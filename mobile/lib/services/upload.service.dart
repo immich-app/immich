@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
@@ -9,7 +10,6 @@ import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/upload.dart';
 import 'package:path/path.dart';
-// import 'package:logging/logging.dart';
 
 final uploadServiceProvider = Provider(
   (ref) => UploadService(
@@ -19,9 +19,17 @@ final uploadServiceProvider = Provider(
 
 class UploadService {
   final IUploadRepository _uploadRepository;
-  // final Logger _log = Logger("UploadService");
   void Function(TaskStatusUpdate)? onUploadStatus;
   void Function(TaskProgressUpdate)? onTaskProgress;
+
+  final StreamController<TaskStatusUpdate> _taskStatusController =
+      StreamController<TaskStatusUpdate>.broadcast();
+  final StreamController<TaskProgressUpdate> _taskProgressController =
+      StreamController<TaskProgressUpdate>.broadcast();
+
+  Stream<TaskStatusUpdate> get taskStatusStream => _taskStatusController.stream;
+  Stream<TaskProgressUpdate> get taskProgressStream =>
+      _taskProgressController.stream;
 
   UploadService(
     this._uploadRepository,
@@ -32,29 +40,70 @@ class UploadService {
 
   void _onTaskProgressCallback(TaskProgressUpdate update) {
     onTaskProgress?.call(update);
+    if (!_taskProgressController.isClosed) {
+      _taskProgressController.add(update);
+    }
   }
 
   void _onUploadCallback(TaskStatusUpdate update) {
     onUploadStatus?.call(update);
+    if (!_taskStatusController.isClosed) {
+      _taskStatusController.add(update);
+    }
+  }
+
+  void dispose() {
+    _taskStatusController.close();
+    _taskProgressController.close();
   }
 
   Future<bool> cancelUpload(String id) {
     return FileDownloader().cancelTaskWithId(id);
   }
 
-  Future<void> upload(File file) async {
-    final task = await _buildUploadTask(
-      hash(file.path).toString(),
-      file,
-    );
-
-    await _uploadRepository.upload(task);
+  Future<void> cancel() async {
+    await _uploadRepository.cancelAll();
+    await _uploadRepository.deleteAllTrackingRecords();
   }
 
-  Future<UploadTask> _buildUploadTask(
+  Future<void> pause() {
+    return _uploadRepository.pauseAll();
+  }
+
+  Future<List<TaskRecord>> getRecords() async {
+    final all = await _uploadRepository.getRecords();
+    return all;
+  }
+
+  void enqueueTasks(List<UploadTask> tasks) {
+    _uploadRepository.enqueueAll(tasks);
+  }
+
+  Future<UploadTask> buildUploadTask(
+    File file, {
+    Map<String, String>? fields,
+    String? originalFileName,
+    String? deviceAssetId,
+    String? metadata,
+    String group = kUploadGroup,
+  }) async {
+    return _buildTask(
+      deviceAssetId ?? hash(file.path).toString(),
+      file,
+      fields: fields,
+      originalFileName: originalFileName,
+      metadata: metadata,
+      group: group,
+    );
+  }
+
+  Future<UploadTask> _buildTask(
     String id,
     File file, {
     Map<String, String>? fields,
+    String? originalFileName,
+    String? metadata,
+    String group = kUploadGroup,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
@@ -66,9 +115,8 @@ class UploadService {
     final stats = await file.stat();
     final fileCreatedAt = stats.changed;
     final fileModifiedAt = stats.modified;
-
     final fieldsMap = {
-      'filename': filename,
+      'filename': originalFileName ?? filename,
       'deviceAssetId': id,
       'deviceId': deviceId,
       'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
@@ -80,6 +128,7 @@ class UploadService {
 
     return UploadTask(
       taskId: id,
+      displayName: originalFileName ?? filename,
       httpRequestMethod: 'POST',
       url: url,
       headers: headers,
@@ -88,7 +137,8 @@ class UploadService {
       baseDirectory: baseDirectory,
       directory: directory,
       fileField: 'assetData',
-      group: uploadGroup,
+      metaData: metadata ?? '',
+      group: group,
       updates: Updates.statusAndProgress,
     );
   }

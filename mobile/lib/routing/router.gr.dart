@@ -609,6 +609,38 @@ class EditImageRouteArgs {
 }
 
 /// generated route for
+/// [ExpBackupAlbumSelectionPage]
+class ExpBackupAlbumSelectionRoute extends PageRouteInfo<void> {
+  const ExpBackupAlbumSelectionRoute({List<PageRouteInfo>? children})
+      : super(ExpBackupAlbumSelectionRoute.name, initialChildren: children);
+
+  static const String name = 'ExpBackupAlbumSelectionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ExpBackupAlbumSelectionPage();
+    },
+  );
+}
+
+/// generated route for
+/// [ExpBackupPage]
+class ExpBackupRoute extends PageRouteInfo<void> {
+  const ExpBackupRoute({List<PageRouteInfo>? children})
+      : super(ExpBackupRoute.name, initialChildren: children);
+
+  static const String name = 'ExpBackupRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ExpBackupPage();
+    },
+  );
+}
+
+/// generated route for
 /// [FailedBackupStatusPage]
 class FailedBackupStatusRoute extends PageRouteInfo<void> {
   const FailedBackupStatusRoute({List<PageRouteInfo>? children})
