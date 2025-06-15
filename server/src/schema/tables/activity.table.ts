@@ -25,6 +25,7 @@ import {
   name: 'CHK_2ab1e70f113f450eb40c1e3ec8',
   expression: `("comment" IS NULL AND "isLiked" = true) OR ("comment" IS NOT NULL AND "isLiked" = false)`,
 })
+// TODO: create mapping for FOREIGN KEY ("albumId", "assetId") REFERENCES "albums_assets_assets" once sql-tools add support for it
 export class ActivityTable {
   @PrimaryGeneratedColumn()
   id!: string;
