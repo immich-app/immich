@@ -36,5 +36,5 @@ export function isMismatchedTag(target: string | undefined, tags: TagResponseDto
   if (tags === null) {
     return true;
   }
-  return !tags.find((candidate) => candidate.value === target);
+  return !tags.some((candidate) => candidate.value === target);
 }
