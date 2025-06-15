@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { upload } from 'src/commands/asset';
 import { login, logout } from 'src/commands/auth';
+import { getJobsStatus, pauseJobExecutions, resumeJobExecutions, startJob } from 'src/commands/jobs';
 import { serverInfo } from 'src/commands/server-info';
 import { version } from '../package.json';
 
@@ -33,6 +34,80 @@ program
   .command('logout')
   .description('Remove stored credentials')
   .action(() => logout(program.opts()));
+
+const jobsCommand = program.createCommand('jobs')
+  .description('Manage background jobs');
+
+jobsCommand
+  .command('pause')
+  .description('Pause executions of all instances of the given job')
+  .usage('<jobName> [options]')
+  .addOption(
+    new Option('-j, --json-output', 'Output detailed information in json format')
+      .env('IMMICH_JSON_OUTPUT')
+      .default(false),
+  )
+  .argument('<jobName>', 'Name of the job to pause executions for')
+  .action((jobName, options) => pauseJobExecutions(jobName, program.opts(), options));
+
+jobsCommand
+  .command('resume')
+  .description('Resume executions of all instances of the given job')
+  .usage('<jobName> [options]')
+  .addOption(
+    new Option('-j, --json-output', 'Output detailed information in json format')
+      .env('IMMICH_JSON_OUTPUT')
+      .default(false),
+  )
+  .argument('<jobName>', 'Name of the job to resume executions for')
+  .action((jobName, options) => resumeJobExecutions(jobName, program.opts(), options));
+
+jobsCommand
+  .command('run')
+  .description('Start a specific job')
+  .usage('<jobName> [options]')
+  .addOption(
+    new Option('-w, --wait', 'Wait for the job to complete before returning')
+      .env("IMMICH_WAIT_JOB_COMPLETION")
+      .default(false),
+  )
+  .addOption(
+    new Option('-j, --json-output', 'Output detailed information in json format')
+      .env('IMMICH_JSON_OUTPUT')
+      .default(false),
+  )
+  .addOption(
+    new Option('--all', 'Execute this job on all assets. Depending on the job, this may clear existing data previously created by the job')
+      .conflicts('refresh')
+      .conflicts('onlyMissing'),
+  )
+  .addOption(
+    new Option('--only-missing', 'Run this job only on assets that have not been processed yet')
+      .default(true)
+      .conflicts('all')
+      .conflicts('refresh'),
+  )
+  .addOption(
+    new Option('--refresh', '(Re)run this job on all assets')
+      .conflicts('all')
+      .conflicts('onlyMissing'),
+  )
+  .argument('<jobName>', 'Name of the job to run')
+  .action((jobName, options) => startJob(jobName, program.opts(), options));
+
+jobsCommand
+  .command("status")
+  .description('Get the status of all jobs or the status of a specific job')
+  .usage('[jobName] [options]')
+  .addOption(
+    new Option('-j, --json-output', 'Output detailed information in json format')
+      .env('IMMICH_JSON_OUTPUT')
+      .default(false),
+  )
+  .argument('[jobName]', 'Name of the job to check status for')
+  .action((jobName, options) => getJobsStatus(jobName, program.opts(), options));
+
+program.addCommand(jobsCommand);
 
 program
   .command('server-info')
