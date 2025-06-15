@@ -222,11 +222,11 @@ The API key can be obtained in the user setting panel on the web interface.
 ### Manage jobs via the CLI
 
 With the Immich CLI you can also manage background jobs on your server. 
-The immich jobs command allows you to pause, resume, run, or check the status of background jobs.
+The `jobs` command allows you to pause, resume, run, or check the status of background jobs.
 
 Once you are authenticated, you can use the `jobs` command to interact with your Immich server.
 
-For example, you can run the following command to print out the status of all the background jobs Immich uses. 
+For example, you can run the following command to print out the status of all the background jobs Immich uses.
 
 ```bash
 immich jobs status
@@ -253,8 +253,9 @@ If you want to run the specified job on all assets your Immich instance handles,
 immich jobs run thumbnailGeneration --refresh
 ```
 
-Alternatively, you can run the same command with the `--all` flag. Similarly to the `--refresh` flag, the `--all` 
-may imply the deletion of the output of previous executions of that job, before running it from scratch on all assets.
+Alternatively, you can run the same command with the `--all` flag. 
+Depending on the job implementation, the `--all` flag may imply the deletion of the output of previous executions of 
+that job, before running it from scratch on all assets.
 
 ```bash
 immich jobs run thumbnailGeneration --all
@@ -262,14 +263,22 @@ immich jobs run thumbnailGeneration --all
 
 If you want to stop executions of a specific job, you can run the command `pause`, followed by the job name. 
 For example, to prevent generation of new thumbnails, you could run this command:
-
 ```bash
 immich jobs pause thumbnailGeneration
 ```
 
-To resume executions of a paused job queue, you can use the `resume` command. 
+Once executions of a specific job are paused, scheduled executions of that job will no longer occur until you 
+resume their execution. This can be done using the `resume` command.
 For example, to resume the generation of new thumbnails, you can run:
 
 ```bash
 immich jobs resume thumbnailGeneration
 ```
+
+We can also use the `run` command to ask the Immich server to create a database dump. 
+This can be done with the following command:
+
+```bash
+immich jobs run backupDatabase
+```
+

@@ -62,12 +62,7 @@ export async function getJobsStatus(jobName: JobName | undefined, baseOptions: B
  */
 export async function startJob(jobName: JobName, baseOptions: BaseOptions, commandOptions: StartJobOptions) {
   await authenticate(baseOptions);
-
-  const validObjectNames = Object.values(JobName);
-  if (!validObjectNames.includes(jobName)) {
-    console.error(`Invalid job name: ${jobName}. Valid job names are: ${validObjectNames.join(', ')}`);
-    process.exit(1);
-  }
+  ensureJobNameIsValid(jobName);
 
   let force: boolean | undefined;
 
