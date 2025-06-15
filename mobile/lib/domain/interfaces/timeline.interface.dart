@@ -3,12 +3,14 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 
 abstract interface class ITimelineRepository implements IDatabaseRepository {
-  Stream<List<Bucket>> watchMainBucket({
+  Stream<List<Bucket>> watchMainBucket(
+    List<String> timelineUsers, {
     GroupAssetsBy groupBy = GroupAssetsBy.day,
   });
 
-  Future<List<BaseAsset>> getMainBucketAssets({
-    required int index,
+  Future<List<BaseAsset>> getMainBucketAssets(
+    List<String> timelineUsers, {
+    required int offset,
     required int count,
   });
 
@@ -19,7 +21,7 @@ abstract interface class ITimelineRepository implements IDatabaseRepository {
 
   Future<List<BaseAsset>> getLocalBucketAssets(
     String albumId, {
-    required int index,
+    required int offset,
     required int count,
   });
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 
 @RoutePage()
 class MainTimelinePage extends StatelessWidget {
@@ -12,8 +13,11 @@ class MainTimelinePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProviderScope(
       overrides: [
-        timelineServiceProvider
-            .overrideWith((ref) => ref.watch(timelineFactoryProvider).main()),
+        timelineServiceProvider.overrideWith(
+          (ref) => ref
+              .watch(timelineFactoryProvider)
+              .main(ref.watch(timelineUsersIdsProvider)),
+        ),
       ],
       child: const Timeline(),
     );

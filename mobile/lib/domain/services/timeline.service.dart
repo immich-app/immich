@@ -29,16 +29,18 @@ class TimelineFactory {
   GroupAssetsBy get groupBy =>
       GroupAssetsBy.values[_settingsService.get(Setting.groupAssetsBy)];
 
-  TimelineService main() => TimelineService(
-        assetSource: (index, count) =>
-            _timelineRepository.getMainBucketAssets(index: index, count: count),
-        bucketSource: () =>
-            _timelineRepository.watchMainBucket(groupBy: groupBy),
+  TimelineService main(List<String> timelineUsers) => TimelineService(
+        assetSource: (offset, count) => _timelineRepository
+            .getMainBucketAssets(timelineUsers, offset: offset, count: count),
+        bucketSource: () => _timelineRepository.watchMainBucket(
+          timelineUsers,
+          groupBy: groupBy,
+        ),
       );
 
   TimelineService localAlbum({required String albumId}) => TimelineService(
-        assetSource: (index, count) => _timelineRepository
-            .getLocalBucketAssets(albumId, index: index, count: count),
+        assetSource: (offset, count) => _timelineRepository
+            .getLocalBucketAssets(albumId, offset: offset, count: count),
         bucketSource: () =>
             _timelineRepository.watchLocalBucket(albumId, groupBy: groupBy),
       );

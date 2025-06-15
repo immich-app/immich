@@ -28,37 +28,32 @@ class DriftTimelineRepository extends DriftDatabaseRepository
   }
 
   @override
-  Stream<List<Bucket>> watchMainBucket({
+  Stream<List<Bucket>> watchMainBucket(
+    List<String> userIds, {
     GroupAssetsBy groupBy = GroupAssetsBy.day,
   }) {
     if (groupBy == GroupAssetsBy.none) {
-      return _db.mergedAssetView.count().map(_generateBuckets).watchSingle();
+      throw UnsupportedError(
+        "GroupAssetsBy.none is not supported for watchMainBucket",
+      );
     }
 
-    final assetCountExp = _db.mergedAssetView.name.count();
-    final dateExp = _db.mergedAssetView.createdAt.dateFmt(groupBy);
-
-    final query = _db.mergedAssetView.selectOnly()
-      ..addColumns([assetCountExp, dateExp])
-      ..groupBy([dateExp])
-      ..orderBy([OrderingTerm.desc(dateExp)]);
-
-    return query.map((row) {
-      final timeline = row.read(dateExp)!.dateFmt(groupBy);
-      final assetCount = row.read(assetCountExp)!;
-      return TimeBucket(date: timeline, assetCount: assetCount);
+    return _db.mergedAssetDrift
+        .mergedBucket(userIds, groupBy: groupBy.index)
+        .map((row) {
+      final date = row.bucketDate.dateFmt(groupBy);
+      return TimeBucket(date: date, assetCount: row.assetCount);
     }).watch();
   }
 
   @override
-  Future<List<BaseAsset>> getMainBucketAssets({
-    required int index,
+  Future<List<BaseAsset>> getMainBucketAssets(
+    List<String> userIds, {
+    required int offset,
     required int count,
   }) {
-    final query = _db.mergedAssetView.select()
-      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
-      ..limit(count, offset: index);
-    return query
+    return _db.mergedAssetDrift
+        .mergedAsset(userIds, limit: Limit(count, offset))
         .map(
           (row) => row.remoteId != null
               ? Asset(
@@ -129,7 +124,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository
   @override
   Future<List<BaseAsset>> getLocalBucketAssets(
     String albumId, {
-    required int index,
+    required int offset,
     required int count,
   }) {
     final query = _db.localAssetEntity.select().join(
@@ -142,7 +137,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository
     )
       ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
       ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
-      ..limit(count, offset: index);
+      ..limit(count, offset: offset);
     return query
         .map((row) => row.readTable(_db.localAssetEntity).toDto())
         .get();
