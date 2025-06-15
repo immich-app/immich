@@ -1,18 +1,21 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { editTypes, showCancelConfirmDialog } from '$lib/stores/asset-editor.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { type AssetResponseDto } from '@immich/sdk';
+  import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   onMount(() => {
-    return websocketEvents.on('on_asset_update', (assetUpdate) => {
-      if (assetUpdate.id === asset.id) {
-        asset = assetUpdate;
+    return websocketEvents.on('on_asset_update', async (assetIds) => {
+      for (const assetId of assetIds) {
+        if (assetId === asset.id) {
+          asset = await getAssetInfo({ id: assetId, key: authManager.key });
+        }
       }
     });
   });

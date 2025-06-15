@@ -8,9 +8,9 @@
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
@@ -23,6 +23,7 @@
     AssetJobName,
     AssetTypeEnum,
     getAllAlbums,
+    getAssetInfo,
     getStack,
     runAssetJobs,
     type AlbumResponseDto,
@@ -148,16 +149,20 @@
     }
   };
 
-  const onAssetUpdate = ({ asset: assetUpdate }: { event: 'upload' | 'update'; asset: AssetResponseDto }) => {
-    if (assetUpdate.id === asset.id) {
-      asset = assetUpdate;
+  const onAssetUpdate = async (assetId: string) => {
+    if (assetId === asset.id) {
+      asset = await getAssetInfo({ id: assetId, key: authManager.key });
     }
   };
 
   onMount(async () => {
     unsubscribes.push(
-      websocketEvents.on('on_upload_success', (asset) => onAssetUpdate({ event: 'upload', asset })),
-      websocketEvents.on('on_asset_update', (asset) => onAssetUpdate({ event: 'update', asset })),
+      websocketEvents.on('on_upload_success', (asset) => onAssetUpdate(asset.id)),
+      websocketEvents.on('on_asset_update', async (assetsIds) => {
+        for (const assetId of assetsIds) {
+          await onAssetUpdate(assetId);
+        }
+      }),
     );
 
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {

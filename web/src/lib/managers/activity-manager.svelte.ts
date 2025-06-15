@@ -1,4 +1,5 @@
 import { user } from '$lib/stores/user.store';
+import { websocketEvents } from '$lib/stores/websocket';
 import { handlePromiseError } from '$lib/utils';
 import {
   createActivity,
@@ -10,6 +11,7 @@ import {
   type ActivityCreateDto,
   type ActivityResponseDto,
 } from '@immich/sdk';
+import { createSubscriber } from 'svelte/reactivity';
 import { get } from 'svelte/store';
 
 class ActivityManager {
@@ -20,19 +22,43 @@ class ActivityManager {
   #likeCount = $state(0);
   #isLiked = $state<ActivityResponseDto | null>(null);
 
+  #subscribe;
+
+  constructor() {
+    this.#subscribe = createSubscriber((update) => {
+      debugger;
+      console.log('update', update);
+      const unsubscribe = websocketEvents.on('on_activity_change', ({ albumId, assetId }) => {
+        if (this.#albumId === albumId || this.#assetId === assetId) {
+          handlePromiseError(this.refreshActivities(this.#albumId!, this.#assetId));
+        }
+      });
+
+      // stop listening when all the effects are destroyed
+      return () => {
+        debugger;
+        unsubscribe();
+      };
+    });
+  }
+
   get activities() {
+    this.#subscribe();
     return this.#activities;
   }
 
   get commentCount() {
+    this.#subscribe();
     return this.#commentCount;
   }
 
   get likeCount() {
+    this.#subscribe();
     return this.#likeCount;
   }
 
   get isLiked() {
+    this.#subscribe();
     return this.#isLiked;
   }
 
@@ -126,3 +152,6 @@ class ActivityManager {
 }
 
 export const activityManager = new ActivityManager();
+function on(arg0: any, arg1: string, update: () => void) {
+  throw new Error('Function not implemented.');
+}

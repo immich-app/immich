@@ -50,30 +50,28 @@ describe(TrashService.name, () => {
 
   describe('restore', () => {
     it('should handle an empty trash', async () => {
-      mocks.trash.getDeletedIds.mockResolvedValue(makeAssetIdStream(0));
-      mocks.trash.restore.mockResolvedValue(0);
+      mocks.trash.getTrashedIds.mockReturnValue(makeAssetIdStream(0));
       await expect(sut.restore(authStub.user1)).resolves.toEqual({ count: 0 });
-      expect(mocks.trash.restore).toHaveBeenCalledWith('user-id');
     });
 
     it('should restore', async () => {
-      mocks.trash.getDeletedIds.mockResolvedValue(makeAssetIdStream(1));
-      mocks.trash.restore.mockResolvedValue(1);
+      mocks.trash.getTrashedIds.mockReturnValue(makeAssetIdStream(1));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.trash.restoreAll.mockResolvedValue(1);
       await expect(sut.restore(authStub.user1)).resolves.toEqual({ count: 1 });
-      expect(mocks.trash.restore).toHaveBeenCalledWith('user-id');
     });
   });
 
   describe('empty', () => {
     it('should handle an empty trash', async () => {
-      mocks.trash.getDeletedIds.mockResolvedValue(makeAssetIdStream(0));
+      mocks.trash.getTrashedIds.mockReturnValue(makeAssetIdStream(0));
       mocks.trash.empty.mockResolvedValue(0);
       await expect(sut.empty(authStub.user1)).resolves.toEqual({ count: 0 });
       expect(mocks.job.queue).not.toHaveBeenCalled();
     });
 
     it('should empty the trash', async () => {
-      mocks.trash.getDeletedIds.mockResolvedValue(makeAssetIdStream(1));
+      mocks.trash.getTrashedIds.mockReturnValue(makeAssetIdStream(1));
       mocks.trash.empty.mockResolvedValue(1);
       await expect(sut.empty(authStub.user1)).resolves.toEqual({ count: 1 });
       expect(mocks.trash.empty).toHaveBeenCalledWith('user-id');
