@@ -456,6 +456,7 @@ export type AssetMediaResponseDto = {
 };
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
+    dateTimeRelative?: number;
     description?: string;
     duplicateId?: string | null;
     ids: string[];

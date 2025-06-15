@@ -369,6 +369,7 @@
       <ChangeDate
         initialDate={dateTime}
         initialTimeZone={timeZone ?? ''}
+        withDuration={false}
         onConfirm={handleConfirmChangeDate}
         onCancel={() => (isShowChangeDate = false)}
       />
