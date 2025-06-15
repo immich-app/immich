@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { ReactionType } from 'src/dtos/activity.dto';
 import { ActivityService } from 'src/services/activity.service';
+import { albumStub } from 'test/fixtures/album.stub';
 import { factory, newUuid, newUuids } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -79,6 +80,7 @@ describe(ActivityService.name, () => {
 
       mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set([albumId]));
       mocks.activity.create.mockResolvedValue(activity);
+      mocks.album.getById.mockResolvedValue({ ...albumStub.empty, owner: factory.user({ id: userId }), albumUsers: [] });
 
       await sut.create(factory.auth({ user: { id: userId } }), {
         albumId,
@@ -115,6 +117,7 @@ describe(ActivityService.name, () => {
       mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set([albumId]));
       mocks.activity.create.mockResolvedValue(activity);
       mocks.activity.search.mockResolvedValue([]);
+      mocks.album.getById.mockResolvedValue({ ...albumStub.empty, owner: factory.user({ id: userId }), albumUsers: [] });
 
       await sut.create(factory.auth({ user: { id: userId } }), { albumId, assetId, type: ReactionType.LIKE });
 

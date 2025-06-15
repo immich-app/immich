@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent, OnJob } from 'src/decorators';
-import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   mapNotification,
@@ -128,6 +127,15 @@ export class NotificationService extends BaseService {
     }
   }
 
+  @OnEvent({ name: 'activity.change' })
+  onActivityChange({ recipientId, assetId, userId, albumId }: ArgOf<'activity.change'>) {
+    for (const recipient of recipientId) {
+      this.eventRepository.clientSend('on_activity_change', recipient, { albumId, assetId });
+    }
+
+    this.eventRepository.clientSend('on_activity_change', userId, { albumId, assetId });
+  }
+
   @OnEvent({ name: 'asset.person' })
   onAssetPerson({ assetId, userId, personId, status }: ArgOf<'asset.person'>) {
     this.eventRepository.clientSend('on_asset_person', userId, { assetId, personId, status });
@@ -158,16 +166,17 @@ export class NotificationService extends BaseService {
     this.eventRepository.clientSend('on_asset_trash', userId, assetIds);
   }
 
+  @OnEvent({ name: 'asset.update' })
+  onAssetUpdate({ assetIds, userId }: ArgOf<'asset.update'>) {
+    this.eventRepository.clientSend('on_asset_update', userId, assetIds);
+  }
+
   @OnEvent({ name: 'asset.metadataExtracted' })
-  async onAssetMetadataExtracted({ assetId, userId, source }: ArgOf<'asset.metadataExtracted'>) {
+  onAssetMetadataExtracted({ assetId, userId, source }: ArgOf<'asset.metadataExtracted'>) {
     if (source !== 'sidecar-write') {
       return;
     }
-
-    const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId]);
-    if (asset) {
-      this.eventRepository.clientSend('on_asset_update', userId, mapAsset(asset));
-    }
+    this.eventRepository.clientSend('on_asset_update', userId, [assetId]);
   }
 
   @OnEvent({ name: 'assets.restore' })
@@ -211,6 +220,11 @@ export class NotificationService extends BaseService {
           name: JobName.NOTIFY_ALBUM_UPDATE,
           data: { id, recipientId: recipient, delay: NotificationService.albumUpdateEmailDelayMs },
         });
+        this.eventRepository.clientSend('on_album_update', recipient, { albumId: id, assetId, status });
+      }
+    } else if (status === 'removed') {
+      for (const recipient of recipientId) {
+        this.eventRepository.clientSend('on_album_update', recipient, { albumId: id, assetId, status });
       }
     }
 
