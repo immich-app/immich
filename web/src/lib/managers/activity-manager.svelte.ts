@@ -130,10 +130,10 @@ class ActivityManager {
       this.#likeCount--;
     }
 
-    if (index !== undefined) {
-      this.#activities.splice(index, 1);
-    } else {
+    if (index === undefined) {
       this.#activities = this.#activities.filter(({ id }) => id !== activity.id);
+    } else {
+      this.#activities.splice(index, 1);
     }
 
     await deleteActivity({ id: activity.id });
