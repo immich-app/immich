@@ -872,6 +872,43 @@ class LocalMediaSummaryRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [LocalTimelinePage]
+class LocalTimelineRoute extends PageRouteInfo<LocalTimelineRouteArgs> {
+  LocalTimelineRoute({
+    Key? key,
+    required String albumId,
+    List<PageRouteInfo>? children,
+  }) : super(
+          LocalTimelineRoute.name,
+          args: LocalTimelineRouteArgs(key: key, albumId: albumId),
+          initialChildren: children,
+        );
+
+  static const String name = 'LocalTimelineRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<LocalTimelineRouteArgs>();
+      return LocalTimelinePage(key: args.key, albumId: args.albumId);
+    },
+  );
+}
+
+class LocalTimelineRouteArgs {
+  const LocalTimelineRouteArgs({this.key, required this.albumId});
+
+  final Key? key;
+
+  final String albumId;
+
+  @override
+  String toString() {
+    return 'LocalTimelineRouteArgs{key: $key, albumId: $albumId}';
+  }
+}
+
+/// generated route for
 /// [LockedPage]
 class LockedRoute extends PageRouteInfo<void> {
   const LockedRoute({List<PageRouteInfo>? children})
@@ -899,6 +936,22 @@ class LoginRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const LoginPage();
+    },
+  );
+}
+
+/// generated route for
+/// [MainTimelinePage]
+class MainTimelineRoute extends PageRouteInfo<void> {
+  const MainTimelineRoute({List<PageRouteInfo>? children})
+      : super(MainTimelineRoute.name, initialChildren: children);
+
+  static const String name = 'MainTimelineRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const MainTimelinePage();
     },
   );
 }
