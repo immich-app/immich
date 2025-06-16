@@ -20,7 +20,7 @@
     "baseUrl": "./",
     "jsx": "react",
     "types": ["vitest/globals"],
-    "noErrorTruncation": true
+    "noErrorTruncation": true,
   },
   "exclude": ["dist", "node_modules", "upload"]
 }
