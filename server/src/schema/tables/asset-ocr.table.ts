@@ -9,9 +9,6 @@ export class AssetOcrTable {
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   assetId!: string;
 
-  @Column({ type: 'text' })
-  text!: string;
-
   // box positions are normalized, with values between 0 and 1
   @Column({ type: 'real' })
   x1!: number;
@@ -42,4 +39,7 @@ export class AssetOcrTable {
 
   @Column({ type: 'real' })
   textScore!: number;
+
+  @Column({ type: 'text' })
+  text!: string;
 }
