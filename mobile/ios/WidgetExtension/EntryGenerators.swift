@@ -33,11 +33,15 @@ func generateRandomEntries(
   let randomAssets = try await api.fetchSearchResults(
     with: SearchFilters(size: count, albumIds: albumIds)
   )
-  
+
   await withTaskGroup(of: ImageEntry?.self) { group in
     for (hourOffset, asset) in randomAssets.enumerated() {
       group.addTask {
-        return try? await buildEntry(api: api, asset: asset, hourOffset: hourOffset)
+        return try? await buildEntry(
+          api: api,
+          asset: asset,
+          hourOffset: hourOffset
+        )
       }
     }
 

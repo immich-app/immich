@@ -72,15 +72,19 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
       return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
     }
 
-    
     guard
-      let entry = try? await buildEntry(api: api, asset: randomImage, hourOffset: 0) else {
+      let entry = try? await buildEntry(
+        api: api,
+        asset: randomImage,
+        hourOffset: 0
+      )
+    else {
       return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
     }
-    
+
     return
-      (try? await buildEntry(api: api, asset: randomImage, hourOffset: 0)) ??
-      ImageEntry(date: Date(), image: nil, error: .fetchFailed)
+      (try? await buildEntry(api: api, asset: randomImage, hourOffset: 0))
+      ?? ImageEntry(date: Date(), image: nil, error: .fetchFailed)
   }
 
   func timeline(
