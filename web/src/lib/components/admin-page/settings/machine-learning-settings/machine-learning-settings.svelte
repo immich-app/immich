@@ -252,7 +252,7 @@
             description={$t('admin.machine_learning_ocr_min_detection_score_description')}
             bind:value={config.machineLearning.ocr.minDetectionScore}
             step="0.1"
-            min={0}
+            min={0.1}
             max={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
             isEdited={config.machineLearning.ocr.minDetectionScore !== savedConfig.machineLearning.ocr.minDetectionScore}
@@ -264,7 +264,7 @@
             description={$t('admin.machine_learning_ocr_min_score_recognition_description')}
             bind:value={config.machineLearning.ocr.minRecognitionScore}
             step="0.1"
-            min={0}
+            min={0.1}
             max={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
             isEdited={config.machineLearning.ocr.minRecognitionScore !== savedConfig.machineLearning.ocr.minRecognitionScore}
@@ -273,8 +273,8 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_ocr_max_resolution')}
-            description={$t('machine_learning_ocr_max_resolution_description')}
-            bind:value={config.machineLearning.ocr.minRecognitionScore}
+            description={$t('admin.machine_learning_ocr_max_resolution_description')}
+            bind:value={config.machineLearning.ocr.maxResolution}
             min={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
             isEdited={config.machineLearning.ocr.maxResolution !== savedConfig.machineLearning.ocr.maxResolution}
