@@ -122,7 +122,7 @@ class BackgroundBackupSettings extends ConsumerWidget {
           ),
         if (Platform.isIOS && iosSettings?.appRefreshEnabled != true)
           SettingPermissionRequest(
-            padding: const EdgeInsetsGeometry.all(16),
+            padding: const EdgeInsets.all(16),
             icon: Icons.refresh_rounded,
             title:
                 'backup_controller_page_background_app_refresh_disabled_title'
