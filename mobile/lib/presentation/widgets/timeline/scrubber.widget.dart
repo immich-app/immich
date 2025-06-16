@@ -150,7 +150,6 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
     _fadeOutTimer?.cancel();
     _fadeOutTimer = Timer(kTimelineScrubberFadeOutDuration, () {
       _thumbAnimationController.reverse();
-      _labelAnimationController.reverse();
       _fadeOutTimer = null;
     });
   }
@@ -208,6 +207,7 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
 
   void _onDragEnd(WidgetRef ref) {
     ref.read(timelineStateProvider.notifier).setScrubbing(false);
+    _labelAnimationController.reverse();
     _isDragging = false;
     _resetThumbTimer();
   }
@@ -277,8 +277,6 @@ class _ScrollLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      // Ignore pointer events when the label is not fully visible,
-      ignoring: animation.value != 1.0,
       child: FadeTransition(
         opacity: animation,
         child: Container(
