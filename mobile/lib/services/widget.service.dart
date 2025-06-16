@@ -24,6 +24,7 @@ class WidgetService {
   }
 
   Future<void> clearCredentials() async {
+    await _repository.setAppGroupId(appShareGroupId);
     await _repository.saveData(kWidgetServerEndpoint, "");
     await _repository.saveData(kWidgetAuthToken, "");
 
