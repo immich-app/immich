@@ -59,7 +59,7 @@ struct ImmichMemoryProvider: TimelineProvider {
         let imageEntry = try? await buildEntry(
           api: api,
           asset: randomImage,
-          hourOffset: 0,
+          hourOffset: 0
         )
       else {
         completion(ImageEntry(date: Date(), image: nil, error: .fetchFailed))
