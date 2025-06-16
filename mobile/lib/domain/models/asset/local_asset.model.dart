@@ -19,6 +19,10 @@ class LocalAsset extends BaseAsset {
   });
 
   @override
+  AssetState get storage =>
+      remoteId == null ? AssetState.local : AssetState.merged;
+
+  @override
   String toString() {
     return '''LocalAsset {
    id: $id,

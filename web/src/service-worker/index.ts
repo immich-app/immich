@@ -20,7 +20,7 @@ const handleInstall = (event: ExtendableEvent) => {
   event.waitUntil(addFilesToCache());
 };
 
-sw.addEventListener('install', handleInstall);
-sw.addEventListener('activate', handleActivate);
-sw.addEventListener('fetch', handleFetchEvent);
+sw.addEventListener('install', handleInstall, { passive: true });
+sw.addEventListener('activate', handleActivate, { passive: true });
+sw.addEventListener('fetch', handleFetchEvent, { passive: true });
 installBroadcastChannelListener();
