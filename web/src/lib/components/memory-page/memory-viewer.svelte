@@ -4,6 +4,8 @@
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import { resizeObserver } from '$lib/actions/resize-observer';
   import { shortcuts } from '$lib/actions/shortcut';
+  import MemoryPhotoViewer from '$lib/components/memory-page/memory-photo-viewer.svelte';
+  import MemoryVideoViewer from '$lib/components/memory-page/memory-video-viewer.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
@@ -23,7 +25,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute, assetViewerFadeDuration, QueryParameter } from '$lib/constants';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -31,9 +33,8 @@
   import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
-  import { getAssetPlaybackUrl, getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
+  import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
-  import { getAltText } from '$lib/utils/thumbnail-util';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, getAssetInfo } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
@@ -59,7 +60,6 @@
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
   import { Tween } from 'svelte/motion';
-  import { fade } from 'svelte/transition';
 
   let memoryGallery: HTMLElement | undefined = $state();
   let memoryWrapper: HTMLElement | undefined = $state();
@@ -463,30 +463,16 @@
         >
           <div class="relative h-full w-full rounded-2xl bg-black">
             {#key current.asset.id}
-              <div transition:fade={{ duration: assetViewerFadeDuration }} class="h-full w-full">
-                {#if current.asset.isVideo}
-                  <video
-                    bind:this={videoPlayer}
-                    autoplay
-                    playsinline
-                    class="h-full w-full rounded-2xl object-contain transition-all"
-                    src={getAssetPlaybackUrl({ id: current.asset.id })}
-                    poster={getAssetThumbnailUrl({ id: current.asset.id, size: AssetMediaSize.Preview })}
-                    draggable="false"
-                    muted={$videoViewerMuted}
-                    volume={$videoViewerVolume}
-                    transition:fade
-                  ></video>
-                {:else}
-                  <img
-                    class="h-full w-full rounded-2xl object-contain transition-all"
-                    src={getAssetThumbnailUrl({ id: current.asset.id, size: AssetMediaSize.Preview })}
-                    alt={$getAltText(current.asset)}
-                    draggable="false"
-                    transition:fade
-                  />
-                {/if}
-              </div>
+              {#if current.asset.isVideo}
+                <MemoryVideoViewer
+                  asset={current.asset}
+                  bind:videoPlayer
+                  videoViewerMuted={$videoViewerMuted}
+                  videoViewerVolume={$videoViewerVolume}
+                />
+              {:else}
+                <MemoryPhotoViewer asset={current.asset} />
+              {/if}
             {/key}
 
             <div
