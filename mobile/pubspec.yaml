@@ -63,6 +63,7 @@ dependencies:
   share_handler: ^0.0.22
   share_plus: ^10.1.4
   socket_io_client: ^2.0.3+1
+  stream_transform: ^2.1.1
   thumbhash: 0.1.0+1
   timezone: ^0.9.4
   url_launcher: ^6.3.1

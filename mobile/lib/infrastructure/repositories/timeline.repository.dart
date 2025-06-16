@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 class DriftTimelineRepository extends DriftDatabaseRepository
     implements ITimelineRepository {
@@ -41,9 +42,11 @@ class DriftTimelineRepository extends DriftDatabaseRepository
     return _db.mergedAssetDrift
         .mergedBucket(userIds, groupBy: groupBy.index)
         .map((row) {
-      final date = row.bucketDate.dateFmt(groupBy);
-      return TimeBucket(date: date, assetCount: row.assetCount);
-    }).watch();
+          final date = row.bucketDate.dateFmt(groupBy);
+          return TimeBucket(date: date, assetCount: row.assetCount);
+        })
+        .watch()
+        .throttle(const Duration(seconds: 3), trailing: true);
   }
 
   @override
