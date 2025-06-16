@@ -14,6 +14,12 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   // Only used during backup to mirror the favorite status of the asset in the server
   BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
 
+  BoolColumn get isLivePhoto => boolean().withDefault(const Constant(false))();
+  BoolColumn get livePhotoImageUploaded =>
+      boolean().withDefault(const Constant(false))();
+  BoolColumn get livePhotoVideoUploaded =>
+      boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -28,5 +34,8 @@ extension LocalAssetEntityDataDomainEx on LocalAssetEntityData {
         updatedAt: updatedAt,
         durationInSeconds: durationInSeconds,
         isFavorite: isFavorite,
+        isLivePhoto: isLivePhoto,
+        livePhotoImageUploaded: livePhotoImageUploaded,
+        livePhotoVideoUploaded: livePhotoVideoUploaded,
       );
 }

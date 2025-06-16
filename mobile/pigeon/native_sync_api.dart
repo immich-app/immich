@@ -23,6 +23,7 @@ class PlatformAsset {
   final int? width;
   final int? height;
   final int durationInSeconds;
+  final bool isLivePhoto;
 
   const PlatformAsset({
     required this.id,
@@ -33,6 +34,7 @@ class PlatformAsset {
     this.width,
     this.height,
     this.durationInSeconds = 0,
+    this.isLivePhoto = false,
   });
 }
 

@@ -40,6 +40,7 @@ class PlatformAsset {
     this.width,
     this.height,
     required this.durationInSeconds,
+    required this.isLivePhoto,
   });
 
   String id;
@@ -58,6 +59,8 @@ class PlatformAsset {
 
   int durationInSeconds;
 
+  bool isLivePhoto;
+
   List<Object?> _toList() {
     return <Object?>[
       id,
@@ -68,6 +71,7 @@ class PlatformAsset {
       width,
       height,
       durationInSeconds,
+      isLivePhoto,
     ];
   }
 
@@ -86,6 +90,7 @@ class PlatformAsset {
       width: result[5] as int?,
       height: result[6] as int?,
       durationInSeconds: result[7]! as int,
+      isLivePhoto: result[8]! as bool,
     );
   }
 

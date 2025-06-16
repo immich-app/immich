@@ -20,6 +20,9 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder
   required String id,
   i0.Value<String?> checksum,
   i0.Value<bool> isFavorite,
+  i0.Value<bool> isLivePhoto,
+  i0.Value<bool> livePhotoImageUploaded,
+  i0.Value<bool> livePhotoVideoUploaded,
 });
 typedef $$LocalAssetEntityTableUpdateCompanionBuilder
     = i1.LocalAssetEntityCompanion Function({
@@ -33,6 +36,9 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder
   i0.Value<String> id,
   i0.Value<String?> checksum,
   i0.Value<bool> isFavorite,
+  i0.Value<bool> isLivePhoto,
+  i0.Value<bool> livePhotoImageUploaded,
+  i0.Value<bool> livePhotoVideoUploaded,
 });
 
 class $$LocalAssetEntityTableFilterComposer
@@ -76,6 +82,18 @@ class $$LocalAssetEntityTableFilterComposer
 
   i0.ColumnFilters<bool> get isFavorite => $composableBuilder(
       column: $table.isFavorite, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<bool> get isLivePhoto => $composableBuilder(
+      column: $table.isLivePhoto,
+      builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<bool> get livePhotoImageUploaded => $composableBuilder(
+      column: $table.livePhotoImageUploaded,
+      builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<bool> get livePhotoVideoUploaded => $composableBuilder(
+      column: $table.livePhotoVideoUploaded,
+      builder: (column) => i0.ColumnFilters(column));
 }
 
 class $$LocalAssetEntityTableOrderingComposer
@@ -120,6 +138,18 @@ class $$LocalAssetEntityTableOrderingComposer
   i0.ColumnOrderings<bool> get isFavorite => $composableBuilder(
       column: $table.isFavorite,
       builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<bool> get isLivePhoto => $composableBuilder(
+      column: $table.isLivePhoto,
+      builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<bool> get livePhotoImageUploaded => $composableBuilder(
+      column: $table.livePhotoImageUploaded,
+      builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<bool> get livePhotoVideoUploaded => $composableBuilder(
+      column: $table.livePhotoVideoUploaded,
+      builder: (column) => i0.ColumnOrderings(column));
 }
 
 class $$LocalAssetEntityTableAnnotationComposer
@@ -160,6 +190,15 @@ class $$LocalAssetEntityTableAnnotationComposer
 
   i0.GeneratedColumn<bool> get isFavorite => $composableBuilder(
       column: $table.isFavorite, builder: (column) => column);
+
+  i0.GeneratedColumn<bool> get isLivePhoto => $composableBuilder(
+      column: $table.isLivePhoto, builder: (column) => column);
+
+  i0.GeneratedColumn<bool> get livePhotoImageUploaded => $composableBuilder(
+      column: $table.livePhotoImageUploaded, builder: (column) => column);
+
+  i0.GeneratedColumn<bool> get livePhotoVideoUploaded => $composableBuilder(
+      column: $table.livePhotoVideoUploaded, builder: (column) => column);
 }
 
 class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
@@ -201,6 +240,9 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             i0.Value<String> id = const i0.Value.absent(),
             i0.Value<String?> checksum = const i0.Value.absent(),
             i0.Value<bool> isFavorite = const i0.Value.absent(),
+            i0.Value<bool> isLivePhoto = const i0.Value.absent(),
+            i0.Value<bool> livePhotoImageUploaded = const i0.Value.absent(),
+            i0.Value<bool> livePhotoVideoUploaded = const i0.Value.absent(),
           }) =>
               i1.LocalAssetEntityCompanion(
             name: name,
@@ -213,6 +255,9 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             id: id,
             checksum: checksum,
             isFavorite: isFavorite,
+            isLivePhoto: isLivePhoto,
+            livePhotoImageUploaded: livePhotoImageUploaded,
+            livePhotoVideoUploaded: livePhotoVideoUploaded,
           ),
           createCompanionCallback: ({
             required String name,
@@ -225,6 +270,9 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             required String id,
             i0.Value<String?> checksum = const i0.Value.absent(),
             i0.Value<bool> isFavorite = const i0.Value.absent(),
+            i0.Value<bool> isLivePhoto = const i0.Value.absent(),
+            i0.Value<bool> livePhotoImageUploaded = const i0.Value.absent(),
+            i0.Value<bool> livePhotoVideoUploaded = const i0.Value.absent(),
           }) =>
               i1.LocalAssetEntityCompanion.insert(
             name: name,
@@ -237,6 +285,9 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             id: id,
             checksum: checksum,
             isFavorite: isFavorite,
+            isLivePhoto: isLivePhoto,
+            livePhotoImageUploaded: livePhotoImageUploaded,
+            livePhotoVideoUploaded: livePhotoVideoUploaded,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -337,6 +388,36 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
       defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
           'CHECK ("is_favorite" IN (0, 1))'),
       defaultValue: const i4.Constant(false));
+  static const i0.VerificationMeta _isLivePhotoMeta =
+      const i0.VerificationMeta('isLivePhoto');
+  @override
+  late final i0.GeneratedColumn<bool> isLivePhoto = i0.GeneratedColumn<bool>(
+      'is_live_photo', aliasedName, false,
+      type: i0.DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_live_photo" IN (0, 1))'),
+      defaultValue: const i4.Constant(false));
+  static const i0.VerificationMeta _livePhotoImageUploadedMeta =
+      const i0.VerificationMeta('livePhotoImageUploaded');
+  @override
+  late final i0.GeneratedColumn<bool> livePhotoImageUploaded =
+      i0.GeneratedColumn<bool>('live_photo_image_uploaded', aliasedName, false,
+          type: i0.DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+              'CHECK ("live_photo_image_uploaded" IN (0, 1))'),
+          defaultValue: const i4.Constant(false));
+  static const i0.VerificationMeta _livePhotoVideoUploadedMeta =
+      const i0.VerificationMeta('livePhotoVideoUploaded');
+  @override
+  late final i0.GeneratedColumn<bool> livePhotoVideoUploaded =
+      i0.GeneratedColumn<bool>('live_photo_video_uploaded', aliasedName, false,
+          type: i0.DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+              'CHECK ("live_photo_video_uploaded" IN (0, 1))'),
+          defaultValue: const i4.Constant(false));
   @override
   List<i0.GeneratedColumn> get $columns => [
         name,
@@ -348,7 +429,10 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         durationInSeconds,
         id,
         checksum,
-        isFavorite
+        isFavorite,
+        isLivePhoto,
+        livePhotoImageUploaded,
+        livePhotoVideoUploaded
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -404,6 +488,24 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
           isFavorite.isAcceptableOrUnknown(
               data['is_favorite']!, _isFavoriteMeta));
     }
+    if (data.containsKey('is_live_photo')) {
+      context.handle(
+          _isLivePhotoMeta,
+          isLivePhoto.isAcceptableOrUnknown(
+              data['is_live_photo']!, _isLivePhotoMeta));
+    }
+    if (data.containsKey('live_photo_image_uploaded')) {
+      context.handle(
+          _livePhotoImageUploadedMeta,
+          livePhotoImageUploaded.isAcceptableOrUnknown(
+              data['live_photo_image_uploaded']!, _livePhotoImageUploadedMeta));
+    }
+    if (data.containsKey('live_photo_video_uploaded')) {
+      context.handle(
+          _livePhotoVideoUploadedMeta,
+          livePhotoVideoUploaded.isAcceptableOrUnknown(
+              data['live_photo_video_uploaded']!, _livePhotoVideoUploadedMeta));
+    }
     return context;
   }
 
@@ -435,6 +537,14 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
           .read(i0.DriftSqlType.string, data['${effectivePrefix}checksum']),
       isFavorite: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.bool, data['${effectivePrefix}is_favorite'])!,
+      isLivePhoto: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.bool, data['${effectivePrefix}is_live_photo'])!,
+      livePhotoImageUploaded: attachedDatabase.typeMapping.read(
+          i0.DriftSqlType.bool,
+          data['${effectivePrefix}live_photo_image_uploaded'])!,
+      livePhotoVideoUploaded: attachedDatabase.typeMapping.read(
+          i0.DriftSqlType.bool,
+          data['${effectivePrefix}live_photo_video_uploaded'])!,
     );
   }
 
@@ -463,6 +573,9 @@ class LocalAssetEntityData extends i0.DataClass
   final String id;
   final String? checksum;
   final bool isFavorite;
+  final bool isLivePhoto;
+  final bool livePhotoImageUploaded;
+  final bool livePhotoVideoUploaded;
   const LocalAssetEntityData(
       {required this.name,
       required this.type,
@@ -473,7 +586,10 @@ class LocalAssetEntityData extends i0.DataClass
       this.durationInSeconds,
       required this.id,
       this.checksum,
-      required this.isFavorite});
+      required this.isFavorite,
+      required this.isLivePhoto,
+      required this.livePhotoImageUploaded,
+      required this.livePhotoVideoUploaded});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
@@ -498,6 +614,11 @@ class LocalAssetEntityData extends i0.DataClass
       map['checksum'] = i0.Variable<String>(checksum);
     }
     map['is_favorite'] = i0.Variable<bool>(isFavorite);
+    map['is_live_photo'] = i0.Variable<bool>(isLivePhoto);
+    map['live_photo_image_uploaded'] =
+        i0.Variable<bool>(livePhotoImageUploaded);
+    map['live_photo_video_uploaded'] =
+        i0.Variable<bool>(livePhotoVideoUploaded);
     return map;
   }
 
@@ -516,6 +637,11 @@ class LocalAssetEntityData extends i0.DataClass
       id: serializer.fromJson<String>(json['id']),
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
+      isLivePhoto: serializer.fromJson<bool>(json['isLivePhoto']),
+      livePhotoImageUploaded:
+          serializer.fromJson<bool>(json['livePhotoImageUploaded']),
+      livePhotoVideoUploaded:
+          serializer.fromJson<bool>(json['livePhotoVideoUploaded']),
     );
   }
   @override
@@ -533,6 +659,9 @@ class LocalAssetEntityData extends i0.DataClass
       'id': serializer.toJson<String>(id),
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
+      'isLivePhoto': serializer.toJson<bool>(isLivePhoto),
+      'livePhotoImageUploaded': serializer.toJson<bool>(livePhotoImageUploaded),
+      'livePhotoVideoUploaded': serializer.toJson<bool>(livePhotoVideoUploaded),
     };
   }
 
@@ -546,7 +675,10 @@ class LocalAssetEntityData extends i0.DataClass
           i0.Value<int?> durationInSeconds = const i0.Value.absent(),
           String? id,
           i0.Value<String?> checksum = const i0.Value.absent(),
-          bool? isFavorite}) =>
+          bool? isFavorite,
+          bool? isLivePhoto,
+          bool? livePhotoImageUploaded,
+          bool? livePhotoVideoUploaded}) =>
       i1.LocalAssetEntityData(
         name: name ?? this.name,
         type: type ?? this.type,
@@ -560,6 +692,11 @@ class LocalAssetEntityData extends i0.DataClass
         id: id ?? this.id,
         checksum: checksum.present ? checksum.value : this.checksum,
         isFavorite: isFavorite ?? this.isFavorite,
+        isLivePhoto: isLivePhoto ?? this.isLivePhoto,
+        livePhotoImageUploaded:
+            livePhotoImageUploaded ?? this.livePhotoImageUploaded,
+        livePhotoVideoUploaded:
+            livePhotoVideoUploaded ?? this.livePhotoVideoUploaded,
       );
   LocalAssetEntityData copyWithCompanion(i1.LocalAssetEntityCompanion data) {
     return LocalAssetEntityData(
@@ -576,6 +713,14 @@ class LocalAssetEntityData extends i0.DataClass
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
       isFavorite:
           data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
+      isLivePhoto:
+          data.isLivePhoto.present ? data.isLivePhoto.value : this.isLivePhoto,
+      livePhotoImageUploaded: data.livePhotoImageUploaded.present
+          ? data.livePhotoImageUploaded.value
+          : this.livePhotoImageUploaded,
+      livePhotoVideoUploaded: data.livePhotoVideoUploaded.present
+          ? data.livePhotoVideoUploaded.value
+          : this.livePhotoVideoUploaded,
     );
   }
 
@@ -591,14 +736,29 @@ class LocalAssetEntityData extends i0.DataClass
           ..write('durationInSeconds: $durationInSeconds, ')
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
-          ..write('isFavorite: $isFavorite')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('isLivePhoto: $isLivePhoto, ')
+          ..write('livePhotoImageUploaded: $livePhotoImageUploaded, ')
+          ..write('livePhotoVideoUploaded: $livePhotoVideoUploaded')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(name, type, createdAt, updatedAt, width,
-      height, durationInSeconds, id, checksum, isFavorite);
+  int get hashCode => Object.hash(
+      name,
+      type,
+      createdAt,
+      updatedAt,
+      width,
+      height,
+      durationInSeconds,
+      id,
+      checksum,
+      isFavorite,
+      isLivePhoto,
+      livePhotoImageUploaded,
+      livePhotoVideoUploaded);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -612,7 +772,10 @@ class LocalAssetEntityData extends i0.DataClass
           other.durationInSeconds == this.durationInSeconds &&
           other.id == this.id &&
           other.checksum == this.checksum &&
-          other.isFavorite == this.isFavorite);
+          other.isFavorite == this.isFavorite &&
+          other.isLivePhoto == this.isLivePhoto &&
+          other.livePhotoImageUploaded == this.livePhotoImageUploaded &&
+          other.livePhotoVideoUploaded == this.livePhotoVideoUploaded);
 }
 
 class LocalAssetEntityCompanion
@@ -627,6 +790,9 @@ class LocalAssetEntityCompanion
   final i0.Value<String> id;
   final i0.Value<String?> checksum;
   final i0.Value<bool> isFavorite;
+  final i0.Value<bool> isLivePhoto;
+  final i0.Value<bool> livePhotoImageUploaded;
+  final i0.Value<bool> livePhotoVideoUploaded;
   const LocalAssetEntityCompanion({
     this.name = const i0.Value.absent(),
     this.type = const i0.Value.absent(),
@@ -638,6 +804,9 @@ class LocalAssetEntityCompanion
     this.id = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
+    this.isLivePhoto = const i0.Value.absent(),
+    this.livePhotoImageUploaded = const i0.Value.absent(),
+    this.livePhotoVideoUploaded = const i0.Value.absent(),
   });
   LocalAssetEntityCompanion.insert({
     required String name,
@@ -650,6 +819,9 @@ class LocalAssetEntityCompanion
     required String id,
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
+    this.isLivePhoto = const i0.Value.absent(),
+    this.livePhotoImageUploaded = const i0.Value.absent(),
+    this.livePhotoVideoUploaded = const i0.Value.absent(),
   })  : name = i0.Value(name),
         type = i0.Value(type),
         id = i0.Value(id);
@@ -664,6 +836,9 @@ class LocalAssetEntityCompanion
     i0.Expression<String>? id,
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isFavorite,
+    i0.Expression<bool>? isLivePhoto,
+    i0.Expression<bool>? livePhotoImageUploaded,
+    i0.Expression<bool>? livePhotoVideoUploaded,
   }) {
     return i0.RawValuesInsertable({
       if (name != null) 'name': name,
@@ -676,6 +851,11 @@ class LocalAssetEntityCompanion
       if (id != null) 'id': id,
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
+      if (isLivePhoto != null) 'is_live_photo': isLivePhoto,
+      if (livePhotoImageUploaded != null)
+        'live_photo_image_uploaded': livePhotoImageUploaded,
+      if (livePhotoVideoUploaded != null)
+        'live_photo_video_uploaded': livePhotoVideoUploaded,
     });
   }
 
@@ -689,7 +869,10 @@ class LocalAssetEntityCompanion
       i0.Value<int?>? durationInSeconds,
       i0.Value<String>? id,
       i0.Value<String?>? checksum,
-      i0.Value<bool>? isFavorite}) {
+      i0.Value<bool>? isFavorite,
+      i0.Value<bool>? isLivePhoto,
+      i0.Value<bool>? livePhotoImageUploaded,
+      i0.Value<bool>? livePhotoVideoUploaded}) {
     return i1.LocalAssetEntityCompanion(
       name: name ?? this.name,
       type: type ?? this.type,
@@ -701,6 +884,11 @@ class LocalAssetEntityCompanion
       id: id ?? this.id,
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
+      isLivePhoto: isLivePhoto ?? this.isLivePhoto,
+      livePhotoImageUploaded:
+          livePhotoImageUploaded ?? this.livePhotoImageUploaded,
+      livePhotoVideoUploaded:
+          livePhotoVideoUploaded ?? this.livePhotoVideoUploaded,
     );
   }
 
@@ -738,6 +926,17 @@ class LocalAssetEntityCompanion
     if (isFavorite.present) {
       map['is_favorite'] = i0.Variable<bool>(isFavorite.value);
     }
+    if (isLivePhoto.present) {
+      map['is_live_photo'] = i0.Variable<bool>(isLivePhoto.value);
+    }
+    if (livePhotoImageUploaded.present) {
+      map['live_photo_image_uploaded'] =
+          i0.Variable<bool>(livePhotoImageUploaded.value);
+    }
+    if (livePhotoVideoUploaded.present) {
+      map['live_photo_video_uploaded'] =
+          i0.Variable<bool>(livePhotoVideoUploaded.value);
+    }
     return map;
   }
 
@@ -753,7 +952,10 @@ class LocalAssetEntityCompanion
           ..write('durationInSeconds: $durationInSeconds, ')
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
-          ..write('isFavorite: $isFavorite')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('isLivePhoto: $isLivePhoto, ')
+          ..write('livePhotoImageUploaded: $livePhotoImageUploaded, ')
+          ..write('livePhotoVideoUploaded: $livePhotoVideoUploaded')
           ..write(')'))
         .toString();
   }

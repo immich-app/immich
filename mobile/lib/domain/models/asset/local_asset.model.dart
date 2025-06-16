@@ -16,6 +16,9 @@ class LocalAsset extends BaseAsset {
     super.height,
     super.durationInSeconds,
     super.isFavorite = false,
+    super.isLivePhoto = false,
+    super.livePhotoImageUploaded = false,
+    super.livePhotoVideoUploaded = false,
   });
 
   @override
@@ -35,6 +38,9 @@ class LocalAsset extends BaseAsset {
    durationInSeconds: ${durationInSeconds ?? "<NA>"},
    remoteId: ${remoteId ?? "<NA>"}
    isFavorite: $isFavorite,
+   isLivePhoto: $isLivePhoto,
+   livePhotoImageUploaded: $livePhotoImageUploaded,
+   livePhotoVideoUploaded: $livePhotoVideoUploaded,
  }''';
   }
 
@@ -60,6 +66,9 @@ class LocalAsset extends BaseAsset {
     int? height,
     int? durationInSeconds,
     bool? isFavorite,
+    bool? isLivePhoto,
+    bool? livePhotoImageUploaded,
+    bool? livePhotoVideoUploaded,
   }) {
     return LocalAsset(
       id: id ?? this.id,
@@ -73,6 +82,11 @@ class LocalAsset extends BaseAsset {
       height: height ?? this.height,
       durationInSeconds: durationInSeconds ?? this.durationInSeconds,
       isFavorite: isFavorite ?? this.isFavorite,
+      isLivePhoto: isLivePhoto ?? this.isLivePhoto,
+      livePhotoImageUploaded:
+          livePhotoImageUploaded ?? this.livePhotoImageUploaded,
+      livePhotoVideoUploaded:
+          livePhotoVideoUploaded ?? this.livePhotoVideoUploaded,
     );
   }
 }

@@ -376,6 +376,9 @@ extension on Iterable<PlatformAsset> {
         width: e.width,
         height: e.height,
         durationInSeconds: e.durationInSeconds,
+        isLivePhoto: e.isLivePhoto,
+        livePhotoImageUploaded: false,
+        livePhotoVideoUploaded: false,
       ),
     ).toList();
   }

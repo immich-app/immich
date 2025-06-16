@@ -291,6 +291,10 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
           durationInSeconds: Value(asset.durationInSeconds),
           id: asset.id,
           checksum: const Value(null),
+          isFavorite: Value(asset.isFavorite),
+          isLivePhoto: Value(asset.isLivePhoto),
+          livePhotoImageUploaded: Value(asset.livePhotoImageUploaded),
+          livePhotoVideoUploaded: Value(asset.livePhotoVideoUploaded),
         );
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,
@@ -395,6 +399,9 @@ extension on LocalAssetEntityData {
       updatedAt: updatedAt,
       durationInSeconds: durationInSeconds,
       isFavorite: isFavorite,
+      isLivePhoto: isLivePhoto,
+      livePhotoImageUploaded: livePhotoImageUploaded,
+      livePhotoVideoUploaded: livePhotoVideoUploaded,
     );
   }
 }
