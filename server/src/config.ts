@@ -254,8 +254,8 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: true,
       modelName: 'PP-OCRv5_server',
       minDetectionScore: 0.5,
-      minRecognitionScore: 0.5,
-      maxResolution: 1440,
+      minRecognitionScore: 0.9,
+      maxResolution: 736,
     },
   },
   map: {

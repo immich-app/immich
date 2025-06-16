@@ -23,12 +23,12 @@ class TextRecognizer(InferenceModel):
     identity = (ModelType.RECOGNITION, ModelTask.OCR)
 
     def __init__(self, model_name: str, **model_kwargs: Any) -> None:
-        self.min_score = model_kwargs.get("minScore", 0.5)
+        self.min_score = model_kwargs.get("minScore", 0.9)
         self._empty: TextRecognitionOutput = {
             "box": np.empty(0, dtype=np.float32),
-            "boxScore": [],
+            "boxScore": np.empty(0, dtype=np.float32),
             "text": [],
-            "textScore": [],
+            "textScore": np.empty(0, dtype=np.float32),
         }
         super().__init__(model_name, **model_kwargs, model_format=ModelFormat.ONNX)
 
@@ -62,24 +62,20 @@ class TextRecognizer(InferenceModel):
         )
         return session
 
-    def configure(self, **kwargs: Any) -> None:
-        self.min_score = kwargs.get("minScore", self.min_score)
-
-    def _predict(self, _: Image, texts: TextDetectionOutput, **kwargs: Any) -> TextRecognitionOutput:
-        boxes, resized_img, box_scores = texts["boxes"], texts["resized"], texts["scores"]
+    def _predict(self, _: Image, texts: TextDetectionOutput) -> TextRecognitionOutput:
+        boxes, img, box_scores = texts["boxes"], texts["image"], texts["scores"]
         if boxes.shape[0] == 0:
             return self._empty
-        rec = self.model(TextRecInput(img=self.get_crop_img_list(resized_img, boxes)))
+        rec = self.model(TextRecInput(img=self.get_crop_img_list(img, boxes)))
         if rec.txts is None:
             return self._empty
 
-        height, width = resized_img.shape[0:2]
-        log.info(f"Image shape: width={width}, height={height}")
+        height, width = img.shape[0:2]
         boxes[:, :, 0] /= width
         boxes[:, :, 1] /= height
 
         text_scores = np.array(rec.scores)
-        valid_text_score_idx = text_scores > 0.5
+        valid_text_score_idx = text_scores > self.min_score
         valid_score_idx_list = valid_text_score_idx.tolist()
         return {
             "box": boxes.reshape(-1, 8)[valid_text_score_idx].reshape(-1),
@@ -115,3 +111,6 @@ class TextRecognizer(InferenceModel):
                 dst_img = np.rot90(dst_img)
             imgs.append(dst_img)
         return imgs
+
+    def configure(self, **kwargs: Any) -> None:
+        self.min_score = kwargs.get("minScore", self.min_score)
