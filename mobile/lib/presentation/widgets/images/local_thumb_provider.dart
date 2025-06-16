@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -39,20 +39,21 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
     ImageDecoderCallback decode,
   ) {
     final cache = cacheManager ?? ThumbnailImageCacheManager();
-    return MultiImageStreamCompleter(
+    return MultiFrameImageStreamCompleter(
       codec: _codec(key, cache, decode),
       scale: 1.0,
-      informationCollector: () sync* {
-        yield ErrorDescription(key.asset.name);
-      },
+      informationCollector: () => <DiagnosticsNode>[
+        DiagnosticsProperty<ImageProvider>('Image provider', this),
+        DiagnosticsProperty<LocalAsset>('Asset', key.asset),
+      ],
     );
   }
 
-  Stream<Codec> _codec(
+  Future<Codec> _codec(
     LocalThumbProvider key,
     CacheManager cache,
     ImageDecoderCallback decode,
-  ) async* {
+  ) async {
     final cacheKey = '${key.asset.id}-${key.asset.updatedAt}-${width}x$height';
 
     final fileFromCache = await cache.getFileFromCache(cacheKey);
@@ -60,9 +61,7 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
       try {
         final buffer =
             await ImmutableBuffer.fromFilePath(fileFromCache.file.path);
-        final codec = await decode(buffer);
-        yield codec;
-        return;
+        return await decode(buffer);
       } catch (_) {}
     }
 
@@ -71,15 +70,15 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
       size: Size(key.width, key.height),
     );
     if (thumbnailBytes == null) {
+      PaintingBinding.instance.imageCache.evict(key);
       throw StateError(
         "Loading thumb for local photo ${key.asset.name} failed",
       );
     }
 
     final buffer = await ImmutableBuffer.fromUint8List(thumbnailBytes);
-    final codec = await decode(buffer);
-    yield codec;
-    await cache.putFile(cacheKey, thumbnailBytes);
+    unawaited(cache.putFile(cacheKey, thumbnailBytes));
+    return decode(buffer);
   }
 
   @override

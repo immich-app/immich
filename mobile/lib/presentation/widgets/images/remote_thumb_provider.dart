@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -36,26 +35,34 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
     ImageDecoderCallback decode,
   ) {
     final cache = cacheManager ?? ThumbnailImageCacheManager();
-    return MultiImageStreamCompleter(
-      codec: _codec(key, cache, decode),
+    final chunkController = StreamController<ImageChunkEvent>();
+    return MultiFrameImageStreamCompleter(
+      codec: _codec(key, cache, decode, chunkController),
       scale: 1.0,
+      chunkEvents: chunkController.stream,
+      informationCollector: () => <DiagnosticsNode>[
+        DiagnosticsProperty<ImageProvider>('Image provider', this),
+        DiagnosticsProperty<String>('Asset Id', key.assetId),
+      ],
     );
   }
 
-  Stream<Codec> _codec(
+  Future<Codec> _codec(
     RemoteThumbProvider key,
     CacheManager cache,
     ImageDecoderCallback decode,
-  ) async* {
+    StreamController<ImageChunkEvent> chunkController,
+  ) async {
     final preview = getThumbnailUrlForRemoteId(
       key.assetId,
     );
 
-    yield await ImageLoader.loadImageFromCache(
+    return ImageLoader.loadImageFromCache(
       preview,
       cache: cache,
       decode: decode,
-    );
+      chunkEvents: chunkController,
+    ).whenComplete(chunkController.close);
   }
 
   @override
