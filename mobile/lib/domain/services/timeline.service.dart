@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
@@ -54,13 +55,21 @@ class TimelineService {
     required TimelineAssetSource assetSource,
     required TimelineBucketSource bucketSource,
   })  : _assetSource = assetSource,
-        _bucketSource = bucketSource;
+        _bucketSource = bucketSource {
+    _bucketSubscription =
+        _bucketSource().listen((_) => unawaited(_reloadBucket()));
+  }
 
   final AsyncMutex _mutex = AsyncMutex();
   int _bufferOffset = 0;
   List<BaseAsset> _buffer = [];
+  StreamSubscription? _bucketSubscription;
 
   Stream<List<Bucket>> Function() get watchBuckets => _bucketSource;
+
+  Future<void> _reloadBucket() => _mutex.run(() async {
+        _buffer = await _assetSource(_bufferOffset, _buffer.length);
+      });
 
   Future<List<BaseAsset>> loadAssets(int index, int count) =>
       _mutex.run(() => _loadAssets(index, count));
@@ -106,5 +115,12 @@ class TimelineService {
     }
     int start = index - _bufferOffset;
     return _buffer.slice(start, start + count);
+  }
+
+  Future<void> dispose() async {
+    await _bucketSubscription?.cancel();
+    _bucketSubscription = null;
+    _buffer.clear();
+    _bufferOffset = 0;
   }
 }

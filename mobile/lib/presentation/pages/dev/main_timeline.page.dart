@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -14,9 +16,13 @@ class MainTimelinePage extends StatelessWidget {
     return ProviderScope(
       overrides: [
         timelineServiceProvider.overrideWith(
-          (ref) => ref
-              .watch(timelineFactoryProvider)
-              .main(ref.watch(timelineUsersIdsProvider)),
+          (ref) {
+            final timelineService = ref
+                .watch(timelineFactoryProvider)
+                .main(ref.watch(timelineUsersIdsProvider));
+            ref.onDispose(() => unawaited(timelineService.dispose()));
+            return timelineService;
+          },
         ),
       ],
       child: const Timeline(),
