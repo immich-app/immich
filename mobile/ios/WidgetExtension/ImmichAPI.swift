@@ -165,7 +165,12 @@ class ImmichAPI {
     guard let img = UIImage(data: data) else {
       throw URLError(.badServerResponse)
     }
+    
+    if (img.size.height * img.size.width) > 998_000 {
+      return img.croppedToMaxSizeCentered(990)!
 
+    }
+    
     return img
   }
 
