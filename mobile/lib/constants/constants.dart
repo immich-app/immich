@@ -20,3 +20,8 @@ const String kSecuredPinCode = "secured_pin_code";
 const kManualUploadGroup = 'manual_upload_group';
 const kBackupGroup = 'backup_group';
 const kBackupLivePhotoGroup = 'backup_live_photo_group';
+
+// Timeline constants
+const int kTimelineNoneSegmentSize = 120;
+const int kTimelineAssetLoadBatchSize = 256;
+const int kTimelineAssetLoadOppositeSize = 64;

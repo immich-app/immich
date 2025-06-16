@@ -83,7 +83,11 @@ open class NativeSyncApiImplBase(context: Context) {
             continue
           }
 
-          val mediaType = c.getInt(mediaTypeColumn)
+          val mediaType = when (c.getInt(mediaTypeColumn)) {
+            MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE -> 1
+            MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> 2
+            else -> 0
+          }
           val name = c.getString(nameColumn)
           // Date taken is milliseconds since epoch, Date added is seconds since epoch
           val createdAt = (c.getLong(dateTakenColumn).takeIf { it > 0 }?.div(1000))
