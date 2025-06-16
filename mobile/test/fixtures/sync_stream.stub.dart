@@ -9,6 +9,10 @@ abstract final class SyncStreamStub {
       email: "admin@admin",
       id: "1",
       name: "Admin",
+      isAdmin: true,
+      profileImagePath: "",
+      quotaSizeInBytes: null,
+      quotaUsageInBytes: 0,
     ),
     ack: "1",
   );
@@ -19,6 +23,10 @@ abstract final class SyncStreamStub {
       email: "user@user",
       id: "5",
       name: "User",
+      isAdmin: false,
+      profileImagePath: "",
+      quotaSizeInBytes: null,
+      quotaUsageInBytes: 0,
     ),
     ack: "5",
   );
