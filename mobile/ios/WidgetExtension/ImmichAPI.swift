@@ -7,6 +7,7 @@ enum WidgetError: Error {
   case fetchFailed
   case unknown
   case albumNotFound
+  case unableToResize
 }
 
 enum AssetType: String, Codable {
@@ -55,7 +56,7 @@ class ImmichAPI {
 
   init() async throws {
     // fetch the credentials from the UserDefaults store that dart placed here
-    guard let defaults = UserDefaults(suiteName: "group.app.immich.share"),
+    guard let defaults = UserDefaults(suiteName: "group.bwees.immich"),
       let serverURL = defaults.string(forKey: "widget_server_url"),
       let sessionKey = defaults.string(forKey: "widget_auth_token")
     else {
@@ -166,9 +167,12 @@ class ImmichAPI {
       throw URLError(.badServerResponse)
     }
     
-    if (img.size.height * img.size.width) > 998_000 {
-      return img.croppedToMaxSizeCentered(990)!
-
+    if img.size.height > 450 || img.size.width > 450 {
+      guard let resized = img.resized(toWidth: 450) else {
+        throw WidgetError.unableToResize
+      }
+      
+      return resized
     }
     
     return img
