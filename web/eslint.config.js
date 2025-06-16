@@ -4,6 +4,7 @@ import eslintPluginCompat from 'eslint-plugin-compat';
 import eslintPluginSvelte from 'eslint-plugin-svelte';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import globals from 'globals';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import parser from 'svelte-eslint-parser';
@@ -21,7 +22,16 @@ export default typescriptEslint.config(
       tscompat: tslintPluginCompat,
     },
     rules: {
-      'tscompat/tscompat': ['error', { browserslist: ['> 0.2% and last 4 major versions', '> 0.5%', 'not dead'] }],
+      'tscompat/tscompat': [
+        'error',
+        {
+          browserslist: fs
+            .readFileSync(path.join(__dirname, '.browserslistrc'), 'utf8')
+            .split('\n')
+            .map((line) => line.trim())
+            .filter((line) => line && !line.startsWith('#')),
+        },
+      ],
     },
     languageOptions: {
       parser,
