@@ -71,7 +71,6 @@ class TextDetector(InferenceModel):
         results = self.model(decode_cv2(inputs))
         if results.boxes is None or results.scores is None or results.img is None:
             return self._empty
-        log.info(f"{results.boxes=}, {results.scores=}")
         return {
             "resized": results.img,
             "boxes": np.array(results.boxes, dtype=np.float32),

@@ -197,10 +197,10 @@ export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileT
   ).as('files');
 }
 
-export function withFile(eb: ExpressionBuilder<DB, 'assets'>, type: AssetFileType) {
+export function withFilePath(eb: ExpressionBuilder<DB, 'assets'>, type: AssetFileType) {
   return eb
     .selectFrom('asset_files')
-    .select(columns.assetFiles)
+    .select('asset_files.path')
     .whereRef('asset_files.assetId', '=', 'assets.id')
     .where('asset_files.type', '=', type);
 }

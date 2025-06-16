@@ -12,28 +12,29 @@ export class AssetOcrTable {
   @Column({ type: 'text' })
   text!: string;
 
-  @Column({ type: 'integer' })
+  // box positions are normalized, with values between 0 and 1
+  @Column({ type: 'real' })
   x1!: number;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'real' })
   y1!: number;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'real' })
   x2!: number;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'real' })
   y2!: number;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'real' })
   x3!: number;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'real' })
   y3!: number;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'real' })
   x4!: number;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'real' })
   y4!: number;
 
   @Column({ type: 'real' })
