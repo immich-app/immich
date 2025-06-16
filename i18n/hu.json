@@ -242,7 +242,6 @@
     "storage_template_migration_info": "A sablon az összes kiterjesztést kisbetűssé alakítja át. A megváltozott sablon csak az újonnan feltöltött elemekre vonatkozik. A korábbi elemek visszamenőleges áthelyezéséhez ezt futtasd: <link>{job}</link>.",
     "storage_template_migration_job": "Tárhely Sablon Migrációja",
     "storage_template_more_details": "További részletekért erről a funkcióról lásd a <template-link>Tárhely Sablon</template-link> és annak <implications-link>következményeit</implications-link> a dokumentációban",
-    "storage_template_onboarding_description": "Ha ez a funkció engedélyezve van, akkor a fájlokat automatikusan az egyéni sablon alapján rendszerezi el. Stabilitási problémák miatt a funkció alapértelmezés szerint ki van kapcsolva. További információkért lásd a <link>dokumentációt</link>.",
     "storage_template_path_length": "Útvonal hozzávetőleges maximális hossza: <b>{length, number}</b>{limit, number}",
     "storage_template_settings": "Tárhely Sablon",
     "storage_template_settings_description": "A feltöltött elemek mappaszerkezetének és fájl elnevezésének kezelése",

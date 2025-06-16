@@ -34,6 +34,7 @@
   "added_to_favorites_count": "{count, plural, one {{count, number} adicionado aos favoritos} other {{count, number} adicionados aos favoritos}}",
   "admin": {
     "add_exclusion_pattern_description": "Adicione padrões de exclusão. Utilizar *, ** ou ? são suportados. Para ignorar todos os ficheiros em qualquer diretório chamado \"Raw\", use \"**/Raw/**'. Para ignorar todos os ficheiros que finalizam em \".tif\", use \"**/*.tif\". Para ignorar um caminho absoluto, use \"/caminho/para/ignorar/**\".",
+    "admin_user": "Utilizador Administrador",
     "asset_offline_description": "Este ficheiro proveniente de uma biblioteca externa deixou de estar disponível no disco e foi movido para a reciclagem. Se o ficheiro foi movido no interior da biblioteca, procure na linha de tempo pelo novo ficheiro correspondente. Para restaurar este ficheiro, certifique-se que o caminho do ficheiro abaixo pode ser acedido pelo Immich e analise a biblioteca.",
     "authentication_settings": "Definições de Autenticação",
     "authentication_settings_description": "Gerir palavras-passe, OAuth, e outras definições de autenticação",
@@ -243,7 +244,6 @@
     "storage_template_migration_info": "O modelo de armazenamento irá converter todas as extensões para letra minúscula. As mudanças do modelo apenas se aplicarão a novos ficheiros. Para aplicar o modelo retroativamente para os ficheiros carregados anteriormente, execute o <link>{job}</link>.",
     "storage_template_migration_job": "Tarefa de Migração do Modelo de Armazenamento",
     "storage_template_more_details": "Para mais informações sobre esta funcionalidade, dirija-se a <template-link>Modelo de Armazenamento</template-link> e às suas <implications-link>implicações</implications-link>",
-    "storage_template_onboarding_description": "Quando ativada, esta funcionalidade irá organizar os ficheiros automaticamente baseando-se num modelo definido pelo utilizador. Devido a problemas de estabilidade esta funcionalidade está desativada por padrão. Para mais informações, por favor leia a <link>documentação</link>.",
     "storage_template_path_length": "Limite aproximado do tamanho do caminho: <b>{length, number}</b>{limit, number}",
     "storage_template_settings": "Modelo de Armazenamento",
     "storage_template_settings_description": "Gerir a estrutura de pastas e o nome do ficheiro carregado",

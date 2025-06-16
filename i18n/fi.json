@@ -242,7 +242,6 @@
     "storage_template_migration_info": "Tallennusmalli muuntaa kaikki tiedostopäätteet pieniksi kirjaimiksi. Mallipohjan muutokset koskevat vain uusia resursseja. Jos haluat käyttää mallipohjaa takautuvasti aiemmin ladattuihin resursseihin, suorita <link>{job}</link>.",
     "storage_template_migration_job": "Tallennustilan mallin muutostyö",
     "storage_template_more_details": "Saadaksesi lisätietoa tästä ominaisuudesta, katso <template-link>Tallennustilan Mallit</template-link> sekä <implications-link>mihin se vaikuttaa</implications-link>",
-    "storage_template_onboarding_description": "Kun tämä ominaisuus on käytössä, se järjestää tiedostot automaattisesti käyttäjän määrittämän mallin perusteella. Vakausongelmien vuoksi ominaisuus on oletuksena poistettu käytöstä. Lisätietoja on <link>dokumentaatiossa</link>.",
     "storage_template_path_length": "Arvioitu tiedostopolun pituusrajoitus: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Tallennustilan malli",
     "storage_template_settings_description": "Hallitse palvelimelle ladatun aineiston kansiorakennetta ja tiedostonimiä",

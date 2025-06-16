@@ -242,7 +242,6 @@
     "storage_template_migration_info": "스토리지 템플릿은 모든 확장자를 소문자로 변환하며, 변경 사항은 새로 업로드한 항목에만 적용됩니다. 기존에 업로드된 항목에 적용하려면 <link>{job}</link>을 실행하세요.",
     "storage_template_migration_job": "스토리지 템플릿 마이그레이션 작업",
     "storage_template_more_details": "이 기능에 대한 자세한 내용은 <template-link>스토리지 템플릿</template-link> 및 <implications-link>설명</implications-link>을 참조하세요.",
-    "storage_template_onboarding_description": "이 기능을 활성화하면 사용자 정의 템플릿을 사용하여 파일을 자동으로 정리할 수 있습니다. 안정성 문제로 인해 해당 기능은 기본적으로 비활성화되어 있습니다. 자세한 내용은 <link>문서</link>를 참조하세요.",
     "storage_template_path_length": "대략적인 경로 길이 제한: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "스토리지 템플릿",
     "storage_template_settings_description": "업로드된 항목의 폴더 구조 및 파일 이름 관리",
