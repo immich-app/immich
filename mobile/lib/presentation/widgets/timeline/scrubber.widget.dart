@@ -276,19 +276,23 @@ class _ScrollLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: animation,
-      child: Container(
-        margin: const EdgeInsets.only(right: 12.0),
-        child: Material(
-          elevation: 4.0,
-          color: backgroundColor,
-          borderRadius: const BorderRadius.all(Radius.circular(16.0)),
-          child: Container(
-            constraints: const BoxConstraints(maxHeight: 28),
-            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            alignment: Alignment.center,
-            child: label,
+    return IgnorePointer(
+      // Ignore pointer events when the label is not fully visible,
+      ignoring: animation.value != 1.0,
+      child: FadeTransition(
+        opacity: animation,
+        child: Container(
+          margin: const EdgeInsets.only(right: 12.0),
+          child: Material(
+            elevation: 4.0,
+            color: backgroundColor,
+            borderRadius: const BorderRadius.all(Radius.circular(16.0)),
+            child: Container(
+              constraints: const BoxConstraints(maxHeight: 28),
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              alignment: Alignment.center,
+              child: label,
+            ),
           ),
         ),
       ),

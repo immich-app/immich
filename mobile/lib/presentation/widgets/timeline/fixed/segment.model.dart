@@ -126,12 +126,7 @@ class FixedSegment extends Segment {
         textDirection: Directionality.of(context),
         children: List.generate(
           assets.length,
-          (i) => RepaintBoundary(
-            child: ThumbnailTile(
-              assets[i],
-              size: Size.square(tileHeight < 512 ? 512 : tileHeight),
-            ),
-          ),
+          (i) => RepaintBoundary(child: ThumbnailTile(assets[i])),
         ),
       );
 }
