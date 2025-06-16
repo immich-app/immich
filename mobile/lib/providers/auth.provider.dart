@@ -118,7 +118,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     await _apiService.setAccessToken(accessToken);
 
-    await _widgetService.setAppGroupId(appShareGroupId);
     await _widgetService.writeCredentials(
       Store.get(StoreKey.serverEndpoint),
       accessToken,

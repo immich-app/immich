@@ -15,6 +15,7 @@ class WidgetService {
   WidgetService(this._repository);
 
   Future<void> writeCredentials(String serverURL, String sessionKey) async {
+    await _repository.setAppGroupId(appShareGroupId);
     await _repository.saveData(kWidgetServerEndpoint, serverURL);
     await _repository.saveData(kWidgetAuthToken, sessionKey);
 
@@ -34,9 +35,5 @@ class WidgetService {
     for (final name in kWidgetNames) {
       await _repository.refresh(name);
     }
-  }
-
-  Future<void> setAppGroupId(String appGroupId) async {
-    await _repository.setAppGroupId(appGroupId);
   }
 }
