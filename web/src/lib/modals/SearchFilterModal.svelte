@@ -34,15 +34,15 @@
   import { preferences } from '$lib/stores/user.store';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
-  import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type OcrSearchDto, type SmartSearchDto } from '@immich/sdk';
+  import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiTune } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
-    searchQuery: MetadataSearchDto | SmartSearchDto | OcrSearchDto;
-    onClose: (search?: SmartSearchDto | MetadataSearchDto | OcrSearchDto) => void;
+    searchQuery: MetadataSearchDto | SmartSearchDto;
+    onClose: (search?: SmartSearchDto | MetadataSearchDto) => void;
   }
 
   let { searchQuery, onClose }: Props = $props();
@@ -141,7 +141,7 @@
 
     const query = filter.query || undefined;
 
-    let payload: SmartSearchDto | MetadataSearchDto | OcrSearchDto = {
+    let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.queryType === 'smart' ? query : undefined,
       ocr: filter.queryType === 'ocr' ? query : undefined,
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
