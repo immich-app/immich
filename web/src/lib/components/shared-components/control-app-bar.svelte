@@ -53,7 +53,7 @@
 
   onMount(() => {
     if (browser) {
-      document.addEventListener('scroll', onScroll);
+      document.addEventListener('scroll', onScroll, { passive: true });
     }
   });
 

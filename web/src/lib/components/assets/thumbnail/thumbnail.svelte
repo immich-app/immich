@@ -123,17 +123,21 @@
     mouseOver = false;
   };
 
-  let timer: ReturnType<typeof setTimeout>;
+  let timer: ReturnType<typeof setTimeout> | null = null;
 
   const preventContextMenu = (evt: Event) => evt.preventDefault();
-  let disposeables: (() => void)[] = [];
+  const disposeables: (() => void)[] = [];
 
   const clearLongPressTimer = () => {
+    if (!timer) {
+      return;
+    }
     clearTimeout(timer);
+    timer = null;
     for (const dispose of disposeables) {
       dispose();
     }
-    disposeables = [];
+    disposeables.length = 0;
   };
 
   let startX: number = 0;
@@ -162,7 +166,7 @@
     };
     element.addEventListener('click', click);
     element.addEventListener('pointerdown', start, true);
-    element.addEventListener('pointerup', clearLongPressTimer, true);
+    element.addEventListener('pointerup', clearLongPressTimer, { capture: true, passive: true });
     return {
       destroy: () => {
         element.removeEventListener('click', click);
@@ -172,17 +176,15 @@
     };
   }
   function moveHandler(e: PointerEvent) {
-    var diffX = Math.abs(startX - e.clientX);
-    var diffY = Math.abs(startY - e.clientY);
-    if (diffX >= 10 || diffY >= 10) {
+    if (Math.abs(startX - e.clientX) >= 10 || Math.abs(startY - e.clientY) >= 10) {
       clearLongPressTimer();
     }
   }
   onMount(() => {
-    document.addEventListener('scroll', clearLongPressTimer, true);
-    document.addEventListener('wheel', clearLongPressTimer, true);
-    document.addEventListener('contextmenu', clearLongPressTimer, true);
-    document.addEventListener('pointermove', moveHandler, true);
+    document.addEventListener('scroll', clearLongPressTimer, { capture: true, passive: true });
+    document.addEventListener('wheel', clearLongPressTimer, { capture: true, passive: true });
+    document.addEventListener('contextmenu', clearLongPressTimer, { capture: true, passive: true });
+    document.addEventListener('pointermove', moveHandler, { capture: true, passive: true });
     return () => {
       document.removeEventListener('scroll', clearLongPressTimer, true);
       document.removeEventListener('wheel', clearLongPressTimer, true);
