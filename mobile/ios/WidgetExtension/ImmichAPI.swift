@@ -116,7 +116,6 @@ class ImmichAPI {
     var request = URLRequest(url: searchURL)
     request.httpMethod = "POST"
     request.httpBody = try JSONEncoder().encode(filters)
-    print(String(data: request.httpBody!, encoding: .utf8))
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
     let (data, _) = try await URLSession.shared.data(for: request)

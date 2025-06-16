@@ -3,9 +3,22 @@ import WidgetKit
 
 struct ImageEntry: TimelineEntry {
   let date: Date
-  let image: UIImage?
+  var image: UIImage?
   var subtitle: String? = nil
   var error: WidgetError? = nil
+
+  // Resizes the stored image to a maximum width of 450 pixels
+  func getResized() -> Self {
+    if (image == nil || image!.size.height < 450 || image!.size.width < 450 ) {
+      return self
+    }
+    
+    guard let resized = image!.resized(toWidth: 450) else {
+      return ImageEntry(date: date, image: nil, error: .unableToResize)
+    }
+      
+    return ImageEntry(date: date, image: resized, error: nil)
+  }
 }
 
 struct ImmichWidgetView: View {

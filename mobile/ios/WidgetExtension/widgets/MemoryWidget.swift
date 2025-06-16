@@ -40,7 +40,7 @@ struct ImmichMemoryProvider: TimelineProvider {
             subtitle: getYearDifferenceSubtitle(assetYear: memory.data.year)
           )
         {
-          completion(entry)
+          completion(entry.getResized())
           return
         }
       }
@@ -66,7 +66,7 @@ struct ImmichMemoryProvider: TimelineProvider {
         return
       }
 
-      completion(imageEntry)
+      completion(imageEntry.getResized())
     }
   }
 
@@ -130,6 +130,9 @@ struct ImmichMemoryProvider: TimelineProvider {
       if entries.count == 0 {
         entries.append(ImageEntry(date: now, image: nil, error: .fetchFailed))
       }
+      
+      // Resize all images to something that can be stored by iOS
+      entries = entries.map { $0.getResized() }
 
       completion(Timeline(entries: entries, policy: .atEnd))
     }
