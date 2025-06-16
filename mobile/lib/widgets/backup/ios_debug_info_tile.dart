@@ -8,14 +8,16 @@ import 'package:immich_mobile/utils/translation.dart';
 /// This is a simple debug widget which should be removed later on when we are
 /// more confident about background sync
 class IosDebugInfoTile extends HookConsumerWidget {
-  final IOSBackgroundSettings settings;
   const IosDebugInfoTile({
     super.key,
-    required this.settings,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(iOSBackgroundSettingsProvider);
+    if (settings == null) {
+      return const SizedBox.shrink();
+    }
     final fetch = settings.timeOfLastFetch;
     final processing = settings.timeOfLastProcessing;
     final processes = settings.numberOfBackgroundTasksQueued;
@@ -49,6 +51,7 @@ class IosDebugInfoTile extends HookConsumerWidget {
     }
 
     return ListTile(
+      contentPadding: EdgeInsets.zero,
       title: Text(
         title,
         style: TextStyle(

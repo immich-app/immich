@@ -28,18 +28,21 @@ class LocalStorageSettings extends HookConsumerWidget {
     }
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-      dense: true,
+      contentPadding: EdgeInsets.zero,
       title: Text(
         "cache_settings_duplicated_assets_title",
         style: context.textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.w500,
+          color: context.colorScheme.onSurface,
+          letterSpacing: 0,
         ),
       ).tr(namedArgs: {'count': "${cacheItemCount.value}"}),
       subtitle: Text(
         "cache_settings_duplicated_assets_subtitle",
         style: context.textTheme.bodyMedium?.copyWith(
           color: context.colorScheme.onSurfaceSecondary,
+          height: 1.4,
+          letterSpacing: 0,
         ),
       ).tr(),
       trailing: TextButton(
@@ -48,7 +51,9 @@ class LocalStorageSettings extends HookConsumerWidget {
           "cache_settings_duplicated_assets_clear_button",
           style: TextStyle(
             fontSize: 12,
-            color: cacheItemCount.value > 0 ? Colors.red : Colors.grey,
+            color: cacheItemCount.value > 0
+                ? context.colorScheme.error
+                : context.themeData.disabledColor,
             fontWeight: FontWeight.bold,
           ),
         ).tr(),

@@ -2,20 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 
-class SettingsButtonListTile extends StatelessWidget {
-  final IconData icon;
-  final Color? iconColor;
-  final String title;
+class SettingButtonListTile extends StatelessWidget {
+  final Icon? icon;
+  final String? title;
   final Widget? subtitle;
   final String? subtileText;
   final String buttonText;
   final Widget? child;
   final void Function()? onButtonTap;
 
-  const SettingsButtonListTile({
-    required this.icon,
-    this.iconColor,
-    required this.title,
+  const SettingButtonListTile({
+    this.title,
+    this.icon,
     this.subtileText,
     this.subtitle,
     required this.buttonText,
@@ -27,31 +25,37 @@ class SettingsButtonListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-      horizontalTitleGap: 20,
+      contentPadding: EdgeInsets.zero,
       isThreeLine: true,
-      leading: Icon(icon, color: iconColor),
-      title: Text(
-        title,
-        style: context.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+      leading: icon,
+      title: title != null
+          ? Text(
+              title!,
+              style: context.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: context.colorScheme.onSurface,
+                letterSpacing: 0,
+              ),
+            )
+          : null,
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (subtileText != null) const SizedBox(height: 4),
           if (subtileText != null)
             Text(
               subtileText!,
               style: context.textTheme.bodyMedium?.copyWith(
                 color: context.colorScheme.onSurfaceSecondary,
+                height: 1.4,
+                letterSpacing: 0,
               ),
             ),
           if (subtitle != null) subtitle!,
-          const SizedBox(height: 6),
-          child ??
-              ElevatedButton(onPressed: onButtonTap, child: Text(buttonText)),
+          const SizedBox(height: 8),
+          Center(
+            child: child ??
+                ElevatedButton(onPressed: onButtonTap, child: Text(buttonText)),
+          ),
         ],
       ),
     );

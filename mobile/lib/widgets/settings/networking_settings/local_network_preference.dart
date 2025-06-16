@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/network.provider.dart';
+import 'package:immich_mobile/utils/fade_on_tap.dart';
+import 'package:immich_mobile/widgets/common/responsive_button.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_info.dart';
 
 class LocalNetworkPreference extends HookConsumerWidget {
   const LocalNetworkPreference({
@@ -139,117 +143,108 @@ class LocalNetworkPreference extends HookConsumerWidget {
       }
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Stack(
-        children: [
-          Container(
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(16)),
-              color: context.colorScheme.surfaceContainerLow,
-              border: Border.all(
-                color: context.colorScheme.surfaceContainerHighest,
-                width: 1,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SettingInfo(
+          text: 'local_network_sheet_info',
+        ),
+        _NetworkSettingItem(
+          icon: Icons.wifi_rounded,
+          title: "wifi_name".tr(),
+          subtitle: wifiNameText.value.isEmpty
+              ? "enter_wifi_name".tr()
+              : wifiNameText.value,
+          isConfigured: wifiNameText.value.isNotEmpty,
+          onTap: enabled ? handleEditWifiName : null,
+          enabled: enabled,
+        ),
+        _NetworkSettingItem(
+          icon: Icons.lan_rounded,
+          title: "server_endpoint".tr(),
+          subtitle: localEndpointText.value.isEmpty
+              ? "http://local-ip:2283"
+              : localEndpointText.value,
+          isConfigured: localEndpointText.value.isNotEmpty,
+          onTap: enabled ? handleEditServerEndpoint : null,
+          enabled: enabled,
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: ResponsiveButton(
+            type: ButtonType.outlined,
+            icon: const Icon(Icons.wifi_find_rounded, size: 18),
+            onPressed: enabled ? autofillCurrentNetwork : null,
+            style: OutlinedButton.styleFrom(
+              textStyle: context.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  bottom: -36,
-                  right: -36,
-                  child: Icon(
-                    Icons.home_outlined,
-                    size: 120,
-                    color: context.primaryColor.withValues(alpha: 0.05),
-                  ),
-                ),
-                ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  physics: const ClampingScrollPhysics(),
-                  shrinkWrap: true,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 4.0,
-                        horizontal: 24,
-                      ),
-                      child: Text(
-                        "local_network_sheet_info".tr(),
-                        style: context.textTheme.bodyMedium,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Divider(
-                      color: context.colorScheme.surfaceContainerHighest,
-                    ),
-                    ListTile(
-                      enabled: enabled,
-                      contentPadding: const EdgeInsets.only(left: 24, right: 8),
-                      leading: const Icon(Icons.wifi_rounded),
-                      title: Text("wifi_name".tr()),
-                      subtitle: wifiNameText.value.isEmpty
-                          ? Text("enter_wifi_name".tr())
-                          : Text(
-                              wifiNameText.value,
-                              style: context.textTheme.labelLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: enabled
-                                    ? context.primaryColor
-                                    : context.colorScheme.onSurface
-                                        .withAlpha(100),
-                                fontFamily: 'Inconsolata',
-                              ),
-                            ),
-                      trailing: IconButton(
-                        onPressed: enabled ? handleEditWifiName : null,
-                        icon: const Icon(Icons.edit_rounded),
-                      ),
-                    ),
-                    ListTile(
-                      enabled: enabled,
-                      contentPadding: const EdgeInsets.only(left: 24, right: 8),
-                      leading: const Icon(Icons.lan_rounded),
-                      title: Text("server_endpoint".tr()),
-                      subtitle: localEndpointText.value.isEmpty
-                          ? const Text("http://local-ip:2283")
-                          : Text(
-                              localEndpointText.value,
-                              style: context.textTheme.labelLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: enabled
-                                    ? context.primaryColor
-                                    : context.colorScheme.onSurface
-                                        .withAlpha(100),
-                                fontFamily: 'Inconsolata',
-                              ),
-                            ),
-                      trailing: IconButton(
-                        onPressed: enabled ? handleEditServerEndpoint : null,
-                        icon: const Icon(Icons.edit_rounded),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24.0,
-                      ),
-                      child: SizedBox(
-                        height: 48,
-                        child: OutlinedButton.icon(
-                          icon: const Icon(Icons.wifi_find_rounded),
-                          label:
-                              Text('use_current_connection'.tr().toUpperCase()),
-                          onPressed: enabled ? autofillCurrentNetwork : null,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+            child: Text('use_current_connection'.tr().toUpperCase()),
           ),
-        ],
+        ),
+      ],
+    );
+  }
+}
+
+class _NetworkSettingItem extends StatelessWidget {
+  const _NetworkSettingItem({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.isConfigured,
+    required this.onTap,
+    required this.enabled,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool isConfigured;
+  final VoidCallback? onTap;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeOnTap(
+      onTap: onTap,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+        leading: Icon(
+          icon,
+          size: 20,
+          color: enabled
+              ? context.colorScheme.onSurface
+              : context.themeData.disabledColor,
+        ),
+        title: Text(
+          title,
+          style: context.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+            color: enabled
+                ? context.colorScheme.onSurface
+                : context.themeData.disabledColor,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: context.textTheme.bodySmall?.copyWith(
+            fontFamily: isConfigured ? 'Inconsolata' : null,
+            fontWeight: isConfigured ? FontWeight.w600 : FontWeight.normal,
+            color: isConfigured && enabled
+                ? context.colorScheme.primary
+                : context.colorScheme.onSurfaceSecondary,
+            height: 1.3,
+          ),
+        ),
+        trailing: enabled
+            ? Icon(
+                Icons.edit_outlined,
+                size: 18,
+                color: context.colorScheme.onSurfaceSecondary,
+              )
+            : null,
       ),
     );
   }

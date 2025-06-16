@@ -95,16 +95,15 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
       direction: DismissDirection.endToStart,
       onDismissed: (_) => widget.onDismissed(widget.index),
       background: Container(
-        color: Colors.red,
+        color: context.colorScheme.error,
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 16),
-        child: const Icon(
+        child: Icon(
           Icons.delete,
-          color: Colors.white,
+          color: context.colorScheme.onError,
         ),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 24),
         trailing: ReorderableDragStartListener(
           enabled: widget.enabled,
           index: widget.index,

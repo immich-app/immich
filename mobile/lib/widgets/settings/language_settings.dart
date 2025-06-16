@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/widgets/common/responsive_button.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
 class LanguageSettings extends HookConsumerWidget {
@@ -233,10 +234,8 @@ class _LanguageApplyButton extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: ElevatedButton(
+        child: Center(
+          child: ResponsiveButton(
             onPressed: isDisabled ? null : onPressed,
             child: isLoading
                 ? const SizedBox.square(

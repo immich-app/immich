@@ -7,39 +7,46 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
-import 'package:immich_mobile/widgets/settings/settings_radio_list_tile.dart';
-import 'package:immich_mobile/widgets/settings/settings_sub_title.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
+import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_radio_list_tile.dart';
 
 class GroupSettings extends HookConsumerWidget {
-  const GroupSettings({
-    super.key,
-  });
+  const GroupSettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final groupByIndex = useAppSettingsState(AppSettingsEnum.groupAssetsBy);
-    final groupBy = GroupAssetsBy.values[groupByIndex.value];
+    final currentGroupBy = GroupAssetsBy.values[groupByIndex.value];
 
-    Future<void> updateAppSettings(GroupAssetsBy groupBy) async {
-      await ref.watch(appSettingsServiceProvider).setSetting(
-            AppSettingsEnum.groupAssetsBy,
-            groupBy.index,
-          );
-      ref.invalidate(appSettingsServiceProvider);
-    }
-
-    void changeGroupValue(GroupAssetsBy? value) {
-      if (value != null) {
-        groupByIndex.value = value.index;
-        unawaited(updateAppSettings(groupBy));
+    Future<void> updateGroupBySetting(GroupAssetsBy newGroupBy) async {
+      try {
+        await ref.read(appSettingsServiceProvider).setSetting(
+              AppSettingsEnum.groupAssetsBy,
+              newGroupBy.index,
+            );
+        ref.invalidate(appSettingsServiceProvider);
+      } catch (e) {
+        debugPrint('Failed to update group by setting: $e');
       }
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    void handleGroupByChange(GroupAssetsBy? selectedGroupBy) {
+      if (selectedGroupBy == null || selectedGroupBy == currentGroupBy) {
+        return;
+      }
+      groupByIndex.value = selectedGroupBy.index;
+      unawaited(updateGroupBySetting(selectedGroupBy));
+    }
+
+    return SettingsCardLayout(
+      header: SettingSectionHeader(
+        title: "asset_list_group_by_sub_title".tr(),
+        icon: Icons.category_outlined,
+      ),
       children: [
-        SettingsSubTitle(title: "asset_list_group_by_sub_title".tr()),
-        SettingsRadioListTile(
+        SettingRadioListTile<GroupAssetsBy>(
+          contentPadding: EdgeInsets.zero,
           groups: [
             SettingsRadioGroup(
               title: 'asset_list_layout_settings_group_by_month_day'.tr(),
@@ -54,8 +61,8 @@ class GroupSettings extends HookConsumerWidget {
               value: GroupAssetsBy.auto,
             ),
           ],
-          groupBy: groupBy,
-          onRadioChanged: changeGroupValue,
+          groupBy: currentGroupBy,
+          onRadioChanged: handleGroupByChange,
         ),
       ],
     );

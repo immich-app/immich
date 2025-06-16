@@ -11,11 +11,12 @@ import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
-import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custome_proxy_headers_settings.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_slider_list_tile.dart';
+import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custom_proxy_headers_settings.dart';
+import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
 import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
-import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
-import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
+import 'package:immich_mobile/widgets/settings/layouts/settings_sub_page_scaffold.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_switch_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/ssl_client_cert_settings.dart';
 import 'package:logging/logging.dart';
 
@@ -55,64 +56,91 @@ class AdvancedSettings extends HookConsumerWidget {
     }
 
     final advancedSettings = [
-      SettingsSwitchListTile(
-        enabled: true,
-        valueNotifier: advancedTroubleshooting,
-        title: "advanced_settings_troubleshooting_title".tr(),
-        subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
+      SettingsCardLayout(
+        children: [
+          SettingSwitchListTile(
+            enabled: true,
+            valueNotifier: advancedTroubleshooting,
+            title: "advanced_settings_troubleshooting_title".tr(),
+            subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
+          ),
+          SettingSliderListTile(
+            title: "advanced_settings_log_level_title"
+                .tr(namedArgs: {'level': logLevel}),
+            valueNotifier: levelId,
+            max: 8,
+            min: 1,
+            divisions: 7,
+            label: logLevel,
+          ),
+        ],
       ),
       FutureBuilder<bool>(
         future: checkAndroidVersion(),
         builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data == true) {
-            return SettingsSwitchListTile(
-              enabled: true,
-              valueNotifier: manageLocalMediaAndroid,
-              title: "advanced_settings_sync_remote_deletions_title".tr(),
-              subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
-              onChanged: (value) async {
-                if (value) {
-                  final result = await ref
-                      .read(localFilesManagerRepositoryProvider)
-                      .requestManageMediaPermission();
-                  manageLocalMediaAndroid.value = result;
-                }
-              },
+            return SettingsCardLayout(
+              children: [
+                SettingSwitchListTile(
+                  enabled: true,
+                  valueNotifier: manageLocalMediaAndroid,
+                  title: "advanced_settings_sync_remote_deletions_title".tr(),
+                  subtitle:
+                      "advanced_settings_sync_remote_deletions_subtitle".tr(),
+                  onChanged: (value) async {
+                    if (value) {
+                      final result = await ref
+                          .read(localFilesManagerRepositoryProvider)
+                          .requestManageMediaPermission();
+                      manageLocalMediaAndroid.value = result;
+                    }
+                  },
+                ),
+              ],
             );
           } else {
             return const SizedBox.shrink();
           }
         },
       ),
-      SettingsSliderListTile(
-        text: "advanced_settings_log_level_title"
-            .tr(namedArgs: {'level': logLevel}),
-        valueNotifier: levelId,
-        maxValue: 8,
-        minValue: 1,
-        noDivisons: 7,
-        label: logLevel,
+      SettingsCardLayout(
+        children: [
+          SettingSwitchListTile(
+            valueNotifier: preferRemote,
+            title: "advanced_settings_prefer_remote_title".tr(),
+            subtitle: "advanced_settings_prefer_remote_subtitle".tr(),
+          ),
+        ],
       ),
-      SettingsSwitchListTile(
-        valueNotifier: preferRemote,
-        title: "advanced_settings_prefer_remote_title".tr(),
-        subtitle: "advanced_settings_prefer_remote_subtitle".tr(),
+      const SettingsCardLayout(children: [LocalStorageSettings()]),
+      SettingsCardLayout(
+        children: [
+          SettingSwitchListTile(
+            enabled: !isLoggedIn,
+            valueNotifier: allowSelfSignedSSLCert,
+            title: "advanced_settings_self_signed_ssl_title".tr(),
+            subtitle: "advanced_settings_self_signed_ssl_subtitle".tr(),
+            onChanged: HttpSSLOptions.applyFromSettings,
+          ),
+        ],
       ),
-      const LocalStorageSettings(),
-      SettingsSwitchListTile(
-        enabled: !isLoggedIn,
-        valueNotifier: allowSelfSignedSSLCert,
-        title: "advanced_settings_self_signed_ssl_title".tr(),
-        subtitle: "advanced_settings_self_signed_ssl_subtitle".tr(),
-        onChanged: HttpSSLOptions.applyFromSettings,
+      const SettingsCardLayout(children: [CustomProxyHeaderSettings()]),
+      SettingsCardLayout(
+        children: [
+          SslClientCertSettings(
+            isLoggedIn: ref.read(currentUserProvider) != null,
+          ),
+        ],
       ),
-      const CustomeProxyHeaderSettings(),
-      SslClientCertSettings(isLoggedIn: ref.read(currentUserProvider) != null),
-      SettingsSwitchListTile(
-        valueNotifier: useAlternatePMFilter,
-        title: "advanced_settings_enable_alternate_media_filter_title".tr(),
-        subtitle:
-            "advanced_settings_enable_alternate_media_filter_subtitle".tr(),
+      SettingsCardLayout(
+        children: [
+          SettingSwitchListTile(
+            valueNotifier: useAlternatePMFilter,
+            title: "advanced_settings_enable_alternate_media_filter_title".tr(),
+            subtitle:
+                "advanced_settings_enable_alternate_media_filter_subtitle".tr(),
+          ),
+        ],
       ),
     ];
 

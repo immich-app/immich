@@ -8,6 +8,8 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/widgets/common/responsive_button.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_info.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/endpoint_input.dart';
 
 class ExternalNetworkPreference extends HookConsumerWidget {
@@ -95,95 +97,58 @@ class ExternalNetworkPreference extends HookConsumerWidget {
       },
       const [],
     );
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(16)),
-          color: context.colorScheme.surfaceContainerLow,
-          border: Border.all(
-            color: context.colorScheme.surfaceContainerHighest,
-            width: 1,
+    return Column(
+      children: [
+        const SettingInfo(
+          text: 'external_network_sheet_info',
+        ),
+        const SizedBox(height: 8),
+        Form(
+          key: GlobalKey<FormState>(),
+          child: ReorderableListView.builder(
+            buildDefaultDragHandles: false,
+            proxyDecorator: proxyDecorator,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: entries.value.length,
+            onReorder: handleReorder,
+            itemBuilder: (context, index) {
+              return EndpointInput(
+                key: Key(index.toString()),
+                index: index,
+                initialValue: entries.value[index],
+                onValidated: updateValidationStatus,
+                onDismissed: handleDismiss,
+                enabled: enabled,
+              );
+            },
           ),
         ),
-        child: Stack(
-          children: [
-            Positioned(
-              bottom: -36,
-              right: -36,
-              child: Icon(
-                Icons.dns_rounded,
-                size: 120,
-                color: context.primaryColor.withValues(alpha: 0.05),
+        const SizedBox(height: 8),
+        Center(
+          child: ResponsiveButton(
+            type: ButtonType.outlined,
+            icon: const Icon(Icons.add, size: 18),
+            onPressed: enabled
+                ? () {
+                    entries.value = [
+                      ...entries.value,
+                      AuxilaryEndpoint(
+                        url: '',
+                        status: AuxCheckStatus.unknown,
+                      ),
+                    ];
+                  }
+                : null,
+            style: OutlinedButton.styleFrom(
+              textStyle: context.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
             ),
-            ListView(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              physics: const ClampingScrollPhysics(),
-              shrinkWrap: true,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 4.0,
-                    horizontal: 24,
-                  ),
-                  child: Text(
-                    "external_network_sheet_info".tr(),
-                    style: context.textTheme.bodyMedium,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Divider(color: context.colorScheme.surfaceContainerHighest),
-                Form(
-                  key: GlobalKey<FormState>(),
-                  child: ReorderableListView.builder(
-                    buildDefaultDragHandles: false,
-                    proxyDecorator: proxyDecorator,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: entries.value.length,
-                    onReorder: handleReorder,
-                    itemBuilder: (context, index) {
-                      return EndpointInput(
-                        key: Key(index.toString()),
-                        index: index,
-                        initialValue: entries.value[index],
-                        onValidated: updateValidationStatus,
-                        onDismissed: handleDismiss,
-                        enabled: enabled,
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: SizedBox(
-                    height: 48,
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.add),
-                      label: Text('add_endpoint'.tr().toUpperCase()),
-                      onPressed: enabled
-                          ? () {
-                              entries.value = [
-                                ...entries.value,
-                                AuxilaryEndpoint(
-                                  url: '',
-                                  status: AuxCheckStatus.unknown,
-                                ),
-                              ];
-                            }
-                          : null,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            child: Text('add_endpoint'.tr().toUpperCase()),
+          ),
         ),
-      ),
+      ],
     );
   }
 }

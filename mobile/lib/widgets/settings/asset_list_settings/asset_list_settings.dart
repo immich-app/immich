@@ -4,8 +4,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_group_settings.dart';
-import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
+import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
+import 'package:immich_mobile/widgets/settings/layouts/settings_sub_page_scaffold.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_switch_list_tile.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'asset_list_layout_settings.dart';
 
@@ -20,10 +21,16 @@ class AssetListSettings extends HookConsumerWidget {
         useAppSettingsState(AppSettingsEnum.storageIndicator);
 
     final assetListSetting = [
-      SettingsSwitchListTile(
-        valueNotifier: showStorageIndicator,
-        title: 'theme_setting_asset_list_storage_indicator_title'.tr(),
-        onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
+      SettingsCardLayout(
+        children: [
+          SettingSwitchListTile(
+            valueNotifier: showStorageIndicator,
+            title: "theme_setting_asset_list_storage_indicator_title".tr(),
+            subtitle:
+                "theme_setting_asset_list_storage_indicator_subtitle".tr(),
+            onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
+          ),
+        ],
       ),
       const LayoutSettings(),
       const GroupSettings(),
@@ -31,7 +38,7 @@ class AssetListSettings extends HookConsumerWidget {
 
     return SettingsSubPageScaffold(
       settings: assetListSetting,
-      showDivider: true,
+      showDivider: false,
     );
   }
 }

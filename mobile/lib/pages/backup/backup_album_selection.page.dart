@@ -10,7 +10,7 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/widgets/backup/album_info_card.dart';
 import 'package:immich_mobile/widgets/backup/album_info_list_tile.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_switch_list_tile.dart';
 
 @RoutePage()
 class BackupAlbumSelectionPage extends HookConsumerWidget {
@@ -197,7 +197,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   ),
                 ),
 
-                SettingsSwitchListTile(
+                SettingSwitchListTile(
                   valueNotifier: enableSyncUploadAlbum,
                   title: "sync_albums".tr(),
                   subtitle: "sync_upload_album_setting_subtitle".tr(),

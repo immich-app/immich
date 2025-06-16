@@ -8,9 +8,13 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 import 'package:immich_mobile/widgets/backup/ios_debug_info_tile.dart';
-import 'package:immich_mobile/widgets/settings/settings_button_list_tile.dart';
-import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
+import 'package:immich_mobile/widgets/common/responsive_button.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_permission_request.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_info.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_slider_list_tile.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_switch_list_tile.dart';
+import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -28,10 +32,10 @@ class BackgroundBackupSettings extends ConsumerWidget {
         content: Text(
           msg.tr(),
           style: context.textTheme.bodyLarge?.copyWith(
-            color: context.primaryColor,
+            color: context.colorScheme.onError,
           ),
         ),
-        backgroundColor: Colors.red,
+        backgroundColor: context.colorScheme.error,
       );
       context.scaffoldMessenger.showSnackBar(snackBar);
     }
@@ -74,18 +78,38 @@ class BackgroundBackupSettings extends ConsumerWidget {
       );
     }
 
+    void turnOnBackgroundBackup() {
+      ref.read(backupProvider.notifier).configureBackgroundBackup(
+            enabled: true,
+            onError: showErrorToUser,
+            onBatteryInfo: showBatteryOptimizationInfoToUser,
+          );
+    }
+
     if (!isBackgroundEnabled) {
-      return SettingsButtonListTile(
-        icon: Icons.cloud_sync_outlined,
-        title: 'backup_controller_page_background_is_off'.tr(),
-        subtileText: 'backup_controller_page_background_description'.tr(),
-        buttonText: 'backup_controller_page_background_turn_on'.tr(),
-        onButtonTap: () =>
-            ref.read(backupProvider.notifier).configureBackgroundBackup(
-                  enabled: true,
-                  onError: showErrorToUser,
-                  onBatteryInfo: showBatteryOptimizationInfoToUser,
-                ),
+      return SettingsCardLayout(
+        contentSpacing: 8,
+        header: SettingIndicatorSectionHeader(
+          padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
+          title: 'backup_controller_page_background_title'.tr(),
+          subtitle: 'backup_controller_page_background_off_subtitle'.tr(),
+          indicatorState: IndicatorState.disabled,
+        ),
+        children: [
+          const SettingInfo(
+            text: 'backup_controller_page_background_description',
+          ),
+          Center(
+            child: ResponsiveButton(
+              onPressed: turnOnBackgroundBackup,
+              child: Text(
+                'backup_controller_page_background_turn_on'.tr(),
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+        ],
       );
     }
 
@@ -97,27 +121,23 @@ class BackgroundBackupSettings extends ConsumerWidget {
             onBatteryInfo: showBatteryOptimizationInfoToUser,
           ),
         if (Platform.isIOS && iosSettings?.appRefreshEnabled != true)
-          _IOSBackgroundRefreshDisabled(),
-        if (Platform.isIOS && iosSettings != null)
-          IosDebugInfoTile(settings: iosSettings),
+          SettingPermissionRequest(
+            padding: const EdgeInsetsGeometry.all(16),
+            icon: Icons.refresh_rounded,
+            title:
+                'backup_controller_page_background_app_refresh_disabled_title'
+                    .tr(),
+            subtitle:
+                'backup_controller_page_background_app_refresh_disabled_content'
+                    .tr(),
+            buttonText:
+                'backup_controller_page_background_app_refresh_enable_button_text'
+                    .tr(),
+            buttonIcon: Icons.settings_outlined,
+            onHandleAction: () => openAppSettings(),
+            colorScheme: PermissionColorScheme.warning,
+          ),
       ],
-    );
-  }
-}
-
-class _IOSBackgroundRefreshDisabled extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SettingsButtonListTile(
-      icon: Icons.task_outlined,
-      title:
-          'backup_controller_page_background_app_refresh_disabled_title'.tr(),
-      subtileText:
-          'backup_controller_page_background_app_refresh_disabled_content'.tr(),
-      buttonText:
-          'backup_controller_page_background_app_refresh_enable_button_text'
-              .tr(),
-      onButtonTap: () => openAppSettings(),
     );
   }
 }
@@ -185,56 +205,74 @@ class _BackgroundSettingsEnabled extends HookConsumerWidget {
             onBatteryInfo: onBatteryInfo,
           ),
     );
-
-    return SettingsButtonListTile(
-      icon: Icons.cloud_sync_rounded,
-      iconColor: context.primaryColor,
-      title: 'backup_controller_page_background_is_on'.tr(),
-      buttonText: 'backup_controller_page_background_turn_off'.tr(),
-      onButtonTap: () =>
-          ref.read(backupProvider.notifier).configureBackgroundBackup(
-                enabled: false,
-                onError: onError,
-                onBatteryInfo: onBatteryInfo,
-              ),
-      subtitle: Column(
-        children: [
-          SettingsSwitchListTile(
-            valueNotifier: isWifiRequiredNotifier,
-            title: 'backup_controller_page_background_wifi'.tr(),
-            icon: Icons.wifi,
-            onChanged: (enabled) =>
-                ref.read(backupProvider.notifier).configureBackgroundBackup(
-                      requireWifi: enabled,
-                      onError: onError,
-                      onBatteryInfo: onBatteryInfo,
-                    ),
-          ),
-          SettingsSwitchListTile(
-            valueNotifier: isChargingRequiredNotifier,
-            title: 'backup_controller_page_background_charging'.tr(),
-            icon: Icons.charging_station,
-            onChanged: (enabled) =>
-                ref.read(backupProvider.notifier).configureBackgroundBackup(
-                      requireCharging: enabled,
-                      onError: onError,
-                      onBatteryInfo: onBatteryInfo,
-                    ),
-          ),
-          if (Platform.isAndroid)
-            SettingsSliderListTile(
-              valueNotifier: triggerDelay,
-              text: 'backup_controller_page_background_delay'.tr(
-                namedArgs: {
-                  'duration': formatBackupDelaySliderValue(triggerDelay.value),
-                },
-              ),
-              maxValue: 3.0,
-              noDivisons: 3,
-              label: formatBackupDelaySliderValue(triggerDelay.value),
-            ),
-        ],
+    return SettingsCardLayout(
+      contentSpacing: 4,
+      header: SettingIndicatorSectionHeader(
+        padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
+        title: 'backup_controller_page_background_title'.tr(),
+        subtitle: 'backup_controller_page_background_on_subtitle'.tr(),
+        indicatorState: IndicatorState.enabled,
       ),
+      children: [
+        Center(
+          child: ResponsiveButton(
+            onPressed: () =>
+                ref.read(backupProvider.notifier).configureBackgroundBackup(
+                      enabled: false,
+                      onError: onError,
+                      onBatteryInfo: onBatteryInfo,
+                    ),
+            child: Text(
+              'backup_controller_page_background_turn_off'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: Divider(
+            height: 1,
+            color: context.colorScheme.outline.withValues(alpha: 0.2),
+          ),
+        ),
+        SettingSwitchListTile(
+          valueNotifier: isWifiRequiredNotifier,
+          title: 'backup_controller_page_background_wifi'.tr(),
+          icon: Icons.wifi,
+          onChanged: (enabled) =>
+              ref.read(backupProvider.notifier).configureBackgroundBackup(
+                    requireWifi: enabled,
+                    onError: onError,
+                    onBatteryInfo: onBatteryInfo,
+                  ),
+        ),
+        SettingSwitchListTile(
+          valueNotifier: isChargingRequiredNotifier,
+          title: 'backup_controller_page_background_charging'.tr(),
+          icon: Icons.charging_station,
+          onChanged: (enabled) =>
+              ref.read(backupProvider.notifier).configureBackgroundBackup(
+                    requireCharging: enabled,
+                    onError: onError,
+                    onBatteryInfo: onBatteryInfo,
+                  ),
+        ),
+        if (Platform.isAndroid) ...[
+          SettingSliderListTile(
+            valueNotifier: triggerDelay,
+            title: 'backup_controller_page_background_delay'.tr(
+              namedArgs: {
+                'duration': formatBackupDelaySliderValue(triggerDelay.value),
+              },
+            ),
+            max: 3.0,
+            divisions: 3,
+            showValue: false,
+            label: formatBackupDelaySliderValue(triggerDelay.value),
+          ),
+        ],
+        if (Platform.isIOS) const IosDebugInfoTile(),
+      ],
     );
   }
 }

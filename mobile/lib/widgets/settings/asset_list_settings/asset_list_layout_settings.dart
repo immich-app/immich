@@ -4,9 +4,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
-import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
-import 'package:immich_mobile/widgets/settings/settings_sub_title.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_slider_list_tile.dart';
+import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_switch_list_tile.dart';
 
 class LayoutSettings extends HookConsumerWidget {
   const LayoutSettings({
@@ -18,23 +19,25 @@ class LayoutSettings extends HookConsumerWidget {
     final useDynamicLayout = useAppSettingsState(AppSettingsEnum.dynamicLayout);
     final tilesPerRow = useAppSettingsState(AppSettingsEnum.tilesPerRow);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return SettingsCardLayout(
+      header: SettingSectionHeader(
+        icon: Icons.dashboard_outlined,
+        title: "asset_list_layout_sub_title".tr(),
+      ),
       children: [
-        SettingsSubTitle(title: "asset_list_layout_sub_title".tr()),
-        SettingsSwitchListTile(
+        SettingSwitchListTile(
           valueNotifier: useDynamicLayout,
           title: "asset_list_layout_settings_dynamic_layout_title".tr(),
           onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
-        SettingsSliderListTile(
+        SettingSliderListTile(
           valueNotifier: tilesPerRow,
-          text: 'theme_setting_asset_list_tiles_per_row_title'
+          title: 'theme_setting_asset_list_tiles_per_row_title'
               .tr(namedArgs: {'count': "${tilesPerRow.value}"}),
           label: "${tilesPerRow.value}",
-          maxValue: 6,
-          minValue: 2,
-          noDivisons: 4,
+          max: 6,
+          min: 2,
+          divisions: 4,
           onChangeEnd: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
       ],

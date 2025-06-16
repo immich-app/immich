@@ -28,7 +28,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+      contentPadding: EdgeInsets.zero,
       horizontalTitleGap: 20,
       isThreeLine: true,
       title: Text(
