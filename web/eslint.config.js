@@ -21,10 +21,7 @@ export default typescriptEslint.config(
       tscompat: tslintPluginCompat,
     },
     rules: {
-      'tscompat/tscompat': [
-        'error',
-        { browserslist: ['> 0.2% and last 4 major versions', '> 0.5%', 'not dead', 'edge >= 135', 'not edge < 135'] },
-      ],
+      'tscompat/tscompat': ['error', { browserslist: ['> 0.2% and last 4 major versions', '> 0.5%', 'not dead'] }],
     },
     languageOptions: {
       parser,
