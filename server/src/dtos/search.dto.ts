@@ -103,6 +103,11 @@ class BaseSearchDto {
   @Max(5)
   @Min(-1)
   rating?: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  ocr?: string;
 }
 
 class BaseSearchWithResultsDto extends BaseSearchDto {
@@ -200,18 +205,6 @@ export class SmartSearchDto extends BaseSearchWithResultsDto {
   @IsNotEmpty()
   @Optional()
   language?: string;
-
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  @Optional()
-  page?: number;
-}
-
-export class OcrSearchDto extends BaseSearchDto {
-  @IsString()
-  @IsNotEmpty()
-  ocr!: string;
 
   @IsInt()
   @Min(1)

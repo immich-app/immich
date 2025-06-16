@@ -881,6 +881,7 @@ export type MetadataSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     order?: AssetOrder;
     originalFileName?: string;
     originalPath?: string;
@@ -930,41 +931,6 @@ export type SearchResponseDto = {
     albums: SearchAlbumResponseDto;
     assets: SearchAssetResponseDto;
 };
-export type OcrSearchDto = {
-    city?: string | null;
-    country?: string | null;
-    createdAfter?: string;
-    createdBefore?: string;
-    deviceId?: string;
-    isArchived?: boolean;
-    isEncoded?: boolean;
-    isFavorite?: boolean;
-    isMotion?: boolean;
-    isNotInAlbum?: boolean;
-    isOffline?: boolean;
-    isVisible?: boolean;
-    lensModel?: string | null;
-    libraryId?: string | null;
-    make?: string;
-    model?: string | null;
-    page?: number;
-    personIds?: string[];
-    ocr: string;
-    rating?: number;
-    size?: number;
-    state?: string | null;
-    tagIds?: string[];
-    takenAfter?: string;
-    takenBefore?: string;
-    trashedAfter?: string;
-    trashedBefore?: string;
-    "type"?: AssetTypeEnum;
-    updatedAfter?: string;
-    updatedBefore?: string;
-    withArchived?: boolean;
-    withDeleted?: boolean;
-    withExif?: boolean;
-};
 export type PlacesResponseDto = {
     admin1name?: string;
     admin2name?: string;
@@ -988,6 +954,7 @@ export type RandomSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     personIds?: string[];
     rating?: number;
     size?: number;
@@ -1023,6 +990,7 @@ export type SmartSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     page?: number;
     personIds?: string[];
     query: string;
@@ -1058,6 +1026,7 @@ export type StatisticsSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     personIds?: string[];
     rating?: number;
     state?: string | null;
@@ -1398,11 +1367,19 @@ export type FacialRecognitionConfig = {
     minScore: number;
     modelName: string;
 };
+export type OcrConfig = {
+    enabled: boolean;
+    maxResolution: number;
+    minDetectionScore: number;
+    minRecognitionScore: number;
+    modelName: string;
+};
 export type SystemConfigMachineLearningDto = {
     clip: ClipConfig;
     duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
+    ocr: OcrConfig;
     /** This property was deprecated in v1.122.0 */
     url?: string;
     urls: string[];
@@ -2948,18 +2925,6 @@ export function searchAssets({ metadataSearchDto }: {
         body: metadataSearchDto
     })));
 }
-export function searchOcr({ ocrSearchDto }: {
-    ocrSearchDto: OcrSearchDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: SearchResponseDto;
-    }>("/search/ocr", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: ocrSearchDto
-    })));
-}
 export function searchPerson({ name, withHidden }: {
     name: string;
     withHidden?: boolean;
@@ -4057,12 +4022,12 @@ export enum JobName {
     BackgroundTask = "backgroundTask",
     StorageTemplateMigration = "storageTemplateMigration",
     Migration = "migration",
-    Ocr = "ocr",
     Search = "search",
     Sidecar = "sidecar",
     Library = "library",
     Notifications = "notifications",
-    BackupDatabase = "backupDatabase"
+    BackupDatabase = "backupDatabase",
+    Ocr = "ocr"
 }
 export enum JobCommand {
     Start = "start",
