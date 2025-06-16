@@ -19,7 +19,7 @@ class BaseCLIPTextualEncoder(InferenceModel):
     depends = []
     identity = (ModelType.TEXTUAL, ModelTask.SEARCH)
 
-    def _predict(self, inputs: str, language: str | None = None, **kwargs: Any) -> str:
+    def _predict(self, inputs: str, language: str | None = None) -> str:
         tokens = self.tokenize(inputs, language=language)
         res: NDArray[np.float32] = self.session.run(None, tokens)[0][0]
         return serialize_np_array(res)

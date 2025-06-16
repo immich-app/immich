@@ -7,16 +7,16 @@ from typing_extensions import TypedDict
 
 
 class TextDetectionOutput(TypedDict):
-    resized: npt.NDArray[np.float32]
+    image: npt.NDArray[np.float32]
     boxes: npt.NDArray[np.float32]
     scores: npt.NDArray[np.float32]
 
 
 class TextRecognitionOutput(TypedDict):
     box: npt.NDArray[np.float32]
-    boxScore: Iterable[float]
+    boxScore: npt.NDArray[np.float32]
     text: Iterable[str]
-    textScore: Iterable[float]
+    textScore: npt.NDArray[np.float32]
 
 
 # RapidOCR expects engine_type to be an attribute

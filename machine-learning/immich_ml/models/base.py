@@ -57,7 +57,7 @@ class InferenceModel(ABC):
         self.load()
         if model_kwargs:
             self.configure(**model_kwargs)
-        return self._predict(*inputs, **model_kwargs)
+        return self._predict(*inputs)
 
     @abstractmethod
     def _predict(self, *inputs: Any, **model_kwargs: Any) -> Any: ...

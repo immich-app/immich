@@ -44,7 +44,7 @@ class FaceRecognizer(InferenceModel):
         return session
 
     def _predict(
-        self, inputs: NDArray[np.uint8] | bytes | Image.Image, faces: FaceDetectionOutput, **kwargs: Any
+        self, inputs: NDArray[np.uint8] | bytes | Image.Image, faces: FaceDetectionOutput
     ) -> FacialRecognitionOutput:
         if faces["boxes"].shape[0] == 0:
             return []

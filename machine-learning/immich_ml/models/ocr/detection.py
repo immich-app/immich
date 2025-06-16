@@ -11,7 +11,8 @@ from rapidocr.utils.typings import ModelType as RapidModelType
 from immich_ml.config import log
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.transforms import decode_cv2
-from immich_ml.schemas import ModelSession, ModelTask, ModelType
+from immich_ml.schemas import ModelFormat, ModelSession, ModelTask, ModelType
+from immich_ml.sessions.ort import OrtSession
 
 from .schemas import OcrOptions, TextDetectionOutput
 
@@ -21,14 +22,14 @@ class TextDetector(InferenceModel):
     identity = (ModelType.DETECTION, ModelTask.OCR)
 
     def __init__(self, model_name: str, **model_kwargs: Any) -> None:
-        super().__init__(model_name, **model_kwargs)
-        self.max_resolution = 1440
+        super().__init__(model_name, **model_kwargs, model_format=ModelFormat.ONNX)
+        self.max_resolution = 736
         self.min_score = 0.5
         self.score_mode = "fast"
         self._empty: TextDetectionOutput = {
-            "resized": np.empty(0, dtype=np.float32),
+            "image": np.empty(0, dtype=np.float32),
             "boxes": np.empty(0, dtype=np.float32),
-            "scores": (),
+            "scores": np.empty(0, dtype=np.float32),
         }
 
     def _download(self) -> None:
@@ -50,7 +51,8 @@ class TextDetector(InferenceModel):
         DownloadFile.run(download_params)
 
     def _load(self) -> ModelSession:
-        session = self._make_session(self.model_path)
+        # TODO: support other runtime sessions
+        session = OrtSession(self.model_path)
         self.model = RapidTextDetector(
             OcrOptions(
                 session=session.session,
@@ -62,17 +64,23 @@ class TextDetector(InferenceModel):
         )
         return session
 
-    def configure(self, **kwargs: Any) -> None:
-        self.max_resolution = kwargs.get("maxResolution", self.max_resolution)
-        self.min_score = kwargs.get("minScore", self.min_score)
-        self.score_mode = kwargs.get("scoreMode", self.score_mode)
-
-    def _predict(self, inputs: bytes | Image.Image, **kwargs: Any) -> TextDetectionOutput:
+    def _predict(self, inputs: bytes | Image.Image) -> TextDetectionOutput:
         results = self.model(decode_cv2(inputs))
         if results.boxes is None or results.scores is None or results.img is None:
             return self._empty
         return {
-            "resized": results.img,
+            "image": results.img,
             "boxes": np.array(results.boxes, dtype=np.float32),
             "scores": np.array(results.scores, dtype=np.float32),
         }
+
+    def configure(self, **kwargs: Any) -> None:
+        if (max_resolution := kwargs.get("maxResolution")) is not None:
+            self.max_resolution = max_resolution
+            self.model.limit_side_len = max_resolution
+        if (min_score := kwargs.get("minScore")) is not None:
+            self.min_score = min_score
+            self.model.postprocess_op.box_thresh = min_score
+        if (score_mode := kwargs.get("scoreMode")) is not None:
+            self.score_mode = score_mode
+            self.model.postprocess_op.score_mode = score_mode
