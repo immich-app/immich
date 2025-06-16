@@ -66,25 +66,24 @@ export class OcrService extends BaseService {
     return JobStatus.Success;
   }
 
-  parseOcrResults(id: string, ocrResults: OCR) {
+  parseOcrResults(id: string, { box, boxScore, text, textScore }: OCR) {
     const ocrDataList = [];
-    for (let i = 0; i < ocrResults.text.length; i++) {
+    for (let i = 0; i < text.length; i++) {
       const boxOffset = i * 8;
-      const row = {
+      ocrDataList.push({
         assetId: id,
-        text: ocrResults.text[i],
-        boxScore: ocrResults.boxScore[i],
-        textScore: ocrResults.textScore[i],
-        x1: ocrResults.box[boxOffset],
-        y1: ocrResults.box[boxOffset + 1],
-        x2: ocrResults.box[boxOffset + 2],
-        y2: ocrResults.box[boxOffset + 3],
-        x3: ocrResults.box[boxOffset + 4],
-        y3: ocrResults.box[boxOffset + 5],
-        x4: ocrResults.box[boxOffset + 6],
-        y4: ocrResults.box[boxOffset + 7],
-      };
-      ocrDataList.push(row);
+        x1: box[boxOffset],
+        y1: box[boxOffset + 1],
+        x2: box[boxOffset + 2],
+        y2: box[boxOffset + 3],
+        x3: box[boxOffset + 4],
+        y3: box[boxOffset + 5],
+        x4: box[boxOffset + 6],
+        y4: box[boxOffset + 7],
+        boxScore: boxScore[i],
+        textScore: textScore[i],
+        text: text[i],
+      });
     }
     return ocrDataList;
   }
