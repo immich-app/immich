@@ -92,6 +92,31 @@ export class SyncRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getPartnerBackfill(userId: string, afterCreateId?: string) {
+    return this.db
+      .selectFrom('partners')
+      .select(['sharedById', 'createId'])
+      .where('sharedWithId', '=', userId)
+      .$if(!!afterCreateId, (qb) => qb.where('createId', '>=', afterCreateId!))
+      .where('createdAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .orderBy('partners.createId', 'asc')
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getPartnerAssetsBackfill(partnerId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
+    return this.db
+      .selectFrom('assets')
+      .select(columns.syncAsset)
+      .where('ownerId', '=', partnerId)
+      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .where('updateId', '<', beforeUpdateId)
+      .$if(!!afterUpdateId, (eb) => eb.where('updateId', '>=', afterUpdateId!))
+      .orderBy('updateId', 'asc')
+      .stream();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID], stream: true })
   getPartnerAssetsUpserts(userId: string, ack?: SyncAck) {
     return this.db

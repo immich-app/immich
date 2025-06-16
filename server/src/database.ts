@@ -209,6 +209,7 @@ export type Partner = {
   sharedWithId: string;
   sharedWith: User;
   createdAt: Date;
+  createId: string;
   updatedAt: Date;
   updateId: string;
   inTimeline: boolean;
