@@ -29,19 +29,18 @@ struct ImmichMemoryProvider: TimelineProvider {
         return
       }
       
-      do {
-        for memory in memories {
-          if let asset = memory.assets.first(where: { $0.type == .image }) {
-            completion(try await buildEntry(
-              api: api,
-              asset: asset,
-              hourOffset: 0,
-              subtitle: getYearDifferenceSubtitle(assetYear: memory.data.year)
-            ))
+      for memory in memories {
+        if let asset = memory.assets.first(where: { $0.type == .image }),
+           let entry = try? await buildEntry(
+             api: api,
+             asset: asset,
+             hourOffset: 0,
+             subtitle: getYearDifferenceSubtitle(assetYear: memory.data.year)
+           ) {
+            completion(entry)
             return
-          }
-        }
-      } catch {}
+           }
+      }
       
       // fallback to random image
       guard
@@ -70,7 +69,6 @@ struct ImmichMemoryProvider: TimelineProvider {
 
   func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<ImageEntry>) -> Void) {
     Task {
-      
       var entries: [ImageEntry] = []
       let now = Date()
       
@@ -80,29 +78,36 @@ struct ImmichMemoryProvider: TimelineProvider {
         return
       }
       
-      // This whole block can fail and we will fall back to random, then a failure screen
-      do {
-        let memories = try await api.fetchMemory(for: Date.now)
+      let memories = try await api.fetchMemory(for: Date.now)
+      
+      await withTaskGroup(of: ImageEntry?.self) { group in
+        var totalAssets = 0
         
         for memory in memories {
           for asset in memory.assets {
-            if asset.type == .image {
-              entries.append(
-                try await buildEntry(
+            if asset.type == .image && totalAssets < 24 {
+              group.addTask {
+                try? await buildEntry(
                   api: api,
                   asset: asset,
-                  hourOffset: entries.count,
+                  hourOffset: totalAssets,
                   subtitle: getYearDifferenceSubtitle(assetYear: memory.data.year)
                 )
-              )
+              }
+              
+              totalAssets += 1
             }
           }
         }
-      } catch {
-        print("Failed to fetch from server: \(error)")
+
+        for await result in group {
+          if let entry = result {
+            entries.append(entry)
+          }
+        }
       }
-      
-      // If we didnt add any memory images, default to 12 hours of random photos
+        
+      // If we didnt add any memory images (some failure occured or no images in memory), default to 12 hours of random photos
       if entries.count == 0 {
         entries.append(
           contentsOf: (try? await generateRandomEntries(
@@ -117,7 +122,7 @@ struct ImmichMemoryProvider: TimelineProvider {
       if entries.count == 0 {
         entries.append(ImageEntry(date: now, image: nil, error: .fetchFailed))
       }
-      
+            
       completion(Timeline(entries: entries, policy: .atEnd))
     }
   }

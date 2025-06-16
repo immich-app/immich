@@ -28,16 +28,24 @@ func generateRandomEntries(
 {
 
   var entries: [ImageEntry] = []
-
   let albumIds = albumId != nil ? [albumId!] : []
 
   let randomAssets = try await api.fetchSearchResults(
     with: SearchFilters(size: count, albumIds: albumIds)
   )
-  for (hourOffset, asset) in randomAssets.enumerated() {
-    entries.append(
-      try await buildEntry(api: api, asset: asset, hourOffset: hourOffset)
-    )
+  
+  await withTaskGroup(of: ImageEntry?.self) { group in
+    for (hourOffset, asset) in randomAssets.enumerated() {
+      group.addTask {
+        return try? await buildEntry(api: api, asset: asset, hourOffset: hourOffset)
+      }
+    }
+
+    for await result in group {
+      if let entry = result {
+        entries.append(entry)
+      }
+    }
   }
 
   return entries
