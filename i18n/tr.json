@@ -240,7 +240,6 @@
     "storage_template_migration_info": "Şablon ayarlarındaki değişiklikler sadece yeni varlıklara uygulanacak. Şablon ayarlarını daha önce yüklenmiş olan varlıklara uygulamak için <link>{job}</link> çalıştırın.",
     "storage_template_migration_job": "Depolama Adreslerini Değiştirme Görevi",
     "storage_template_more_details": "Bu özellik hakkında daha fazla bilgi için, <template-link>Depolama Şablonu</template-link> ve onun <implications-link>etkileri</implications-link> kısmına bakın",
-    "storage_template_onboarding_description": "Bu özellik açıldığında, dosyaları kullanıcı için belirlenen depolama adresi taslağına göre otomatik olarak düzenler. Bu özellik bazen sorun çıkarabildiğini için kapalı gelmektedir. Daha fazla bilgi için <link>dokümantasyona</link> bakabilirsiniz.",
     "storage_template_path_length": "Tahmini dosya adresi uzunluğu: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Depolama Şablonu",
     "storage_template_settings_description": "Yüklenen dosyanın ismini ve klasör yapısını düzenle",

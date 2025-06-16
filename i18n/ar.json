@@ -232,7 +232,6 @@
     "storage_template_migration_info": "تغييرات القالب ستنطبق فقط على المحتويات الجديدة. لتطبيق القالب على المحتويات التي تم رفعها سابقًا، قم بتشغيل <link>{job}</link>.",
     "storage_template_migration_job": "وظيفة تهجير قالب التخزين",
     "storage_template_more_details": "لمزيد من التفاصيل حول هذه الميزة، يرجى الرجوع إلى <template-link>Storage Template</template-link> و<implications-link>implications</implications-link>",
-    "storage_template_onboarding_description": "عند تفعيل هذه الميزة، سيقوم بتنظيم الملفات تلقائيًا بناءً على قالب محدد من قبل المستخدم. بسبب مشاكل الاستقرار، تم تعطيل الميزة افتراضيًا. للمزيد من المعلومات، يرجى الرجوع إلى <link>الوثائق</link>.",
     "storage_template_path_length": "الحد التقريبي لطول المسار: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "قالب التخزين",
     "storage_template_settings_description": "إدارة هيكل المجلد واسم الملف للأصول المرفوعة",

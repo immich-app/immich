@@ -242,7 +242,6 @@
     "storage_template_migration_info": "Mẫu lưu trữ sẽ chuyển tất cả định dạng tập tin thành chữ thường. Những thay đổi của mẫu này chỉ áp dụng cho các ảnh mới tải lên. Để áp dụng mẫu này cho các ảnh đã tải lên trước đây, hãy chạy <link>{job}</link>.",
     "storage_template_migration_job": "Tác vụ di chuyển mẫu lưu trữ",
     "storage_template_more_details": "Cần thêm thông tin chi tiết về tính năng này, vui lòng tham khảo <template-link>Mẫu lưu trữ</template-link> và các <implications-link>hệ quả</implications-link> của nó",
-    "storage_template_onboarding_description": "Khi được bật, tính năng này sẽ tự động sắp xếp các tập tin dựa trên mẫu do người dùng định nghĩa. Do các vấn đề về độ ổn định nên tính năng này đã bị tắt theo mặc định. Để biết thêm thông tin, vui lòng xem <link>tài liệu</link>.",
     "storage_template_path_length": "Giới hạn độ dài đường dẫn xấp xỉ: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Mẫu lưu trữ",
     "storage_template_settings_description": "Quản lý cấu trúc thư mục và tên tập tin của ảnh tải lên",

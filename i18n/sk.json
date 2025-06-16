@@ -239,7 +239,6 @@
     "storage_template_migration_info": "Šablóna úložiska skonvertuje všetky prípony na malé písmená. Zmeny šablón sa budú vzťahovať iba na nové diela. Ak chcete šablónu spätne použiť na predtým nahrané médiá, spustite <link>{job}</link>.",
     "storage_template_migration_job": "Úloha migrácie šablóny úložiska",
     "storage_template_more_details": "Ďalšie podrobnosti o tejto funkcii nájdete v <template-link>Šablóna úložiska</template-link> a jej <implications-link>dôsledky</implications-link>",
-    "storage_template_onboarding_description": "Keď je táto funkcia povolená, automaticky usporiada súbory na základe šablóny definovanej používateľom. Kvôli problémom so stabilitou bola funkcia predvolene vypnutá. Viac informácií nájdete v <link>dokumentácii</link>.",
     "storage_template_path_length": "Približný limit dĺžky cesty: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Šablóna úložiska",
     "storage_template_settings_description": "Spravujte štruktúru priečinkov a názov súboru odovzdaného média",

@@ -242,7 +242,6 @@
     "storage_template_migration_info": "स्टोरेज टेम्प्लेट सभी एक्सटेंशन को लोअरकेस में बदल देगा। टेम्प्लेट में किए गए बदलाव सिर्फ़ नई संपत्तियों पर लागू होंगे। टेम्प्लेट को पहले अपलोड की गई संपत्तियों पर पूर्वव्यापी रूप से लागू करने के लिए, <link>{job}</link> चलाएँ।",
     "storage_template_migration_job": "संग्रहण टेम्पलेट माइग्रेशन कार्य",
     "storage_template_more_details": "इस सुविधा के बारे में अधिक जानकारी के लिए, देखें <template-link>भंडारण टेम्पलेट</template-link> और इसके <implications-link>आशय</implications-link>",
-    "storage_template_onboarding_description": "सक्षम होने पर, यह सुविधा उपयोगकर्ता द्वारा परिभाषित टेम्पलेट के आधार पर फ़ाइलों को स्वतः व्यवस्थित कर देगी। स्थिरता संबंधी समस्याओं के कारण यह सुविधा डिफ़ॉल्ट रूप से बंद कर दी गई है। अधिक जानकारी के लिए, कृपया <link>दस्तावेज़ीकरण</link> देखें।",
     "storage_template_path_length": "अनुमानित पथ लंबाई सीमा: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "भंडारण टेम्पलेट",
     "storage_template_settings_description": "अपलोड संपत्ति की फ़ोल्डर संरचना और फ़ाइल नाम प्रबंधित करें",

@@ -243,7 +243,6 @@
     "storage_template_migration_info": "ストレージテンプレートは全ての拡張子を小文字に変換します。テンプレートの変更は新しいアセットにのみ適用されます。 以前にアップロードしたアセットにテンプレートを遡って適用するには、<link>{job}</link> を実行してください。",
     "storage_template_migration_job": "ストレージテンプレート移行ジョブ",
     "storage_template_more_details": "この機能の詳細については、<template-link>ストレージテンプレート</template-link>とその<implications-link>影響</implications-link>を参照してください",
-    "storage_template_onboarding_description": "この機能を有効にすると、ユーザー定義のテンプレートに基づいてファイルが自動で整理されます。 安定性の問題のため、この機能はデフォルトでオフになっています。 詳細については、<link>ドキュメント</link>を参照してください。",
     "storage_template_path_length": "おおよそのパス長の制限: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "ストレージ テンプレート",
     "storage_template_settings_description": "アップロードしたアセットのフォルダ構造とファイル名を管理します",

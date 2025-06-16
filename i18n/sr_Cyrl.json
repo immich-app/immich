@@ -242,7 +242,6 @@
     "storage_template_migration_info": "Промене шаблона ц́е се применити само на нове датотеке. Да бисте ретроактивно применили шаблон на претходно отпремљене датотеке, покрените <link>{job}</link>.",
     "storage_template_migration_job": "Посао миграције складишта",
     "storage_template_more_details": "За више детаља о овој функцији погледајте <template-link>Шаблон за складиште</template-link> и његове <implications-link>импликације</implications-link>",
-    "storage_template_onboarding_description": "Када је омогуц́ена, ова функција ц́е аутоматски организовати датотеке на основу шаблона који дефинише корисник. Због проблема са стабилношц́у ова функција је подразумевано искључена. За више информација погледајте <link>документацију</link>.",
     "storage_template_path_length": "Приближно ограничење дужине путање: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Шаблон за складиштење",
     "storage_template_settings_description": "Управљајте структуром директоријума и именом датотеке средства за отпремање",
