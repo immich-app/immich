@@ -390,7 +390,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     )
     .$if(!!options.ocr, (qb) =>
       qb
-        .innerJoin('ocr_search', 'assets.id', 'ocr_search.assetId')
+        .innerJoin('ocr_search', 'asset.id', 'ocr_search.assetId')
         .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${options.ocr!})`),
     )
     .$if(!!options.type, (qb) => qb.where('asset.type', '=', options.type!))

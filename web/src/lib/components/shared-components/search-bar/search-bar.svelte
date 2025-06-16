@@ -39,7 +39,7 @@
     searchStore.isSearchEnabled = false;
   });
 
-  const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto | OcrSearchDto) => {
+  const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
     const params = getMetadataSearchQuery(payload);
 
     closeDropdown();

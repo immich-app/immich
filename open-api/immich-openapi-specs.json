@@ -5934,6 +5934,14 @@
             }
           },
           {
+            "name": "ocr",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "personIds",
             "required": false,
             "in": "query",
@@ -6149,48 +6157,6 @@
         ],
         "x-immich-permission": "asset.read",
         "description": "This endpoint requires the `asset.read` permission."
-      }
-    },
-    "/search/ocr": {
-      "post": {
-        "operationId": "searchOcr",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OcrSearchDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SearchResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Search"
-        ]
       }
     },
     "/search/person": {
@@ -12604,6 +12570,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "order": {
             "allOf": [
               {
@@ -12918,176 +12887,32 @@
           "enabled": {
             "type": "boolean"
           },
-          "minDetectionBoxScore": {
-            "format": "double",
-            "maximum": 1,
-            "minimum": 0,
-            "type": "number"
+          "maxResolution": {
+            "minimum": 1,
+            "type": "integer"
           },
           "minDetectionScore": {
             "format": "double",
             "maximum": 1,
-            "minimum": 0,
+            "minimum": 0.1,
             "type": "number"
           },
           "minRecognitionScore": {
             "format": "double",
             "maximum": 1,
-            "minimum": 0,
+            "minimum": 0.1,
             "type": "number"
           },
           "modelName": {
             "type": "string"
-          },
-          "orientationClassifyEnabled": {
-            "type": "boolean"
-          },
-          "unwarpingEnabled": {
-            "type": "boolean"
           }
         },
         "required": [
           "enabled",
-          "minDetectionBoxScore",
+          "maxResolution",
           "minDetectionScore",
           "minRecognitionScore",
-          "modelName",
-          "orientationClassifyEnabled",
-          "unwarpingEnabled"
-        ],
-        "type": "object"
-      },
-      "OcrSearchDto": {
-        "properties": {
-          "albumIds": {
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "city": {
-            "nullable": true,
-            "type": "string"
-          },
-          "country": {
-            "nullable": true,
-            "type": "string"
-          },
-          "createdAfter": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "createdBefore": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          },
-          "isEncoded": {
-            "type": "boolean"
-          },
-          "isFavorite": {
-            "type": "boolean"
-          },
-          "isMotion": {
-            "type": "boolean"
-          },
-          "isNotInAlbum": {
-            "type": "boolean"
-          },
-          "isOffline": {
-            "type": "boolean"
-          },
-          "lensModel": {
-            "nullable": true,
-            "type": "string"
-          },
-          "libraryId": {
-            "format": "uuid",
-            "nullable": true,
-            "type": "string"
-          },
-          "make": {
-            "type": "string"
-          },
-          "model": {
-            "nullable": true,
-            "type": "string"
-          },
-          "ocr": {
-            "type": "string"
-          },
-          "page": {
-            "minimum": 1,
-            "type": "number"
-          },
-          "personIds": {
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "rating": {
-            "maximum": 5,
-            "minimum": -1,
-            "type": "number"
-          },
-          "state": {
-            "nullable": true,
-            "type": "string"
-          },
-          "tagIds": {
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "nullable": true,
-            "type": "array"
-          },
-          "takenAfter": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "takenBefore": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "trashedAfter": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "trashedBefore": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetTypeEnum"
-              }
-            ]
-          },
-          "updatedAfter": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedBefore": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "visibility": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetVisibility"
-              }
-            ]
-          }
-        },
-        "required": [
-          "ocr"
+          "modelName"
         ],
         "type": "object"
       },
@@ -13758,6 +13583,9 @@
           },
           "model": {
             "nullable": true,
+            "type": "string"
+          },
+          "ocr": {
             "type": "string"
           },
           "personIds": {
@@ -14856,6 +14684,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "page": {
             "minimum": 1,
             "type": "number"
@@ -15059,6 +14890,9 @@
           },
           "model": {
             "nullable": true,
+            "type": "string"
+          },
+          "ocr": {
             "type": "string"
           },
           "personIds": {

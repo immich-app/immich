@@ -188,7 +188,6 @@ part 'model/o_auth_callback_dto.dart';
 part 'model/o_auth_config_dto.dart';
 part 'model/o_auth_token_endpoint_auth_method.dart';
 part 'model/ocr_config.dart';
-part 'model/ocr_search_dto.dart';
 part 'model/on_this_day_dto.dart';
 part 'model/onboarding_dto.dart';
 part 'model/onboarding_response_dto.dart';

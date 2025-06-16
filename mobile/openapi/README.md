@@ -194,7 +194,6 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**searchAssetStatistics**](doc//SearchApi.md#searchassetstatistics) | **POST** /search/statistics | 
 *SearchApi* | [**searchAssets**](doc//SearchApi.md#searchassets) | **POST** /search/metadata | 
 *SearchApi* | [**searchLargeAssets**](doc//SearchApi.md#searchlargeassets) | **POST** /search/large-assets | 
-*SearchApi* | [**searchOcr**](doc//SearchApi.md#searchocr) | **POST** /search/ocr | 
 *SearchApi* | [**searchPerson**](doc//SearchApi.md#searchperson) | **GET** /search/person | 
 *SearchApi* | [**searchPlaces**](doc//SearchApi.md#searchplaces) | **GET** /search/places | 
 *SearchApi* | [**searchRandom**](doc//SearchApi.md#searchrandom) | **POST** /search/random | 
@@ -417,7 +416,6 @@ Class | Method | HTTP request | Description
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthTokenEndpointAuthMethod](doc//OAuthTokenEndpointAuthMethod.md)
  - [OcrConfig](doc//OcrConfig.md)
- - [OcrSearchDto](doc//OcrSearchDto.md)
  - [OnThisDayDto](doc//OnThisDayDto.md)
  - [OnboardingDto](doc//OnboardingDto.md)
  - [OnboardingResponseDto](doc//OnboardingResponseDto.md)

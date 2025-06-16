@@ -253,8 +253,8 @@ export const defaults = Object.freeze<SystemConfig>({
     ocr: {
       enabled: true,
       modelName: 'PP-OCRv5_server',
-      minDetectionScore: 0.3,
-      minRecognitionScore: 0.0,
+      minDetectionScore: 0.5,
+      minRecognitionScore: 0.5,
       maxResolution: 1440,
     },
   },

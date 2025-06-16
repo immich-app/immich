@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { AssetOcr, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { DB } from 'src/schema';
+import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 
 @Injectable()
 export class OcrRepository {
@@ -46,7 +47,7 @@ export class OcrRepository {
       ],
     ],
   })
-  upsert(assetId: string, ocrDataList: Insertable<AssetOcr>[]) {
+  upsert(assetId: string, ocrDataList: Insertable<AssetOcrTable>[]) {
     let query = this.db.with('deleted_ocr', (db) => db.deleteFrom('asset_ocr').where('assetId', '=', assetId));
     if (ocrDataList.length > 0) {
       const searchText = ocrDataList.map((item) => item.text.trim()).join(' ');

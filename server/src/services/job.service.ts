@@ -308,7 +308,6 @@ export class JobService extends BaseService {
 
     if (config.nightlyTasks.clusterNewFaces) {
       jobs.push({ name: JobName.FacialRecognitionQueueAll, data: { force: false, nightly: true } });
-      { name: JobName.QUEUE_OCR, data: { force: false, nightly: true } },
     }
 
     await this.jobRepository.queueAll(jobs);

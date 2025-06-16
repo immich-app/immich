@@ -178,6 +178,8 @@ export interface DB {
   asset_metadata: AssetMetadataTable;
   asset_metadata_audit: AssetMetadataAuditTable;
   asset_job_status: AssetJobStatusTable;
+  asset_ocr: AssetOcrTable;
+  ocr_search: OcrSearchTable;
 
   audit: AuditTable;
 

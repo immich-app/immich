@@ -14,38 +14,53 @@ class OcrConfig {
   /// Returns a new [OcrConfig] instance.
   OcrConfig({
     required this.enabled,
-    required this.minScore,
+    required this.maxResolution,
+    required this.minDetectionScore,
+    required this.minRecognitionScore,
     required this.modelName,
   });
 
   bool enabled;
 
+  /// Minimum value: 1
+  int maxResolution;
+
   /// Minimum value: 0.1
   /// Maximum value: 1
-  double minScore;
+  double minDetectionScore;
+
+  /// Minimum value: 0.1
+  /// Maximum value: 1
+  double minRecognitionScore;
 
   String modelName;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is OcrConfig &&
     other.enabled == enabled &&
-    other.minScore == minScore &&
+    other.maxResolution == maxResolution &&
+    other.minDetectionScore == minDetectionScore &&
+    other.minRecognitionScore == minRecognitionScore &&
     other.modelName == modelName;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (enabled.hashCode) +
-    (minScore.hashCode) +
+    (maxResolution.hashCode) +
+    (minDetectionScore.hashCode) +
+    (minRecognitionScore.hashCode) +
     (modelName.hashCode);
 
   @override
-  String toString() => 'OcrConfig[enabled=$enabled, minScore=$minScore, modelName=$modelName]';
+  String toString() => 'OcrConfig[enabled=$enabled, maxResolution=$maxResolution, minDetectionScore=$minDetectionScore, minRecognitionScore=$minRecognitionScore, modelName=$modelName]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
-      json[r'minScore'] = this.minScore;
+      json[r'maxResolution'] = this.maxResolution;
+      json[r'minDetectionScore'] = this.minDetectionScore;
+      json[r'minRecognitionScore'] = this.minRecognitionScore;
       json[r'modelName'] = this.modelName;
     return json;
   }
@@ -60,7 +75,9 @@ class OcrConfig {
 
       return OcrConfig(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        minScore: (mapValueOfType<num>(json, r'minScore')!).toDouble(),
+        maxResolution: mapValueOfType<int>(json, r'maxResolution')!,
+        minDetectionScore: (mapValueOfType<num>(json, r'minDetectionScore')!).toDouble(),
+        minRecognitionScore: (mapValueOfType<num>(json, r'minRecognitionScore')!).toDouble(),
         modelName: mapValueOfType<String>(json, r'modelName')!,
       );
     }
@@ -110,7 +127,9 @@ class OcrConfig {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'enabled',
-    'minScore',
+    'maxResolution',
+    'minDetectionScore',
+    'minRecognitionScore',
     'modelName',
   };
 }

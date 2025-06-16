@@ -1,10 +1,10 @@
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { Column, ForeignKeyColumn, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
+import { Column, ForeignKeyColumn, Generated, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
 
 @Table('asset_ocr')
 export class AssetOcrTable {
   @PrimaryGeneratedColumn()
-  id!: string;
+  id!: Generated<string>;
 
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   assetId!: string;

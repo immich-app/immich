@@ -196,9 +196,9 @@ export class AssetJobRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getForOcr(id: string) {
     return this.db
-      .selectFrom('assets')
-      .select((eb) => ['assets.visibility', withFile(eb, AssetFileType.PREVIEW).as('previewFile')])
-      .where('assets.id', '=', id)
+      .selectFrom('asset')
+      .select((eb) => ['asset.visibility', withFile(eb, AssetFileType.Preview).as('previewFile')])
+      .where('asset.id', '=', id)
       .executeTakeFirst();
   }
 
@@ -361,15 +361,15 @@ export class AssetJobRepository {
   @GenerateSql({ params: [], stream: true })
   streamForOcrJob(force?: boolean) {
     return this.db
-      .selectFrom('assets')
-      .select(['assets.id'])
+      .selectFrom('asset')
+      .select(['asset.id'])
       .$if(!force, (qb) =>
         qb
-          .innerJoin('asset_job_status', 'asset_job_status.assetId', 'assets.id')
+          .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
           .where('asset_job_status.ocrAt', 'is', null),
       )
-      .where('assets.deletedAt', 'is', null)
-      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .stream();
   }
 

@@ -13,7 +13,7 @@ export class OcrService extends BaseService {
   async handleQueueOcr({ force, nightly }: JobOf<JobName.QUEUE_OCR>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isOcrEnabled(machineLearning)) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     if (force) {
@@ -33,23 +33,23 @@ export class OcrService extends BaseService {
     }
 
     await this.jobRepository.queueAll(jobs);
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   @OnJob({ name: JobName.OCR, queue: QueueName.OCR })
   async handleOcr({ id }: JobOf<JobName.OCR>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isOcrEnabled(machineLearning)) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const asset = await this.assetJobRepository.getForOcr(id);
     if (!asset || !asset.previewFile) {
-      return JobStatus.FAILED;
+      return JobStatus.Failed;
     }
 
-    if (asset.visibility === AssetVisibility.HIDDEN) {
-      return JobStatus.SKIPPED;
+    if (asset.visibility === AssetVisibility.Hidden) {
+      return JobStatus.Skipped;
     }
 
     const ocrResults = await this.machineLearningRepository.ocr(
@@ -63,7 +63,7 @@ export class OcrService extends BaseService {
     await this.assetRepository.upsertJobStatus({ assetId: id, ocrAt: new Date() });
 
     this.logger.debug(`Processed ${ocrResults.text.length} OCR result(s) for ${id}`);
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   parseOcrResults(id: string, ocrResults: OCR) {

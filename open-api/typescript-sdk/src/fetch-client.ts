@@ -909,6 +909,7 @@ export type MetadataSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     order?: AssetOrder;
     originalFileName?: string;
     originalPath?: string;
@@ -958,37 +959,6 @@ export type SearchResponseDto = {
     albums: SearchAlbumResponseDto;
     assets: SearchAssetResponseDto;
 };
-export type OcrSearchDto = {
-    albumIds?: string[];
-    city?: string | null;
-    country?: string | null;
-    createdAfter?: string;
-    createdBefore?: string;
-    deviceId?: string;
-    isEncoded?: boolean;
-    isFavorite?: boolean;
-    isMotion?: boolean;
-    isNotInAlbum?: boolean;
-    isOffline?: boolean;
-    lensModel?: string | null;
-    libraryId?: string | null;
-    make?: string;
-    model?: string | null;
-    ocr: string;
-    page?: number;
-    personIds?: string[];
-    rating?: number;
-    state?: string | null;
-    tagIds?: string[] | null;
-    takenAfter?: string;
-    takenBefore?: string;
-    trashedAfter?: string;
-    trashedBefore?: string;
-    "type"?: AssetTypeEnum;
-    updatedAfter?: string;
-    updatedBefore?: string;
-    visibility?: AssetVisibility;
-};
 export type PlacesResponseDto = {
     admin1name?: string;
     admin2name?: string;
@@ -1012,6 +982,7 @@ export type RandomSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     personIds?: string[];
     rating?: number;
     size?: number;
@@ -1047,6 +1018,7 @@ export type SmartSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     page?: number;
     personIds?: string[];
     query?: string;
@@ -1083,6 +1055,7 @@ export type StatisticsSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     personIds?: string[];
     rating?: number;
     state?: string | null;
@@ -1434,7 +1407,9 @@ export type FacialRecognitionConfig = {
 };
 export type OcrConfig = {
     enabled: boolean;
-    minScore: number;
+    maxResolution: number;
+    minDetectionScore: number;
+    minRecognitionScore: number;
     modelName: string;
 };
 export type SystemConfigMachineLearningDto = {
@@ -3409,7 +3384,7 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
@@ -3426,6 +3401,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     make?: string;
     minFileSize?: number;
     model?: string | null;
+    ocr?: string;
     personIds?: string[];
     rating?: number;
     size?: number;
@@ -3462,6 +3438,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         make,
         minFileSize,
         model,
+        ocr,
         personIds,
         rating,
         size,
@@ -3495,18 +3472,6 @@ export function searchAssets({ metadataSearchDto }: {
         ...opts,
         method: "POST",
         body: metadataSearchDto
-    })));
-}
-export function searchOcr({ ocrSearchDto }: {
-    ocrSearchDto: OcrSearchDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: SearchResponseDto;
-    }>("/search/ocr", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: ocrSearchDto
     })));
 }
 /**
