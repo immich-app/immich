@@ -6,8 +6,6 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:immich_mobile/domain/utils/background_sync.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/services/exp_backup.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 
@@ -158,7 +156,6 @@ final expBackupProvider =
   return ExpBackupNotifier(
     ref.watch(expBackupServiceProvider),
     ref.watch(uploadServiceProvider),
-    ref.watch(backgroundSyncProvider),
   );
 });
 
@@ -166,7 +163,6 @@ class ExpBackupNotifier extends StateNotifier<ExpBackupState> {
   ExpBackupNotifier(
     this._backupService,
     this._uploadService,
-    this._backgroundSyncManager,
   ) : super(
           ExpBackupState(
             totalCount: 0,
@@ -183,7 +179,6 @@ class ExpBackupNotifier extends StateNotifier<ExpBackupState> {
 
   final ExpBackupService _backupService;
   final UploadService _uploadService;
-  final BackgroundSyncManager _backgroundSyncManager;
   StreamSubscription<TaskStatusUpdate>? _statusSubscription;
   StreamSubscription<TaskProgressUpdate>? _progressSubscription;
 

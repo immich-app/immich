@@ -5,7 +5,6 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:platform/platform.dart';
 import "package:immich_mobile/utils/database.utils.dart";
 
 final backupRepositoryProvider = Provider<IBackupRepository>(
@@ -15,10 +14,7 @@ final backupRepositoryProvider = Provider<IBackupRepository>(
 class DriftBackupRepository extends DriftDatabaseRepository
     implements IBackupRepository {
   final Drift _db;
-  final Platform _platform;
-  const DriftBackupRepository(this._db, {Platform? platform})
-      : _platform = platform ?? const LocalPlatform(),
-        super(_db);
+  const DriftBackupRepository(this._db) : super(_db);
 
   @override
   Future<List<LocalAsset>> getAssets(String albumId) {

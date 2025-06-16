@@ -5,9 +5,9 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/interfaces/local_asset.interface.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/utils/upload.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -172,6 +172,7 @@ class ExpBackupService {
       originalFileName: originalFileName,
       deviceAssetId: asset.id,
       metadata: metadata,
+      group: kBackupGroup,
     );
   }
 
@@ -198,13 +199,13 @@ class ExpBackupService {
       originalFileName: asset.name,
       deviceAssetId: asset.id,
       fields: fields,
-      group: kUploadLivePhotoGroup,
+      group: kBackupLivePhotoGroup,
     );
   }
 
   Future<void> cancel() async {
     shouldCancel = true;
-    await _uploadService.cancel();
+    await _uploadService.cancelAllForGroup(kBackupGroup);
   }
 }
 

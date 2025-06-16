@@ -134,7 +134,7 @@ class ShareIntentUploadStateNotifier
   }
 
   Future<void> upload(File file) {
-    return _uploadService.buildUploadTask(file);
+    return _uploadService.buildUploadTask(file, group: kManualUploadGroup);
   }
 
   Future<bool> cancelUpload(String id) {

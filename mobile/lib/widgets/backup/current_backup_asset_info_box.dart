@@ -1,15 +1,7 @@
-import 'dart:io';
-
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/backup/exp_backup.provider.dart';
-import 'package:immich_mobile/widgets/backup/asset_info_table.dart';
-import 'package:immich_mobile/widgets/backup/error_chip.dart';
-import 'package:immich_mobile/widgets/backup/icloud_download_progress_bar.dart';
-import 'package:immich_mobile/widgets/backup/upload_progress_bar.dart';
-import 'package:immich_mobile/widgets/backup/upload_stats.dart';
 
 class CurrentUploadingAssetInfoBox extends ConsumerWidget {
   const CurrentUploadingAssetInfoBox({super.key});

@@ -15,3 +15,8 @@ const int kBatchHashSizeLimit = 1024 * 1024 * 1024; // 1GB
 
 // Secure storage keys
 const String kSecuredPinCode = "secured_pin_code";
+
+// background_downloader task groups
+const kManualUploadGroup = 'manual_upload_group';
+const kBackupGroup = 'backup_group';
+const kBackupLivePhotoGroup = 'backup_live_photo_group';

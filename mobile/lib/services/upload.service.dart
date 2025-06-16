@@ -3,12 +3,12 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/upload.interface.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/upload.dart';
 import 'package:path/path.dart';
 
 final uploadServiceProvider = Provider(
@@ -61,13 +61,13 @@ class UploadService {
     return FileDownloader().cancelTaskWithId(id);
   }
 
-  Future<void> cancel() async {
-    await _uploadRepository.cancelAll();
-    await _uploadRepository.deleteAllTrackingRecords();
+  Future<void> cancelAllForGroup(String group) async {
+    await _uploadRepository.cancelAll(group);
+    await _uploadRepository.deleteAllTrackingRecords(group);
   }
 
-  Future<void> pause() {
-    return _uploadRepository.pauseAll();
+  Future<void> pauseAll() {
+    return _uploadRepository.pauseAll(kBackupGroup);
   }
 
   Future<List<TaskRecord>> getRecords() async {
@@ -81,11 +81,11 @@ class UploadService {
 
   Future<UploadTask> buildUploadTask(
     File file, {
+    required String group,
     Map<String, String>? fields,
     String? originalFileName,
     String? deviceAssetId,
     String? metadata,
-    String group = kUploadGroup,
   }) async {
     return _buildTask(
       deviceAssetId ?? hash(file.path).toString(),
@@ -100,10 +100,10 @@ class UploadService {
   Future<UploadTask> _buildTask(
     String id,
     File file, {
+    required String group,
     Map<String, String>? fields,
     String? originalFileName,
     String? metadata,
-    String group = kUploadGroup,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();

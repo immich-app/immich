@@ -1,12 +1,10 @@
 import 'dart:io';
 
-import 'package:background_downloader/background_downloader.dart';
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
@@ -22,7 +20,6 @@ import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
-import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
@@ -33,7 +30,6 @@ import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/backup_album.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
-import 'package:immich_mobile/services/upload.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
@@ -51,7 +47,6 @@ final backupProvider =
     ref.watch(albumMediaRepositoryProvider),
     ref.watch(fileMediaRepositoryProvider),
     ref.watch(backupAlbumServiceProvider),
-    ref.watch(uploadServiceProvider),
     ref,
   );
 });
@@ -66,7 +61,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     this._albumMediaRepository,
     this._fileMediaRepository,
     this._backupAlbumService,
-    this._uploadService,
     this.ref,
   ) : super(
           BackUpState(
@@ -106,10 +100,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             ),
             iCloudDownloadProgress: 0.0,
           ),
-        ) {
-    _uploadService.onUploadStatus = _uploadStatusCallback;
-    _uploadService.onTaskProgress = _taskProgressCallback;
-  }
+        );
 
   final log = Logger('BackupNotifier');
   final BackupService _backupService;
@@ -120,7 +111,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final IAlbumMediaRepository _albumMediaRepository;
   final IFileMediaRepository _fileMediaRepository;
   final BackupAlbumService _backupAlbumService;
-  final UploadService _uploadService;
   final Ref ref;
 
   ///
@@ -498,7 +488,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   Future<void> startBackupProcess() async {
     debugPrint("Start backup process");
     assert(state.backupProgress == BackUpProgressEnum.idle);
-    // state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
+    state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
     await getBackupInfo();
 
@@ -532,87 +522,19 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         state = state.copyWith(iCloudDownloadProgress: progress);
       });
 
-      // await _backupService.backupAsset(
-      //   assetsWillBeBackup,
-      //   state.cancelToken,
-      //   pmProgressHandler: pmProgressHandler,
-      //   onSuccess: _onAssetUploaded,
-      //   onProgress: _onUploadProgress,
-      //   onCurrentAsset: _onSetCurrentBackupAsset,
-      //   onError: _onBackupError,
-      // );
-
-      await _backupService.uploadAssets(assetsWillBeBackup);
+      await _backupService.backupAsset(
+        assetsWillBeBackup,
+        state.cancelToken,
+        pmProgressHandler: pmProgressHandler,
+        onSuccess: _onAssetUploaded,
+        onProgress: _onUploadProgress,
+        onCurrentAsset: _onSetCurrentBackupAsset,
+        onError: _onBackupError,
+      );
       await notifyBackgroundServiceCanRun();
     } else {
       openAppSettings();
     }
-  }
-
-  void _updateUploadStatus(TaskStatusUpdate task, TaskStatus status) async {
-    if (status == TaskStatus.canceled) {
-      return;
-    }
-
-    final taskId = task.task.taskId;
-    final uploadStatus = switch (task.status) {
-      TaskStatus.complete => UploadStatus.complete,
-      TaskStatus.failed => UploadStatus.failed,
-      TaskStatus.canceled => UploadStatus.canceled,
-      TaskStatus.enqueued => UploadStatus.enqueued,
-      TaskStatus.running => UploadStatus.running,
-      TaskStatus.paused => UploadStatus.paused,
-      TaskStatus.notFound => UploadStatus.notFound,
-      TaskStatus.waitingToRetry => UploadStatus.waitingtoRetry
-    };
-
-    // state = [
-    //   for (final attachment in state)
-    //     if (attachment.id == taskId.toInt())
-    //       attachment.copyWith(status: uploadStatus)
-    //     else
-    //       attachment,
-    // ];
-  }
-
-  void _uploadStatusCallback(TaskStatusUpdate update) {
-    _updateUploadStatus(update, update.status);
-
-    switch (update.status) {
-      case TaskStatus.complete:
-        // if (update.responseStatusCode == 200) {
-        //   if (kDebugMode) {
-        //     debugPrint("[COMPLETE] ${update.task.taskId} - DUPLICATE");
-        //   }
-        // } else {
-        //   if (kDebugMode) {
-        //     debugPrint("[COMPLETE] ${update.task.taskId}");
-        //   }
-        // }
-        break;
-
-      default:
-        break;
-    }
-  }
-
-  void _taskProgressCallback(TaskProgressUpdate update) {
-    // Ignore if the task is canceled or completed
-    if (update.progress == downloadFailed ||
-        update.progress == downloadCompleted) {
-      return;
-    }
-
-    // print("[_taskProgressCallback] $update");
-
-    final taskId = update.task.taskId;
-    // state = [
-    //   for (final attachment in state)
-    //     if (attachment.id == taskId.toInt())
-    //       attachment.copyWith(uploadProgress: update.progress)
-    //     else
-    //       attachment,
-    // ];
   }
 
   void setAvailableAlbums(availableAlbums) {

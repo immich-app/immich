@@ -6,9 +6,9 @@ abstract interface class IUploadRepository {
 
   void enqueueAll(List<UploadTask> tasks);
   Future<bool> cancel(String id);
-  Future<bool> cancelAll();
-  Future<void> pauseAll();
-  Future<void> deleteAllTrackingRecords();
+  Future<bool> cancelAll(String group);
+  Future<void> pauseAll(String group);
+  Future<void> deleteAllTrackingRecords(String group);
   Future<void> deleteRecordsWithIds(List<String> id);
   Future<List<TaskRecord>> getRecords([TaskStatus? status]);
 }
