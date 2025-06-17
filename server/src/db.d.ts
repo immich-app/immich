@@ -98,8 +98,10 @@ export interface AlbumsSharedUsersUsers {
   albumsId: string;
   role: Generated<AlbumUserRole>;
   usersId: string;
-  updatedAt: Generated<Timestamp>;
+  createId: Generated<string>;
+  createdAt: Generated<Timestamp>;
   updateId: Generated<string>;
+  updatedAt: Generated<Timestamp>;
 }
 
 export interface ApiKeys {

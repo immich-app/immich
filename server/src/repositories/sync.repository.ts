@@ -254,16 +254,36 @@ export class SyncRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  getAlbumBackfill(userId: string, afterCreateId?: string) {
+    return this.db
+      .selectFrom('albums_shared_users_users')
+      .select(['albumsId as id', 'createId'])
+      .where('usersId', '=', userId)
+      .$if(!!afterCreateId, (qb) => qb.where('createId', '>=', afterCreateId!))
+      .where('createdAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .orderBy('createId', 'asc')
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
+  getAlbumUsersBackfill(albumId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
+    return this.db
+      .selectFrom('albums_shared_users_users')
+      .select(columns.syncAlbumUser)
+      .where('albumsId', '=', albumId)
+      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .where('updateId', '<', beforeUpdateId)
+      .$if(!!afterUpdateId, (eb) => eb.where('updateId', '>=', afterUpdateId!))
+      .orderBy('updateId', 'asc')
+      .stream();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID], stream: true })
   getAlbumUserUpserts(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('albums_shared_users_users')
-      .select([
-        'albums_shared_users_users.albumsId as albumId',
-        'albums_shared_users_users.usersId as userId',
-        'albums_shared_users_users.role',
-        'albums_shared_users_users.updateId',
-      ])
+      .select(columns.syncAlbumUser)
       .where('albums_shared_users_users.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
       .$if(!!ack, (qb) => qb.where('albums_shared_users_users.updateId', '>', ack!.updateId))
       .orderBy('albums_shared_users_users.updateId', 'asc')
