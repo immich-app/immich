@@ -97,7 +97,6 @@ class NotificationSetting extends HookConsumerWidget {
           SettingSliderListTile(
             title: 'setting_notifications_notify_failures_grace_period'
                 .tr(namedArgs: {'duration': formattedValue}),
-            subtitle: 'setting_notifications_notify_failures_subtitle'.tr(),
             label: formattedValue,
             valueNotifier: sliderValue,
             max: 5,
