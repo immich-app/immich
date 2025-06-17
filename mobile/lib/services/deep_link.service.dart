@@ -5,7 +5,6 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/services/memory.service.dart';
-import 'package:immich_mobile/utils/hash.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -26,8 +25,13 @@ class DeepLinkService {
   final CurrentAsset _currentAsset;
   final CurrentAlbum _currentAlbum;
 
-  DeepLinkService(this._memoryService, this._assetService, this._albumService,
-      this._currentAsset, this._currentAlbum);
+  DeepLinkService(
+    this._memoryService,
+    this._assetService,
+    this._albumService,
+    this._currentAsset,
+    this._currentAlbum,
+  );
 
   Future<DeepLink> handle(PlatformDeepLink link) async {
     // get everything after the scheme, since Uri cannot parse path
