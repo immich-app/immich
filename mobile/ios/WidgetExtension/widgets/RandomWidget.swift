@@ -73,7 +73,7 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     }
 
     guard
-      let entry = try? await buildEntry(
+      var entry = try? await buildEntry(
         api: api,
         asset: randomImage,
         hourOffset: 0
@@ -82,7 +82,9 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
       return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
     }
 
-    return entry.getResized()
+    entry.resize()
+
+    return entry
   }
 
   func timeline(
@@ -130,9 +132,11 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     if entries.count == 0 {
       entries.append(ImageEntry(date: now, image: nil, error: .fetchFailed))
     }
-    
+
     // Resize all images to something that can be stored by iOS
-    entries = entries.map { $0.getResized() }
+    for i in entries.indices {
+      entries[i].resize()
+    }
 
     return Timeline(entries: entries, policy: .atEnd)
   }

@@ -8,16 +8,18 @@ struct ImageEntry: TimelineEntry {
   var error: WidgetError? = nil
 
   // Resizes the stored image to a maximum width of 450 pixels
-  func getResized() -> Self {
+  mutating func resize() {
     if (image == nil || image!.size.height < 450 || image!.size.width < 450 ) {
-      return self
+      return
     }
     
     guard let resized = image!.resized(toWidth: 450) else {
-      return ImageEntry(date: date, image: nil, error: .unableToResize)
+      image = nil
+      error = .unableToResize
+      return
     }
       
-    return ImageEntry(date: date, image: resized, error: nil)
+    image = resized
   }
 }
 

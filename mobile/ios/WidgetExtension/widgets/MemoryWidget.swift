@@ -33,14 +33,15 @@ struct ImmichMemoryProvider: TimelineProvider {
 
       for memory in memories {
         if let asset = memory.assets.first(where: { $0.type == .image }),
-          let entry = try? await buildEntry(
+          var entry = try? await buildEntry(
             api: api,
             asset: asset,
             hourOffset: 0,
             subtitle: getYearDifferenceSubtitle(assetYear: memory.data.year)
           )
         {
-          completion(entry.getResized())
+          entry.resize()
+          completion(entry)
           return
         }
       }
@@ -56,7 +57,7 @@ struct ImmichMemoryProvider: TimelineProvider {
       }
 
       guard
-        let imageEntry = try? await buildEntry(
+        var imageEntry = try? await buildEntry(
           api: api,
           asset: randomImage,
           hourOffset: 0
@@ -66,7 +67,8 @@ struct ImmichMemoryProvider: TimelineProvider {
         return
       }
 
-      completion(imageEntry.getResized())
+      imageEntry.resize()
+      completion(imageEntry)
     }
   }
 
@@ -115,7 +117,8 @@ struct ImmichMemoryProvider: TimelineProvider {
         }
       }
 
-      // If we didnt add any memory images (some failure occured or no images in memory), default to 12 hours of random photos
+      // If we didnt add any memory images (some failure occured or no images in memory),
+      // default to 12 hours of random photos
       if entries.count == 0 {
         entries.append(
           contentsOf: (try? await generateRandomEntries(
@@ -126,13 +129,16 @@ struct ImmichMemoryProvider: TimelineProvider {
         )
       }
 
-      // If we fail to fetch images, we still want to add an entry with a nil image and an error
+      // If we fail to fetch images, we still want to add an entry
+      // with a nil image and an error
       if entries.count == 0 {
         entries.append(ImageEntry(date: now, image: nil, error: .fetchFailed))
       }
-      
+
       // Resize all images to something that can be stored by iOS
-      entries = entries.map { $0.getResized() }
+      for i in entries.indices {
+        entries[i].resize()
+      }
 
       completion(Timeline(entries: entries, policy: .atEnd))
     }

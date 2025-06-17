@@ -165,15 +165,7 @@ class ImmichAPI {
     guard let img = UIImage(data: data) else {
       throw URLError(.badServerResponse)
     }
-    
-    if img.size.height > 450 || img.size.width > 450 {
-      guard let resized = img.resized(toWidth: 450) else {
-        throw WidgetError.unableToResize
-      }
-      
-      return resized
-    }
-    
+
     return img
   }
 
