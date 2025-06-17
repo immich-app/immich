@@ -36,7 +36,7 @@ struct ImmichMemoryProvider: TimelineProvider {
           var entry = try? await buildEntry(
             api: api,
             asset: asset,
-            hourOffset: 0,
+            dateOffset: 0,
             subtitle: getYearDifferenceSubtitle(assetYear: memory.data.year)
           )
         {
@@ -60,7 +60,7 @@ struct ImmichMemoryProvider: TimelineProvider {
         var imageEntry = try? await buildEntry(
           api: api,
           asset: randomImage,
-          hourOffset: 0
+          dateOffset: 0
         )
       else {
         completion(ImageEntry(date: Date(), image: nil, error: .fetchFailed))
@@ -98,7 +98,7 @@ struct ImmichMemoryProvider: TimelineProvider {
                 try? await buildEntry(
                   api: api,
                   asset: asset,
-                  hourOffset: totalAssets,
+                  dateOffset: totalAssets,
                   subtitle: getYearDifferenceSubtitle(
                     assetYear: memory.data.year
                   )

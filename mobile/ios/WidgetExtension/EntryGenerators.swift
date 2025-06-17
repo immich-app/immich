@@ -4,14 +4,14 @@ import WidgetKit
 func buildEntry(
   api: ImmichAPI,
   asset: SearchResult,
-  hourOffset: Int,
+  dateOffset: Int,
   subtitle: String? = nil
 )
   async throws -> ImageEntry
 {
   let entryDate = Calendar.current.date(
-    byAdding: .hour,
-    value: hourOffset,
+    byAdding: .minute,
+    value: dateOffset * 20,
     to: Date.now
   )!
   let image = try await api.fetchImage(asset: asset)
@@ -22,7 +22,8 @@ func generateRandomEntries(
   api: ImmichAPI,
   now: Date,
   count: Int,
-  albumId: String? = nil
+  albumId: String? = nil,
+  subtitle: String? = nil
 )
   async throws -> [ImageEntry]
 {
@@ -35,12 +36,13 @@ func generateRandomEntries(
   )
 
   await withTaskGroup(of: ImageEntry?.self) { group in
-    for (hourOffset, asset) in randomAssets.enumerated() {
+    for (dateOffset, asset) in randomAssets.enumerated() {
       group.addTask {
         return try? await buildEntry(
           api: api,
           asset: asset,
-          hourOffset: hourOffset
+          dateOffset: dateOffset,
+          subtitle: subtitle
         )
       }
     }
