@@ -4052,12 +4052,15 @@ export enum SyncEntityType {
     AssetDeleteV1 = "AssetDeleteV1",
     AssetExifV1 = "AssetExifV1",
     PartnerAssetV1 = "PartnerAssetV1",
+    PartnerAssetBackfillV1 = "PartnerAssetBackfillV1",
     PartnerAssetDeleteV1 = "PartnerAssetDeleteV1",
     PartnerAssetExifV1 = "PartnerAssetExifV1",
+    PartnerAssetExifBackfillV1 = "PartnerAssetExifBackfillV1",
     AlbumV1 = "AlbumV1",
     AlbumDeleteV1 = "AlbumDeleteV1",
     AlbumUserV1 = "AlbumUserV1",
-    AlbumUserDeleteV1 = "AlbumUserDeleteV1"
+    AlbumUserDeleteV1 = "AlbumUserDeleteV1",
+    SyncAckV1 = "SyncAckV1"
 }
 export enum SyncRequestType {
     UsersV1 = "UsersV1",

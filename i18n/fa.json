@@ -192,7 +192,6 @@
     "storage_template_migration_info": "تغییرات قالب فقط به دارایی‌های جدید اعمال خواهد شد. برای اعمال قالب به دارایی‌های بارگذاری شده قبلی، باید <link>{job}</link> را اجرا کنید.",
     "storage_template_migration_job": "وظیفه مهاجرت الگوی ذخیره‌سازی",
     "storage_template_more_details": "برای جزئیات بیشتر درباره این ویژگی، به <template-link>قالب ذخیره‌سازی</template-link> و <implications-link>مفاهیم</implications-link> آن مراجعه کنید",
-    "storage_template_onboarding_description": "زمانی که این ویژگی فعال شود، فایل‌ها به‌طور خودکار بر اساس یک قالب تعریف‌شده توسط کاربر سازماندهی می‌شوند. به دلیل مشکلات پایداری، این ویژگی به‌طور پیش‌فرض غیرفعال است. برای اطلاعات بیشتر، لطفاً به <link>مستندات</link> مراجعه کنید.",
     "storage_template_path_length": "حداکثر طول مسیر تقریبی: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "قالب ذخیره‌سازی",
     "storage_template_settings_description": "مدیریت ساختار پوشه و نام فایل دارایی بارگذاری شده",
