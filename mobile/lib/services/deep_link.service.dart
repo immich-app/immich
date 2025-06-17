@@ -50,7 +50,7 @@ class DeepLinkService {
     final memory = await _memoryService.getMemoryById(memoryId);
 
     if (memory == null) {
-      return DeepLink.none; // Return none if memory is not found
+      return DeepLink.none;
     }
 
     return DeepLink([
@@ -62,7 +62,7 @@ class DeepLinkService {
     final asset = await _assetService.getAssetByRemoteId(assetId);
 
     if (asset == null) {
-      return DeepLink.none; // Return none if asset is not found
+      return DeepLink.none;
     }
 
     _currentAsset.set(asset);
@@ -82,7 +82,7 @@ class DeepLinkService {
     final album = await _albumService.getAlbumByRemoteId(albumId);
 
     if (album == null) {
-      return DeepLink.none; // Return none if album is not found
+      return DeepLink.none;
     }
 
     _currentAlbum.set(album);
