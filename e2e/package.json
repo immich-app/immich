@@ -25,7 +25,7 @@
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@playwright/test": "^1.44.1",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^22.15.29",
+    "@types/node": "^22.15.31",
     "@types/oidc-provider": "^9.0.0",
     "@types/pg": "^8.15.1",
     "@types/pngjs": "^6.0.4",
