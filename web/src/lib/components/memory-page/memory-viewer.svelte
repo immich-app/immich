@@ -363,15 +363,16 @@
       {/snippet}
 
       <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
-        <IconButton
-          shape="round"
-          variant="ghost"
-          color="secondary"
-          aria-label={paused ? $t('play_memories') : $t('pause_memories')}
-          icon={paused ? mdiPlay : mdiPause}
-          onclick={() => handlePromiseError(handleAction('PlayPauseButtonClick', paused ? 'play' : 'pause'))}
-          class="hover:text-black"
-        />
+        <div class="w-[50px] dark">
+          <IconButton
+            shape="round"
+            variant="ghost"
+            color="secondary"
+            aria-label={paused ? $t('play_memories') : $t('pause_memories')}
+            icon={paused ? mdiPlay : mdiPause}
+            onclick={() => handlePromiseError(handleAction('PlayPauseButtonClick', paused ? 'play' : 'pause'))}
+          />
+        </div>
 
         {#each current.memory.assets as asset, index (asset.id)}
           <a class="relative w-full py-2" href={asHref(asset)} aria-label={$t('view')}>
@@ -385,20 +386,23 @@
             {(current.assetIndex + 1).toLocaleString($locale)}/{current.memory.assets.length.toLocaleString($locale)}
           </p>
         </div>
-        <IconButton
-          shape="round"
-          variant="ghost"
-          color="secondary"
-          aria-label={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
-          icon={$videoViewerMuted ? mdiVolumeOff : mdiVolumeHigh}
-          onclick={() => ($videoViewerMuted = !$videoViewerMuted)}
-        />
+
+        <div class="w-[50px] dark">
+          <IconButton
+            shape="round"
+            variant="ghost"
+            color="secondary"
+            aria-label={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
+            icon={$videoViewerMuted ? mdiVolumeOff : mdiVolumeHigh}
+            onclick={() => ($videoViewerMuted = !$videoViewerMuted)}
+          />
+        </div>
       </div>
     </ControlAppBar>
 
     {#if galleryInView}
       <div
-        class="fixed top-20 start-1/2 -translate-x-1/2 transition-opacity"
+        class="fixed top-10 start-1/2 -translate-x-1/2 transition-opacity dark z-1"
         class:opacity-0={!galleryInView}
         class:opacity-100={galleryInView}
       >
@@ -409,7 +413,6 @@
         >
           <IconButton
             shape="round"
-            variant="ghost"
             color="secondary"
             aria-label={$t('hide_gallery')}
             icon={mdiChevronUp}
@@ -529,26 +532,28 @@
             </div>
             <!-- CONTROL BUTTONS -->
             {#if current.previous}
-              <div class="absolute top-1/2 start-0 ms-4">
+              <div class="absolute top-1/2 start-0 ms-4 dark">
                 <IconButton
                   shape="round"
                   aria-label={$t('previous_memory')}
                   icon={mdiChevronLeft}
                   variant="ghost"
                   color="secondary"
+                  size="giant"
                   onclick={handlePreviousAsset}
                 />
               </div>
             {/if}
 
             {#if current.next}
-              <div class="absolute top-1/2 end-0 me-4">
+              <div class="absolute top-1/2 end-0 me-4 dark">
                 <IconButton
                   shape="round"
                   aria-label={$t('next_memory')}
                   icon={mdiChevronRight}
                   variant="ghost"
                   color="secondary"
+                  size="giant"
                   onclick={handleNextAsset}
                 />
               </div>
@@ -612,13 +617,12 @@
   <!-- GALLERY VIEWER -->
   <section class="bg-immich-dark-gray p-4">
     <div
-      class="sticky mb-10 flex place-content-center place-items-center transition-all"
+      class="sticky mb-10 flex place-content-center place-items-center transition-all dark"
       class:opacity-0={galleryInView}
       class:opacity-100={!galleryInView}
     >
       <IconButton
         shape="round"
-        variant="ghost"
         color="secondary"
         aria-label={$t('show_gallery')}
         icon={mdiChevronDown}
