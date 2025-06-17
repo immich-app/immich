@@ -30,7 +30,7 @@ class ShareService {
       for (var asset in assets) {
         if (asset.isLocal) {
           // Prefer local assets to share
-          File? f = await asset.local!.file;
+          File? f = await asset.local!.originFile;
           downloadedXFiles.add(XFile(f!.path));
         } else if (asset.isRemote) {
           // Download remote asset otherwise
