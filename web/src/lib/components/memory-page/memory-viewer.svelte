@@ -4,6 +4,8 @@
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import { resizeObserver } from '$lib/actions/resize-observer';
   import { shortcuts } from '$lib/actions/shortcut';
+  import MemoryPhotoViewer from '$lib/components/memory-page/memory-photo-viewer.svelte';
+  import MemoryVideoViewer from '$lib/components/memory-page/memory-video-viewer.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
@@ -23,7 +25,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute, assetViewerFadeDuration, QueryParameter } from '$lib/constants';
+  import { AppRoute, QueryParameter } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -31,9 +33,8 @@
   import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
-  import { getAssetPlaybackUrl, getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
+  import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
-  import { getAltText } from '$lib/utils/thumbnail-util';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, getAssetInfo } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
@@ -59,7 +60,6 @@
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
   import { Tween } from 'svelte/motion';
-  import { fade } from 'svelte/transition';
 
   let memoryGallery: HTMLElement | undefined = $state();
   let memoryWrapper: HTMLElement | undefined = $state();
@@ -363,15 +363,16 @@
       {/snippet}
 
       <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
-        <IconButton
-          shape="round"
-          variant="ghost"
-          color="secondary"
-          aria-label={paused ? $t('play_memories') : $t('pause_memories')}
-          icon={paused ? mdiPlay : mdiPause}
-          onclick={() => handlePromiseError(handleAction('PlayPauseButtonClick', paused ? 'play' : 'pause'))}
-          class="hover:text-black"
-        />
+        <div class="w-[50px] dark">
+          <IconButton
+            shape="round"
+            variant="ghost"
+            color="secondary"
+            aria-label={paused ? $t('play_memories') : $t('pause_memories')}
+            icon={paused ? mdiPlay : mdiPause}
+            onclick={() => handlePromiseError(handleAction('PlayPauseButtonClick', paused ? 'play' : 'pause'))}
+          />
+        </div>
 
         {#each current.memory.assets as asset, index (asset.id)}
           <a class="relative w-full py-2" href={asHref(asset)} aria-label={$t('view')}>
@@ -385,20 +386,23 @@
             {(current.assetIndex + 1).toLocaleString($locale)}/{current.memory.assets.length.toLocaleString($locale)}
           </p>
         </div>
-        <IconButton
-          shape="round"
-          variant="ghost"
-          color="secondary"
-          aria-label={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
-          icon={$videoViewerMuted ? mdiVolumeOff : mdiVolumeHigh}
-          onclick={() => ($videoViewerMuted = !$videoViewerMuted)}
-        />
+
+        <div class="w-[50px] dark">
+          <IconButton
+            shape="round"
+            variant="ghost"
+            color="secondary"
+            aria-label={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
+            icon={$videoViewerMuted ? mdiVolumeOff : mdiVolumeHigh}
+            onclick={() => ($videoViewerMuted = !$videoViewerMuted)}
+          />
+        </div>
       </div>
     </ControlAppBar>
 
     {#if galleryInView}
       <div
-        class="fixed top-20 start-1/2 -translate-x-1/2 transition-opacity"
+        class="fixed top-10 start-1/2 -translate-x-1/2 transition-opacity dark z-1"
         class:opacity-0={!galleryInView}
         class:opacity-100={galleryInView}
       >
@@ -409,7 +413,6 @@
         >
           <IconButton
             shape="round"
-            variant="ghost"
             color="secondary"
             aria-label={$t('hide_gallery')}
             icon={mdiChevronUp}
@@ -463,30 +466,16 @@
         >
           <div class="relative h-full w-full rounded-2xl bg-black">
             {#key current.asset.id}
-              <div transition:fade={{ duration: assetViewerFadeDuration }} class="h-full w-full">
-                {#if current.asset.isVideo}
-                  <video
-                    bind:this={videoPlayer}
-                    autoplay
-                    playsinline
-                    class="h-full w-full rounded-2xl object-contain transition-all"
-                    src={getAssetPlaybackUrl({ id: current.asset.id })}
-                    poster={getAssetThumbnailUrl({ id: current.asset.id, size: AssetMediaSize.Preview })}
-                    draggable="false"
-                    muted={$videoViewerMuted}
-                    volume={$videoViewerVolume}
-                    transition:fade
-                  ></video>
-                {:else}
-                  <img
-                    class="h-full w-full rounded-2xl object-contain transition-all"
-                    src={getAssetThumbnailUrl({ id: current.asset.id, size: AssetMediaSize.Preview })}
-                    alt={$getAltText(current.asset)}
-                    draggable="false"
-                    transition:fade
-                  />
-                {/if}
-              </div>
+              {#if current.asset.isVideo}
+                <MemoryVideoViewer
+                  asset={current.asset}
+                  bind:videoPlayer
+                  videoViewerMuted={$videoViewerMuted}
+                  videoViewerVolume={$videoViewerVolume}
+                />
+              {:else}
+                <MemoryPhotoViewer asset={current.asset} />
+              {/if}
             {/key}
 
             <div
@@ -543,26 +532,28 @@
             </div>
             <!-- CONTROL BUTTONS -->
             {#if current.previous}
-              <div class="absolute top-1/2 start-0 ms-4">
+              <div class="absolute top-1/2 start-0 ms-4 dark">
                 <IconButton
                   shape="round"
                   aria-label={$t('previous_memory')}
                   icon={mdiChevronLeft}
                   variant="ghost"
                   color="secondary"
+                  size="giant"
                   onclick={handlePreviousAsset}
                 />
               </div>
             {/if}
 
             {#if current.next}
-              <div class="absolute top-1/2 end-0 me-4">
+              <div class="absolute top-1/2 end-0 me-4 dark">
                 <IconButton
                   shape="round"
                   aria-label={$t('next_memory')}
                   icon={mdiChevronRight}
                   variant="ghost"
                   color="secondary"
+                  size="giant"
                   onclick={handleNextAsset}
                 />
               </div>
@@ -626,13 +617,12 @@
   <!-- GALLERY VIEWER -->
   <section class="bg-immich-dark-gray p-4">
     <div
-      class="sticky mb-10 flex place-content-center place-items-center transition-all"
+      class="sticky mb-10 flex place-content-center place-items-center transition-all dark"
       class:opacity-0={galleryInView}
       class:opacity-100={!galleryInView}
     >
       <IconButton
         shape="round"
-        variant="ghost"
         color="secondary"
         aria-label={$t('show_gallery')}
         icon={mdiChevronDown}
