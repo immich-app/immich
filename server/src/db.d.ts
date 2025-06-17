@@ -332,6 +332,7 @@ export interface PartnersAudit {
 
 export interface Partners {
   createdAt: Generated<Timestamp>;
+  createId: Generated<string>;
   inTimeline: Generated<boolean>;
   sharedById: string;
   sharedWithId: string;

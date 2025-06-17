@@ -722,6 +722,7 @@ jobs:
         run: |
           echo "ERROR: Generated SQL files not up to date!"
           echo "Changed files: ${CHANGED_FILES}"
+          git diff
           exit 1
 
   # mobile-integration-tests:

@@ -74,6 +74,8 @@
     showSimpleControls = true,
   }: Props = $props();
 
+  const initialCenter = center;
+
   let map: maplibregl.Map | undefined = $state();
   let marker: maplibregl.Marker | null = null;
   let abortController: AbortController;
@@ -247,6 +249,10 @@
       },
     });
   });
+
+  $effect(() => {
+    map?.jumpTo({ center, zoom });
+  });
 </script>
 
 <!--  We handle style loading ourselves so we set style blank here -->
@@ -254,8 +260,8 @@
   {hash}
   style=""
   class="h-full {rounded ? 'rounded-2xl' : 'rounded-none'}"
-  {center}
   {zoom}
+  center={initialCenter}
   attributionControl={false}
   diffStyleUpdates={true}
   onload={(event) => {

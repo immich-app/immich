@@ -65,6 +65,7 @@ export class SyncAssetV1 {
   fileCreatedAt!: Date | null;
   fileModifiedAt!: Date | null;
   localDateTime!: Date | null;
+  duration!: string | null;
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
   deletedAt!: Date | null;
@@ -153,12 +154,15 @@ export type SyncItem = {
   [SyncEntityType.AssetDeleteV1]: SyncAssetDeleteV1;
   [SyncEntityType.AssetExifV1]: SyncAssetExifV1;
   [SyncEntityType.PartnerAssetV1]: SyncAssetV1;
+  [SyncEntityType.PartnerAssetBackfillV1]: SyncAssetV1;
   [SyncEntityType.PartnerAssetDeleteV1]: SyncAssetDeleteV1;
   [SyncEntityType.PartnerAssetExifV1]: SyncAssetExifV1;
+  [SyncEntityType.PartnerAssetExifBackfillV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumV1]: SyncAlbumV1;
   [SyncEntityType.AlbumDeleteV1]: SyncAlbumDeleteV1;
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserDeleteV1]: SyncAlbumUserDeleteV1;
+  [SyncEntityType.SyncAckV1]: object;
 };
 
 const responseDtos = [

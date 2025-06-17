@@ -241,7 +241,6 @@
     "storage_template_migration_info": "Promene šablona će se primeniti samo na nove datoteke. Da biste retroaktivno primenili šablon na prethodno otpremljene datoteke, pokrenite <link>{job}</link>.",
     "storage_template_migration_job": "Posao migracije skladišta",
     "storage_template_more_details": "Za više detalja o ovoj funkciji pogledajte <template-link>Šablon za skladište</template-link> i njegove <implications-link>implikacije</implications-link>",
-    "storage_template_onboarding_description": "Kada je omogućena, ova funkcija će automatski organizovati datoteke na osnovu šablona koji definiše korisnik. Zbog problema sa stabilnošću ova funkcija je podrazumevano isključena. Za više informacija pogledajte <link>dokumentaciju</link>.",
     "storage_template_path_length": "Približno ograničenje dužine putanje: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Šablon za skladištenje",
     "storage_template_settings_description": "Upravljajte strukturom direktorijuma i imenom datoteke sredstva za otpremanje",
