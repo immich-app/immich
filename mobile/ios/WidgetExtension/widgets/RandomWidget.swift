@@ -122,7 +122,7 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
       contentsOf: (try? await generateRandomEntries(
         api: api,
         now: now,
-        count: 24,
+        count: 12,
         albumId: albumId
       ))
         ?? []

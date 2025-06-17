@@ -13,13 +13,11 @@ struct ImageEntry: TimelineEntry {
       return
     }
     
-    guard let resized = image!.resized(toWidth: 450) else {
-      image = nil
+    image = image?.resized(toWidth: 450)
+    
+    if image == nil {
       error = .unableToResize
-      return
     }
-      
-    image = resized
   }
 }
 

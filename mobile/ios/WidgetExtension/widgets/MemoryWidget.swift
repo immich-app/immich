@@ -93,7 +93,7 @@ struct ImmichMemoryProvider: TimelineProvider {
 
         for memory in memories {
           for asset in memory.assets {
-            if asset.type == .image && totalAssets < 24 {
+            if asset.type == .image && totalAssets < 12 {
               group.addTask {
                 try? await buildEntry(
                   api: api,
