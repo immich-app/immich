@@ -139,7 +139,7 @@ class NetworkingSettings extends HookConsumerWidget {
         const SizedBox(height: 16),
         SettingsCardLayout(
           header: SettingSectionHeader(
-            title: "automatic_endpoint_switching_title".tr(),
+            title: "automatic_endpoint_switching_header".tr(),
             icon: Icons.swap_horizontal_circle_outlined,
           ),
           contentSpacing: 8,
@@ -147,7 +147,7 @@ class NetworkingSettings extends HookConsumerWidget {
             SettingSwitchListTile(
               enabled: true,
               valueNotifier: featureEnabled,
-              title: "Enable Auto-Switching",
+              title: "automatic_endpoint_switching_title".tr(),
               subtitle: "automatic_endpoint_switching_subtitle".tr(),
             ),
             if (featureEnabled.value) ...[
