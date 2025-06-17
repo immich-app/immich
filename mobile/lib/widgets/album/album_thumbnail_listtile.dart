@@ -4,10 +4,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:immich_mobile/utils/translation.dart';
 import 'package:openapi/api.dart';
 
 class AlbumThumbnailListTile extends StatelessWidget {
@@ -91,7 +91,12 @@ class AlbumThumbnailListTile extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          t('items_count', {'count': album.assetCount}),
+                          'items_count'.t(
+                            context: context,
+                            args: {
+                              'count': album.assetCount,
+                            },
+                          ),
                           style: const TextStyle(
                             fontSize: 12,
                           ),

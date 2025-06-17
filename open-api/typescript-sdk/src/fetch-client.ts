@@ -109,6 +109,7 @@ export type UserAdminResponseDto = {
 export type UserAdminCreateDto = {
     avatarColor?: (UserAvatarColor) | null;
     email: string;
+    isAdmin?: boolean;
     name: string;
     notify?: boolean;
     password: string;
@@ -122,6 +123,7 @@ export type UserAdminDeleteDto = {
 export type UserAdminUpdateDto = {
     avatarColor?: (UserAvatarColor) | null;
     email?: string;
+    isAdmin?: boolean;
     name?: string;
     password?: string;
     pinCode?: string | null;
@@ -442,6 +444,7 @@ export type AssetMediaCreateDto = {
     duration?: string;
     fileCreatedAt: string;
     fileModifiedAt: string;
+    filename?: string;
     isFavorite?: boolean;
     livePhotoVideoId?: string;
     sidecarData?: Blob;
@@ -508,6 +511,7 @@ export type AssetMediaReplaceDto = {
     duration?: string;
     fileCreatedAt: string;
     fileModifiedAt: string;
+    filename?: string;
 };
 export type SignUpDto = {
     email: string;
@@ -742,6 +746,9 @@ export type MemoryCreateDto = {
     seenAt?: string;
     "type": MemoryType;
 };
+export type MemoryStatisticsResponseDto = {
+    total: number;
+};
 export type MemoryUpdateDto = {
     isSaved?: boolean;
     memoryAt?: string;
@@ -853,6 +860,7 @@ export type SearchExploreResponseDto = {
     items: SearchExploreItem[];
 };
 export type MetadataSearchDto = {
+    albumIds?: string[];
     checksum?: string;
     city?: string | null;
     country?: string | null;
@@ -929,6 +937,7 @@ export type PlacesResponseDto = {
     name: string;
 };
 export type RandomSearchDto = {
+    albumIds?: string[];
     city?: string | null;
     country?: string | null;
     createdAfter?: string;
@@ -962,6 +971,7 @@ export type RandomSearchDto = {
     withStacked?: boolean;
 };
 export type SmartSearchDto = {
+    albumIds?: string[];
     city?: string | null;
     country?: string | null;
     createdAfter?: string;
@@ -996,6 +1006,7 @@ export type SmartSearchDto = {
     withExif?: boolean;
 };
 export type StatisticsSearchDto = {
+    albumIds?: string[];
     city?: string | null;
     country?: string | null;
     createdAfter?: string;
@@ -1381,7 +1392,7 @@ export type SystemConfigOAuthDto = {
     buttonText: string;
     clientId: string;
     clientSecret: string;
-    defaultStorageQuota: number;
+    defaultStorageQuota: number | null;
     enabled: boolean;
     issuerUrl: string;
     mobileOverrideEnabled: boolean;
@@ -2275,12 +2286,29 @@ export function getDownloadInfo({ key, downloadInfoDto }: {
         body: downloadInfoDto
     })));
 }
+export function deleteDuplicates({ bulkIdsDto }: {
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/duplicates", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: bulkIdsDto
+    })));
+}
 export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: DuplicateResponseDto[];
     }>("/duplicates", {
         ...opts
+    }));
+}
+export function deleteDuplicate({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/duplicates/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
     }));
 }
 export function getFaces({ id }: {
@@ -2504,6 +2532,24 @@ export function createMemory({ memoryCreateDto }: {
         method: "POST",
         body: memoryCreateDto
     })));
+}
+export function memoriesStatistics({ $for, isSaved, isTrashed, $type }: {
+    $for?: string;
+    isSaved?: boolean;
+    isTrashed?: boolean;
+    $type?: MemoryType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryStatisticsResponseDto;
+    }>(`/memories/statistics${QS.query(QS.explode({
+        "for": $for,
+        isSaved,
+        isTrashed,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
 }
 export function deleteMemory({ id }: {
     id: string;
@@ -4006,12 +4052,15 @@ export enum SyncEntityType {
     AssetDeleteV1 = "AssetDeleteV1",
     AssetExifV1 = "AssetExifV1",
     PartnerAssetV1 = "PartnerAssetV1",
+    PartnerAssetBackfillV1 = "PartnerAssetBackfillV1",
     PartnerAssetDeleteV1 = "PartnerAssetDeleteV1",
     PartnerAssetExifV1 = "PartnerAssetExifV1",
+    PartnerAssetExifBackfillV1 = "PartnerAssetExifBackfillV1",
     AlbumV1 = "AlbumV1",
     AlbumDeleteV1 = "AlbumDeleteV1",
     AlbumUserV1 = "AlbumUserV1",
-    AlbumUserDeleteV1 = "AlbumUserDeleteV1"
+    AlbumUserDeleteV1 = "AlbumUserDeleteV1",
+    SyncAckV1 = "SyncAckV1"
 }
 export enum SyncRequestType {
     UsersV1 = "UsersV1",

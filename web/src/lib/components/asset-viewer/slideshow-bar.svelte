@@ -101,10 +101,12 @@
   };
 
   const onShowSettings = async () => {
+    // eslint-disable-next-line tscompat/tscompat
     if (document.fullscreenElement) {
+      // eslint-disable-next-line tscompat/tscompat
       await document.exitFullscreen();
     }
-    await modalManager.show(SlideshowSettingsModal, {});
+    await modalManager.show(SlideshowSettingsModal);
   };
 </script>
 

@@ -169,7 +169,8 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
             type: Value(asset.type.toAssetType()),
             createdAt: Value.absentIfNull(asset.fileCreatedAt),
             updatedAt: Value.absentIfNull(asset.fileModifiedAt),
-            durationInSeconds: const Value(0),
+            durationInSeconds:
+                Value(asset.duration?.toDuration()?.inSeconds ?? 0),
             checksum: Value(asset.checksum),
             isFavorite: Value(asset.isFavorite),
             ownerId: Value(asset.ownerId),
@@ -250,4 +251,18 @@ extension on api.AssetVisibility {
         api.AssetVisibility.locked => AssetVisibility.locked,
         _ => throw Exception('Unknown AssetVisibility value: $this'),
       };
+}
+
+extension on String {
+  Duration? toDuration() {
+    try {
+      final parts = split(':')
+          .map((e) => double.parse(e).toInt())
+          .toList(growable: false);
+
+      return Duration(hours: parts[0], minutes: parts[1], seconds: parts[2]);
+    } catch (_) {
+      return null;
+    }
+  }
 }

@@ -6,10 +6,10 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/asset_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/services/share.service.dart';
-import 'package:immich_mobile/utils/translation.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
@@ -59,10 +59,11 @@ Future<void> handleArchiveAssets(
     await ref
         .read(assetProvider.notifier)
         .toggleArchive(selection, shouldArchive);
-
     final message = shouldArchive
-        ? t('moved_to_archive', {'count': selection.length})
-        : t('moved_to_library', {'count': selection.length});
+        ? 'moved_to_archive'
+            .t(context: context, args: {'count': selection.length})
+        : 'moved_to_library'
+            .t(context: context, args: {'count': selection.length});
     if (context.mounted) {
       ImmichToast.show(
         context: context,
@@ -94,7 +95,7 @@ Future<void> handleFavoriteAssets(
       ImmichToast.show(
         context: context,
         msg: toastMessage,
-        gravity: ToastGravity.BOTTOM,
+        gravity: toastGravity,
       );
     }
   }
@@ -164,9 +165,8 @@ Future<void> handleSetAssetsVisibility(
   WidgetRef ref,
   BuildContext context,
   AssetVisibilityEnum visibility,
-  List<Asset> selection, {
-  ToastGravity toastGravity = ToastGravity.BOTTOM,
-}) async {
+  List<Asset> selection,
+) async {
   if (selection.isNotEmpty) {
     await ref
         .watch(assetProvider.notifier)

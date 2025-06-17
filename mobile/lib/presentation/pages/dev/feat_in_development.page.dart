@@ -1,5 +1,3 @@
-// ignore_for_file: avoid-local-functions
-
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
@@ -90,6 +88,11 @@ final _features = [
       }
     },
   ),
+  _Feature(
+    name: 'Main Timeline',
+    icon: Icons.timeline_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const MainTimelineRoute()),
+  ),
 ];
 
 @RoutePage()
@@ -142,7 +145,6 @@ class _Feature {
   final Future<void> Function(BuildContext, WidgetRef _) onTap;
 }
 
-// ignore: prefer-single-widget-per-file
 class _DevLogs extends StatelessWidget {
   const _DevLogs();
 
@@ -170,7 +172,6 @@ class _DevLogs extends StatelessWidget {
         builder: (_, logMessages) {
           return ListView.separated(
             itemBuilder: (ctx, index) {
-              // ignore: avoid-unsafe-collection-methods
               final logMessage = logMessages.data![index];
               return ListTile(
                 title: Text(
