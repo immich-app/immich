@@ -34,6 +34,8 @@ class Asset extends BaseAsset {
   AssetState get storage =>
       localId == null ? AssetState.remote : AssetState.merged;
 
+  bool get hasLocal => localId != null;
+
   @override
   String toString() {
     return '''Asset {

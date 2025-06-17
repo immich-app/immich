@@ -6,21 +6,22 @@ import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class StorageRepository implements IStorageRepository {
-  final _log = Logger('StorageRepository');
+  const StorageRepository();
 
   @override
   Future<File?> getFileForAsset(LocalAsset asset) async {
+    final log = Logger('StorageRepository');
     File? file;
     try {
       final entity = await AssetEntity.fromId(asset.id);
       file = await entity?.originFile;
       if (file == null) {
-        _log.warning(
+        log.warning(
           "Cannot get file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
         );
       }
     } catch (error, stackTrace) {
-      _log.warning(
+      log.warning(
         "Error getting file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
         error,
         stackTrace,
