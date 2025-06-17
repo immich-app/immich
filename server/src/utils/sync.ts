@@ -18,14 +18,17 @@ export const toAck = ({ type, updateId, extraId }: SyncAck) =>
 
 export const mapJsonLine = (object: unknown) => JSON.stringify(object) + '\n';
 
+export type SerializeOptions<T extends keyof SyncItem, D extends SyncItem[T]> = {
+  type: T;
+  data: Exact<SyncItem[T], D>;
+  ids: [string] | [string, string];
+  ackType?: SyncEntityType;
+};
+
 export const serialize = <T extends keyof SyncItem, D extends SyncItem[T]>({
   type,
   data,
   ids,
   ackType,
-}: {
-  type: T;
-  data: Exact<SyncItem[T], D>;
-  ids: [string] | [string, string];
-  ackType?: SyncEntityType;
-}) => mapJsonLine({ type, data, ack: toAck({ type: ackType ?? type, updateId: ids[0], extraId: ids[1] }) });
+}: SerializeOptions<T, D>) =>
+  mapJsonLine({ type, data, ack: toAck({ type: ackType ?? type, updateId: ids[0], extraId: ids[1] }) });
