@@ -42,3 +42,4 @@ volumes:
   open_api_node_modules:
   server_node_modules:
   web_node_modules:
+  upload-devcontainer-volume:
