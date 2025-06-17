@@ -20,7 +20,7 @@ import { SyncAck } from 'src/types';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { setIsEqual } from 'src/utils/set';
-import { fromAck, serialize } from 'src/utils/sync';
+import { fromAck, serialize, toAck } from 'src/utils/sync';
 
 const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
 export const SYNC_TYPES_ORDER = [
@@ -98,12 +98,12 @@ export class SyncService extends BaseService {
         case SyncRequestType.UsersV1: {
           const deletes = this.syncRepository.getUserDeletes(checkpointMap[SyncEntityType.UserDeleteV1]);
           for await (const { id, ...data } of deletes) {
-            response.write(serialize({ type: SyncEntityType.UserDeleteV1, updateId: id, data }));
+            response.write(serialize({ type: SyncEntityType.UserDeleteV1, ids: [id], data }));
           }
 
           const upserts = this.syncRepository.getUserUpserts(checkpointMap[SyncEntityType.UserV1]);
           for await (const { updateId, ...data } of upserts) {
-            response.write(serialize({ type: SyncEntityType.UserV1, updateId, data }));
+            response.write(serialize({ type: SyncEntityType.UserV1, ids: [updateId], data }));
           }
 
           break;
@@ -115,12 +115,12 @@ export class SyncService extends BaseService {
             checkpointMap[SyncEntityType.PartnerDeleteV1],
           );
           for await (const { id, ...data } of deletes) {
-            response.write(serialize({ type: SyncEntityType.PartnerDeleteV1, updateId: id, data }));
+            response.write(serialize({ type: SyncEntityType.PartnerDeleteV1, ids: [id], data }));
           }
 
           const upserts = this.syncRepository.getPartnerUpserts(auth.user.id, checkpointMap[SyncEntityType.PartnerV1]);
           for await (const { updateId, ...data } of upserts) {
-            response.write(serialize({ type: SyncEntityType.PartnerV1, updateId, data }));
+            response.write(serialize({ type: SyncEntityType.PartnerV1, ids: [updateId], data }));
           }
 
           break;
@@ -132,7 +132,7 @@ export class SyncService extends BaseService {
             checkpointMap[SyncEntityType.AssetDeleteV1],
           );
           for await (const { id, ...data } of deletes) {
-            response.write(serialize({ type: SyncEntityType.AssetDeleteV1, updateId: id, data }));
+            response.write(serialize({ type: SyncEntityType.AssetDeleteV1, ids: [id], data }));
           }
 
           const upserts = this.syncRepository.getAssetUpserts(auth.user.id, checkpointMap[SyncEntityType.AssetV1]);
@@ -140,7 +140,7 @@ export class SyncService extends BaseService {
             response.write(
               serialize({
                 type: SyncEntityType.AssetV1,
-                updateId,
+                ids: [updateId],
                 data: {
                   ...data,
                   checksum: hexOrBufferToBase64(checksum),
@@ -159,7 +159,60 @@ export class SyncService extends BaseService {
             checkpointMap[SyncEntityType.PartnerAssetDeleteV1],
           );
           for await (const { id, ...data } of deletes) {
-            response.write(serialize({ type: SyncEntityType.PartnerAssetDeleteV1, updateId: id, data }));
+            response.write(serialize({ type: SyncEntityType.PartnerAssetDeleteV1, ids: [id], data }));
+          }
+
+          const checkpoint = checkpointMap[SyncEntityType.PartnerAssetBackfillV1];
+          const partnerAssetCheckpoint = checkpointMap[SyncEntityType.PartnerAssetV1];
+
+          const partners = await this.syncRepository.getPartnerBackfill(auth.user.id, checkpoint?.updateId);
+
+          if (partnerAssetCheckpoint) {
+            for (const partner of partners) {
+              if (partner.createId === checkpoint?.updateId && checkpoint.extraId === 'complete') {
+                continue;
+              }
+              const partnerCheckpoint = checkpoint?.updateId === partner.createId ? checkpoint?.extraId : undefined;
+              const backfill = this.syncRepository.getPartnerAssetsBackfill(
+                partner.sharedById,
+                partnerCheckpoint,
+                partnerAssetCheckpoint.updateId,
+              );
+
+              for await (const { updateId, checksum, thumbhash, ...data } of backfill) {
+                response.write(
+                  serialize({
+                    type: SyncEntityType.PartnerAssetBackfillV1,
+                    ids: [updateId],
+                    data: {
+                      ...data,
+                      checksum: hexOrBufferToBase64(checksum),
+                      thumbhash: thumbhash ? hexOrBufferToBase64(thumbhash) : null,
+                    },
+                  }),
+                );
+              }
+              response.write(
+                serialize({
+                  type: SyncEntityType.SyncAckV1,
+                  data: {},
+                  ackType: SyncEntityType.PartnerAssetBackfillV1,
+                  ids: [partner.sharedById, 'complete'],
+                }),
+              );
+            }
+          } else if (partners.length > 0) {
+            await this.syncRepository.upsertCheckpoints([
+              {
+                type: SyncEntityType.PartnerAssetBackfillV1,
+                sessionId,
+                ack: toAck({
+                  type: SyncEntityType.PartnerAssetBackfillV1,
+                  updateId: partners.at(-1)!.createId,
+                  extraId: 'complete',
+                }),
+              },
+            ]);
           }
 
           const upserts = this.syncRepository.getPartnerAssetsUpserts(
@@ -170,7 +223,7 @@ export class SyncService extends BaseService {
             response.write(
               serialize({
                 type: SyncEntityType.PartnerAssetV1,
-                updateId,
+                ids: [updateId],
                 data: {
                   ...data,
                   checksum: hexOrBufferToBase64(checksum),
@@ -189,19 +242,74 @@ export class SyncService extends BaseService {
             checkpointMap[SyncEntityType.AssetExifV1],
           );
           for await (const { updateId, ...data } of upserts) {
-            response.write(serialize({ type: SyncEntityType.AssetExifV1, updateId, data }));
+            response.write(serialize({ type: SyncEntityType.AssetExifV1, ids: [updateId], data }));
           }
 
           break;
         }
 
         case SyncRequestType.PartnerAssetExifsV1: {
+          const checkpoint = checkpointMap[SyncEntityType.PartnerAssetExifBackfillV1];
+          const partnerAssetCheckpoint = checkpointMap[SyncEntityType.PartnerAssetExifV1];
+
+          const partners = await this.syncRepository.getPartnerBackfill(auth.user.id, checkpoint?.updateId);
+
+          if (partnerAssetCheckpoint) {
+            for (const partner of partners) {
+              if (partner.createId === checkpoint?.updateId && checkpoint.extraId === 'complete') {
+                continue;
+              }
+              const partnerCheckpoint = checkpoint?.updateId === partner.createId ? checkpoint?.extraId : undefined;
+              const backfill = this.syncRepository.getPartnerAssetExifsBackfill(
+                partner.sharedById,
+                partnerCheckpoint,
+                partnerAssetCheckpoint.updateId,
+              );
+
+              for await (const { updateId, ...data } of backfill) {
+                response.write(
+                  serialize({
+                    type: SyncEntityType.PartnerAssetExifBackfillV1,
+                    ids: [updateId],
+                    data,
+                  }),
+                );
+              }
+              response.write(
+                serialize({
+                  type: SyncEntityType.SyncAckV1,
+                  data: {},
+                  ackType: SyncEntityType.PartnerAssetExifBackfillV1,
+                  ids: [partner.sharedById, 'complete'],
+                }),
+              );
+            }
+          } else if (partners.length > 0) {
+            await this.syncRepository.upsertCheckpoints([
+              {
+                type: SyncEntityType.PartnerAssetExifBackfillV1,
+                sessionId,
+                ack: toAck({
+                  type: SyncEntityType.PartnerAssetExifBackfillV1,
+                  updateId: partners.at(-1)!.createId,
+                  extraId: 'complete',
+                }),
+              },
+            ]);
+          }
+
           const upserts = this.syncRepository.getPartnerAssetExifsUpserts(
             auth.user.id,
             checkpointMap[SyncEntityType.PartnerAssetExifV1],
           );
           for await (const { updateId, ...data } of upserts) {
-            response.write(serialize({ type: SyncEntityType.PartnerAssetExifV1, updateId, data }));
+            response.write(
+              serialize({
+                type: SyncEntityType.PartnerAssetExifV1,
+                ids: [updateId],
+                data,
+              }),
+            );
           }
 
           break;
@@ -213,12 +321,12 @@ export class SyncService extends BaseService {
             checkpointMap[SyncEntityType.AlbumDeleteV1],
           );
           for await (const { id, ...data } of deletes) {
-            response.write(serialize({ type: SyncEntityType.AlbumDeleteV1, updateId: id, data }));
+            response.write(serialize({ type: SyncEntityType.AlbumDeleteV1, ids: [id], data }));
           }
 
           const upserts = this.syncRepository.getAlbumUpserts(auth.user.id, checkpointMap[SyncEntityType.AlbumV1]);
           for await (const { updateId, ...data } of upserts) {
-            response.write(serialize({ type: SyncEntityType.AlbumV1, updateId, data }));
+            response.write(serialize({ type: SyncEntityType.AlbumV1, ids: [updateId], data }));
           }
 
           break;
@@ -230,7 +338,7 @@ export class SyncService extends BaseService {
             checkpointMap[SyncEntityType.AlbumUserDeleteV1],
           );
           for await (const { id, ...data } of deletes) {
-            response.write(serialize({ type: SyncEntityType.AlbumUserDeleteV1, updateId: id, data }));
+            response.write(serialize({ type: SyncEntityType.AlbumUserDeleteV1, ids: [id], data }));
           }
 
           const upserts = this.syncRepository.getAlbumUserUpserts(
@@ -238,7 +346,7 @@ export class SyncService extends BaseService {
             checkpointMap[SyncEntityType.AlbumUserV1],
           );
           for await (const { updateId, ...data } of upserts) {
-            response.write(serialize({ type: SyncEntityType.AlbumUserV1, updateId, data }));
+            response.write(serialize({ type: SyncEntityType.AlbumUserV1, ids: [updateId], data }));
           }
 
           break;
