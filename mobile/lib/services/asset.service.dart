@@ -554,4 +554,9 @@ class AssetService {
 
     await _assetRepository.updateAll(updatedAssets);
   }
+
+  Future<Asset?> getAssetByRemoteId(String remoteId) async {
+    final assets = await _assetRepository.getAllByRemoteId([remoteId]);
+    return assets.isNotEmpty ? assets.first : null;
+  }
 }

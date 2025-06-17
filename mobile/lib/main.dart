@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -26,6 +27,7 @@ import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
+import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/utils/download.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/migration.dart';
@@ -199,6 +201,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
+    final deepLinkHandler = ref.read(deepLinkServiceProvider);
     final immichTheme = ref.watch(immichThemeProvider);
 
     return ProviderScope(
@@ -220,8 +223,14 @@ class ImmichAppState extends ConsumerState<ImmichApp>
           colorScheme: immichTheme.light,
           locale: context.locale,
         ),
-        routeInformationParser: router.defaultRouteParser(),
-        routerDelegate: router.delegate(
+        routerConfig: router.config(
+          deepLinkBuilder: (deepLink) async {
+            if (deepLink.uri.scheme == "immich") {
+              return await deepLinkHandler.handle(deepLink);
+            }
+
+            return DeepLink.path(deepLink.path);
+          },
           navigatorObservers: () => [AppNavigationObserver(ref: ref)],
         ),
       ),
