@@ -49,7 +49,6 @@ class BackupSettings extends HookConsumerWidget {
 
     return SettingsSubPageScaffold(
       settings: backupSettings,
-      showDivider: false,
     );
   }
 }

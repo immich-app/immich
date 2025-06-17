@@ -17,7 +17,6 @@ class AssetViewerSettings extends StatelessWidget {
 
     return SettingsSubPageScaffold(
       settings: assetViewerSetting,
-      showDivider: false,
     );
   }
 }

@@ -17,7 +17,6 @@ class PreferenceSetting extends StatelessWidget {
 
     return const SettingsSubPageScaffold(
       settings: preferenceSettings,
-      showDivider: false,
     );
   }
 }

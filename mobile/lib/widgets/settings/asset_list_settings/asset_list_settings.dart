@@ -36,7 +36,6 @@ class AssetListSettings extends HookConsumerWidget {
 
     return SettingsSubPageScaffold(
       settings: assetListSetting,
-      showDivider: false,
     );
   }
 }

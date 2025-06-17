@@ -284,7 +284,6 @@ class _LanguageItem extends StatelessWidget {
         horizontal: 8.0,
       ),
       child: SettingCard(
-        margin: EdgeInsets.zero,
         child: ListTile(
           title: Text(
             countryName,

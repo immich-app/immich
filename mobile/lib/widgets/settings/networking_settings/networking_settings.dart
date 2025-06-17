@@ -10,6 +10,7 @@ import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
 import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
+import 'package:immich_mobile/widgets/settings/layouts/settings_sub_page_scaffold.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/external_network_preference.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/local_network_preference.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_switch_list_tile.dart';
@@ -95,10 +96,8 @@ class NetworkingSettings extends HookConsumerWidget {
       [featureEnabled.value],
     );
 
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 96),
-      physics: const ClampingScrollPhysics(),
-      children: <Widget>[
+    return SettingsSubPageScaffold(
+      settings: <Widget>[
         SettingsCardLayout(
           header: SettingSectionHeader(
             title: "current_server_address".tr(),
@@ -106,7 +105,6 @@ class NetworkingSettings extends HookConsumerWidget {
                 ? Icons.https_outlined
                 : Icons.http_outlined,
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           children: [
             ListTile(
               contentPadding: EdgeInsets.zero,
@@ -136,7 +134,6 @@ class NetworkingSettings extends HookConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
         SettingsCardLayout(
           header: SettingSectionHeader(
             title: "automatic_endpoint_switching_title".tr(),
@@ -151,9 +148,12 @@ class NetworkingSettings extends HookConsumerWidget {
               subtitle: "automatic_endpoint_switching_subtitle".tr(),
             ),
             if (featureEnabled.value) ...[
-              Divider(
-                height: 1,
-                color: context.colorScheme.outline.withValues(alpha: 0.2),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Divider(
+                  height: 1,
+                  color: context.colorScheme.outline.withValues(alpha: 0.2),
+                ),
               ),
               const NetworkPreferenceTitle(
                 icon: Icons.home_outlined,
@@ -202,15 +202,18 @@ class NetworkPreferenceTitle extends StatelessWidget {
             WidgetSpan(
               child: Padding(
                 padding: const EdgeInsets.only(right: 4),
-                child: Icon(icon, color: context.colorScheme.tertiary),
+                child: Icon(
+                  icon,
+                  color: context.colorScheme.onSurface.withAlpha(160),
+                ),
               ),
               alignment: PlaceholderAlignment.bottom,
             ),
             TextSpan(
               text: title.tr().toUpperCase(),
               style: context.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: context.colorScheme.tertiary,
+                fontWeight: FontWeight.w500,
+                color: context.colorScheme.onSurface.withAlpha(200),
               ),
             ),
           ],

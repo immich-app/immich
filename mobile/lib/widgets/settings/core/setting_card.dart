@@ -5,7 +5,7 @@ class SettingCard extends StatelessWidget {
   const SettingCard({
     super.key,
     required this.child,
-    this.margin = const EdgeInsets.symmetric(horizontal: 16),
+    this.margin = EdgeInsets.zero,
     this.borderRadius = const BorderRadius.all(Radius.circular(16)),
     this.color,
     this.shadow,
