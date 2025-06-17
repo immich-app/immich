@@ -13622,6 +13622,10 @@
             "nullable": true,
             "type": "string"
           },
+          "duration": {
+            "nullable": true,
+            "type": "string"
+          },
           "fileCreatedAt": {
             "format": "date-time",
             "nullable": true,
@@ -13671,6 +13675,7 @@
         "required": [
           "checksum",
           "deletedAt",
+          "duration",
           "fileCreatedAt",
           "fileModifiedAt",
           "id",
@@ -13694,12 +13699,15 @@
           "AssetDeleteV1",
           "AssetExifV1",
           "PartnerAssetV1",
+          "PartnerAssetBackfillV1",
           "PartnerAssetDeleteV1",
           "PartnerAssetExifV1",
+          "PartnerAssetExifBackfillV1",
           "AlbumV1",
           "AlbumDeleteV1",
           "AlbumUserV1",
-          "AlbumUserDeleteV1"
+          "AlbumUserDeleteV1",
+          "SyncAckV1"
         ],
         "type": "string"
       },

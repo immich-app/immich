@@ -14,6 +14,9 @@ const GeneratedUuidV7Column = (options: Omit<ColumnOptions, 'type' | 'default' |
 export const UpdateIdColumn = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
   GeneratedUuidV7Column(options);
 
+export const CreateIdColumn = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
+  GeneratedUuidV7Column(options);
+
 export const PrimaryGeneratedUuidV7Column = () => GeneratedUuidV7Column({ primary: true });
 
 export const UpdatedAtTrigger = (name: string) =>

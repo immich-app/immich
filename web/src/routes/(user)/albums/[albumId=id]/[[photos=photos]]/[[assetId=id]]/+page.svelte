@@ -4,7 +4,6 @@
   import CastButton from '$lib/cast/cast-button.svelte';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
-  import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
@@ -38,6 +37,7 @@
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
@@ -129,27 +129,6 @@
       backUrl = history.state?.backUrl || AppRoute.ALBUMS;
     }
   });
-
-  const handleToggleEnableActivity = async () => {
-    try {
-      const updateAlbum = await updateAlbumInfo({
-        id: album.id,
-        updateAlbumDto: {
-          isActivityEnabled: !album.isActivityEnabled,
-        },
-      });
-
-      album = { ...album, isActivityEnabled: updateAlbum.isActivityEnabled };
-
-      await refreshAlbum();
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('activity_changed', { values: { enabled: album.isActivityEnabled } }),
-      });
-    } catch (error) {
-      handleError(error, $t('errors.cant_change_activity', { values: { enabled: album.isActivityEnabled } }));
-    }
-  };
 
   const handleFavorite = async () => {
     try {
@@ -259,22 +238,6 @@
       viewMode = AlbumPageViewMode.VIEW;
     } catch (error) {
       handleError(error, $t('errors.error_adding_users_to_album'));
-    }
-  };
-
-  const handleRemoveUser = async (userId: string, nextViewMode: AlbumPageViewMode) => {
-    if (userId == 'me' || userId === $user.id) {
-      await goto(backUrl);
-      return;
-    }
-
-    try {
-      await refreshAlbum();
-
-      // Dynamically set the view mode based on the passed argument
-      viewMode = album.albumUsers.length > 0 ? nextViewMode : AlbumPageViewMode.VIEW;
-    } catch (error) {
-      handleError(error, $t('errors.error_deleting_shared_user'));
     }
   };
 
@@ -451,6 +414,29 @@
 
     if (changed) {
       album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+    }
+  };
+
+  const handleOptions = async () => {
+    const result = await modalManager.show(AlbumOptionsModal, { album, order: albumOrder, user: $user });
+
+    if (!result) {
+      return;
+    }
+
+    switch (result.action) {
+      case 'changeOrder': {
+        albumOrder = result.order;
+        break;
+      }
+      case 'shareUser': {
+        await handleShare();
+        break;
+      }
+      case 'refreshAlbum': {
+        await refreshAlbum();
+        break;
+      }
     }
   };
 </script>
@@ -697,11 +683,7 @@
                     text={$t('select_album_cover')}
                     onClick={() => (viewMode = AlbumPageViewMode.SELECT_THUMBNAIL)}
                   />
-                  <MenuOption
-                    icon={mdiCogOutline}
-                    text={$t('options')}
-                    onClick={() => (viewMode = AlbumPageViewMode.OPTIONS)}
-                  />
+                  <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={handleOptions} />
                 {/if}
 
                 <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
@@ -772,23 +754,6 @@
     </div>
   {/if}
 </div>
-
-{#if viewMode === AlbumPageViewMode.OPTIONS && $user}
-  <AlbumOptions
-    {album}
-    order={albumOrder}
-    user={$user}
-    onChangeOrder={async (order) => {
-      albumOrder = order;
-      await setModeToView();
-    }}
-    onRemove={(userId) => handleRemoveUser(userId, AlbumPageViewMode.OPTIONS)}
-    onRefreshAlbum={refreshAlbum}
-    onClose={() => (viewMode = AlbumPageViewMode.VIEW)}
-    onToggleEnabledActivity={handleToggleEnableActivity}
-    onShowSelectSharedUser={handleShare}
-  />
-{/if}
 
 <style>
   ::placeholder {
