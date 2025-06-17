@@ -159,6 +159,16 @@
             config.storageTemplate.hashVerificationEnabled === savedConfig.storageTemplate.hashVerificationEnabled
           )}
         />
+
+        <SettingSwitch
+          title={$t('admin.storage_template_include_external_assets')}
+          {disabled}
+          subtitle={$t('admin.storage_template_include_external_assets_description')}
+          bind:checked={config.storageTemplate.includeExternalAssets}
+          isEdited={!(
+            config.storageTemplate.includeExternalAssets === savedConfig.storageTemplate.includeExternalAssets
+          )}
+        />
       {/if}
 
       {#if config.storageTemplate.enabled}

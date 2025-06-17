@@ -189,9 +189,16 @@ export class StorageTemplateService extends BaseService {
   }
 
   async moveAsset(asset: StorageAsset, metadata: MoveAssetMetadata) {
-    if (asset.isExternal || StorageCore.isAndroidMotionPath(asset.originalPath)) {
-      // External assets are not affected by storage template
-      // TODO: shouldn't this only apply to external assets?
+    const config = await this.getConfig({ withCache: true });
+
+    // Check if external assets should be excluded
+    if (asset.isExternal && !config.storageTemplate.includeExternalAssets) {
+      // External assets are excluded unless the option is enabled
+      return;
+    }
+
+    if (StorageCore.isAndroidMotionPath(asset.originalPath)) {
+      // Android motion paths are always excluded
       return;
     }
 
