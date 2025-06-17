@@ -9,6 +9,7 @@ import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/common/responsive_button.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_card.dart';
 
 class LanguageSettings extends HookConsumerWidget {
   const LanguageSettings({super.key});
@@ -282,18 +283,8 @@ class _LanguageItem extends StatelessWidget {
         vertical: 4.0,
         horizontal: 8.0,
       ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color:
-              context.colorScheme.surfaceContainerLowest.withValues(alpha: .6),
-          borderRadius: const BorderRadius.all(
-            Radius.circular(16.0),
-          ),
-          border: Border.all(
-            color: context.colorScheme.outlineVariant.withValues(alpha: .4),
-            width: 1.0,
-          ),
-        ),
+      child: SettingCard(
+        margin: EdgeInsets.zero,
         child: ListTile(
           title: Text(
             countryName,

@@ -7,7 +7,6 @@ class SettingCard extends StatelessWidget {
     required this.child,
     this.margin = const EdgeInsets.symmetric(horizontal: 16),
     this.borderRadius = const BorderRadius.all(Radius.circular(16)),
-    this.gradient,
     this.color,
     this.shadow,
   });
@@ -15,7 +14,6 @@ class SettingCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? margin;
   final BorderRadius borderRadius;
-  final Gradient? gradient;
   final Color? color;
   final List<BoxShadow>? shadow;
 
@@ -24,19 +22,12 @@ class SettingCard extends StatelessWidget {
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        gradient: gradient ??
-            LinearGradient(
-              colors: [
-                context.colorScheme.surfaceContainerLow.withValues(alpha: 0.5),
-                context.colorScheme.surfaceContainerLow.withValues(alpha: 0.7),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+        color: color ??
+            context.colorScheme.surfaceContainerLowest.withValues(alpha: 0.6),
         borderRadius: borderRadius,
         border: Border.all(
           color: context.colorScheme.outlineVariant.withValues(alpha: 0.4),
-          width: 1,
+          width: 0.5,
         ),
         boxShadow: shadow,
       ),
