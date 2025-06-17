@@ -10,11 +10,13 @@ class SettingsSubPageScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-      itemCount: settings.length,
-      itemBuilder: (_, index) => settings[index],
-      separatorBuilder: (_, index) => const SizedBox(height: 8),
+    return SafeArea(
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        itemCount: settings.length,
+        itemBuilder: (_, index) => settings[index],
+        separatorBuilder: (_, index) => const SizedBox(height: 8),
+      ),
     );
   }
 }
