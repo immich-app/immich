@@ -45,6 +45,9 @@ struct RandomConfigurationAppIntent: WidgetConfigurationIntent {
 
   @Parameter(title: "Album", default: NO_ALBUM)
   var album: Album?
+  
+  @Parameter(title: "Show Album Name", default: false)
+  var showAlbumName: Bool
 }
 
 // MARK: Provider
@@ -76,7 +79,7 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
       var entry = try? await buildEntry(
         api: api,
         asset: randomImage,
-        hourOffset: 0
+        dateOffset: 0
       )
     else {
       return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
@@ -105,6 +108,8 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     // nil if album is NONE or nil
     let albumId =
       configuration.album?.id != "NONE" ? configuration.album?.id : nil
+    var albumName: String? = albumId != nil ? configuration.album?.albumName : nil
+    
     if albumId != nil {
       // make sure the album exists on server, otherwise show error
       guard let albums = try? await api.fetchAlbums() else {
@@ -123,7 +128,8 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
         api: api,
         now: now,
         count: 12,
-        albumId: albumId
+        albumId: albumId,
+        subtitle: configuration.showAlbumName ? albumName : nil
       ))
         ?? []
     )
