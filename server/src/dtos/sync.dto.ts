@@ -65,6 +65,7 @@ export class SyncAssetV1 {
   fileCreatedAt!: Date | null;
   fileModifiedAt!: Date | null;
   localDateTime!: Date | null;
+  duration!: string | null;
   @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
   deletedAt!: Date | null;
