@@ -16,7 +16,7 @@
   import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
   import { moveFocus } from '$lib/utils/focus-util';
   import { handleError } from '$lib/utils/handle-error';
-  import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
+  import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
   import { isTimelineAsset, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
@@ -27,7 +27,7 @@
   import Portal from '../portal/portal.svelte';
 
   interface Props {
-    assets: TimelineAsset[] | AssetResponseDto[];
+    assets: (TimelineAsset | AssetResponseDto)[];
     assetInteraction: AssetInteraction;
     disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
@@ -62,39 +62,91 @@
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAssetId } = assetViewingStore;
 
-  const geometry = $derived(
-    getJustifiedLayoutFromAssets(assets, {
+  let geometry: CommonJustifiedLayout | undefined = $state();
+
+  $effect(() => {
+    const _assets = assets;
+    updateSlidingWindow();
+
+    const rowWidth = Math.floor(viewport.width);
+    const rowHeight = rowWidth < 850 ? 100 : 235;
+
+    geometry = getJustifiedLayoutFromAssets(_assets, {
       spacing: 2,
-      heightTolerance: 0.3,
-      rowHeight: Math.floor(viewport.width) < 850 ? 100 : 235,
-      rowWidth: Math.floor(viewport.width),
-    }),
-  );
+      heightTolerance: 0.15,
+      rowHeight,
+      rowWidth,
+    });
+  });
+
+  let assetLayouts = $derived.by(() => {
+    const assetLayout = [];
+    let containerHeight = 0;
+    let containerWidth = 0;
+    if (geometry) {
+      containerHeight = geometry.containerHeight;
+      containerWidth = geometry.containerWidth;
+      for (const [index, asset] of assets.entries()) {
+        const top = geometry.getTop(index);
+        const left = geometry.getLeft(index);
+        const width = geometry.getWidth(index);
+        const height = geometry.getHeight(index);
+
+        const layoutTopWithOffset = top + pageHeaderOffset;
+        const layoutBottom = layoutTopWithOffset + height;
+
+        const display = layoutTopWithOffset < slidingWindow.bottom && layoutBottom > slidingWindow.top;
+
+        const layout = {
+          asset,
+          top,
+          left,
+          width,
+          height,
+          display,
+        };
+
+        assetLayout.push(layout);
+      }
+    }
+
+    return {
+      assetLayout,
+      containerHeight,
+      containerWidth,
+    };
+  });
 
   let currentViewAssetIndex = 0;
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
-  let slidingTop = $state(0);
-  let slidingBottom = $state(0);
+  let slidingWindow = $state({ top: 0, bottom: 0 });
 
   const updateSlidingWindow = () => {
     const v = $state.snapshot(viewport);
     const top = (document.scrollingElement?.scrollTop || 0) - slidingWindowOffset;
-    slidingTop = top;
-    slidingBottom = top + v.height;
+    const bottom = top + v.height;
+    const w = {
+      top,
+      bottom,
+    };
+    slidingWindow = w;
   };
-  $effect(updateSlidingWindow);
   const debouncedOnIntersected = debounce(() => onIntersected?.(), 750, { maxWait: 100, leading: true });
 
   let lastIntersectedHeight = 0;
   $effect(() => {
     // notify we got to (near) the end of scroll
     const scrollPercentage =
-      (slidingBottom - viewport.height) / (viewport.height - (document.scrollingElement?.clientHeight || 0));
+      ((slidingWindow.bottom - viewport.height) / (viewport.height - (document.scrollingElement?.clientHeight || 0))) *
+      100;
 
-    if (scrollPercentage > 0.9 && lastIntersectedHeight !== geometry.containerHeight) {
-      debouncedOnIntersected();
-      lastIntersectedHeight = geometry.containerHeight;
+    if (scrollPercentage > 90) {
+      const intersectedHeight = geometry?.containerHeight || 0;
+      if (lastIntersectedHeight !== intersectedHeight) {
+        debouncedOnIntersected();
+        lastIntersectedHeight = intersectedHeight;
+      }
     }
   });
   const viewAssetHandler = async (asset: TimelineAsset) => {
@@ -204,7 +256,7 @@
     isShowDeleteConfirmation = false;
     await deleteAssets(
       !(isTrashEnabled && !force),
-      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id)) as TimelineAsset[]),
+      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id))),
       assetInteraction.selectedAssets,
       onReload,
     );
@@ -217,7 +269,7 @@
       assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
     );
     if (ids) {
-      assets = assets.filter((asset) => !ids.includes(asset.id)) as TimelineAsset[];
+      assets = assets.filter((asset) => !ids.includes(asset.id));
       deselectAllAssets();
     }
   };
@@ -402,7 +454,7 @@
   onkeyup={onKeyUp}
   onselectstart={onSelectStart}
   use:shortcuts={shortcutList}
-  onscroll={updateSlidingWindow}
+  onscroll={() => updateSlidingWindow()}
 />
 
 {#if isShowDeleteConfirmation}
@@ -416,12 +468,13 @@
 {#if assets.length > 0}
   <div
     style:position="relative"
-    style:height={geometry.containerHeight + 'px'}
-    style:width={geometry.containerWidth + 'px'}
+    style:height={assetLayouts.containerHeight + 'px'}
+    style:width={assetLayouts.containerWidth - 1 + 'px'}
   >
-    {#each assets as asset, i (asset.id + i)}
-      {#if geometry.getTop(i) + pageHeaderOffset < slidingBottom && geometry.getTop(i) + pageHeaderOffset + geometry.getHeight(i) > slidingTop}
-        {@const layout = geometry.getPosition(i)}
+    {#each assetLayouts.assetLayout as layout, layoutIndex (layout.asset.id + '-' + layoutIndex)}
+      {@const currentAsset = layout.asset}
+
+      {#if layout.display}
         <div
           class="absolute"
           style:overflow="clip"
@@ -431,25 +484,25 @@
             readonly={disableAssetSelect}
             onClick={() => {
               if (assetInteraction.selectionActive) {
-                handleSelectAssets(toTimelineAsset(asset));
+                handleSelectAssets(toTimelineAsset(currentAsset));
                 return;
               }
-              void viewAssetHandler(toTimelineAsset(asset));
+              void viewAssetHandler(toTimelineAsset(currentAsset));
             }}
-            onSelect={() => handleSelectAssets(toTimelineAsset(asset))}
-            onMouseEvent={() => assetMouseEventHandler(toTimelineAsset(asset))}
+            onSelect={() => handleSelectAssets(toTimelineAsset(currentAsset))}
+            onMouseEvent={() => assetMouseEventHandler(toTimelineAsset(currentAsset))}
             {showArchiveIcon}
-            asset={toTimelineAsset(asset)}
-            selected={assetInteraction.hasSelectedAsset(asset.id)}
-            selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
+            asset={toTimelineAsset(currentAsset)}
+            selected={assetInteraction.hasSelectedAsset(currentAsset.id)}
+            selectionCandidate={assetInteraction.hasSelectionCandidate(currentAsset.id)}
             thumbnailWidth={layout.width}
             thumbnailHeight={layout.height}
           />
-          {#if showAssetName && !isTimelineAsset(asset)}
+          {#if showAssetName && !isTimelineAsset(currentAsset)}
             <div
               class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-linear-to-t bg-slate-50/75 dark:bg-slate-800/75 overflow-clip text-ellipsis whitespace-pre-wrap"
             >
-              {asset.originalFileName}
+              {currentAsset.originalFileName}
             </div>
           {/if}
         </div>

@@ -1,7 +1,7 @@
 import { AssetOrder } from '@immich/sdk';
 
 import type { CommonLayoutOptions } from '$lib/utils/layout-utils';
-import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
+import { getJustifiedLayoutFromAssets, getPosition } from '$lib/utils/layout-utils';
 import { plainDateTimeCompare } from '$lib/utils/timeline-util';
 
 import type { MonthGroup } from './month-group.svelte';
@@ -153,7 +153,8 @@ export class DayGroup {
     this.width = geometry.containerWidth;
     this.height = assets.length === 0 ? 0 : geometry.containerHeight;
     for (let i = 0; i < this.viewerAssets.length; i++) {
-      this.viewerAssets[i].position = geometry.getPosition(i);
+      const position = getPosition(geometry, i);
+      this.viewerAssets[i].position = position;
     }
   }
 

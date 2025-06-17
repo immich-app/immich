@@ -377,11 +377,13 @@ export class TimelineManager {
   }
 
   createLayoutOptions() {
+    const viewportWidth = this.viewportWidth;
+
     return {
       spacing: 2,
-      heightTolerance: 0.3,
+      heightTolerance: 0.15,
       rowHeight: this.#rowHeight,
-      rowWidth: Math.floor(this.viewportWidth),
+      rowWidth: Math.floor(viewportWidth),
     };
   }
 
