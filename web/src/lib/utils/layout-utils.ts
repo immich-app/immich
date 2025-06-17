@@ -1,13 +1,16 @@
-import { TUNABLES } from '$lib/utils/tunables';
+// import { TUNABLES } from '$lib/utils/tunables';
+// note: it's important that this is not imported in more than one file due to https://github.com/sveltejs/kit/issues/7805
+// import { JustifiedLayout, type LayoutOptions } from '@immich/justified-layout-wasm';
 
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { getAssetRatio } from '$lib/utils/asset-utils';
-import { isTimelineAsset, isTimelineAssets } from '$lib/utils/timeline-util';
-import { JustifiedLayout, type LayoutOptions } from '@immich/justified-layout-wasm';
+import { isTimelineAsset } from '$lib/utils/timeline-util';
 import type { AssetResponseDto } from '@immich/sdk';
 import createJustifiedLayout from 'justified-layout';
 
-const useWasm = TUNABLES.LAYOUT.WASM;
+export type getJustifiedLayoutFromAssetsFunction = typeof getJustifiedLayoutFromAssets;
+
+// let useWasm = TUNABLES.LAYOUT.WASM;
 
 export type CommonJustifiedLayout = {
   containerWidth: number;
@@ -16,12 +19,6 @@ export type CommonJustifiedLayout = {
   getLeft(boxIdx: number): number;
   getWidth(boxIdx: number): number;
   getHeight(boxIdx: number): number;
-  getPosition(boxIdx: number): {
-    top: number;
-    left: number;
-    width: number;
-    height: number;
-  };
 };
 
 export type CommonLayoutOptions = {
@@ -32,32 +29,25 @@ export type CommonLayoutOptions = {
 };
 
 export function getJustifiedLayoutFromAssets(
-  assets: AssetResponseDto[] | TimelineAsset[],
+  assets: (TimelineAsset | AssetResponseDto)[],
   options: CommonLayoutOptions,
-) {
-  if (useWasm) {
-    return isTimelineAssets(assets) ? wasmLayoutFromTimeline(assets, options) : wasmLayoutFromDto(assets, options);
-  }
-
+): CommonJustifiedLayout {
+  // if (useWasm) {
+  //   return wasmJustifiedLayout(assets, options);
+  // }
   return justifiedLayout(assets, options);
 }
 
-function wasmLayoutFromTimeline(assets: TimelineAsset[], options: LayoutOptions) {
-  const aspectRatios = new Float32Array(assets.length);
-  for (let i = 0; i < assets.length; i++) {
-    aspectRatios[i] = assets[i].ratio;
-  }
-  return new JustifiedLayout(aspectRatios, options);
-}
-
-function wasmLayoutFromDto(assets: AssetResponseDto[], options: LayoutOptions) {
-  const aspectRatios = new Float32Array(assets.length);
-  for (let i = 0; i < assets.length; i++) {
-    const { width, height } = getAssetRatio(assets[i]);
-    aspectRatios[i] = width / height;
-  }
-  return new JustifiedLayout(aspectRatios, options);
-}
+// commented out until a solution for top level awaits on safari is fixed
+// function wasmJustifiedLayout(assets: AssetResponseDto[], options: LayoutOptions) {
+//   const aspectRatios = new Float32Array(assets.length);
+//   // eslint-disable-next-line unicorn/no-for-loop
+//   for (let i = 0; i < assets.length; i++) {
+//     const { width, height } = getAssetRatio(assets[i]);
+//     aspectRatios[i] = width / height;
+//   }
+//   return new JustifiedLayout(aspectRatios, options);
+// }
 
 type Geometry = ReturnType<typeof createJustifiedLayout>;
 class Adapter {
@@ -98,13 +88,9 @@ class Adapter {
   getHeight(boxIdx: number) {
     return this.result.boxes[boxIdx]?.height;
   }
-
-  getPosition(boxIdx: number): CommonPosition {
-    return this.result.boxes[boxIdx];
-  }
 }
 
-export function justifiedLayout(assets: TimelineAsset[] | AssetResponseDto[], options: CommonLayoutOptions) {
+export function justifiedLayout(assets: (TimelineAsset | AssetResponseDto)[], options: CommonLayoutOptions) {
   const adapter = {
     targetRowHeight: options.rowHeight,
     containerWidth: options.rowWidth,
@@ -119,9 +105,25 @@ export function justifiedLayout(assets: TimelineAsset[] | AssetResponseDto[], op
   return new Adapter(result);
 }
 
+export const emptyGeometry = () =>
+  new Adapter({
+    containerHeight: 0,
+    widowCount: 0,
+    boxes: [],
+  });
+
 export type CommonPosition = {
   top: number;
   left: number;
   width: number;
   height: number;
 };
+
+export function getPosition(geometry: CommonJustifiedLayout, boxIdx: number): CommonPosition {
+  const top = geometry.getTop(boxIdx);
+  const left = geometry.getLeft(boxIdx);
+  const width = geometry.getWidth(boxIdx);
+  const height = geometry.getHeight(boxIdx);
+
+  return { top, left, width, height };
+}

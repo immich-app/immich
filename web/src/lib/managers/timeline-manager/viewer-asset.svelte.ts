@@ -18,7 +18,7 @@ export class ViewerAsset {
     return calculateViewerAssetIntersecting(store, positionTop, this.position.height);
   });
 
-  position: CommonPosition | undefined = $state.raw();
+  position: CommonPosition | undefined = $state();
   asset: TimelineAsset = <TimelineAsset>$state();
   id: string = $derived(this.asset.id);
 
