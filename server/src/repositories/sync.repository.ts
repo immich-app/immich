@@ -92,7 +92,7 @@ export class SyncRepository {
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   getPartnerBackfill(userId: string, afterCreateId?: string) {
     return this.db
       .selectFrom('partners')
@@ -104,7 +104,7 @@ export class SyncRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
   getPartnerAssetsBackfill(partnerId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
     return this.db
       .selectFrom('assets')
@@ -158,6 +158,20 @@ export class SyncRepository {
       .select(columns.syncAssetExif)
       .where('assetId', 'in', (eb) => eb.selectFrom('assets').select('id').where('ownerId', '=', userId))
       .$call((qb) => this.upsertTableFilters(qb, ack))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
+  getPartnerAssetExifsBackfill(partnerId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
+    return this.db
+      .selectFrom('exif')
+      .select(columns.syncAssetExif)
+      .innerJoin('assets', 'assets.id', 'exif.assetId')
+      .where('assets.ownerId', '=', partnerId)
+      .where('exif.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .where('exif.updateId', '<', beforeUpdateId)
+      .$if(!!afterUpdateId, (eb) => eb.where('exif.updateId', '>=', afterUpdateId!))
+      .orderBy('exif.updateId', 'asc')
       .stream();
   }
 

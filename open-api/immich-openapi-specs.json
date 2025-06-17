@@ -13702,6 +13702,7 @@
           "PartnerAssetBackfillV1",
           "PartnerAssetDeleteV1",
           "PartnerAssetExifV1",
+          "PartnerAssetExifBackfillV1",
           "AlbumV1",
           "AlbumDeleteV1",
           "AlbumUserV1",

@@ -162,7 +162,6 @@ export class SyncService extends BaseService {
             response.write(serialize({ type: SyncEntityType.PartnerAssetDeleteV1, ids: [id], data }));
           }
 
-          //PartnerAssetBackfillV1|partnerCreateId|assetUpdateId
           const checkpoint = checkpointMap[SyncEntityType.PartnerAssetBackfillV1];
           const partnerAssetCheckpoint = checkpointMap[SyncEntityType.PartnerAssetV1];
 
@@ -250,12 +249,67 @@ export class SyncService extends BaseService {
         }
 
         case SyncRequestType.PartnerAssetExifsV1: {
+          const checkpoint = checkpointMap[SyncEntityType.PartnerAssetExifBackfillV1];
+          const partnerAssetCheckpoint = checkpointMap[SyncEntityType.PartnerAssetExifV1];
+
+          const partners = await this.syncRepository.getPartnerBackfill(auth.user.id, checkpoint?.updateId);
+
+          if (partnerAssetCheckpoint) {
+            for (const partner of partners) {
+              if (partner.createId === checkpoint?.updateId && checkpoint.extraId === 'complete') {
+                continue;
+              }
+              const partnerCheckpoint = checkpoint?.updateId === partner.createId ? checkpoint?.extraId : undefined;
+              const backfill = this.syncRepository.getPartnerAssetExifsBackfill(
+                partner.sharedById,
+                partnerCheckpoint,
+                partnerAssetCheckpoint.updateId,
+              );
+
+              for await (const { updateId, ...data } of backfill) {
+                response.write(
+                  serialize({
+                    type: SyncEntityType.PartnerAssetExifBackfillV1,
+                    ids: [updateId],
+                    data,
+                  }),
+                );
+              }
+              response.write(
+                serialize({
+                  type: SyncEntityType.SyncAckV1,
+                  data: {},
+                  ackType: SyncEntityType.PartnerAssetExifBackfillV1,
+                  ids: [partner.sharedById, 'complete'],
+                }),
+              );
+            }
+          } else if (partners.length > 0) {
+            await this.syncRepository.upsertCheckpoints([
+              {
+                type: SyncEntityType.PartnerAssetExifBackfillV1,
+                sessionId,
+                ack: toAck({
+                  type: SyncEntityType.PartnerAssetExifBackfillV1,
+                  updateId: partners.at(-1)!.createId,
+                  extraId: 'complete',
+                }),
+              },
+            ]);
+          }
+
           const upserts = this.syncRepository.getPartnerAssetExifsUpserts(
             auth.user.id,
             checkpointMap[SyncEntityType.PartnerAssetExifV1],
           );
           for await (const { updateId, ...data } of upserts) {
-            response.write(serialize({ type: SyncEntityType.PartnerAssetExifV1, ids: [updateId], data }));
+            response.write(
+              serialize({
+                type: SyncEntityType.PartnerAssetExifV1,
+                ids: [updateId],
+                data,
+              }),
+            );
           }
 
           break;

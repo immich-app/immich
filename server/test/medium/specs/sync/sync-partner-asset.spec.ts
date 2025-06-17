@@ -262,7 +262,7 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
           type: SyncEntityType.PartnerAssetBackfillV1,
         },
         {
-          ack: expect.any(String),
+          ack: expect.stringContaining(SyncEntityType.PartnerAssetBackfillV1),
           data: {},
           type: SyncEntityType.SyncAckV1,
         },
@@ -332,7 +332,7 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
           type: SyncEntityType.PartnerAssetBackfillV1,
         },
         {
-          ack: expect.any(String),
+          ack: expect.stringContaining(SyncEntityType.PartnerAssetBackfillV1),
           data: {},
           type: SyncEntityType.SyncAckV1,
         },

@@ -598,6 +598,7 @@ export enum SyncEntityType {
   PartnerAssetBackfillV1 = 'PartnerAssetBackfillV1',
   PartnerAssetDeleteV1 = 'PartnerAssetDeleteV1',
   PartnerAssetExifV1 = 'PartnerAssetExifV1',
+  PartnerAssetExifBackfillV1 = 'PartnerAssetExifBackfillV1',
 
   AlbumV1 = 'AlbumV1',
   AlbumDeleteV1 = 'AlbumDeleteV1',

@@ -157,6 +157,7 @@ export type SyncItem = {
   [SyncEntityType.PartnerAssetBackfillV1]: SyncAssetV1;
   [SyncEntityType.PartnerAssetDeleteV1]: SyncAssetDeleteV1;
   [SyncEntityType.PartnerAssetExifV1]: SyncAssetExifV1;
+  [SyncEntityType.PartnerAssetExifBackfillV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumV1]: SyncAlbumV1;
   [SyncEntityType.AlbumDeleteV1]: SyncAlbumDeleteV1;
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
