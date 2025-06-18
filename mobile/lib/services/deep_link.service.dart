@@ -38,61 +38,65 @@ class DeepLinkService {
     final request = link.uri.host;
     final queryParams = link.uri.queryParameters;
 
+    PageRouteInfo<dynamic>? deepLinkRoute;
+
     switch (request) {
       case "memory":
-        return _buildMemoryDeepLink(queryParams['id'] ?? '');
+        deepLinkRoute = await _buildMemoryDeepLink(queryParams['id'] ?? '');
       case "asset":
-        return _buildAssetDeepLink(queryParams['id'] ?? '');
+        deepLinkRoute = await _buildAssetDeepLink(queryParams['id'] ?? '');
       case "album":
-        return _buildAlbumDeepLink(queryParams['id'] ?? '');
+        deepLinkRoute = await _buildAlbumDeepLink(queryParams['id'] ?? '');
     }
 
-    return DeepLink.none;
-  }
-
-  Future<DeepLink> _buildMemoryDeepLink(String memoryId) async {
-    final memory = await _memoryService.getMemoryById(memoryId);
-
-    if (memory == null) {
+    if (deepLinkRoute == null) {
+      if (link.initial) return DeepLink.defaultPath;
       return DeepLink.none;
     }
 
     return DeepLink([
-      MemoryRoute(memories: [memory], memoryIndex: 0),
+      if (link.initial) const TabControllerRoute(),
+      deepLinkRoute,
     ]);
   }
 
-  Future<DeepLink> _buildAssetDeepLink(String assetId) async {
+  Future<MemoryRoute?> _buildMemoryDeepLink(String memoryId) async {
+    final memory = await _memoryService.getMemoryById(memoryId);
+
+    if (memory == null) {
+      return null;
+    }
+
+    return MemoryRoute(memories: [memory], memoryIndex: 0);
+  }
+
+  Future<GalleryViewerRoute?> _buildAssetDeepLink(String assetId) async {
     final asset = await _assetService.getAssetByRemoteId(assetId);
 
     if (asset == null) {
-      return DeepLink.none;
+      return null;
     }
 
     _currentAsset.set(asset);
     final renderList = await RenderList.fromAssets([asset], GroupAssetsBy.auto);
 
-    return DeepLink([
-      GalleryViewerRoute(
-        renderList: renderList,
-        initialIndex: 0,
-        heroOffset: 0,
-        showStack: true,
-      ),
-    ]);
+    return GalleryViewerRoute(
+      renderList: renderList,
+      initialIndex: 0,
+      heroOffset: 0,
+      showStack: true,
+    );
   }
 
-  Future<DeepLink> _buildAlbumDeepLink(String albumId) async {
+  Future<AlbumViewerRoute?> _buildAlbumDeepLink(String albumId) async {
     final album = await _albumService.getAlbumByRemoteId(albumId);
 
     if (album == null) {
-      return DeepLink.none;
+      return null;
     }
 
     _currentAlbum.set(album);
 
-    return DeepLink([
-      AlbumViewerRoute(albumId: album.id),
-    ]);
+    return AlbumViewerRoute(albumId: album.id);
   }
 }

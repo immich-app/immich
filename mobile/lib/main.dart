@@ -171,6 +171,17 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     );
   }
 
+  Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
+    final deepLinkHandler = ref.read(deepLinkServiceProvider);
+
+    if (deepLink.uri.scheme == "immich") {
+      final proposedRoute = await deepLinkHandler.handle(deepLink);
+      return proposedRoute;
+    }
+
+    return DeepLink.path(deepLink.path);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -201,7 +212,6 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
-    final deepLinkHandler = ref.read(deepLinkServiceProvider);
     final immichTheme = ref.watch(immichThemeProvider);
 
     return ProviderScope(
@@ -224,21 +234,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
           locale: context.locale,
         ),
         routerConfig: router.config(
-          deepLinkBuilder: (deepLink) async {
-            if (deepLink.uri.scheme == "immich") {
-              final proposedRoute = await deepLinkHandler.handle(deepLink);
-
-              // If the deep link is not handled, and the app was opened by it,
-              // we redirect to the home page
-              if (proposedRoute == DeepLink.none && deepLink.initial) {
-                return DeepLink.defaultPath;
-              }
-
-              return proposedRoute;
-            }
-
-            return DeepLink.path(deepLink.path);
-          },
+          deepLinkBuilder: _deepLinkBuilder,
           navigatorObservers: () => [AppNavigationObserver(ref: ref)],
         ),
       ),
