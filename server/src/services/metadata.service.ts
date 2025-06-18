@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CapturedAtTagNames, ContainerDirectoryItem, ExifDateTime, Tags } from 'exiftool-vendored';
+import { ContainerDirectoryItem, ExifDateTime, Tags } from 'exiftool-vendored';
 import { Insertable } from 'kysely';
 import _ from 'lodash';
 import { Duration } from 'luxon';
@@ -30,20 +30,27 @@ import { JobItem, JobOf } from 'src/types';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 
-const UTC_DATE_TAGS = ['GPSDateTime', 'DateTimeUTC', 'GPSDateStamp', 'SonyDateTime2'] as const;
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS = [
-  ...CapturedAtTagNames,
-  ...UTC_DATE_TAGS,
+  'SubSecDateTimeOriginal',
+  'SubSecCreateDate',
+  'SubSecMediaCreateDate',
+  'DateTimeOriginal',
+  'CreateDate',
+  'MediaCreateDate',
+  'CreationDate',
+  'DateTimeCreated',
+  'TimeCreated',
+  'GPSDateTime',
+  'DateTimeUTC',
+  'GPSDateStamp',
+  'SonyDateTime2',
   // Undocumented, non-standard tag from insta360 in xmp.GPano namespace
   'SourceImageCreateTime',
 ] as Array<keyof Tags>;
 
-export function firstDateTime(
-  tags: Tags | ImmichTags,
-  dateTimeTags: readonly (typeof EXIF_DATE_TAGS)[number][] = CapturedAtTagNames,
-) {
-  for (const tag of dateTimeTags) {
+export function firstDateTime(tags: ImmichTags) {
+  for (const tag of EXIF_DATE_TAGS) {
     const tagValue = tags?.[tag];
 
     if (tagValue instanceof ExifDateTime) {
@@ -429,7 +436,7 @@ export class MetadataService extends BaseService {
 
     // prefer dates from sidecar tags
     if (sidecarTags) {
-      const result = firstDateTime(sidecarTags, EXIF_DATE_TAGS);
+      const result = firstDateTime(sidecarTags);
       const sidecarDate = result?.dateTime;
       if (sidecarDate) {
         for (const tag of EXIF_DATE_TAGS) {
@@ -771,7 +778,7 @@ export class MetadataService extends BaseService {
   }
 
   private getDates(asset: { id: string; originalPath: string }, exifTags: ImmichTags, stats: Stats) {
-    const result = firstDateTime(exifTags, EXIF_DATE_TAGS);
+    const result = firstDateTime(exifTags);
     const tag = result?.tag;
     const dateTime = result?.dateTime;
     this.logger.verbose(
