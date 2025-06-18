@@ -13708,6 +13708,11 @@
           "AlbumUserV1",
           "AlbumUserBackfillV1",
           "AlbumUserDeleteV1",
+          "AlbumAssetV1",
+          "AlbumAssetBackfillV1",
+          "AlbumAssetDeleteV1",
+          "AlbumAssetExifV1",
+          "AlbumAssetExifBackfillV1",
           "SyncAckV1"
         ],
         "type": "string"
@@ -13755,7 +13760,9 @@
           "PartnerAssetsV1",
           "PartnerAssetExifsV1",
           "AlbumsV1",
-          "AlbumUsersV1"
+          "AlbumUsersV1",
+          "AlbumAssetsV1",
+          "AlbumAssetExifsV1"
         ],
         "type": "string"
       },

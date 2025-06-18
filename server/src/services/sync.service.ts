@@ -62,6 +62,8 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.PartnerAssetExifsV1,
   SyncRequestType.AlbumsV1,
   SyncRequestType.AlbumUsersV1,
+  SyncRequestType.AlbumAssetsV1,
+  SyncRequestType.AlbumAssetExifsV1,
 ];
 
 const throwSessionRequired = () => {
@@ -161,6 +163,16 @@ export class SyncService extends BaseService {
 
         case SyncRequestType.AlbumUsersV1: {
           await this.syncAlbumUsersV1(response, checkpointMap, auth, sessionId);
+          break;
+        }
+
+        // case SyncRequestType.AlbumAssetsV1: {
+        //   await this.syncAlbumAssetsV1(response, checkpointMap, auth, sessionId);
+        //   break;
+        // }
+
+        case SyncRequestType.AlbumAssetExifsV1: {
+          await this.syncAlbumAssetExifsV1(response, checkpointMap, auth, sessionId);
           break;
         }
 
@@ -375,6 +387,101 @@ export class SyncService extends BaseService {
     }
 
     const upserts = this.syncRepository.getAlbumUserUpserts(auth.user.id, checkpointMap[upsertType]);
+    for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
+
+  private async syncAlbumAssetsV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto, sessionId: string) {
+    const backfillType = SyncEntityType.AlbumAssetBackfillV1;
+    const upsertType = SyncEntityType.AlbumAssetV1;
+
+    const backfillCheckpoint = checkpointMap[backfillType];
+    const upsertCheckpoint = checkpointMap[upsertType];
+
+    const deletes = this.syncRepository.getAlbumAssetDeletes(
+      auth.user.id,
+      checkpointMap[SyncEntityType.AlbumAssetDeleteV1],
+    );
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: SyncEntityType.AlbumAssetDeleteV1, ids: [id], data });
+    }
+
+    const albums = await this.syncRepository.getAlbumBackfill(auth.user.id, backfillCheckpoint?.updateId);
+
+    if (upsertCheckpoint) {
+      const endId = upsertCheckpoint.updateId;
+
+      for (const album of albums) {
+        const createId = album.createId;
+        if (isEntityBackfillComplete(createId, backfillCheckpoint)) {
+          continue;
+        }
+
+        const startId = getStartId(createId, backfillCheckpoint);
+        const backfill = this.syncRepository.getAlbumAssetsBackfill(album.id, auth.user.id, startId, endId);
+
+        for await (const { updateId, ...data } of backfill) {
+          send(response, { type: backfillType, ids: [createId, updateId], data: mapSyncAssetV1(data) });
+        }
+
+        sendEntityBackfillCompleteAck(response, backfillType, createId);
+      }
+    } else if (albums.length > 0) {
+      await this.upsertBackfillCheckpoint({
+        type: backfillType,
+        sessionId,
+        createId: albums.at(-1)!.createId,
+      });
+    }
+
+    const upserts = this.syncRepository.getAlbumAssetsUpserts(auth.user.id, checkpointMap[upsertType]);
+    for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data: mapSyncAssetV1(data) });
+    }
+  }
+
+  private async syncAlbumAssetExifsV1(
+    response: Writable,
+    checkpointMap: CheckpointMap,
+    auth: AuthDto,
+    sessionId: string,
+  ) {
+    const backfillType = SyncEntityType.AlbumAssetExifBackfillV1;
+    const upsertType = SyncEntityType.AlbumAssetExifV1;
+
+    const backfillCheckpoint = checkpointMap[backfillType];
+    const upsertCheckpoint = checkpointMap[upsertType];
+
+    const albums = await this.syncRepository.getAlbumBackfill(auth.user.id, backfillCheckpoint?.updateId);
+
+    if (upsertCheckpoint) {
+      const endId = upsertCheckpoint.updateId;
+
+      for (const album of albums) {
+        const createId = album.createId;
+        if (isEntityBackfillComplete(createId, backfillCheckpoint)) {
+          continue;
+        }
+
+        const startId = getStartId(createId, backfillCheckpoint);
+        const backfill = this.syncRepository.getAlbumAssetExifsBackfill(album.id, auth.user.id, startId, endId);
+
+        for await (const { updateId, ...data } of backfill) {
+          send(response, { type: backfillType, ids: [createId, updateId], data });
+        }
+
+        sendEntityBackfillCompleteAck(response, backfillType, createId);
+      }
+    } else if (albums.length > 0) {
+      await this.upsertBackfillCheckpoint({
+        type: backfillType,
+        sessionId,
+        createId: albums.at(-1)!.createId,
+      });
+    }
+
+    const upserts = this.syncRepository.getAlbumAssetExifsUpserts(auth.user.id, checkpointMap[upsertType]);
     for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });
     }

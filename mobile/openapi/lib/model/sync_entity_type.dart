@@ -40,6 +40,11 @@ class SyncEntityType {
   static const albumUserV1 = SyncEntityType._(r'AlbumUserV1');
   static const albumUserBackfillV1 = SyncEntityType._(r'AlbumUserBackfillV1');
   static const albumUserDeleteV1 = SyncEntityType._(r'AlbumUserDeleteV1');
+  static const albumAssetV1 = SyncEntityType._(r'AlbumAssetV1');
+  static const albumAssetBackfillV1 = SyncEntityType._(r'AlbumAssetBackfillV1');
+  static const albumAssetDeleteV1 = SyncEntityType._(r'AlbumAssetDeleteV1');
+  static const albumAssetExifV1 = SyncEntityType._(r'AlbumAssetExifV1');
+  static const albumAssetExifBackfillV1 = SyncEntityType._(r'AlbumAssetExifBackfillV1');
   static const syncAckV1 = SyncEntityType._(r'SyncAckV1');
 
   /// List of all possible values in this [enum][SyncEntityType].
@@ -61,6 +66,11 @@ class SyncEntityType {
     albumUserV1,
     albumUserBackfillV1,
     albumUserDeleteV1,
+    albumAssetV1,
+    albumAssetBackfillV1,
+    albumAssetDeleteV1,
+    albumAssetExifV1,
+    albumAssetExifBackfillV1,
     syncAckV1,
   ];
 
@@ -117,6 +127,11 @@ class SyncEntityTypeTypeTransformer {
         case r'AlbumUserV1': return SyncEntityType.albumUserV1;
         case r'AlbumUserBackfillV1': return SyncEntityType.albumUserBackfillV1;
         case r'AlbumUserDeleteV1': return SyncEntityType.albumUserDeleteV1;
+        case r'AlbumAssetV1': return SyncEntityType.albumAssetV1;
+        case r'AlbumAssetBackfillV1': return SyncEntityType.albumAssetBackfillV1;
+        case r'AlbumAssetDeleteV1': return SyncEntityType.albumAssetDeleteV1;
+        case r'AlbumAssetExifV1': return SyncEntityType.albumAssetExifV1;
+        case r'AlbumAssetExifBackfillV1': return SyncEntityType.albumAssetExifBackfillV1;
         case r'SyncAckV1': return SyncEntityType.syncAckV1;
         default:
           if (!allowNull) {

@@ -7,7 +7,13 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { SyncEntityType } from 'src/enum';
 import { SyncAck } from 'src/types';
 
-type AuditTables = 'users_audit' | 'partners_audit' | 'assets_audit' | 'albums_audit' | 'album_users_audit';
+type AuditTables =
+  | 'users_audit'
+  | 'partners_audit'
+  | 'assets_audit'
+  | 'albums_audit'
+  | 'album_users_audit'
+  | 'album_assets_audit';
 type UpsertTables = 'users' | 'partners' | 'assets' | 'exif' | 'albums' | 'albums_shared_users_users';
 
 @Injectable()
@@ -228,6 +234,33 @@ export class SyncRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getAlbumAssetDeletes(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('album_assets_audit')
+      .select(['id', 'assetId', 'albumId'])
+      .where((eb) =>
+        eb(
+          'albumId',
+          'in',
+          eb
+            .selectFrom('albums')
+            .select(['id'])
+            .where('ownerId', '=', userId)
+            .union((eb) =>
+              eb.parens(
+                eb
+                  .selectFrom('albums_shared_users_users as albumUsers')
+                  .select(['albumUsers.albumsId as id'])
+                  .where('albumUsers.usersId', '=', userId),
+              ),
+            ),
+        ),
+      )
+      .$call((qb) => this.auditTableFilters(qb, ack))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
   getAlbumUserDeletes(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('album_users_audit')
@@ -266,7 +299,7 @@ export class SyncRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
   getAlbumUsersBackfill(albumId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
     return this.db
       .selectFrom('albums_shared_users_users')
@@ -305,6 +338,64 @@ export class SyncRepository {
             ),
         ),
       )
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
+  getAlbumAssetsBackfill(albumId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
+    return this.db
+      .selectFrom('albums_assets_assets as album_assets')
+      .innerJoin('assets', 'album_assets.assetsId', 'assets.id')
+      .select(columns.syncAsset)
+      .where('album_assets.albumsId', '=', albumId)
+      .where('album_assets.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .where('album_assets.updateId', '<=', beforeUpdateId)
+      .$if(!!afterUpdateId, (eb) => eb.where('album_assets.updateId', '>=', afterUpdateId!))
+      .orderBy('album_assets.updateId', 'asc')
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getAlbumAssetsUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('albums_assets_assets as album_assets')
+      .innerJoin('assets', 'album_assets.assetsId', 'assets.id')
+      .select(columns.syncAsset)
+      .where('album_assets.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .$if(!!ack, (qb) => qb.where('album_assets.updateId', '>', ack!.updateId))
+      .orderBy('album_assets.updateId', 'asc')
+      .innerJoin('albums', 'albums.id', 'album_assets.albumsId')
+      .leftJoin('albums_shared_users_users as album_users', 'album_users.albumsId', 'album_assets.albumsId')
+      .where((eb) => eb.or([eb('albums.ownerId', '=', userId), eb('album_users.usersId', '=', userId)]))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
+  getAlbumAssetExifsBackfill(albumId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
+    return this.db
+      .selectFrom('albums_assets_assets as album_assets')
+      .innerJoin('exif', 'album_assets.assetsId', 'exif.assetId')
+      .select(columns.syncAssetExif)
+      .where('album_assets.albumsId', '=', albumId)
+      .where('album_assets.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .where('album_assets.updateId', '<=', beforeUpdateId)
+      .$if(!!afterUpdateId, (eb) => eb.where('album_assets.updateId', '>=', afterUpdateId!))
+      .orderBy('album_assets.updateId', 'asc')
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getAlbumAssetExifsUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('albums_assets_assets as album_assets')
+      .innerJoin('exif', 'album_assets.assetsId', 'exif.assetId')
+      .select(columns.syncAssetExif)
+      .where('album_assets.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .$if(!!ack, (qb) => qb.where('album_assets.updateId', '>', ack!.updateId))
+      .orderBy('album_assets.updateId', 'asc')
+      .innerJoin('albums', 'albums.id', 'album_assets.albumsId')
+      .leftJoin('albums_shared_users_users as album_users', 'album_users.albumsId', 'album_assets.albumsId')
+      .where((eb) => eb.or([eb('albums.ownerId', '=', userId), eb('album_users.usersId', '=', userId)]))
       .stream();
   }
 

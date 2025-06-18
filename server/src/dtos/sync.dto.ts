@@ -125,6 +125,11 @@ export class SyncAlbumUserDeleteV1 {
   userId!: string;
 }
 
+export class SyncAlbumAssetDeleteV1 {
+  albumId!: string;
+  assetId!: string;
+}
+
 export class SyncAlbumUserV1 {
   albumId!: string;
   userId!: string;
@@ -163,6 +168,11 @@ export type SyncItem = {
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserBackfillV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserDeleteV1]: SyncAlbumUserDeleteV1;
+  [SyncEntityType.AlbumAssetV1]: SyncAssetV1;
+  [SyncEntityType.AlbumAssetBackfillV1]: SyncAssetV1;
+  [SyncEntityType.AlbumAssetDeleteV1]: SyncAlbumAssetDeleteV1;
+  [SyncEntityType.AlbumAssetExifV1]: SyncAssetExifV1;
+  [SyncEntityType.AlbumAssetExifBackfillV1]: SyncAssetExifV1;
   [SyncEntityType.SyncAckV1]: object;
 };
 
