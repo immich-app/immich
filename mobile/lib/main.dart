@@ -18,6 +18,7 @@ import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provide
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -175,7 +176,13 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     final deepLinkHandler = ref.read(deepLinkServiceProvider);
 
     if (deepLink.uri.scheme == "immich") {
-      final proposedRoute = await deepLinkHandler.handle(deepLink);
+      final currentRouteName =
+          ref.read(currentRouteNameProvider.notifier).state;
+
+      final proposedRoute = await deepLinkHandler.handle(
+        deepLink,
+        currentRouteName == SplashScreenRoute.name,
+      );
       return proposedRoute;
     }
 

@@ -33,14 +33,14 @@ class DeepLinkService {
     this._currentAlbum,
   );
 
-  Future<DeepLink> handle(PlatformDeepLink link) async {
+  Future<DeepLink> handle(PlatformDeepLink link, bool isColdStart) async {
     // get everything after the scheme, since Uri cannot parse path
-    final request = link.uri.host;
+    final intent = link.uri.host;
     final queryParams = link.uri.queryParameters;
 
     PageRouteInfo<dynamic>? deepLinkRoute;
 
-    switch (request) {
+    switch (intent) {
       case "memory":
         deepLinkRoute = await _buildMemoryDeepLink(queryParams['id'] ?? '');
       case "asset":
@@ -49,13 +49,15 @@ class DeepLinkService {
         deepLinkRoute = await _buildAlbumDeepLink(queryParams['id'] ?? '');
     }
 
+    // Deep link resolution failed, safely handle it based on the app state
     if (deepLinkRoute == null) {
-      if (link.initial) return DeepLink.defaultPath;
+      if (isColdStart) return DeepLink.defaultPath;
       return DeepLink.none;
     }
 
     return DeepLink([
-      if (link.initial) const TabControllerRoute(),
+      // we need something to segue back to if the app was cold started
+      if (isColdStart) const PhotosRoute(),
       deepLinkRoute,
     ]);
   }
