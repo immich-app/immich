@@ -102,11 +102,11 @@ class ShareIntentUploadStateNotifier
       case TaskStatus.complete:
         if (update.responseStatusCode == 200) {
           if (kDebugMode) {
-            debugPrint("[COMPLETE] ${update.task.taskId} - DUPLICATE");
+            // debugPrint("[COMPLETE] ${update.task.taskId} - DUPLICATE");
           }
         } else {
           if (kDebugMode) {
-            debugPrint("[COMPLETE] ${update.task.taskId}");
+            // debugPrint("[COMPLETE] ${update.task.taskId}");
           }
         }
         break;

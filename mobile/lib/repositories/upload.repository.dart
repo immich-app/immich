@@ -15,8 +15,11 @@ class UploadRepository implements IUploadRepository {
   final taskQueue = MemoryTaskQueue();
 
   UploadRepository() {
-    taskQueue.minInterval = const Duration(milliseconds: 5);
+    taskQueue.minInterval = const Duration(milliseconds: 25);
     taskQueue.maxConcurrent = 5;
+    taskQueue.maxConcurrentByHost = 5;
+    taskQueue.maxConcurrentByGroup = 5;
+
     FileDownloader().addTaskQueue(taskQueue);
     FileDownloader().registerCallbacks(
       group: kBackupGroup,
@@ -28,6 +31,12 @@ class UploadRepository implements IUploadRepository {
       taskStatusCallback: (update) => onUploadStatus?.call(update),
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
+
+    taskQueue.enqueueErrors.listen((error) {
+      // Handle errors from the task queue
+      // You can log them or take appropriate actions
+      print('Task Queue Error: $error');
+    });
   }
 
   @override

@@ -55,6 +55,27 @@ class ExpBackupPage extends HookConsumerWidget {
                 ),
               ).tr(),
             ),
+            OutlinedButton(
+              onPressed: () =>
+                  ref.read(expBackupProvider.notifier).getDataInfo(),
+              child: const Text(
+                "Get database info",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ).tr(),
+            ),
+            ElevatedButton(
+              onPressed: () => ref.read(expBackupProvider.notifier).resume(),
+              child: const Text(
+                "Resume",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ).tr(),
+            ),
           ],
         ),
       );

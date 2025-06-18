@@ -86,6 +86,7 @@ class UploadService {
     String? originalFileName,
     String? deviceAssetId,
     String? metadata,
+    int? priority,
   }) async {
     return _buildTask(
       deviceAssetId ?? hash(file.path).toString(),
@@ -94,6 +95,7 @@ class UploadService {
       originalFileName: originalFileName,
       metadata: metadata,
       group: group,
+      priority: priority,
     );
   }
 
@@ -104,6 +106,7 @@ class UploadService {
     Map<String, String>? fields,
     String? originalFileName,
     String? metadata,
+    int? priority,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
@@ -139,6 +142,7 @@ class UploadService {
       fileField: 'assetData',
       metaData: metadata ?? '',
       group: group,
+      priority: priority ?? 5,
       updates: Updates.statusAndProgress,
     );
   }

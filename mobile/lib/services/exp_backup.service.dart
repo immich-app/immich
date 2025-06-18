@@ -66,7 +66,7 @@ class ExpBackupService {
       return;
     }
 
-    const batchSize = 5;
+    const batchSize = 100;
     for (int i = 0; i < candidates.length; i += batchSize) {
       if (shouldCancel) {
         break;
@@ -200,6 +200,7 @@ class ExpBackupService {
       deviceAssetId: asset.id,
       fields: fields,
       group: kBackupLivePhotoGroup,
+      priority: 0,
     );
   }
 

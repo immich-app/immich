@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 
 import 'package:immich_mobile/services/exp_backup.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
@@ -220,6 +221,23 @@ class ExpBackupNotifier extends StateNotifier<ExpBackupState> {
 
   Future<void> cancel() {
     return _backupService.cancel();
+  }
+
+  Future<void> getDataInfo() async {
+    final a = await FileDownloader().database.allRecordsWithStatus(
+          TaskStatus.enqueued,
+          group: kBackupGroup,
+        );
+
+    final b = await FileDownloader().allTasks(
+      group: kBackupGroup,
+    );
+
+    print("ALl tasks: ${b.length}");
+  }
+
+  Future<void> resume() async {
+    await FileDownloader().start();
   }
 
   @override
