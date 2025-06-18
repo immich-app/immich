@@ -1,41 +1,27 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+  import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/stores';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
-  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
-  import {
-    setFocusToAsset as setFocusAssetInit,
-    setFocusTo as setFocusToInit,
-  } from '$lib/components/photos-page/actions/focus-actions';
   import AssetDateGroupActions from '$lib/components/photos-page/asset-date-group-actions.svelte';
+  import AssetGridActions from '$lib/components/photos-page/asset-grid-actions.svelte';
   import AssetViewerAndActions from '$lib/components/photos-page/asset-viewer-and-actions.svelte';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
-  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
-  import { AppRoute, AssetAction } from '$lib/constants';
+  import { AssetAction } from '$lib/constants';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
-  import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { searchStore } from '$lib/stores/search.svelte';
-  import { featureFlags } from '$lib/stores/server-config.store';
-  import { handlePromiseError } from '$lib/utils';
-  import { deleteAssets, updateStackedAssetInTimeline } from '$lib/utils/actions';
-  import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { getTimes, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
+  import { type ScrubberListener, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
   import { AssetVisibility, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
   import Portal from '../shared-components/portal/portal.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
-  import DeleteAssetDialog from './delete-asset-dialog.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -89,7 +75,6 @@
 
   let timelineElement: HTMLElement | undefined = $state();
   let showSkeleton = $state(true);
-  let isShowSelectDate = $state(false);
   let scrubberMonthPercent = $state(0);
   let scrubberMonth: { year: number; month: number } | undefined = $state(undefined);
   let scrubOverallPercent: number = $state(0);
@@ -101,6 +86,7 @@
 
   const maxMd = $derived(mobileDevice.maxMd);
   const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+  const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
 
   $effect(() => {
     const layoutOptions = maxMd
@@ -392,147 +378,6 @@
     }
   };
 
-  const trashOrDelete = async (force: boolean = false) => {
-    isShowDeleteConfirmation = false;
-    await deleteAssets(
-      !(isTrashEnabled && !force),
-      (assetIds) => timelineManager.removeAssets(assetIds),
-      assetInteraction.selectedAssets,
-      !isTrashEnabled || force ? undefined : (assets) => timelineManager.addAssets(assets),
-    );
-    assetInteraction.clearMultiselect();
-  };
-
-  const onDelete = () => {
-    const hasTrashedAsset = assetInteraction.selectedAssets.some((asset) => asset.isTrashed);
-
-    if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
-      isShowDeleteConfirmation = true;
-      return;
-    }
-    handlePromiseError(trashOrDelete(hasTrashedAsset));
-  };
-
-  const onForceDelete = () => {
-    if ($showDeleteModal) {
-      isShowDeleteConfirmation = true;
-      return;
-    }
-    handlePromiseError(trashOrDelete(true));
-  };
-
-  const onStackAssets = async () => {
-    const result = await stackAssets(assetInteraction.selectedAssets);
-
-    updateStackedAssetInTimeline(timelineManager, result);
-
-    onEscape();
-  };
-
-  const toggleArchive = async () => {
-    const visibility = assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive;
-    const ids = await archiveAssets(assetInteraction.selectedAssets, visibility);
-    timelineManager.updateAssetOperation(ids, (asset) => {
-      asset.visibility = visibility;
-      return { remove: false };
-    });
-    deselectAllAssets();
-  };
-
-  let shiftKeyIsDown = $state(false);
-
-  const deselectAllAssets = () => {
-    cancelMultiselect(assetInteraction);
-  };
-
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (searchStore.isSearchEnabled) {
-      return;
-    }
-
-    if (event.key === 'Shift') {
-      event.preventDefault();
-      shiftKeyIsDown = true;
-    }
-  };
-
-  const onKeyUp = (event: KeyboardEvent) => {
-    if (searchStore.isSearchEnabled) {
-      return;
-    }
-
-    if (event.key === 'Shift') {
-      event.preventDefault();
-      shiftKeyIsDown = false;
-    }
-  };
-
-  const onSelectStart = (e: Event) => {
-    if (assetInteraction.selectionActive && shiftKeyIsDown) {
-      e.preventDefault();
-    }
-  };
-
-  let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
-  let isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
-  let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
-  let isShortcutModalOpen = false;
-
-  const handleOpenShortcutModal = async () => {
-    if (isShortcutModalOpen) {
-      return;
-    }
-
-    isShortcutModalOpen = true;
-    await modalManager.show(ShortcutsModal, {});
-    isShortcutModalOpen = false;
-  };
-
-  $effect(() => {
-    if (isEmpty) {
-      assetInteraction.clearMultiselect();
-    }
-  });
-
-  const setFocusTo = setFocusToInit.bind(undefined, scrollToAsset, timelineManager);
-  const setFocusAsset = setFocusAssetInit.bind(undefined, scrollToAsset);
-
-  let shortcutList = $derived(
-    (() => {
-      if (searchStore.isSearchEnabled || $showAssetViewer) {
-        return [];
-      }
-
-      const shortcuts: ShortcutOptions[] = [
-        { shortcut: { key: 'Escape' }, onShortcut: onEscape },
-        { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
-        { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
-        { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(timelineManager, assetInteraction) },
-        { shortcut: { key: 'ArrowRight' }, onShortcut: () => setFocusTo('earlier', 'asset') },
-        { shortcut: { key: 'ArrowLeft' }, onShortcut: () => setFocusTo('later', 'asset') },
-        { shortcut: { key: 'D' }, onShortcut: () => setFocusTo('earlier', 'day') },
-        { shortcut: { key: 'D', shift: true }, onShortcut: () => setFocusTo('later', 'day') },
-        { shortcut: { key: 'M' }, onShortcut: () => setFocusTo('earlier', 'month') },
-        { shortcut: { key: 'M', shift: true }, onShortcut: () => setFocusTo('later', 'month') },
-        { shortcut: { key: 'Y' }, onShortcut: () => setFocusTo('earlier', 'year') },
-        { shortcut: { key: 'Y', shift: true }, onShortcut: () => setFocusTo('later', 'year') },
-        { shortcut: { key: 'G' }, onShortcut: () => (isShowSelectDate = true) },
-      ];
-
-      if (assetInteraction.selectionActive) {
-        shortcuts.push(
-          { shortcut: { key: 'Delete' }, onShortcut: onDelete },
-          { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
-          { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
-          { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
-          { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
-        );
-      }
-
-      return shortcuts;
-    })(),
-  );
-
   let onDateGroupSelect = <({ title, assets }: { title: string; assets: TimelineAsset[] }) => void>$state();
   let onSelectAssets = <(asset: TimelineAsset) => Promise<void>>$state();
   let onSelectAssetCandidates = <(asset: TimelineAsset | null) => void>$state();
@@ -545,8 +390,6 @@
   });
 </script>
 
-<svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
-
 <AssetDateGroupActions
   {timelineManager}
   {assetInteraction}
@@ -557,31 +400,8 @@
   bind:onSelectAssetCandidates
 ></AssetDateGroupActions>
 
-{#if isShowDeleteConfirmation}
-  <DeleteAssetDialog
-    size={idsSelectedAssets.length}
-    onCancel={() => (isShowDeleteConfirmation = false)}
-    onConfirm={() => handlePromiseError(trashOrDelete(true))}
-  />
-{/if}
-
-{#if isShowSelectDate}
-  <ChangeDate
-    title="Navigate to Time"
-    initialDate={DateTime.now()}
-    timezoneInput={false}
-    onConfirm={async (dateString: string) => {
-      isShowSelectDate = false;
-      const asset = await timelineManager.getClosestAssetToDate(
-        (DateTime.fromISO(dateString) as DateTime<true>).toObject(),
-      );
-      if (asset) {
-        setFocusAsset(asset);
-      }
-    }}
-    onCancel={() => (isShowSelectDate = false)}
-  />
-{/if}
+<AssetGridActions {scrollToAsset} {timelineManager} {assetInteraction} bind:isShowDeleteConfirmation {onEscape}
+></AssetGridActions>
 
 {#if timelineManager.months.length > 0}
   <Scrubber
@@ -595,21 +415,6 @@
     {scrubberMonth}
     {onScrub}
     bind:scrubberWidth
-    onScrubKeyDown={(evt) => {
-      evt.preventDefault();
-      let amount = 50;
-      if (shiftKeyIsDown) {
-        amount = 500;
-      }
-      if (evt.key === 'ArrowUp') {
-        amount = -amount;
-        if (shiftKeyIsDown) {
-          element?.scrollBy({ top: amount, behavior: 'smooth' });
-        }
-      } else if (evt.key === 'ArrowDown') {
-        element?.scrollBy({ top: amount, behavior: 'smooth' });
-      }
-    }}
   />
 {/if}
 
