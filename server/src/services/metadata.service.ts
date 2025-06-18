@@ -47,7 +47,7 @@ const EXIF_DATE_TAGS = [
   'SonyDateTime2',
   // Undocumented, non-standard tag from insta360 in xmp.GPano namespace
   'SourceImageCreateTime',
-] as Array<keyof Tags>;
+] as Array<keyof ImmichTags>;
 
 export function firstDateTime(tags: ImmichTags) {
   for (const tag of EXIF_DATE_TAGS) {
