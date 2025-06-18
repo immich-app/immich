@@ -7,6 +7,7 @@
     setFocusToAsset as setFocusAssetInit,
     setFocusTo as setFocusToInit,
   } from '$lib/components/photos-page/actions/focus-actions';
+  import AssetDateGroupActions from '$lib/components/photos-page/asset-date-group-actions.svelte';
   import AssetViewerAndActions from '$lib/components/photos-page/asset-viewer-and-actions.svelte';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
@@ -16,11 +17,9 @@
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
@@ -99,7 +98,7 @@
     onThumbnailClick,
   }: Props = $props();
 
-  let { isViewing: showAssetViewer, gridScrollTarget, mutex } = assetViewingStore;
+  let { isViewing: showAssetViewer, gridScrollTarget, mutex, viewingAsset} = assetViewingStore;
 
   let element: HTMLElement | undefined = $state();
 
@@ -455,14 +454,6 @@
     deselectAllAssets();
   };
 
-  const handleSelectAsset = (asset: TimelineAsset) => {
-    if (!timelineManager.albumAssets.has(asset.id)) {
-      assetInteraction.selectAsset(asset);
-    }
-  };
-
-  let lastAssetMouseEvent: TimelineAsset | null = $state(null);
-
   let shiftKeyIsDown = $state(false);
 
   const deselectAllAssets = () => {
@@ -489,131 +480,6 @@
       event.preventDefault();
       shiftKeyIsDown = false;
     }
-  };
-
-  const handleSelectAssetCandidates = (asset: TimelineAsset | null) => {
-    if (asset) {
-      void selectAssetCandidates(asset);
-    }
-    lastAssetMouseEvent = asset;
-  };
-
-  const handleGroupSelect = (timelineManager: TimelineManager, group: string, assets: TimelineAsset[]) => {
-    if (assetInteraction.selectedGroup.has(group)) {
-      assetInteraction.removeGroupFromMultiselectGroup(group);
-      for (const asset of assets) {
-        assetInteraction.removeAssetFromMultiselectGroup(asset.id);
-      }
-    } else {
-      assetInteraction.addGroupToMultiselectGroup(group);
-      for (const asset of assets) {
-        handleSelectAsset(asset);
-      }
-    }
-
-    if (timelineManager.assetCount == assetInteraction.selectedAssets.length) {
-      isSelectingAllAssets.set(true);
-    } else {
-      isSelectingAllAssets.set(false);
-    }
-  };
-
-  const handleSelectAssets = async (asset: TimelineAsset) => {
-    if (!asset) {
-      return;
-    }
-    onSelect(asset);
-
-    if (singleSelect) {
-      scrollTop(0);
-      return;
-    }
-
-    const rangeSelection = assetInteraction.assetSelectionCandidates.length > 0;
-    const deselect = assetInteraction.hasSelectedAsset(asset.id);
-
-    // Select/deselect already loaded assets
-    if (deselect) {
-      for (const candidate of assetInteraction.assetSelectionCandidates) {
-        assetInteraction.removeAssetFromMultiselectGroup(candidate.id);
-      }
-      assetInteraction.removeAssetFromMultiselectGroup(asset.id);
-    } else {
-      for (const candidate of assetInteraction.assetSelectionCandidates) {
-        handleSelectAsset(candidate);
-      }
-      handleSelectAsset(asset);
-    }
-
-    assetInteraction.clearAssetSelectionCandidates();
-
-    if (assetInteraction.assetSelectionStart && rangeSelection) {
-      let startBucket = timelineManager.getMonthGroupByAssetId(assetInteraction.assetSelectionStart.id);
-      let endBucket = timelineManager.getMonthGroupByAssetId(asset.id);
-
-      if (startBucket === null || endBucket === null) {
-        return;
-      }
-
-      // Select/deselect assets in range (start,end)
-      let started = false;
-      for (const monthGroup of timelineManager.months) {
-        if (monthGroup === endBucket) {
-          break;
-        }
-        if (started) {
-          await timelineManager.loadMonthGroup(monthGroup.yearMonth);
-          for (const asset of monthGroup.assetsIterator()) {
-            if (deselect) {
-              assetInteraction.removeAssetFromMultiselectGroup(asset.id);
-            } else {
-              handleSelectAsset(asset);
-            }
-          }
-        }
-        if (monthGroup === startBucket) {
-          started = true;
-        }
-      }
-
-      // Update date group selection in range [start,end]
-      started = false;
-      for (const monthGroup of timelineManager.months) {
-        if (monthGroup === startBucket) {
-          started = true;
-        }
-        if (started) {
-          // Split month group into day groups and check each group
-          for (const dayGroup of monthGroup.dayGroups) {
-            const dayGroupTitle = dayGroup.groupTitle;
-            if (dayGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
-              assetInteraction.addGroupToMultiselectGroup(dayGroupTitle);
-            } else {
-              assetInteraction.removeGroupFromMultiselectGroup(dayGroupTitle);
-            }
-          }
-        }
-        if (monthGroup === endBucket) {
-          break;
-        }
-      }
-    }
-
-    assetInteraction.setAssetSelectionStart(deselect ? null : asset);
-  };
-
-  const selectAssetCandidates = async (endAsset: TimelineAsset) => {
-    if (!shiftKeyIsDown) {
-      return;
-    }
-
-    const startAsset = assetInteraction.assetSelectionStart;
-    if (!startAsset) {
-      return;
-    }
-
-    const assets = assetsSnapshot(await timelineManager.retrieveRange(startAsset, endAsset));
-    assetInteraction.setAssetSelectionCandidates(assets);
   };
 
   const onSelectStart = (e: Event) => {
@@ -682,23 +548,9 @@
     })(),
   );
 
-  $effect(() => {
-    if (!lastAssetMouseEvent) {
-      assetInteraction.clearAssetSelectionCandidates();
-    }
-  });
-
-  $effect(() => {
-    if (!shiftKeyIsDown) {
-      assetInteraction.clearAssetSelectionCandidates();
-    }
-  });
-
-  $effect(() => {
-    if (shiftKeyIsDown && lastAssetMouseEvent) {
-      void selectAssetCandidates(lastAssetMouseEvent);
-    }
-  });
+  let onDateGroupSelect = <({ title, assets }: { title: string; assets: TimelineAsset[] }) => void>$state();
+  let onSelectAssets = <(asset: TimelineAsset) => Promise<void>>$state();
+  let onSelectAssetCandidates = <(asset: TimelineAsset | null) => void>$state();
 
   $effect(() => {
     if ($showAssetViewer) {
@@ -709,6 +561,16 @@
 </script>
 
 <svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
+
+<AssetDateGroupActions
+  {timelineManager}
+  {assetInteraction}
+  handleScrollTop={scrollTop}
+  {onSelect}
+  bind:onDateGroupSelect
+  bind:onSelectAssets
+  bind:onSelectAssetCandidates
+></AssetDateGroupActions>
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
@@ -829,9 +691,9 @@
             {isSelectionMode}
             {singleSelect}
             {monthGroup}
-            onSelect={({ title, assets }) => handleGroupSelect(timelineManager, title, assets)}
-            onSelectAssetCandidates={handleSelectAssetCandidates}
-            onSelectAssets={handleSelectAssets}
+            onSelect={onDateGroupSelect}
+            {onSelectAssetCandidates}
+            {onSelectAssets}
             onScrollCompensation={handleScrollCompensation}
             {customLayout}
             {onThumbnailClick}
@@ -849,23 +711,6 @@
     ></div>
   </section>
 </section>
-
-{#if !albumMapViewManager.isInMapView}
-  <Portal target="body">
-    {#if $showAssetViewer}
-      <AssetViewerAndActions
-        bind:showSkeleton
-        {timelineManager}
-        {removeAction}
-        {withStacked}
-        {isShared}
-        {album}
-        {person}
-        {isShowDeleteConfirmation}
-      ></AssetViewerAndActions>
-    {/if}
-  </Portal>
-{/if}
 
 <style>
   #asset-grid {
