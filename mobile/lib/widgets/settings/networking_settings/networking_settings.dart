@@ -204,16 +204,17 @@ class NetworkPreferenceTitle extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 4),
                 child: Icon(
                   icon,
-                  color: context.colorScheme.onSurface.withAlpha(160),
+                  size: 20,
+                  color: context.colorScheme.tertiary.withValues(alpha: 0.8),
                 ),
               ),
               alignment: PlaceholderAlignment.bottom,
             ),
             TextSpan(
               text: title.tr().toUpperCase(),
-              style: context.textTheme.titleSmall?.copyWith(
+              style: context.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w500,
-                color: context.colorScheme.onSurface.withAlpha(200),
+                color: context.colorScheme.tertiary,
               ),
             ),
           ],
