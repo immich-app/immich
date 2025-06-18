@@ -603,6 +603,7 @@ export enum SyncEntityType {
   AlbumV1 = 'AlbumV1',
   AlbumDeleteV1 = 'AlbumDeleteV1',
   AlbumUserV1 = 'AlbumUserV1',
+  AlbumUserBackfillV1 = 'AlbumUserBackfillV1',
   AlbumUserDeleteV1 = 'AlbumUserDeleteV1',
 
   SyncAckV1 = 'SyncAckV1',
