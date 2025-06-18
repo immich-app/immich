@@ -1,12 +1,12 @@
 import 'reflect-metadata';
 import { processCheckConstraints } from 'src/sql-tools/from-code/processors/check-constraint.processor';
 import { processColumns } from 'src/sql-tools/from-code/processors/column.processor';
-import { processCompositeForeignKeyConstraints } from 'src/sql-tools/from-code/processors/composite-foreign-key-constraint.processor';
 import { processConfigurationParameters } from 'src/sql-tools/from-code/processors/configuration-parameter.processor';
 import { processDatabases } from 'src/sql-tools/from-code/processors/database.processor';
 import { processEnums } from 'src/sql-tools/from-code/processors/enum.processor';
 import { processExtensions } from 'src/sql-tools/from-code/processors/extension.processor';
-import { processForeignKeyConstraints } from 'src/sql-tools/from-code/processors/foreign-key-constriant.processor';
+import { processForeignKeyColumns } from 'src/sql-tools/from-code/processors/foreign-key-column.processor';
+import { processForeignKeyConstraints } from 'src/sql-tools/from-code/processors/foreign-key-constraint.processor';
 import { processFunctions } from 'src/sql-tools/from-code/processors/function.processor';
 import { processIndexes } from 'src/sql-tools/from-code/processors/index.processor';
 import { processPrimaryKeyConstraints } from 'src/sql-tools/from-code/processors/primary-key-contraint.processor';
@@ -33,11 +33,11 @@ const processors: Processor[] = [
   processFunctions,
   processTables,
   processColumns,
+  processForeignKeyColumns,
+  processForeignKeyConstraints,
   processUniqueConstraints,
   processCheckConstraints,
   processPrimaryKeyConstraints,
-  processForeignKeyConstraints,
-  processCompositeForeignKeyConstraints,
   processIndexes,
   processTriggers,
 ];

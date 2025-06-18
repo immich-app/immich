@@ -1,10 +1,10 @@
 import { CheckOptions } from 'src/sql-tools/from-code/decorators/check.decorator';
 import { ColumnOptions } from 'src/sql-tools/from-code/decorators/column.decorator';
-import { CompositeForeignKeyOptions } from 'src/sql-tools/from-code/decorators/composite-foreign-key.decorator';
 import { ConfigurationParameterOptions } from 'src/sql-tools/from-code/decorators/configuration-parameter.decorator';
 import { DatabaseOptions } from 'src/sql-tools/from-code/decorators/database.decorator';
 import { ExtensionOptions } from 'src/sql-tools/from-code/decorators/extension.decorator';
 import { ForeignKeyColumnOptions } from 'src/sql-tools/from-code/decorators/foreign-key-column.decorator';
+import { ForeignKeyConstraintOptions } from 'src/sql-tools/from-code/decorators/foreign-key-constraint.decorator';
 import { IndexOptions } from 'src/sql-tools/from-code/decorators/index.decorator';
 import { TableOptions } from 'src/sql-tools/from-code/decorators/table.decorator';
 import { TriggerOptions } from 'src/sql-tools/from-code/decorators/trigger.decorator';
@@ -27,5 +27,5 @@ export type RegisterItem =
   | { type: 'extension'; item: ClassBased<{ options: ExtensionOptions }> }
   | { type: 'configurationParameter'; item: ClassBased<{ options: ConfigurationParameterOptions }> }
   | { type: 'foreignKeyColumn'; item: PropertyBased<{ options: ForeignKeyColumnOptions; target: () => object }> }
-  | { type: 'compositeForeignKey'; item: { object: object; options: CompositeForeignKeyOptions } };
+  | { type: 'foreignKeyConstraint'; item: ClassBased<{ options: ForeignKeyConstraintOptions }> };
 export type RegisterItemType<T extends RegisterItem['type']> = Extract<RegisterItem, { type: T }>['item'];
