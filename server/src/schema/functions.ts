@@ -142,6 +142,20 @@ export const albums_delete_audit = registerFunction({
   synchronize: false,
 });
 
+export const album_assets_delete_audit = registerFunction({
+  name: 'album_assets_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO album_assets_audit ("albumId", "assetId")
+      SELECT "albumsId", "assetsId" FROM OLD
+      WHERE "albumsId" IN (SELECT "id" FROM albums WHERE "id" IN (SELECT "albumsId" FROM OLD));
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
 export const album_users_delete_audit = registerFunction({
   name: 'album_users_delete_audit',
   returnType: 'TRIGGER',

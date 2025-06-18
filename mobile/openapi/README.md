@@ -464,6 +464,7 @@ Class | Method | HTTP request | Description
  - [SyncAckDto](doc//SyncAckDto.md)
  - [SyncAckSetDto](doc//SyncAckSetDto.md)
  - [SyncAlbumDeleteV1](doc//SyncAlbumDeleteV1.md)
+ - [SyncAlbumToAssetV1](doc//SyncAlbumToAssetV1.md)
  - [SyncAlbumUserDeleteV1](doc//SyncAlbumUserDeleteV1.md)
  - [SyncAlbumUserV1](doc//SyncAlbumUserV1.md)
  - [SyncAlbumV1](doc//SyncAlbumV1.md)

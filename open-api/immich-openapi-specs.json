@@ -13369,6 +13369,10 @@
         ],
         "type": "object"
       },
+      "SyncAckV1": {
+        "properties": {},
+        "type": "object"
+      },
       "SyncAlbumDeleteV1": {
         "properties": {
           "albumId": {
@@ -13377,6 +13381,21 @@
         },
         "required": [
           "albumId"
+        ],
+        "type": "object"
+      },
+      "SyncAlbumToAssetV1": {
+        "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId",
+          "assetId"
         ],
         "type": "object"
       },
@@ -13708,6 +13727,13 @@
           "AlbumUserV1",
           "AlbumUserBackfillV1",
           "AlbumUserDeleteV1",
+          "AlbumAssetV1",
+          "AlbumAssetBackfillV1",
+          "AlbumAssetExifV1",
+          "AlbumAssetExifBackfillV1",
+          "AlbumToAssetV1",
+          "AlbumToAssetDeleteV1",
+          "AlbumToAssetBackfillV1",
           "SyncAckV1"
         ],
         "type": "string"
@@ -13755,7 +13781,10 @@
           "PartnerAssetsV1",
           "PartnerAssetExifsV1",
           "AlbumsV1",
-          "AlbumUsersV1"
+          "AlbumUsersV1",
+          "AlbumToAssetsV1",
+          "AlbumAssetsV1",
+          "AlbumAssetExifsV1"
         ],
         "type": "string"
       },
