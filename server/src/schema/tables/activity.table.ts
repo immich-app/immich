@@ -8,6 +8,7 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
+  ForeignKeyConstraint,
   Index,
   PrimaryGeneratedColumn,
   Table,
@@ -25,6 +26,14 @@ import {
 @Check({
   name: 'CHK_2ab1e70f113f450eb40c1e3ec8',
   expression: `("comment" IS NULL AND "isLiked" = true) OR ("comment" IS NOT NULL AND "isLiked" = false)`,
+})
+@ForeignKeyConstraint({
+  name: 'fk_activity_album_asset_composite',
+  columns: ['albumId', 'assetId'],
+  referenceTable: () => AlbumAssetTable,
+  referenceColumns: ['albumsId', 'assetsId'],
+  onUpdate: 'NO ACTION',
+  onDelete: 'CASCADE',
 })
 export class ActivityTable {
   @PrimaryGeneratedColumn()
@@ -44,13 +53,6 @@ export class ActivityTable {
 
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: true })
   assetId!: string | null;
-
-  @ForeignKeyColumn(() => AlbumAssetTable, {
-    onDelete: 'CASCADE',
-    nullable: true,
-    constraintName: 'fk_activity_album_asset_composite',
-  })
-  albumAsset!: AlbumAssetTable;
 
   @Column({ type: 'text', default: null })
   comment!: string | null;
