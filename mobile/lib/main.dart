@@ -226,7 +226,15 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         routerConfig: router.config(
           deepLinkBuilder: (deepLink) async {
             if (deepLink.uri.scheme == "immich") {
-              return await deepLinkHandler.handle(deepLink);
+              final proposedRoute = await deepLinkHandler.handle(deepLink);
+
+              // If the deep link is not handled, and the app was opened by it,
+              // we redirect to the home page
+              if (proposedRoute == DeepLink.none && deepLink.initial) {
+                return DeepLink.defaultPath;
+              }
+
+              return proposedRoute;
             }
 
             return DeepLink.path(deepLink.path);
