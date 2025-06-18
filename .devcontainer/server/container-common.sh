@@ -51,14 +51,27 @@ fix_permissions() {
 
     run_cmd sudo find "${IMMICH_WORKSPACE}/server/upload" -not -path "${IMMICH_WORKSPACE}/server/upload/postgres/*" -not -path "${IMMICH_WORKSPACE}/server/upload/postgres" -exec chown node {} +
 
-    run_cmd sudo chown node -R "${IMMICH_WORKSPACE}/.vscode" \
+    # Change ownership for directories that exist
+    for dir in "${IMMICH_WORKSPACE}/.vscode" \
         "${IMMICH_WORKSPACE}/cli/node_modules" \
         "${IMMICH_WORKSPACE}/e2e/node_modules" \
         "${IMMICH_WORKSPACE}/open-api/typescript-sdk/node_modules" \
         "${IMMICH_WORKSPACE}/server/node_modules" \
         "${IMMICH_WORKSPACE}/server/dist" \
         "${IMMICH_WORKSPACE}/web/node_modules" \
-        "${IMMICH_WORKSPACE}/web/dist"
+        "${IMMICH_WORKSPACE}/web/dist"; do
+        if [ -d "$dir" ]; then
+            run_cmd sudo chown node -R "$dir"
+        fi
+    done
+
+    # Set ownership for docker/Library (node) but postgres subdirectory (999:999)
+    if [ -d "${IMMICH_WORKSPACE}/docker/Library" ]; then
+        run_cmd sudo chown node "${IMMICH_WORKSPACE}/docker/Library"
+        if [ -d "${IMMICH_WORKSPACE}/docker/Library/postgres" ]; then
+            run_cmd sudo chown -R 999:999 "${IMMICH_WORKSPACE}/docker/Library/postgres"
+        fi
+    fi
 
     log ""
 }

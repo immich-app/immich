@@ -8,6 +8,7 @@
 
 docker/upload
 docker/library
+docker/Library
 uploads
 coverage
 
