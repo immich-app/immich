@@ -1,0 +1,45 @@
+services:
+  immich-server:
+    build:
+      target: dev-container-server
+    env_file: !reset []
+    environment:
+      - IMMICH_SERVER_URL=http://127.0.0.1:2283/
+    volumes: !override
+      - ..:/workspaces/immich
+      - cli_node_modules:/workspaces/immich/cli/node_modules
+      - e2e_node_modules:/workspaces/immich/e2e/node_modules
+      - open_api_node_modules:/workspaces/immich/open-api/typescript-sdk/node_modules
+      - server_node_modules:/workspaces/immich/server/node_modules
+      - web_node_modules:/workspaces/immich/web/node_modules
+      - ${UPLOAD_LOCATION-./Library}/photos:/workspaces/immich/server/upload
+      - ${UPLOAD_LOCATION-./Library}/photos/upload:/workspaces/immich/server/upload/upload
+      - /etc/localtime:/etc/localtime:ro
+
+  immich-web:
+    env_file: !reset []
+
+  immich-machine-learning:
+    env_file: !reset []
+    
+  database:
+    env_file: !reset []
+    environment: !override
+      POSTGRES_PASSWORD: ${DB_PASSWORD-postgres}
+      POSTGRES_USER: ${DB_USERNAME-postgres}
+      POSTGRES_DB: ${DB_DATABASE_NAME-immich}
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+    volumes:
+      - ${UPLOAD_LOCATION-./Library}/postgres:/var/lib/postgresql/data
+
+  redis:
+    env_file: !reset []
+
+volumes:
+  # Node modules for each service to avoid conflicts and ensure consistent dependencies
+  cli_node_modules:
+  e2e_node_modules:
+  open_api_node_modules:
+  server_node_modules:
+  web_node_modules:
+  upload-devcontainer-volume:

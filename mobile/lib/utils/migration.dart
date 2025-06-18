@@ -1,5 +1,3 @@
-// ignore_for_file: avoid-unsafe-collection-methods
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -168,25 +166,33 @@ Future<void> _migrateDeviceAsset(Isar db) async {
 }
 
 Future<void> _migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
-  final isarDeviceAssets =
-      await db.deviceAssetEntitys.where().sortByAssetId().findAll();
-  await drift.batch((batch) {
-    for (final deviceAsset in isarDeviceAssets) {
-      final companion = LocalAssetEntityCompanion(
-        updatedAt: Value(deviceAsset.modifiedTime),
-        id: Value(deviceAsset.assetId),
-        checksum: Value(base64.encode(deviceAsset.hash)),
-      );
-      batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
-        drift.localAssetEntity,
-        companion,
-        onConflict: DoUpdate(
-          (_) => companion,
-          where: (old) => old.updatedAt.equals(deviceAsset.modifiedTime),
-        ),
+  try {
+    final isarDeviceAssets =
+        await db.deviceAssetEntitys.where().sortByAssetId().findAll();
+    await drift.batch((batch) {
+      for (final deviceAsset in isarDeviceAssets) {
+        final companion = LocalAssetEntityCompanion(
+          updatedAt: Value(deviceAsset.modifiedTime),
+          id: Value(deviceAsset.assetId),
+          checksum: Value(base64.encode(deviceAsset.hash)),
+        );
+        batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
+          drift.localAssetEntity,
+          companion,
+          onConflict: DoUpdate(
+            (_) => companion,
+            where: (old) => old.updatedAt.equals(deviceAsset.modifiedTime),
+          ),
+        );
+      }
+    });
+  } catch (error) {
+    if (kDebugMode) {
+      debugPrint(
+        "[MIGRATION] Error while migrating device assets to SQLite: $error",
       );
     }
-  });
+  }
 }
 
 class _DeviceAsset {

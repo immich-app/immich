@@ -46,6 +46,7 @@
      */
     defaultFirstOption?: boolean;
     onSelect?: (option: ComboBoxOption | undefined) => void;
+    forceFocus?: boolean;
   }
 
   let {
@@ -57,6 +58,7 @@
     allowCreate = false,
     defaultFirstOption = false,
     onSelect = () => {},
+    forceFocus = false,
   }: Props = $props();
 
   /**
@@ -103,9 +105,9 @@
     }
     observer.observe(input);
     const scrollableAncestor = input?.closest('.overflow-y-auto, .overflow-y-scroll');
-    scrollableAncestor?.addEventListener('scroll', onPositionChange);
-    window.visualViewport?.addEventListener('resize', onPositionChange);
-    window.visualViewport?.addEventListener('scroll', onPositionChange);
+    scrollableAncestor?.addEventListener('scroll', onPositionChange, { passive: true });
+    window.visualViewport?.addEventListener('resize', onPositionChange, { passive: true });
+    window.visualViewport?.addEventListener('scroll', onPositionChange, { passive: true });
 
     return () => {
       observer.disconnect();
@@ -114,6 +116,12 @@
       window.visualViewport?.removeEventListener('scroll', onPositionChange);
     };
   });
+
+  const forceFocusInput = (el: HTMLDivElement) => {
+    if (forceFocus) {
+      el.focus();
+    }
+  };
 
   const activate = () => {
     isActive = true;
@@ -284,6 +292,7 @@
       role="combobox"
       type="text"
       value={searchQuery}
+      use:forceFocusInput
       use:shortcuts={[
         {
           shortcut: { key: 'ArrowUp' },

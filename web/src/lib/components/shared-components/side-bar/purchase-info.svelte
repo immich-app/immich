@@ -27,7 +27,7 @@
   const { isPurchased } = purchaseStore;
 
   const openPurchaseModal = async () => {
-    await modalManager.show(PurchaseModal, {});
+    await modalManager.show(PurchaseModal);
     showMessage = false;
   };
 

@@ -1,5 +1,3 @@
-// ignore_for_file: avoid-passing-async-when-sync-expected
-
 import 'dart:async';
 
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
@@ -59,8 +57,7 @@ class SyncStreamService {
 
   Future<void> _handleSyncData(
     SyncEntityType type,
-    // ignore: avoid-dynamic
-    Iterable<dynamic> data,
+    Iterable<Object> data,
   ) async {
     _logger.fine("Processing sync data for $type of length ${data.length}");
     switch (type) {

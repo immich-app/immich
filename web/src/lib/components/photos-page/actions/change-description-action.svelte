@@ -18,7 +18,7 @@
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const handleUpdateDescription = async () => {
-    const description = await modalManager.show(AssetUpdateDecriptionConfirmModal, {});
+    const description = await modalManager.show(AssetUpdateDecriptionConfirmModal);
     if (description) {
       const ids = getSelectedAssets(getOwnedAssets(), $user);
 

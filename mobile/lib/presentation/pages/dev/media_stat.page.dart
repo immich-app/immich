@@ -1,5 +1,3 @@
-// ignore_for_file: prefer-single-widget-per-file
-
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 class _Stat {
   const _Stat({required this.name, required this.load});
@@ -18,9 +17,16 @@ class _Stat {
 
 class _Summary extends StatelessWidget {
   final String name;
+  final Widget? leading;
   final Future<int> countFuture;
+  final void Function()? onTap;
 
-  const _Summary({required this.name, required this.countFuture});
+  const _Summary({
+    required this.name,
+    required this.countFuture,
+    this.leading,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +42,12 @@ class _Summary extends StatelessWidget {
         } else {
           subtitle = Text('${snapshot.data ?? 0}');
         }
-        return ListTile(title: Text(name), trailing: subtitle);
+        return ListTile(
+          leading: leading,
+          title: Text(name),
+          trailing: subtitle,
+          onTap: onTap,
+        );
       },
     );
   }
@@ -107,8 +118,12 @@ class LocalMediaSummaryPage extends StatelessWidget {
                           .filter((f) => f.albumId.id.equals(album.id))
                           .count();
                       return _Summary(
+                        leading: const Icon(Icons.photo_album_rounded),
                         name: album.name,
                         countFuture: countFuture,
+                        onTap: () => context.router.push(
+                          LocalTimelineRoute(albumId: album.id),
+                        ),
                       );
                     },
                     itemCount: albums.length,

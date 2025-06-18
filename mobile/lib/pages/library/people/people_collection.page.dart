@@ -27,6 +27,7 @@ class PeopleCollectionPage extends HookConsumerWidget {
     ) {
       return showDialog(
         context: context,
+        useRootNavigator: false,
         builder: (BuildContext context) {
           return PersonNameEditForm(personId: personId, personName: personName);
         },
@@ -60,80 +61,84 @@ class PeopleCollectionPage extends HookConsumerWidget {
               ),
             ],
           ),
-          body: people.when(
-            data: (people) {
-              if (search.value != null) {
-                people = people.where((person) {
-                  return person.name
-                      .toLowerCase()
-                      .contains(search.value!.toLowerCase());
-                }).toList();
-              }
-              return GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: isTablet ? 6 : 3,
-                  childAspectRatio: 0.85,
-                  mainAxisSpacing: isPortrait && isTablet ? 36 : 0,
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 32),
-                itemCount: people.length,
-                itemBuilder: (context, index) {
-                  final person = people[index];
+          body: SafeArea(
+            child: people.when(
+              data: (people) {
+                if (search.value != null) {
+                  people = people.where((person) {
+                    return person.name
+                        .toLowerCase()
+                        .contains(search.value!.toLowerCase());
+                  }).toList();
+                }
+                return GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: isTablet ? 6 : 3,
+                    childAspectRatio: 0.85,
+                    mainAxisSpacing: isPortrait && isTablet ? 36 : 0,
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  itemCount: people.length,
+                  itemBuilder: (context, index) {
+                    final person = people[index];
 
-                  return Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          context.pushRoute(
-                            PersonResultRoute(
-                              personId: person.id,
-                              personName: person.name,
-                            ),
-                          );
-                        },
-                        child: Material(
-                          shape: const CircleBorder(side: BorderSide.none),
-                          elevation: 3,
-                          child: CircleAvatar(
-                            maxRadius: isTablet ? 120 / 2 : 96 / 2,
-                            backgroundImage: NetworkImage(
-                              getFaceThumbnailUrl(person.id),
-                              headers: headers,
+                    return Column(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            context.pushRoute(
+                              PersonResultRoute(
+                                personId: person.id,
+                                personName: person.name,
+                              ),
+                            );
+                          },
+                          child: Material(
+                            shape: const CircleBorder(side: BorderSide.none),
+                            elevation: 3,
+                            child: CircleAvatar(
+                              maxRadius: isTablet ? 120 / 2 : 96 / 2,
+                              backgroundImage: NetworkImage(
+                                getFaceThumbnailUrl(person.id),
+                                headers: headers,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      GestureDetector(
-                        onTap: () => showNameEditModel(person.id, person.name),
-                        child: person.name.isEmpty
-                            ? Text(
-                                'add_a_name'.tr(),
-                                style: context.textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: context.colorScheme.primary,
-                                ),
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0,
-                                ),
-                                child: Text(
-                                  person.name,
-                                  overflow: TextOverflow.ellipsis,
+                        const SizedBox(height: 12),
+                        GestureDetector(
+                          onTap: () =>
+                              showNameEditModel(person.id, person.name),
+                          child: person.name.isEmpty
+                              ? Text(
+                                  'add_a_name'.tr(),
                                   style: context.textTheme.titleSmall?.copyWith(
                                     fontWeight: FontWeight.w500,
+                                    color: context.colorScheme.primary,
+                                  ),
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0,
+                                  ),
+                                  child: Text(
+                                    person.name,
+                                    overflow: TextOverflow.ellipsis,
+                                    style:
+                                        context.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ),
-                              ),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-            error: (error, stack) => const Text("error"),
-            loading: () => const Center(child: CircularProgressIndicator()),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              error: (error, stack) => const Text("error"),
+              loading: () => const Center(child: CircularProgressIndicator()),
+            ),
           ),
         );
       },
