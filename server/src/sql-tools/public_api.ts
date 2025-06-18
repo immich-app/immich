@@ -5,6 +5,7 @@ export * from 'src/sql-tools/from-code/decorators/after-insert.decorator';
 export * from 'src/sql-tools/from-code/decorators/before-update.decorator';
 export * from 'src/sql-tools/from-code/decorators/check.decorator';
 export * from 'src/sql-tools/from-code/decorators/column.decorator';
+export * from 'src/sql-tools/from-code/decorators/composite-foreign-key.decorator';
 export * from 'src/sql-tools/from-code/decorators/configuration-parameter.decorator';
 export * from 'src/sql-tools/from-code/decorators/create-date-column.decorator';
 export * from 'src/sql-tools/from-code/decorators/database.decorator';

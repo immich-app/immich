@@ -1,5 +1,6 @@
 import { CheckOptions } from 'src/sql-tools/from-code/decorators/check.decorator';
 import { ColumnOptions } from 'src/sql-tools/from-code/decorators/column.decorator';
+import { CompositeForeignKeyOptions } from 'src/sql-tools/from-code/decorators/composite-foreign-key.decorator';
 import { ConfigurationParameterOptions } from 'src/sql-tools/from-code/decorators/configuration-parameter.decorator';
 import { DatabaseOptions } from 'src/sql-tools/from-code/decorators/database.decorator';
 import { ExtensionOptions } from 'src/sql-tools/from-code/decorators/extension.decorator';
@@ -25,5 +26,6 @@ export type RegisterItem =
   | { type: 'trigger'; item: ClassBased<{ options: TriggerOptions }> }
   | { type: 'extension'; item: ClassBased<{ options: ExtensionOptions }> }
   | { type: 'configurationParameter'; item: ClassBased<{ options: ConfigurationParameterOptions }> }
-  | { type: 'foreignKeyColumn'; item: PropertyBased<{ options: ForeignKeyColumnOptions; target: () => object }> };
+  | { type: 'foreignKeyColumn'; item: PropertyBased<{ options: ForeignKeyColumnOptions; target: () => object }> }
+  | { type: 'compositeForeignKey'; item: { object: object; options: CompositeForeignKeyOptions } };
 export type RegisterItemType<T extends RegisterItem['type']> = Extract<RegisterItem, { type: T }>['item'];

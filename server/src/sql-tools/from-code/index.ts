@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { processCheckConstraints } from 'src/sql-tools/from-code/processors/check-constraint.processor';
 import { processColumns } from 'src/sql-tools/from-code/processors/column.processor';
+import { processCompositeForeignKeyConstraints } from 'src/sql-tools/from-code/processors/composite-foreign-key-constraint.processor';
 import { processConfigurationParameters } from 'src/sql-tools/from-code/processors/configuration-parameter.processor';
 import { processDatabases } from 'src/sql-tools/from-code/processors/database.processor';
 import { processEnums } from 'src/sql-tools/from-code/processors/enum.processor';
@@ -36,6 +37,7 @@ const processors: Processor[] = [
   processCheckConstraints,
   processPrimaryKeyConstraints,
   processForeignKeyConstraints,
+  processCompositeForeignKeyConstraints,
   processIndexes,
   processTriggers,
 ];
