@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
@@ -81,10 +81,9 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.locale;
     return Scaffold(
       appBar: AppBar(
-        title: Text('settings', style: context.pageTitle).tr(),
+        title: Text('settings'.t(context: context), style: context.pageTitle),
       ),
       body: context.isMobile ? const _MobileLayout() : const _TabletLayout(),
     );
@@ -173,9 +172,9 @@ class _MobileSettingsItem extends StatelessWidget {
             child: Icon(section.icon, color: context.primaryColor),
           ),
         ),
-        title: Text(section.title).tr(),
+        title: Text(section.title.t(context: context)),
         titleTextStyle: context.itemTitle,
-        subtitle: Text(section.subtitle).tr(),
+        subtitle: Text(section.subtitle.t(context: context)),
         subtitleTextStyle: context.itemSubtitle,
         trailing: Icon(
           Icons.chevron_right,
@@ -205,7 +204,7 @@ class _TabletSettingsItem extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(12)),
       ),
-      title: Text(section.title).tr(),
+      title: Text(section.title.t(context: context)),
       titleTextStyle: context.itemTitle.copyWith(
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
       ),
@@ -225,10 +224,10 @@ class SettingsSubPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.locale;
     return Scaffold(
       appBar: AppBar(
-        title: Text(section.title, style: context.pageTitle).tr(),
+        title:
+            Text(section.title.t(context: context), style: context.pageTitle),
       ),
       body: section.widget,
     );

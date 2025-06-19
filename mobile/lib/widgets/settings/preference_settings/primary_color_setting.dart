@@ -1,10 +1,10 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/fade_on_tap.dart';
@@ -123,7 +123,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
           Align(
             alignment: Alignment.center,
             child: Text(
-              "theme_setting_primary_color_title".tr(),
+              'theme_setting_primary_color_title'.t(context: context),
               style: context.textTheme.titleLarge,
             ),
           ),
@@ -141,7 +141,8 @@ class PrimaryColorSetting extends HookConsumerWidget {
                   borderRadius: BorderRadius.circular(15),
                 ),
                 title: Text(
-                  'theme_setting_system_primary_color_title'.tr(),
+                  'theme_setting_system_primary_color_title'
+                      .t(context: context),
                   style: context.textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w500,
                     height: 1.5,
@@ -178,9 +179,10 @@ class PrimaryColorSetting extends HookConsumerWidget {
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      title: Text("theme_setting_primary_color_title".tr()),
+      title: Text('theme_setting_primary_color_title'.t(context: context)),
       titleTextStyle: context.itemTitle,
-      subtitle: Text("theme_setting_primary_color_subtitle".tr()),
+      subtitle:
+          Text('theme_setting_primary_color_subtitle'.t(context: context)),
       subtitleTextStyle: context.itemSubtitle,
       trailing: FadeOnTap(
         onTap: () => showModalBottomSheet(

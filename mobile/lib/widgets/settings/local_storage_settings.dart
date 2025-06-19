@@ -1,10 +1,10 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' show useEffect, useState;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 
 class LocalStorageSettings extends HookConsumerWidget {
@@ -30,25 +30,26 @@ class LocalStorageSettings extends HookConsumerWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(
-        "cache_settings_duplicated_assets_title",
+        'cache_settings_duplicated_assets_title'
+            .t(context: context, args: {'count': cacheItemCount.value}),
         style: context.textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.w500,
           color: context.colorScheme.onSurface,
           letterSpacing: 0,
         ),
-      ).tr(namedArgs: {'count': "${cacheItemCount.value}"}),
+      ),
       subtitle: Text(
-        "cache_settings_duplicated_assets_subtitle",
+        'cache_settings_duplicated_assets_subtitle'.t(context: context),
         style: context.textTheme.bodyMedium?.copyWith(
           color: context.colorScheme.onSurfaceSecondary,
           height: 1.4,
           letterSpacing: 0,
         ),
-      ).tr(),
+      ),
       trailing: TextButton(
         onPressed: cacheItemCount.value > 0 ? clearCache : null,
         child: Text(
-          "cache_settings_duplicated_assets_clear_button",
+          'cache_settings_duplicated_assets_clear_button'.t(context: context),
           style: TextStyle(
             fontSize: 12,
             color: cacheItemCount.value > 0
@@ -56,7 +57,7 @@ class LocalStorageSettings extends HookConsumerWidget {
                 : context.themeData.disabledColor,
             fontWeight: FontWeight.bold,
           ),
-        ).tr(),
+        ),
       ),
     );
   }

@@ -1,12 +1,12 @@
 import 'dart:io';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 
@@ -32,13 +32,16 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       horizontalTitleGap: 20,
       isThreeLine: true,
       title: Text(
-        "client_cert_title".tr(),
+        "client_cert_title".t(context: context),
         style: context.itemTitle,
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("client_cert_subtitle".tr(), style: context.itemSubtitle),
+          Text(
+            "client_cert_subtitle".t(context: context),
+            style: context.itemSubtitle,
+          ),
           const SizedBox(
             height: 6,
           ),
@@ -49,7 +52,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
             children: [
               ElevatedButton(
                 onPressed: widget.isLoggedIn ? null : () => importCert(context),
-                child: Text("client_cert_import".tr()),
+                child: Text("client_cert_import".t(context: context)),
               ),
               const SizedBox(
                 width: 15,
@@ -58,7 +61,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
                 onPressed: widget.isLoggedIn || !isCertExist
                     ? null
                     : () => removeCert(context),
-                child: Text("remove".tr()),
+                child: Text("remove".t(context: context)),
               ),
             ],
           ),
@@ -75,7 +78,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
         actions: [
           TextButton(
             onPressed: () => ctx.pop(),
-            child: Text("client_cert_dialog_msg_confirm".tr()),
+            child: Text("client_cert_dialog_msg_confirm".t(context: context)),
           ),
         ],
       ),
@@ -93,7 +96,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       cert,
     );
     if (!isCertValid) {
-      showMessage(context, "client_cert_invalid_msg".tr());
+      showMessage(context, "client_cert_invalid_msg".t(context: context));
       return;
     }
     cert.save();
@@ -101,7 +104,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     setState(
       () => isCertExist = true,
     );
-    showMessage(context, "client_cert_import_success_msg".tr());
+    showMessage(context, "client_cert_import_success_msg".t(context: context));
   }
 
   void setPassword(BuildContext context, Uint8List data) {
@@ -115,14 +118,14 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
           obscureText: true,
           obscuringCharacter: "*",
           decoration: InputDecoration(
-            hintText: "client_cert_enter_password".tr(),
+            hintText: "client_cert_enter_password".t(context: context),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () =>
                 {ctx.pop(), storeCert(context, data, password.text)},
-            child: Text("client_cert_dialog_msg_confirm".tr()),
+            child: Text("client_cert_dialog_msg_confirm".t(context: context)),
           ),
         ],
       ),
@@ -150,6 +153,6 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     setState(
       () => isCertExist = false,
     );
-    showMessage(context, "client_cert_remove_msg".tr());
+    showMessage(context, "client_cert_remove_msg".t(context: context));
   }
 }

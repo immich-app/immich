@@ -87,8 +87,8 @@ class BackgroundBackupSettings extends HookConsumerWidget {
         : 'backup_controller_page_background_is_off'.t(context: context);
 
     return SettingsCardLayout(
-      header: SettingSectionHeader(
-        title: 'backup_controller_page_background_title'.t(context: context),
+      header: const SettingSectionHeader(
+        title: 'backup_controller_page_background_title',
         icon: Icons.refresh_rounded,
       ),
       children: [

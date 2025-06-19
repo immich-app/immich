@@ -1,7 +1,7 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
@@ -40,15 +40,17 @@ class NotificationSetting extends HookConsumerWidget {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          content: const Text('notification_permission_dialog_content').tr(),
+          content: Text(
+            'notification_permission_dialog_content'.t(context: context),
+          ),
           actions: [
             TextButton(
-              child: const Text('cancel').tr(),
+              child: Text('cancel'.t(context: ctx)),
               onPressed: () => ctx.pop(),
             ),
             TextButton(
               onPressed: () => openAppNotificationSettings(ctx),
-              child: const Text('settings').tr(),
+              child: Text('settings'.t(context: ctx)),
             ),
           ],
         ),
@@ -63,9 +65,11 @@ class NotificationSetting extends HookConsumerWidget {
         SettingPermissionRequest(
           padding: const EdgeInsets.all(16),
           icon: Icons.notifications_off_rounded,
-          title: 'notification_permission_list_tile_title'.tr(),
-          subtitle: 'notification_permission_list_tile_content'.tr(),
-          buttonText: 'notification_permission_list_tile_enable_button'.tr(),
+          title: 'notification_permission_list_tile_title'.t(context: context),
+          subtitle:
+              'notification_permission_list_tile_content'.t(context: context),
+          buttonText: 'notification_permission_list_tile_enable_button'
+              .t(context: context),
           buttonIcon: Icons.notifications_active_rounded,
           onHandleAction: () => ref
               .watch(notificationPermissionProvider.notifier)
@@ -86,14 +90,18 @@ class NotificationSetting extends HookConsumerWidget {
           SettingSwitchListTile(
             enabled: hasPermission,
             valueNotifier: totalProgressValue,
-            title: 'setting_notifications_total_progress_title'.tr(),
-            subtitle: 'setting_notifications_total_progress_subtitle'.tr(),
+            title: 'setting_notifications_total_progress_title'
+                .t(context: context),
+            subtitle: 'setting_notifications_total_progress_subtitle'
+                .t(context: context),
           ),
           SettingSwitchListTile(
             enabled: hasPermission,
             valueNotifier: singleProgressValue,
-            title: 'setting_notifications_single_progress_title'.tr(),
-            subtitle: 'setting_notifications_single_progress_subtitle'.tr(),
+            title: 'setting_notifications_single_progress_title'
+                .t(context: context),
+            subtitle: 'setting_notifications_single_progress_subtitle'
+                .t(context: context),
           ),
         ],
       ),
@@ -104,7 +112,7 @@ class NotificationSetting extends HookConsumerWidget {
         children: [
           SettingSliderListTile(
             title: 'setting_notifications_notify_failures_grace_period'
-                .tr(namedArgs: {'duration': formattedValue}),
+                .t(context: context, args: {'duration': formattedValue}),
             label: formattedValue,
             valueNotifier: sliderValue,
             max: 5,
@@ -121,17 +129,16 @@ class NotificationSetting extends HookConsumerWidget {
 
 String _formatSliderValue(double v) {
   if (v == 0.0) {
-    return 'setting_notifications_notify_immediately'.tr();
+    return 'setting_notifications_notify_immediately'.t();
   } else if (v == 1.0) {
-    return 'setting_notifications_notify_minutes'
-        .tr(namedArgs: {'count': '30'});
+    return 'setting_notifications_notify_minutes'.t(args: {'count': '30'});
   } else if (v == 2.0) {
-    return 'setting_notifications_notify_hours'.tr(namedArgs: {'count': '2'});
+    return 'setting_notifications_notify_hours'.t(args: {'count': '2'});
   } else if (v == 3.0) {
-    return 'setting_notifications_notify_hours'.tr(namedArgs: {'count': '8'});
+    return 'setting_notifications_notify_hours'.t(args: {'count': '8'});
   } else if (v == 4.0) {
-    return 'setting_notifications_notify_hours'.tr(namedArgs: {'count': '24'});
+    return 'setting_notifications_notify_hours'.t(args: {'count': '24'});
   } else {
-    return 'setting_notifications_notify_never'.tr();
+    return 'setting_notifications_notify_never'.t();
   }
 }

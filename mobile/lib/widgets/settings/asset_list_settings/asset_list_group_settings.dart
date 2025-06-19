@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
@@ -40,8 +40,8 @@ class GroupSettings extends HookConsumerWidget {
     }
 
     return SettingsCardLayout(
-      header: SettingSectionHeader(
-        title: "asset_list_group_by_sub_title".tr(),
+      header: const SettingSectionHeader(
+        title: 'asset_list_group_by_sub_title',
         icon: Icons.category_outlined,
       ),
       children: [
@@ -49,15 +49,17 @@ class GroupSettings extends HookConsumerWidget {
           contentPadding: EdgeInsets.zero,
           groups: [
             SettingsRadioGroup(
-              title: 'asset_list_layout_settings_group_by_month_day'.tr(),
+              title: 'asset_list_layout_settings_group_by_month_day'
+                  .t(context: context),
               value: GroupAssetsBy.day,
             ),
             SettingsRadioGroup(
-              title: 'month'.tr(),
+              title: 'month'.t(context: context),
               value: GroupAssetsBy.month,
             ),
             SettingsRadioGroup(
-              title: 'asset_list_layout_settings_group_automatically'.tr(),
+              title: 'asset_list_layout_settings_group_automatically'
+                  .t(context: context),
               value: GroupAssetsBy.auto,
             ),
           ],

@@ -1,8 +1,8 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/network.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -37,8 +37,8 @@ class NetworkingSettings extends HookConsumerWidget {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text("location_permission".tr()),
-              content: Text("location_permission_content".tr()),
+              title: Text('location_permission'.t(context: context)),
+              content: Text('location_permission_content'.t(context: context)),
               actions: [
                 TextButton(
                   onPressed: () async {
@@ -48,7 +48,7 @@ class NetworkingSettings extends HookConsumerWidget {
 
                     Navigator.pop(context, isGrant);
                   },
-                  child: Text("grant_permission".tr()),
+                  child: Text('grant_permission'.t(context: context)),
                 ),
               ],
             );
@@ -61,8 +61,10 @@ class NetworkingSettings extends HookConsumerWidget {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text("background_location_permission".tr()),
-              content: Text("background_location_permission_content".tr()),
+              title: Text('background_location_permission'.t(context: context)),
+              content: Text(
+                'background_location_permission_content'.t(context: context),
+              ),
               actions: [
                 TextButton(
                   onPressed: () async {
@@ -72,7 +74,7 @@ class NetworkingSettings extends HookConsumerWidget {
 
                     Navigator.pop(context, isGrant);
                   },
-                  child: Text("grant_permission".tr()),
+                  child: Text('grant_permission'.t(context: context)),
                 ),
               ],
             );
@@ -100,7 +102,7 @@ class NetworkingSettings extends HookConsumerWidget {
       settings: <Widget>[
         SettingsCardLayout(
           header: SettingSectionHeader(
-            title: "current_server_address".tr(),
+            title: 'current_server_address',
             icon: (currentEndpoint?.startsWith('https') ?? false)
                 ? Icons.https_outlined
                 : Icons.http_outlined,
@@ -117,14 +119,14 @@ class NetworkingSettings extends HookConsumerWidget {
                       Icons.circle_outlined,
                     ),
               title: Text(
-                'server_info_box_server_url'.tr(),
+                'server_info_box_server_url'.t(context: context),
                 style: context.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: context.colorScheme.onSurface,
                 ),
               ),
               subtitle: Text(
-                currentEndpoint ?? "--",
+                currentEndpoint ?? '--',
                 style: context.textTheme.bodyMedium?.copyWith(
                   color: context.primaryColor,
                   fontWeight: FontWeight.bold,
@@ -135,8 +137,8 @@ class NetworkingSettings extends HookConsumerWidget {
           ],
         ),
         SettingsCardLayout(
-          header: SettingSectionHeader(
-            title: "automatic_endpoint_switching_title".tr(),
+          header: const SettingSectionHeader(
+            title: 'automatic_endpoint_switching_title',
             icon: Icons.swap_horizontal_circle_outlined,
           ),
           contentSpacing: 8,
@@ -144,8 +146,9 @@ class NetworkingSettings extends HookConsumerWidget {
             SettingSwitchListTile(
               enabled: true,
               valueNotifier: featureEnabled,
-              title: "automatic_endpoint_switching_toggle".tr(),
-              subtitle: "automatic_endpoint_switching_subtitle".tr(),
+              title: 'automatic_endpoint_switching_toggle'.t(context: context),
+              subtitle:
+                  'automatic_endpoint_switching_subtitle'.t(context: context),
             ),
             if (featureEnabled.value) ...[
               Padding(
@@ -157,7 +160,7 @@ class NetworkingSettings extends HookConsumerWidget {
               ),
               const NetworkPreferenceTitle(
                 icon: Icons.home_outlined,
-                title: "local_network",
+                title: 'local_network',
               ),
               LocalNetworkPreference(enabled: featureEnabled.value),
               Padding(
@@ -169,7 +172,7 @@ class NetworkingSettings extends HookConsumerWidget {
               ),
               // External Network Section
               const NetworkPreferenceTitle(
-                title: "external_network",
+                title: 'external_network',
                 icon: Icons.dns_outlined,
               ),
               ExternalNetworkPreference(enabled: featureEnabled.value),
@@ -211,7 +214,7 @@ class NetworkPreferenceTitle extends StatelessWidget {
               alignment: PlaceholderAlignment.bottom,
             ),
             TextSpan(
-              text: title.tr().toUpperCase(),
+              text: title.t(context: context).toUpperCase(),
               style: context.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w500,
                 color: context.colorScheme.tertiary,

@@ -1,7 +1,7 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/networking_settings.dart';
@@ -77,11 +77,11 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
     try {
       if (url == null || url.isEmpty || !Uri.parse(url).isAbsolute) {
         isInputValid = false;
-        return 'validate_endpoint_error'.tr();
+        return 'validate_endpoint_error'.t(context: context);
       }
     } catch (_) {
       isInputValid = false;
-      return 'validate_endpoint_error'.tr();
+      return 'validate_endpoint_error'.t(context: context);
     }
 
     isInputValid = true;

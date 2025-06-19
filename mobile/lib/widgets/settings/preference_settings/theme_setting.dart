@@ -1,8 +1,8 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
@@ -80,27 +80,28 @@ class ThemeSetting extends HookConsumerWidget {
     }
 
     return SettingsCardLayout(
-      header: SettingSectionHeader(
-        title: "theme".tr(),
+      header: const SettingSectionHeader(
+        title: 'theme',
         icon: Icons.palette_outlined,
       ),
       children: [
         SettingSwitchListTile(
           valueNotifier: isSystemTheme,
-          title: 'theme_setting_system_theme_switch'.tr(),
+          title: 'theme_setting_system_theme_switch'.t(context: context),
           onChanged: onSystemThemeChange,
         ),
         if (currentTheme.value != ThemeMode.system)
           SettingSwitchListTile(
             valueNotifier: isDarkTheme,
-            title: 'map_settings_dark_mode'.tr(),
+            title: 'map_settings_dark_mode'.t(context: context),
             onChanged: onThemeChange,
           ),
         const PrimaryColorSetting(),
         SettingSwitchListTile(
           valueNotifier: applyThemeToBackgroundProvider,
-          title: "theme_setting_colorful_interface_title".tr(),
-          subtitle: 'theme_setting_colorful_interface_subtitle'.tr(),
+          title: 'theme_setting_colorful_interface_title'.t(context: context),
+          subtitle:
+              'theme_setting_colorful_interface_subtitle'.t(context: context),
           onChanged: onSurfaceColorSettingChange,
         ),
       ],

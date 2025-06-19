@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/widgets/common/responsive_button.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_info.dart';
@@ -145,7 +145,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            child: Text('add_endpoint'.tr().toUpperCase()),
+            child: Text('add_endpoint'.t(context: context).toUpperCase()),
           ),
         ),
       ],

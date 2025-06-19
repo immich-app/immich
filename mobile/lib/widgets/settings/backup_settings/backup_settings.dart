@@ -1,19 +1,19 @@
 import 'dart:io';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/backup/backup_verification.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/widgets/common/responsive_button.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/background_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/foreground_settings.dart';
-import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
 import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
-import 'package:immich_mobile/widgets/settings/core/setting_button_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/layouts/settings_sub_page_scaffold.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_button_list_tile.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_switch_list_tile.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 
@@ -41,8 +41,8 @@ class BackupSettings extends HookConsumerWidget {
           children: [
             SettingSwitchListTile(
               valueNotifier: ignoreIcloudAssets,
-              title: 'ignore_icloud_photos'.tr(),
-              subtitle: 'ignore_icloud_photos_description'.tr(),
+              title: 'ignore_icloud_photos'.t(context: context),
+              subtitle: 'ignore_icloud_photos_description'.t(context: context),
             ),
           ],
         ),
@@ -82,9 +82,9 @@ class _SyncAlbumsSettings extends HookConsumerWidget {
       ),
       children: [
         SettingButtonListTile(
-          title: 'sync_albums'.tr(),
-          subtileText: "sync_albums_manual_subtitle".tr(),
-          buttonText: 'sync'.tr(),
+          title: 'sync_albums'.t(context: context),
+          subtileText: "sync_albums_manual_subtitle".t(context: context),
+          buttonText: 'sync'.t(context: context),
           child: ResponsiveButton(
             onPressed: !isAlbumSyncInProgress.value ? syncAlbums : null,
             child: isAlbumSyncInProgress.value
@@ -95,7 +95,7 @@ class _SyncAlbumsSettings extends HookConsumerWidget {
                     ),
                   )
                 : Text(
-                    'sync'.tr(),
+                    'sync'.t(context: context),
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                     ),
@@ -124,9 +124,10 @@ class _CheckCorruptAssetSettings extends ConsumerWidget {
       ),
       children: [
         SettingButtonListTile(
-          title: 'check_corrupt_asset_backup'.tr(),
-          subtileText: 'check_corrupt_asset_backup_description'.tr(),
-          buttonText: 'check_corrupt_asset_backup_button'.tr(),
+          title: 'check_corrupt_asset_backup'.t(context: context),
+          subtileText:
+              'check_corrupt_asset_backup_description'.t(context: context),
+          buttonText: 'check_corrupt_asset_backup_button'.t(context: context),
           child: ResponsiveButton(
             onPressed:
                 !isCorruptCheckInProgress ? handleCheckCorruptAsset : null,
@@ -138,7 +139,7 @@ class _CheckCorruptAssetSettings extends ConsumerWidget {
                     ),
                   )
                 : Text(
-                    'check_corrupt_asset_backup_button'.tr(),
+                    'check_corrupt_asset_backup_button'.t(context: context),
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                     ),

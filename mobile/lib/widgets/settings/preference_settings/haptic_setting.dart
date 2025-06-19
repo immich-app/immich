@@ -1,6 +1,6 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
 import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
@@ -24,7 +24,7 @@ class HapticSetting extends HookConsumerWidget {
       children: [
         SettingSwitchListTile(
           valueNotifier: isHapticFeedback,
-          title: 'haptic_feedback_switch'.tr(),
+          title: 'haptic_feedback_switch'.t(context: context),
         ),
       ],
     );

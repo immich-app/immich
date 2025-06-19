@@ -27,8 +27,8 @@ class ForegroundBackupSettings extends HookConsumerWidget {
         : 'backup_controller_page_status_off'.t(context: context);
 
     return SettingsCardLayout(
-      header: SettingSectionHeader(
-        title: 'backup_controller_page_foreground_title'.t(context: context),
+      header: const SettingSectionHeader(
+        title: 'backup_controller_page_foreground_title',
         icon: Icons.cloud_upload_outlined,
       ),
       children: [
