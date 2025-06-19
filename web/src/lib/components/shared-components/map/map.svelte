@@ -22,7 +22,7 @@
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import maplibregl, { GlobeControl, type GeoJSONSource, type LngLatLike } from 'maplibre-gl';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import {
     AttributionControl,
@@ -61,7 +61,7 @@
     mapMarkers = $bindable(),
     showSettings = true,
     zoom = undefined,
-    center = $bindable(undefined),
+    center = undefined,
     hash = false,
     simplified = false,
     clickable = false,
@@ -250,8 +250,14 @@
     });
   });
 
+  let lastCenter: LngLatLike | undefined = undefined;
+
   $effect(() => {
+    if (!map || !center || isEqual(lastCenter, center)) {
+      return;
+    }
     map?.jumpTo({ center, zoom });
+    lastCenter = center;
   });
 </script>
 
