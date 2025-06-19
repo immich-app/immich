@@ -141,6 +141,19 @@
       android:name="androidx.startup.InitializationProvider"
       android:authorities="${applicationId}.androidx-startup"
       tools:node="remove" />
+
+
+    <!-- Widgets -->
+    <receiver
+      android:name="app.alextran.immich.widget.RandomWidget"
+      android:exported="true">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/widget" />
+    </receiver>
   </application>
 
 
