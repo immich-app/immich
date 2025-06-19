@@ -63,6 +63,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
+    final isVideoReady = useState(false);
+
     Future<VideoSource?> createSource() async {
       if (!context.mounted) {
         return null;
@@ -196,6 +198,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       final videoPlayback =
           VideoPlaybackValue.fromNativeController(videoController);
       ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
+
+      isVideoReady.value = true;
 
       try {
         await videoController.play();
@@ -393,8 +397,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       children: [
         // This remains under the video to avoid flickering
         // For motion videos, this is the image portion of the asset
-        if (controller.value == null)
-          Center(key: ValueKey(asset.id), child: image),
+        if (!isVideoReady.value) Center(key: ValueKey(asset.id), child: image),
         if (aspectRatio.value != null && !isCasting)
           Visibility.maintain(
             key: ValueKey(asset),
