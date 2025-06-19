@@ -23,11 +23,11 @@ final userRepositoryProvider = Provider<IsarUserRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef UserRepositoryRef = ProviderRef<IsarUserRepository>;
-String _$userApiRepositoryHash() => r'6b19f2c99fb83162a5ceb91adb8589eaae01bc92';
+String _$userApiRepositoryHash() => r'8a7340ca4544c8c6b20225c65bff2abb9e96baa2';
 
 /// See also [userApiRepository].
 @ProviderFor(userApiRepository)
-final userApiRepositoryProvider = Provider<IUserApiRepository>.internal(
+final userApiRepositoryProvider = Provider<UserApiRepository>.internal(
   userApiRepository,
   name: r'userApiRepositoryProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -39,7 +39,7 @@ final userApiRepositoryProvider = Provider<IUserApiRepository>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef UserApiRepositoryRef = ProviderRef<IUserApiRepository>;
+typedef UserApiRepositoryRef = ProviderRef<UserApiRepository>;
 String _$userServiceHash() => r'181414dddc7891be6237e13d568c287a804228d1';
 
 /// See also [userService].

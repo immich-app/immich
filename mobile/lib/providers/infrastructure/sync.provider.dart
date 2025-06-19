@@ -26,7 +26,7 @@ final syncApiRepositoryProvider = Provider(
 );
 
 final syncStreamRepositoryProvider = Provider(
-  (ref) => DriftSyncStreamRepository(ref.watch(driftProvider)),
+  (ref) => SyncStreamRepository(ref.watch(driftProvider)),
 );
 
 final localSyncServiceProvider = Provider(

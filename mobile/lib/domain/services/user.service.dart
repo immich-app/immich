@@ -1,22 +1,22 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:immich_mobile/domain/interfaces/user_api.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
 import 'package:logging/logging.dart';
 
 class UserService {
   final Logger _log = Logger("UserService");
   final IsarUserRepository _isarUserRepository;
-  final IUserApiRepository _userApiRepository;
+  final UserApiRepository _userApiRepository;
   final StoreService _storeService;
 
   UserService({
     required IsarUserRepository isarUserRepository,
-    required IUserApiRepository userApiRepository,
+    required UserApiRepository userApiRepository,
     required StoreService storeService,
   })  : _isarUserRepository = isarUserRepository,
         _userApiRepository = userApiRepository,

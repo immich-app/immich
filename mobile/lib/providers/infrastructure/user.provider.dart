@@ -1,5 +1,4 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/interfaces/user_api.interface.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
@@ -15,7 +14,7 @@ IsarUserRepository userRepository(Ref ref) =>
     IsarUserRepository(ref.watch(isarProvider));
 
 @Riverpod(keepAlive: true)
-IUserApiRepository userApiRepository(Ref ref) =>
+UserApiRepository userApiRepository(Ref ref) =>
     UserApiRepository(ref.watch(apiServiceProvider).usersApi);
 
 @Riverpod(keepAlive: true)
