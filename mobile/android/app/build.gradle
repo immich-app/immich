@@ -3,6 +3,8 @@ plugins {
   id "kotlin-android"
   id "dev.flutter.flutter-gradle-plugin"
   id 'com.google.devtools.ksp'
+  id 'org.jetbrains.kotlin.plugin.compose' version '2.0.20' // this version matches your Kotlin version
+
 }
 
 def localProperties = new Properties()
@@ -43,6 +45,10 @@ android {
 
   sourceSets {
     main.java.srcDirs += 'src/main/kotlin'
+  }
+
+  buildFeatures {
+    compose true
   }
 
   defaultConfig {
@@ -116,6 +122,9 @@ dependencies {
 
   ksp "com.github.bumptech.glide:ksp:$glide_version"
   coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
+
+  //Glance Widget
+  implementation "androidx.glance:glance-appwidget:1.1.1"
 }
 
 // This is uncommented in F-Droid build script
