@@ -65,14 +65,6 @@ fix_permissions() {
         fi
     done
 
-    # Set ownership for docker/Library (node) but postgres subdirectory (999:999)
-    if [ -d "${IMMICH_WORKSPACE}/docker/Library" ]; then
-        run_cmd sudo chown node "${IMMICH_WORKSPACE}/docker/Library"
-        if [ -d "${IMMICH_WORKSPACE}/docker/Library/postgres" ]; then
-            run_cmd sudo chown -R 999:999 "${IMMICH_WORKSPACE}/docker/Library/postgres"
-        fi
-    fi
-
     log ""
 }
 
