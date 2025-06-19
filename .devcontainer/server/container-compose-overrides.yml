@@ -29,6 +29,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME-postgres}
       POSTGRES_DB: ${DB_DATABASE_NAME-immich}
       POSTGRES_INITDB_ARGS: '--data-checksums'
+      POSTGRES_HOST_AUTH_METHOD: md5
     volumes:
       - ${UPLOAD_LOCATION-./Library}/postgres:/var/lib/postgresql/data
 
