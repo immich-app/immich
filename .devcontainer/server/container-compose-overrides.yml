@@ -12,8 +12,8 @@ services:
       - open_api_node_modules:/workspaces/immich/open-api/typescript-sdk/node_modules
       - server_node_modules:/workspaces/immich/server/node_modules
       - web_node_modules:/workspaces/immich/web/node_modules
-      - ${UPLOAD_LOCATION-./Library}/photos:/workspaces/immich/server/upload
-      - ${UPLOAD_LOCATION-./Library}/photos/upload:/workspaces/immich/server/upload/upload
+      - ${IMMICH_UPLOAD_VOLUME-${UPLOAD_LOCATION:+${UPLOAD_LOCATION}/photos}${UPLOAD_LOCATION:-upload-devcontainer-volume}}:/workspaces/immich/server/upload
+      - ${IMMICH_UPLOAD_VOLUME-${UPLOAD_LOCATION:+${UPLOAD_LOCATION}/photos/upload}${UPLOAD_LOCATION:-upload-devcontainer-volume}}:/workspaces/immich/server/upload/upload
       - /etc/localtime:/etc/localtime:ro
 
   immich-web:
@@ -31,7 +31,7 @@ services:
       POSTGRES_INITDB_ARGS: '--data-checksums'
       POSTGRES_HOST_AUTH_METHOD: md5
     volumes:
-      - ${UPLOAD_LOCATION-./Library}/postgres:/var/lib/postgresql/data
+      - ${IMMICH_POSTGRES_VOLUME-${UPLOAD_LOCATION:+${UPLOAD_LOCATION}/postgres}${UPLOAD_LOCATION:-postgres-devcontainer-volume}}:/var/lib/postgresql/data
 
   redis:
     env_file: !reset []
@@ -44,3 +44,4 @@ volumes:
   server_node_modules:
   web_node_modules:
   upload-devcontainer-volume:
+  postgres-devcontainer-volume:
