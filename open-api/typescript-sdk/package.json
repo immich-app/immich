@@ -1,6 +1,6 @@
 {
   "name": "@immich/sdk",
-  "version": "1.134.0",
+  "version": "1.135.0",
   "description": "Auto-generated TypeScript SDK for the Immich API",
   "type": "module",
   "main": "./build/index.js",
@@ -19,7 +19,7 @@
     "@oazapfts/runtime": "^1.0.2"
   },
   "devDependencies": {
-    "@types/node": "^22.15.29",
+    "@types/node": "^22.15.31",
     "typescript": "^5.3.3"
   },
   "repository": {

@@ -33,7 +33,7 @@ import { BaseService } from 'src/services/base.service';
 import { SyncService } from 'src/services/sync.service';
 import { RepositoryInterface } from 'src/types';
 import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory';
-import { automock, ServiceOverrides } from 'test/utils';
+import { automock, ServiceOverrides, wait } from 'test/utils';
 import { Mocked } from 'vitest';
 
 const sha256 = (value: string) => createHash('sha256').update(value).digest('base64');
@@ -120,7 +120,7 @@ export const newSyncTest = (options: SyncTestOptions) => {
   const testSync = async (auth: AuthDto, types: SyncRequestType[]) => {
     const stream = mediumFactory.syncStream();
     // Wait for 2ms to ensure all updates are available and account for setTimeout inaccuracy
-    await new Promise((resolve) => setTimeout(resolve, 2));
+    await wait(2);
     await sut.stream(auth, stream, { types });
 
     return stream.getResponse();

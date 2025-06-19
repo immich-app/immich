@@ -244,7 +244,7 @@
     "storage_template_migration_info": "The storage template will convert all extensions to lowercase. Template changes will only apply to new assets. To retroactively apply the template to previously uploaded assets, run the <link>{job}</link>.",
     "storage_template_migration_job": "Storage Template Migration Job",
     "storage_template_more_details": "For more details about this feature, refer to the <template-link>Storage Template</template-link> and its <implications-link>implications</implications-link>",
-    "storage_template_onboarding_description": "When enabled, this feature will auto-organize files based on a user-defined template. Due to stability issues the feature has been turned off by default. For more information, please see the <link>documentation</link>.",
+    "storage_template_onboarding_description_v2": "When enabled, this feature will auto-organize files based on a user-defined template. For more information, please see the <link>documentation</link>.",
     "storage_template_path_length": "Approximate path length limit: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Storage Template",
     "storage_template_settings_description": "Manage the folder structure and file name of the upload asset",

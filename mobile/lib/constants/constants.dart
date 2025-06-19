@@ -15,3 +15,20 @@ const int kBatchHashSizeLimit = 1024 * 1024 * 1024; // 1GB
 
 // Secure storage keys
 const String kSecuredPinCode = "secured_pin_code";
+
+// Timeline constants
+const int kTimelineNoneSegmentSize = 120;
+const int kTimelineAssetLoadBatchSize = 256;
+const int kTimelineAssetLoadOppositeSize = 64;
+
+// Widget keys
+const String kWidgetAuthToken = "widget_auth_token";
+const String kWidgetServerEndpoint = "widget_server_url";
+const String appShareGroupId = "group.app.immich.share";
+
+// add widget identifiers here for new widgets
+// these are used to force a widget refresh
+const List<String> kWidgetNames = [
+  'com.immich.widget.random',
+  'com.immich.widget.memory',
+];

@@ -67,15 +67,19 @@ export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
       fileSelector.type = 'file';
       fileSelector.multiple = multiple;
       fileSelector.accept = extensions.join(',');
-      fileSelector.addEventListener('change', (e: Event) => {
-        const target = e.target as HTMLInputElement;
-        if (!target.files) {
-          return;
-        }
-        const files = Array.from(target.files);
+      fileSelector.addEventListener(
+        'change',
+        (e: Event) => {
+          const target = e.target as HTMLInputElement;
+          if (!target.files) {
+            return;
+          }
+          const files = Array.from(target.files);
 
-        resolve(fileUploadHandler({ files, albumId, replaceAssetId: assetId }));
-      });
+          resolve(fileUploadHandler({ files, albumId, replaceAssetId: assetId }));
+        },
+        { passive: true },
+      );
 
       fileSelector.click();
     } catch (error) {

@@ -438,3 +438,7 @@ export async function* makeStream<T>(items: T[] = []): AsyncIterableIterator<T> 
     yield item;
   }
 }
+
+export const wait = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};

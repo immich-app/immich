@@ -41,6 +41,9 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     RemoteAssetEntity,
     RemoteExifEntity,
   ],
+  include: {
+    'package:immich_mobile/infrastructure/entities/merged_asset.drift',
+  },
 )
 class Drift extends $Drift implements IDatabaseRepository {
   Drift([QueryExecutor? executor])

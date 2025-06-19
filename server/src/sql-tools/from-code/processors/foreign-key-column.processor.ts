@@ -1,10 +1,10 @@
 import { onMissingColumn, resolveColumn } from 'src/sql-tools/from-code/processors/column.processor';
 import { onMissingTable, resolveTable } from 'src/sql-tools/from-code/processors/table.processor';
 import { Processor } from 'src/sql-tools/from-code/processors/type';
-import { asKey } from 'src/sql-tools/helpers';
+import { asForeignKeyConstraintName, asKey } from 'src/sql-tools/helpers';
 import { DatabaseActionType, DatabaseConstraintType } from 'src/sql-tools/types';
 
-export const processForeignKeyConstraints: Processor = (builder, items) => {
+export const processForeignKeyColumns: Processor = (builder, items) => {
   for (const {
     item: { object, propertyName, options, target },
   } of items.filter((item) => item.type === 'foreignKeyColumn')) {
@@ -34,13 +34,16 @@ export const processForeignKeyConstraints: Processor = (builder, items) => {
       column.type = referenceColumns[0].type;
     }
 
+    const referenceColumnNames = referenceColumns.map((column) => column.name);
+    const name = options.constraintName || asForeignKeyConstraintName(table.name, columnNames);
+
     table.constraints.push({
-      name: options.constraintName || asForeignKeyConstraintName(table.name, columnNames),
+      name,
       tableName: table.name,
       columnNames,
       type: DatabaseConstraintType.FOREIGN_KEY,
       referenceTableName: referenceTable.name,
-      referenceColumnNames: referenceColumns.map((column) => column.name),
+      referenceColumnNames,
       onUpdate: options.onUpdate as DatabaseActionType,
       onDelete: options.onDelete as DatabaseActionType,
       synchronize: options.synchronize ?? true,
@@ -58,5 +61,4 @@ export const processForeignKeyConstraints: Processor = (builder, items) => {
   }
 };
 
-const asForeignKeyConstraintName = (table: string, columns: string[]) => asKey('FK_', table, columns);
 const asRelationKeyConstraintName = (table: string, columns: string[]) => asKey('REL_', table, columns);

@@ -2,7 +2,7 @@ import { Kysely } from 'kysely';
 import { DB } from 'src/db';
 import { AlbumUserRole, SyncEntityType, SyncRequestType } from 'src/enum';
 import { mediumFactory, newSyncAuthUser, newSyncTest } from 'test/medium.factory';
-import { getKyselyDB } from 'test/utils';
+import { getKyselyDB, wait } from 'test/utils';
 
 let defaultDatabase: Kysely<DB>;
 
@@ -264,6 +264,96 @@ describe(SyncRequestType.AlbumUsersV1, () => {
           type: SyncEntityType.AlbumUserDeleteV1,
         },
       ]);
+    });
+
+    it('should backfill album users when a user shares an album with you', async () => {
+      const { auth, sut, testSync, getRepository } = await setup();
+
+      const albumRepo = getRepository('album');
+      const albumUserRepo = getRepository('albumUser');
+      const userRepo = getRepository('user');
+
+      const user1 = mediumFactory.userInsert();
+      const user2 = mediumFactory.userInsert();
+      await userRepo.create(user1);
+      await userRepo.create(user2);
+
+      const album1 = mediumFactory.albumInsert({ ownerId: user1.id });
+      const album2 = mediumFactory.albumInsert({ ownerId: user1.id });
+      await albumRepo.create(album1, [], []);
+      await albumRepo.create(album2, [], []);
+
+      // backfill album user
+      await albumUserRepo.create({ albumsId: album1.id, usersId: user1.id, role: AlbumUserRole.EDITOR });
+      await wait(2);
+      // initial album user
+      await albumUserRepo.create({ albumsId: album2.id, usersId: auth.user.id, role: AlbumUserRole.EDITOR });
+      await wait(2);
+      // post checkpoint album user
+      await albumUserRepo.create({ albumsId: album1.id, usersId: user2.id, role: AlbumUserRole.EDITOR });
+
+      const response = await testSync(auth, [SyncRequestType.AlbumUsersV1]);
+      expect(response).toHaveLength(1);
+      expect(response).toEqual([
+        {
+          ack: expect.any(String),
+          data: expect.objectContaining({
+            albumId: album2.id,
+            role: AlbumUserRole.EDITOR,
+            userId: auth.user.id,
+          }),
+          type: SyncEntityType.AlbumUserV1,
+        },
+      ]);
+
+      // ack initial user
+      const acks = response.map(({ ack }) => ack);
+      await sut.setAcks(auth, { acks });
+
+      // get access to the backfill album user
+      await albumUserRepo.create({ albumsId: album1.id, usersId: auth.user.id, role: AlbumUserRole.EDITOR });
+
+      // should backfill the album user
+      const backfillResponse = await testSync(auth, [SyncRequestType.AlbumUsersV1]);
+      expect(backfillResponse).toEqual([
+        {
+          ack: expect.any(String),
+          data: expect.objectContaining({
+            albumId: album1.id,
+            role: AlbumUserRole.EDITOR,
+            userId: user1.id,
+          }),
+          type: SyncEntityType.AlbumUserBackfillV1,
+        },
+        {
+          ack: expect.stringContaining(SyncEntityType.AlbumUserBackfillV1),
+          data: {},
+          type: SyncEntityType.SyncAckV1,
+        },
+        {
+          ack: expect.any(String),
+          data: expect.objectContaining({
+            albumId: album1.id,
+            role: AlbumUserRole.EDITOR,
+            userId: user2.id,
+          }),
+          type: SyncEntityType.AlbumUserV1,
+        },
+        {
+          ack: expect.any(String),
+          data: expect.objectContaining({
+            albumId: album1.id,
+            role: AlbumUserRole.EDITOR,
+            userId: auth.user.id,
+          }),
+          type: SyncEntityType.AlbumUserV1,
+        },
+      ]);
+
+      await sut.setAcks(auth, { acks: [backfillResponse[1].ack, backfillResponse.at(-1).ack] });
+
+      const finalResponse = await testSync(auth, [SyncRequestType.AlbumUsersV1]);
+      expect(finalResponse).toEqual([]);
     });
   });
 });
