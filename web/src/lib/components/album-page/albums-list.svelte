@@ -236,6 +236,8 @@
       await deleteAlbum({
         id: albumToDelete.id,
       });
+      userInteraction.recentAlbums = undefined;
+      window.dispatchEvent(new CustomEvent('immich:reloadRecentAlbums'));
     } catch (error) {
       // In rare cases deleting an album completes after the list of albums has been requested,
       // leading to a bad request error.
@@ -245,7 +247,6 @@
         throw error;
       }
     }
-
     ownedAlbums = ownedAlbums.filter(({ id }) => id !== albumToDelete.id);
     sharedAlbums = sharedAlbums.filter(({ id }) => id !== albumToDelete.id);
   };
