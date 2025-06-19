@@ -25,8 +25,7 @@ class BackgroundBackupSettings extends HookConsumerWidget {
       final snackBar = SnackBar(
         content: Text(
           msg.t(context: context),
-          style: context.textTheme.bodyLarge?.copyWith(
-          ),
+          style: context.textTheme.bodyLarge?.copyWith(),
         ),
       );
       context.scaffoldMessenger.showSnackBar(snackBar);
