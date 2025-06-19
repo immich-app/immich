@@ -12,7 +12,6 @@
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
-  import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
@@ -911,28 +910,26 @@
   </section>
 </section>
 
-{#if !albumMapViewManager.isInMapView}
-  <Portal target="body">
-    {#if $showAssetViewer}
-      {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-        <AssetViewer
-          {withStacked}
-          asset={$viewingAsset}
-          preloadAssets={$preloadAssets}
-          {isShared}
-          {album}
-          {person}
-          preAction={handlePreAction}
-          onAction={handleAction}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onRandom={handleRandom}
-          onClose={handleClose}
-        />
-      {/await}
-    {/if}
-  </Portal>
-{/if}
+<Portal target="body">
+  {#if $showAssetViewer}
+    {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+      <AssetViewer
+        {withStacked}
+        asset={$viewingAsset}
+        preloadAssets={$preloadAssets}
+        {isShared}
+        {album}
+        {person}
+        preAction={handlePreAction}
+        onAction={handleAction}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onRandom={handleRandom}
+        onClose={handleClose}
+      />
+    {/await}
+  {/if}
+</Portal>
 
 <style>
   #asset-grid {

@@ -119,8 +119,6 @@ export class DatabaseRepository {
     await sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(extension)} CASCADE`.execute(this.db);
     if (extension === DatabaseExtension.VECTORCHORD) {
       const dbName = sql.id(await this.getDatabaseName());
-      await sql`ALTER DATABASE ${dbName} SET vchordrq.prewarm_dim = '512,640,768,1024,1152,1536'`.execute(this.db);
-      await sql`SET vchordrq.prewarm_dim = '512,640,768,1024,1152,1536'`.execute(this.db);
       await sql`ALTER DATABASE ${dbName} SET vchordrq.probes = 1`.execute(this.db);
       await sql`SET vchordrq.probes = 1`.execute(this.db);
     }
@@ -142,21 +140,29 @@ export class DatabaseRepository {
     }
     targetVersion ??= availableVersion;
 
-    const isVectors = extension === DatabaseExtension.VECTORS;
     let restartRequired = false;
     const diff = semver.diff(installedVersion, targetVersion);
+    if (!diff) {
+      return { restartRequired: false };
+    }
+
+    await Promise.all([
+      this.db.schema.dropIndex(VectorIndex.CLIP).ifExists().execute(),
+      this.db.schema.dropIndex(VectorIndex.FACE).ifExists().execute(),
+    ]);
+
     await this.db.transaction().execute(async (tx) => {
       await this.setSearchPath(tx);
 
       await sql`ALTER EXTENSION ${sql.raw(extension)} UPDATE TO ${sql.lit(targetVersion)}`.execute(tx);
 
-      if (isVectors && (diff === 'major' || diff === 'minor')) {
+      if (extension === DatabaseExtension.VECTORS && (diff === 'major' || diff === 'minor')) {
         await sql`SELECT pgvectors_upgrade()`.execute(tx);
         restartRequired = true;
       }
     });
 
-    if (diff && !restartRequired) {
+    if (!restartRequired) {
       await Promise.all([this.reindexVectors(VectorIndex.CLIP), this.reindexVectors(VectorIndex.FACE)]);
     }
 

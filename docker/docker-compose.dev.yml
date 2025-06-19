@@ -16,7 +16,7 @@ name: immich-dev
 services:
   immich-server:
     container_name: immich_server
-    command: [ '/usr/src/app/bin/immich-dev' ]
+    command: ['/usr/src/app/bin/immich-dev']
     image: immich-server-dev:latest
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -70,7 +70,7 @@ services:
     # user: 0:0
     build:
       context: ../web
-    command: [ '/usr/src/app/bin/immich-web' ]
+    command: ['/usr/src/app/bin/immich-web']
     env_file:
       - .env
     ports:
@@ -122,7 +122,7 @@ services:
 
   database:
     container_name: immich_postgres
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.1-pgvectors0.2.0
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.2-pgvectors0.2.0
     env_file:
       - .env
     environment:
