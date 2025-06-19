@@ -1,11 +1,10 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/widgets/common/responsive_button.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_info.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
-
+import 'package:immich_mobile/widgets/settings/core/setting_switch_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
 
 class ForegroundBackupSettings extends ConsumerWidget {
@@ -14,39 +13,33 @@ class ForegroundBackupSettings extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isEnabled = ref.watch(backupProvider.select((s) => s.autoBackup));
-    void toggleForegroundBackup() =>
-        ref.read(backupProvider.notifier).setAutoBackup(!isEnabled);
+    final valueNotifier = ValueNotifier<bool>(isEnabled);
 
-    final subtitleHeader = isEnabled
-        ? 'backup_controller_page_foreground_on_subtitle'.tr()
-        : 'backup_controller_page_foreground_off_subtitle'.tr();
-    final indicatorState =
-        isEnabled ? IndicatorState.enabled : IndicatorState.disabled;
-    final buttonText = isEnabled
-        ? 'backup_controller_page_turn_off'.tr()
-        : 'backup_controller_page_turn_on'.tr();
+    void toggleForegroundBackup(bool value) {
+      ref.read(backupProvider.notifier).setAutoBackup(value);
+      valueNotifier.value = value;
+    }
+
+    final subtitle = isEnabled
+        ? 'backup_controller_page_status_on'.t(context: context)
+        : 'backup_controller_page_status_off'.t(context: context);
 
     return SettingsCardLayout(
-      contentSpacing: 8,
-      header: SettingIndicatorSectionHeader(
-        padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
-        title: 'backup_controller_page_foreground_title'.tr(),
-        subtitle: subtitleHeader,
-        indicatorState: indicatorState,
+      header: SettingSectionHeader(
+        title: 'backup_controller_page_foreground_title'.t(context: context),
+        icon: Icons.cloud_upload_outlined,
       ),
       children: [
-        if (!isEnabled)
-          const SettingInfo(text: 'backup_controller_page_desc_backup'),
-        Center(
-          child: ResponsiveButton(
-            onPressed: toggleForegroundBackup,
-            child: Text(
-              buttonText,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
+        const SettingInfo(
+          padding: EdgeInsets.only(top: 4),
+          text: 'backup_controller_page_desc_backup',
         ),
-        const SizedBox(height: 4),
+        SettingSwitchListTile(
+          valueNotifier: valueNotifier,
+          onChanged: toggleForegroundBackup,
+          title: 'backup_controller_page_foreground_title'.t(context: context),
+          subtitle: subtitle,
+        ),
       ],
     );
   }

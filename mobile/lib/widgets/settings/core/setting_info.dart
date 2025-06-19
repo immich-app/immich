@@ -1,7 +1,7 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 
 class SettingInfo extends StatelessWidget {
   const SettingInfo({
@@ -38,7 +38,7 @@ class SettingInfo extends StatelessWidget {
           ],
           Expanded(
             child: Text(
-              text.tr(),
+              text.t(context: context),
               style: context.textTheme.bodyMedium?.copyWith(
                 color: textColor ?? context.colorScheme.onSurfaceSecondary,
                 height: 1.4,

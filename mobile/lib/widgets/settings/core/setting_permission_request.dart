@@ -12,7 +12,7 @@ class SettingPermissionRequest extends StatelessWidget {
     required this.buttonText,
     required this.onHandleAction,
     this.buttonIcon,
-    this.colorScheme = PermissionColorScheme.primary,
+    this.colorScheme = PermissionColorScheme.warning,
     this.useCard = true,
     this.padding = const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
   });

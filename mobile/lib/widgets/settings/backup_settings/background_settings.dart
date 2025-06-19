@@ -1,41 +1,33 @@
 import 'dart:io';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/widgets/backup/ios_debug_info_tile.dart';
-import 'package:immich_mobile/widgets/common/responsive_button.dart';
-import 'package:immich_mobile/widgets/settings/core/setting_permission_request.dart';
+import 'package:immich_mobile/widgets/settings/backup_settings/ios_permission_request.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_info.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_switch_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-class BackgroundBackupSettings extends ConsumerWidget {
+class BackgroundBackupSettings extends HookConsumerWidget {
   const BackgroundBackupSettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isBackgroundEnabled =
-        ref.watch(backupProvider.select((s) => s.backgroundBackup));
-    final iosSettings = ref.watch(iOSBackgroundSettingsProvider);
-
     void showErrorToUser(String msg) {
       final snackBar = SnackBar(
         content: Text(
-          msg.tr(),
+          msg.t(context: context),
           style: context.textTheme.bodyLarge?.copyWith(
-            color: context.colorScheme.onError,
           ),
         ),
-        backgroundColor: context.colorScheme.error,
       );
       context.scaffoldMessenger.showSnackBar(snackBar);
     }
@@ -48,11 +40,11 @@ class BackgroundBackupSettings extends ConsumerWidget {
           return AlertDialog(
             title: const Text(
               'backup_controller_page_background_battery_info_title',
-            ).tr(),
+            ).t(context: ctx),
             content: SingleChildScrollView(
               child: const Text(
                 'backup_controller_page_background_battery_info_message',
-              ).tr(),
+              ).t(context: ctx),
             ),
             actions: [
               ElevatedButton(
@@ -63,13 +55,13 @@ class BackgroundBackupSettings extends ConsumerWidget {
                 child: const Text(
                   "backup_controller_page_background_battery_info_link",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                ).tr(),
+                ).t(context: ctx),
               ),
               ElevatedButton(
                 child: const Text(
                   'backup_controller_page_background_battery_info_ok',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                ).tr(),
+                ).t(context: ctx),
                 onPressed: () => ctx.pop(),
               ),
             ],
@@ -78,78 +70,92 @@ class BackgroundBackupSettings extends ConsumerWidget {
       );
     }
 
-    void turnOnBackgroundBackup() {
-      ref.read(backupProvider.notifier).configureBackgroundBackup(
-            enabled: true,
-            onError: showErrorToUser,
-            onBatteryInfo: showBatteryOptimizationInfoToUser,
-          );
-    }
+    final isBackgroundEnabled =
+        ref.watch(backupProvider.select((s) => s.backgroundBackup));
+    final isBackgroundEnabledNotifier = useValueNotifier(isBackgroundEnabled);
+    useValueChanged(
+      isBackgroundEnabled,
+      (_, __) => WidgetsBinding.instance.addPostFrameCallback(
+        (_) => isBackgroundEnabledNotifier.value = isBackgroundEnabled,
+      ),
+    );
+    final iosSettings = ref.watch(iOSBackgroundSettingsProvider);
+    final hasIosPermissions =
+        !Platform.isIOS || iosSettings?.appRefreshEnabled == true;
 
-    if (!isBackgroundEnabled) {
-      return SettingsCardLayout(
-        contentSpacing: 8,
-        header: SettingIndicatorSectionHeader(
-          padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
-          title: 'backup_controller_page_background_title'.tr(),
-          subtitle: 'backup_controller_page_background_off_subtitle'.tr(),
-          indicatorState: IndicatorState.disabled,
-        ),
-        children: [
+    final subtitle = isBackgroundEnabled
+        ? 'backup_controller_page_background_is_on'.t(context: context)
+        : 'backup_controller_page_background_is_off'.t(context: context);
+
+    return SettingsCardLayout(
+      header: SettingSectionHeader(
+        title: 'backup_controller_page_background_title'.t(context: context),
+        icon: Icons.refresh_rounded,
+      ),
+      children: [
+        if (hasIosPermissions) ...[
           const SettingInfo(
+            padding: EdgeInsets.only(top: 4),
             text: 'backup_controller_page_background_description',
           ),
-          Center(
-            child: ResponsiveButton(
-              onPressed: turnOnBackgroundBackup,
-              child: Text(
-                'backup_controller_page_background_turn_on'.tr(),
-                style: const TextStyle(fontWeight: FontWeight.w600),
+          SettingSwitchListTile(
+            valueNotifier: isBackgroundEnabledNotifier,
+            title:
+                'backup_controller_page_background_title'.t(context: context),
+            subtitle: subtitle,
+            onChanged: (enabled) =>
+                ref.read(backupProvider.notifier).configureBackgroundBackup(
+                      enabled: enabled,
+                      onError: showErrorToUser,
+                      onBatteryInfo: showBatteryOptimizationInfoToUser,
+                    ),
+          ),
+          if (isBackgroundEnabled) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Divider(
+                height: 1,
+                color: context.colorScheme.outline.withValues(alpha: 0.2),
               ),
             ),
-          ),
-          const SizedBox(height: 4),
+            _BackgroundOptionsSection(
+              onError: showErrorToUser,
+              onBatteryInfo: showBatteryOptimizationInfoToUser,
+            ),
+            if (Platform.isIOS) const IosDebugInfoTile(),
+          ],
         ],
-      );
-    }
-
-    return Column(
-      children: [
-        if (!Platform.isIOS || iosSettings?.appRefreshEnabled == true)
-          _BackgroundSettingsEnabled(
-            onError: showErrorToUser,
-            onBatteryInfo: showBatteryOptimizationInfoToUser,
-          ),
-        if (Platform.isIOS && iosSettings?.appRefreshEnabled != true)
-          SettingPermissionRequest(
-            padding: const EdgeInsets.all(16),
-            icon: Icons.refresh_rounded,
-            title:
-                'backup_controller_page_background_app_refresh_disabled_title'
-                    .tr(),
-            subtitle:
-                'backup_controller_page_background_app_refresh_disabled_content'
-                    .tr(),
-            buttonText:
-                'backup_controller_page_background_app_refresh_enable_button_text'
-                    .tr(),
-            buttonIcon: Icons.settings_outlined,
-            onHandleAction: () => openAppSettings(),
-            colorScheme: PermissionColorScheme.warning,
-          ),
+        if (!hasIosPermissions) const IosPermissionRequest(),
       ],
     );
   }
 }
 
-class _BackgroundSettingsEnabled extends HookConsumerWidget {
+class _BackgroundOptionsSection extends HookConsumerWidget {
   final void Function(String msg) onError;
   final void Function() onBatteryInfo;
 
-  const _BackgroundSettingsEnabled({
+  const _BackgroundOptionsSection({
     required this.onError,
     required this.onBatteryInfo,
   });
+
+  static int _backupDelayToSliderValue(int ms) => switch (ms) {
+        5000 => 0,
+        30000 => 1,
+        120000 => 2,
+        _ => 3,
+      };
+
+  static int _backupDelayToMilliseconds(int v) =>
+      switch (v) { 0 => 5000, 1 => 30000, 2 => 120000, _ => 600000 };
+
+  static String _formatBackupDelaySliderValue(int v) => switch (v) {
+        0 => 'setting_notifications_notify_seconds'.t(args: {'count': '5'}),
+        1 => 'setting_notifications_notify_seconds'.t(args: {'count': '30'}),
+        2 => 'setting_notifications_notify_minutes'.t(args: {'count': '2'}),
+        _ => 'setting_notifications_notify_minutes'.t(args: {'count': '10'}),
+      };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -173,71 +179,24 @@ class _BackgroundSettingsEnabled extends HookConsumerWidget {
       ),
     );
 
-    int backupDelayToSliderValue(int ms) => switch (ms) {
-          5000 => 0,
-          30000 => 1,
-          120000 => 2,
-          _ => 3,
-        };
-
-    int backupDelayToMilliseconds(int v) =>
-        switch (v) { 0 => 5000, 1 => 30000, 2 => 120000, _ => 600000 };
-
-    String formatBackupDelaySliderValue(int v) => switch (v) {
-          0 => 'setting_notifications_notify_seconds'
-              .tr(namedArgs: {'count': '5'}),
-          1 => 'setting_notifications_notify_seconds'
-              .tr(namedArgs: {'count': '30'}),
-          2 => 'setting_notifications_notify_minutes'
-              .tr(namedArgs: {'count': '2'}),
-          _ => 'setting_notifications_notify_minutes'
-              .tr(namedArgs: {'count': '10'}),
-        };
-
     final backupTriggerDelay =
         ref.watch(backupProvider.select((s) => s.backupTriggerDelay));
-    final triggerDelay = useState(backupDelayToSliderValue(backupTriggerDelay));
+    final triggerDelay =
+        useState(_backupDelayToSliderValue(backupTriggerDelay));
     useValueChanged(
       triggerDelay.value,
       (_, __) => ref.read(backupProvider.notifier).configureBackgroundBackup(
-            triggerDelay: backupDelayToMilliseconds(triggerDelay.value),
+            triggerDelay: _backupDelayToMilliseconds(triggerDelay.value),
             onError: onError,
             onBatteryInfo: onBatteryInfo,
           ),
     );
-    return SettingsCardLayout(
-      contentSpacing: 4,
-      header: SettingIndicatorSectionHeader(
-        padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
-        title: 'backup_controller_page_background_title'.tr(),
-        subtitle: 'backup_controller_page_background_on_subtitle'.tr(),
-        indicatorState: IndicatorState.enabled,
-      ),
+
+    return Column(
       children: [
-        Center(
-          child: ResponsiveButton(
-            onPressed: () =>
-                ref.read(backupProvider.notifier).configureBackgroundBackup(
-                      enabled: false,
-                      onError: onError,
-                      onBatteryInfo: onBatteryInfo,
-                    ),
-            child: Text(
-              'backup_controller_page_background_turn_off'.tr(),
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: Divider(
-            height: 1,
-            color: context.colorScheme.outline.withValues(alpha: 0.2),
-          ),
-        ),
         SettingSwitchListTile(
           valueNotifier: isWifiRequiredNotifier,
-          title: 'backup_controller_page_background_wifi'.tr(),
+          title: 'backup_controller_page_background_wifi'.t(context: context),
           icon: Icons.wifi,
           onChanged: (enabled) =>
               ref.read(backupProvider.notifier).configureBackgroundBackup(
@@ -248,7 +207,8 @@ class _BackgroundSettingsEnabled extends HookConsumerWidget {
         ),
         SettingSwitchListTile(
           valueNotifier: isChargingRequiredNotifier,
-          title: 'backup_controller_page_background_charging'.tr(),
+          title:
+              'backup_controller_page_background_charging'.t(context: context),
           icon: Icons.charging_station,
           onChanged: (enabled) =>
               ref.read(backupProvider.notifier).configureBackgroundBackup(
@@ -257,21 +217,19 @@ class _BackgroundSettingsEnabled extends HookConsumerWidget {
                     onBatteryInfo: onBatteryInfo,
                   ),
         ),
-        if (Platform.isAndroid) ...[
+        if (Platform.isAndroid)
           SettingSliderListTile(
             valueNotifier: triggerDelay,
-            title: 'backup_controller_page_background_delay'.tr(
-              namedArgs: {
-                'duration': formatBackupDelaySliderValue(triggerDelay.value),
+            title: 'backup_controller_page_background_delay'.t(
+              context: context,
+              args: {
+                'duration': _formatBackupDelaySliderValue(triggerDelay.value),
               },
             ),
             max: 3.0,
             divisions: 3,
-            showValue: false,
-            label: formatBackupDelaySliderValue(triggerDelay.value),
+            label: _formatBackupDelaySliderValue(triggerDelay.value),
           ),
-        ],
-        if (Platform.isIOS) const IosDebugInfoTile(),
       ],
     );
   }

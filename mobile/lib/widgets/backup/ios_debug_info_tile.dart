@@ -1,8 +1,9 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 
 /// This is a simple debug widget which should be removed later on when we are
@@ -53,16 +54,15 @@ class IosDebugInfoTile extends HookConsumerWidget {
       contentPadding: EdgeInsets.zero,
       title: Text(
         title,
-        style: TextStyle(
+        style: context.textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.bold,
-          fontSize: 14,
           color: context.primaryColor,
         ),
       ),
       subtitle: Text(
         subtitle,
-        style: const TextStyle(
-          fontSize: 14,
+        style: context.textTheme.bodyMedium?.copyWith(
+          color: context.colorScheme.onSurfaceSecondary,
         ),
       ),
       leading: Icon(
