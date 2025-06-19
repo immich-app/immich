@@ -20,7 +20,7 @@ import { get } from 'svelte/store';
 import { DayGroup } from './day-group.svelte';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
 import type { TimelineManager } from './timeline-manager.svelte';
-import type { AssetDescriptor, AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
+import type { AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
 export class MonthGroup {
@@ -342,8 +342,12 @@ export class MonthGroup {
     }
   }
 
-  findAssetById(assetDescriptor: AssetDescriptor) {
-    return this.assetsIterator().find((asset) => asset.id === assetDescriptor.id);
+  findAssetById(id: string) {
+    for (const asset of this.assetsIterator()) {
+      if (asset.id === id) {
+        return asset;
+      }
+    }
   }
 
   findClosest(target: TimelinePlainDateTime) {

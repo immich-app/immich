@@ -428,7 +428,7 @@ export class TimelineManager {
       return;
     }
     monthGroup = await this.#loadMonthGroupAtTime(asset.localDateTime, { cancelable: false });
-    if (monthGroup?.findAssetById({ id })) {
+    if (monthGroup?.findAssetById(id)) {
       return monthGroup;
     }
   }

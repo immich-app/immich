@@ -32,7 +32,7 @@ export async function getAssetWithOffset(
 
 export function findMonthGroupForAsset(timelineManager: TimelineManager, id: string) {
   for (const month of timelineManager.months) {
-    const asset = month.findAssetById({ id });
+    const asset = month.findAssetById(id);
     if (asset) {
       return { monthGroup: month, asset };
     }
