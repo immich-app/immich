@@ -1,10 +1,7 @@
 <script lang="ts">
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import MapModal from '$lib/modals/MapModal.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { handlePromiseError } from '$lib/utils';
-  import { navigate } from '$lib/utils/navigation';
   import { getAlbumInfo, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiMapOutline } from '@mdi/js';
@@ -17,9 +14,7 @@
 
   let { album }: Props = $props();
   let abortController: AbortController;
-  let { isViewing: showAssetViewer, asset: viewingAsset, setAssetId } = assetViewingStore;
-  let viewingAssets: string[] = $state([]);
-  let viewingAssetCursor = 0;
+  let { setAssetId } = assetViewingStore;
 
   let mapMarkers: MapMarkerResponseDto[] = $state([]);
 
@@ -61,36 +56,8 @@
     const assetIds = await modalManager.show(MapModal, { mapMarkers });
 
     if (assetIds) {
-      viewingAssets = assetIds;
-      viewingAssetCursor = 0;
-
       await setAssetId(assetIds[0]);
     }
-  }
-
-  async function navigateNext() {
-    if (viewingAssetCursor < viewingAssets.length - 1) {
-      await setAssetId(viewingAssets[++viewingAssetCursor]);
-      return true;
-    }
-    return false;
-  }
-
-  async function navigatePrevious() {
-    if (viewingAssetCursor > 0) {
-      await setAssetId(viewingAssets[--viewingAssetCursor]);
-      return true;
-    }
-    return false;
-  }
-
-  async function navigateRandom() {
-    if (viewingAssets.length <= 0) {
-      return undefined;
-    }
-    const index = Math.floor(Math.random() * viewingAssets.length);
-    const asset = await setAssetId(viewingAssets[index]);
-    return asset;
   }
 </script>
 
@@ -102,22 +69,3 @@
   onclick={openMap}
   aria-label={$t('map')}
 />
-
-<Portal target="body">
-  {#if $showAssetViewer}
-    {#await import('../../../lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-      <AssetViewer
-        asset={$viewingAsset}
-        showNavigation={viewingAssets.length > 1}
-        onNext={navigateNext}
-        onPrevious={navigatePrevious}
-        onRandom={navigateRandom}
-        onClose={() => {
-          assetViewingStore.showAssetViewer(false);
-          handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
-        }}
-        isShared={false}
-      />
-    {/await}
-  {/if}
-</Portal>
