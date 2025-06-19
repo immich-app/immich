@@ -519,8 +519,6 @@
   "backup_controller_page_background_description": "Turn on the background service to automatically backup any new assets without needing to open the app",
   "backup_controller_page_background_is_off": "Automatic background backup is off",
   "backup_controller_page_background_is_on": "Automatic background backup is on",
-  "backup_controller_page_background_off_subtitle": "Automatic sync when app is closed",
-  "backup_controller_page_background_on_subtitle": "Syncs when app is closed",
   "backup_controller_page_background_title": "Background Backup",
   "backup_controller_page_background_turn_off": "Turn off background service",
   "backup_controller_page_background_turn_on": "Turn on background service",

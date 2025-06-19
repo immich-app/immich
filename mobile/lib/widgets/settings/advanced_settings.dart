@@ -11,6 +11,7 @@ import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custom_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
@@ -59,6 +60,9 @@ class AdvancedSettings extends HookConsumerWidget {
 
     final advancedSettings = [
       SettingsCardLayout(
+        header: const SettingSectionHeader(
+          title: "Placeholder",
+        ),
         children: [
           SettingSwitchListTile(
             enabled: true,
@@ -79,6 +83,9 @@ class AdvancedSettings extends HookConsumerWidget {
       ),
       if (isAndroid31Plus.hasData && isAndroid31Plus.data == true)
         SettingsCardLayout(
+          header: const SettingSectionHeader(
+            title: "Placeholder",
+          ),
           children: [
             SettingSwitchListTile(
               valueNotifier: manageLocalMediaAndroid,
@@ -96,6 +103,9 @@ class AdvancedSettings extends HookConsumerWidget {
           ],
         ),
       SettingsCardLayout(
+        header: const SettingSectionHeader(
+          title: "Placeholder",
+        ),
         children: [
           SettingSwitchListTile(
             valueNotifier: preferRemote,
@@ -104,8 +114,16 @@ class AdvancedSettings extends HookConsumerWidget {
           ),
         ],
       ),
-      const SettingsCardLayout(children: [LocalStorageSettings()]),
+      const SettingsCardLayout(
+        header: SettingSectionHeader(
+          title: "Placeholder",
+        ),
+        children: [LocalStorageSettings()],
+      ),
       SettingsCardLayout(
+        header: const SettingSectionHeader(
+          title: "Placeholder",
+        ),
         children: [
           SettingSwitchListTile(
             enabled: !isLoggedIn,
@@ -116,8 +134,16 @@ class AdvancedSettings extends HookConsumerWidget {
           ),
         ],
       ),
-      const SettingsCardLayout(children: [CustomProxyHeaderSettings()]),
+      const SettingsCardLayout(
+        header: SettingSectionHeader(
+          title: "Placeholder",
+        ),
+        children: [CustomProxyHeaderSettings()],
+      ),
       SettingsCardLayout(
+        header: const SettingSectionHeader(
+          title: "Placeholder",
+        ),
         children: [
           SslClientCertSettings(
             isLoggedIn: ref.read(currentUserProvider) != null,
@@ -125,6 +151,9 @@ class AdvancedSettings extends HookConsumerWidget {
         ],
       ),
       SettingsCardLayout(
+        header: const SettingSectionHeader(
+          title: "Placeholder",
+        ),
         children: [
           SettingSwitchListTile(
             valueNotifier: useAlternatePMFilter,

@@ -10,6 +10,7 @@ import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/widgets/common/responsive_button.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/background_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/foreground_settings.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
 import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_button_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/layouts/settings_sub_page_scaffold.dart';
@@ -34,6 +35,9 @@ class BackupSettings extends HookConsumerWidget {
       const BackgroundBackupSettings(),
       if (Platform.isIOS)
         SettingsCardLayout(
+          header: const SettingSectionHeader(
+            title: "Placeholder",
+          ),
           children: [
             SettingSwitchListTile(
               valueNotifier: ignoreIcloudAssets,
@@ -73,6 +77,9 @@ class _SyncAlbumsSettings extends HookConsumerWidget {
     }
 
     return SettingsCardLayout(
+      header: const SettingSectionHeader(
+        title: "Placeholder",
+      ),
       children: [
         SettingButtonListTile(
           title: 'sync_albums'.tr(),
@@ -112,6 +119,9 @@ class _CheckCorruptAssetSettings extends ConsumerWidget {
     }
 
     return SettingsCardLayout(
+      header: const SettingSectionHeader(
+        title: "Placeholder",
+      ),
       children: [
         SettingButtonListTile(
           title: 'check_corrupt_asset_backup'.tr(),

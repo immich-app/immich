@@ -38,7 +38,7 @@ class SettingSwitchListTile extends StatelessWidget {
     return ListTile(
       contentPadding: contentPadding,
       enabled: enabled,
-      dense: true,
+      // dense: true,
       selectedTileColor: enabled ? null : context.themeData.disabledColor,
       leading: icon != null
           ? Icon(

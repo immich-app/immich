@@ -5,6 +5,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_permission_request.dart';
 import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
@@ -60,6 +61,7 @@ class NotificationSetting extends HookConsumerWidget {
     final notificationSettings = [
       if (!hasPermission)
         SettingPermissionRequest(
+          padding: const EdgeInsets.all(16),
           icon: Icons.notifications_off_rounded,
           title: 'notification_permission_list_tile_title'.tr(),
           subtitle: 'notification_permission_list_tile_content'.tr(),
@@ -77,6 +79,9 @@ class NotificationSetting extends HookConsumerWidget {
           useCard: true,
         ),
       SettingsCardLayout(
+        header: const SettingSectionHeader(
+          title: "Placeholder",
+        ),
         children: [
           SettingSwitchListTile(
             enabled: hasPermission,
@@ -93,6 +98,9 @@ class NotificationSetting extends HookConsumerWidget {
         ],
       ),
       SettingsCardLayout(
+        header: const SettingSectionHeader(
+          title: "Placeholder",
+        ),
         children: [
           SettingSliderListTile(
             title: 'setting_notifications_notify_failures_grace_period'

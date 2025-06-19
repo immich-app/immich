@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_group_settings.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
 import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
 import 'package:immich_mobile/widgets/settings/layouts/settings_sub_page_scaffold.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_switch_list_tile.dart';
@@ -22,6 +23,9 @@ class AssetListSettings extends HookConsumerWidget {
 
     final assetListSetting = [
       SettingsCardLayout(
+        header: const SettingSectionHeader(
+          title: "Placeholder",
+        ),
         children: [
           SettingSwitchListTile(
             valueNotifier: showStorageIndicator,
