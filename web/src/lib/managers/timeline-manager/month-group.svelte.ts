@@ -348,7 +348,6 @@ export class MonthGroup {
         return asset;
       }
     }
-    return undefined;
   }
 
   findClosest(target: TimelinePlainDateTime) {
