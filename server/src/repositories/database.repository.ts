@@ -119,8 +119,6 @@ export class DatabaseRepository {
     await sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(extension)} CASCADE`.execute(this.db);
     if (extension === DatabaseExtension.VECTORCHORD) {
       const dbName = sql.id(await this.getDatabaseName());
-      await sql`ALTER DATABASE ${dbName} SET vchordrq.prewarm_dim = '512,640,768,1024,1152,1536'`.execute(this.db);
-      await sql`SET vchordrq.prewarm_dim = '512,640,768,1024,1152,1536'`.execute(this.db);
       await sql`ALTER DATABASE ${dbName} SET vchordrq.probes = 1`.execute(this.db);
       await sql`SET vchordrq.probes = 1`.execute(this.db);
     }
