@@ -533,8 +533,6 @@
   "backup_controller_page_excluded": "Excluded: ",
   "backup_controller_page_failed": "Failed ({count})",
   "backup_controller_page_filename": "File name: {filename} [{size}]",
-  "backup_controller_page_foreground_off_subtitle": "Manual backup only",
-  "backup_controller_page_foreground_on_subtitle": "Automatic backup when app is open",
   "backup_controller_page_foreground_title": "Foreground Backup",
   "backup_controller_page_id": "ID: {id}",
   "backup_controller_page_info": "Backup Information",
