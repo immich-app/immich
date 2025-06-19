@@ -394,6 +394,35 @@ where
 order by
   "id" asc
 
+-- SyncRepository.getAlbumBackfill
+select
+  "albumsId" as "id",
+  "createId"
+from
+  "albums_shared_users_users"
+where
+  "usersId" = $1
+  and "createId" >= $2
+  and "createdAt" < now() - interval '1 millisecond'
+order by
+  "createId" asc
+
+-- SyncRepository.getAlbumUsersBackfill
+select
+  "albums_shared_users_users"."albumsId" as "albumId",
+  "albums_shared_users_users"."usersId" as "userId",
+  "albums_shared_users_users"."role",
+  "albums_shared_users_users"."updateId"
+from
+  "albums_shared_users_users"
+where
+  "albumsId" = $1
+  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $2
+  and "updateId" >= $3
+order by
+  "updateId" asc
+
 -- SyncRepository.getAlbumUserUpserts
 select
   "albums_shared_users_users"."albumsId" as "albumId",

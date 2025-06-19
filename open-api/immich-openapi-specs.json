@@ -8503,7 +8503,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.134.0",
+    "version": "1.135.0",
     "contact": {}
   },
   "tags": [],
@@ -13706,6 +13706,7 @@
           "AlbumV1",
           "AlbumDeleteV1",
           "AlbumUserV1",
+          "AlbumUserBackfillV1",
           "AlbumUserDeleteV1",
           "SyncAckV1"
         ],

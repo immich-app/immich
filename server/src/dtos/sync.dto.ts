@@ -161,6 +161,7 @@ export type SyncItem = {
   [SyncEntityType.AlbumV1]: SyncAlbumV1;
   [SyncEntityType.AlbumDeleteV1]: SyncAlbumDeleteV1;
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
+  [SyncEntityType.AlbumUserBackfillV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserDeleteV1]: SyncAlbumUserDeleteV1;
   [SyncEntityType.SyncAckV1]: object;
 };

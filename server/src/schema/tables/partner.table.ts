@@ -27,7 +27,7 @@ export class PartnerTable {
   @CreateDateColumn()
   createdAt!: Date;
 
-  @CreateIdColumn()
+  @CreateIdColumn({ indexName: 'IDX_partners_create_id' })
   createId!: string;
 
   @UpdateDateColumn()

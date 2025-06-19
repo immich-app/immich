@@ -1,7 +1,7 @@
 import { onMissingColumn, resolveColumn } from 'src/sql-tools/from-code/processors/column.processor';
 import { onMissingTable, resolveTable } from 'src/sql-tools/from-code/processors/table.processor';
 import { Processor } from 'src/sql-tools/from-code/processors/type';
-import { asKey } from 'src/sql-tools/helpers';
+import { asIndexName } from 'src/sql-tools/helpers';
 
 export const processIndexes: Processor = (builder, items, config) => {
   for (const {
@@ -74,17 +74,4 @@ export const processIndexes: Processor = (builder, items, config) => {
       synchronize: options.synchronize ?? true,
     });
   }
-};
-
-const asIndexName = (table: string, columns?: string[], where?: string) => {
-  const items: string[] = [];
-  for (const columnName of columns ?? []) {
-    items.push(columnName);
-  }
-
-  if (where) {
-    items.push(where);
-  }
-
-  return asKey('IDX_', table, items);
 };

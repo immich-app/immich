@@ -1,7 +1,7 @@
 import { ColumnOptions } from 'src/sql-tools/from-code/decorators/column.decorator';
 import { onMissingTable, resolveTable } from 'src/sql-tools/from-code/processors/table.processor';
 import { Processor, SchemaBuilder } from 'src/sql-tools/from-code/processors/type';
-import { asMetadataKey, fromColumnValue } from 'src/sql-tools/helpers';
+import { addWarning, asMetadataKey, fromColumnValue } from 'src/sql-tools/helpers';
 import { DatabaseColumn } from 'src/sql-tools/types';
 
 export const processColumns: Processor = (builder, items) => {
@@ -81,7 +81,7 @@ export const onMissingColumn = (
   propertyName?: symbol | string,
 ) => {
   const label = object.constructor.name + (propertyName ? '.' + String(propertyName) : '');
-  builder.warnings.push(`[${context}] Unable to find column (${label})`);
+  addWarning(builder, context, `Unable to find column (${label})`);
 };
 
 const METADATA_KEY = asMetadataKey('table-metadata');
