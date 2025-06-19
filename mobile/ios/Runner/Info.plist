@@ -115,8 +115,8 @@
     </dict>
     <key>NSBonjourServices</key>
     <array>
-    <string>_googlecast._tcp</string>
-    <string>_CC1AD845._googlecast._tcp</string>
+      <string>_googlecast._tcp</string>
+      <string>_CC1AD845._googlecast._tcp</string>
     </array>
     <key>NSCameraUsageDescription</key>
     <string>We need to access the camera to let you take beautiful video using this app</string>
@@ -168,5 +168,8 @@
     <true />
     <key>NSFaceIDUsageDescription</key>
     <string>We need to use FaceID to allow access to your locked folder</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>We need local network permission to connect to the local server using IP address and
+      allow the casting feature to work</string>
   </dict>
 </plist>
