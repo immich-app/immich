@@ -343,7 +343,12 @@ export class MonthGroup {
   }
 
   findAssetById(assetDescriptor: AssetDescriptor) {
-    return this.assetsIterator().find((asset) => asset.id === assetDescriptor.id);
+    for (const asset of this.assetsIterator()) {
+      if (asset.id === assetDescriptor.id) {
+        return asset;
+      }
+    }
+    return undefined;
   }
 
   findClosest(target: TimelinePlainDateTime) {
