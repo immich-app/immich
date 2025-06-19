@@ -1,11 +1,11 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user_api.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../fixtures/user.stub.dart';
@@ -14,16 +14,16 @@ import '../service.mock.dart';
 
 void main() {
   late UserService sut;
-  late IUserRepository mockUserRepo;
+  late IsarUserRepository mockUserRepo;
   late IUserApiRepository mockUserApiRepo;
   late StoreService mockStoreService;
 
   setUp(() {
-    mockUserRepo = MockUserRepository();
+    mockUserRepo = MockIsarUserRepository();
     mockUserApiRepo = MockUserApiRepository();
     mockStoreService = MockStoreService();
     sut = UserService(
-      userRepository: mockUserRepo,
+      isarUserRepository: mockUserRepo,
       userApiRepository: mockUserApiRepo,
       storeService: mockStoreService,
     );
