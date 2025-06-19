@@ -59,7 +59,7 @@ class SettingSliderListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: padding ?? const EdgeInsets.symmetric(vertical: 4),
+      padding: padding ?? const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -120,26 +120,18 @@ class SettingSliderListTile extends StatelessWidget {
               ],
             ],
           ),
-          const SizedBox(height: 8),
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              year2023: false,
-              trackHeight: 4,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-            ),
-            child: Slider(
-              value: valueNotifier.value.toDouble(),
-              onChanged: enabled
-                  ? (double v) => valueNotifier.value = v.toInt()
-                  : null,
-              onChangeEnd:
-                  enabled ? (double v) => onChangeEnd?.call(v.toInt()) : null,
-              min: min,
-              max: max,
-              divisions: divisions,
-              label: label ?? _formatValue(valueNotifier.value.toDouble()),
-            ),
+          const SizedBox(height: 4),
+          Slider(
+            value: valueNotifier.value.toDouble(),
+            activeColor: context.primaryColor,
+            onChanged:
+                enabled ? (double v) => valueNotifier.value = v.toInt() : null,
+            onChangeEnd:
+                enabled ? (double v) => onChangeEnd?.call(v.toInt()) : null,
+            min: min,
+            max: max,
+            divisions: divisions,
+            label: label ?? _formatValue(valueNotifier.value.toDouble()),
           ),
         ],
       ),

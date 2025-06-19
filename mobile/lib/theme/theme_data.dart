@@ -88,8 +88,10 @@ ThemeData getThemeData({
       side: BorderSide.none,
     ),
     sliderTheme: const SliderThemeData(
-      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7),
-      trackHeight: 2.0,
+      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8),
+      overlayShape: RoundSliderOverlayShape(overlayRadius: 16),
+      year2023: false,
+      trackHeight: 4,
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       type: BottomNavigationBarType.fixed,
