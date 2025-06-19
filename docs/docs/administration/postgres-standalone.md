@@ -82,6 +82,8 @@ VectorChord is the successor extension to pgvecto.rs, allowing for higher perfor
 
 ### Migrating from pgvecto.rs
 
+<details>
+<summary>Migrating from pgvecto.rs</summary>
 Support for pgvecto.rs will be dropped in a later release, hence we recommend all users currently using pgvecto.rs to migrate to VectorChord at their convenience. There are two primary approaches to do so.
 
 The easiest option is to have both extensions installed during the migration:
@@ -133,8 +135,12 @@ ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE vector(512);
 
 5. Start Immich and let it create new indices using VectorChord
 
+</details>
+
 ### Migrating from pgvector
 
+<details>
+<summary>Migrating from pgvector</summary>
 1. Ensure you have at least 0.7.0 of pgvector installed. If it is below that, please upgrade it and run the SQL command `ALTER EXTENSION vector UPDATE;` using psql or your choice of database client
 2. Follow the Prerequisites to install VectorChord
 3. If Immich does not have superuser permissions, run the SQL command `CREATE EXTENSION vchord CASCADE;`
@@ -142,6 +148,8 @@ ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE vector(512);
 5. Start Immich and let it create new indices using VectorChord
 
 Note that VectorChord itself uses pgvector types, so you should not uninstall pgvector after following these steps.
+
+</details>
 
 [vchord-install]: https://docs.vectorchord.ai/vectorchord/getting-started/installation.html
 [pg-apt]: https://www.postgresql.org/download/linux/#generic
