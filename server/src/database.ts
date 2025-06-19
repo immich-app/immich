@@ -209,6 +209,7 @@ export type Partner = {
   sharedWithId: string;
   sharedWith: User;
   createdAt: Date;
+  createId: string;
   updatedAt: Date;
   updateId: string;
   inTimeline: boolean;
@@ -352,6 +353,13 @@ export const columns = {
     'isFavorite',
     'visibility',
     'updateId',
+    'duration',
+  ],
+  syncAlbumUser: [
+    'albums_shared_users_users.albumsId as albumId',
+    'albums_shared_users_users.usersId as userId',
+    'albums_shared_users_users.role',
+    'albums_shared_users_users.updateId',
   ],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],
   syncAssetExif: [

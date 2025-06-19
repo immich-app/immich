@@ -9,20 +9,26 @@ type Impossible<K extends keyof any> = {
 type Exact<T, U extends T = T> = U & Impossible<Exclude<keyof U, keyof T>>;
 
 export const fromAck = (ack: string): SyncAck => {
-  const [type, updateId] = ack.split('|');
-  return { type: type as SyncEntityType, updateId };
+  const [type, updateId, extraId] = ack.split('|');
+  return { type: type as SyncEntityType, updateId, extraId };
 };
 
-export const toAck = ({ type, updateId }: SyncAck) => [type, updateId].join('|');
+export const toAck = ({ type, updateId, extraId }: SyncAck) =>
+  [type, updateId, extraId].filter((v) => v !== undefined).join('|');
 
 export const mapJsonLine = (object: unknown) => JSON.stringify(object) + '\n';
 
+export type SerializeOptions<T extends keyof SyncItem, D extends SyncItem[T]> = {
+  type: T;
+  data: Exact<SyncItem[T], D>;
+  ids: [string] | [string, string];
+  ackType?: SyncEntityType;
+};
+
 export const serialize = <T extends keyof SyncItem, D extends SyncItem[T]>({
   type,
-  updateId,
   data,
-}: {
-  type: T;
-  updateId: string;
-  data: Exact<SyncItem[T], D>;
-}) => mapJsonLine({ type, data, ack: toAck({ type, updateId }) });
+  ids,
+  ackType,
+}: SerializeOptions<T, D>) =>
+  mapJsonLine({ type, data, ack: toAck({ type: ackType ?? type, updateId: ids[0], extraId: ids[1] }) });

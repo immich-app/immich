@@ -1,4 +1,4 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { partners_delete_audit } from 'src/schema/functions';
 import { UserTable } from 'src/schema/tables/user.table';
 import { AfterDeleteTrigger, Column, CreateDateColumn, ForeignKeyColumn, Table, UpdateDateColumn } from 'src/sql-tools';
@@ -26,6 +26,9 @@ export class PartnerTable {
 
   @CreateDateColumn()
   createdAt!: Date;
+
+  @CreateIdColumn({ indexName: 'IDX_partners_create_id' })
+  createId!: string;
 
   @UpdateDateColumn()
   updatedAt!: Date;

@@ -1,10 +1,11 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
+  import { user as authUser } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, Field, Modal, ModalBody, ModalFooter, Switch } from '@immich/ui';
   import { mdiAccountEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -14,6 +15,11 @@
   }
 
   let { user, onClose }: Props = $props();
+
+  let isAdmin = $derived(user.isAdmin);
+  let name = $derived(user.name);
+  let email = $derived(user.email);
+  let storageLabel = $derived(user.storageLabel || '');
 
   let quotaSize = $state(user.quotaSizeInBytes === null ? null : convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB));
 
@@ -28,14 +34,14 @@
 
   const handleEditUser = async () => {
     try {
-      const { id, email, name, storageLabel } = user;
       const newUser = await updateUserAdmin({
-        id,
+        id: user.id,
         userAdminUpdateDto: {
           email,
           name,
-          storageLabel: storageLabel || '',
+          storageLabel,
           quotaSizeInBytes: quotaSize === null ? null : convertToBytes(Number(quotaSize), ByteUnit.GiB),
+          isAdmin,
         },
       });
 
@@ -56,12 +62,12 @@
     <form onsubmit={onSubmit} autocomplete="off" id="edit-user-form">
       <div class="mb-4 flex flex-col gap-2">
         <label class="immich-form-label" for="email">{$t('email')}</label>
-        <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
+        <input class="immich-form-input" id="email" name="email" type="email" bind:value={email} />
       </div>
 
       <div class="my-4 flex flex-col gap-2">
         <label class="immich-form-label" for="name">{$t('name')}</label>
-        <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
+        <input class="immich-form-input" id="name" name="name" type="text" required bind:value={name} />
       </div>
 
       <div class="my-4 flex flex-col gap-2">
@@ -89,7 +95,7 @@
           id="storage-label"
           name="storage-label"
           type="text"
-          bind:value={user.storageLabel}
+          bind:value={storageLabel}
         />
 
         <p>
@@ -99,6 +105,12 @@
           </a>
         </p>
       </div>
+
+      {#if user.id !== $authUser.id}
+        <Field label={$t('admin.admin_user')}>
+          <Switch bind:checked={isAdmin} />
+        </Field>
+      {/if}
     </form>
   </ModalBody>
 

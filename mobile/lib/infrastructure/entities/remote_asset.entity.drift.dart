@@ -1178,3 +1178,6 @@ class RemoteAssetEntityCompanion
         .toString();
   }
 }
+
+i0.Index get idxRemoteAssetChecksum => i0.Index('idx_remote_asset_checksum',
+    'CREATE INDEX idx_remote_asset_checksum ON remote_asset_entity (checksum)');

@@ -31,8 +31,8 @@ export function onImageLoad(resetSize: boolean = false) {
     cropFrameEl?.classList.add('transition');
     cropSettings.update((crop) => normalizeCropArea(crop, img, scale));
     cropFrameEl?.classList.add('transition');
-    cropFrameEl?.addEventListener('transitionend', () => {
-      cropFrameEl?.classList.remove('transition');
+    cropFrameEl?.addEventListener('transitionend', () => cropFrameEl?.classList.remove('transition'), {
+      passive: true,
     });
   }
   cropImageScale.set(scale);
