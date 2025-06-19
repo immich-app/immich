@@ -244,8 +244,6 @@ async def load(model: InferenceModel) -> InferenceModel:
 
 async def idle_shutdown_task() -> None:
     while True:
-        # This log prints every 10 seconds and makes the verbose log level very hard to use
-        # log.debug("Checking for inactivity...")
         if (
             last_called is not None
             and not active_requests
