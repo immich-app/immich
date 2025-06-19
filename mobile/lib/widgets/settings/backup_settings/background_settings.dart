@@ -184,10 +184,12 @@ class _BackgroundOptionsSection extends HookConsumerWidget {
         useState(_backupDelayToSliderValue(backupTriggerDelay));
     useValueChanged(
       triggerDelay.value,
-      (_, __) => ref.read(backupProvider.notifier).configureBackgroundBackup(
-            triggerDelay: _backupDelayToMilliseconds(triggerDelay.value),
-            onError: onError,
-            onBatteryInfo: onBatteryInfo,
+      (_, __) => (_, __) => WidgetsBinding.instance.addPostFrameCallback(
+            (_) => ref.read(backupProvider.notifier).configureBackgroundBackup(
+                  triggerDelay: _backupDelayToMilliseconds(triggerDelay.value),
+                  onError: onError,
+                  onBatteryInfo: onBatteryInfo,
+                ),
           ),
     );
 
