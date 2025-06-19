@@ -16,15 +16,9 @@ class CustomProxyHeaderSettings extends StatelessWidget {
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         title: Text("headers_settings_tile_title".tr()),
-        titleTextStyle: context.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-          color: context.colorScheme.onSurface,
-        ),
+        titleTextStyle: context.itemTitle,
         subtitle: Text("headers_settings_tile_subtitle".tr()),
-        subtitleTextStyle: context.textTheme.bodyMedium?.copyWith(
-          color: context.colorScheme.onSurfaceSecondary,
-          // height: 1.4,
-        ),
+        subtitleTextStyle: context.itemSubtitle,
         trailing: Icon(
           Icons.chevron_right,
           color: context.colorScheme.onSurface.withValues(alpha: 0.4),

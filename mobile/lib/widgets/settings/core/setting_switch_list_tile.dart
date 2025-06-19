@@ -49,23 +49,15 @@ class SettingSwitchListTile extends StatelessWidget {
       title: Text(
         title,
         style: titleStyle ??
-            context.textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: enabled ? null : context.themeData.disabledColor,
-              letterSpacing: 0,
-            ),
+            (enabled ? context.itemTitle : context.itemTitleDisabled),
       ),
       subtitle: subtitle != null
           ? Text(
               subtitle!,
               style: subtitleStyle ??
-                  context.textTheme.bodyMedium?.copyWith(
-                    letterSpacing: 0,
-                    height: 1.4,
-                    color: enabled
-                        ? context.colorScheme.onSurfaceSecondary
-                        : context.themeData.disabledColor,
-                  ),
+                  (enabled
+                      ? context.itemSubtitle
+                      : context.itemSubtitleDisabled),
             )
           : null,
       trailing: Switch(

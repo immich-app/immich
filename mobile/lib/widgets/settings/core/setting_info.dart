@@ -39,10 +39,8 @@ class SettingInfo extends StatelessWidget {
           Expanded(
             child: Text(
               text.t(context: context),
-              style: context.textTheme.bodyMedium?.copyWith(
+              style: context.itemSubtitle.copyWith(
                 color: textColor ?? context.colorScheme.onSurfaceSecondary,
-                height: 1.4,
-                letterSpacing: 0,
               ),
             ),
           ),

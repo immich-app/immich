@@ -71,23 +71,17 @@ class SettingSliderListTile extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: enabled ? null : context.themeData.disabledColor,
-                        letterSpacing: 0,
-                      ),
+                      style: enabled
+                          ? context.itemTitle
+                          : context.itemTitleDisabled,
                     ),
                     if (subtitle != null) ...[
                       const SizedBox(height: 4),
                       Text(
                         subtitle!,
-                        style: context.textTheme.bodyMedium?.copyWith(
-                          letterSpacing: 0,
-                          height: 1.4,
-                          color: enabled
-                              ? context.colorScheme.onSurfaceSecondary
-                              : context.themeData.disabledColor,
-                        ),
+                        style: enabled
+                            ? context.itemSubtitle
+                            : context.itemSubtitleDisabled,
                       ),
                     ],
                   ],

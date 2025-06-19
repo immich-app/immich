@@ -33,19 +33,12 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       isThreeLine: true,
       title: Text(
         "client_cert_title".tr(),
-        style: context.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
+        style: context.itemTitle,
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "client_cert_subtitle".tr(),
-            style: context.textTheme.bodyMedium?.copyWith(
-              color: context.colorScheme.onSurfaceSecondary,
-            ),
-          ),
+          Text("client_cert_subtitle".tr(), style: context.itemSubtitle),
           const SizedBox(
             height: 6,
           ),

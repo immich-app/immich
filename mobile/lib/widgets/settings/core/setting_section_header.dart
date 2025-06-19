@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 
 class SettingSectionHeader extends StatelessWidget {
   const SettingSectionHeader({
@@ -50,9 +51,8 @@ class SettingSectionHeader extends StatelessWidget {
             const SizedBox(width: 10),
             Text(
               title,
-              style: context.textTheme.titleSmall?.copyWith(
+              style: context.sectionTitle.copyWith(
                 color: titleTextColor,
-                letterSpacing: -0.25,
               ),
             ),
           ],

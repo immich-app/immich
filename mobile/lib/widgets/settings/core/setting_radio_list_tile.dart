@@ -42,21 +42,11 @@ class SettingRadioListTile<T> extends StatelessWidget {
               child: ListTile(
                 contentPadding: contentPadding,
                 dense: true,
-                title: Text(
-                  group.title,
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0,
-                  ),
-                ),
+                title: Text(group.title, style: context.itemTitle),
                 subtitle: group.subtitle != null
                     ? Text(
                         group.subtitle!,
-                        style: context.textTheme.bodyMedium?.copyWith(
-                          letterSpacing: 0,
-                          height: 1.4,
-                          color: context.colorScheme.onSurfaceSecondary,
-                        ),
+                        style: context.itemSubtitle,
                       )
                     : null,
                 trailing: Radio<T>(

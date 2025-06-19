@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 
 class SettingButtonListTile extends StatelessWidget {
@@ -31,25 +30,14 @@ class SettingButtonListTile extends StatelessWidget {
       title: title != null
           ? Text(
               title!,
-              style: context.textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.w500,
-                color: context.colorScheme.onSurface,
-                letterSpacing: 0,
-              ),
+              style: context.itemTitle,
             )
           : null,
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (subtileText != null)
-            Text(
-              subtileText!,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.colorScheme.onSurfaceSecondary,
-                height: 1.4,
-                letterSpacing: 0,
-              ),
-            ),
+            Text(subtileText!, style: context.itemSubtitle),
           if (subtitle != null) subtitle!,
           const SizedBox(height: 8),
           Center(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/widgets/common/responsive_button.dart';
 import 'package:immich_mobile/widgets/settings/core/setting_card.dart';
 
@@ -71,10 +72,7 @@ class SettingPermissionRequest extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               subtitle!,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.colorScheme.onSurface.withValues(alpha: 0.8),
-                height: 1.4,
-              ),
+              style: context.itemSubtitle,
               textAlign: TextAlign.center,
             ),
           ],

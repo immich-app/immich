@@ -84,7 +84,7 @@ class SettingsPage extends StatelessWidget {
     context.locale;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('settings').tr(),
+        title: Text('settings', style: context.pageTitle).tr(),
       ),
       body: context.isMobile ? const _MobileLayout() : const _TabletLayout(),
     );
@@ -174,15 +174,9 @@ class _MobileSettingsItem extends StatelessWidget {
           ),
         ),
         title: Text(section.title).tr(),
-        titleTextStyle: context.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-          color: context.colorScheme.onSurface,
-        ),
+        titleTextStyle: context.itemTitle,
         subtitle: Text(section.subtitle).tr(),
-        subtitleTextStyle: context.textTheme.bodyMedium?.copyWith(
-          color: context.colorScheme.onSurfaceSecondary,
-          height: 1.4,
-        ),
+        subtitleTextStyle: context.itemSubtitle,
         trailing: Icon(
           Icons.chevron_right,
           color: context.colorScheme.onSurface.withValues(alpha: 0.4),
@@ -212,9 +206,8 @@ class _TabletSettingsItem extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(12)),
       ),
       title: Text(section.title).tr(),
-      titleTextStyle: context.textTheme.bodyLarge?.copyWith(
+      titleTextStyle: context.itemTitle.copyWith(
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-        color: context.colorScheme.onSurface,
       ),
       leading: Icon(section.icon),
       selected: isSelected,
@@ -235,7 +228,7 @@ class SettingsSubPage extends StatelessWidget {
     context.locale;
     return Scaffold(
       appBar: AppBar(
-        title: Text(section.title).tr(),
+        title: Text(section.title, style: context.pageTitle).tr(),
       ),
       body: section.widget,
     );

@@ -90,6 +90,7 @@ ThemeData getThemeData({
     sliderTheme: const SliderThemeData(
       thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8),
       overlayShape: RoundSliderOverlayShape(overlayRadius: 16),
+      // ignore: deprecated_member_use
       year2023: false,
       trackHeight: 4,
     ),

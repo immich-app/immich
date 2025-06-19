@@ -179,15 +179,9 @@ class PrimaryColorSetting extends HookConsumerWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text("theme_setting_primary_color_title".tr()),
-      titleTextStyle: context.textTheme.bodyLarge?.copyWith(
-        fontWeight: FontWeight.w500,
-        color: context.colorScheme.onSurface,
-      ),
+      titleTextStyle: context.itemTitle,
       subtitle: Text("theme_setting_primary_color_subtitle".tr()),
-      subtitleTextStyle: context.textTheme.bodyMedium?.copyWith(
-        color: context.colorScheme.onSurfaceSecondary,
-        height: 1.4,
-      ),
+      subtitleTextStyle: context.itemSubtitle,
       trailing: FadeOnTap(
         onTap: () => showModalBottomSheet(
           context: context,
