@@ -370,16 +370,15 @@
             onToggleFavorite={() => handleToggleFavorite(person)}
           />
 
-          <input
-            type="text"
-            class=" bg-white dark:bg-immich-dark-gray border-gray-100 placeholder-gray-400 text-center dark:border-gray-900 w-full rounded-2xl mt-2 py-2 text-sm text-immich-primary dark:text-immich-dark-primary"
+          <textarea
+            class="bg-white dark:bg-immich-dark-gray border-gray-100 placeholder-gray-400 text-center dark:border-gray-900 w-full rounded-2xl mt-2 p-2 text-sm text-immich-primary dark:text-immich-dark-primary resize-none field-sizing-content"
             value={person.name}
             placeholder={$t('add_a_name')}
             use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
             onfocusin={() => onNameChangeInputFocus(person)}
             onfocusout={() => onNameChangeSubmit(newName, person)}
             oninput={(event) => onNameChangeInputUpdate(event)}
-          />
+          ></textarea>
         </div>
       {/snippet}
     </PeopleInfiniteScroll>
