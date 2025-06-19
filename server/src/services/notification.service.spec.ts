@@ -268,7 +268,7 @@ describe(NotificationService.name, () => {
       mocks.album.getById.mockResolvedValue(albumStub.empty);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.SKIPPED);
-      expect(mocks.asset.getById).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
     });
 
     it('should skip if the recipient has email notifications disabled', async () => {
