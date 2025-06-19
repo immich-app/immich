@@ -66,6 +66,14 @@ COMMIT;
 
 When installing a new version of VectorChord, you will need to manually update the extension by connecting to the Immich database and running `ALTER EXTENSION vchord UPDATE;`.
 
+:::tip
+If you receive an error such as `deserialization: bad version number`, you may need to reindex by connecting to the Immich database with `psql` and running:
+```sql title="Reindex"
+REINDEX INDEX face_index;
+REINDEX INDEX clip_index;
+```
+:::
+
 ## Migrating to VectorChord
 
 VectorChord is the successor extension to pgvecto.rs, allowing for higher performance, lower memory usage and higher quality results for smart search and facial recognition.
