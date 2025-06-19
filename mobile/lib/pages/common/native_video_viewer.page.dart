@@ -397,7 +397,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       children: [
         // This remains under the video to avoid flickering
         // For motion videos, this is the image portion of the asset
-        if (!isVideoReady.value) Center(key: ValueKey(asset.id), child: image),
+        if (!isVideoReady.value || asset.isMotionPhoto)
+          Center(key: ValueKey(asset.id), child: image),
         if (aspectRatio.value != null && !isCasting)
           Visibility.maintain(
             key: ValueKey(asset),
