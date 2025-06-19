@@ -68,10 +68,12 @@ When installing a new version of VectorChord, you will need to manually update t
 
 :::tip
 If you receive an error such as `deserialization: bad version number`, you may need to reindex by connecting to the Immich database with `psql` and running:
+
 ```sql title="Reindex"
 REINDEX INDEX face_index;
 REINDEX INDEX clip_index;
 ```
+
 :::
 
 ## Migrating to VectorChord
