@@ -191,10 +191,10 @@
     </ModalBody>
 
     <ModalFooter>
-      <div class="flex w-full gap-2">
+      <HStack fullWidth>
         <Button color="secondary" fullWidth shape="round" onclick={() => handleCancel()}>{$t('cancel')}</Button>
         <Button type="submit" fullWidth shape="round" form="create-tag-form">{$t('create')}</Button>
-      </div>
+      </HStack>
     </ModalFooter>
   </Modal>
 {/if}
@@ -214,10 +214,10 @@
     </ModalBody>
 
     <ModalFooter>
-      <div class="flex w-full gap-2">
+      <HStack fullWidth>
         <Button color="secondary" fullWidth shape="round" onclick={() => handleCancel()}>{$t('cancel')}</Button>
         <Button type="submit" fullWidth shape="round" form="edit-tag-form">{$t('save')}</Button>
-      </div>
+      </HStack>
     </ModalFooter>
   </Modal>
 {/if}
