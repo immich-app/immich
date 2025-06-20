@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiFolderRemove } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -63,7 +63,7 @@
     </form>
   </ModalBody>
   <ModalFooter>
-    <div class="flex gap-2 w-full">
+    <HStack fullWidth>
       <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
       {#if isEditing}
         <Button shape="round" color="danger" fullWidth onclick={() => onClose({ action: 'delete' })}
@@ -73,6 +73,6 @@
       <Button shape="round" type="submit" disabled={!canSubmit} fullWidth form="add-exclusion-pattern-form">
         {submitText}
       </Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>

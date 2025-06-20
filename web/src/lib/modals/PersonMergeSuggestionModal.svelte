@@ -7,7 +7,7 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { mergePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, IconButton, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, IconButton, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiArrowLeft, mdiMerge } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -139,11 +139,11 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full">
+    <HStack fullWidth>
       <Button fullWidth shape="round" color="secondary" onclick={() => onClose()}>{$t('no')}</Button>
       <Button id="merge-confirm-button" fullWidth shape="round" onclick={handleMergePerson}>
         {$t('yes')}
       </Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>
