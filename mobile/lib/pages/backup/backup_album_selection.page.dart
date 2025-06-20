@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -23,6 +24,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
         useAppSettingsState(AppSettingsEnum.syncAlbums);
     final isDarkTheme = context.isDarkTheme;
     final albums = ref.watch(backupProvider).availableAlbums;
+    final searchQuery = useState('');
+    final formFocus = useFocusNode();
 
     useEffect(
       () {
@@ -31,6 +34,10 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       },
       [],
     );
+
+    final filteredAlbums = albums.where((album) {
+      return album.name.toLowerCase().contains(searchQuery.value.toLowerCase());
+    }).toList();
 
     buildAlbumSelectionList() {
       if (albums.isEmpty) {
@@ -47,10 +54,10 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           delegate: SliverChildBuilderDelegate(
             ((context, index) {
               return AlbumInfoListTile(
-                album: albums[index],
+                album: filteredAlbums[index],
               );
             }),
-            childCount: albums.length,
+            childCount: filteredAlbums.length,
           ),
         ),
       );
@@ -73,10 +80,10 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
           ),
-          itemCount: albums.length,
+          itemCount: filteredAlbums.length,
           itemBuilder: ((context, index) {
             return AlbumInfoCard(
-              album: albums[index],
+              album: filteredAlbums[index],
             );
           }),
         ),
@@ -246,8 +253,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
                             ),
                             elevation: 5,
                             title: Text(
@@ -276,9 +284,54 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                     },
                   ),
                 ),
-
-                // buildSearchBar(),
               ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 4),
+              child: TextField(
+                focusNode: formFocus,
+                onChanged: (value) => searchQuery.value = value,
+                onTapOutside: (_) => formFocus.unfocus(),
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.only(left: 24),
+                  filled: true,
+                  fillColor: context.primaryColor.withValues(alpha: 0.1),
+                  hintStyle: context.textTheme.bodyLarge?.copyWith(
+                    color: context.themeData.colorScheme.onSurfaceSecondary,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(Radius.circular(25)),
+                    borderSide: BorderSide(
+                      color: context.colorScheme.surfaceContainerHighest,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(Radius.circular(25)),
+                    borderSide: BorderSide(
+                      color: context.colorScheme.surfaceContainerHighest,
+                    ),
+                  ),
+                  disabledBorder: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(Radius.circular(25)),
+                    borderSide: BorderSide(
+                      color: context.colorScheme.surfaceContainerHighest,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(Radius.circular(25)),
+                    borderSide: BorderSide(
+                      color: context.colorScheme.primary.withAlpha(150),
+                    ),
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: context.colorScheme.primary,
+                  ),
+                  hintText: 'search_albums'.tr(),
+                ),
+              ),
             ),
           ),
           SliverLayoutBuilder(
