@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/interfaces/person_api.interface.dart';
+import 'package:immich_mobile/domain/models/person.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/services/person.service.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
@@ -9,14 +9,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'people.provider.g.dart';
 
 @riverpod
-Future<List<Person>> getAllPeople(
-  Ref ref,
-) async {
+Future<List<Person>> getAllPeople(Ref ref, {bool withHidden = false}) {
   final PersonService personService = ref.read(personServiceProvider);
 
-  final people = await personService.getAllPeople();
-
-  return people;
+  return personService.getAllPeople(withHidden: withHidden);
 }
 
 @riverpod
@@ -40,6 +36,21 @@ Future<bool> updatePersonName(
   final person = await personService.updateName(personId, updatedName);
 
   if (person != null && person.name == updatedName) {
+    ref.invalidate(getAllPeopleProvider);
+    return true;
+  }
+  return false;
+}
+
+@riverpod
+Future<bool> updatePersonIsHidden(
+  Ref ref,
+  String personId,
+  bool isHidden,
+) async {
+  final PersonService personService = ref.read(personServiceProvider);
+  final person = await personService.updateIsHidden(personId, isHidden);
+  if (person != null && person.isHidden == isHidden) {
     ref.invalidate(getAllPeopleProvider);
     return true;
   }
