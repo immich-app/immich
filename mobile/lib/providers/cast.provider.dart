@@ -1,6 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/interfaces/cast_destination_service.interface.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
 
@@ -10,7 +9,7 @@ final castProvider = StateNotifierProvider<CastNotifier, CastManagerState>(
 
 class CastNotifier extends StateNotifier<CastManagerState> {
   // more cast providers can be added here (ie Fcast)
-  final ICastDestinationService _gCastService;
+  final GCastService _gCastService;
 
   List<(String, CastDestinationType, dynamic)> discovered = List.empty();
 
