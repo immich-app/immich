@@ -72,11 +72,9 @@ export interface SystemConfig {
     ocr: {
       enabled: boolean;
       modelName: string;
-      minDetectionBoxScore: number;
       minDetectionScore: number;
       minRecognitionScore: number;
-      unwarpingEnabled: boolean;
-      orientationClassifyEnabled: boolean;
+      maxResolution: number;
     };
   };
   map: {
@@ -246,11 +244,9 @@ export const defaults = Object.freeze<SystemConfig>({
     ocr: {
       enabled: true,
       modelName: 'PP-OCRv5_server',
-      minDetectionBoxScore: 0.6,
-      minDetectionScore: 0.3,
-      minRecognitionScore: 0.0,
-      unwarpingEnabled: false,
-      orientationClassifyEnabled: false,
+      minDetectionScore: 0.5,
+      minRecognitionScore: 0.9,
+      maxResolution: 736,
     },
   },
   map: {

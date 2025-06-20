@@ -98,10 +98,8 @@ export interface AlbumsSharedUsersUsers {
   albumsId: string;
   role: Generated<AlbumUserRole>;
   usersId: string;
-  createId: Generated<string>;
-  createdAt: Generated<Timestamp>;
-  updateId: Generated<string>;
   updatedAt: Generated<Timestamp>;
+  updateId: Generated<string>;
 }
 
 export interface ApiKeys {
@@ -190,6 +188,7 @@ export interface Assets {
 export interface AssetOcr {
   id: Generated<string>;
   assetId: string;
+  text: string;
   x1: number;
   y1: number;
   x2: number;
@@ -197,8 +196,8 @@ export interface AssetOcr {
   x3: number;
   y3: number;
   x4: number;
-  text: string;
-  confidence: number;
+  boxScore: number;
+  textScore: number;
 }
 
 export interface AssetStack {
@@ -354,7 +353,6 @@ export interface PartnersAudit {
 
 export interface Partners {
   createdAt: Generated<Timestamp>;
-  createId: Generated<string>;
   inTimeline: Generated<boolean>;
   sharedById: string;
   sharedWithId: string;

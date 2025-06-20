@@ -9,7 +9,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { generateId } from '$lib/utils/generate-id';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
-  import type { MetadataSearchDto, SmartSearchDto, OcrSearchDto } from '@immich/sdk';
+  import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
   import { onDestroy, tick } from 'svelte';
@@ -19,7 +19,7 @@
   interface Props {
     value?: string;
     grayTheme: boolean;
-    searchQuery?: MetadataSearchDto | SmartSearchDto | OcrSearchDto;
+    searchQuery?: MetadataSearchDto | SmartSearchDto;
   }
 
   let { value = $bindable(''), grayTheme, searchQuery = {} }: Props = $props();
@@ -40,7 +40,7 @@
     searchStore.isSearchEnabled = false;
   });
 
-  const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto | OcrSearchDto) => {
+  const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
     const params = getMetadataSearchQuery(payload);
 
     closeDropdown();
@@ -108,10 +108,7 @@
 
   const onSubmit = () => {
     const searchType = getSearchType();
-    let payload: SmartSearchDto | MetadataSearchDto | OcrSearchDto = {} as
-      | SmartSearchDto
-      | MetadataSearchDto
-      | OcrSearchDto;
+    let payload = {} as SmartSearchDto | MetadataSearchDto;
 
     switch (searchType) {
       case 'smart': {
@@ -127,7 +124,7 @@
         break;
       }
       case 'ocr': {
-        payload = { ocr: value } as OcrSearchDto;
+        payload = { ocr: value } as MetadataSearchDto;
         break;
       }
     }
@@ -179,20 +176,14 @@
     onSubmit();
   };
 
-  function getSearchType(): 'smart' | 'metadata' | 'description' | 'ocr' {
+  function getSearchType() {
     const searchType = localStorage.getItem('searchQueryType');
     switch (searchType) {
-      case 'smart': {
-        return 'smart';
-      }
-      case 'metadata': {
-        return 'metadata';
-      }
-      case 'description': {
-        return 'description';
-      }
+      case 'smart':
+      case 'metadata':
+      case 'description':
       case 'ocr': {
-        return 'ocr';
+        return searchType;
       }
       default: {
         return 'smart';

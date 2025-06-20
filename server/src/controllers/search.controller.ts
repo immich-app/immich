@@ -14,8 +14,7 @@ import {
   SearchStatisticsResponseDto,
   SearchSuggestionRequestDto,
   SmartSearchDto,
-  StatisticsSearchDto,
-  OcrSearchDto,
+  StatisticsSearchDto
 } from 'src/dtos/search.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { SearchService } from 'src/services/search.service';
@@ -51,13 +50,6 @@ export class SearchController {
   @Authenticated()
   searchSmart(@Auth() auth: AuthDto, @Body() dto: SmartSearchDto): Promise<SearchResponseDto> {
     return this.service.searchSmart(auth, dto);
-  }
-
-  @Post('ocr')
-  @HttpCode(HttpStatus.OK)
-  @Authenticated()
-  searchOcr(@Auth() auth: AuthDto, @Body() dto: OcrSearchDto): Promise<SearchResponseDto> {
-    return this.service.searchOcr(auth, dto);
   }
 
   @Get('explore')

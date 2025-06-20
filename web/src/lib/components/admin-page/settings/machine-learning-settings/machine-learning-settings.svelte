@@ -231,20 +231,6 @@
             disabled={disabled || !config.machineLearning.enabled}
           />
 
-          <SettingSwitch
-            title={$t('admin.machine_learning_ocr_unwarping_enabled')}
-            subtitle={$t('admin.machine_learning_ocr_unwarping_enabled_description')}
-            bind:checked={config.machineLearning.ocr.unwarpingEnabled}
-            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
-          />
-
-          <SettingSwitch
-            title={$t('admin.machine_learning_ocr_orientation_classify_enabled')}
-            subtitle={$t('admin.machine_learning_ocr_orientation_classify_enabled_description')}
-            bind:checked={config.machineLearning.ocr.orientationClassifyEnabled}
-            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
-          />
-
           <hr />
 
           <SettingSelect
@@ -262,23 +248,11 @@
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
-            label={$t('admin.machine_learning_ocr_min_detection_box_score')}
-            description={$t('admin.machine_learning_ocr_min_detection_box_score_description')}
-            bind:value={config.machineLearning.ocr.minDetectionBoxScore}
-            step="0.1"
-            min={0}
-            max={1}
-            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
-            isEdited={config.machineLearning.ocr.minDetectionBoxScore !== savedConfig.machineLearning.ocr.minDetectionBoxScore}
-          />
-
-          <SettingInputField
-            inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_ocr_min_detection_score')}
             description={$t('admin.machine_learning_ocr_min_detection_score_description')}
             bind:value={config.machineLearning.ocr.minDetectionScore}
             step="0.1"
-            min={0}
+            min={0.1}
             max={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
             isEdited={config.machineLearning.ocr.minDetectionScore !== savedConfig.machineLearning.ocr.minDetectionScore}
@@ -290,10 +264,20 @@
             description={$t('admin.machine_learning_ocr_min_score_recognition_description')}
             bind:value={config.machineLearning.ocr.minRecognitionScore}
             step="0.1"
-            min={0}
+            min={0.1}
             max={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
             isEdited={config.machineLearning.ocr.minRecognitionScore !== savedConfig.machineLearning.ocr.minRecognitionScore}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_ocr_max_resolution')}
+            description={$t('admin.machine_learning_ocr_max_resolution_description')}
+            bind:value={config.machineLearning.ocr.maxResolution}
+            min={1}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
+            isEdited={config.machineLearning.ocr.maxResolution !== savedConfig.machineLearning.ocr.maxResolution}
           />
         </div>
       </SettingAccordion>

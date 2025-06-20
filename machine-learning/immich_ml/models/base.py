@@ -38,9 +38,8 @@ class InferenceModel(ABC):
 
     def download(self) -> None:
         if not self.cached:
-            log.info(
-                f"Downloading {self.model_type.replace('-', ' ')} model '{self.model_name}'. This may take a while."
-            )
+            model_type = self.model_type.replace("-", " ")
+            log.info(f"Downloading {model_type} model '{self.model_name}' to {self.model_path}. This may take a while.")
             self._download()
 
     def load(self) -> None:
@@ -58,7 +57,7 @@ class InferenceModel(ABC):
         self.load()
         if model_kwargs:
             self.configure(**model_kwargs)
-        return self._predict(*inputs, **model_kwargs)
+        return self._predict(*inputs)
 
     @abstractmethod
     def _predict(self, *inputs: Any, **model_kwargs: Any) -> Any: ...

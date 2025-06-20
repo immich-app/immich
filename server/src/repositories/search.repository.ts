@@ -84,8 +84,7 @@ export interface SearchEmbeddingOptions {
 }
 
 export interface SearchOcrOptions {
-  ocr: string;
-  userIds: string[];
+  ocr?: string;
 }
 
 export interface SearchPeopleOptions {
@@ -118,7 +117,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
   SearchTagOptions &
-  SearchAlbumOptions;
+  SearchAlbumOptions &
+  SearchOcrOptions;
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
@@ -131,7 +131,8 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
-  SearchTagOptions;
+  SearchTagOptions &
+  SearchOcrOptions;
 
 export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
 
@@ -272,30 +273,6 @@ export class SearchRepository {
         .execute();
       return paginationHelper(items, pagination.size);
     });
-  }
-
-  @GenerateSql({
-    params: [
-      { page: 1, size: 100 },
-      {
-        userIds: [DummyValue.UUID],
-        ocr: DummyValue.STRING,
-      },
-    ],
-  })
-  async searchOcr(pagination: SearchPaginationOptions, options: OcrSearchOptions) {
-    if (!isValidInteger(pagination.size, { min: 1, max: 1000 })) {
-      throw new Error(`Invalid value for 'size': ${pagination.size}`);
-    }
-
-    const items = await searchAssetBuilder(this.db, options)
-      .innerJoin('ocr_search', 'assets.id', 'ocr_search.assetId')
-      .where('ocr_search.text', 'ilike', `%${options.ocr}%`)
-      .limit(pagination.size + 1)
-      .offset((pagination.page - 1) * pagination.size)
-      .execute();
-
-    return paginationHelper(items, pagination.size);
   }
 
   @GenerateSql({

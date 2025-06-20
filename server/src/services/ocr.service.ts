@@ -1,19 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
-import {
-  JobName,
-  JobStatus,
-  QueueName,
-} from 'src/enum';
+import { AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
+import { OCR } from 'src/repositories/machine-learning.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
-import { getAssetFiles } from 'src/utils/asset.util';
 import { isOcrEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class OcrService extends BaseService {
-
   @OnJob({ name: JobName.QUEUE_OCR, queue: QueueName.OCR })
   async handleQueueOcr({ force, nightly }: JobOf<JobName.QUEUE_OCR>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
@@ -48,59 +43,48 @@ export class OcrService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const relations = { files: true };
-    const asset = await this.assetRepository.getById(id, relations);
-    if (!asset) {
+    const asset = await this.assetJobRepository.getForOcr(id);
+    if (!asset || !asset.previewFile) {
       return JobStatus.FAILED;
     }
-    if (!asset.files) {
-      return JobStatus.FAILED;
+
+    if (asset.visibility === AssetVisibility.HIDDEN) {
+      return JobStatus.SKIPPED;
     }
-    const { previewFile } = getAssetFiles(asset.files);
-    if (!previewFile) {
-      return JobStatus.FAILED;
-    }
+
     const ocrResults = await this.machineLearningRepository.ocr(
       machineLearning.urls,
-      previewFile.path,
-      machineLearning.ocr
+      asset.previewFile,
+      machineLearning.ocr,
     );
 
-    if (ocrResults.length === 0) {
-      this.logger.warn(`No valid OCR results for document ${id}`);
-      await this.assetRepository.upsertJobStatus({
-        assetId: asset.id,
-        ocrAt: new Date(),
-      });
-      return JobStatus.SUCCESS;
-    }
+    await this.ocrRepository.upsert(id, this.parseOcrResults(id, ocrResults));
 
-    try {
-      const ocrDataList = ocrResults.map(result => ({
-        x1: result.x1,
-        y1: result.y1,
-        x2: result.x2,
-        y2: result.y2,
-        x3: result.x3,
-        y3: result.y3,
-        x4: result.x4,
-        y4: result.y4,
-        text: result.text.trim(),
-        confidence: result.confidence,
-      }));
+    await this.assetRepository.upsertJobStatus({ assetId: id, ocrAt: new Date() });
 
-      await this.ocrRepository.upsert(id, ocrDataList);
-      await this.assetRepository.upsertJobStatus({
-        assetId: asset.id,
-        ocrAt: new Date(),
-      });
-      
-      this.logger.debug(`Processed ${ocrResults.length} OCR result(s) for ${id}`);
-      return JobStatus.SUCCESS;
-    } catch (error) {
-      this.logger.error(`Failed to insert OCR results for ${id}:`, error);
-      return JobStatus.FAILED;
-    }
+    this.logger.debug(`Processed ${ocrResults.text.length} OCR result(s) for ${id}`);
+    return JobStatus.SUCCESS;
   }
 
+  parseOcrResults(id: string, { box, boxScore, text, textScore }: OCR) {
+    const ocrDataList = [];
+    for (let i = 0; i < text.length; i++) {
+      const boxOffset = i * 8;
+      ocrDataList.push({
+        assetId: id,
+        x1: box[boxOffset],
+        y1: box[boxOffset + 1],
+        x2: box[boxOffset + 2],
+        y2: box[boxOffset + 3],
+        x3: box[boxOffset + 4],
+        y3: box[boxOffset + 5],
+        x4: box[boxOffset + 6],
+        y4: box[boxOffset + 7],
+        boxScore: boxScore[i],
+        textScore: textScore[i],
+        text: text[i],
+      });
+    }
+    return ocrDataList;
+  }
 }

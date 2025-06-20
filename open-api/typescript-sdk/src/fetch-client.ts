@@ -881,6 +881,7 @@ export type MetadataSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     order?: AssetOrder;
     originalFileName?: string;
     originalPath?: string;
@@ -988,6 +989,7 @@ export type RandomSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     personIds?: string[];
     rating?: number;
     size?: number;
@@ -1023,6 +1025,7 @@ export type SmartSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     page?: number;
     personIds?: string[];
     query: string;
@@ -1058,6 +1061,7 @@ export type StatisticsSearchDto = {
     libraryId?: string | null;
     make?: string;
     model?: string | null;
+    ocr?: string;
     personIds?: string[];
     rating?: number;
     state?: string | null;
@@ -1398,11 +1402,19 @@ export type FacialRecognitionConfig = {
     minScore: number;
     modelName: string;
 };
+export type OcrConfig = {
+    enabled: boolean;
+    maxResolution: number;
+    minDetectionScore: number;
+    minRecognitionScore: number;
+    modelName: string;
+};
 export type SystemConfigMachineLearningDto = {
     clip: ClipConfig;
     duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
+    ocr: OcrConfig;
     /** This property was deprecated in v1.122.0 */
     url?: string;
     urls: string[];
@@ -4062,7 +4074,8 @@ export enum JobName {
     Sidecar = "sidecar",
     Library = "library",
     Notifications = "notifications",
-    BackupDatabase = "backupDatabase"
+    BackupDatabase = "backupDatabase",
+    Ocr = "ocr"
 }
 export enum JobCommand {
     Start = "start",
