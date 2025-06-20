@@ -33,7 +33,7 @@ class DeepLinkService {
     this._currentAlbum,
   );
 
-  Future<DeepLink> handle(PlatformDeepLink link, bool isColdStart) async {
+  Future<DeepLink> handleScheme(PlatformDeepLink link, bool isColdStart) async {
     // get everything after the scheme, since Uri cannot parse path
     final intent = link.uri.host;
     final queryParams = link.uri.queryParameters;
@@ -47,6 +47,39 @@ class DeepLinkService {
         deepLinkRoute = await _buildAssetDeepLink(queryParams['id'] ?? '');
       case "album":
         deepLinkRoute = await _buildAlbumDeepLink(queryParams['id'] ?? '');
+    }
+
+    // Deep link resolution failed, safely handle it based on the app state
+    if (deepLinkRoute == null) {
+      if (isColdStart) return DeepLink.defaultPath;
+      return DeepLink.none;
+    }
+
+    return DeepLink([
+      // we need something to segue back to if the app was cold started
+      if (isColdStart) const PhotosRoute(),
+      deepLinkRoute,
+    ]);
+  }
+
+  Future<DeepLink> handleMyImmichApp(
+    PlatformDeepLink link,
+    bool isColdStart,
+  ) async {
+    final path = link.uri.path;
+
+    const uuidRegex =
+        r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
+    final assetRegex = RegExp('/photos/($uuidRegex)');
+    final albumRegex = RegExp('/albums/($uuidRegex)');
+
+    PageRouteInfo<dynamic>? deepLinkRoute;
+    if (assetRegex.hasMatch(path)) {
+      final assetId = assetRegex.firstMatch(path)?.group(1) ?? '';
+      deepLinkRoute = await _buildAssetDeepLink(assetId);
+    } else if (albumRegex.hasMatch(path)) {
+      final albumId = albumRegex.firstMatch(path)?.group(1) ?? '';
+      deepLinkRoute = await _buildAlbumDeepLink(albumId);
     }
 
     // Deep link resolution failed, safely handle it based on the app state

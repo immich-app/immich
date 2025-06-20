@@ -174,15 +174,23 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
     final deepLinkHandler = ref.read(deepLinkServiceProvider);
+    final currentRouteName = ref.read(currentRouteNameProvider.notifier).state;
 
     if (deepLink.uri.scheme == "immich") {
-      final currentRouteName =
-          ref.read(currentRouteNameProvider.notifier).state;
-
-      final proposedRoute = await deepLinkHandler.handle(
+      final proposedRoute = await deepLinkHandler.handleScheme(
         deepLink,
         currentRouteName == SplashScreenRoute.name,
       );
+
+      return proposedRoute;
+    }
+
+    if (deepLink.uri.host == "my.immich.app") {
+      final proposedRoute = await deepLinkHandler.handleMyImmichApp(
+        deepLink,
+        currentRouteName == SplashScreenRoute.name,
+      );
+
       return proposedRoute;
     }
 
