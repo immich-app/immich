@@ -86,12 +86,52 @@ select
   "deletedAt",
   "isFavorite",
   "visibility",
-  "updateId"
+  "updateId",
+  "duration"
 from
   "assets"
 where
   "ownerId" = $1
   and "updatedAt" < now() - interval '1 millisecond'
+order by
+  "updateId" asc
+
+-- SyncRepository.getPartnerBackfill
+select
+  "sharedById",
+  "createId"
+from
+  "partners"
+where
+  "sharedWithId" = $1
+  and "createId" >= $2
+  and "createdAt" < now() - interval '1 millisecond'
+order by
+  "partners"."createId" asc
+
+-- SyncRepository.getPartnerAssetsBackfill
+select
+  "id",
+  "ownerId",
+  "originalFileName",
+  "thumbhash",
+  "checksum",
+  "fileCreatedAt",
+  "fileModifiedAt",
+  "localDateTime",
+  "type",
+  "deletedAt",
+  "isFavorite",
+  "visibility",
+  "updateId",
+  "duration"
+from
+  "assets"
+where
+  "ownerId" = $1
+  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $2
+  and "updateId" >= $3
 order by
   "updateId" asc
 
@@ -109,7 +149,8 @@ select
   "deletedAt",
   "isFavorite",
   "visibility",
-  "updateId"
+  "updateId",
+  "duration"
 from
   "assets"
 where
@@ -198,6 +239,45 @@ where
   and "updatedAt" < now() - interval '1 millisecond'
 order by
   "updateId" asc
+
+-- SyncRepository.getPartnerAssetExifsBackfill
+select
+  "exif"."assetId",
+  "exif"."description",
+  "exif"."exifImageWidth",
+  "exif"."exifImageHeight",
+  "exif"."fileSizeInByte",
+  "exif"."orientation",
+  "exif"."dateTimeOriginal",
+  "exif"."modifyDate",
+  "exif"."timeZone",
+  "exif"."latitude",
+  "exif"."longitude",
+  "exif"."projectionType",
+  "exif"."city",
+  "exif"."state",
+  "exif"."country",
+  "exif"."make",
+  "exif"."model",
+  "exif"."lensModel",
+  "exif"."fNumber",
+  "exif"."focalLength",
+  "exif"."iso",
+  "exif"."exposureTime",
+  "exif"."profileDescription",
+  "exif"."rating",
+  "exif"."fps",
+  "exif"."updateId"
+from
+  "exif"
+  inner join "assets" on "assets"."id" = "exif"."assetId"
+where
+  "assets"."ownerId" = $1
+  and "exif"."updatedAt" < now() - interval '1 millisecond'
+  and "exif"."updateId" < $2
+  and "exif"."updateId" >= $3
+order by
+  "exif"."updateId" asc
 
 -- SyncRepository.getPartnerAssetExifsUpserts
 select
@@ -313,6 +393,35 @@ where
   and "deletedAt" < now() - interval '1 millisecond'
 order by
   "id" asc
+
+-- SyncRepository.getAlbumBackfill
+select
+  "albumsId" as "id",
+  "createId"
+from
+  "albums_shared_users_users"
+where
+  "usersId" = $1
+  and "createId" >= $2
+  and "createdAt" < now() - interval '1 millisecond'
+order by
+  "createId" asc
+
+-- SyncRepository.getAlbumUsersBackfill
+select
+  "albums_shared_users_users"."albumsId" as "albumId",
+  "albums_shared_users_users"."usersId" as "userId",
+  "albums_shared_users_users"."role",
+  "albums_shared_users_users"."updateId"
+from
+  "albums_shared_users_users"
+where
+  "albumsId" = $1
+  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $2
+  and "updateId" >= $3
+order by
+  "updateId" asc
 
 -- SyncRepository.getAlbumUserUpserts
 select

@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { ColumnValue } from 'src/sql-tools/from-code/decorators/column.decorator';
+import { SchemaBuilder } from 'src/sql-tools/from-code/processors/type';
 import {
   Comparer,
   DatabaseColumn,
@@ -211,3 +212,22 @@ export const asColumnComment = (tableName: string, columnName: string, comment: 
 };
 
 export const asColumnList = (columns: string[]) => columns.map((column) => `"${column}"`).join(', ');
+
+export const asForeignKeyConstraintName = (table: string, columns: string[]) => asKey('FK_', table, [...columns]);
+
+export const asIndexName = (table: string, columns?: string[], where?: string) => {
+  const items: string[] = [];
+  for (const columnName of columns ?? []) {
+    items.push(columnName);
+  }
+
+  if (where) {
+    items.push(where);
+  }
+
+  return asKey('IDX_', table, items);
+};
+
+export const addWarning = (builder: SchemaBuilder, context: string, message: string) => {
+  builder.warnings.push(`[${context}] ${message}`);
+};

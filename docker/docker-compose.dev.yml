@@ -16,7 +16,7 @@ name: immich-dev
 services:
   immich-server:
     container_name: immich_server
-    command: [ '/usr/src/app/bin/immich-dev' ]
+    command: ['/usr/src/app/bin/immich-dev']
     image: immich-server-dev:latest
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -70,7 +70,7 @@ services:
     # user: 0:0
     build:
       context: ../web
-    command: [ '/usr/src/app/bin/immich-web' ]
+    command: ['/usr/src/app/bin/immich-web']
     env_file:
       - .env
     ports:
@@ -116,13 +116,13 @@ services:
 
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:8-bookworm@sha256:a19bebed6a91bd5e6e2106fef015f9602a3392deeb7c9ed47548378dcee3dfc2
+    image: docker.io/valkey/valkey:8-bookworm@sha256:fec42f399876eb6faf9e008570597741c87ff7662a54185593e74b09ce83d177
     healthcheck:
       test: redis-cli ping || exit 1
 
   database:
     container_name: immich_postgres
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.1-pgvectors0.2.0
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
     env_file:
       - .env
     environment:

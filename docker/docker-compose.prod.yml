@@ -56,14 +56,14 @@ services:
 
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:8-bookworm@sha256:a19bebed6a91bd5e6e2106fef015f9602a3392deeb7c9ed47548378dcee3dfc2
+    image: docker.io/valkey/valkey:8-bookworm@sha256:fec42f399876eb6faf9e008570597741c87ff7662a54185593e74b09ce83d177
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
 
   database:
     container_name: immich_postgres
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.1-pgvectors0.2.0
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
     env_file:
       - .env
     environment:
@@ -91,7 +91,7 @@ services:
   # add data source for http://immich-prometheus:9090 to get started
   immich-grafana:
     container_name: immich_grafana
-    command: [ './run.sh', '-disable-reporting' ]
+    command: ['./run.sh', '-disable-reporting']
     ports:
       - 3000:3000
     image: grafana/grafana:12.0.1-ubuntu@sha256:65575bb9c761335e2ff30e364f21d38632e3b2e75f5f81d83cc92f44b9bbc055

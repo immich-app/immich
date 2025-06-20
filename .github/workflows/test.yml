@@ -101,7 +101,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Run small tests & coverage
-        run: npm run test:cov
+        run: npm test
         if: ${{ !cancelled() }}
 
   cli-unit-tests:
@@ -146,7 +146,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Run unit tests & coverage
-        run: npm run test:cov
+        run: npm run test
         if: ${{ !cancelled() }}
 
   cli-unit-tests-win:
@@ -184,7 +184,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Run unit tests & coverage
-        run: npm run test:cov
+        run: npm run test
         if: ${{ !cancelled() }}
 
   web-lint:
@@ -262,7 +262,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Run unit tests & coverage
-        run: npm run test:cov
+        run: npm run test
         if: ${{ !cancelled() }}
 
   i18n-tests:
@@ -644,7 +644,7 @@ jobs:
       contents: read
     services:
       postgres:
-        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.1
+        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -722,6 +722,7 @@ jobs:
         run: |
           echo "ERROR: Generated SQL files not up to date!"
           echo "Changed files: ${CHANGED_FILES}"
+          git diff
           exit 1
 
   # mobile-integration-tests:

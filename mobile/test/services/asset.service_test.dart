@@ -22,7 +22,7 @@ void main() {
   late MockExifInfoRepository exifInfoRepository;
   late MockETagRepository eTagRepository;
   late MockBackupAlbumRepository backupAlbumRepository;
-  late MockUserRepository userRepository;
+  late MockIsarUserRepository userRepository;
   late MockAssetMediaRepository assetMediaRepository;
   late MockApiService apiService;
 
@@ -35,7 +35,7 @@ void main() {
     assetRepository = MockAssetRepository();
     assetApiRepository = MockAssetApiRepository();
     exifInfoRepository = MockExifInfoRepository();
-    userRepository = MockUserRepository();
+    userRepository = MockIsarUserRepository();
     eTagRepository = MockETagRepository();
     backupAlbumRepository = MockBackupAlbumRepository();
     apiService = MockApiService();

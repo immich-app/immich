@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
@@ -10,14 +9,12 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart' as api show AssetVisibility;
 import 'package:openapi/api.dart' hide AssetVisibility;
 
-class DriftSyncStreamRepository extends DriftDatabaseRepository
-    implements ISyncStreamRepository {
+class SyncStreamRepository extends DriftDatabaseRepository {
   final Logger _logger = Logger('DriftSyncStreamRepository');
   final Drift _db;
 
-  DriftSyncStreamRepository(super.db) : _db = db;
+  SyncStreamRepository(super.db) : _db = db;
 
-  @override
   Future<void> deleteUsersV1(Iterable<SyncUserDeleteV1> data) async {
     try {
       await _db.batch((batch) {
@@ -34,7 +31,6 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     }
   }
 
-  @override
   Future<void> updateUsersV1(Iterable<SyncUserV1> data) async {
     try {
       await _db.batch((batch) {
@@ -57,7 +53,6 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     }
   }
 
-  @override
   Future<void> deletePartnerV1(Iterable<SyncPartnerDeleteV1> data) async {
     try {
       await _db.batch((batch) {
@@ -77,7 +72,6 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     }
   }
 
-  @override
   Future<void> updatePartnerV1(Iterable<SyncPartnerV1> data) async {
     try {
       await _db.batch((batch) {
@@ -101,7 +95,6 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     }
   }
 
-  @override
   Future<void> deleteAssetsV1(Iterable<SyncAssetDeleteV1> data) async {
     try {
       await _deleteAssetsV1(data);
@@ -111,7 +104,6 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     }
   }
 
-  @override
   Future<void> updateAssetsV1(Iterable<SyncAssetV1> data) async {
     try {
       await _updateAssetsV1(data);
@@ -121,7 +113,6 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     }
   }
 
-  @override
   Future<void> deletePartnerAssetsV1(Iterable<SyncAssetDeleteV1> data) async {
     try {
       await _deleteAssetsV1(data);
@@ -131,7 +122,6 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     }
   }
 
-  @override
   Future<void> updatePartnerAssetsV1(Iterable<SyncAssetV1> data) async {
     try {
       await _updateAssetsV1(data);
@@ -141,7 +131,6 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     }
   }
 
-  @override
   Future<void> updateAssetsExifV1(Iterable<SyncAssetExifV1> data) async {
     try {
       await _updateAssetExifV1(data);
@@ -151,7 +140,6 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     }
   }
 
-  @override
   Future<void> updatePartnerAssetsExifV1(Iterable<SyncAssetExifV1> data) async {
     try {
       await _updateAssetExifV1(data);
@@ -169,7 +157,8 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
             type: Value(asset.type.toAssetType()),
             createdAt: Value.absentIfNull(asset.fileCreatedAt),
             updatedAt: Value.absentIfNull(asset.fileModifiedAt),
-            durationInSeconds: const Value(0),
+            durationInSeconds:
+                Value(asset.duration?.toDuration()?.inSeconds ?? 0),
             checksum: Value(asset.checksum),
             isFavorite: Value(asset.isFavorite),
             ownerId: Value(asset.ownerId),
@@ -250,4 +239,18 @@ extension on api.AssetVisibility {
         api.AssetVisibility.locked => AssetVisibility.locked,
         _ => throw Exception('Unknown AssetVisibility value: $this'),
       };
+}
+
+extension on String {
+  Duration? toDuration() {
+    try {
+      final parts = split(':')
+          .map((e) => double.parse(e).toInt())
+          .toList(growable: false);
+
+      return Duration(hours: parts[0], minutes: parts[1], seconds: parts[2]);
+    } catch (_) {
+      return null;
+    }
+  }
 }
