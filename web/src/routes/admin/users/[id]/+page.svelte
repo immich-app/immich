@@ -39,7 +39,9 @@
     mdiCameraIris,
     mdiChartPie,
     mdiChartPieOutline,
+    mdiCheck,
     mdiCheckCircle,
+    mdiClose,
     mdiDeleteRestore,
     mdiFeatureSearchOutline,
     mdiLockSmart,
@@ -50,6 +52,7 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import FeatureSetting from '$lib/components/admin-page/user/feature-setting.svelte';
 
   interface Props {
     data: PageData;
@@ -292,33 +295,15 @@
           <CardBody>
             <div class="px-4 pb-4">
               <Stack gap={3}>
-                <Field readOnly label={$t('email_notifications')}>
-                  <Switch checked={userPreferences.emailNotifications.enabled} color="primary" />
-                </Field>
-                <Field readOnly label={$t('folders')}>
-                  <Switch checked={userPreferences.folders.enabled} color="primary" />
-                </Field>
-                <Field readOnly label={$t('memories')}>
-                  <Switch checked={userPreferences.memories.enabled} color="primary" />
-                </Field>
-                <Field readOnly label={$t('people')}>
-                  <Switch checked={userPreferences.people.enabled} color="primary" />
-                </Field>
-                <Field readOnly label={$t('rating')}>
-                  <Switch checked={userPreferences.ratings.enabled} color="primary" />
-                </Field>
-                <Field readOnly label={$t('shared_links')}>
-                  <Switch checked={userPreferences.sharedLinks.enabled} color="primary" />
-                </Field>
-                <Field readOnly label={$t('show_supporter_badge')}>
-                  <Switch checked={userPreferences.purchase.showSupportBadge} color="primary" />
-                </Field>
-                <Field readOnly label={$t('tags')}>
-                  <Switch checked={userPreferences.tags.enabled} color="primary" />
-                </Field>
-                <Field readOnly label={$t('gcast_enabled')}>
-                  <Switch checked={userPreferences.cast.gCastEnabled} color="primary" />
-                </Field>
+                <FeatureSetting title={$t('email_notifications')} state={userPreferences.emailNotifications.enabled} />
+                <FeatureSetting title={$t('folders')} state={userPreferences.folders.enabled} />
+                <FeatureSetting title={$t('memories')} state={userPreferences.memories.enabled} />
+                <FeatureSetting title={$t('people')} state={userPreferences.people.enabled} />
+                <FeatureSetting title={$t('rating')} state={userPreferences.ratings.enabled} />
+                <FeatureSetting title={$t('shared_links')} state={userPreferences.sharedLinks.enabled} />
+                <FeatureSetting title={$t('show_supporter_badge')} state={userPreferences.purchase.showSupportBadge} />
+                <FeatureSetting title={$t('tags')} state={userPreferences.tags.enabled} />
+                <FeatureSetting title={$t('gcast_enabled')} state={userPreferences.cast.gCastEnabled} />
               </Stack>
             </div>
           </CardBody>
