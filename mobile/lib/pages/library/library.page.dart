@@ -6,13 +6,12 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/intl_keys.g.dart';
+import 'package:immich_mobile/pages/library/people/circle_avatar_people.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
 import 'package:immich_mobile/widgets/common/user_avatar.dart';
@@ -230,6 +229,7 @@ class PeopleCollectionCard extends ConsumerWidget {
         final isTablet = constraints.maxWidth > 600;
         final widthFactor = isTablet ? 0.25 : 0.5;
         final size = context.width * widthFactor - 20.0;
+        final imageSize = isTablet ? 120 : 96;
 
         return GestureDetector(
           onTap: () => context.pushRoute(const PeopleCollectionRoute()),
@@ -262,11 +262,9 @@ class PeopleCollectionCard extends ConsumerWidget {
                       mainAxisSpacing: 8,
                       physics: const NeverScrollableScrollPhysics(),
                       children: people.take(4).map((person) {
-                        return CircleAvatar(
-                          backgroundImage: NetworkImage(
-                            getFaceThumbnailUrl(person.id),
-                            headers: ApiService.getRequestHeaders(),
-                          ),
+                        return CirclePeopleAvatar(
+                          imageSize: imageSize,
+                          personId: person.id,
                         );
                       }).toList(),
                     );
