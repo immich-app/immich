@@ -57,6 +57,7 @@
     canvas = new Canvas(canvasEl);
     configureControlStyle();
 
+    // eslint-disable-next-line tscompat/tscompat
     faceRect = new Rect({
       fill: 'rgba(66,80,175,0.25)',
       stroke: 'rgb(66,80,175)',

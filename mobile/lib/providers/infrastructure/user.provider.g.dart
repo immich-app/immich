@@ -6,11 +6,11 @@ part of 'user.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$userRepositoryHash() => r'1a2ac726bcc44397dcaecf449084fefd336696d4';
+String _$userRepositoryHash() => r'538791a4ad126ed086c9db682c67fc5c654d54f3';
 
 /// See also [userRepository].
 @ProviderFor(userRepository)
-final userRepositoryProvider = Provider<IUserRepository>.internal(
+final userRepositoryProvider = Provider<IsarUserRepository>.internal(
   userRepository,
   name: r'userRepositoryProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -22,12 +22,12 @@ final userRepositoryProvider = Provider<IUserRepository>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef UserRepositoryRef = ProviderRef<IUserRepository>;
-String _$userApiRepositoryHash() => r'6b19f2c99fb83162a5ceb91adb8589eaae01bc92';
+typedef UserRepositoryRef = ProviderRef<IsarUserRepository>;
+String _$userApiRepositoryHash() => r'8a7340ca4544c8c6b20225c65bff2abb9e96baa2';
 
 /// See also [userApiRepository].
 @ProviderFor(userApiRepository)
-final userApiRepositoryProvider = Provider<IUserApiRepository>.internal(
+final userApiRepositoryProvider = Provider<UserApiRepository>.internal(
   userApiRepository,
   name: r'userApiRepositoryProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -39,8 +39,8 @@ final userApiRepositoryProvider = Provider<IUserApiRepository>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef UserApiRepositoryRef = ProviderRef<IUserApiRepository>;
-String _$userServiceHash() => r'4a0873357b7115b4d6bfa8e89b847c0b74ce0d93';
+typedef UserApiRepositoryRef = ProviderRef<UserApiRepository>;
+String _$userServiceHash() => r'181414dddc7891be6237e13d568c287a804228d1';
 
 /// See also [userService].
 @ProviderFor(userService)

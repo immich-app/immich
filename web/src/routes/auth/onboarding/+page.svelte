@@ -139,7 +139,7 @@
   <div class="flex flex-col w-full">
     <div class=" bg-gray-300 dark:bg-gray-600 rounded-md h-2">
       <div
-        class="progress-bar bg-immich-primary dark:bg-immich-dark-primary h-2 rounded-md transition-all duration-200 ease-out"
+        class="progress-bar bg-primary h-2 rounded-md transition-all duration-200 ease-out"
         style="width: {(onboardingProgress / onboardingStepCount) * 100}%"
       ></div>
     </div>

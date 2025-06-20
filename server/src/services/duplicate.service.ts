@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
+import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
@@ -13,11 +14,19 @@ import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 @Injectable()
 export class DuplicateService extends BaseService {
   async getDuplicates(auth: AuthDto): Promise<DuplicateResponseDto[]> {
-    const duplicates = await this.assetRepository.getDuplicates(auth.user.id);
+    const duplicates = await this.duplicateRepository.getAll(auth.user.id);
     return duplicates.map(({ duplicateId, assets }) => ({
       duplicateId,
       assets: assets.map((asset) => mapAsset(asset, { auth })),
     }));
+  }
+
+  async delete(auth: AuthDto, id: string): Promise<void> {
+    await this.duplicateRepository.delete(auth.user.id, id);
+  }
+
+  async deleteAll(auth: AuthDto, dto: BulkIdsDto) {
+    await this.duplicateRepository.deleteAll(auth.user.id, dto.ids);
   }
 
   @OnJob({ name: JobName.QUEUE_DUPLICATE_DETECTION, queue: QueueName.DUPLICATE_DETECTION })
@@ -69,12 +78,17 @@ export class DuplicateService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
+    if (asset.visibility === AssetVisibility.LOCKED) {
+      this.logger.debug(`Asset ${id} is locked, skipping`);
+      return JobStatus.SKIPPED;
+    }
+
     if (!asset.embedding) {
       this.logger.debug(`Asset ${id} is missing embedding`);
       return JobStatus.FAILED;
     }
 
-    const duplicateAssets = await this.searchRepository.searchDuplicates({
+    const duplicateAssets = await this.duplicateRepository.search({
       assetId: asset.id,
       embedding: asset.embedding,
       maxDistance: machineLearning.duplicateDetection.maxDistance,
@@ -117,7 +131,11 @@ export class DuplicateService extends BaseService {
       .map((duplicate) => duplicate.assetId);
     assetIdsToUpdate.push(asset.id);
 
-    await this.assetRepository.updateDuplicates({ targetDuplicateId, assetIds: assetIdsToUpdate, duplicateIds });
+    await this.duplicateRepository.merge({
+      targetId: targetDuplicateId,
+      assetIds: assetIdsToUpdate,
+      sourceIds: duplicateIds,
+    });
     return assetIdsToUpdate;
   }
 }

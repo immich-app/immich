@@ -50,9 +50,6 @@ class SyncApiRepository implements ISyncApiRepository {
           SyncRequestType.partnerAssetsV1,
           SyncRequestType.assetExifsV1,
           SyncRequestType.partnerAssetExifsV1,
-          SyncRequestType.albumsV1,
-          // SyncRequestType.albumAssetsV1,
-          SyncRequestType.albumUsersV1,
         ],
       ).toJson(),
     );
@@ -143,10 +140,4 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.partnerAssetV1: SyncAssetV1.fromJson,
   SyncEntityType.partnerAssetDeleteV1: SyncAssetDeleteV1.fromJson,
   SyncEntityType.partnerAssetExifV1: SyncAssetExifV1.fromJson,
-  SyncEntityType.albumV1: SyncAlbumV1.fromJson,
-  SyncEntityType.albumDeleteV1: SyncAlbumDeleteV1.fromJson,
-  // SyncEntityType.albumAssetV1: SyncAlbumAssetV1.fromJson,
-  // SyncEntityType.albumAssetDeleteV1: SyncAlbumAssetDeleteV1.fromJson,
-  SyncEntityType.albumUserV1: SyncAlbumUserV1.fromJson,
-  SyncEntityType.albumUserDeleteV1: SyncAlbumUserDeleteV1.fromJson,
 };

@@ -57,7 +57,13 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
   }
 
   final shouldTruncate = version < 8 || version < targetVersion;
+
   if (shouldTruncate) {
+    if (targetVersion == 12) {
+      await Store.put(StoreKey.version, targetVersion);
+      return;
+    }
+
     await _migrateTo(db, targetVersion);
   }
 }

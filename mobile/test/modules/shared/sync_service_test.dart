@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/interfaces/user.interface.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
@@ -55,7 +55,7 @@ void main() {
     final MockAlbumRepository albumRepository = MockAlbumRepository();
     final MockAssetRepository assetRepository = MockAssetRepository();
     final MockExifInfoRepository exifInfoRepository = MockExifInfoRepository();
-    final MockUserRepository userRepository = MockUserRepository();
+    final MockIsarUserRepository userRepository = MockIsarUserRepository();
     final MockETagRepository eTagRepository = MockETagRepository();
     final MockAlbumMediaRepository albumMediaRepository =
         MockAlbumMediaRepository();

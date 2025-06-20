@@ -243,7 +243,6 @@
     "storage_template_migration_info": "Lager-skabelonen vil konvertere alle filendelser til små bogstaver. Skabelonændringer vil kun gælde for nye mediefiler. For at anvende skabelonen retroaktivt på tidligere uploadede mediefiler skal du køre <link>{job}</link>.",
     "storage_template_migration_job": "Lager Skabelon Migreringsjob",
     "storage_template_more_details": "For flere detaljer om denne funktion, referer til <template-link>Lager Skabelonen</template-link> og dens <implications-link>implikationer</implications-link>",
-    "storage_template_onboarding_description": "Når denne funktion er aktiveret, vil den automatisk organisere filer baseret på en brugerdefineret skabelon. På grund af stabilitetsproblemer er funktionen som standard slået fra. For mere information, se <link>dokumentation</link>.",
     "storage_template_path_length": "Anslået sti-længde begrænsning <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Lagringsskabelon",
     "storage_template_settings_description": "Administrer mappestrukturen og filnavnet for den uploadede mediefil",

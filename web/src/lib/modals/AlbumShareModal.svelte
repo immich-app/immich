@@ -85,7 +85,7 @@
               {#key user.id}
                 <div class="flex place-items-center gap-4 p-4">
                   <div
-                    class="flex h-10 w-10 items-center justify-center rounded-full border bg-immich-dark-success text-3xl text-white dark:border-immich-dark-gray dark:bg-immich-dark-success"
+                    class="flex h-10 w-10 items-center justify-center rounded-full border bg-green-600 text-3xl text-white"
                   >
                     <Icon path={mdiCheck} size={24} />
                   </div>
@@ -171,7 +171,7 @@
         {#if sharedLinks.length > 0}
           <div class="flex justify-between items-center">
             <Text>{$t('shared_links')}</Text>
-            <Link href={AppRoute.SHARED_LINKS} class="text-sm">{$t('view_all')}</Link>
+            <Link href={AppRoute.SHARED_LINKS} onclick={() => onClose()} class="text-sm">{$t('view_all')}</Link>
           </div>
 
           <Stack gap={4}>

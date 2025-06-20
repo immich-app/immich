@@ -70,7 +70,10 @@ const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
     console.log(JSON.stringify({ newFiles, duplicates, newAssets }, undefined, 4));
   }
   await updateAlbums([...newAssets, ...duplicates], options);
-  await deleteFiles(newFiles, options);
+  await deleteFiles(
+    newAssets.map(({ filepath }) => filepath),
+    options,
+  );
 };
 
 export const startWatch = async (

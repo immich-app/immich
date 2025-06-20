@@ -131,15 +131,14 @@ class ControlBottomAppBar extends HookConsumerWidget {
 
     List<Widget> renderActionButtons() {
       return [
-        if (hasRemote)
-          ControlBoxButton(
-            iconData: Platform.isAndroid
-                ? Icons.share_rounded
-                : Icons.ios_share_rounded,
-            label: "share".tr(),
-            onPressed: enabled ? () => onShare(true) : null,
-          ),
-        if (!isInLockedView)
+        ControlBoxButton(
+          iconData: Platform.isAndroid
+              ? Icons.share_rounded
+              : Icons.ios_share_rounded,
+          label: "share".tr(),
+          onPressed: enabled ? () => onShare(true) : null,
+        ),
+        if (!isInLockedView && hasRemote)
           ControlBoxButton(
             iconData: Icons.link_rounded,
             label: "share_link".tr(),

@@ -12,11 +12,11 @@ import '../repository.mocks.dart';
 void main() {
   late EntityService sut;
   late MockAssetRepository assetRepository;
-  late MockUserRepository userRepository;
+  late MockIsarUserRepository userRepository;
 
   setUp(() {
     assetRepository = MockAssetRepository();
-    userRepository = MockUserRepository();
+    userRepository = MockIsarUserRepository();
     sut = EntityService(assetRepository, userRepository);
   });
 
