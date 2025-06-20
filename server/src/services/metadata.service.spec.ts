@@ -6,7 +6,7 @@ import { defaults } from 'src/config';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetType, AssetVisibility, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
 import { ImmichTags } from 'src/repositories/metadata.repository';
-import { MetadataService, firstDateTime } from 'src/services/metadata.service';
+import { firstDateTime, MetadataService } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
@@ -1663,14 +1663,14 @@ describe(MetadataService.name, () => {
         MediaCreateDate: '2023:06:06 06:00:00',
         CreationDate: '2023:07:07 07:00:00',
         DateTimeCreated: '2023:08:08 08:00:00',
-        
+
         // Additional date tags
         TimeCreated: '2023:09:09 09:00:00',
         GPSDateTime: '2023:10:10 10:00:00',
         DateTimeUTC: '2023:11:11 11:00:00',
         GPSDateStamp: '2023:12:12', // Date-only tag, should be ignored
         SonyDateTime2: '2023:13:13 13:00:00',
-        
+
         // Non-standard tag
         SourceImageCreateTime: '2023:14:14 14:00:00',
       };
@@ -1686,7 +1686,7 @@ describe(MetadataService.name, () => {
         // Standard date tags
         CreationDate: '2023:07:07 07:00:00',
         DateTimeCreated: '2023:08:08 08:00:00',
-        
+
         // Additional date tags
         TimeCreated: '2023:09:09 09:00:00',
         GPSDateTime: '2023:10:10 10:00:00',
