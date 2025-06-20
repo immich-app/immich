@@ -14,7 +14,6 @@ import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/asset_api.interface.dart';
 import 'package:immich_mobile/interfaces/asset_media.interface.dart';
 import 'package:immich_mobile/interfaces/backup_album.interface.dart';
-import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
@@ -54,7 +53,7 @@ class AssetService {
   final IAssetRepository _assetRepository;
   final IExifInfoRepository _exifInfoRepository;
   final IsarUserRepository _isarUserRepository;
-  final IETagRepository _etagRepository;
+  final ETagRepository _etagRepository;
   final IBackupAlbumRepository _backupRepository;
   final ApiService _apiService;
   final SyncService _syncService;
