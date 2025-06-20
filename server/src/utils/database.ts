@@ -18,7 +18,6 @@ import postgres, { Notice } from 'postgres';
 import { columns, Exif, Person } from 'src/database';
 import { DB } from 'src/db';
 import { AssetFileType, AssetVisibility, DatabaseExtension, DatabaseSslMode } from 'src/enum';
-import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DatabaseConnectionParams, VectorExtension } from 'src/types';
 
@@ -279,8 +278,8 @@ export function withTags(eb: ExpressionBuilder<DB, 'assets'>) {
   ).as('tags');
 }
 
-export function truncatedDate<O>(size: TimeBucketSize) {
-  return sql<O>`date_trunc(${sql.lit(size)}, "localDateTime" at time zone 'UTC') at time zone 'UTC'`;
+export function truncatedDate<O>() {
+  return sql<O>`date_trunc(${sql.lit('MONTH')}, "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagId: string) {
