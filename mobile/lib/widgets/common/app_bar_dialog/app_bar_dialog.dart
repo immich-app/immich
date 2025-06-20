@@ -17,6 +17,7 @@ import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_profile_info.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_server_info.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
+import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_kid_mode.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ImmichAppBarDialog extends HookConsumerWidget {
@@ -291,6 +292,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 const AppBarServerInfo(),
                 buildAppLogButton(),
                 buildSettingButton(),
+                const KidModeCheckbox(),
                 buildSignOutButton(),
                 buildFooter(),
               ],

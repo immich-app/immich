@@ -30,6 +30,8 @@ import 'package:immich_mobile/widgets/asset_grid/control_bottom_app_bar.dart';
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
+import '../../providers/kid_mode_provider.dart';
+
 class MultiselectGrid extends HookConsumerWidget {
   const MultiselectGrid({
     super.key,
@@ -80,6 +82,7 @@ class MultiselectGrid extends HookConsumerWidget {
     final selection = useState(<Asset>{});
     final currentUser = ref.watch(currentUserProvider);
     final processing = useProcessingOverlay();
+    final isKidModeEnabled = ref.watch(kidModeProvider);
 
     useEffect(
       () {
@@ -101,7 +104,7 @@ class MultiselectGrid extends HookConsumerWidget {
       bool multiselect,
       Set<Asset> selectedAssets,
     ) {
-      selectionEnabledHook.value = multiselect;
+      selectionEnabledHook.value = isKidModeEnabled ? false : multiselect;
       selection.value = selectedAssets;
       selectionAssetState.value =
           AssetSelectionState.fromSelection(selectedAssets);

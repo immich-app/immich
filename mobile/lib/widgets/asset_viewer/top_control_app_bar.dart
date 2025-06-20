@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
 import 'package:immich_mobile/widgets/asset_viewer/motion_photo_button.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/kid_mode_provider.dart';
 
 class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
@@ -57,6 +58,7 @@ class TopControlAppBar extends HookConsumerWidget {
             asset.remoteId != null
         ? ref.watch(activityStatisticsProvider(album.remoteId!, asset.remoteId))
         : 0;
+    final isKidModeEnabled = ref.watch(kidModeProvider);
 
     Widget buildFavoriteButton(a) {
       return IconButton(
@@ -203,26 +205,35 @@ class TopControlAppBar extends HookConsumerWidget {
       actionsIconTheme: const IconThemeData(size: iconSize),
       shape: const Border(),
       actions: [
-        if (asset.isRemote && isOwner) buildFavoriteButton(a),
+        if (asset.isRemote && isOwner && !isKidModeEnabled)
+          buildFavoriteButton(a),
         if (isOwner &&
             !isInHomePage &&
             !(isInTrash ?? false) &&
             !isInLockedView)
           buildLocateButton(),
-        if (asset.livePhotoVideoId != null) const MotionPhotoButton(),
-        if (asset.isLocal && !asset.isRemote) buildUploadButton(),
-        if (asset.isRemote && !asset.isLocal && isOwner) buildDownloadButton(),
+        if (asset.livePhotoVideoId != null && !isKidModeEnabled)
+          const MotionPhotoButton(),
+        if (asset.isLocal && !asset.isRemote && !isKidModeEnabled)
+          buildUploadButton(),
+        if (asset.isRemote && !asset.isLocal && isOwner && !isKidModeEnabled)
+          buildDownloadButton(),
         if (asset.isRemote &&
             (isOwner || isPartner) &&
             !asset.isTrashed &&
-            !isInLockedView)
+            !isInLockedView &&
+            !isKidModeEnabled)
           buildAddToAlbumButton(),
-        if (isCasting || (asset.isRemote && websocketConnected))
+        if (isCasting ||
+            (asset.isRemote && websocketConnected) && !isKidModeEnabled)
           buildCastButton(),
-        if (asset.isTrashed) buildRestoreButton(),
-        if (album != null && album.shared && !isInLockedView)
+        if (asset.isTrashed && !isKidModeEnabled) buildRestoreButton(),
+        if (album != null &&
+            album.shared &&
+            !isInLockedView &&
+            !isKidModeEnabled)
           buildActivitiesButton(),
-        buildMoreInfoButton(),
+        if (!isKidModeEnabled) buildMoreInfoButton(),
       ],
     );
   }
