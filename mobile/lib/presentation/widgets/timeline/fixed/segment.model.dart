@@ -9,7 +9,9 @@ import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment_builder.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class FixedSegment extends Segment {
   final double tileHeight;
@@ -62,18 +64,23 @@ class FixedSegment extends Segment {
 
   @override
   Widget builder(BuildContext context, int index) {
+    final rowIndexInSegment = index - (firstIndex + 1);
+    final assetIndex = rowIndexInSegment * columnCount;
+    final assetCount = bucket.assetCount;
+    final numberOfAssets = math.min(columnCount, assetCount - assetIndex);
+
+    void onSelectIconTapped(DateTime date) {
+      print(date);
+    }
+
     if (index == firstIndex) {
       return TimelineHeader(
         bucket: bucket,
         header: header,
         height: headerExtent,
+        onIconTapped: onSelectIconTapped,
       );
     }
-
-    final rowIndexInSegment = index - (firstIndex + 1);
-    final assetIndex = rowIndexInSegment * columnCount;
-    final assetCount = bucket.assetCount;
-    final numberOfAssets = math.min(columnCount, assetCount - assetIndex);
 
     return _buildRow(firstAssetIndex + assetIndex, numberOfAssets);
   }
@@ -83,6 +90,25 @@ class FixedSegment extends Segment {
           final isScrubbing =
               ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
           final timelineService = ref.read(timelineServiceProvider);
+          final isMultiSelectEnabled =
+              ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+
+          void handleOnTap(BaseAsset asset) {
+            if (!isMultiSelectEnabled) {
+              return;
+            }
+
+            ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
+          }
+
+          void handleOnLongPress(BaseAsset asset) {
+            if (isMultiSelectEnabled) {
+              return;
+            }
+
+            ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+            ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
+          }
 
           // Timeline is being scrubbed, show placeholders
           if (isScrubbing) {
@@ -97,7 +123,12 @@ class FixedSegment extends Segment {
           // Bucket is already loaded, show the assets
           if (timelineService.hasRange(assetIndex, count)) {
             final assets = timelineService.getAssets(assetIndex, count);
-            return _buildAssetRow(ctx, assets);
+            return _buildAssetRow(
+              ctx,
+              assets,
+              onTap: (asset) => handleOnTap(asset),
+              onLongPress: (asset) => handleOnLongPress(asset),
+            );
           }
 
           // Bucket is not loaded, show placeholders and load the bucket
@@ -113,20 +144,36 @@ class FixedSegment extends Segment {
                 );
               }
 
-              return _buildAssetRow(ctxx, snap.requireData);
+              return _buildAssetRow(
+                ctxx,
+                snap.requireData,
+                onTap: (asset) => handleOnTap(asset),
+                onLongPress: (asset) => handleOnLongPress(asset),
+              );
             },
           );
         },
       );
 
-  Widget _buildAssetRow(BuildContext context, List<BaseAsset> assets) =>
+  Widget _buildAssetRow(
+    BuildContext context,
+    List<BaseAsset> assets, {
+    required void Function(BaseAsset) onTap,
+    required void Function(BaseAsset) onLongPress,
+  }) =>
       FixedTimelineRow(
         dimension: tileHeight,
         spacing: spacing,
         textDirection: Directionality.of(context),
         children: List.generate(
           assets.length,
-          (i) => RepaintBoundary(child: ThumbnailTile(assets[i])),
+          (i) => RepaintBoundary(
+            child: GestureDetector(
+              onTap: () => onTap(assets[i]),
+              onLongPress: () => onLongPress(assets[i]),
+              child: ThumbnailTile(assets[i]),
+            ),
+          ),
         ),
       );
 }
