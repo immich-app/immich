@@ -55,6 +55,8 @@ class BackupService {
   final IFileMediaRepository _fileMediaRepository;
   final IAssetRepository _assetRepository;
   final IAssetMediaRepository _assetMediaRepository;
+  static const Duration _fileOperationTimeout = Duration(seconds: 30);
+  static const Duration _loadFileTimeout = Duration(minutes: 5);
 
   BackupService(
     this._apiService,
@@ -304,12 +306,29 @@ class BackupService {
             ),
           );
 
-          file =
-              await asset.local!.loadFile(progressHandler: pmProgressHandler);
+          file = await asset.local!
+              .loadFile(progressHandler: pmProgressHandler)
+              .timeout(
+            _loadFileTimeout,
+            onTimeout: () {
+              throw TimeoutException(
+                "Loading iCloud asset timed out",
+                _loadFileTimeout,
+              );
+            },
+          );
+
           if (asset.local!.isLivePhoto) {
-            livePhotoFile = await asset.local!.loadFile(
-              withSubtype: true,
-              progressHandler: pmProgressHandler,
+            livePhotoFile = await asset.local!
+                .loadFile(withSubtype: true, progressHandler: pmProgressHandler)
+                .timeout(
+              _loadFileTimeout,
+              onTimeout: () {
+                throw TimeoutException(
+                  "Loading iCloud asset timed out",
+                  _loadFileTimeout,
+                );
+              },
             );
           }
         } else {
@@ -335,12 +354,24 @@ class BackupService {
             }
           }
 
-          final fileStream = file.openRead();
-          final assetRawUploadData = http.MultipartFile(
-            "assetData",
-            fileStream,
-            file.lengthSync(),
-            filename: originalFileName,
+          final assetRawUploadData = await Future.sync(() {
+            final fileStream = file!.openRead();
+            final length = file.lengthSync();
+
+            return http.MultipartFile(
+              "assetData",
+              fileStream,
+              length,
+              filename: originalFileName,
+            );
+          }).timeout(
+            _fileOperationTimeout,
+            onTimeout: () {
+              throw TimeoutException(
+                "Reading file properties timed out",
+                _fileOperationTimeout,
+              );
+            },
           );
 
           final baseRequest = MultipartRequest(
@@ -368,7 +399,7 @@ class BackupService {
                   : asset.fileCreatedAt,
               fileName: originalFileName,
               fileType: _getAssetType(asset.type),
-              fileSize: file.lengthSync(),
+              fileSize: assetRawUploadData.length,
               iCloudAsset: false,
             ),
           );
@@ -447,6 +478,15 @@ class BackupService {
         debugPrint("Backup was cancelled by the user");
         anyErrors = true;
         break;
+      } on TimeoutException catch (error, stackTrace) {
+        _log.severe(
+          "Timeout error during backup for asset ${asset.localId} | ${asset.fileName} | Created on ${asset.fileCreatedAt}",
+          error,
+          stackTrace,
+        );
+
+        anyErrors = true;
+        continue;
       } catch (error, stackTrace) {
         debugPrint("Error backup asset: ${error.toString()}: $stackTrace");
         anyErrors = true;
