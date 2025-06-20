@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_dialog.dart';
@@ -35,6 +36,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isDarkTheme = context.isDarkTheme;
     const widgetSize = 30.0;
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     buildProfileIndicator() {
       return InkWell(
@@ -43,6 +45,23 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           useRootNavigator: false,
           builder: (ctx) => const ImmichAppBarDialog(),
         ),
+        onDoubleTap: () => {
+          ref.read(readonlyModeProvider.notifier).toggleReadonlyMode(),
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              duration: const Duration(seconds: 2),
+              content: Text(
+                (isReadonlyModeEnabled
+                        ? "readonly_mode_disabled"
+                        : "readonly_mode_enabled")
+                    .tr(),
+                style: context.textTheme.bodyLarge?.copyWith(
+                  color: context.primaryColor,
+                ),
+              ),
+            ),
+          ),
+        },
         borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Badge(
           label: Container(
@@ -149,7 +168,9 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     }
 
     return AppBar(
-      backgroundColor: context.themeData.appBarTheme.backgroundColor,
+      backgroundColor: isReadonlyModeEnabled
+          ? context.primaryColor.withValues(alpha: .15)
+          : context.themeData.appBarTheme.backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(
           Radius.circular(5),
@@ -206,7 +227,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
               ),
             ),
           ),
-        if (showUploadButton)
+        if (showUploadButton && !isReadonlyModeEnabled)
           Padding(
             padding: const EdgeInsets.only(right: 20),
             child: buildBackupIndicator(),

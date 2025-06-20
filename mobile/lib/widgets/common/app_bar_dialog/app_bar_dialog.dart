@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_profile_info.dart';
@@ -33,6 +34,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
     final user = ref.watch(currentUserProvider);
     final isLoggingOut = useState(false);
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     useEffect(
       () {
@@ -284,6 +286,34 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
+    buildReadonlyMessage() {
+      return Padding(
+        padding: const EdgeInsets.only(
+          left: 10.0,
+          right: 10.0,
+        ),
+        child: ListTile(
+          dense: true,
+          visualDensity: VisualDensity.standard,
+          contentPadding: const EdgeInsets.only(left: 20, right: 20),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(10),
+            ),
+          ),
+          minLeadingWidth: 20,
+          tileColor: theme.primaryColor.withAlpha(80),
+          title: Text(
+            "profile_drawer_readonly_mode",
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: theme.textTheme.labelLarge?.color?.withAlpha(250),
+            ),
+            textAlign: TextAlign.center,
+          ).tr(),
+        ),
+      );
+    }
+
     return Dismissible(
       behavior: HitTestBehavior.translucent,
       direction: DismissDirection.down,
@@ -315,6 +345,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 const AppBarProfileInfoBox(),
                 buildStorageInformation(),
                 const AppBarServerInfo(),
+                if (isReadonlyModeEnabled) buildReadonlyMessage(),
                 buildAppLogButton(),
                 buildSettingButton(),
                 buildSignOutButton(),
