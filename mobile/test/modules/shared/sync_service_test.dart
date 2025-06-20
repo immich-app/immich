@@ -11,6 +11,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/interfaces/partner_api.interface.dart';
+import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -132,7 +133,7 @@ void main() {
           .thenAnswer((_) async => [initialAssets[3], null, null]);
       when(() => assetRepository.updateAll(any())).thenAnswer((_) async => []);
       when(() => assetRepository.deleteByIds(any())).thenAnswer((_) async {
-        return null;
+        return;
       });
       when(() => exifInfoRepository.updateAll(any()))
           .thenAnswer((_) async => []);
@@ -242,7 +243,7 @@ void main() {
           state: AssetState.remote,
         ),
       ).thenAnswer((_) async {
-        return null;
+        return;
       });
       when(
         () => assetRepository
