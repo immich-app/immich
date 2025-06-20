@@ -18,4 +18,4 @@ export async function up(qb: Kysely<any>): Promise<void> {
   }
 }
 
-export async function down(db: Kysely<any>): Promise<void> {}
+export async function down(): Promise<void> {}
