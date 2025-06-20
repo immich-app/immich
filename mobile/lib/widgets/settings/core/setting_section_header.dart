@@ -50,10 +50,14 @@ class SettingSectionHeader extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            Text(
-              title.t(context: context),
-              style: context.sectionTitle.copyWith(
-                color: titleTextColor,
+            Expanded(
+              child: Text(
+                title.t(context: context),
+                style: context.sectionTitle.copyWith(
+                  color: titleTextColor,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           ],

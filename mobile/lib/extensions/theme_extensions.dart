@@ -33,7 +33,7 @@ extension SettingsTextStyles on BuildContext {
         color: _colors.primary,
       );
 
-  TextStyle get itemTitle => _textTheme.bodyLarge!.copyWith(
+  TextStyle get itemTitle => _textTheme.titleSmall!.copyWith(
         fontWeight: FontWeight.w500,
         letterSpacing: 0,
         color: _colors.onSurface,
