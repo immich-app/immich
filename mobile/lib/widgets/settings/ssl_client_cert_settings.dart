@@ -3,26 +3,23 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
-import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
-import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
 
-class SslClientCertSettings extends ConsumerStatefulWidget {
-  const SslClientCertSettings({super.key});
+class SslClientCertSettings extends StatefulWidget {
+  const SslClientCertSettings({super.key, required this.isLoggedIn});
+
+  final bool isLoggedIn;
 
   @override
-  ConsumerState<SslClientCertSettings> createState() =>
-      _SslClientCertSettingsState();
+  State<StatefulWidget> createState() => _SslClientCertSettingsState();
 }
 
-class _SslClientCertSettingsState extends ConsumerState<SslClientCertSettings> {
+class _SslClientCertSettingsState extends State<SslClientCertSettings> {
   _SslClientCertSettingsState()
       : isCertExist = SSLClientCertStoreVal.load() != null;
 
@@ -30,55 +27,46 @@ class _SslClientCertSettingsState extends ConsumerState<SslClientCertSettings> {
 
   @override
   Widget build(BuildContext context) {
-    final isLoggedIn = ref.read(currentUserProvider) != null;
-
-    return SettingsCardLayout(
-      header: const SettingSectionHeader(
-        title: "Placeholder",
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      horizontalTitleGap: 20,
+      isThreeLine: true,
+      title: Text(
+        "client_cert_title".t(context: context),
+        style: context.itemTitle,
       ),
-      children: [
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          horizontalTitleGap: 20,
-          isThreeLine: true,
-          title: Text(
-            "client_cert_title".t(context: context),
-            style: context.itemTitle,
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "client_cert_subtitle".t(context: context),
+            style: context.itemSubtitle,
           ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(
+            height: 6,
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                "client_cert_subtitle".t(context: context),
-                style: context.itemSubtitle,
+              ElevatedButton(
+                onPressed: widget.isLoggedIn ? null : () => importCert(context),
+                child: Text("client_cert_import".t(context: context)),
               ),
               const SizedBox(
-                height: 6,
+                width: 15,
               ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: isLoggedIn ? null : () => importCert(context),
-                    child: Text("client_cert_import".t(context: context)),
-                  ),
-                  const SizedBox(
-                    width: 15,
-                  ),
-                  ElevatedButton(
-                    onPressed: isLoggedIn || !isCertExist
-                        ? null
-                        : () => removeCert(context),
-                    child: Text("remove".t(context: context)),
-                  ),
-                ],
+              ElevatedButton(
+                onPressed: widget.isLoggedIn || !isCertExist
+                    ? null
+                    : () => removeCert(context),
+                child: Text("remove".t(context: context)),
               ),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_group_settings.dart';
-import 'package:immich_mobile/widgets/settings/asset_list_settings/storage_indicator_setting.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_section_header.dart';
+import 'package:immich_mobile/widgets/settings/layouts/settings_card_layout.dart';
 import 'package:immich_mobile/widgets/settings/layouts/settings_sub_page_scaffold.dart';
+import 'package:immich_mobile/widgets/settings/core/setting_switch_list_tile.dart';
+import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'asset_list_layout_settings.dart';
 
 class AssetListSettings extends HookConsumerWidget {
@@ -12,8 +18,23 @@ class AssetListSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final showStorageIndicator =
+        useAppSettingsState(AppSettingsEnum.storageIndicator);
+
     final assetListSetting = [
-      const StorageIndicatorSetting(),
+      SettingsCardLayout(
+        header: const SettingSectionHeader(
+          title: "Placeholder",
+        ),
+        children: [
+          SettingSwitchListTile(
+            valueNotifier: showStorageIndicator,
+            title: 'theme_setting_asset_list_storage_indicator_title'
+                .t(context: context),
+            onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
+          ),
+        ],
+      ),
       const LayoutSettings(),
       const GroupSettings(),
     ];
