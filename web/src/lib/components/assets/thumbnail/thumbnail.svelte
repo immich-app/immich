@@ -375,7 +375,7 @@
           <Icon path={mdiCheckCircle} size="24" class="text-zinc-800" />
         {:else if selected}
           <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-            <Icon path={mdiCheckCircle} size="24" class="text-immich-primary" />
+            <Icon path={mdiCheckCircle} size="24" class="text-primary" />
           </div>
         {:else}
           <Icon path={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />

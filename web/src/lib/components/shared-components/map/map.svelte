@@ -22,7 +22,7 @@
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import maplibregl, { GlobeControl, type GeoJSONSource, type LngLatLike } from 'maplibre-gl';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import {
     AttributionControl,
@@ -251,7 +251,11 @@
   });
 
   $effect(() => {
-    map?.jumpTo({ center, zoom });
+    if (!center || !zoom) {
+      return;
+    }
+
+    untrack(() => map?.jumpTo({ center, zoom }));
   });
 </script>
 

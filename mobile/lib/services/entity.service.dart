@@ -1,24 +1,24 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 
 class EntityService {
   final IAssetRepository _assetRepository;
-  final IUserRepository _userRepository;
+  final IsarUserRepository _isarUserRepository;
   EntityService(
     this._assetRepository,
-    this._userRepository,
+    this._isarUserRepository,
   );
 
   Future<Album> fillAlbumWithDatabaseEntities(Album album) async {
     final ownerId = album.ownerId;
     if (ownerId != null) {
       // replace owner with user from database
-      final user = await _userRepository.getByUserId(ownerId);
+      final user = await _isarUserRepository.getByUserId(ownerId);
       album.owner.value = user == null ? null : User.fromDto(user);
     }
     final thumbnailAssetId =
@@ -30,7 +30,7 @@ class EntityService {
     }
     if (album.remoteUsers.isNotEmpty) {
       // replace all users with users from database
-      final users = await _userRepository
+      final users = await _isarUserRepository
           .getByUserIds(album.remoteUsers.map((user) => user.id).toList());
       album.sharedUsers.clear();
       album.sharedUsers.addAll(users.nonNulls.map(User.fromDto));
