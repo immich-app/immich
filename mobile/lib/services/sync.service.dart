@@ -18,7 +18,6 @@ import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/local_files_manager.interface.dart';
 import 'package:immich_mobile/interfaces/partner.interface.dart';
-import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -71,7 +70,7 @@ class SyncService {
   final UserService _userService;
   final IPartnerRepository _partnerRepository;
   final IETagRepository _eTagRepository;
-  final IPartnerApiRepository _partnerApiRepository;
+  final PartnerApiRepository _partnerApiRepository;
   final UserApiRepository _userApiRepository;
   final AsyncMutex _lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
