@@ -1,5 +1,4 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/interfaces/sessions_api.interface.dart';
 import 'package:immich_mobile/models/sessions/session_create_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
@@ -11,13 +10,11 @@ final sessionsAPIRepositoryProvider = Provider(
   ),
 );
 
-class SessionsAPIRepository extends ApiRepository
-    implements ISessionAPIRepository {
+class SessionsAPIRepository extends ApiRepository {
   final SessionsApi _api;
 
   SessionsAPIRepository(this._api);
 
-  @override
   Future<SessionCreateResponse> createSession(
     String deviceType,
     String deviceOS, {

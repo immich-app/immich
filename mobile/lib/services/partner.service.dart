@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/interfaces/partner.interface.dart';
 import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -19,12 +19,12 @@ final partnerServiceProvider = Provider(
 class PartnerService {
   final IPartnerApiRepository _partnerApiRepository;
   final IPartnerRepository _partnerRepository;
-  final IUserRepository _userRepository;
+  final IsarUserRepository _isarUserRepository;
   final Logger _log = Logger("PartnerService");
 
   PartnerService(
     this._partnerApiRepository,
-    this._userRepository,
+    this._isarUserRepository,
     this._partnerRepository,
   );
 
@@ -47,7 +47,8 @@ class PartnerService {
   Future<bool> removePartner(UserDto partner) async {
     try {
       await _partnerApiRepository.delete(partner.id);
-      await _userRepository.update(partner.copyWith(isPartnerSharedBy: false));
+      await _isarUserRepository
+          .update(partner.copyWith(isPartnerSharedBy: false));
     } catch (e) {
       _log.warning("Failed to remove partner ${partner.id}", e);
       return false;
@@ -58,7 +59,8 @@ class PartnerService {
   Future<bool> addPartner(UserDto partner) async {
     try {
       await _partnerApiRepository.create(partner.id);
-      await _userRepository.update(partner.copyWith(isPartnerSharedBy: true));
+      await _isarUserRepository
+          .update(partner.copyWith(isPartnerSharedBy: true));
       return true;
     } catch (e) {
       _log.warning("Failed to add partner ${partner.id}", e);
@@ -75,7 +77,7 @@ class PartnerService {
         partner.id,
         inTimeline: inTimeline,
       );
-      await _userRepository
+      await _isarUserRepository
           .update(partner.copyWith(inTimeline: dto.inTimeline));
       return true;
     } catch (e) {
