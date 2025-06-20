@@ -1,6 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/interfaces/backup_album.interface.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 
 final backupAlbumServiceProvider = Provider<BackupAlbumService>((ref) {
@@ -8,7 +7,7 @@ final backupAlbumServiceProvider = Provider<BackupAlbumService>((ref) {
 });
 
 class BackupAlbumService {
-  final IBackupAlbumRepository _backupAlbumRepository;
+  final BackupAlbumRepository _backupAlbumRepository;
 
   BackupAlbumService(this._backupAlbumRepository);
 
