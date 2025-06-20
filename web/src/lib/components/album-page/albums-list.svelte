@@ -2,7 +2,6 @@
   import { goto } from '$app/navigation';
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
-  import EditAlbumForm from '$lib/components/forms/edit-album-form.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import RightClickContextMenu from '$lib/components/shared-components/context-menu/right-click-context-menu.svelte';
   import {
@@ -11,6 +10,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
@@ -258,7 +258,7 @@
 
   const handleEdit = async (album: AlbumResponseDto) => {
     closeAlbumContextMenu();
-    const editedAlbum = await modalManager.show(EditAlbumForm, {
+    const editedAlbum = await modalManager.show(AlbumEditModal, {
       album,
     });
     if (editedAlbum) {
