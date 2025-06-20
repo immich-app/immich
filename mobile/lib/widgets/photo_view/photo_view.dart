@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_controller.dart';
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_scalestate_controller.dart';
 import 'package:immich_mobile/widgets/photo_view/src/core/photo_view_core.dart';
@@ -241,6 +240,7 @@ class PhotoView extends StatefulWidget {
     this.heroAttributes,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
+    this.semanticLabel,
     this.controller,
     this.scaleStateController,
     this.maxScale,
@@ -300,7 +300,8 @@ class PhotoView extends StatefulWidget {
     this.filterQuality,
     this.disableGestures,
     this.enablePanAlways,
-  })  : errorBuilder = null,
+  })  : semanticLabel = null,
+        errorBuilder = null,
         imageProvider = null,
         gaplessPlayback = false,
         loadingBuilder = null,
@@ -324,6 +325,11 @@ class PhotoView extends StatefulWidget {
   /// `false` -> resets the state (default)
   /// `true`  -> keeps the state
   final bool wantKeepAlive;
+
+  /// A Semantic description of the image.
+  ///
+  /// Used to provide a description of the image to TalkBack on Android, and VoiceOver on iOS.
+  final String? semanticLabel;
 
   /// This is used to continue showing the old image (`true`), or briefly show
   /// nothing (`false`), when the `imageProvider` changes. By default it's set
@@ -554,6 +560,7 @@ class _PhotoViewState extends State<PhotoView>
                 imageProvider: widget.imageProvider!,
                 loadingBuilder: widget.loadingBuilder,
                 backgroundDecoration: backgroundDecoration,
+                semanticLabel: widget.semanticLabel,
                 gaplessPlayback: widget.gaplessPlayback,
                 heroAttributes: widget.heroAttributes,
                 scaleStateChangedCallback: widget.scaleStateChangedCallback,
@@ -625,21 +632,21 @@ typedef PhotoViewImageTapDownCallback = Function(
 typedef PhotoViewImageDragStartCallback = Function(
   BuildContext context,
   DragStartDetails details,
-  PhotoViewControllerValue controllerValue,
+  PhotoViewControllerBase controller,
 );
 
 /// A type definition for a callback when the user drags
 typedef PhotoViewImageDragUpdateCallback = Function(
   BuildContext context,
   DragUpdateDetails details,
-  PhotoViewControllerValue controllerValue,
+  PhotoViewControllerBase controller,
 );
 
 /// A type definition for a callback when the user taps down the photoview region
 typedef PhotoViewImageDragEndCallback = Function(
   BuildContext context,
   DragEndDetails details,
-  PhotoViewControllerValue controllerValue,
+  PhotoViewControllerBase controller,
 );
 
 /// A type definition for a callback when a user finished scale

@@ -12,7 +12,6 @@ import 'package:immich_mobile/widgets/photo_view/photo_view.dart'
         PhotoViewImageScaleEndCallback,
         PhotoViewImageLongPressStartCallback,
         ScaleStateCycle;
-
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_controller.dart';
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_scalestate_controller.dart';
 import 'package:immich_mobile/widgets/photo_view/src/core/photo_view_gesture_detector.dart';
@@ -121,6 +120,7 @@ class PhotoViewGallery extends StatefulWidget {
     this.scrollDirection = Axis.horizontal,
     this.customSize,
     this.allowImplicitScrolling = false,
+    this.enablePanAlways = false,
   })  : itemCount = null,
         builder = null;
 
@@ -144,6 +144,7 @@ class PhotoViewGallery extends StatefulWidget {
     this.scrollDirection = Axis.horizontal,
     this.customSize,
     this.allowImplicitScrolling = false,
+    this.enablePanAlways = false,
   })  : pageOptions = null,
         assert(itemCount != null),
         assert(builder != null);
@@ -168,6 +169,9 @@ class PhotoViewGallery extends StatefulWidget {
 
   /// Mirror to [PhotoView.wantKeepAlive]
   final bool wantKeepAlive;
+
+  /// Mirror to [PhotoView.enablePanAlways]
+  final bool enablePanAlways;
 
   /// Mirror to [PhotoView.gaplessPlayback]
   final bool gaplessPlayback;
@@ -275,6 +279,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             basePosition: pageOption.basePosition,
             disableGestures: pageOption.disableGestures,
             heroAttributes: pageOption.heroAttributes,
+            enablePanAlways: widget.enablePanAlways,
             child: pageOption.child,
           )
         : PhotoView(
@@ -283,6 +288,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             imageProvider: pageOption.imageProvider,
             loadingBuilder: widget.loadingBuilder,
             backgroundDecoration: widget.backgroundDecoration,
+            semanticLabel: pageOption.semanticLabel,
             wantKeepAlive: widget.wantKeepAlive,
             controller: pageOption.controller,
             scaleStateController: pageOption.scaleStateController,
@@ -306,6 +312,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             filterQuality: pageOption.filterQuality,
             basePosition: pageOption.basePosition,
             disableGestures: pageOption.disableGestures,
+            enablePanAlways: widget.enablePanAlways,
             errorBuilder: pageOption.errorBuilder,
             heroAttributes: pageOption.heroAttributes,
           );
@@ -335,6 +342,7 @@ class PhotoViewGalleryPageOptions {
     Key? key,
     required this.imageProvider,
     this.heroAttributes,
+    this.semanticLabel,
     this.minScale,
     this.maxScale,
     this.initialScale,
@@ -361,6 +369,7 @@ class PhotoViewGalleryPageOptions {
   PhotoViewGalleryPageOptions.customChild({
     required this.child,
     this.childSize,
+    this.semanticLabel,
     this.heroAttributes,
     this.minScale,
     this.maxScale,
@@ -388,6 +397,9 @@ class PhotoViewGalleryPageOptions {
 
   /// Mirror to [PhotoView.heroAttributes]
   final PhotoViewHeroAttributes? heroAttributes;
+
+  /// Mirror to [PhotoView.semanticLabel]
+  final String? semanticLabel;
 
   /// Mirror to [PhotoView.minScale]
   final dynamic minScale;

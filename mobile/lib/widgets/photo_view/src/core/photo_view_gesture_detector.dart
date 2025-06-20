@@ -96,6 +96,7 @@ class PhotoViewGestureDetector extends StatelessWidget {
       ),
       (PhotoViewGestureRecognizer instance) {
         instance
+          ..dragStartBehavior = DragStartBehavior.start
           ..onStart = onScaleStart
           ..onUpdate = onScaleUpdate
           ..onEnd = onScaleEnd;
