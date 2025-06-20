@@ -6,7 +6,7 @@ import { defaults } from 'src/config';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetType, AssetVisibility, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
 import { ImmichTags } from 'src/repositories/metadata.repository';
-import { MetadataService } from 'src/services/metadata.service';
+import { MetadataService, firstDateTime } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
@@ -1637,6 +1637,82 @@ describe(MetadataService.name, () => {
         GPSLatitude: gps,
         GPSLongitude: gps,
       });
+    });
+  });
+
+  describe('firstDateTime', () => {
+    it('should ignore date-only tags like GPSDateStamp', () => {
+      const tags = {
+        GPSDateStamp: '2023:08:08', // Date-only tag, should be ignored
+        SonyDateTime2: '2023:07:07 07:00:00',
+      };
+
+      const result = firstDateTime(tags);
+      expect(result?.tag).toBe('SonyDateTime2');
+      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-07-07T07:00:00.000Z');
+    });
+
+    it('should respect full priority order with all date tags present', () => {
+      const tags = {
+        // SubSec and standard EXIF date tags
+        SubSecDateTimeOriginal: '2023:01:01 01:00:00',
+        SubSecCreateDate: '2023:02:02 02:00:00',
+        SubSecMediaCreateDate: '2023:03:03 03:00:00',
+        DateTimeOriginal: '2023:04:04 04:00:00',
+        CreateDate: '2023:05:05 05:00:00',
+        MediaCreateDate: '2023:06:06 06:00:00',
+        CreationDate: '2023:07:07 07:00:00',
+        DateTimeCreated: '2023:08:08 08:00:00',
+        
+        // Additional date tags
+        TimeCreated: '2023:09:09 09:00:00',
+        GPSDateTime: '2023:10:10 10:00:00',
+        DateTimeUTC: '2023:11:11 11:00:00',
+        GPSDateStamp: '2023:12:12', // Date-only tag, should be ignored
+        SonyDateTime2: '2023:13:13 13:00:00',
+        
+        // Non-standard tag
+        SourceImageCreateTime: '2023:14:14 14:00:00',
+      };
+
+      const result = firstDateTime(tags);
+      // Should use SubSecDateTimeOriginal as it has highest priority
+      expect(result?.tag).toBe('SubSecDateTimeOriginal');
+      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-01-01T01:00:00.000Z');
+    });
+
+    it('should handle missing SubSec tags and use available date tags', () => {
+      const tags = {
+        // Standard date tags
+        CreationDate: '2023:07:07 07:00:00',
+        DateTimeCreated: '2023:08:08 08:00:00',
+        
+        // Additional date tags
+        TimeCreated: '2023:09:09 09:00:00',
+        GPSDateTime: '2023:10:10 10:00:00',
+        DateTimeUTC: '2023:11:11 11:00:00',
+        GPSDateStamp: '2023:12:12', // Date-only tag, should be ignored
+        SonyDateTime2: '2023:13:13 13:00:00',
+      };
+
+      const result = firstDateTime(tags);
+      // Should use CreationDate when available
+      expect(result?.tag).toBe('CreationDate');
+      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-07-07T07:00:00.000Z');
+    });
+
+    it('should handle invalid date formats gracefully', () => {
+      const tags = {
+        TimeCreated: 'invalid-date',
+        GPSDateTime: '2023:10:10 10:00:00',
+        DateTimeUTC: 'also-invalid',
+        SonyDateTime2: '2023:13:13 13:00:00',
+      };
+
+      const result = firstDateTime(tags);
+      // Should skip invalid dates and use the first valid one
+      expect(result?.tag).toBe('GPSDateTime');
+      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-10-10T10:00:00.000Z');
     });
   });
 });

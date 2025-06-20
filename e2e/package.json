@@ -44,6 +44,7 @@
     "pngjs": "^7.0.0",
     "prettier": "^3.2.5",
     "prettier-plugin-organize-imports": "^4.0.0",
+    "sharp": "^0.33.5",
     "socket.io-client": "^4.7.4",
     "supertest": "^7.0.0",
     "typescript": "^5.3.3",

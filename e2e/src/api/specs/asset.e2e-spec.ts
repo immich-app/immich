@@ -15,6 +15,7 @@ import { DateTime } from 'luxon';
 import { randomBytes } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
+import sharp from 'sharp';
 import { Socket } from 'socket.io-client';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
@@ -39,6 +40,40 @@ const today = DateTime.fromObject({
   day: 3,
 }) as DateTime<true>;
 const yesterday = today.minus({ days: 1 });
+
+const createTestImageWithExif = async (filename: string, exifData: Record<string, any>) => {
+  // Generate unique color to ensure different checksums for each image
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+
+  // Create a 100x100 solid color JPEG using Sharp
+  const imageBytes = await sharp({
+    create: {
+      width: 100,
+      height: 100,
+      channels: 3,
+      background: { r, g, b },
+    },
+  })
+    .jpeg({ quality: 90 })
+    .toBuffer();
+
+  // Add random suffix to filename to avoid collisions
+  const uniqueFilename = filename.replace('.jpg', `-${randomBytes(4).toString('hex')}.jpg`);
+  const filepath = join(tempDir, uniqueFilename);
+  await writeFile(filepath, imageBytes);
+
+  // Filter out undefined values before writing EXIF
+  const cleanExifData = Object.fromEntries(Object.entries(exifData).filter(([, value]) => value !== undefined));
+
+  await exiftool.write(filepath, cleanExifData);
+
+  // Re-read the image bytes after EXIF has been written
+  const finalImageBytes = await readFile(filepath);
+
+  return { filepath, imageBytes: finalImageBytes, filename: uniqueFilename };
+};
 
 describe('/asset', () => {
   let admin: LoginResponseDto;
@@ -1187,6 +1222,411 @@ describe('/asset', () => {
 
       const video = await utils.getAssetInfo(admin.accessToken, asset.livePhotoVideoId as string);
       expect(video.checksum).toStrictEqual(checksum);
+    });
+  });
+
+  describe('EXIF metadata extraction', () => {
+    describe('Additional date tag extraction', () => {
+      describe('Date-time vs time-only tag handling', () => {
+        it('should fall back to file timestamps when only time-only tags are available', async () => {
+          const { imageBytes, filename } = await createTestImageWithExif('time-only-fallback.jpg', {
+            TimeCreated: '2023:11:15 14:30:00', // Time-only tag, should not be used for dateTimeOriginal
+            // Exclude all date-time tags to force fallback to file timestamps
+            SubSecDateTimeOriginal: undefined,
+            DateTimeOriginal: undefined,
+            SubSecCreateDate: undefined,
+            SubSecMediaCreateDate: undefined,
+            CreateDate: undefined,
+            MediaCreateDate: undefined,
+            CreationDate: undefined,
+            DateTimeCreated: undefined,
+            GPSDateTime: undefined,
+            DateTimeUTC: undefined,
+            SonyDateTime2: undefined,
+            GPSDateStamp: undefined,
+          });
+
+          const oldDate = new Date('2020-01-01T00:00:00.000Z');
+          const asset = await utils.createAsset(admin.accessToken, {
+            assetData: {
+              filename,
+              bytes: imageBytes,
+            },
+            fileCreatedAt: oldDate.toISOString(),
+            fileModifiedAt: oldDate.toISOString(),
+          });
+
+          await utils.waitForWebsocketEvent({ event: 'assetUpload', id: asset.id });
+
+          const assetInfo = await getAssetInfo({ id: asset.id }, { headers: asBearerAuth(admin.accessToken) });
+
+          expect(assetInfo.exifInfo?.dateTimeOriginal).toBeDefined();
+          // Should fall back to file timestamps, which we set to 2020-01-01
+          expect(new Date(assetInfo.exifInfo!.dateTimeOriginal!).getTime()).toBe(
+            new Date('2020-01-01T00:00:00.000Z').getTime(),
+          );
+        });
+
+        it('should prefer DateTimeOriginal over time-only tags', async () => {
+          const { imageBytes, filename } = await createTestImageWithExif('datetime-over-time.jpg', {
+            DateTimeOriginal: '2023:10:10 10:00:00', // Should be preferred
+            TimeCreated: '2023:11:15 14:30:00', // Should be ignored (time-only)
+          });
+
+          const asset = await utils.createAsset(admin.accessToken, {
+            assetData: {
+              filename,
+              bytes: imageBytes,
+            },
+          });
+
+          await utils.waitForWebsocketEvent({ event: 'assetUpload', id: asset.id });
+
+          const assetInfo = await getAssetInfo({ id: asset.id }, { headers: asBearerAuth(admin.accessToken) });
+
+          expect(assetInfo.exifInfo?.dateTimeOriginal).toBeDefined();
+          // Should use DateTimeOriginal, not TimeCreated
+          expect(new Date(assetInfo.exifInfo!.dateTimeOriginal!).getTime()).toBe(
+            new Date('2023-10-10T10:00:00.000Z').getTime(),
+          );
+        });
+      });
+
+      describe('GPSDateTime tag extraction', () => {
+        it('should extract GPSDateTime with GPS coordinates', async () => {
+          const { imageBytes, filename } = await createTestImageWithExif('gps-datetime.jpg', {
+            GPSDateTime: '2023:11:15 12:30:00Z',
+            GPSLatitude: 37.7749,
+            GPSLongitude: -122.4194,
+            // Exclude other date tags
+            SubSecDateTimeOriginal: undefined,
+            DateTimeOriginal: undefined,
+            SubSecCreateDate: undefined,
+            SubSecMediaCreateDate: undefined,
+            CreateDate: undefined,
+            MediaCreateDate: undefined,
+            CreationDate: undefined,
+            DateTimeCreated: undefined,
+            TimeCreated: undefined,
+          });
+
+          const asset = await utils.createAsset(admin.accessToken, {
+            assetData: {
+              filename,
+              bytes: imageBytes,
+            },
+          });
+
+          await utils.waitForWebsocketEvent({ event: 'assetUpload', id: asset.id });
+
+          const assetInfo = await getAssetInfo({ id: asset.id }, { headers: asBearerAuth(admin.accessToken) });
+
+          expect(assetInfo.exifInfo?.dateTimeOriginal).toBeDefined();
+          expect(assetInfo.exifInfo?.latitude).toBeCloseTo(37.7749, 4);
+          expect(assetInfo.exifInfo?.longitude).toBeCloseTo(-122.4194, 4);
+          expect(new Date(assetInfo.exifInfo!.dateTimeOriginal!).getTime()).toBe(
+            new Date('2023-11-15T12:30:00.000Z').getTime(),
+          );
+        });
+      });
+
+      describe('CreateDate tag extraction', () => {
+        it('should extract CreateDate when available', async () => {
+          const { imageBytes, filename } = await createTestImageWithExif('create-date.jpg', {
+            CreateDate: '2023:11:15 10:30:00',
+            // Exclude other higher priority date tags
+            SubSecDateTimeOriginal: undefined,
+            DateTimeOriginal: undefined,
+            SubSecCreateDate: undefined,
+            SubSecMediaCreateDate: undefined,
+            MediaCreateDate: undefined,
+            CreationDate: undefined,
+            DateTimeCreated: undefined,
+            TimeCreated: undefined,
+            GPSDateTime: undefined,
+          });
+
+          const asset = await utils.createAsset(admin.accessToken, {
+            assetData: {
+              filename,
+              bytes: imageBytes,
+            },
+          });
+
+          await utils.waitForWebsocketEvent({ event: 'assetUpload', id: asset.id });
+
+          const assetInfo = await getAssetInfo({ id: asset.id }, { headers: asBearerAuth(admin.accessToken) });
+
+          expect(assetInfo.exifInfo?.dateTimeOriginal).toBeDefined();
+          expect(new Date(assetInfo.exifInfo!.dateTimeOriginal!).getTime()).toBe(
+            new Date('2023-11-15T10:30:00.000Z').getTime(),
+          );
+        });
+      });
+
+      describe('GPSDateStamp tag extraction', () => {
+        it('should fall back to file timestamps when only date-only tags are available', async () => {
+          const { imageBytes, filename } = await createTestImageWithExif('gps-datestamp.jpg', {
+            GPSDateStamp: '2023:11:15', // Date-only tag, should not be used for dateTimeOriginal
+            // Note: NOT including GPSTimeStamp to avoid automatic GPSDateTime creation
+            GPSLatitude: 51.5074,
+            GPSLongitude: -0.1278,
+            // Explicitly exclude all testable date-time tags to force fallback to file timestamps
+            DateTimeOriginal: undefined,
+            CreateDate: undefined,
+            CreationDate: undefined,
+            GPSDateTime: undefined,
+          });
+
+          const oldDate = new Date('2020-01-01T00:00:00.000Z');
+          const asset = await utils.createAsset(admin.accessToken, {
+            assetData: {
+              filename,
+              bytes: imageBytes,
+            },
+            fileCreatedAt: oldDate.toISOString(),
+            fileModifiedAt: oldDate.toISOString(),
+          });
+
+          await utils.waitForWebsocketEvent({ event: 'assetUpload', id: asset.id });
+
+          const assetInfo = await getAssetInfo({ id: asset.id }, { headers: asBearerAuth(admin.accessToken) });
+
+          expect(assetInfo.exifInfo?.dateTimeOriginal).toBeDefined();
+          expect(assetInfo.exifInfo?.latitude).toBeCloseTo(51.5074, 4);
+          expect(assetInfo.exifInfo?.longitude).toBeCloseTo(-0.1278, 4);
+          // Should fall back to file timestamps, which we set to 2020-01-01
+          expect(new Date(assetInfo.exifInfo!.dateTimeOriginal!).getTime()).toBe(
+            new Date('2020-01-01T00:00:00.000Z').getTime(),
+          );
+        });
+      });
+
+      /* 
+       * NOTE: The following EXIF date tags are NOT effectively usable with JPEG test files:
+       * 
+       * NOT WRITABLE to JPEG:
+       * - MediaCreateDate: Can be read from video files but not written to JPEG
+       * - DateTimeCreated: Read-only tag in JPEG format
+       * - DateTimeUTC: Cannot be written to JPEG files  
+       * - SonyDateTime2: Proprietary Sony tag, not writable to JPEG
+       * - SubSecMediaCreateDate: Tag not defined for JPEG format
+       * - SourceImageCreateTime: Non-standard insta360 tag, not writable to JPEG
+       * 
+       * WRITABLE but NOT READABLE from JPEG:
+       * - SubSecDateTimeOriginal: Can be written but not read back from JPEG
+       * - SubSecCreateDate: Can be written but not read back from JPEG
+       * 
+       * EFFECTIVELY TESTABLE TAGS (writable and readable):
+       * - DateTimeOriginal ✓
+       * - CreateDate ✓
+       * - CreationDate ✓
+       * - GPSDateTime ✓
+       * 
+       * The metadata service correctly handles non-readable tags and will fall back to
+       * file timestamps when only non-readable tags are present.
+       */
+
+      describe('Date tag priority order', () => {
+        it('should respect the complete date tag priority order', async () => {
+          // Test cases using only EFFECTIVELY TESTABLE tags (writable AND readable from JPEG)
+          const testCases = [
+            {
+              name: 'DateTimeOriginal has highest priority among testable tags',
+              exifData: {
+                DateTimeOriginal: '2023:04:04 04:00:00', // TESTABLE - highest priority among readable tags
+                CreateDate: '2023:05:05 05:00:00', // TESTABLE
+                CreationDate: '2023:07:07 07:00:00', // TESTABLE
+                GPSDateTime: '2023:10:10 10:00:00', // TESTABLE
+              },
+              expectedDate: '2023-04-04T04:00:00.000Z',
+            },
+            {
+              name: 'CreateDate when DateTimeOriginal missing',
+              exifData: {
+                CreateDate: '2023:05:05 05:00:00', // TESTABLE
+                CreationDate: '2023:07:07 07:00:00', // TESTABLE
+                GPSDateTime: '2023:10:10 10:00:00', // TESTABLE
+              },
+              expectedDate: '2023-05-05T05:00:00.000Z',
+            },
+            {
+              name: 'CreationDate when standard EXIF tags missing',
+              exifData: {
+                CreationDate: '2023:07:07 07:00:00', // TESTABLE
+                GPSDateTime: '2023:10:10 10:00:00', // TESTABLE
+              },
+              expectedDate: '2023-07-07T07:00:00.000Z',
+            },
+            {
+              name: 'GPSDateTime when no other testable date tags present',
+              exifData: {
+                GPSDateTime: '2023:10:10 10:00:00', // TESTABLE
+                Make: 'SONY',
+              },
+              expectedDate: '2023-10-10T10:00:00.000Z',
+            },
+          ];
+
+          for (const testCase of testCases) {
+            const { imageBytes, filename } = await createTestImageWithExif(
+              `${testCase.name.replaceAll(/\s+/g, '-').toLowerCase()}.jpg`,
+              testCase.exifData,
+            );
+
+            const asset = await utils.createAsset(admin.accessToken, {
+              assetData: {
+                filename,
+                bytes: imageBytes,
+              },
+            });
+
+            await utils.waitForWebsocketEvent({ event: 'assetUpload', id: asset.id });
+
+            const assetInfo = await getAssetInfo({ id: asset.id }, { headers: asBearerAuth(admin.accessToken) });
+
+            expect(assetInfo.exifInfo?.dateTimeOriginal, `Failed for: ${testCase.name}`).toBeDefined();
+            expect(
+              new Date(assetInfo.exifInfo!.dateTimeOriginal!).getTime(),
+              `Date mismatch for: ${testCase.name}`,
+            ).toBe(new Date(testCase.expectedDate).getTime());
+          }
+        });
+      });
+
+      describe('Edge cases for date tag handling', () => {
+        it('should fall back to file timestamps with GPSDateStamp alone', async () => {
+          const { imageBytes, filename } = await createTestImageWithExif('gps-datestamp-only.jpg', {
+            GPSDateStamp: '2023:08:08', // Date-only tag, should not be used for dateTimeOriginal
+            // Intentionally no GPSTimeStamp
+            // Exclude all other date tags
+            SubSecDateTimeOriginal: undefined,
+            DateTimeOriginal: undefined,
+            SubSecCreateDate: undefined,
+            SubSecMediaCreateDate: undefined,
+            CreateDate: undefined,
+            MediaCreateDate: undefined,
+            CreationDate: undefined,
+            DateTimeCreated: undefined,
+            TimeCreated: undefined,
+            GPSDateTime: undefined,
+            DateTimeUTC: undefined,
+          });
+
+          const oldDate = new Date('2020-01-01T00:00:00.000Z');
+          const asset = await utils.createAsset(admin.accessToken, {
+            assetData: {
+              filename,
+              bytes: imageBytes,
+            },
+            fileCreatedAt: oldDate.toISOString(),
+            fileModifiedAt: oldDate.toISOString(),
+          });
+
+          await utils.waitForWebsocketEvent({ event: 'assetUpload', id: asset.id });
+
+          const assetInfo = await getAssetInfo({ id: asset.id }, { headers: asBearerAuth(admin.accessToken) });
+
+          expect(assetInfo.exifInfo?.dateTimeOriginal).toBeDefined();
+          // Should fall back to file timestamps, which we set to 2020-01-01
+          expect(new Date(assetInfo.exifInfo!.dateTimeOriginal!).getTime()).toBe(
+            new Date('2020-01-01T00:00:00.000Z').getTime(),
+          );
+        });
+
+        it('should handle all testable date tags present to verify complete priority order', async () => {
+          const { imageBytes, filename } = await createTestImageWithExif('all-testable-date-tags.jpg', {
+            // All TESTABLE date tags to JPEG format (writable AND readable)
+            DateTimeOriginal: '2023:04:04 04:00:00', // TESTABLE - highest priority among readable tags
+            CreateDate: '2023:05:05 05:00:00', // TESTABLE
+            CreationDate: '2023:07:07 07:00:00', // TESTABLE
+            GPSDateTime: '2023:10:10 10:00:00', // TESTABLE
+            // Note: Excluded non-testable tags:
+            // SubSec tags: writable but not readable from JPEG
+            // Non-writable tags: MediaCreateDate, DateTimeCreated, DateTimeUTC, SonyDateTime2, etc.
+            // Time-only/date-only tags: already excluded from EXIF_DATE_TAGS
+          });
+
+          const asset = await utils.createAsset(admin.accessToken, {
+            assetData: {
+              filename,
+              bytes: imageBytes,
+            },
+          });
+
+          await utils.waitForWebsocketEvent({ event: 'assetUpload', id: asset.id });
+
+          const assetInfo = await getAssetInfo({ id: asset.id }, { headers: asBearerAuth(admin.accessToken) });
+
+          expect(assetInfo.exifInfo?.dateTimeOriginal).toBeDefined();
+          // Should use DateTimeOriginal as it has the highest priority among testable tags
+          expect(new Date(assetInfo.exifInfo!.dateTimeOriginal!).getTime()).toBe(
+            new Date('2023-04-04T04:00:00.000Z').getTime(),
+          );
+        });
+
+        it('should use CreationDate when SubSec tags are missing', async () => {
+          const { imageBytes, filename } = await createTestImageWithExif('creation-date-priority.jpg', {
+            CreationDate: '2023:07:07 07:00:00', // WRITABLE
+            GPSDateTime: '2023:10:10 10:00:00', // WRITABLE
+            // Note: DateTimeCreated, DateTimeUTC, SonyDateTime2 are NOT writable to JPEG
+            // Note: TimeCreated and GPSDateStamp are excluded from EXIF_DATE_TAGS (time-only/date-only)
+            // Exclude SubSec and standard EXIF tags
+            SubSecDateTimeOriginal: undefined,
+            DateTimeOriginal: undefined,
+            SubSecCreateDate: undefined,
+            CreateDate: undefined,
+          });
+
+          const asset = await utils.createAsset(admin.accessToken, {
+            assetData: {
+              filename,
+              bytes: imageBytes,
+            },
+          });
+
+          await utils.waitForWebsocketEvent({ event: 'assetUpload', id: asset.id });
+
+          const assetInfo = await getAssetInfo({ id: asset.id }, { headers: asBearerAuth(admin.accessToken) });
+
+          expect(assetInfo.exifInfo?.dateTimeOriginal).toBeDefined();
+          // Should use CreationDate when available
+          expect(new Date(assetInfo.exifInfo!.dateTimeOriginal!).getTime()).toBe(
+            new Date('2023-07-07T07:00:00.000Z').getTime(),
+          );
+        });
+
+        it('should skip invalid date formats and use next valid tag', async () => {
+          const { imageBytes, filename } = await createTestImageWithExif('invalid-date-handling.jpg', {
+            // Note: Testing invalid date handling with only WRITABLE tags
+            GPSDateTime: '2023:10:10 10:00:00', // WRITABLE - Valid date
+            CreationDate: '2023:13:13 13:00:00', // WRITABLE - Valid date  
+            // Note: TimeCreated excluded (time-only), DateTimeCreated not writable to JPEG
+            // Exclude other date tags
+            SubSecDateTimeOriginal: undefined,
+            DateTimeOriginal: undefined,
+            SubSecCreateDate: undefined,
+            CreateDate: undefined,
+          });
+
+          const asset = await utils.createAsset(admin.accessToken, {
+            assetData: {
+              filename,
+              bytes: imageBytes,
+            },
+          });
+
+          await utils.waitForWebsocketEvent({ event: 'assetUpload', id: asset.id });
+
+          const assetInfo = await getAssetInfo({ id: asset.id }, { headers: asBearerAuth(admin.accessToken) });
+
+          expect(assetInfo.exifInfo?.dateTimeOriginal).toBeDefined();
+          // Should skip invalid dates and use the first valid one (GPSDateTime)
+          expect(new Date(assetInfo.exifInfo!.dateTimeOriginal!).getTime()).toBe(
+            new Date('2023-10-10T10:00:00.000Z').getTime(),
+          );
+        });
+      });
     });
   });
 

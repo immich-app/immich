@@ -40,10 +40,8 @@ const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
   'MediaCreateDate',
   'CreationDate',
   'DateTimeCreated',
-  'TimeCreated',
   'GPSDateTime',
   'DateTimeUTC',
-  'GPSDateStamp',
   'SonyDateTime2',
   // Undocumented, non-standard tag from insta360 in xmp.GPano namespace
   'SourceImageCreateTime' as keyof ImmichTags,
