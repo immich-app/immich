@@ -34,7 +34,6 @@ extension SettingsTextStyles on BuildContext {
       );
 
   TextStyle get itemTitle => _textTheme.titleSmall!.copyWith(
-        fontWeight: FontWeight.w500,
         letterSpacing: 0,
         color: _colors.onSurface,
       );

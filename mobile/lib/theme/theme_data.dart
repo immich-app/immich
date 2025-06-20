@@ -219,5 +219,5 @@ String? _getFontFamilyFromLocale(Locale locale) {
     // Let Flutter use the default font
     return null;
   }
-  return 'Overpass';
+  return 'Mulish';
 }
