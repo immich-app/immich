@@ -32,7 +32,7 @@ documentation:
 🧠machine-learning:
   - changed-files:
       - any-glob-to-any-file:
-          - machine-learning/app/**
+          - machine-learning/**
 
 changelog:translation:
   - head-branch: ['^chore/translations$']

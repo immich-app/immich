@@ -14,7 +14,7 @@ import {
   SearchStatisticsResponseDto,
   SearchSuggestionRequestDto,
   SmartSearchDto,
-  StatisticsSearchDto,
+  StatisticsSearchDto
 } from 'src/dtos/search.dto';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { SearchService } from 'src/services/search.service';

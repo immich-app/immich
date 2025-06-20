@@ -108,7 +108,7 @@
 
   const onSubmit = () => {
     const searchType = getSearchType();
-    let payload: SmartSearchDto | MetadataSearchDto = {} as SmartSearchDto | MetadataSearchDto;
+    let payload = {} as SmartSearchDto | MetadataSearchDto;
 
     switch (searchType) {
       case 'smart': {
@@ -121,6 +121,10 @@
       }
       case 'description': {
         payload = { description: value } as MetadataSearchDto;
+        break;
+      }
+      case 'ocr': {
+        payload = { ocr: value } as MetadataSearchDto;
         break;
       }
     }
@@ -172,17 +176,14 @@
     onSubmit();
   };
 
-  function getSearchType(): 'smart' | 'metadata' | 'description' {
+  function getSearchType() {
     const searchType = localStorage.getItem('searchQueryType');
     switch (searchType) {
-      case 'smart': {
-        return 'smart';
-      }
-      case 'metadata': {
-        return 'metadata';
-      }
-      case 'description': {
-        return 'description';
+      case 'smart':
+      case 'metadata':
+      case 'description':
+      case 'ocr': {
+        return searchType;
       }
       default: {
         return 'smart';
@@ -201,6 +202,9 @@
       }
       case 'description': {
         return $t('description');
+      }
+      case 'ocr': {
+        return $t('ocr');
       }
     }
   }

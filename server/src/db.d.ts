@@ -98,10 +98,8 @@ export interface AlbumsSharedUsersUsers {
   albumsId: string;
   role: Generated<AlbumUserRole>;
   usersId: string;
-  createId: Generated<string>;
-  createdAt: Generated<Timestamp>;
-  updateId: Generated<string>;
   updatedAt: Generated<Timestamp>;
+  updateId: Generated<string>;
 }
 
 export interface ApiKeys {
@@ -146,6 +144,7 @@ export interface AssetJobStatus {
   metadataExtractedAt: Timestamp | null;
   previewAt: Timestamp | null;
   thumbnailAt: Timestamp | null;
+  ocrAt: Timestamp | null;
 }
 
 export interface AssetsAudit {
@@ -184,6 +183,21 @@ export interface Assets {
   type: AssetType;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
+}
+
+export interface AssetOcr {
+  id: Generated<string>;
+  assetId: string;
+  text: string;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  x3: number;
+  y3: number;
+  x4: number;
+  boxScore: number;
+  textScore: number;
 }
 
 export interface AssetStack {
@@ -325,6 +339,11 @@ export interface NaturalearthCountries {
   type: string;
 }
 
+export interface OcrSearch {
+  assetId: string;
+  text: string;
+}
+
 export interface PartnersAudit {
   deletedAt: Generated<Timestamp>;
   id: Generated<string>;
@@ -334,7 +353,6 @@ export interface PartnersAudit {
 
 export interface Partners {
   createdAt: Generated<Timestamp>;
-  createId: Generated<string>;
   inTimeline: Generated<boolean>;
   sharedById: string;
   sharedWithId: string;
@@ -493,6 +511,7 @@ export interface DB {
   asset_faces: AssetFaces;
   asset_files: AssetFiles;
   asset_job_status: AssetJobStatus;
+  asset_ocr: AssetOcr;
   asset_stack: AssetStack;
   assets: Assets;
   assets_audit: AssetsAudit;
@@ -507,6 +526,7 @@ export interface DB {
   notifications: Notifications;
   move_history: MoveHistory;
   naturalearth_countries: NaturalearthCountries;
+  ocr_search: OcrSearch;
   partners_audit: PartnersAudit;
   partners: Partners;
   person: Person;

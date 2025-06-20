@@ -198,6 +198,10 @@ export class JobService extends BaseService {
         return this.jobRepository.queue({ name: JobName.BACKUP_DATABASE, data: { force } });
       }
 
+      case QueueName.OCR: {
+        return this.jobRepository.queue({ name: JobName.QUEUE_OCR, data: { force } });
+      }
+
       default: {
         throw new BadRequestException(`Invalid job name: ${name}`);
       }
@@ -243,6 +247,7 @@ export class JobService extends BaseService {
       { name: JobName.USER_SYNC_USAGE },
       { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false, nightly: true } },
       { name: JobName.CLEAN_OLD_SESSION_TOKENS },
+      { name: JobName.QUEUE_OCR, data: { force: false, nightly: true } },
     ]);
   }
 
@@ -295,6 +300,7 @@ export class JobService extends BaseService {
         const jobs: JobItem[] = [
           { name: JobName.SMART_SEARCH, data: item.data },
           { name: JobName.FACE_DETECTION, data: item.data },
+          { name: JobName.OCR, data: item.data },
         ];
 
         if (asset.type === AssetType.VIDEO) {

@@ -16,6 +16,7 @@ import {
   withExifInner,
   withFaces,
   withFacesAndPeople,
+  withFilePath,
   withFiles,
 } from 'src/utils/database';
 
@@ -186,6 +187,15 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForOcr(id: string) {
+    return this.db
+      .selectFrom('assets')
+      .select((eb) => ['assets.visibility', withFilePath(eb, AssetFileType.PREVIEW).as('previewFile')])
+      .where('assets.id', '=', id)
+      .executeTakeFirst();
+  }
+
   @GenerateSql({ params: [[DummyValue.UUID]] })
   getForSyncAssets(ids: string[]) {
     return this.db
@@ -340,6 +350,21 @@ export class AssetJobRepository {
       .$if(!force, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
       .select(['assets.id'])
       .orderBy('assets.createdAt', 'desc')
+      .stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForOcrJob(force?: boolean) {
+    return this.db
+      .selectFrom('assets')
+      .select(['assets.id'])
+      .$if(!force, (qb) =>
+        qb
+          .innerJoin('asset_job_status', 'asset_job_status.assetId', 'assets.id')
+          .where('asset_job_status.ocrAt', 'is', null),
+      )
+      .where('assets.deletedAt', 'is', null)
+      .where('assets.visibility', '!=', AssetVisibility.HIDDEN)
       .stream();
   }
 

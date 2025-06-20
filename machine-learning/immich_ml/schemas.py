@@ -23,6 +23,7 @@ class BoundingBox(TypedDict):
 class ModelTask(StrEnum):
     FACIAL_RECOGNITION = "facial-recognition"
     SEARCH = "clip"
+    OCR = "ocr"
 
 
 class ModelType(StrEnum):
@@ -30,6 +31,7 @@ class ModelType(StrEnum):
     RECOGNITION = "recognition"
     TEXTUAL = "textual"
     VISUAL = "visual"
+    OCR = "ocr"
 
 
 class ModelFormat(StrEnum):
@@ -42,6 +44,7 @@ class ModelSource(StrEnum):
     INSIGHTFACE = "insightface"
     MCLIP = "mclip"
     OPENCLIP = "openclip"
+    PADDLE = "paddle"
 
 
 ModelIdentity = tuple[ModelType, ModelTask]

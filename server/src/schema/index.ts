@@ -23,6 +23,7 @@ import { AssetAuditTable } from 'src/schema/tables/asset-audit.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { AssetFileTable } from 'src/schema/tables/asset-files.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
+import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { AuditTable } from 'src/schema/tables/audit.table';
 import { ExifTable } from 'src/schema/tables/exif.table';
@@ -34,6 +35,7 @@ import { MemoryAssetTable } from 'src/schema/tables/memory_asset.table';
 import { MoveTable } from 'src/schema/tables/move.table';
 import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
 import { NotificationTable } from 'src/schema/tables/notification.table';
+import { OcrSearchTable } from 'src/schema/tables/ocr-search.table';
 import { PartnerAuditTable } from 'src/schema/tables/partner-audit.table';
 import { PartnerTable } from 'src/schema/tables/partner.table';
 import { PersonTable } from 'src/schema/tables/person.table';
@@ -66,6 +68,7 @@ export class ImmichDatabase {
     AssetAuditTable,
     AssetFaceTable,
     AssetJobStatusTable,
+    AssetOcrTable,
     AssetTable,
     AssetFileTable,
     AuditTable,
@@ -78,6 +81,7 @@ export class ImmichDatabase {
     MoveTable,
     NaturalEarthCountriesTable,
     NotificationTable,
+    OcrSearchTable,
     PartnerAuditTable,
     PartnerTable,
     PersonTable,
