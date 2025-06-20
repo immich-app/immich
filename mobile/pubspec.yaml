@@ -136,22 +136,6 @@ flutter:
           weight: 600
         - asset: fonts/overpass/Overpass-Bold.ttf
           weight: 700
-    - family: Mulish
-      fonts:
-        - asset: fonts/Mulish/Mulish-Regular.ttf
-          weight: 400
-        - asset: fonts/Mulish/Mulish-Italic.ttf
-          style: italic
-        - asset: fonts/Mulish/Mulish-Medium.ttf
-          weight: 500
-        - asset: fonts/Mulish/Mulish-SemiBold.ttf
-          weight: 600
-        - asset: fonts/Mulish/Mulish-Bold.ttf
-          weight: 700
-        - asset: fonts/Mulish/Mulish-ExtraBold.ttf
-          weight: 800
-        - asset: fonts/Mulish/Mulish-Black.ttf
-          weight: 900
     - family: OverpassMono
       fonts:
         - asset: fonts/overpass/OverpassMono.ttf
