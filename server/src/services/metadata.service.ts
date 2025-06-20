@@ -31,7 +31,7 @@ import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 
 /** look for a date from these tags (in order) */
-const EXIF_DATE_TAGS = [
+const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
   'SubSecDateTimeOriginal',
   'SubSecCreateDate',
   'SubSecMediaCreateDate',
@@ -46,8 +46,8 @@ const EXIF_DATE_TAGS = [
   'GPSDateStamp',
   'SonyDateTime2',
   // Undocumented, non-standard tag from insta360 in xmp.GPano namespace
-  'SourceImageCreateTime',
-] as Array<keyof ImmichTags>;
+  'SourceImageCreateTime' as keyof ImmichTags,
+];
 
 export function firstDateTime(tags: ImmichTags) {
   for (const tag of EXIF_DATE_TAGS) {
