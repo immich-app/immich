@@ -63,7 +63,7 @@ final syncServiceProvider = Provider(
 class SyncService {
   final HashService _hashService;
   final EntityService _entityService;
-  final IAlbumMediaRepository _albumMediaRepository;
+  final AlbumMediaRepository _albumMediaRepository;
   final IAlbumApiRepository _albumApiRepository;
   final IAlbumRepository _albumRepository;
   final IAssetRepository _assetRepository;

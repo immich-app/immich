@@ -51,7 +51,7 @@ class BackupService {
   final Logger _log = Logger("BackupService");
   final AppSettingsService _appSetting;
   final AlbumService _albumService;
-  final IAlbumMediaRepository _albumMediaRepository;
+  final AlbumMediaRepository _albumMediaRepository;
   final IFileMediaRepository _fileMediaRepository;
   final IAssetRepository _assetRepository;
   final IAssetMediaRepository _assetMediaRepository;
