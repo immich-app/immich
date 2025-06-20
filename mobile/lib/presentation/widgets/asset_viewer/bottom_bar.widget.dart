@@ -10,6 +10,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
 
@@ -23,6 +24,7 @@ class ViewerBottomBar extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isSheetOpen = ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
@@ -49,7 +51,7 @@ class ViewerBottomBar extends ConsumerWidget {
         duration: Durations.short2,
         child: AnimatedSwitcher(
           duration: Durations.short4,
-          child: isSheetOpen
+          child: isSheetOpen || isReadonlyModeEnabled
               ? const SizedBox.shrink()
               : Theme(
                   data: context.themeData.copyWith(
