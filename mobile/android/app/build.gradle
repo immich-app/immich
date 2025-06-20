@@ -97,6 +97,8 @@ dependencies {
   def guava_version = '33.3.1-android'
   def glide_version = '4.16.0'
   def serialization_version = '1.8.1'
+  def compose_version = '1.1.1'
+  def coil_version = '3.2.0'
 
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
@@ -110,7 +112,13 @@ dependencies {
   coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
 
   //Glance Widget
-  implementation "androidx.glance:glance-appwidget:1.1.1"
+  implementation "androidx.glance:glance-appwidget:$compose_version"
+
+  implementation("io.coil-kt.coil3:coil-compose:$coil_version")
+  implementation("io.coil-kt.coil3:coil-network-okhttp:$coil_version") {
+    // Exclude OkHttp to avoid conflicts with the one used by Flutter
+    exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+  }
 }
 
 // This is uncommented in F-Droid build script
