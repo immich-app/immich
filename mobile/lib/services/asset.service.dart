@@ -60,7 +60,7 @@ class AssetService {
   final BackupService _backupService;
   final AlbumService _albumService;
   final UserService _userService;
-  final IAssetMediaRepository _assetMediaRepository;
+  final AssetMediaRepository _assetMediaRepository;
   final log = Logger('AssetService');
 
   AssetService(
