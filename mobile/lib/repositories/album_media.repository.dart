@@ -92,11 +92,7 @@ class AlbumMediaRepository {
     return assets.map(AssetMediaRepository.toAsset).toList().cast();
   }
 
-  Future<Album> get(
-    String id, {
-    DateTime? modifiedFrom,
-    DateTime? modifiedUntil,
-  }) async {
+  Future<Album> get(String id) async {
     final assetPathEntity = await AssetPathEntity.fromId(
       id,
       filterOption: _getAlbumFilter(containsPathModified: true),
