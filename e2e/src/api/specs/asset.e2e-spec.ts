@@ -1402,27 +1402,27 @@ describe('/asset', () => {
         });
       });
 
-      /* 
+      /*
        * NOTE: The following EXIF date tags are NOT effectively usable with JPEG test files:
-       * 
+       *
        * NOT WRITABLE to JPEG:
        * - MediaCreateDate: Can be read from video files but not written to JPEG
        * - DateTimeCreated: Read-only tag in JPEG format
-       * - DateTimeUTC: Cannot be written to JPEG files  
+       * - DateTimeUTC: Cannot be written to JPEG files
        * - SonyDateTime2: Proprietary Sony tag, not writable to JPEG
        * - SubSecMediaCreateDate: Tag not defined for JPEG format
        * - SourceImageCreateTime: Non-standard insta360 tag, not writable to JPEG
-       * 
+       *
        * WRITABLE but NOT READABLE from JPEG:
        * - SubSecDateTimeOriginal: Can be written but not read back from JPEG
        * - SubSecCreateDate: Can be written but not read back from JPEG
-       * 
+       *
        * EFFECTIVELY TESTABLE TAGS (writable and readable):
        * - DateTimeOriginal ✓
        * - CreateDate ✓
        * - CreationDate ✓
        * - GPSDateTime ✓
-       * 
+       *
        * The metadata service correctly handles non-readable tags and will fall back to
        * file timestamps when only non-readable tags are present.
        */
@@ -1600,7 +1600,7 @@ describe('/asset', () => {
           const { imageBytes, filename } = await createTestImageWithExif('invalid-date-handling.jpg', {
             // Note: Testing invalid date handling with only WRITABLE tags
             GPSDateTime: '2023:10:10 10:00:00', // WRITABLE - Valid date
-            CreationDate: '2023:13:13 13:00:00', // WRITABLE - Valid date  
+            CreationDate: '2023:13:13 13:00:00', // WRITABLE - Valid date
             // Note: TimeCreated excluded (time-only), DateTimeCreated not writable to JPEG
             // Exclude other date tags
             SubSecDateTimeOriginal: undefined,
