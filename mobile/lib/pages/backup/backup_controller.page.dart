@@ -18,6 +18,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 import 'package:immich_mobile/widgets/backup/current_backup_asset_info_box.dart';
+import 'package:immich_mobile/widgets/backup/exp_upload_option_toggle.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 @RoutePage()
@@ -302,11 +303,19 @@ class BackupControllerPage extends HookConsumerWidget {
       body: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 32),
+            padding: const EdgeInsets.only(
+              left: 16.0,
+              right: 16,
+              bottom: 32,
+            ),
             child: ListView(
-              // crossAxisAlignment: CrossAxisAlignment.start,
               children: hasAnyAlbum
                   ? [
+                      const SizedBox(height: 8),
+                      ExpUploadOptionToggle(
+                        onToggle: () =>
+                            context.replaceRoute(const ExpBackupRoute()),
+                      ),
                       buildFolderSelectionTile(),
                       BackupInfoCard(
                         title: "total".tr(),
@@ -335,6 +344,11 @@ class BackupControllerPage extends HookConsumerWidget {
                       buildBackupButton(),
                     ]
                   : [
+                      const SizedBox(height: 8),
+                      ExpUploadOptionToggle(
+                        onToggle: () =>
+                            context.replaceRoute(const ExpBackupRoute()),
+                      ),
                       buildFolderSelectionTile(),
                       if (!didGetBackupInfo.value) buildLoadingIndicator(),
                     ],

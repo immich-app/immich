@@ -102,11 +102,11 @@ class ShareIntentUploadStateNotifier
       case TaskStatus.complete:
         if (update.responseStatusCode == 200) {
           if (kDebugMode) {
-            debugPrint("[COMPLETE] ${update.task.taskId} - DUPLICATE");
+            // debugPrint("[COMPLETE] ${update.task.taskId} - DUPLICATE");
           }
         } else {
           if (kDebugMode) {
-            debugPrint("[COMPLETE] ${update.task.taskId}");
+            // debugPrint("[COMPLETE] ${update.task.taskId}");
           }
         }
         break;
@@ -134,7 +134,7 @@ class ShareIntentUploadStateNotifier
   }
 
   Future<void> upload(File file) {
-    return _uploadService.upload(file);
+    return _uploadService.buildUploadTask(file, group: kManualUploadGroup);
   }
 
   Future<bool> cancelUpload(String id) {

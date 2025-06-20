@@ -3,4 +3,5 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
 abstract interface class ILocalAssetRepository implements IDatabaseRepository {
   Future<void> updateHashes(Iterable<LocalAsset> hashes);
+  Future<LocalAsset?> getById(String id);
 }

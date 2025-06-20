@@ -3,6 +3,7 @@ import 'package:immich_mobile/domain/interfaces/local_asset.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/utils/database.utils.dart';
 
 class DriftLocalAssetRepository extends DriftDatabaseRepository
     implements ILocalAssetRepository {
@@ -24,5 +25,13 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository
         );
       }
     });
+  }
+
+  @override
+  Future<LocalAsset?> getById(String id) {
+    final query = _db.localAssetEntity.select()
+      ..where((lae) => lae.id.equals(id));
+
+    return query.map((row) => row.toDto()).getSingleOrNull();
   }
 }
