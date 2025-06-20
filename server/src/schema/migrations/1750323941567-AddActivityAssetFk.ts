@@ -5,7 +5,7 @@ export async function up(db: Kysely<any>): Promise<void> {
           WHERE a."assetId" IS NOT NULL
           AND NOT EXISTS (
             SELECT 1
-              FROM public.albums_assets_assets AS aaa
+              FROM albums_assets_assets AS aaa
               WHERE a."albumId" = aaa."albumsId"
               AND a."assetId" = aaa."assetsId"
         );`.execute(db);
