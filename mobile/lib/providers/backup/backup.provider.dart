@@ -11,7 +11,6 @@ import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/backup_album.interface.dart';
-import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
@@ -109,7 +108,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final BackgroundService _backgroundService;
   final GalleryPermissionNotifier _galleryPermissionNotifier;
   final IAlbumMediaRepository _albumMediaRepository;
-  final IFileMediaRepository _fileMediaRepository;
+  final FileMediaRepository _fileMediaRepository;
   final BackupAlbumService _backupAlbumService;
   final Ref ref;
 
