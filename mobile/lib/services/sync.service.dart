@@ -19,7 +19,6 @@ import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/local_files_manager.interface.dart';
-import 'package:immich_mobile/interfaces/partner.interface.dart';
 import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
@@ -71,7 +70,7 @@ class SyncService {
   final IExifInfoRepository _exifInfoRepository;
   final IsarUserRepository _isarUserRepository;
   final UserService _userService;
-  final IPartnerRepository _partnerRepository;
+  final PartnerRepository _partnerRepository;
   final IETagRepository _eTagRepository;
   final IPartnerApiRepository _partnerApiRepository;
   final UserApiRepository _userApiRepository;
