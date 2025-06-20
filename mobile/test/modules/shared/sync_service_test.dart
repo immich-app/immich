@@ -10,7 +10,6 @@ import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:mocktail/mocktail.dart';
@@ -132,7 +131,9 @@ void main() {
       when(() => assetRepository.getAllByOwnerIdChecksum(any(), any()))
           .thenAnswer((_) async => [initialAssets[3], null, null]);
       when(() => assetRepository.updateAll(any())).thenAnswer((_) async => []);
-      when(() => assetRepository.deleteByIds(any())).thenAnswer((_) async {});
+      when(() => assetRepository.deleteByIds(any())).thenAnswer((_) async {
+        return null;
+      });
       when(() => exifInfoRepository.updateAll(any()))
           .thenAnswer((_) async => []);
       when(() => assetRepository.transaction<void>(any())).thenAnswer(
@@ -240,7 +241,9 @@ void main() {
           [initialAssets[1].remoteId!, initialAssets[2].remoteId!],
           state: AssetState.remote,
         ),
-      ).thenAnswer((_) async {});
+      ).thenAnswer((_) async {
+        return null;
+      });
       when(
         () => assetRepository
             .getAllByRemoteId(["2-1", "1-1"], state: AssetState.merged),

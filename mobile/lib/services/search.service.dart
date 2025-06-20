@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
-import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/search/search_result.model.dart';
@@ -20,7 +19,7 @@ final searchServiceProvider = Provider(
 
 class SearchService {
   final ApiService _apiService;
-  final IAssetRepository _assetRepository;
+  final AssetRepository _assetRepository;
 
   final _log = Logger("SearchService");
   SearchService(this._apiService, this._assetRepository);

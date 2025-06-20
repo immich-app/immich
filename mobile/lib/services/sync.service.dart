@@ -16,7 +16,6 @@ import 'package:immich_mobile/infrastructure/repositories/user_api.repository.da
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
-import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/local_files_manager.interface.dart';
 import 'package:immich_mobile/interfaces/partner.interface.dart';
@@ -67,7 +66,7 @@ class SyncService {
   final IAlbumMediaRepository _albumMediaRepository;
   final IAlbumApiRepository _albumApiRepository;
   final IAlbumRepository _albumRepository;
-  final IAssetRepository _assetRepository;
+  final AssetRepository _assetRepository;
   final IExifInfoRepository _exifInfoRepository;
   final IsarUserRepository _isarUserRepository;
   final UserService _userService;
