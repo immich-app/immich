@@ -4,7 +4,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
+import 'package:immich_mobile/utils/fade_on_tap.dart';
+import 'package:immich_mobile/widgets/settings/advanced_settings/advanced_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/backup_settings.dart';
@@ -156,32 +157,33 @@ class _MobileSettingsItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SettingCard(
-      margin: EdgeInsets.zero,
-      child: ListTile(
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-        leading: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
-            color: context.colorScheme.primary.withValues(alpha: 0.1),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Icon(section.icon, color: context.primaryColor),
-          ),
-        ),
-        title: Text(section.title.t(context: context)),
-        titleTextStyle: context.itemTitle,
-        subtitle: Text(section.subtitle.t(context: context)),
-        subtitleTextStyle: context.itemSubtitle,
-        trailing: Icon(
-          Icons.chevron_right,
-          color: context.colorScheme.onSurface.withValues(alpha: 0.4),
-          size: 18,
-        ),
+      child: FadeOnTap(
         onTap: () => context.pushRoute(SettingsSubRoute(section: section)),
+        child: ListTile(
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          leading: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
+              color: context.colorScheme.primary.withValues(alpha: 0.1),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Icon(section.icon, color: context.primaryColor),
+            ),
+          ),
+          title: Text(section.title.t(context: context)),
+          titleTextStyle: context.itemTitle,
+          subtitle: Text(section.subtitle.t(context: context)),
+          subtitleTextStyle: context.itemSubtitle,
+          trailing: Icon(
+            Icons.chevron_right,
+            color: context.colorScheme.onSurface.withValues(alpha: 0.4),
+            size: 18,
+          ),
+        ),
       ),
     );
   }
@@ -200,18 +202,20 @@ class _TabletSettingsItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-      ),
-      title: Text(section.title.t(context: context)),
-      titleTextStyle: context.itemTitle.copyWith(
-        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-      ),
-      leading: Icon(section.icon),
-      selected: isSelected,
-      selectedTileColor: context.primaryColor.withValues(alpha: 0.1),
+    return FadeOnTap(
       onTap: onTap,
+      child: ListTile(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+        title: Text(section.title.t(context: context)),
+        titleTextStyle: context.itemTitle.copyWith(
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+        ),
+        leading: Icon(section.icon),
+        selected: isSelected,
+        selectedTileColor: context.primaryColor.withValues(alpha: 0.1),
+      ),
     );
   }
 }
