@@ -25,13 +25,11 @@
     CardTitle,
     Code,
     Container,
-    Field,
     getByteUnitString,
     Heading,
     HStack,
     Icon,
     Stack,
-    Switch,
     Text,
   } from '@immich/ui';
   import {
@@ -39,9 +37,7 @@
     mdiCameraIris,
     mdiChartPie,
     mdiChartPieOutline,
-    mdiCheck,
     mdiCheckCircle,
-    mdiClose,
     mdiDeleteRestore,
     mdiFeatureSearchOutline,
     mdiLockSmart,

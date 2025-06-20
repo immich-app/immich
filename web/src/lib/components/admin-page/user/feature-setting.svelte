@@ -1,6 +1,5 @@
 <script lang="ts">
   import { Icon, Text } from '@immich/ui';
-  import { t } from 'svelte-i18n';
   import { mdiCheck, mdiClose } from '@mdi/js';
 
   interface Props {
@@ -13,9 +12,5 @@
 
 <div class="flex justify-between items-center">
   <Text class="text-sm font-medium">{title}</Text>
-  <Icon
-    icon={state ? mdiCheck : mdiClose}
-    class={state ? 'text-immich-primary dark:text-immich-dark-primary' : 'text-danger'}
-    size="24"
-  />
+  <Icon icon={state ? mdiCheck : mdiClose} class={state ? 'text-primary' : 'text-danger'} size="24" />
 </div>
