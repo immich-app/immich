@@ -66,15 +66,9 @@ class SyncService {
   final IExifInfoRepository _exifInfoRepository;
   final IsarUserRepository _isarUserRepository;
   final UserService _userService;
-<<<<<<< HEAD
-  final IPartnerRepository _partnerRepository;
-  final ETagRepository _eTagRepository;
-  final IPartnerApiRepository _partnerApiRepository;
-=======
   final PartnerRepository _partnerRepository;
-  final IETagRepository _eTagRepository;
+  final ETagRepository _eTagRepository;
   final PartnerApiRepository _partnerApiRepository;
->>>>>>> 4c2ad44303d96fe2363bd67a4b55116a4063195c
   final UserApiRepository _userApiRepository;
   final AsyncMutex _lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
