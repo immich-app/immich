@@ -33,8 +33,8 @@ class WidgetService {
   }
 
   Future<void> refreshWidgets() async {
-    for (final name in kWidgetNames) {
-      await _repository.refresh(name);
+    for (final (iOSName, androidName) in kWidgetNames) {
+      await _repository.refresh(iOSName, androidName);
     }
   }
 }

@@ -28,7 +28,8 @@ const String appShareGroupId = "group.app.immich.share";
 
 // add widget identifiers here for new widgets
 // these are used to force a widget refresh
-const List<String> kWidgetNames = [
-  'com.immich.widget.random',
-  'com.immich.widget.memory',
+// (iOSName, androidFQDN)
+const List<(String, String)> kWidgetNames = [
+  ('com.immich.widget.random', 'app.alextran.immich.widget.RandomReceiver'),
+  ('com.immich.widget.memory', 'app.alextran.immich.widget.MemoryReceiver'),
 ];

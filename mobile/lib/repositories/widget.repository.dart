@@ -13,8 +13,11 @@ class WidgetRepository implements IWidgetRepository {
   }
 
   @override
-  Future<void> refresh(String name) async {
-    await HomeWidget.updateWidget(name: name, iOSName: name);
+  Future<void> refresh(String iosName, String androidName) async {
+    await HomeWidget.updateWidget(
+      iOSName: iosName,
+      qualifiedAndroidName: androidName,
+    );
   }
 
   @override
