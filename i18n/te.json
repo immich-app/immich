@@ -402,7 +402,6 @@
   "assets": "ఆస్తులు",
   "assets_added_count": "జోడించబడినవి {count, plural, one {# ఆస్తి} other {# ఆస్తులు}}",
   "assets_added_to_album_count": "{count, plural, one {# ఆస్తి} other {# ఆస్తులు}} ఆల్బమ్‌కి జోడించబడినవి",
-  "assets_added_to_name_count": "{count, plural, one {# ఆస్తి} other {# ఆస్తులు}} {hasName, select, true {<b>{name}</b>} other {కొత్త ఆల్బమ్}}కి జోడించబడినవి",
   "assets_count": "{count, plural, one {# ఆస్తి} other {# ఆస్తులు}}",
   "assets_moved_to_trash_count": "{count, plural, one {# ఆస్తి} other {# ఆస్తులు}} చెత్తబుట్టలోకి తరలించారు",
   "assets_permanently_deleted_count": "{count, plural, one {# ఆస్తి} other {# ఆస్తులు}} శాశ్వతంగా తొలగించబడినవి",

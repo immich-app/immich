@@ -461,7 +461,6 @@
   "assets": "Các tập tin",
   "assets_added_count": "Đã thêm {count, plural, one {# mục} other {# mục}}",
   "assets_added_to_album_count": "Đã thêm {count, plural, one {# mục} other {# mục}} vào album",
-  "assets_added_to_name_count": "Đã thêm {count, plural, one {# mục} other {# mục}} vào {hasName, select, true {<b>{name}</b>} other {album mới}}",
   "assets_count": "{count, plural, one {# mục} other {# mục}}",
   "assets_deleted_permanently": "Đã xoá vĩnh viễn {count} mục",
   "assets_deleted_permanently_from_server": "Đã xoá vĩnh viễn {count} mục khỏi máy chủ Immich",
