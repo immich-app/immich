@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
@@ -35,6 +36,10 @@ class AdvancedSettings extends HookConsumerWidget {
         useAppSettingsState(AppSettingsEnum.allowSelfSignedSSLCert);
     final useAlternatePMFilter =
         useAppSettingsState(AppSettingsEnum.photoManagerCustomFilter);
+    final readonlyModeEnabled =
+        useAppSettingsState(AppSettingsEnum.readonlyModeEnabled);
+    final allowUserAvatarOverride =
+        useAppSettingsState(AppSettingsEnum.allowUserAvatarOverride);
 
     final logLevel = Level.LEVELS[levelId.value].name;
 
@@ -113,6 +118,20 @@ class AdvancedSettings extends HookConsumerWidget {
         title: "advanced_settings_enable_alternate_media_filter_title".tr(),
         subtitle:
             "advanced_settings_enable_alternate_media_filter_subtitle".tr(),
+      ),
+      SettingsSwitchListTile(
+        valueNotifier: readonlyModeEnabled,
+        title: "advanced_settings_readonly_mode_title".tr(),
+        subtitle: "advanced_settings_readonly_mode_subtitle".tr(),
+        onChanged: (value) {
+          readonlyModeEnabled.value = value;
+          ref.read(readonlyModeProvider.notifier).setReadonlyMode(value);
+        },
+      ),
+      SettingsSwitchListTile(
+        valueNotifier: allowUserAvatarOverride,
+        title: "advanced_settings_allow_user_avatar_override_title".tr(),
+        subtitle: "advanced_settings_allow_user_avatar_override_subtitle".tr(),
       ),
     ];
 

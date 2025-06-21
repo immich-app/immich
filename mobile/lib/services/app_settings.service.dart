@@ -90,6 +90,16 @@ enum AppSettingsEnum<T> {
     null,
     false,
   ),
+  readonlyModeEnabled<bool>(
+    StoreKey.readonlyModeEnabled,
+    "readonlyModeEnabled",
+    false,
+  ),
+  allowUserAvatarOverride<bool>(
+    StoreKey.allowUserAvatarOverride,
+    "allowUserAvatarOverride",
+    false,
+  ),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
