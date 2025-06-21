@@ -132,9 +132,7 @@ void main() {
       when(() => assetRepository.getAllByOwnerIdChecksum(any(), any()))
           .thenAnswer((_) async => [initialAssets[3], null, null]);
       when(() => assetRepository.updateAll(any())).thenAnswer((_) async => []);
-      when(() => assetRepository.deleteByIds(any())).thenAnswer((_) async {
-        return;
-      });
+      when(() => assetRepository.deleteByIds(any())).thenAnswer((_) async {});
       when(() => exifInfoRepository.updateAll(any()))
           .thenAnswer((_) async => []);
       when(() => assetRepository.transaction<void>(any())).thenAnswer(
