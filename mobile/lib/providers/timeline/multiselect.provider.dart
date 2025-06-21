@@ -2,10 +2,13 @@ import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 final multiSelectProvider =
     StateNotifierProvider<MultiSelectProviderNotifier, MultiSelectState>(
-  (ref) => MultiSelectProviderNotifier(),
+  (ref) => MultiSelectProviderNotifier(ref.watch(timelineServiceProvider)),
+  dependencies: [timelineServiceProvider],
 );
 
 class MultiSelectState {
@@ -41,10 +44,12 @@ class MultiSelectState {
 }
 
 class MultiSelectProviderNotifier extends StateNotifier<MultiSelectState> {
-  MultiSelectProviderNotifier()
+  MultiSelectProviderNotifier(this._timelineService)
       : super(
           MultiSelectState(selectedAssets: []),
         );
+
+  final TimelineService _timelineService;
 
   void selectAsset(BaseAsset asset) {
     if (state.selectedAssets.contains(asset)) {
@@ -71,6 +76,46 @@ class MultiSelectProviderNotifier extends StateNotifier<MultiSelectState> {
       deselectAsset(asset);
     } else {
       selectAsset(asset);
+    }
+  }
+
+  /// Bucket
+
+  void selectBucket(int offset, int bucketCount) async {
+    final assets = await _timelineService.loadAssets(offset, bucketCount);
+    final selectedAssets = state.selectedAssets.toSet();
+
+    for (final asset in assets) {
+      if (!selectedAssets.contains(asset)) {
+        selectedAssets.add(asset);
+      }
+    }
+
+    state = state.copyWith(
+      selectedAssets: selectedAssets.toList(),
+    );
+  }
+
+  void deselectBucket(int offset, int bucketCount) async {
+    final assets = await _timelineService.loadAssets(offset, bucketCount);
+    final selectedAssets = state.selectedAssets.toSet();
+
+    for (final asset in assets) {
+      if (selectedAssets.contains(asset)) {
+        selectedAssets.remove(asset);
+      }
+    }
+
+    state = state.copyWith(
+      selectedAssets: selectedAssets.toList(),
+    );
+  }
+
+  void toggleBucketSelection(int offset, int bucketCount) {
+    if (state.selectedAssets.isEmpty) {
+      selectBucket(offset, bucketCount);
+    } else {
+      deselectBucket(offset, bucketCount);
     }
   }
 }

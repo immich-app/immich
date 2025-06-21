@@ -10,14 +10,14 @@ class TimelineHeader extends ConsumerWidget {
   final Bucket bucket;
   final HeaderType header;
   final double height;
-  final Function(DateTime date) onIconTapped;
+  final int offset;
 
   const TimelineHeader({
     super.key,
     required this.bucket,
     required this.header,
     required this.height,
-    required this.onIconTapped,
+    required this.offset,
   });
 
   String _formatMonth(BuildContext context, DateTime date) {
@@ -76,7 +76,11 @@ class TimelineHeader extends ConsumerWidget {
           ),
           const Spacer(),
           GestureDetector(
-            onTap: () => onIconTapped.call(date),
+            onTap: () => {
+              ref
+                  .read(multiSelectProvider.notifier)
+                  .toggleBucketSelection(offset, bucket.assetCount),
+            },
             child: isMultiSelectEnabled
                 ? Icon(
                     Icons.check_circle_rounded,

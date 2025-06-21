@@ -69,16 +69,12 @@ class FixedSegment extends Segment {
     final assetCount = bucket.assetCount;
     final numberOfAssets = math.min(columnCount, assetCount - assetIndex);
 
-    void onSelectIconTapped(DateTime date) {
-      print(date);
-    }
-
     if (index == firstIndex) {
       return TimelineHeader(
         bucket: bucket,
         header: header,
         height: headerExtent,
-        onIconTapped: onSelectIconTapped,
+        offset: firstAssetIndex,
       );
     }
 
