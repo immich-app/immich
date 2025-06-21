@@ -11,7 +11,6 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/interfaces/asset_api.interface.dart';
-import 'package:immich_mobile/interfaces/asset_media.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
@@ -58,7 +57,7 @@ class AssetService {
   final BackupService _backupService;
   final AlbumService _albumService;
   final UserService _userService;
-  final IAssetMediaRepository _assetMediaRepository;
+  final AssetMediaRepository _assetMediaRepository;
   final log = Logger('AssetService');
 
   AssetService(
