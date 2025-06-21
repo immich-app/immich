@@ -16,7 +16,6 @@ import 'package:immich_mobile/infrastructure/repositories/user_api.repository.da
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
-import 'package:immich_mobile/interfaces/local_files_manager.interface.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -74,7 +73,7 @@ class SyncService {
   final AsyncMutex _lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
   final AppSettingsService _appSettingsService;
-  final ILocalFilesManager _localFilesManager;
+  final LocalFilesManagerRepository _localFilesManager;
 
   SyncService(
     this._hashService,
