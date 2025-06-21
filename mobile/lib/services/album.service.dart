@@ -15,7 +15,6 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
     as entity;
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
-import 'package:immich_mobile/interfaces/backup_album.interface.dart';
 import 'package:immich_mobile/models/albums/album_add_asset_response.model.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -48,7 +47,7 @@ class AlbumService {
   final EntityService _entityService;
   final IAlbumRepository _albumRepository;
   final IAssetRepository _assetRepository;
-  final IBackupAlbumRepository _backupAlbumRepository;
+  final BackupAlbumRepository _backupAlbumRepository;
   final AlbumMediaRepository _albumMediaRepository;
   final AlbumApiRepository _albumApiRepository;
   final Logger _log = Logger('AlbumService');
