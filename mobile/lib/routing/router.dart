@@ -340,5 +340,8 @@ class AppRouter extends RootStackRouter {
       page: MainTimelineRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
+    // required to handle all deeplinks in deep_link.service.dart
+    // auto_route_library#1722
+    RedirectRoute(path: '*', redirectTo: '/'),
   ];
 }

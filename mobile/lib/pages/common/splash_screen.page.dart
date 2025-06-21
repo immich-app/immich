@@ -72,7 +72,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       return;
     }
 
-    if (context.router.current.name != ShareIntentRoute.name) {
+    if (context.router.current.name == SplashScreenRoute.name) {
       context.replaceRoute(const TabControllerRoute());
     }
 

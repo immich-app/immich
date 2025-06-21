@@ -100,6 +100,11 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   Future<Album?> get(int id) => db.albums.get(id);
 
   @override
+  Future<Album?> getByRemoteId(String remoteId) {
+    return db.albums.filter().remoteIdEqualTo(remoteId).findFirst();
+  }
+
+  @override
   Future<void> removeUsers(Album album, List<UserDto> users) => txn(
         () => album.sharedUsers.update(unlink: users.map(entity.User.fromDto)),
       );

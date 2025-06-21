@@ -86,9 +86,21 @@
       <dict>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
+        <key>CFBundleURLName</key>
+        <string>Share Extension</string>
         <key>CFBundleURLSchemes</key>
         <array>
           <string>ShareMedia-$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+        </array>
+      </dict>
+      <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLName</key>
+        <string>Deep Link</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>immich</string>
         </array>
       </dict>
     </array>
@@ -120,6 +132,8 @@
     </array>
     <key>NSCameraUsageDescription</key>
     <string>We need to access the camera to let you take beautiful video using this app</string>
+    <key>NSFaceIDUsageDescription</key>
+    <string>We need to use FaceID to allow access to your locked folder</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>We require this permission to access the local WiFi name for background upload mechanism</string>
     <key>NSLocationUsageDescription</key>
@@ -166,8 +180,6 @@
     <true />
     <key>io.flutter.embedded_views_preview</key>
     <true />
-    <key>NSFaceIDUsageDescription</key>
-    <string>We need to use FaceID to allow access to your locked folder</string>
     <key>NSLocalNetworkUsageDescription</key>
     <string>We need local network permission to connect to the local server using IP address and
       allow the casting feature to work</string>

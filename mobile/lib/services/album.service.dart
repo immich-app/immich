@@ -487,6 +487,10 @@ class AlbumService {
     return _albumRepository.get(id);
   }
 
+  Future<Album?> getAlbumByRemoteId(String remoteId) {
+    return _albumRepository.getByRemoteId(remoteId);
+  }
+
   Stream<Album?> watchAlbum(int id) {
     return _albumRepository.watchAlbum(id);
   }

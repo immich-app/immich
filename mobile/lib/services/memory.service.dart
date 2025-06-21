@@ -59,4 +59,34 @@ class MemoryService {
       return null;
     }
   }
+
+  Future<Memory?> getMemoryById(String id) async {
+    try {
+      final memoryResponse = await _apiService.memoriesApi.getMemory(id);
+
+      if (memoryResponse == null) {
+        return null;
+      }
+      final dbAssets = await _assetRepository
+          .getAllByRemoteId(memoryResponse.assets.map((e) => e.id));
+      if (dbAssets.isEmpty) {
+        log.warning("No assets found for memory with ID: $id");
+        return null;
+      }
+      final yearsAgo = DateTime.now().year - memoryResponse.data.year;
+      final String title = 'years_ago'.t(
+        args: {
+          'years': yearsAgo.toString(),
+        },
+      );
+
+      return Memory(
+        title: title,
+        assets: dbAssets,
+      );
+    } catch (error, stack) {
+      log.severe("Cannot get memory with ID: $id", error, stack);
+      return null;
+    }
+  }
 }

@@ -16,6 +16,8 @@ abstract interface class IAlbumRepository implements IDatabaseRepository {
     bool? owner,
   });
 
+  Future<Album?> getByRemoteId(String remoteId);
+
   Future<List<Album>> getAll({
     bool? shared,
     bool? remote,

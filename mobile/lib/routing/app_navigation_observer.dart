@@ -25,6 +25,11 @@ class AppNavigationObserver extends AutoRouterObserver {
   @override
   void didPush(Route route, Route? previousRoute) {
     _handleLockedViewState(route, previousRoute);
+
+    Future(
+      () => ref.read(currentRouteNameProvider.notifier).state =
+          route.settings.name,
+    );
   }
 
   _handleLockedViewState(Route route, Route? previousRoute) {
