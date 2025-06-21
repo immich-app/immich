@@ -8,6 +8,8 @@
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AssetAction } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { modalManager } from '@immich/ui';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -15,7 +17,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { navigate } from '$lib/utils/navigation';
-  import { type ScrubberListener, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
+  import { getTimes, type ScrubberListener, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
   import { AssetVisibility, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
@@ -69,7 +71,7 @@
     empty,
   }: Props = $props();
 
-  let { isViewing: showAssetViewer, gridScrollTarget, mutex, viewingAsset} = assetViewingStore;
+  let { isViewing: showAssetViewer, gridScrollTarget, mutex, asset: viewingAsset} = assetViewingStore;
 
   let element: HTMLElement | undefined = $state();
 
@@ -499,6 +501,21 @@
     ></div>
   </section>
 </section>
+
+<Portal target="body">
+   {#if $showAssetViewer}
+    <AssetViewerAndActions
+      bind:showSkeleton
+      {timelineManager}
+      {removeAction}
+      {withStacked}
+      {isShared}
+      {album}
+      {person}
+      {isShowDeleteConfirmation}
+    ></AssetViewerAndActions>
+   {/if}
+ </Portal>
 
 <style>
   #asset-grid {

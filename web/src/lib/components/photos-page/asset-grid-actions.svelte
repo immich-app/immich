@@ -7,7 +7,7 @@
   } from '$lib/components/photos-page/actions/focus-actions';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import { modalManager } from '@immich/ui';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
