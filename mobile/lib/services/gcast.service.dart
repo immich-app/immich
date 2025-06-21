@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:cast/session.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/interfaces/cast_destination_service.interface.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/models/sessions/session_create_response.model.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
@@ -21,7 +20,7 @@ final gCastServiceProvider = Provider(
   ),
 );
 
-class GCastService implements ICastDestinationService {
+class GCastService {
   final GCastRepository _gCastRepository;
   final SessionsAPIRepository _sessionsApiService;
   final AssetApiRepository _assetApiRepository;
@@ -32,15 +31,14 @@ class GCastService implements ICastDestinationService {
   int? _sessionId;
   Timer? _mediaStatusPollingTimer;
 
-  @override
   void Function(bool)? onConnectionState;
-  @override
+
   void Function(Duration)? onCurrentTime;
-  @override
+
   void Function(Duration)? onDuration;
-  @override
+
   void Function(String)? onReceiverName;
-  @override
+
   void Function(CastState)? onCastState;
 
   GCastService(
@@ -120,25 +118,21 @@ class GCastService implements ICastDestinationService {
     }
   }
 
-  @override
   Future<void> connect(dynamic device) async {
     await _gCastRepository.connect(device);
 
     onReceiverName?.call(device.extras["fn"] ?? "Google Cast");
   }
 
-  @override
   CastDestinationType getType() {
     return CastDestinationType.googleCast;
   }
 
-  @override
   Future<bool> initialize() async {
     // there is nothing blocking us from using Google Cast that we can check for
     return true;
   }
 
-  @override
   Future<void> disconnect() async {
     onReceiverName?.call("");
     currentAssetId = null;
@@ -162,7 +156,6 @@ class GCastService implements ICastDestinationService {
     return bufferedExpiration.isAfter(DateTime.now());
   }
 
-  @override
   void loadMedia(Asset asset, bool reload) async {
     if (!isConnected) {
       return;
@@ -234,7 +227,6 @@ class GCastService implements ICastDestinationService {
     }
   }
 
-  @override
   void play() {
     _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
       "type": "PLAY",
@@ -242,7 +234,6 @@ class GCastService implements ICastDestinationService {
     });
   }
 
-  @override
   void pause() {
     _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
       "type": "PAUSE",
@@ -250,7 +241,6 @@ class GCastService implements ICastDestinationService {
     });
   }
 
-  @override
   void seekTo(Duration position) {
     _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
       "type": "SEEK",
@@ -259,7 +249,6 @@ class GCastService implements ICastDestinationService {
     });
   }
 
-  @override
   void stop() {
     _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
       "type": "STOP",
@@ -273,7 +262,6 @@ class GCastService implements ICastDestinationService {
   // 0x01 is display capability bitmask
   bool isDisplay(int ca) => (ca & 0x01) != 0;
 
-  @override
   Future<List<(String, CastDestinationType, dynamic)>> getDevices() async {
     final dests = await _gCastRepository.listDestinations();
 
