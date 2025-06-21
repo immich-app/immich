@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/interfaces/person_api.interface.dart';
+import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/services/person.service.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';

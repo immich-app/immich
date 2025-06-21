@@ -180,8 +180,9 @@ export class PersonRepository {
       )
       .$if(!options?.closestFaceAssetId, (qb) =>
         qb
-          .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
+          .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
           .orderBy((eb) => eb.fn.count('asset_faces.assetId'), 'desc')
+          .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
           .orderBy('person.createdAt'),
       )
       .$if(!options?.withHidden, (qb) => qb.where('person.isHidden', '=', false))
