@@ -3,7 +3,8 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
 import { installBroadcastChannelListener } from './broadcast-channel';
-import { deleteOldCaches, handleFetchEvent } from './fetch-event';
+import { deleteOldCaches } from './cache';
+import { handleFetchEvent } from './fetch-event';
 
 const sw = globalThis as unknown as ServiceWorkerGlobalScope;
 
@@ -14,6 +15,7 @@ const handleActivate = (event: ExtendableEvent) => {
 
 const handleInstall = (event: ExtendableEvent) => {
   event.waitUntil(sw.skipWaiting());
+  // do not preload app resources
 };
 
 sw.addEventListener('install', handleInstall, { passive: true });
