@@ -10,7 +10,6 @@ import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
-import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/asset_api.interface.dart';
 import 'package:immich_mobile/interfaces/asset_media.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
@@ -49,7 +48,7 @@ final assetServiceProvider = Provider(
 
 class AssetService {
   final IAssetApiRepository _assetApiRepository;
-  final IAssetRepository _assetRepository;
+  final AssetRepository _assetRepository;
   final IExifInfoRepository _exifInfoRepository;
   final IsarUserRepository _isarUserRepository;
   final ETagRepository _etagRepository;
