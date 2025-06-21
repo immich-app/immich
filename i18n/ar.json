@@ -435,7 +435,6 @@
   "assets": "المحتويات",
   "assets_added_count": "تمت إضافة {count, plural, one {# محتوى} other {# محتويات}}",
   "assets_added_to_album_count": "تمت إضافة {count, plural, one {# الأصل} other {# الأصول}} إلى الألبوم",
-  "assets_added_to_name_count": "تم إضافة {count, plural, one {# محتوى} other {# محتويات }} إلى {hasName, select, true {<b>{name}</b>} other {ألبوم جديد}}",
   "assets_count": "{count, plural, one {# محتوى} other {# محتويات}}",
   "assets_moved_to_trash_count": "تم نقل {count, plural, one {# محتوى} other {# محتويات}} إلى سلة المهملات",
   "assets_permanently_deleted_count": "تم حذف {count, plural, one {# هذا المحتوى} other {# هذه المحتويات}} بشكل دائم",

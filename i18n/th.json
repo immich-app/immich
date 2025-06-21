@@ -455,7 +455,6 @@
   "asset_viewer_settings_title": "ตัวดูทรัพยากร",
   "assets": "สื่อ",
   "assets_added_to_album_count": "เพิ่ม {count, plural, one {# asset} other {# assets}} ไปยังอัลบั้ม",
-  "assets_added_to_name_count": "เพิ่ม {count, plural, one {# asset} other {# assets}} ไปยัง {hasName, select, true {<b>{name}</b>} other {new album}}",
   "assets_moved_to_trash_count": "ย้าย {count, plural, one {# asset} other {# assets}} ไปยังถังขยะแล้ว",
   "assets_permanently_deleted_count": "ลบ {count, plural, one {# asset} other {# assets}} ทิ้งถาวร",
   "assets_removed_count": "{count, plural, one {# asset} other {# assets}} ถูกลบแล้ว",

@@ -462,7 +462,6 @@
   "assets": "elementer",
   "assets_added_count": "Tilføjet {count, plural, one {# mediefil} other {# mediefiler}}",
   "assets_added_to_album_count": "{count, plural, one {# mediefil} other {# mediefiler}} tilføjet til albummet",
-  "assets_added_to_name_count": "Tilføjet {count, plural, one {# mediefil} other {# mediefiler}} til {hasName, select, true {<b>{name}</b>} other {nyt album}}",
   "assets_cannot_be_added_to_album_count": "{count, plural, one {Billed} other {Billeder}} kan ikke blive tilføjet til album",
   "assets_count": "{count, plural, one {# mediefil} other {# mediefiler}}",
   "assets_deleted_permanently": "{count} element(er) blev fjernet permanent",

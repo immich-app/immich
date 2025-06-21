@@ -464,7 +464,6 @@
   "assets": "Объекты",
   "assets_added_count": "{count, plural, one {Добавлен # объект} many {Добавлено # объектов} other {Добавлено # объекта}}",
   "assets_added_to_album_count": "В альбом {count, plural, one {добавлен # объект} many {добавлено # объектов} other {добавлено # объекта}}",
-  "assets_added_to_name_count": "{count, plural, one {# объект добавлен} many {# объектов добавлено} other {# объекта добавлено}} в {hasName, select, true {альбом <b>{name}</b>} other {новый альбом}}",
   "assets_cannot_be_added_to_album_count": "{count, plural, one {Объект не может быть добавлен} other {Объекты не могут быть добавлены}} в альбом",
   "assets_count": "{count, plural, one {# объект} many {# объектов} other {# объекта}}",
   "assets_deleted_permanently": "{count} объект(ов) удалено навсегда",

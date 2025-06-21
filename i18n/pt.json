@@ -464,7 +464,6 @@
   "assets": "Ficheiros",
   "assets_added_count": "{count, plural, one {# ficheiro adicionado} other {# ficheiros adicionados}}",
   "assets_added_to_album_count": "{count, plural, one {# ficheiro adicionado} other {# ficheiros adicionados}} ao álbum",
-  "assets_added_to_name_count": "{count, plural, one {# ficheiro adicionado} other {# ficheiros adicionados}} a {hasName, select, true {<b>{name}</b>} other {novo álbum}}",
   "assets_cannot_be_added_to_album_count": "Não foi possível adicionar {count, plural, one {ficheiro} other {ficheiros}} ao álbum",
   "assets_count": "{count, plural, one {# ficheiro} other {# ficheiros}}",
   "assets_deleted_permanently": "{count} ficheiro(s) eliminado(s) permanentemente",

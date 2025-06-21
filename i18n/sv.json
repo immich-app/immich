@@ -458,7 +458,6 @@
   "assets": "Objekt",
   "assets_added_count": "La till {count, plural, one {# asset} other {# assets}}",
   "assets_added_to_album_count": "Lade till {count, plural, one {# asset} other {# assets}} i albumet",
-  "assets_added_to_name_count": "Lade till {count, plural, one {# objekt} other {# objekt}} till {hasName, select, true {<b>{name}</b>} other {nytt album}}",
   "assets_count": "{count, plural, one {# objekt} other {# objekt}}",
   "assets_deleted_permanently": "{count} objekt har tagits bort permanent",
   "assets_deleted_permanently_from_server": "{count} objekt har tagits bort permanent från Immich-servern",
