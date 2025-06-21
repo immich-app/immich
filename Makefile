@@ -48,6 +48,8 @@ audit-%:
 	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) audit fix
 install-%:
 	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) i
+cinstall-%:
+	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) ci
 build-cli: build-sdk
 build-web: build-sdk
 build-%: install-%
@@ -81,7 +83,8 @@ test-medium-dev:
 	docker exec -it immich_server /bin/sh -c "npm run test:medium"
 
 build-all: $(foreach M,$(filter-out e2e .github,$(MODULES)),build-$M) ;
-install-all: $(foreach M,$(MODULES),install-$M) ;
+install-all: $(foreach M,$(filter-out .github,$(MODULES)),install-$M) ;
+cinstall-all: $(foreach M,$(filter-out .github,$(MODULES)),cinstall-$M) ;
 check-all: $(foreach M,$(filter-out sdk cli docs .github,$(MODULES)),check-$M) ;
 lint-all: $(foreach M,$(filter-out sdk docs .github,$(MODULES)),lint-$M) ;
 format-all: $(foreach M,$(filter-out sdk,$(MODULES)),format-$M) ;

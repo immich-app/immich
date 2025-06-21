@@ -6,7 +6,11 @@ design/
 docker/
 !docker/scripts
 docs/
+!docs/package.json
+!docs/package-lock.json
 e2e/
+!e2e/package.json
+!e2e/package-lock.json
 fastlane/
 machine-learning/
 misc/
