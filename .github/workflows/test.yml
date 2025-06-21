@@ -85,6 +85,7 @@ jobs:
         with:
           node-version-file: './server/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run npm install
         run: npm ci
@@ -127,6 +128,7 @@ jobs:
         with:
           node-version-file: './cli/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Setup typescript-sdk
         run: npm ci && npm run build
@@ -173,6 +175,7 @@ jobs:
         with:
           node-version-file: './cli/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Setup typescript-sdk
         run: npm ci && npm run build
@@ -212,6 +215,7 @@ jobs:
         with:
           node-version-file: './web/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -254,6 +258,7 @@ jobs:
         with:
           node-version-file: './web/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -288,6 +293,7 @@ jobs:
         with:
           node-version-file: './web/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install dependencies
         run: npm --prefix=web ci
@@ -333,6 +339,7 @@ jobs:
         with:
           node-version-file: './e2e/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -377,6 +384,7 @@ jobs:
         with:
           node-version-file: './server/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run npm install
         run: npm ci
@@ -411,6 +419,7 @@ jobs:
         with:
           node-version-file: './e2e/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -460,6 +469,7 @@ jobs:
         with:
           node-version-file: './e2e/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -579,6 +589,7 @@ jobs:
         with:
           node-version-file: './.github/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run npm install
         run: npm ci
@@ -621,6 +632,7 @@ jobs:
         with:
           node-version-file: './server/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install server dependencies
         run: npm --prefix=server ci
@@ -683,6 +695,7 @@ jobs:
         with:
           node-version-file: './server/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install server dependencies
         run: npm ci

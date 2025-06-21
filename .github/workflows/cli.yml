@@ -39,6 +39,7 @@ jobs:
           node-version-file: './cli/.nvmrc'
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Prepare SDK
         run: npm ci --prefix ../open-api/typescript-sdk/

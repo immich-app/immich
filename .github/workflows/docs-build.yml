@@ -58,6 +58,7 @@ jobs:
         with:
           node-version-file: './docs/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run npm install
         run: npm ci

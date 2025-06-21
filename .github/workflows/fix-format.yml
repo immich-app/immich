@@ -33,6 +33,7 @@ jobs:
         with:
           node-version-file: './server/.nvmrc'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Fix formatting
         run: make install-all && make format-all

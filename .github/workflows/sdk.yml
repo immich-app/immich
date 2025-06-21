@@ -26,6 +26,7 @@ jobs:
           node-version-file: './open-api/typescript-sdk/.nvmrc'
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
       - name: Install deps
         run: npm ci
       - name: Build
