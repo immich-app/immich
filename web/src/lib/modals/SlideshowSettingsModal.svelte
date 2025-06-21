@@ -2,7 +2,7 @@
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import {
     mdiArrowDownThin,
     mdiArrowUpThin,
@@ -105,9 +105,9 @@
     </div>
   </ModalBody>
   <ModalFooter>
-    <div class="flex gap-2 w-full">
+    <HStack fullWidth>
       <Button color="secondary" shape="round" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
       <Button fullWidth color="primary" shape="round" onclick={applyChanges}>{$t('confirm')}</Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>

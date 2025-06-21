@@ -1,6 +1,6 @@
 <script lang="ts">
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiCancel } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -32,13 +32,13 @@
     </div>
   </ModalBody>
   <ModalFooter>
-    <div class="flex gap-3 w-full">
+    <HStack fullWidth>
       <Button shape="round" color="secondary" fullWidth onclick={() => onClose(false)}>
         {$t('cancel')}
       </Button>
       <Button shape="round" color="danger" fullWidth onclick={() => onClose(true)}>
         {$t('confirm')}
       </Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>
