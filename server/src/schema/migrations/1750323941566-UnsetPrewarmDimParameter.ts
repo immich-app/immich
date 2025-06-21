@@ -2,7 +2,11 @@ import { Kysely, sql } from 'kysely';
 
 export async function up(qb: Kysely<any>): Promise<void> {
   type Conf = { db: string; guc: string[] };
-  const res = await sql<Conf>`select current_database() db, to_json(setconfig) guc from pg_db_role_setting`.execute(qb);
+  const res = await sql<Conf>`
+    select current_database() db, to_json(setconfig) guc
+    from pg_db_role_setting
+    where setdatabase = (select oid from pg_database where datname = current_database())
+      and setrole = 0;`.execute(qb);
   if (res.rows.length === 0) {
     return;
   }
