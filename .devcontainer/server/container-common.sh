@@ -73,10 +73,10 @@ install_dependencies() {
     log "Installing dependencies"
     (
         cd "${IMMICH_WORKSPACE}" || exit 1
-        run_cmd make install-server
-        run_cmd make install-sdk
+        run_cmd make cinstall-server
+        run_cmd make cinstall-sdk
         run_cmd make build-sdk
-        run_cmd make install-web
+        run_cmd make cinstall-web
     )
     log ""
 }

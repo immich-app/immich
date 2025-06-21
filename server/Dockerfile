@@ -18,6 +18,7 @@ ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 FROM dev AS dev-container-server
 
+RUN rm -rf /usr/src/app
 RUN apt-get update && \
     apt-get install sudo inetutils-ping openjdk-11-jre-headless \
     vim nano \
@@ -27,12 +28,16 @@ RUN usermod -aG sudo node
 RUN echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 RUN mkdir -p /workspaces/immich
 RUN chown node -R /workspaces
+COPY --chown=node:node --chmod=777 ../.devcontainer/server/*.sh /immich-devcontainer/
 
-RUN mkdir /immich-devcontainer && chown node -R /immich-devcontainer
-COPY --chmod=777 ../.devcontainer/server/*.sh /immich-devcontainer/
+USER node
+COPY --chown=node:node .. /tmp/create-dep-cache/
+WORKDIR /tmp/create-dep-cache
+RUN make install-all && rm -rf /tmp/create-dep-cache 
+
 
 FROM dev-container-server AS dev-container-mobile
-
+USER root
 # Enable multiarch for arm64 if necessary
 RUN if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
     dpkg --add-architecture amd64 && \
