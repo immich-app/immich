@@ -84,6 +84,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
+          cache: 'npm'
 
       - name: Run npm install
         run: npm ci
@@ -125,6 +126,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './cli/.nvmrc'
+          cache: 'npm'
 
       - name: Setup typescript-sdk
         run: npm ci && npm run build
@@ -170,6 +172,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './cli/.nvmrc'
+          cache: 'npm'
 
       - name: Setup typescript-sdk
         run: npm ci && npm run build
@@ -208,6 +211,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './web/.nvmrc'
+          cache: 'npm'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -249,6 +253,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './web/.nvmrc'
+          cache: 'npm'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -282,6 +287,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './web/.nvmrc'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm --prefix=web ci
@@ -326,6 +332,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './e2e/.nvmrc'
+          cache: 'npm'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -369,6 +376,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
+          cache: 'npm'
 
       - name: Run npm install
         run: npm ci
@@ -402,6 +410,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './e2e/.nvmrc'
+          cache: 'npm'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -450,6 +459,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './e2e/.nvmrc'
+          cache: 'npm'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -568,6 +578,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './.github/.nvmrc'
+          cache: 'npm'
 
       - name: Run npm install
         run: npm ci
@@ -609,6 +620,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
+          cache: 'npm'
 
       - name: Install server dependencies
         run: npm --prefix=server ci
@@ -670,6 +682,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
+          cache: 'npm'
 
       - name: Install server dependencies
         run: npm ci

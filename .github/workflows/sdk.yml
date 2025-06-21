@@ -25,6 +25,7 @@ jobs:
         with:
           node-version-file: './open-api/typescript-sdk/.nvmrc'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
       - name: Install deps
         run: npm ci
       - name: Build
