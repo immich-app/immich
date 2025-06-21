@@ -19,7 +19,7 @@ beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
 });
 
-describe.concurrent(SyncRequestType.PartnerAssetExifsV1, () => {
+describe(SyncRequestType.PartnerAssetExifsV1, () => {
   it('should detect and sync the first partner asset exif', async () => {
     const { auth, sut, getRepository, testSync } = await setup();
 
@@ -78,7 +78,6 @@ describe.concurrent(SyncRequestType.PartnerAssetExifsV1, () => {
     await sut.setAcks(auth, { acks });
 
     const ackSyncResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
-
     expect(ackSyncResponse).toHaveLength(0);
   });
 
@@ -196,6 +195,79 @@ describe.concurrent(SyncRequestType.PartnerAssetExifsV1, () => {
     expect(finalAcks).toEqual([]);
   });
 
+  it('should handle partners with users ids lower than a uuidv7', async () => {
+    const { auth, sut, getRepository, testSync } = await setup();
+
+    const userRepo = getRepository('user');
+    const user2 = mediumFactory.userInsert({ id: '00d4c0af-7695-4cf2-85e6-415eeaf449cb' });
+    const user3 = mediumFactory.userInsert({ id: '00e4c0af-7695-4cf2-85e6-415eeaf449cb' });
+    await userRepo.create(user2);
+    await userRepo.create(user3);
+
+    const assetRepo = getRepository('asset');
+    const assetUser3 = mediumFactory.assetInsert({ ownerId: user3.id });
+    await assetRepo.create(assetUser3);
+    await assetRepo.upsertExif({ assetId: assetUser3.id, make: 'assetUser3' });
+
+    await wait(2);
+
+    const assetUser2 = mediumFactory.assetInsert({ ownerId: user2.id });
+    await assetRepo.create(assetUser2);
+    await assetRepo.upsertExif({ assetId: assetUser2.id, make: 'assetUser2' });
+
+    const partnerRepo = getRepository('partner');
+    await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+
+    const response = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
+
+    expect(response).toHaveLength(1);
+    expect(response).toEqual(
+      expect.arrayContaining([
+        {
+          ack: expect.any(String),
+          data: expect.objectContaining({
+            assetId: assetUser2.id,
+          }),
+          type: SyncEntityType.PartnerAssetExifV1,
+        },
+      ]),
+    );
+
+    const acks = response.map(({ ack }) => ack);
+    await sut.setAcks(auth, { acks });
+
+    // This checks that our ack upsert is correct
+    const ackUpsertResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
+    expect(ackUpsertResponse).toEqual([]);
+
+    await partnerRepo.create({ sharedById: user3.id, sharedWithId: auth.user.id });
+
+    const syncAckResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
+    expect(syncAckResponse).toHaveLength(2);
+    expect(syncAckResponse).toEqual(
+      expect.arrayContaining([
+        {
+          ack: expect.stringMatching(new RegExp(`${SyncEntityType.PartnerAssetExifBackfillV1}\\|.+?\\|.+`)),
+          data: expect.objectContaining({
+            assetId: assetUser3.id,
+          }),
+          type: SyncEntityType.PartnerAssetExifBackfillV1,
+        },
+        {
+          ack: expect.stringContaining(SyncEntityType.PartnerAssetExifBackfillV1),
+          data: {},
+          type: SyncEntityType.SyncAckV1,
+        },
+      ]),
+    );
+
+    const syncAckResponseAcks = syncAckResponse.map(({ ack }) => ack);
+    await sut.setAcks(auth, { acks: [syncAckResponseAcks[1]] });
+
+    const finalResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
+    expect(finalResponse).toEqual([]);
+  });
+
   it('should only backfill partner assets created prior to the current partner asset checkpoint', async () => {
     const { auth, sut, getRepository, testSync } = await setup();
 
@@ -210,13 +282,13 @@ describe.concurrent(SyncRequestType.PartnerAssetExifsV1, () => {
     const assetUser2 = mediumFactory.assetInsert({ ownerId: user2.id });
     const asset2User3 = mediumFactory.assetInsert({ ownerId: user3.id });
     await assetRepo.create(assetUser3);
-    await assetRepo.upsertExif({ assetId: assetUser3.id, make: 'Canon' });
+    await assetRepo.upsertExif({ assetId: assetUser3.id, make: 'assetUser3' });
     await wait(2);
     await assetRepo.create(assetUser2);
-    await assetRepo.upsertExif({ assetId: assetUser2.id, make: 'Canon' });
+    await assetRepo.upsertExif({ assetId: assetUser2.id, make: 'assetUser2' });
     await wait(2);
     await assetRepo.create(asset2User3);
-    await assetRepo.upsertExif({ assetId: asset2User3.id, make: 'Canon' });
+    await assetRepo.upsertExif({ assetId: asset2User3.id, make: 'asset2User3' });
 
     const partnerRepo = getRepository('partner');
     await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
@@ -246,7 +318,7 @@ describe.concurrent(SyncRequestType.PartnerAssetExifsV1, () => {
     expect(backfillResponse).toEqual(
       expect.arrayContaining([
         {
-          ack: expect.any(String),
+          ack: expect.stringMatching(new RegExp(`${SyncEntityType.PartnerAssetExifBackfillV1}\\|.+?\\|.+`)),
           data: expect.objectContaining({
             assetId: assetUser3.id,
           }),
@@ -270,7 +342,6 @@ describe.concurrent(SyncRequestType.PartnerAssetExifsV1, () => {
     const backfillAck = backfillResponse[1].ack;
     const partnerAssetAck = backfillResponse[2].ack;
     await sut.setAcks(auth, { acks: [backfillAck, partnerAssetAck] });
-
     const finalResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
 
     const finalAcks = finalResponse.map(({ ack }) => ack);

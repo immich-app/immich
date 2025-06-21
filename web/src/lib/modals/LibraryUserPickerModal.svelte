@@ -2,7 +2,7 @@
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { user } from '$lib/stores/user.store';
   import { searchUsersAdmin } from '@immich/sdk';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -38,9 +38,9 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-2 w-full">
+    <HStack fullWidth>
       <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
       <Button shape="round" type="submit" fullWidth form="select-library-owner-form">{$t('create')}</Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>

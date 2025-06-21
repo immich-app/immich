@@ -13,10 +13,14 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
     as entity;
+<<<<<<< HEAD
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/backup_album.interface.dart';
+=======
+import 'package:immich_mobile/interfaces/album.interface.dart';
+>>>>>>> 484311e9bbbf96e97e5f26b960f06d7c9d343966
 import 'package:immich_mobile/models/albums/album_add_asset_response.model.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -47,11 +51,19 @@ class AlbumService {
   final SyncService _syncService;
   final UserService _userService;
   final EntityService _entityService;
+<<<<<<< HEAD
   final AlbumRepository _albumRepository;
   final IAssetRepository _assetRepository;
   final IBackupAlbumRepository _backupAlbumRepository;
   final IAlbumMediaRepository _albumMediaRepository;
   final IAlbumApiRepository _albumApiRepository;
+=======
+  final IAlbumRepository _albumRepository;
+  final AssetRepository _assetRepository;
+  final BackupAlbumRepository _backupAlbumRepository;
+  final AlbumMediaRepository _albumMediaRepository;
+  final AlbumApiRepository _albumApiRepository;
+>>>>>>> 484311e9bbbf96e97e5f26b960f06d7c9d343966
   final Logger _log = Logger('AlbumService');
   Completer<bool> _localCompleter = Completer()..complete(false);
   Completer<bool> _remoteCompleter = Completer()..complete(false);

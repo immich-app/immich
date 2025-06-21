@@ -111,7 +111,7 @@ export class SyncRepository {
       .select(columns.syncAsset)
       .where('ownerId', '=', partnerId)
       .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .where('updateId', '<', beforeUpdateId)
+      .where('updateId', '<=', beforeUpdateId)
       .$if(!!afterUpdateId, (eb) => eb.where('updateId', '>=', afterUpdateId!))
       .orderBy('updateId', 'asc')
       .stream();
@@ -169,7 +169,7 @@ export class SyncRepository {
       .innerJoin('assets', 'assets.id', 'exif.assetId')
       .where('assets.ownerId', '=', partnerId)
       .where('exif.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .where('exif.updateId', '<', beforeUpdateId)
+      .where('exif.updateId', '<=', beforeUpdateId)
       .$if(!!afterUpdateId, (eb) => eb.where('exif.updateId', '>=', afterUpdateId!))
       .orderBy('exif.updateId', 'asc')
       .stream();
@@ -273,7 +273,7 @@ export class SyncRepository {
       .select(columns.syncAlbumUser)
       .where('albumsId', '=', albumId)
       .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .where('updateId', '<', beforeUpdateId)
+      .where('updateId', '<=', beforeUpdateId)
       .$if(!!afterUpdateId, (eb) => eb.where('updateId', '>=', afterUpdateId!))
       .orderBy('updateId', 'asc')
       .stream();

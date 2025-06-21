@@ -1,6 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
@@ -18,7 +17,7 @@ class MemoryService {
   final log = Logger("MemoryService");
 
   final ApiService _apiService;
-  final IAssetRepository _assetRepository;
+  final AssetRepository _assetRepository;
 
   MemoryService(this._apiService, this._assetRepository);
 
