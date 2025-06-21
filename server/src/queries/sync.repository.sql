@@ -130,7 +130,7 @@ from
 where
   "ownerId" = $1
   and "updatedAt" < now() - interval '1 millisecond'
-  and "updateId" < $2
+  and "updateId" <= $2
   and "updateId" >= $3
 order by
   "updateId" asc
@@ -274,7 +274,7 @@ from
 where
   "assets"."ownerId" = $1
   and "exif"."updatedAt" < now() - interval '1 millisecond'
-  and "exif"."updateId" < $2
+  and "exif"."updateId" <= $2
   and "exif"."updateId" >= $3
 order by
   "exif"."updateId" asc
@@ -418,7 +418,7 @@ from
 where
   "albumsId" = $1
   and "updatedAt" < now() - interval '1 millisecond'
-  and "updateId" < $2
+  and "updateId" <= $2
   and "updateId" >= $3
 order by
   "updateId" asc

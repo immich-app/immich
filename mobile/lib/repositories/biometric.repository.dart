@@ -1,18 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/interfaces/biometric.interface.dart';
 import 'package:immich_mobile/models/auth/biometric_status.model.dart';
 import 'package:local_auth/local_auth.dart';
 
 final biometricRepositoryProvider =
     Provider((ref) => BiometricRepository(LocalAuthentication()));
 
-class BiometricRepository implements IBiometricRepository {
+class BiometricRepository {
   final LocalAuthentication _localAuth;
 
   BiometricRepository(this._localAuth);
 
-  @override
   Future<BiometricStatus> getStatus() async {
     final bool canAuthenticateWithBiometrics =
         await _localAuth.canCheckBiometrics;
@@ -26,7 +24,6 @@ class BiometricRepository implements IBiometricRepository {
     );
   }
 
-  @override
   Future<bool> authenticate(String? message) async {
     return _localAuth.authenticate(
       localizedReason: message ?? 'please_auth_to_access'.tr(),

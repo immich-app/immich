@@ -14,12 +14,8 @@ import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
-import 'package:immich_mobile/interfaces/album_api.interface.dart';
-import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/local_files_manager.interface.dart';
-import 'package:immich_mobile/interfaces/partner.interface.dart';
-import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -63,16 +59,22 @@ final syncServiceProvider = Provider(
 class SyncService {
   final HashService _hashService;
   final EntityService _entityService;
-  final IAlbumMediaRepository _albumMediaRepository;
-  final IAlbumApiRepository _albumApiRepository;
+  final AlbumMediaRepository _albumMediaRepository;
+  final AlbumApiRepository _albumApiRepository;
   final IAlbumRepository _albumRepository;
   final IAssetRepository _assetRepository;
   final IExifInfoRepository _exifInfoRepository;
   final IsarUserRepository _isarUserRepository;
   final UserService _userService;
+<<<<<<< HEAD
   final IPartnerRepository _partnerRepository;
   final ETagRepository _eTagRepository;
   final IPartnerApiRepository _partnerApiRepository;
+=======
+  final PartnerRepository _partnerRepository;
+  final IETagRepository _eTagRepository;
+  final PartnerApiRepository _partnerApiRepository;
+>>>>>>> 4c2ad44303d96fe2363bd67a4b55116a4063195c
   final UserApiRepository _userApiRepository;
   final AsyncMutex _lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
