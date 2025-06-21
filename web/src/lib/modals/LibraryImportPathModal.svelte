@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -60,7 +60,7 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-2 w-full">
+    <HStack fullWidth>
       <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>{cancelText}</Button>
       {#if isEditing}
         <Button shape="round" color="danger" fullWidth onclick={() => onClose({ action: 'delete' })}>
@@ -70,6 +70,6 @@
       <Button shape="round" type="submit" disabled={!canSubmit} fullWidth form="library-import-path-form">
         {submitText}
       </Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>

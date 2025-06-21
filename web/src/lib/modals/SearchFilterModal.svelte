@@ -34,7 +34,7 @@
   import { parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
   import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiTune } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
@@ -204,11 +204,11 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full">
+    <HStack fullWidth>
       <Button shape="round" size="large" type="reset" color="secondary" fullWidth form={formId}
         >{$t('clear_all')}</Button
       >
       <Button shape="round" size="large" type="submit" fullWidth form={formId}>{$t('search')}</Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>
