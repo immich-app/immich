@@ -1,5 +1,7 @@
 import { asset_face_source_type, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import {
+  album_asset_after_insert,
+  album_assets_delete_audit,
   album_user_after_insert,
   album_users_delete_audit,
   albums_delete_audit,
@@ -13,6 +15,7 @@ import {
   users_delete_audit,
 } from 'src/schema/functions';
 import { ActivityTable } from 'src/schema/tables/activity.table';
+import { AlbumAssetAuditTable } from 'src/schema/tables/album-asset-audit.table';
 import { AlbumAssetTable } from 'src/schema/tables/album-asset.table';
 import { AlbumAuditTable } from 'src/schema/tables/album-audit.table';
 import { AlbumUserAuditTable } from 'src/schema/tables/album-user-audit.table';
@@ -59,6 +62,7 @@ export class ImmichDatabase {
     ActivityTable,
     AlbumAssetTable,
     AlbumAuditTable,
+    AlbumAssetAuditTable,
     AlbumUserAuditTable,
     AlbumUserTable,
     AlbumTable,
@@ -108,6 +112,8 @@ export class ImmichDatabase {
     albums_delete_audit,
     album_user_after_insert,
     album_users_delete_audit,
+    album_asset_after_insert,
+    album_assets_delete_audit,
   ];
 
   enum = [assets_status_enum, asset_face_source_type, asset_visibility_enum];

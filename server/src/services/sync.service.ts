@@ -61,6 +61,7 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.PartnerAssetsV1,
   SyncRequestType.PartnerAssetExifsV1,
   SyncRequestType.AlbumsV1,
+  SyncRequestType.AlbumAssetsV1,
   SyncRequestType.AlbumUsersV1,
 ];
 
@@ -156,6 +157,26 @@ export class SyncService extends BaseService {
 
         case SyncRequestType.AlbumsV1: {
           await this.syncAlbumsV1(response, checkpointMap, auth);
+          break;
+        }
+
+        case SyncRequestType.AlbumAssetsV1: {
+          const deletes = this.syncRepository.getAlbumAssetDeletes(
+            auth.user.id,
+            checkpointMap[SyncEntityType.AlbumAssetV1],
+          );
+          for await (const { id, ...data } of deletes) {
+            response.write(serialize({ type: SyncEntityType.AlbumAssetDeleteV1, updateId: id, data }));
+          }
+
+          const upserts = this.syncRepository.getAlbumAssetUpserts(
+            auth.user.id,
+            checkpointMap[SyncEntityType.AlbumAssetV1],
+          );
+          for await (const { updateId, ...data } of upserts) {
+            response.write(serialize({ type: SyncEntityType.AlbumAssetV1, updateId, data }));
+          }
+
           break;
         }
 
