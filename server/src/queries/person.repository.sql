@@ -35,8 +35,9 @@ having
 order by
   "person"."isHidden" asc,
   "person"."isFavorite" desc,
-  NULLIF(person.name, '') asc nulls last,
+  NULLIF(person.name, '') is null asc,
   count("asset_faces"."assetId") desc,
+  NULLIF(person.name, '') asc nulls last,
   "person"."createdAt"
 limit
   $5
