@@ -3,22 +3,19 @@
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
-  import { AppRoute, AssetAction, QueryParameter, SettingInputFieldType } from '$lib/constants';
+  import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import TagCreateModal from '$lib/modals/TagCreateModal.svelte';
+  import TagEditModal from '$lib/modals/TagEditModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
-  import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
-  import { Button, HStack, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
+  import { deleteTag, getAllTags, type TagResponseDto } from '@immich/sdk';
+  import { Button, HStack, Text } from '@immich/ui';
   import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -50,49 +47,18 @@
 
   const navigateToView = (path: string) => goto(getLink(path));
 
-  let isNewOpen = $state(false);
-  let newTagValue = $state('');
-  const handleCreate = () => {
-    newTagValue = tag ? tag.value + '/' : '';
-    isNewOpen = true;
+  const handleCreate = async () => {
+    await modalManager.show(TagCreateModal, { baseTag: tag });
+    tags = await getAllTags();
   };
 
-  let isEditOpen = $state(false);
-  let newTagColor = $state('');
-  const handleEdit = () => {
-    newTagColor = tag?.color ?? '';
-    isEditOpen = true;
-  };
-
-  const handleCancel = () => {
-    isNewOpen = false;
-    isEditOpen = false;
-  };
-
-  const handleSubmit = async () => {
-    if (tag && isEditOpen && newTagColor) {
-      await updateTag({ id: tag.id!, tagUpdateDto: { color: newTagColor } });
-
-      notificationController.show({
-        message: $t('tag_updated', { values: { tag: tag.value } }),
-        type: NotificationType.Info,
-      });
-
-      tags = await getAllTags();
-      isEditOpen = false;
+  const handleEdit = async () => {
+    if (!tag) {
+      return;
     }
 
-    if (isNewOpen && newTagValue) {
-      const [newTag] = await upsertTags({ tagUpsertDto: { tags: [newTagValue] } });
-
-      notificationController.show({
-        message: $t('tag_created', { values: { tag: newTag.value } }),
-        type: NotificationType.Info,
-      });
-
-      tags = await getAllTags();
-      isNewOpen = false;
-    }
+    await modalManager.show(TagEditModal, { tag });
+    tags = await getAllTags();
   };
 
   const handleDelete = async () => {
@@ -115,11 +81,6 @@
 
     // navigate to parent
     await navigateToView(tag.parent ? tag.parent.path : '');
-  };
-
-  const onsubmit = async (event: Event) => {
-    event.preventDefault();
-    await handleSubmit();
   };
 </script>
 
@@ -167,57 +128,3 @@
     {/if}
   </section>
 </UserPageLayout>
-
-{#if isNewOpen}
-  <Modal size="small" title={$t('create_tag')} icon={mdiTag} onClose={handleCancel}>
-    <ModalBody>
-      <div class="text-immich-primary dark:text-immich-dark-primary">
-        <p class="text-sm dark:text-immich-dark-fg">
-          {$t('create_tag_description')}
-        </p>
-      </div>
-
-      <form {onsubmit} autocomplete="off" id="create-tag-form">
-        <div class="my-4 flex flex-col gap-2">
-          <SettingInputField
-            inputType={SettingInputFieldType.TEXT}
-            label={$t('tag').toUpperCase()}
-            bind:value={newTagValue}
-            required={true}
-            autofocus={true}
-          />
-        </div>
-      </form>
-    </ModalBody>
-
-    <ModalFooter>
-      <HStack fullWidth>
-        <Button color="secondary" fullWidth shape="round" onclick={() => handleCancel()}>{$t('cancel')}</Button>
-        <Button type="submit" fullWidth shape="round" form="create-tag-form">{$t('create')}</Button>
-      </HStack>
-    </ModalFooter>
-  </Modal>
-{/if}
-
-{#if isEditOpen}
-  <Modal title={$t('edit_tag')} icon={mdiTag} onClose={handleCancel}>
-    <ModalBody>
-      <form {onsubmit} autocomplete="off" id="edit-tag-form">
-        <div class="my-4 flex flex-col gap-2">
-          <SettingInputField
-            inputType={SettingInputFieldType.COLOR}
-            label={$t('color').toUpperCase()}
-            bind:value={newTagColor}
-          />
-        </div>
-      </form>
-    </ModalBody>
-
-    <ModalFooter>
-      <HStack fullWidth>
-        <Button color="secondary" fullWidth shape="round" onclick={() => handleCancel()}>{$t('cancel')}</Button>
-        <Button type="submit" fullWidth shape="round" form="edit-tag-form">{$t('save')}</Button>
-      </HStack>
-    </ModalFooter>
-  </Modal>
-{/if}
