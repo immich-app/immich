@@ -5,7 +5,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { getConfig, type SystemConfigDto } from '@immich/sdk';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
 
   let config: SystemConfigDto | undefined = $state();
   let adminSettingsComponent = $state<ReturnType<typeof AdminSettings>>();
@@ -14,9 +14,9 @@
     config = await getConfig();
   });
 
-  export const save = async () => {
+  onDestroy(async () => {
     await adminSettingsComponent?.handleSave({ storageTemplate: config?.storageTemplate });
-  };
+  });
 </script>
 
 <div class="flex flex-col">
