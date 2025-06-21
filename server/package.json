@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.135.1",
+  "version": "1.135.3",
   "description": "",
   "author": "",
   "private": true,
@@ -68,7 +68,6 @@
     "handlebars": "^4.7.8",
     "i18n-iso-countries": "^7.6.0",
     "ioredis": "^5.3.2",
-    "joi": "^17.10.0",
     "js-yaml": "^4.1.0",
     "kysely": "^0.28.0",
     "kysely-postgres-js": "^2.0.0",

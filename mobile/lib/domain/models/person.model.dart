@@ -1,10 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
-
-abstract interface class IPersonApiRepository {
-  Future<List<Person>> getAll();
-  Future<Person> update(String id, {String? name});
-}
 
 class Person {
   Person({

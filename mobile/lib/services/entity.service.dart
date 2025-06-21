@@ -2,12 +2,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
-import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 
 class EntityService {
-  final IAssetRepository _assetRepository;
+  final AssetRepository _assetRepository;
   final IsarUserRepository _isarUserRepository;
   EntityService(
     this._assetRepository,

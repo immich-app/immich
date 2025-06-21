@@ -2,7 +2,7 @@
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiRenameOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -68,9 +68,9 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-2 w-full">
+    <HStack fullWidth>
       <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
       <Button shape="round" type="submit" fullWidth disabled={isSubmitting} form="edit-album-form">{$t('save')}</Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>

@@ -3,7 +3,6 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
-import 'package:immich_mobile/interfaces/timeline.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
 import 'package:immich_mobile/utils/hash.dart';
@@ -13,11 +12,9 @@ import 'package:isar/isar.dart';
 final timelineRepositoryProvider =
     Provider((ref) => TimelineRepository(ref.watch(dbProvider)));
 
-class TimelineRepository extends DatabaseRepository
-    implements ITimelineRepository {
+class TimelineRepository extends DatabaseRepository {
   TimelineRepository(super.db);
 
-  @override
   Future<List<String>> getTimelineUserIds(String id) {
     return db.users
         .filter()
@@ -28,7 +25,6 @@ class TimelineRepository extends DatabaseRepository
         .findAll();
   }
 
-  @override
   Stream<List<String>> watchTimelineUsers(String id) {
     return db.users
         .filter()
@@ -39,7 +35,6 @@ class TimelineRepository extends DatabaseRepository
         .watch();
   }
 
-  @override
   Stream<RenderList> watchArchiveTimeline(String userId) {
     final query = db.assets
         .where()
@@ -52,7 +47,6 @@ class TimelineRepository extends DatabaseRepository
     return _watchRenderList(query, GroupAssetsBy.none);
   }
 
-  @override
   Stream<RenderList> watchFavoriteTimeline(String userId) {
     final query = db.assets
         .where()
@@ -67,7 +61,6 @@ class TimelineRepository extends DatabaseRepository
     return _watchRenderList(query, GroupAssetsBy.none);
   }
 
-  @override
   Stream<RenderList> watchAlbumTimeline(
     Album album,
     GroupAssetsBy groupAssetByOption,
@@ -86,7 +79,6 @@ class TimelineRepository extends DatabaseRepository
     return _watchRenderList(withSortedOption, groupAssetByOption);
   }
 
-  @override
   Stream<RenderList> watchTrashTimeline(String userId) {
     final query = db.assets
         .filter()
@@ -97,7 +89,6 @@ class TimelineRepository extends DatabaseRepository
     return _watchRenderList(query, GroupAssetsBy.none);
   }
 
-  @override
   Stream<RenderList> watchAllVideosTimeline(String userId) {
     final query = db.assets
         .where()
@@ -111,7 +102,6 @@ class TimelineRepository extends DatabaseRepository
     return _watchRenderList(query, GroupAssetsBy.none);
   }
 
-  @override
   Stream<RenderList> watchHomeTimeline(
     String userId,
     GroupAssetsBy groupAssetByOption,
@@ -128,7 +118,6 @@ class TimelineRepository extends DatabaseRepository
     return _watchRenderList(query, groupAssetByOption);
   }
 
-  @override
   Stream<RenderList> watchMultiUsersTimeline(
     List<String> userIds,
     GroupAssetsBy groupAssetByOption,
@@ -145,7 +134,6 @@ class TimelineRepository extends DatabaseRepository
     return _watchRenderList(query, groupAssetByOption);
   }
 
-  @override
   Future<RenderList> getTimelineFromAssets(
     List<Asset> assets,
     GroupAssetsBy getGroupByOption,
@@ -153,7 +141,6 @@ class TimelineRepository extends DatabaseRepository
     return RenderList.fromAssets(assets, getGroupByOption);
   }
 
-  @override
   Stream<RenderList> watchAssetSelectionTimeline(String userId) {
     final query = db.assets
         .where()
@@ -168,7 +155,6 @@ class TimelineRepository extends DatabaseRepository
     return _watchRenderList(query, GroupAssetsBy.none);
   }
 
-  @override
   Stream<RenderList> watchLockedTimeline(
     String userId,
     GroupAssetsBy getGroupByOption,
