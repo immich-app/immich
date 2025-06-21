@@ -20,6 +20,7 @@ import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/stack.service.dart';
@@ -29,8 +30,6 @@ import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart'
 import 'package:immich_mobile/widgets/asset_grid/control_bottom_app_bar.dart';
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
-
-import '../../providers/kid_mode_provider.dart';
 
 class MultiselectGrid extends HookConsumerWidget {
   const MultiselectGrid({
@@ -82,7 +81,7 @@ class MultiselectGrid extends HookConsumerWidget {
     final selection = useState(<Asset>{});
     final currentUser = ref.watch(currentUserProvider);
     final processing = useProcessingOverlay();
-    final isKidModeEnabled = ref.watch(kidModeProvider);
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     useEffect(
       () {
@@ -104,7 +103,7 @@ class MultiselectGrid extends HookConsumerWidget {
       bool multiselect,
       Set<Asset> selectedAssets,
     ) {
-      selectionEnabledHook.value = isKidModeEnabled ? false : multiselect;
+      selectionEnabledHook.value = isReadonlyModeEnabled ? false : multiselect;
       selection.value = selectedAssets;
       selectionAssetState.value =
           AssetSelectionState.fromSelection(selectedAssets);

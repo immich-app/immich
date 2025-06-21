@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
@@ -11,6 +12,8 @@ import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_dialog.dart';
@@ -34,6 +37,11 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isDarkTheme = context.isDarkTheme;
     const widgetSize = 30.0;
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+    final allowUserAvatarOverride =
+        ref.read(appSettingsServiceProvider).getSetting(
+              AppSettingsEnum.allowUserAvatarOverride,
+            );
 
     buildProfileIndicator() {
       return InkWell(
@@ -42,6 +50,14 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           useRootNavigator: false,
           builder: (ctx) => const ImmichAppBarDialog(),
         ),
+        onDoubleTap: () => {
+          if (allowUserAvatarOverride)
+            {
+              ref
+                  .read(readonlyModeProvider.notifier)
+                  .toggleReadonlyMode(isReadonlyModeEnabled ? false : true),
+            },
+        },
         borderRadius: BorderRadius.circular(12),
         child: Badge(
           label: Container(

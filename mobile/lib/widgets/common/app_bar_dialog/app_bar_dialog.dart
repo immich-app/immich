@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
@@ -12,12 +13,13 @@ import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_profile_info.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_server_info.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
-import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_kid_mode.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ImmichAppBarDialog extends HookConsumerWidget {
@@ -32,6 +34,11 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
     final user = ref.watch(currentUserProvider);
     final isLoggingOut = useState(false);
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+    final allowUserAvatarOverride =
+        ref.read(appSettingsServiceProvider).getSetting(
+              AppSettingsEnum.allowUserAvatarOverride,
+            );
 
     useEffect(
       () {
@@ -261,6 +268,26 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
+    buildReadonlyMessage() {
+      return isReadonlyModeEnabled
+          ? allowUserAvatarOverride
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 10, bottom: 5),
+                  child: Text(
+                    "Read-only mode enabled. Double-tap the user icon to exit.",
+                    style: context.textTheme.displaySmall,
+                  ).tr(),
+                )
+              : Padding(
+                  padding: const EdgeInsets.only(top: 10, bottom: 5),
+                  child: Text(
+                    "Read-only mode enabled. Disable in Advanced user's settings.",
+                    style: context.textTheme.displaySmall,
+                  ).tr(),
+                )
+          : const SizedBox.shrink();
+    }
+
     return Dismissible(
       behavior: HitTestBehavior.translucent,
       direction: DismissDirection.down,
@@ -292,8 +319,8 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 const AppBarServerInfo(),
                 buildAppLogButton(),
                 buildSettingButton(),
-                const KidModeCheckbox(),
                 buildSignOutButton(),
+                buildReadonlyMessage(),
                 buildFooter(),
               ],
             ),

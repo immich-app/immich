@@ -11,7 +11,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
-import 'package:immich_mobile/providers/kid_mode_provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 
 @RoutePage()
 class TabControllerPage extends HookConsumerWidget {
@@ -145,9 +145,9 @@ class TabControllerPage extends HookConsumerWidget {
     }
 
     final multiselectEnabled = ref.watch(multiselectProvider);
-    final isKidModeEnabled = ref.watch(kidModeProvider);
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     return AutoTabsRouter(
-      routes: isKidModeEnabled
+      routes: isReadonlyModeEnabled
           ? [
               const PhotosRoute(),
             ]
@@ -184,7 +184,7 @@ class TabControllerPage extends HookConsumerWidget {
                   )
                 : heroedChild,
             bottomNavigationBar:
-                multiselectEnabled || isScreenLandscape || isKidModeEnabled
+                multiselectEnabled || isScreenLandscape || isReadonlyModeEnabled
                     ? null
                     : bottomNavigationBar(tabsRouter),
           ),
