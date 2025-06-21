@@ -1,5 +1,4 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/interfaces/secure_storage.interface.dart';
 import 'package:immich_mobile/repositories/secure_storage.repository.dart';
 
 final secureStorageServiceProvider = Provider(
@@ -9,9 +8,7 @@ final secureStorageServiceProvider = Provider(
 );
 
 class SecureStorageService {
-  // final _log = Logger("LocalAuthService");
-
-  final ISecureStorageRepository _secureStorageRepository;
+  final SecureStorageRepository _secureStorageRepository;
 
   SecureStorageService(this._secureStorageRepository);
 
