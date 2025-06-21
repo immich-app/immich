@@ -4,6 +4,7 @@ import { QueueOptions } from 'bullmq';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { Request, Response } from 'express';
+import { readFileSync } from 'fs';
 import { RedisOptions } from 'ioredis';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
@@ -156,13 +157,21 @@ const getEnv = (): EnvData => {
     web: join(buildFolder, 'www'),
   };
 
-  let redisConfig = {
+  let redisConfig: RedisOptions = {
     host: dto.REDIS_HOSTNAME || 'redis',
     port: dto.REDIS_PORT || 6379,
     db: dto.REDIS_DBINDEX || 0,
     username: dto.REDIS_USERNAME || undefined,
     password: dto.REDIS_PASSWORD || undefined,
     path: dto.REDIS_SOCKET || undefined,
+    ...(dto.REDIS_TLS
+      ? {
+          tls: {
+            rejectUnauthorized: !dto.REDIS_TLS_INSECURE,
+            ...(dto.REDIS_TLS_CERT ? { ca: readFileSync(dto.REDIS_TLS_CERT) } : {}),
+          },
+        }
+      : {}),
   };
 
   const redisUrl = dto.REDIS_URL;
