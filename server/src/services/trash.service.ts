@@ -25,11 +25,22 @@ export class TrashService extends BaseService {
   }
 
   async restore(auth: AuthDto): Promise<TrashResponseDto> {
-    const count = await this.trashRepository.restore(auth.user.id);
-    if (count > 0) {
-      this.logger.log(`Restored ${count} asset(s) from trash`);
+    const assets = this.trashRepository.getTrashedIds(auth.user.id);
+    let total = 0;
+    let batch = new BulkIdsDto();
+    batch.ids = [];
+    for await (const { id } of assets) {
+      batch.ids.push(id);
+      if (batch.ids.length === JOBS_ASSET_PAGINATION_SIZE) {
+        const { count } = await this.restoreAssets(auth, batch);
+        total += count;
+        batch = new BulkIdsDto();
+        batch.ids = [];
+      }
     }
-    return { count };
+    const { count } = await this.restoreAssets(auth, batch);
+    total += count;
+    return { count: total };
   }
 
   async empty(auth: AuthDto): Promise<TrashResponseDto> {

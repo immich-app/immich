@@ -1,4 +1,5 @@
 import { user } from '$lib/stores/user.store';
+import { websocketEvents } from '$lib/stores/websocket';
 import { handlePromiseError } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import {
@@ -12,6 +13,7 @@ import {
   type ActivityResponseDto,
 } from '@immich/sdk';
 import { t } from 'svelte-i18n';
+import { createSubscriber } from 'svelte/reactivity';
 import { get } from 'svelte/store';
 
 type CacheKey = string;
@@ -30,27 +32,48 @@ class ActivityManager {
   #likeCount = $state(0);
   #isLiked = $state<ActivityResponseDto | null>(null);
 
-  #cache = new Map<CacheKey, ActivityCache>();
+  #subscribe;
 
+  #cache = new Map<CacheKey, ActivityCache>();
   isLoading = $state(false);
+
+  constructor() {
+    this.#subscribe = createSubscriber((update) => {
+      const unsubscribe = websocketEvents.on('on_activity_change', ({ albumId, assetId }) => {
+        if (this.#albumId === albumId || this.#assetId === assetId) {
+          this.#invalidateCache(albumId, this.#assetId);
+          handlePromiseError(this.refreshActivities(albumId, this.#assetId));
+          update();
+        }
+      });
+
+      return () => {
+        unsubscribe();
+      };
+    });
+  }
 
   get assetId() {
     return this.#assetId;
   }
 
   get activities() {
+    this.#subscribe();
     return this.#activities;
   }
 
   get commentCount() {
+    this.#subscribe();
     return this.#commentCount;
   }
 
   get likeCount() {
+    this.#subscribe();
     return this.#likeCount;
   }
 
   get isLiked() {
+    this.#subscribe();
     return this.#isLiked;
   }
 
@@ -78,7 +101,7 @@ class ActivityManager {
   }
 
   async addActivity(dto: ActivityCreateDto) {
-    if (this.#albumId === undefined) {
+    if (!this.#albumId) {
       return;
     }
 
@@ -87,9 +110,7 @@ class ActivityManager {
 
     if (activity.type === ReactionType.Comment) {
       this.#commentCount++;
-    }
-
-    if (activity.type === ReactionType.Like) {
+    } else if (activity.type === ReactionType.Like) {
       this.#likeCount++;
     }
 
@@ -105,15 +126,15 @@ class ActivityManager {
 
     if (activity.type === ReactionType.Comment) {
       this.#commentCount--;
-    }
-
-    if (activity.type === ReactionType.Like) {
+    } else if (activity.type === ReactionType.Like) {
       this.#likeCount--;
     }
 
-    this.#activities = index
-      ? this.#activities.splice(index, 1)
-      : this.#activities.filter(({ id }) => id !== activity.id);
+    if (index === undefined) {
+      this.#activities = this.#activities.filter(({ id }) => id !== activity.id);
+    } else {
+      this.#activities.splice(index, 1);
+    }
 
     await deleteActivity({ id: activity.id });
     this.#invalidateCache(this.#albumId, this.#assetId);
@@ -128,12 +149,17 @@ class ActivityManager {
     if (this.#isLiked) {
       await this.deleteActivity(this.#isLiked);
       this.#isLiked = null;
-    } else {
-      this.#isLiked = (await this.addActivity({
-        albumId: this.#albumId,
-        assetId: this.#assetId,
-        type: ReactionType.Like,
-      }))!;
+      return;
+    }
+
+    const newLike = await this.addActivity({
+      albumId: this.#albumId,
+      assetId: this.#assetId,
+      type: ReactionType.Like,
+    });
+
+    if (newLike) {
+      this.#isLiked = newLike;
     }
   }
 
