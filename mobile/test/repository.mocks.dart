@@ -6,11 +6,11 @@ import 'package:immich_mobile/interfaces/asset_media.interface.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
 import 'package:immich_mobile/interfaces/auth_api.interface.dart';
 import 'package:immich_mobile/interfaces/backup_album.interface.dart';
-import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
 import 'package:immich_mobile/repositories/partner.repository.dart';
+import 'package:immich_mobile/repositories/etag.repository.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:mocktail/mocktail.dart';
@@ -23,7 +23,7 @@ class MockBackupRepository extends Mock implements IBackupAlbumRepository {}
 
 class MockExifInfoRepository extends Mock implements IExifInfoRepository {}
 
-class MockETagRepository extends Mock implements IETagRepository {}
+class MockETagRepository extends Mock implements ETagRepository {}
 
 class MockAlbumMediaRepository extends Mock implements AlbumMediaRepository {}
 

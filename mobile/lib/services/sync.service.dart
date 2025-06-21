@@ -15,7 +15,6 @@ import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
-import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -67,7 +66,7 @@ class SyncService {
   final IsarUserRepository _isarUserRepository;
   final UserService _userService;
   final PartnerRepository _partnerRepository;
-  final IETagRepository _eTagRepository;
+  final ETagRepository _eTagRepository;
   final PartnerApiRepository _partnerApiRepository;
   final UserApiRepository _userApiRepository;
   final AsyncMutex _lock = AsyncMutex();
