@@ -1,12 +1,12 @@
 <script lang="ts">
-  import AlbumSelectionModal from '$lib/components/shared-components/album-selection/album-selection-modal.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { addAssetsToAlbum, addAssetsToNewAlbum } from '$lib/utils/asset-utils';
-  import type { AlbumResponseDto } from '@immich/sdk';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import AlbumPickerModal from '$lib/modals/AlbumPickerModal.svelte';
+  import type { OnAddToAlbum } from '$lib/utils/actions';
+  import { addAssetsToAlbum } from '$lib/utils/asset-utils';
   import { mdiImageAlbum, mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import type { OnAddToAlbum } from '$lib/utils/actions';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   interface Props {
     shared?: boolean;
@@ -15,46 +15,24 @@
 
   let { shared = false, onAddToAlbum = () => {} }: Props = $props();
 
-  let showAlbumPicker = $state(false);
-
   const { getAssets } = getAssetControlContext();
 
-  const handleHideAlbumPicker = () => {
-    showAlbumPicker = false;
-  };
+  const onClick = async () => {
+    const album = await modalManager.show(AlbumPickerModal, { shared });
 
-  const handleAddToNewAlbum = async (albumName: string) => {
-    showAlbumPicker = false;
-
-    const assetIds = [...getAssets()].map((asset) => asset.id);
-    const album = await addAssetsToNewAlbum(albumName, assetIds);
     if (!album) {
       return;
     }
 
-    onAddToAlbum(assetIds, album.id);
-  };
-
-  const handleAddToAlbum = async (album: AlbumResponseDto) => {
-    showAlbumPicker = false;
-    const assetIds = [...getAssets()].map((asset) => asset.id);
+    const assetIds = [...getAssets()].map(({ id }) => id);
     await addAssetsToAlbum(album.id, assetIds);
     onAddToAlbum(assetIds, album.id);
   };
 </script>
 
 <MenuOption
-  onClick={() => (showAlbumPicker = true)}
+  {onClick}
   text={shared ? $t('add_to_shared_album') : $t('add_to_album')}
   icon={shared ? mdiShareVariantOutline : mdiImageAlbum}
   shortcut={{ key: 'l', shift: shared }}
 />
-
-{#if showAlbumPicker}
-  <AlbumSelectionModal
-    {shared}
-    onNewAlbum={handleAddToNewAlbum}
-    onAlbumClick={handleAddToAlbum}
-    onClose={handleHideAlbumPicker}
-  />
-{/if}

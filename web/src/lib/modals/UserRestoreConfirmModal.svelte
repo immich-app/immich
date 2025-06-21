@@ -2,7 +2,7 @@
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { restoreUserAdmin, type UserAdminResponseDto, type UserResponseDto } from '@immich/sdk';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiDeleteRestore } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -35,13 +35,13 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full">
+    <HStack fullWidth>
       <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>
         {$t('cancel')}
       </Button>
       <Button shape="round" color="primary" fullWidth onclick={() => handleRestoreUser()}>
         {$t('restore')}
       </Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>

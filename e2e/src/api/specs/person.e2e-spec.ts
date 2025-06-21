@@ -125,12 +125,12 @@ describe('/people', () => {
         total: 11,
         hidden: 1,
         people: [
-          expect.objectContaining({ name: 'Bill' }),
           expect.objectContaining({ name: 'Freddy' }),
-          expect.objectContaining({ name: 'Alice' }),
-          expect.objectContaining({ name: 'Bob' }),
-          expect.objectContaining({ name: 'Charlie' }),
+          expect.objectContaining({ name: 'Bill' }),
           expect.objectContaining({ name: 'multiple_assets_person' }),
+          expect.objectContaining({ name: 'Bob' }),
+          expect.objectContaining({ name: 'Alice' }),
+          expect.objectContaining({ name: 'Charlie' }),
           expect.objectContaining({ name: 'visible_person' }),
           expect.objectContaining({ id: nameNullPerson4Assets.id, name: '' }),
           expect.objectContaining({ id: nameNullPerson3Assets.id, name: '' }),
@@ -150,12 +150,12 @@ describe('/people', () => {
       const people = body.people as PersonResponseDto[];
 
       expect(people.map((p) => p.id)).toEqual([
-        nameBillPersonFavourite.id, // name: 'Bill', count: 2
         nameFreddyPersonFavourite.id, // name: 'Freddy', count: 2
-        nameAlicePerson.id, // name: 'Alice', count: 1
-        nameBobPerson.id, // name: 'Bob', count: 2
-        nameCharliePerson.id, // name: 'Charlie', count: 1
+        nameBillPersonFavourite.id, // name: 'Bill', count: 1
         multipleAssetsPerson.id, // name: 'multiple_assets_person', count: 3
+        nameBobPerson.id, // name: 'Bob', count: 2
+        nameAlicePerson.id, // name: 'Alice', count: 1
+        nameCharliePerson.id, // name: 'Charlie', count: 1
         visiblePerson.id, // name: 'visible_person', count: 1
         nameNullPerson4Assets.id, // name: '', count: 4
         nameNullPerson3Assets.id, // name: '', count: 3
@@ -173,12 +173,12 @@ describe('/people', () => {
         total: 11,
         hidden: 1,
         people: [
-          expect.objectContaining({ name: 'Bill' }),
           expect.objectContaining({ name: 'Freddy' }),
-          expect.objectContaining({ name: 'Alice' }),
-          expect.objectContaining({ name: 'Bob' }),
-          expect.objectContaining({ name: 'Charlie' }),
+          expect.objectContaining({ name: 'Bill' }),
           expect.objectContaining({ name: 'multiple_assets_person' }),
+          expect.objectContaining({ name: 'Bob' }),
+          expect.objectContaining({ name: 'Alice' }),
+          expect.objectContaining({ name: 'Charlie' }),
           expect.objectContaining({ name: 'visible_person' }),
           expect.objectContaining({ id: nameNullPerson4Assets.id, name: '' }),
           expect.objectContaining({ id: nameNullPerson3Assets.id, name: '' }),
@@ -197,7 +197,7 @@ describe('/people', () => {
         hasNextPage: true,
         total: 11,
         hidden: 1,
-        people: [expect.objectContaining({ name: 'Charlie' })],
+        people: [expect.objectContaining({ name: 'Alice' })],
       });
     });
   });

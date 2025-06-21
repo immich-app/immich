@@ -6,12 +6,12 @@
     isSelectableRowType,
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
   import { albumViewSettings } from '$lib/stores/preferences.store';
-  import { type AlbumResponseDto, getAllAlbums } from '@immich/sdk';
+  import { type AlbumResponseDto, createAlbum, getAllAlbums } from '@immich/sdk';
   import { Modal, ModalBody } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import AlbumListItem from '../../asset-viewer/album-list-item.svelte';
-  import NewAlbumListItem from './new-album-list-item.svelte';
+  import AlbumListItem from '../components/asset-viewer/album-list-item.svelte';
+  import NewAlbumListItem from '../components/shared-components/album-selection/new-album-list-item.svelte';
 
   let albums: AlbumResponseDto[] = $state([]);
   let recentAlbums: AlbumResponseDto[] = $state([]);
@@ -20,13 +20,11 @@
   let selectedRowIndex: number = $state(-1);
 
   interface Props {
-    onNewAlbum: (search: string) => void;
-    onAlbumClick: (album: AlbumResponseDto) => void;
     shared: boolean;
-    onClose: () => void;
+    onClose: (album?: AlbumResponseDto) => void;
   }
 
-  let { onNewAlbum, onAlbumClick, shared, onClose }: Props = $props();
+  let { shared, onClose }: Props = $props();
 
   onMount(async () => {
     albums = await getAllAlbums({ shared: shared || undefined });
@@ -38,7 +36,34 @@
   const albumModalRows = $derived(rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex));
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
-  const onkeydown = (e: KeyboardEvent) => {
+  const onNewAlbum = async (name: string) => {
+    const album = await createAlbum({ createAlbumDto: { albumName: name } });
+    onClose(album);
+  };
+
+  const onEnter = async () => {
+    const item = albumModalRows.find(({ selected }) => selected);
+    if (!item) {
+      return;
+    }
+
+    switch (item.type) {
+      case AlbumModalRowType.NEW_ALBUM: {
+        await onNewAlbum(search);
+        break;
+      }
+      case AlbumModalRowType.ALBUM_ITEM: {
+        if (item.album) {
+          onClose(item.album);
+        }
+        break;
+      }
+    }
+
+    selectedRowIndex = -1;
+  };
+
+  const onkeydown = async (e: KeyboardEvent) => {
     switch (e.key) {
       case 'ArrowUp': {
         e.preventDefault();
@@ -60,15 +85,7 @@
       }
       case 'Enter': {
         e.preventDefault();
-        const selectedRow = albumModalRows.find((row) => row.selected);
-        if (selectedRow) {
-          if (selectedRow.type === AlbumModalRowType.NEW_ALBUM) {
-            onNewAlbum(search);
-          } else if (selectedRow.type === AlbumModalRowType.ALBUM_ITEM && selectedRow.album) {
-            onAlbumClick(selectedRow.album);
-          }
-          selectedRowIndex = -1;
-        }
+        await onEnter();
         break;
       }
       default: {
@@ -76,8 +93,6 @@
       }
     }
   };
-
-  const handleAlbumClick = (album: AlbumResponseDto) => () => onAlbumClick(album);
 </script>
 
 <Modal title={shared ? $t('add_to_shared_album') : $t('add_to_album')} {onClose} size="small">
@@ -119,7 +134,7 @@
                 album={row.album}
                 selected={row.selected || false}
                 searchQuery={search}
-                onAlbumClick={handleAlbumClick(row.album)}
+                onAlbumClick={() => onClose(row.album)}
               />
             {/if}
           {/each}
