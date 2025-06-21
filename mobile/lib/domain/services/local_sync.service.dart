@@ -5,8 +5,6 @@ import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:immich_mobile/utils/diff.dart';
@@ -17,21 +15,15 @@ class LocalSyncService {
   final ILocalAlbumRepository _localAlbumRepository;
   final NativeSyncApi _nativeSyncApi;
   final Platform _platform;
-  final StoreService _storeService;
   final Logger _log = Logger("DeviceSyncService");
 
   LocalSyncService({
     required ILocalAlbumRepository localAlbumRepository,
     required NativeSyncApi nativeSyncApi,
-    required StoreService storeService,
     Platform? platform,
   })  : _localAlbumRepository = localAlbumRepository,
         _nativeSyncApi = nativeSyncApi,
-        _storeService = storeService,
         _platform = platform ?? const LocalPlatform();
-
-  bool get _ignoreIcloudAssets =>
-      _storeService.get(StoreKey.ignoreIcloudAssets, false) == true;
 
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
@@ -84,11 +76,7 @@ class LocalSyncService {
             );
             continue;
           }
-          if (_ignoreIcloudAssets) {
-            await removeAlbum(dbAlbum);
-          } else {
-            await updateAlbum(dbAlbum, album);
-          }
+          await updateAlbum(dbAlbum, album);
         }
       }
 
@@ -106,12 +94,7 @@ class LocalSyncService {
     try {
       final Stopwatch stopwatch = Stopwatch()..start();
 
-      List<PlatformAlbum> deviceAlbums =
-          List.of(await _nativeSyncApi.getAlbums());
-      if (_platform.isIOS && _ignoreIcloudAssets) {
-        deviceAlbums.removeWhere((album) => album.isCloud);
-      }
-
+      final deviceAlbums = await _nativeSyncApi.getAlbums();
       final dbAlbums =
           await _localAlbumRepository.getAll(sortBy: {SortLocalAlbumsBy.id});
 
