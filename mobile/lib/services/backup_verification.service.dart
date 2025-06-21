@@ -13,7 +13,6 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
-import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
@@ -25,7 +24,7 @@ import 'package:immich_mobile/utils/diff.dart';
 /// Finds duplicates originating from missing EXIF information
 class BackupVerificationService {
   final UserService _userService;
-  final IFileMediaRepository _fileMediaRepository;
+  final FileMediaRepository _fileMediaRepository;
   final IAssetRepository _assetRepository;
   final IExifInfoRepository _exifInfoRepository;
 
@@ -123,7 +122,7 @@ class BackupVerificationService {
       String auth,
       String endpoint,
       RootIsolateToken rootIsolateToken,
-      IFileMediaRepository fileMediaRepository,
+      FileMediaRepository fileMediaRepository,
     }) tuple,
   ) async {
     assert(tuple.deleteCandidates.length == tuple.originals.length);
