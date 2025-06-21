@@ -1,5 +1,4 @@
 import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
-import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
@@ -12,10 +11,11 @@ import 'package:immich_mobile/repositories/auth.repository.dart';
 import 'package:immich_mobile/repositories/auth_api.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockAlbumRepository extends Mock implements IAlbumRepository {}
+class MockAlbumRepository extends Mock implements AlbumRepository {}
 
 class MockAssetRepository extends Mock implements AssetRepository {}
 

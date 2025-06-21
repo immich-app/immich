@@ -6,20 +6,20 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
     as entity;
-import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 
+enum AlbumSort { remoteId, localId }
+
 final albumRepositoryProvider =
     Provider((ref) => AlbumRepository(ref.watch(dbProvider)));
 
-class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
+class AlbumRepository extends DatabaseRepository {
   AlbumRepository(super.db);
 
-  @override
   Future<int> count({bool? local}) {
     final baseQuery = db.albums.where();
     final QueryBuilder<Album, Album, QAfterWhereClause> query = switch (local) {
@@ -30,10 +30,8 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     return query.count();
   }
 
-  @override
   Future<Album> create(Album album) => txn(() => db.albums.store(album));
 
-  @override
   Future<Album?> getByName(
     String name, {
     bool? shared,
@@ -58,13 +56,10 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     return query.findFirst();
   }
 
-  @override
   Future<Album> update(Album album) => txn(() => db.albums.store(album));
 
-  @override
   Future<void> delete(int albumId) => txn(() => db.albums.delete(albumId));
 
-  @override
   Future<List<Album>> getAll({
     bool? shared,
     bool? remote,
@@ -96,23 +91,18 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     return query.findAll();
   }
 
-  @override
   Future<Album?> get(int id) => db.albums.get(id);
 
-  @override
   Future<void> removeUsers(Album album, List<UserDto> users) => txn(
         () => album.sharedUsers.update(unlink: users.map(entity.User.fromDto)),
       );
 
-  @override
   Future<void> addAssets(Album album, List<Asset> assets) =>
       txn(() => album.assets.update(link: assets));
 
-  @override
   Future<void> removeAssets(Album album, List<Asset> assets) =>
       txn(() => album.assets.update(unlink: assets));
 
-  @override
   Future<Album> recalculateMetadata(Album album) async {
     album.startDate = await album.assets.filter().fileCreatedAtProperty().min();
     album.endDate = await album.assets.filter().fileCreatedAtProperty().max();
@@ -121,15 +111,12 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     return album;
   }
 
-  @override
   Future<void> addUsers(Album album, List<UserDto> users) =>
       txn(() => album.sharedUsers.update(link: users.map(entity.User.fromDto)));
 
-  @override
   Future<void> deleteAllLocal() =>
       txn(() => db.albums.where().localIdIsNotNull().deleteAll());
 
-  @override
   Future<List<Album>> search(
     String searchTerm,
     QuickFilterMode filterMode,
@@ -152,24 +139,20 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     return await query.findAll();
   }
 
-  @override
   Future<void> clearTable() async {
     await txn(() async {
       await db.albums.clear();
     });
   }
 
-  @override
   Stream<List<Album>> watchRemoteAlbums() {
     return db.albums.where().remoteIdIsNotNull().watch();
   }
 
-  @override
   Stream<List<Album>> watchLocalAlbums() {
     return db.albums.where().localIdIsNotNull().watch();
   }
 
-  @override
   Stream<Album?> watchAlbum(int id) {
     return db.albums.watchObject(id, fireImmediately: true);
   }
