@@ -110,6 +110,9 @@ When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSW
 | `REDIS_USERNAME` | Redis username |         | server     |
 | `REDIS_PASSWORD` | Redis password |         | server     |
 | `REDIS_DBINDEX`  | Redis DB index |   `0`   | server     |
+| `REDIS_TLS`      | Redis TLS      | `false` | server     |
+| `REDIS_INSECURE_TLS` | Allow Insecure Connection to Redis | `false` | server |
+| `REDIS_TLS_CERT` | Path to Redis TLS Cert | | server |
 
 :::info
 All `REDIS_` variables must be provided to all Immich workers, including `api` and `microservices`.

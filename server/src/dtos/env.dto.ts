@@ -195,4 +195,15 @@ export class EnvDto {
   @IsString()
   @Optional()
   REDIS_URL?: string;
+
+  @ValidateBoolean({ optional: false })
+  @Optional()
+  REDIS_TLS?: boolean;
+
+  @ValidateBoolean({ optional: false })
+  @Optional()
+  REDIS_TLS_INSECURE?: boolean;
+
+  @IsString()
+  REDIS_TLS_CERT?: string;
 }
