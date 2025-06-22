@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Put } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
   ServerAboutResponseDto,
@@ -16,7 +17,7 @@ import {
 } from 'src/dtos/server.dto';
 import { VersionCheckStateResponseDto } from 'src/dtos/system-metadata.dto';
 import { Permission } from 'src/enum';
-import { Authenticated } from 'src/middleware/auth.guard';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { ServerService } from 'src/services/server.service';
 import { SystemMetadataService } from 'src/services/system-metadata.service';
 import { VersionService } from 'src/services/version.service';
@@ -44,8 +45,8 @@ export class ServerController {
 
   @Get('storage')
   @Authenticated({ permission: Permission.ServerStorage })
-  getStorage(): Promise<ServerStorageResponseDto> {
-    return this.service.getStorage();
+  getStorage(@Auth() user: AuthDto): Promise<ServerStorageResponseDto> {
+    return this.service.getStorage(user);
   }
 
   @Get('ping')

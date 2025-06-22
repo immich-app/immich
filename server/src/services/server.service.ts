@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
   ServerAboutResponseDto,
@@ -59,9 +60,38 @@ export class ServerService extends BaseService {
     };
   }
 
-  async getStorage(): Promise<ServerStorageResponseDto> {
+  async getStorage(user?: AuthDto): Promise<ServerStorageResponseDto> {
     const libraryBase = StorageCore.getBaseFolder(StorageFolder.Library);
-    const diskInfo = await this.storageRepository.checkDiskUsage(libraryBase);
+    let diskInfo;
+
+    if (!user) {
+      // No user provided, use library base folder
+      diskInfo = await this.storageRepository.checkDiskUsage(libraryBase);
+    } else {
+      // If user is provided, check their specific folder
+      try {
+        // Convert AuthDto to the format expected by getLibraryFolder
+        const userInfo = {
+          id: user.user.id,
+          storageLabel: null, // Using null as default since AuthUser doesn't have storageLabel
+        };
+        const userLibraryFolder = StorageCore.getLibraryFolder(userInfo);
+
+        // Check if the user's folder exists before getting disk usage
+        const exists = await this.storageRepository.checkFileExists(userLibraryFolder);
+        if (!exists) {
+          throw new NotFoundException(`User folder ${userLibraryFolder} does not exist.`);
+        }
+
+        this.logger.debug(`Checking disk usage for user ${user.user.id} at ${userLibraryFolder}`);
+        diskInfo = await this.storageRepository.checkDiskUsage(userLibraryFolder);
+      } catch (error: unknown) {
+        // Fallback to library base folder if user folder doesn't exist or has issues
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        this.logger.warn(`Failed to check user folder disk usage: ${errorMessage}. Using library base folder.`);
+        diskInfo = await this.storageRepository.checkDiskUsage(libraryBase);
+      }
+    }
 
     const usagePercentage = (((diskInfo.total - diskInfo.free) / diskInfo.total) * 100).toFixed(2);
 
