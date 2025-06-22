@@ -33,7 +33,7 @@ COPY --chown=node:node --chmod=777 ../.devcontainer/server/*.sh /immich-devconta
 USER node
 COPY --chown=node:node .. /tmp/create-dep-cache/
 WORKDIR /tmp/create-dep-cache
-RUN make install-all && rm -rf /tmp/create-dep-cache 
+RUN make ci-all && rm -rf /tmp/create-dep-cache 
 
 
 FROM dev-container-server AS dev-container-mobile

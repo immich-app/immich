@@ -48,7 +48,7 @@ audit-%:
 	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) audit fix
 install-%:
 	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) i
-cinstall-%:
+ci-%:
 	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) ci
 build-cli: build-sdk
 build-web: build-sdk
@@ -84,7 +84,7 @@ test-medium-dev:
 
 build-all: $(foreach M,$(filter-out e2e .github,$(MODULES)),build-$M) ;
 install-all: $(foreach M,$(filter-out .github,$(MODULES)),install-$M) ;
-cinstall-all: $(foreach M,$(filter-out .github,$(MODULES)),cinstall-$M) ;
+ci-all: $(foreach M,$(filter-out .github,$(MODULES)),ci-$M) ;
 check-all: $(foreach M,$(filter-out sdk cli docs .github,$(MODULES)),check-$M) ;
 lint-all: $(foreach M,$(filter-out sdk docs .github,$(MODULES)),lint-$M) ;
 format-all: $(foreach M,$(filter-out sdk,$(MODULES)),format-$M) ;
