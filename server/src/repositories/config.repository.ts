@@ -168,7 +168,9 @@ const getEnv = (): EnvData => {
       ? {
           tls: {
             rejectUnauthorized: !dto.REDIS_TLS_INSECURE,
-            ...(dto.REDIS_TLS_CERT ? { ca: readFileSync(dto.REDIS_TLS_CERT) } : {}),
+            ...(dto.REDIS_TLS_CERT ? { cert: readFileSync(dto.REDIS_TLS_CERT) } : {}),
+            ...(dto.REDIS_TLS_CA ? { ca: readFileSync(dto.REDIS_TLS_CA) } : {}),
+            ...(dto.REDIS_TLS_KEY ? { key: readFileSync(dto.REDIS_TLS_KEY) } : {}),
           },
         }
       : {}),
