@@ -1,0 +1,111 @@
+name: Docker PU
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+  release:
+    types: [published]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+  actions: read
+
+jobs:
+  pre-job:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      should_run_server: ${{ steps.found_paths.outputs.server == 'true' || steps.should_force.outputs.should_force == 'true' }}
+      should_run_ml: ${{ steps.found_paths.outputs.machine-learning == 'true' || steps.should_force.outputs.should_force == 'true' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - id: found_paths
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          filters: |
+            server:
+              - 'server/**'
+              - 'openapi/**'
+              - 'web/**'
+              - 'i18n/**'
+            machine-learning:
+              - 'machine-learning/**'
+            workflow:
+              - '.github/workflows/docker.yml'
+              - '.github/workflows/multi-runner-build.yml'
+              - '.github/actions/image-build'
+
+      - name: Check if we should force jobs to run
+        id: should_force
+        run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
+
+  retag_server:
+    name: Re-Tag Server
+    needs: pre-job
+    permissions:
+      contents: read
+      packages: write
+    if: ${{ needs.pre-job.outputs.should_run_server == 'false' && !github.event.pull_request.head.repo.fork }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        suffix: ['']
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Re-tag image
+        env:
+          REGISTRY_NAME: 'ghcr.io'
+          REPOSITORY: ${{ github.repository_owner }}/immich-server
+          TAG_OLD: main${{ matrix.suffix }}
+          TAG_PR: ${{ github.event.number == 0 && github.ref_name || format('pr-{0}', github.event.number) }}${{ matrix.suffix }}
+          TAG_COMMIT: commit-${{ github.event_name != 'pull_request' && github.sha || github.event.pull_request.head.sha }}${{ matrix.suffix }}
+        run: |
+          docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_PR}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
+          docker buildx imagetools create -t "${REGISTRY_NAME}/${REPOSITORY}:${TAG_COMMIT}" "${REGISTRY_NAME}/${REPOSITORY}:${TAG_OLD}"
+
+  server:
+    name: Build and Push Server
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@094bfb927b8cd75b343abaac27b3241be0fccfe9 # multi-runner-build-workflow-0.1.0
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    with:
+      image: immich-server
+      context: .
+      dockerfile: server/Dockerfile
+      dockerhub-push: ${{ github.event_name == 'release' }}
+      build-args: |
+        DEVICE=cpu
+
+  success-check-server:
+    name: Docker Build & Push Server Success
+    needs: [server, retag_server]
+    permissions: {}
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: immich-app/devtools/actions/success-check@6b81b1572e466f7f48ba3c823159ce3f4a4d66a6 # success-check-action-0.0.3
+        with:
+          needs: ${{ toJSON(needs) }}
