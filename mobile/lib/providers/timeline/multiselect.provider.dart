@@ -112,6 +112,7 @@ class MultiSelectProviderNotifier extends StateNotifier<MultiSelectState> {
   }
 
   void toggleBucketSelection(int offset, int bucketCount) {
+    print("test");
     if (state.selectedAssets.isEmpty) {
       selectBucket(offset, bucketCount);
     } else {
