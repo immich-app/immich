@@ -218,9 +218,9 @@
     if (map) {
       map.resize();
 
-      if (window.location.hash) {
+      if (globalThis.location.hash) {
         const hashChangeEvent = new HashChangeEvent('hashchange');
-        window.dispatchEvent(hashChangeEvent);
+        globalThis.dispatchEvent(hashChangeEvent);
       }
     }
   });
