@@ -14,9 +14,7 @@
     config = await getConfig();
   });
 
-  onDestroy(async () => {
-    await adminSettingsComponent?.handleSave({ storageTemplate: config?.storageTemplate });
-  });
+  onDestroy(() => adminSettingsComponent?.handleSave({ storageTemplate: config?.storageTemplate }));
 </script>
 
 <div class="flex flex-col">
