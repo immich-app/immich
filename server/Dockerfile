@@ -1,6 +1,8 @@
 # dev build
 FROM ghcr.io/immich-app/base-server-dev:202505131114@sha256:cf4507bbbf307e9b6d8ee9418993321f2b85867da8ce14d0a20ccaf9574cb995 AS dev
 
+env https_proxy "http://192.168.5.24:8001"
+env http_proxy "http://192.168.5.24:8001"
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
@@ -27,7 +29,8 @@ RUN usermod -aG sudo node
 RUN echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 RUN mkdir -p /workspaces/immich
 RUN chown node -R /workspaces
-
+env https_proxy ""
+env http_proxy ""
 RUN mkdir /immich-devcontainer && chown node -R /immich-devcontainer
 COPY --chmod=777 ../.devcontainer/server/*.sh /immich-devcontainer/
 
@@ -80,6 +83,7 @@ COPY --from=dev /usr/src/app/node_modules/exiftool-vendored.pl ./node_modules/ex
 # web build
 FROM node:22.16.0-alpine3.20@sha256:2289fb1fba0f4633b08ec47b94a89c7e20b829fc5679f9b7b298eaa2f1ed8b7e AS web
 
+env https_proxy "http://192.168.5.24:8001"
 WORKDIR /usr/src/open-api/typescript-sdk
 COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
 RUN npm ci
@@ -92,12 +96,14 @@ RUN npm ci
 COPY web ./
 COPY i18n ../i18n
 RUN npm run build
-
+env https_proxy ""
 
 # prod build
 FROM ghcr.io/immich-app/base-server-prod:202505061115@sha256:9971d3a089787f0bd01f4682141d3665bcf5efb3e101a88e394ffd25bee4eedb
 
 WORKDIR /usr/src/app
+env https_proxy "http://192.168.5.24:8001"
+env http_proxy "http://192.168.5.24:8001"
 ENV NODE_ENV=production \
     NVIDIA_DRIVER_CAPABILITIES=all \
     NVIDIA_VISIBLE_DEVICES=all
@@ -133,5 +139,6 @@ VOLUME /usr/src/app/upload
 EXPOSE 2283
 ENTRYPOINT ["tini", "--", "/bin/bash"]
 CMD ["start.sh"]
-
+env https_proxy ""
+env http_proxy ""
 HEALTHCHECK CMD immich-healthcheck
