@@ -3,13 +3,13 @@
   import { page } from '$app/stores';
   import { focusTrap } from '$lib/actions/focus-trap';
   import { scrollMemory } from '$lib/actions/scroll-memory';
-  import { shortcut } from '$lib/actions/shortcut';
   import Icon from '$lib/components/elements/icon.svelte';
   import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import ContenteditableText from '$lib/components/shared-components/contenteditable-text.svelte';
   import {
     notificationController,
     NotificationType,
@@ -283,12 +283,6 @@
     }
   };
 
-  const onNameChangeInputUpdate = (event: Event) => {
-    if (event.target) {
-      newName = (event.target as HTMLInputElement).value;
-    }
-  };
-
   const updateName = async (id: string, name: string) => {
     await updatePerson({
       id,
@@ -370,15 +364,12 @@
             onToggleFavorite={() => handleToggleFavorite(person)}
           />
 
-          <input
-            type="text"
-            class=" bg-white dark:bg-immich-dark-gray border-gray-100 placeholder-gray-400 text-center dark:border-gray-900 w-full rounded-2xl mt-2 py-2 text-sm text-immich-primary dark:text-immich-dark-primary"
+          <ContenteditableText
+            class="bg-white dark:bg-immich-dark-gray border-gray-100 placeholder-gray-400 text-center dark:border-gray-900 w-full rounded-2xl mt-2 p-2 text-sm text-immich-primary dark:text-immich-dark-primary"
             value={person.name}
             placeholder={$t('add_a_name')}
-            use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
             onfocusin={() => onNameChangeInputFocus(person)}
-            onfocusout={() => onNameChangeSubmit(newName, person)}
-            oninput={(event) => onNameChangeInputUpdate(event)}
+            onUpdate={(newValue) => onNameChangeSubmit(newValue, person)}
           />
         </div>
       {/snippet}
