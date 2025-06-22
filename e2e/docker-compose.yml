@@ -28,8 +28,10 @@ services:
     extra_hosts:
       - 'auth-server:host-gateway'
     depends_on:
-      - redis
-      - database
+      redis:
+        condition: service_started
+      database:
+        condition: service_healthy
     ports:
       - 2285:2285
 
@@ -37,7 +39,7 @@ services:
     image: redis:6.2-alpine@sha256:3211c33a618c457e5d241922c975dbc4f446d0bdb2dc75694f5573ef8e2d01fa
 
   database:
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0@sha256:e6d1209c1c13791c6f9fbf726c41865e3320dfe2445a6b4ffb03e25f904b3b37
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0@sha256:9c704fb49ce27549df00f1b096cc93f8b0c959ef087507704d74954808f78a82
     command: -c fsync=off -c shared_preload_libraries=vchord.so -c config_file=/var/lib/postgresql/data/postgresql.conf
     environment:
       POSTGRES_PASSWORD: postgres
@@ -45,3 +47,9 @@ services:
       POSTGRES_DB: immich
     ports:
       - 5435:5432
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d immich']
+      interval: 1s
+      timeout: 5s
+      retries: 30
+      start_period: 10s

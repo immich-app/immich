@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -8,17 +9,22 @@ import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
 
 final authRepositoryProvider = Provider<IAuthRepository>(
-  (ref) => AuthRepository(ref.watch(dbProvider)),
+  (ref) =>
+      AuthRepository(ref.watch(dbProvider), drift: ref.watch(driftProvider)),
 );
 
 class AuthRepository extends DatabaseRepository implements IAuthRepository {
-  AuthRepository(super.db);
+  final Drift _drift;
+
+  AuthRepository(super.db, {required Drift drift}) : _drift = drift;
 
   @override
   Future<void> clearLocalData() {
@@ -29,6 +35,8 @@ class AuthRepository extends DatabaseRepository implements IAuthRepository {
         db.albums.clear(),
         db.eTags.clear(),
         db.users.clear(),
+        _drift.remoteAssetEntity.deleteAll(),
+        _drift.remoteExifEntity.deleteAll(),
       ]);
     });
   }

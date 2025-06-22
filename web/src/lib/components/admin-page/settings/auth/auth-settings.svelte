@@ -36,7 +36,7 @@
   const handleSave = async (skipConfirm: boolean) => {
     const allMethodsDisabled = !config.oauth.enabled && !config.passwordLogin.enabled;
     if (allMethodsDisabled && !skipConfirm) {
-      const isConfirmed = await modalManager.show(AuthDisableLoginConfirmModal, {});
+      const isConfirmed = await modalManager.show(AuthDisableLoginConfirmModal);
       if (!isConfirmed) {
         return;
       }
@@ -182,7 +182,7 @@
                 label={$t('admin.oauth_storage_quota_default').toUpperCase()}
                 description={$t('admin.oauth_storage_quota_default_description')}
                 bind:value={config.oauth.defaultStorageQuota}
-                required={true}
+                required={false}
                 disabled={disabled || !config.oauth.enabled}
                 isEdited={!(config.oauth.defaultStorageQuota == savedConfig.oauth.defaultStorageQuota)}
               />

@@ -55,7 +55,7 @@
 {#if menuItem}
   <MenuOption
     onClick={setLockedVisibility}
-    text={unlock ? $t('move_off_locked_folder') : $t('add_to_locked_folder')}
+    text={unlock ? $t('move_off_locked_folder') : $t('move_to_locked_folder')}
     icon={unlock ? mdiLockOpenVariantOutline : mdiLockOutline}
   />
 {:else}
@@ -67,6 +67,6 @@
     variant="ghost"
     onclick={setLockedVisibility}
   >
-    {unlock ? $t('move_off_locked_folder') : $t('add_to_locked_folder')}
+    {unlock ? $t('move_off_locked_folder') : $t('move_to_locked_folder')}
   </Button>
 {/if}

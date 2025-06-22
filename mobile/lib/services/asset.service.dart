@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
-import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/asset_api.interface.dart';
 import 'package:immich_mobile/interfaces/asset_media.interface.dart';
@@ -53,7 +53,7 @@ class AssetService {
   final IAssetApiRepository _assetApiRepository;
   final IAssetRepository _assetRepository;
   final IExifInfoRepository _exifInfoRepository;
-  final IUserRepository _userRepository;
+  final IsarUserRepository _isarUserRepository;
   final IETagRepository _etagRepository;
   final IBackupAlbumRepository _backupRepository;
   final ApiService _apiService;
@@ -68,7 +68,7 @@ class AssetService {
     this._assetApiRepository,
     this._assetRepository,
     this._exifInfoRepository,
-    this._userRepository,
+    this._isarUserRepository,
     this._etagRepository,
     this._backupRepository,
     this._apiService,
@@ -85,7 +85,9 @@ class AssetService {
     final syncedUserIds = await _etagRepository.getAllIds();
     final List<UserDto> syncedUsers = syncedUserIds.isEmpty
         ? []
-        : (await _userRepository.getByUserIds(syncedUserIds)).nonNulls.toList();
+        : (await _isarUserRepository.getByUserIds(syncedUserIds))
+            .nonNulls
+            .toList();
     final Stopwatch sw = Stopwatch()..start();
     final bool changes = await _syncService.syncRemoteAssetsToDb(
       users: syncedUsers,

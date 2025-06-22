@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
@@ -58,9 +59,7 @@ Cancelable<T?> runInIsolateGentle<T>({
         stack,
       );
     } finally {
-      // Wait for the logs to flush
-      await Future.delayed(const Duration(seconds: 2));
-      // Always close the new db connection on Isolate end
+      await LogService.I.flushBuffer();
       ref.read(driftProvider).close();
       ref.read(isarProvider).close();
     }

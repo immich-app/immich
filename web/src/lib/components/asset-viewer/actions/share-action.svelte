@@ -1,10 +1,10 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { makeSharedLinkUrl } from '$lib/utils';
   import type { AssetResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -23,4 +23,11 @@
   };
 </script>
 
-<CircleIconButton color="opaque" icon={mdiShareVariantOutline} onclick={handleClick} title={$t('share')} />
+<IconButton
+  color="secondary"
+  shape="round"
+  variant="ghost"
+  icon={mdiShareVariantOutline}
+  onclick={handleClick}
+  aria-label={$t('share')}
+/>

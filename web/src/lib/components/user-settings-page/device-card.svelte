@@ -1,8 +1,8 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import type { SessionResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import {
     mdiAndroid,
     mdiApple,
@@ -75,11 +75,13 @@
     </div>
     {#if !device.current && onDelete}
       <div>
-        <CircleIconButton
-          color="primary"
+        <IconButton
+          color="danger"
+          variant="ghost"
+          shape="round"
           icon={mdiTrashCanOutline}
-          title={$t('log_out')}
-          size="16"
+          aria-label={$t('log_out')}
+          size="small"
           onclick={onDelete}
         />
       </div>

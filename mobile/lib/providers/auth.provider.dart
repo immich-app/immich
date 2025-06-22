@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
+import 'package:immich_mobile/services/widget.service.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -23,6 +24,7 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
     ref.watch(apiServiceProvider),
     ref.watch(userServiceProvider),
     ref.watch(secureStorageServiceProvider),
+    ref.watch(widgetServiceProvider),
   );
 });
 
@@ -31,6 +33,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final ApiService _apiService;
   final UserService _userService;
   final SecureStorageService _secureStorageService;
+  final WidgetService _widgetService;
   final _log = Logger("AuthenticationNotifier");
 
   static const Duration _timeoutDuration = Duration(seconds: 7);
@@ -40,6 +43,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     this._apiService,
     this._userService,
     this._secureStorageService,
+    this._widgetService,
   ) : super(
           AuthState(
             deviceId: "",
@@ -76,6 +80,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     try {
       await _secureStorageService.delete(kSecuredPinCode);
+      await _widgetService.clearCredentials();
+
       await _authService.logout();
     } finally {
       await _cleanUp();
@@ -111,6 +117,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String accessToken,
   }) async {
     await _apiService.setAccessToken(accessToken);
+
+    await _widgetService.writeCredentials(
+      Store.get(StoreKey.serverEndpoint),
+      accessToken,
+    );
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
     String deviceId =

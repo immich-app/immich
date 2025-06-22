@@ -5,7 +5,7 @@
   import { t } from 'svelte-i18n';
   import { fly, slide } from 'svelte/transition';
   import { getByteUnitString } from '../../utils/byte-units';
-  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { IconButton } from '@immich/ui';
 
   const abort = (downloadKey: string, download: DownloadProgress) => {
     download.abort?.abort();
@@ -42,10 +42,13 @@
             </div>
           </div>
           <div class="absolute end-2">
-            <CircleIconButton
-              title={$t('close')}
+            <IconButton
+              variant="ghost"
+              shape="round"
+              color="secondary"
+              aria-label={$t('close')}
               onclick={() => abort(downloadKey, download)}
-              size="20"
+              size="large"
               icon={mdiClose}
               class="dark:text-immich-dark-gray"
             />

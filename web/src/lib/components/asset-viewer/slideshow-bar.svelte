@@ -1,9 +1,9 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
   import ProgressBar from '$lib/components/shared-components/progress-bar/progress-bar.svelte';
-  import SlideshowSettings from '$lib/components/slideshow-settings.svelte';
   import { ProgressBarStatus } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import SlideshowSettingsModal from '$lib/modals/SlideshowSettingsModal.svelte';
   import { SlideshowNavigation, slideshowStore } from '$lib/stores/slideshow.store';
   import { IconButton } from '@immich/ui';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
@@ -28,7 +28,8 @@
     onSetToFullScreen = () => {},
   }: Props = $props();
 
-  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation } = slideshowStore;
+  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation, slideshowAutoplay } =
+    slideshowStore;
 
   let progressBarStatus: ProgressBarStatus | undefined = $state();
   let progressBar = $state<ReturnType<typeof ProgressBar>>();
@@ -60,20 +61,20 @@
         showControls = false;
         setCursorStyle('none');
       }
-    }, 10_000);
+    }, 2500);
   };
 
   onMount(() => {
     hideControlsAfterDelay();
     unsubscribeRestart = restartProgress.subscribe((value) => {
       if (value) {
-        progressBar?.restart(value);
+        progressBar?.restart();
       }
     });
 
     unsubscribeStop = stopProgress.subscribe((value) => {
       if (value) {
-        progressBar?.restart(false);
+        progressBar?.restart();
         stopControlsHideTimer();
       }
     });
@@ -90,7 +91,7 @@
   });
 
   const handleDone = async () => {
-    await progressBar?.reset();
+    await progressBar?.resetProgress();
 
     if ($slideshowNavigation === SlideshowNavigation.AscendingOrder) {
       onPrevious();
@@ -100,11 +101,37 @@
   };
 
   const onShowSettings = async () => {
+    // eslint-disable-next-line tscompat/tscompat
     if (document.fullscreenElement) {
+      // eslint-disable-next-line tscompat/tscompat
       await document.exitFullscreen();
     }
-    await modalManager.show(SlideshowSettings, {});
+    await modalManager.show(SlideshowSettingsModal);
   };
+
+  onMount(() => {
+    function exitFullscreenHandler() {
+      const doc = document as Document & {
+        webkitIsFullScreen?: boolean;
+      };
+
+      if (
+        // eslint-disable-next-line tscompat/tscompat
+        !document.fullscreenElement &&
+        !doc.webkitIsFullScreen
+      ) {
+        onClose();
+      }
+    }
+
+    document.addEventListener('fullscreenchange', exitFullscreenHandler);
+    document.addEventListener('webkitfullscreenchange', exitFullscreenHandler);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', exitFullscreenHandler);
+      document.removeEventListener('webkitfullscreenchange', exitFullscreenHandler);
+    };
+  });
 </script>
 
 <svelte:document
@@ -113,6 +140,17 @@
     { shortcut: { key: 'Escape' }, onShortcut: onClose },
     { shortcut: { key: 'ArrowLeft' }, onShortcut: onPrevious },
     { shortcut: { key: 'ArrowRight' }, onShortcut: onNext },
+    {
+      shortcut: { key: ' ' },
+      onShortcut: () => {
+        if (progressBarStatus === ProgressBarStatus.Paused) {
+          progressBar?.play();
+        } else {
+          progressBar?.pause();
+        }
+      },
+      preventDefault: true,
+    },
   ]}
 />
 
@@ -120,7 +158,7 @@
 
 {#if showControls}
   <div
-    class="m-4 flex gap-2"
+    class="m-4 flex gap-2 dark"
     onmouseenter={() => (isOverControls = true)}
     onmouseleave={() => (isOverControls = false)}
     transition:fly={{ duration: 150 }}
@@ -133,7 +171,6 @@
       icon={mdiClose}
       onclick={onClose}
       aria-label={$t('exit_slideshow')}
-      class="text-white"
     />
 
     <IconButton
@@ -143,7 +180,6 @@
       icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
       onclick={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar?.play() : progressBar?.pause())}
       aria-label={progressBarStatus === ProgressBarStatus.Paused ? $t('play') : $t('pause')}
-      class="text-white"
     />
     <IconButton
       variant="ghost"
@@ -152,7 +188,6 @@
       icon={mdiChevronLeft}
       onclick={onPrevious}
       aria-label={$t('previous')}
-      class="text-white"
     />
     <IconButton
       variant="ghost"
@@ -161,7 +196,6 @@
       icon={mdiChevronRight}
       onclick={onNext}
       aria-label={$t('next')}
-      class="text-white"
     />
     <IconButton
       variant="ghost"
@@ -170,7 +204,6 @@
       icon={mdiCog}
       onclick={onShowSettings}
       aria-label={$t('slideshow_settings')}
-      class="text-white"
     />
     {#if !isFullScreen}
       <IconButton
@@ -180,14 +213,13 @@
         icon={mdiFullscreen}
         onclick={onSetToFullScreen}
         aria-label={$t('set_slideshow_to_fullscreen')}
-        class="text-white"
       />
     {/if}
   </div>
 {/if}
 
 <ProgressBar
-  autoplay
+  autoplay={$slideshowAutoplay}
   hidden={!$showProgressBar}
   duration={$slideshowDelay}
   bind:this={progressBar}

@@ -1,4 +1,4 @@
-import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { user } from '$lib/stores/user.store';
 import { AssetVisibility, type UserAdminResponseDto } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';

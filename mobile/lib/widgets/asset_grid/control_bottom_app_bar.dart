@@ -39,6 +39,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
   final void Function()? onEditLocation;
   final void Function()? onRemoveFromAlbum;
   final void Function()? onToggleLocked;
+  final void Function()? onDownload;
 
   final bool enabled;
   final bool unfavorite;
@@ -56,6 +57,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
     required this.onAddToAlbum,
     required this.onCreateNewAlbum,
     required this.onUpload,
+    this.onDownload,
     this.onStack,
     this.onEditTime,
     this.onEditLocation,
@@ -78,7 +80,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final sharedAlbums =
         ref.watch(albumProvider).where((a) => a.shared).toList();
-    const bottomPadding = 0.20;
+    const bottomPadding = 0.24;
     final scrollController = useDraggableScrollController();
     final isInLockedView = ref.watch(inLockedViewProvider);
 
@@ -129,15 +131,14 @@ class ControlBottomAppBar extends HookConsumerWidget {
 
     List<Widget> renderActionButtons() {
       return [
-        if (hasRemote)
-          ControlBoxButton(
-            iconData: Platform.isAndroid
-                ? Icons.share_rounded
-                : Icons.ios_share_rounded,
-            label: "share".tr(),
-            onPressed: enabled ? () => onShare(true) : null,
-          ),
-        if (!isInLockedView)
+        ControlBoxButton(
+          iconData: Platform.isAndroid
+              ? Icons.share_rounded
+              : Icons.ios_share_rounded,
+          label: "share".tr(),
+          onPressed: enabled ? () => onShare(true) : null,
+        ),
+        if (!isInLockedView && hasRemote)
           ControlBoxButton(
             iconData: Icons.link_rounded,
             label: "share_link".tr(),
@@ -157,6 +158,15 @@ class ControlBottomAppBar extends HookConsumerWidget {
                 : Icons.favorite_rounded,
             label: (unfavorite ? "unfavorite" : "favorite").tr(),
             onPressed: enabled ? onFavorite : null,
+          ),
+        if (hasRemote && onDownload != null)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 90),
+            child: ControlBoxButton(
+              iconData: Icons.download,
+              label: "download".tr(),
+              onPressed: onDownload,
+            ),
           ),
         if (hasLocal && hasRemote && onDelete != null && !isInLockedView)
           ConstrainedBox(
@@ -303,7 +313,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
 
     getInitialSize() {
       if (isInLockedView) {
-        return 0.20;
+        return bottomPadding;
       }
       if (hasRemote) {
         return 0.35;
@@ -313,7 +323,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
 
     getMaxChildSize() {
       if (isInLockedView) {
-        return 0.20;
+        return bottomPadding;
       }
       if (hasRemote) {
         return 0.65;
@@ -322,15 +332,12 @@ class ControlBottomAppBar extends HookConsumerWidget {
     }
 
     return DraggableScrollableSheet(
-      controller: scrollController,
       initialChildSize: getInitialSize(),
       minChildSize: bottomPadding,
       maxChildSize: getMaxChildSize(),
       snap: true,
-      builder: (
-        BuildContext context,
-        ScrollController scrollController,
-      ) {
+      controller: scrollController,
+      builder: (BuildContext context, ScrollController scrollController) {
         return Card(
           color: context.colorScheme.surfaceContainerHigh,
           surfaceTintColor: context.colorScheme.surfaceContainerHigh,

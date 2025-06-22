@@ -1,10 +1,10 @@
 <script lang="ts">
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { user } from '$lib/stores/user.store';
   import { getContextMenuPositionFromEvent, type ContextMenuPosition } from '$lib/utils/context-menu';
   import { getShortDateRange } from '$lib/utils/date-time';
   import type { AlbumResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -43,12 +43,13 @@
       class="absolute end-6 top-6 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
       data-testid="context-button-parent"
     >
-      <CircleIconButton
-        color="opaque"
-        title={$t('show_album_options')}
+      <IconButton
+        color="secondary"
+        aria-label={$t('show_album_options')}
         icon={mdiDotsVertical}
-        size="20"
-        padding="2"
+        shape="round"
+        variant="ghost"
+        size="medium"
         class="icon-white-drop-shadow"
         onclick={showAlbumContextMenu}
       />

@@ -59,14 +59,18 @@ export class SyncPartnerDeleteV1 {
 export class SyncAssetV1 {
   id!: string;
   ownerId!: string;
+  originalFileName!: string;
   thumbhash!: string | null;
   checksum!: string;
   fileCreatedAt!: Date | null;
   fileModifiedAt!: Date | null;
   localDateTime!: Date | null;
+  duration!: string | null;
+  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
   type!: AssetType;
   deletedAt!: Date | null;
   isFavorite!: boolean;
+  @ApiProperty({ enumName: 'AssetVisibility', enum: AssetVisibility })
   visibility!: AssetVisibility;
 }
 
@@ -124,6 +128,7 @@ export class SyncAlbumUserDeleteV1 {
 export class SyncAlbumUserV1 {
   albumId!: string;
   userId!: string;
+  @ApiProperty({ enumName: 'AlbumUserRole', enum: AlbumUserRole })
   role!: AlbumUserRole;
 }
 
@@ -149,12 +154,16 @@ export type SyncItem = {
   [SyncEntityType.AssetDeleteV1]: SyncAssetDeleteV1;
   [SyncEntityType.AssetExifV1]: SyncAssetExifV1;
   [SyncEntityType.PartnerAssetV1]: SyncAssetV1;
+  [SyncEntityType.PartnerAssetBackfillV1]: SyncAssetV1;
   [SyncEntityType.PartnerAssetDeleteV1]: SyncAssetDeleteV1;
   [SyncEntityType.PartnerAssetExifV1]: SyncAssetExifV1;
+  [SyncEntityType.PartnerAssetExifBackfillV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumV1]: SyncAlbumV1;
   [SyncEntityType.AlbumDeleteV1]: SyncAlbumDeleteV1;
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
+  [SyncEntityType.AlbumUserBackfillV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserDeleteV1]: SyncAlbumUserDeleteV1;
+  [SyncEntityType.SyncAckV1]: object;
 };
 
 const responseDtos = [

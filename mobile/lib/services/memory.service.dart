@@ -1,10 +1,10 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/translation.dart';
 import 'package:logging/logging.dart';
 
 final memoryServiceProvider = StateProvider<MemoryService>((ref) {
@@ -40,7 +40,11 @@ class MemoryService {
             .getAllByRemoteId(memory.assets.map((e) => e.id));
         final yearsAgo = now.year - memory.data.year;
         if (dbAssets.isNotEmpty) {
-          final String title = t('years_ago', {'years': yearsAgo.toString()});
+          final String title = 'years_ago'.t(
+            args: {
+              'years': yearsAgo.toString(),
+            },
+          );
           memories.add(
             Memory(
               title: title,

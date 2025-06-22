@@ -14,6 +14,9 @@ const config = {
   },
   preprocess: vitePreprocess(),
   kit: {
+    paths: {
+      relative: false,
+    },
     adapter: adapter({
       fallback: 'index.html',
       precompress: true,

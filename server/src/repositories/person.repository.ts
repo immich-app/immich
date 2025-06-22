@@ -38,11 +38,6 @@ export interface PersonStatistics {
   assets: number;
 }
 
-export interface PeopleStatistics {
-  total: number;
-  hidden: number;
-}
-
 export interface DeleteFacesOptions {
   sourceType: SourceType;
 }
@@ -143,6 +138,7 @@ export class PersonRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
   async getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions) {
     const items = await this.db
       .selectFrom('person')
@@ -151,7 +147,7 @@ export class PersonRepository {
       .innerJoin('assets', (join) =>
         join
           .onRef('asset_faces.assetId', '=', 'assets.id')
-          .on('assets.visibility', '!=', AssetVisibility.ARCHIVE)
+          .on('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
           .on('assets.deletedAt', 'is', null),
       )
       .where('person.ownerId', '=', userId)
@@ -186,7 +182,7 @@ export class PersonRepository {
         qb
           .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
           .orderBy((eb) => eb.fn.count('asset_faces.assetId'), 'desc')
-          .orderBy(sql`NULLIF(person.name, '')`, sql`asc nulls last`)
+          .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
           .orderBy('person.createdAt'),
       )
       .$if(!options?.withHidden, (qb) => qb.where('person.isHidden', '=', false))
@@ -341,7 +337,7 @@ export class PersonRepository {
         join
           .onRef('assets.id', '=', 'asset_faces.assetId')
           .on('asset_faces.personId', '=', personId)
-          .on('assets.visibility', '!=', AssetVisibility.ARCHIVE)
+          .on('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
           .on('assets.deletedAt', 'is', null),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['assets.id'])).as('count'))
@@ -354,35 +350,31 @@ export class PersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getNumberOfPeople(userId: string): Promise<PeopleStatistics> {
-    const items = await this.db
+  getNumberOfPeople(userId: string) {
+    const zero = sql.lit(0);
+    return this.db
       .selectFrom('person')
-      .innerJoin('asset_faces', 'asset_faces.personId', 'person.id')
+      .where((eb) =>
+        eb.exists((eb) =>
+          eb
+            .selectFrom('asset_faces')
+            .whereRef('asset_faces.personId', '=', 'person.id')
+            .where('asset_faces.deletedAt', 'is', null)
+            .where((eb) =>
+              eb.exists((eb) =>
+                eb
+                  .selectFrom('assets')
+                  .whereRef('assets.id', '=', 'asset_faces.assetId')
+                  .where('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
+                  .where('assets.deletedAt', 'is', null),
+              ),
+            ),
+        ),
+      )
       .where('person.ownerId', '=', userId)
-      .where('asset_faces.deletedAt', 'is', null)
-      .innerJoin('assets', (join) =>
-        join
-          .onRef('assets.id', '=', 'asset_faces.assetId')
-          .on('assets.deletedAt', 'is', null)
-          .on('assets.visibility', '!=', AssetVisibility.ARCHIVE),
-      )
-      .select((eb) => eb.fn.count(eb.fn('distinct', ['person.id'])).as('total'))
-      .select((eb) =>
-        eb.fn
-          .count(eb.fn('distinct', ['person.id']))
-          .filterWhere('person.isHidden', '=', true)
-          .as('hidden'),
-      )
-      .executeTakeFirst();
-
-    if (items == undefined) {
-      return { total: 0, hidden: 0 };
-    }
-
-    return {
-      total: Number(items.total),
-      hidden: Number(items.hidden),
-    };
+      .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>(), zero).as('total'))
+      .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>().filterWhere('isHidden', '=', true), zero).as('hidden'))
+      .executeTakeFirstOrThrow();
   }
 
   create(person: Insertable<Person>) {

@@ -1,5 +1,5 @@
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { type AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
 import { readonly, writable } from 'svelte/store';

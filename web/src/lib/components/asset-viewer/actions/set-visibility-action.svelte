@@ -3,7 +3,7 @@
 
   import { AssetAction } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
-  import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetVisibility, updateAssets } from '@immich/sdk';
   import { mdiLockOpenVariantOutline, mdiLockOutline } from '@mdi/js';
@@ -56,6 +56,6 @@
 
 <MenuOption
   onClick={() => toggleLockedVisibility()}
-  text={isLocked ? $t('move_off_locked_folder') : $t('add_to_locked_folder')}
+  text={isLocked ? $t('move_off_locked_folder') : $t('move_to_locked_folder')}
   icon={isLocked ? mdiLockOpenVariantOutline : mdiLockOutline}
 />

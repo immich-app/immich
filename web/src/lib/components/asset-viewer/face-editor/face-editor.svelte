@@ -57,6 +57,7 @@
     canvas = new Canvas(canvasEl);
     configureControlStyle();
 
+    // eslint-disable-next-line tscompat/tscompat
     faceRect = new Rect({
       fill: 'rgba(66,80,175,0.25)',
       stroke: 'rgb(66,80,175)',
@@ -322,7 +323,7 @@
     <p class="text-center text-sm">{$t('select_person_to_tag')}</p>
 
     <div class="my-3 relative">
-      <Input placeholder="Search person..." bind:value={searchTerm} size="tiny" />
+      <Input placeholder={$t('search_people')} bind:value={searchTerm} size="tiny" />
     </div>
 
     <div class="h-[250px] overflow-y-auto mt-2">

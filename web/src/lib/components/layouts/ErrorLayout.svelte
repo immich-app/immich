@@ -1,8 +1,8 @@
 <script lang="ts">
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import { copyToClipboard } from '$lib/utils';
+  import { IconButton } from '@immich/ui';
   import { mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -41,10 +41,11 @@
               🚨 {$t('error_title')}
             </h1>
             <div class="flex justify-end">
-              <CircleIconButton
+              <IconButton
+                shape="round"
                 color="primary"
                 icon={mdiContentCopy}
-                title={$t('copy_error')}
+                aria-label={$t('copy_error')}
                 onclick={() => handleCopy()}
               />
             </div>

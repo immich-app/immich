@@ -23,8 +23,8 @@
 
 <div
   class="max-w-60 rounded-xl border-4 transition-colors font-semibold text-xs {isSelected
-    ? 'bg-immich-primary dark:bg-immich-dark-primary border-immich-primary dark:border-immich-dark-primary'
-    : 'bg-gray-200 dark:bg-gray-800 border-gray-200 dark:border-gray-800'}"
+    ? 'bg-primary border-primary'
+    : 'bg-subtle border-subtle'}"
 >
   <div class="relative w-full">
     <button

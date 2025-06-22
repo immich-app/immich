@@ -73,6 +73,10 @@ String getThumbnailUrlForRemoteId(
   return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail?size=${type.value}';
 }
 
+String getPlaybackUrlForRemoteId(final String id) {
+  return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/video/playback?';
+}
+
 String getFaceThumbnailUrl(final String personId) {
   return '${Store.get(StoreKey.serverEndpoint)}/people/$personId/thumbnail';
 }

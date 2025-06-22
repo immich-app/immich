@@ -12,6 +12,38 @@ delete from "person"
 where
   "person"."id" in ($1)
 
+-- PersonRepository.getAllForUser
+select
+  "person".*
+from
+  "person"
+  inner join "asset_faces" on "asset_faces"."personId" = "person"."id"
+  inner join "assets" on "asset_faces"."assetId" = "assets"."id"
+  and "assets"."visibility" = 'timeline'
+  and "assets"."deletedAt" is null
+where
+  "person"."ownerId" = $1
+  and "asset_faces"."deletedAt" is null
+  and "person"."isHidden" = $2
+group by
+  "person"."id"
+having
+  (
+    "person"."name" != $3
+    or count("asset_faces"."assetId") >= $4
+  )
+order by
+  "person"."isHidden" asc,
+  "person"."isFavorite" desc,
+  NULLIF(person.name, '') is null asc,
+  count("asset_faces"."assetId") desc,
+  NULLIF(person.name, '') asc nulls last,
+  "person"."createdAt"
+limit
+  $5
+offset
+  $6
+
 -- PersonRepository.getAllWithoutFaces
 select
   "person".*
@@ -182,27 +214,42 @@ from
   "asset_faces"
   left join "assets" on "assets"."id" = "asset_faces"."assetId"
   and "asset_faces"."personId" = $1
-  and "assets"."visibility" != $2
+  and "assets"."visibility" = 'timeline'
   and "assets"."deletedAt" is null
 where
   "asset_faces"."deletedAt" is null
 
 -- PersonRepository.getNumberOfPeople
 select
-  count(distinct ("person"."id")) as "total",
-  count(distinct ("person"."id")) filter (
-    where
-      "person"."isHidden" = $1
+  coalesce(count(*), 0) as "total",
+  coalesce(
+    count(*) filter (
+      where
+        "isHidden" = $1
+    ),
+    0
   ) as "hidden"
 from
   "person"
-  inner join "asset_faces" on "asset_faces"."personId" = "person"."id"
-  inner join "assets" on "assets"."id" = "asset_faces"."assetId"
-  and "assets"."deletedAt" is null
-  and "assets"."visibility" != $2
 where
-  "person"."ownerId" = $3
-  and "asset_faces"."deletedAt" is null
+  exists (
+    select
+    from
+      "asset_faces"
+    where
+      "asset_faces"."personId" = "person"."id"
+      and "asset_faces"."deletedAt" is null
+      and exists (
+        select
+        from
+          "assets"
+        where
+          "assets"."id" = "asset_faces"."assetId"
+          and "assets"."visibility" = 'timeline'
+          and "assets"."deletedAt" is null
+      )
+  )
+  and "person"."ownerId" = $2
 
 -- PersonRepository.refreshFaces
 with

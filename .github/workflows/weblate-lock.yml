@@ -52,10 +52,6 @@ jobs:
     permissions: {}
     if: always()
     steps:
-      - name: Any jobs failed?
-        if: ${{ contains(needs.*.result, 'failure') }}
-        run: exit 1
-      - name: All jobs passed or skipped
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        # zizmor: ignore[template-injection]
-        run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
+      - uses: immich-app/devtools/actions/success-check@6b81b1572e466f7f48ba3c823159ce3f4a4d66a6 # success-check-action-0.0.3
+        with:
+          needs: ${{ toJSON(needs) }}

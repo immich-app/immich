@@ -2,7 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
-import { ImmichCookie } from 'src/enum';
+import { ImmichCookie, UserMetadataKey } from 'src/enum';
+import { UserMetadataItem } from 'src/types';
 import { Optional, PinCode, toEmail } from 'src/validation';
 
 export type CookieResponse = {
@@ -39,9 +40,14 @@ export class LoginResponseDto {
   profileImagePath!: string;
   isAdmin!: boolean;
   shouldChangePassword!: boolean;
+  isOnboarded!: boolean;
 }
 
 export function mapLoginResponse(entity: UserAdmin, accessToken: string): LoginResponseDto {
+  const onboardingMetadata = entity.metadata.find(
+    (item): item is UserMetadataItem<UserMetadataKey.ONBOARDING> => item.key === UserMetadataKey.ONBOARDING,
+  )?.value;
+
   return {
     accessToken,
     userId: entity.id,
@@ -50,6 +56,7 @@ export function mapLoginResponse(entity: UserAdmin, accessToken: string): LoginR
     isAdmin: entity.isAdmin,
     profileImagePath: entity.profileImagePath,
     shouldChangePassword: entity.shouldChangePassword,
+    isOnboarded: onboardingMetadata?.isOnboarded ?? false,
   };
 }
 

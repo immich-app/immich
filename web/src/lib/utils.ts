@@ -275,6 +275,10 @@ export const oauth = {
     }
     return false;
   },
+  isAutoLaunchEnabled: (location: Location) => {
+    const value = 'autoLaunch=1';
+    return location.search.includes(value);
+  },
   authorize: async (location: Location) => {
     const $t = get(t);
     try {

@@ -211,6 +211,7 @@ export enum SystemMetadataKey {
 export enum UserMetadataKey {
   PREFERENCES = 'preferences',
   LICENSE = 'license',
+  ONBOARDING = 'onboarding',
 }
 
 export enum UserAvatarColor {
@@ -594,13 +595,18 @@ export enum SyncEntityType {
   AssetExifV1 = 'AssetExifV1',
 
   PartnerAssetV1 = 'PartnerAssetV1',
+  PartnerAssetBackfillV1 = 'PartnerAssetBackfillV1',
   PartnerAssetDeleteV1 = 'PartnerAssetDeleteV1',
   PartnerAssetExifV1 = 'PartnerAssetExifV1',
+  PartnerAssetExifBackfillV1 = 'PartnerAssetExifBackfillV1',
 
   AlbumV1 = 'AlbumV1',
   AlbumDeleteV1 = 'AlbumDeleteV1',
   AlbumUserV1 = 'AlbumUserV1',
+  AlbumUserBackfillV1 = 'AlbumUserBackfillV1',
   AlbumUserDeleteV1 = 'AlbumUserDeleteV1',
+
+  SyncAckV1 = 'SyncAckV1',
 }
 
 export enum NotificationLevel {

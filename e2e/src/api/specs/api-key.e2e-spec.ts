@@ -143,7 +143,7 @@ describe('/api-keys', () => {
       const { apiKey } = await create(user.accessToken, [Permission.All]);
       const { status, body } = await request(app)
         .put(`/api-keys/${apiKey.id}`)
-        .send({ name: 'new name' })
+        .send({ name: 'new name', permissions: [Permission.All] })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('API Key not found'));
@@ -153,13 +153,16 @@ describe('/api-keys', () => {
       const { apiKey } = await create(user.accessToken, [Permission.All]);
       const { status, body } = await request(app)
         .put(`/api-keys/${apiKey.id}`)
-        .send({ name: 'new name' })
+        .send({
+          name: 'new name',
+          permissions: [Permission.ActivityCreate, Permission.ActivityRead, Permission.ActivityUpdate],
+        })
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual({
         id: expect.any(String),
         name: 'new name',
-        permissions: [Permission.All],
+        permissions: [Permission.ActivityCreate, Permission.ActivityRead, Permission.ActivityUpdate],
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       });

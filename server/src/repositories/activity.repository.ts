@@ -5,6 +5,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { Activity, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { AssetVisibility } from 'src/enum';
 import { asUuid } from 'src/utils/database';
 
 export interface ActivitySearch {
@@ -35,12 +36,13 @@ export class ActivityRepository {
         (join) => join.onTrue(),
       )
       .select((eb) => eb.fn.toJson('user').as('user'))
-      .leftJoin('assets', (join) => join.onRef('assets.id', '=', 'activity.assetId').on('assets.deletedAt', 'is', null))
+      .leftJoin('assets', 'assets.id', 'activity.assetId')
       .$if(!!userId, (qb) => qb.where('activity.userId', '=', userId!))
       .$if(assetId === null, (qb) => qb.where('assetId', 'is', null))
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
       .$if(!!albumId, (qb) => qb.where('activity.albumId', '=', albumId!))
       .$if(isLiked !== undefined, (qb) => qb.where('activity.isLiked', '=', isLiked!))
+      .where('assets.deletedAt', 'is', null)
       .orderBy('activity.createdAt', 'asc')
       .execute();
   }
@@ -66,18 +68,31 @@ export class ActivityRepository {
   }
 
   @GenerateSql({ params: [{ albumId: DummyValue.UUID, assetId: DummyValue.UUID }] })
-  async getStatistics({ albumId, assetId }: { albumId: string; assetId?: string }): Promise<number> {
-    const { count } = await this.db
+  async getStatistics({
+    albumId,
+    assetId,
+  }: {
+    albumId: string;
+    assetId?: string;
+  }): Promise<{ comments: number; likes: number }> {
+    const result = await this.db
       .selectFrom('activity')
-      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .select((eb) => [
+        eb.fn.countAll<number>().filterWhere('activity.isLiked', '=', false).as('comments'),
+        eb.fn.countAll<number>().filterWhere('activity.isLiked', '=', true).as('likes'),
+      ])
       .innerJoin('users', (join) => join.onRef('users.id', '=', 'activity.userId').on('users.deletedAt', 'is', null))
       .leftJoin('assets', 'assets.id', 'activity.assetId')
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
       .where('activity.albumId', '=', albumId)
-      .where('activity.isLiked', '=', false)
-      .where('assets.deletedAt', 'is', null)
+      .where(({ or, and, eb }) =>
+        or([
+          and([eb('assets.deletedAt', 'is', null), eb('assets.visibility', '!=', sql.lit(AssetVisibility.LOCKED))]),
+          eb('assets.id', 'is', null),
+        ]),
+      )
       .executeTakeFirstOrThrow();
 
-    return count;
+    return result;
   }
 }

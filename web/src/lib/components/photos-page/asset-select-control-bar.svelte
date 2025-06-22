@@ -14,7 +14,7 @@
 </script>
 
 <script lang="ts">
-  import type { TimelineAsset } from '$lib/stores/assets-store.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { mdiClose } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';

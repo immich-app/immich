@@ -17,6 +17,7 @@ targets:
              main: lib/infrastructure/repositories/db.repository.dart
          generate_for: &drift_generate_for
            - lib/infrastructure/entities/*.dart
+           - lib/infrastructure/entities/*.drift
            - lib/infrastructure/repositories/db.repository.dart
        drift_dev:modular:
          enabled: true

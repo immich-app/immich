@@ -395,6 +395,7 @@ class _MapWithMarker extends StatelessWidget {
           children: [
             style.widgetWhen(
               onData: (style) => MapLibreMap(
+                attributionButtonMargins: const Point(8, kToolbarHeight),
                 initialCameraPosition: CameraPosition(
                   target: initialLocation ?? const LatLng(0, 0),
                   zoom: initialLocation != null ? 12 : 0,

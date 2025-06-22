@@ -17,6 +17,27 @@ To add a new translation text, enter the key-value pair in the `i18n/en.json` in
 make translation
 ```
 
+## Static Analysis
+
+The following checks of static analysis must pass for a contribution to the mobile app to be valid:
+
+```bash
+dart format lib
+dart analyze
+dart run custom_lint
+dcm analyze lib
+```
+
+[DCM](https://dcm.dev/) is a vendor tool that needs to be downloaded manually to run locally.
+Immich was provided an open source license. 
+To use it, it is important that you do not have an active free tier license (can be verified with `dcm license`).
+If you have write-access to the Immich repository directly, running dcm in your clone should just work.
+If you are working on a clone of a fork, you need to connect to the main Immich repository as remote first:
+
+```bash
+git remote add immich git@github.com:immich-app/immich.git
+```
+
 ## Immich-Flutter Directory Structure
 
 Below are the directory inside the `lib` directory:

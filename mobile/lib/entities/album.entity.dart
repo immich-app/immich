@@ -19,6 +19,7 @@ class Album {
     required this.name,
     required this.createdAt,
     required this.modifiedAt,
+    this.description,
     this.startDate,
     this.endDate,
     this.lastModifiedAssetTimestamp,
@@ -34,6 +35,7 @@ class Album {
   @Index(unique: false, replace: false, type: IndexType.hash)
   String? localId;
   String name;
+  String? description;
   DateTime createdAt;
   DateTime modifiedAt;
   DateTime? startDate;
@@ -108,6 +110,7 @@ class Album {
         remoteId == other.remoteId &&
         localId == other.localId &&
         name == other.name &&
+        description == other.description &&
         createdAt.isAtSameMomentAs(other.createdAt) &&
         modifiedAt.isAtSameMomentAs(other.modifiedAt) &&
         isAtSameMomentAs(startDate, other.startDate) &&
@@ -135,6 +138,7 @@ class Album {
       modifiedAt.hashCode ^
       startDate.hashCode ^
       endDate.hashCode ^
+      description.hashCode ^
       lastModifiedAssetTimestamp.hashCode ^
       shared.hashCode ^
       activityEnabled.hashCode ^
@@ -150,6 +154,7 @@ class Album {
       name: dto.albumName,
       createdAt: dto.createdAt,
       modifiedAt: dto.updatedAt,
+      description: dto.description,
       lastModifiedAssetTimestamp: dto.lastModifiedAssetTimestamp,
       shared: dto.shared,
       startDate: dto.startDate,
@@ -184,7 +189,8 @@ class Album {
   }
 
   @override
-  String toString() => name;
+  String toString() =>
+      'remoteId: $remoteId name: $name description: $description';
 }
 
 extension AssetsHelper on IsarCollection<Album> {

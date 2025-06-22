@@ -32,7 +32,7 @@ export class ApiKeyService extends BaseService {
       throw new BadRequestException('API Key not found');
     }
 
-    const key = await this.apiKeyRepository.update(auth.user.id, id, { name: dto.name });
+    const key = await this.apiKeyRepository.update(auth.user.id, id, { name: dto.name, permissions: dto.permissions });
 
     return this.map(key);
   }
