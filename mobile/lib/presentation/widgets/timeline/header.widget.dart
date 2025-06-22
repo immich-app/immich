@@ -1,9 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class TimelineHeader extends ConsumerWidget {
@@ -41,6 +43,16 @@ class TimelineHeader extends ConsumerWidget {
     final date = (bucket as TimeBucket).date;
     final isMultiSelectEnabled =
         ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+
+    List<BaseAsset> bucketAssets;
+    try {
+      bucketAssets = ref
+          .watch(timelineServiceProvider)
+          .getAssets(offset, bucket.assetCount);
+    } catch (e) {
+      bucketAssets = <BaseAsset>[];
+    }
+    final isAllSelected = ref.watch(bucketSelectionProvider(bucketAssets));
 
     return Padding(
       padding: const EdgeInsets.only(
@@ -81,7 +93,7 @@ class TimelineHeader extends ConsumerWidget {
                   .read(multiSelectProvider.notifier)
                   .toggleBucketSelection(offset, bucket.assetCount),
             },
-            child: isMultiSelectEnabled
+            child: isMultiSelectEnabled && isAllSelected
                 ? Icon(
                     Icons.check_circle_rounded,
                     size: 26,
