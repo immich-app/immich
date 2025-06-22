@@ -52,6 +52,7 @@ class TimelineHeader extends ConsumerWidget {
     } catch (e) {
       bucketAssets = <BaseAsset>[];
     }
+
     final isAllSelected = ref.watch(bucketSelectionProvider(bucketAssets));
 
     return Padding(
