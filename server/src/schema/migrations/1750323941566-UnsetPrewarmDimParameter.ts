@@ -7,8 +7,8 @@ export async function up(qb: Kysely<any>): Promise<void> {
     return;
   }
 
-  await sql`alter database immich reset all;`.execute(qb);
   const { db, guc } = res.rows[0];
+  await sql.raw(`alter database "${db}" reset all;`).execute(qb);
   for (const parameter of guc) {
     const [key, value] = parameter.split('=');
     if (key === 'vchordrq.prewarm_dim') {

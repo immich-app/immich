@@ -1,7 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
-import 'package:immich_mobile/interfaces/partner.interface.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/partner.repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
@@ -17,7 +16,7 @@ final partnerServiceProvider = Provider(
 
 class PartnerService {
   final PartnerApiRepository _partnerApiRepository;
-  final IPartnerRepository _partnerRepository;
+  final PartnerRepository _partnerRepository;
   final IsarUserRepository _isarUserRepository;
   final Logger _log = Logger("PartnerService");
 
