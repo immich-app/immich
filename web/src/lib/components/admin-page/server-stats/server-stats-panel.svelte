@@ -113,15 +113,17 @@
             >
             <td class="w-1/4 text-ellipsis px-2 text-sm">
               {getByteUnitString(user.usage, $locale, 0)}
-              {#if user.quotaSizeInBytes}
+              {#if user.quotaSizeInBytes !== null}
                 / {getByteUnitString(user.quotaSizeInBytes, $locale, 0)}
               {/if}
               <span class="text-immich-primary dark:text-immich-dark-primary">
-                {#if user.quotaSizeInBytes}
+                {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes > 0}
                   ({(user.usage / user.quotaSizeInBytes).toLocaleString($locale, {
                     style: 'percent',
                     maximumFractionDigits: 0,
                   })})
+                {:else if user.quotaSizeInBytes !== null && user.quotaSizeInBytes === 0}
+                  ({(1).toLocaleString($locale, { style: 'percent', maximumFractionDigits: 0 })})
                 {:else}
                   ({$t('unlimited')})
                 {/if}
