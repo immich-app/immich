@@ -108,7 +108,6 @@ export function formatMonthGroupTitle(_date: DateTime): string {
     {
       month: 'short',
       year: 'numeric',
-      timeZone: 'UTC',
     },
     { locale: get(locale) },
   );
