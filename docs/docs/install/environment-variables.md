@@ -113,6 +113,8 @@ When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSW
 | `REDIS_TLS`      | Redis TLS      | `false` | server     |
 | `REDIS_INSECURE_TLS` | Allow Insecure Connection to Redis | `false` | server |
 | `REDIS_TLS_CERT` | Path to Redis TLS Cert | | server |
+| `REDIS_TLS_CA`   | Path to Redis TLS CA   | | server |
+| `REDIS_TLS_KEY`  | Path to Redis TLS Key  | | server |
 
 :::info
 All `REDIS_` variables must be provided to all Immich workers, including `api` and `microservices`.
@@ -121,6 +123,10 @@ All `REDIS_` variables must be provided to all Immich workers, including `api` a
 More information can be found in the upstream [ioredis] documentation.
 
 When `REDIS_URL` or `REDIS_SOCKET` are defined, the `REDIS_HOSTNAME`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_PASSWORD`, and `REDIS_DBINDEX` variables are ignored.
+
+When `REDIS_TLS` is enable is requiring to emable `REDIS_INSECURE_TLS` if the server allow connection without verifing the certificate, otherwise specify the path using `REDIS_TLS_CERT`
+
+The `REDIS_TLS_CA`and `REDIS_TLS_KEY` are only required when redis connection require client certificates for the TLS handshake.
 :::
 
 Redis (Sentinel) URL example JSON before encoding:

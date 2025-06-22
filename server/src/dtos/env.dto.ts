@@ -206,6 +206,18 @@ export class EnvDto {
 
   @ValidateIf((o) => o.REDIS_TLS === true && o.REDIS_TLS_INSECURE === false)
   @IsString()
-  @FileExist({ message: 'Redis Cert must exist on the server' })
+  @FileExist({ message: 'Redis TLS Cert must exist on the server' })
   REDIS_TLS_CERT?: string;
+
+  @Optional()
+  @ValidateIf((o) => o.REDIS_TLS === true && o.REDIS_TLS_INSECURE === false)
+  @IsString()
+  @FileExist({ message: 'Redis TLS CA must exist on the server' })
+  REDIS_TLS_CA?: string;
+
+  @Optional()
+  @ValidateIf((o) => o.REDIS_TLS === true && o.REDIS_TLS_INSECURE === false)
+  @IsString()
+  @FileExist({ message: 'Redis TLS Key must exist on the server' })
+  REDIS_TLS_KEY?: string;
 }
