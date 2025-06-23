@@ -65,7 +65,7 @@ class ImmichAPI {
   init() async throws {
     // fetch the credentials from the UserDefaults store that dart placed here
     guard let defaults = UserDefaults(suiteName: "group.app.immich.share"),
-      let serverURL = defaults.string(forKey: "widget_server_url"),
+      var serverURL = defaults.string(forKey: "widget_server_url"),
       let sessionKey = defaults.string(forKey: "widget_auth_token")
     else {
       throw WidgetError.noLogin
@@ -75,31 +75,30 @@ class ImmichAPI {
       throw WidgetError.noLogin
     }
         
-    // check if the stored value is an array of URLs
-    if serverURL.starts(with: "[") {
-      guard let urls = try? JSONDecoder().decode([String].self, from: serverURL.data(using: .utf8)!) else {
-        throw WidgetError.noLogin
-      }
-      
-      for url in urls {
-        guard let endpointURL = URL(string: url) else { continue }
-        
-        if let apiURL = await Self.validateServer(at: endpointURL) {
-          serverConfig = ServerConfig(
-            serverEndpoint: apiURL.absoluteString,
-            sessionKey: sessionKey
-          )
-          return
-        }
-      }
-      
-      throw WidgetError.fetchFailed
-    } else {
-      serverConfig = ServerConfig(
-        serverEndpoint: serverURL,
-        sessionKey: sessionKey
-      )
+    // migrate the server list value to a JSON array if it is not already
+    if !serverURL.starts(with: "[") {
+      let newServerList = "[\"\(serverURL)\"]"
+      defaults.set(newServerList, forKey: "widget_server_url")
+      serverURL = newServerList
     }
+        
+    guard let urls = try? JSONDecoder().decode([String].self, from: serverURL.data(using: .utf8)!) else {
+      throw WidgetError.noLogin
+    }
+    
+    for url in urls {
+      guard let endpointURL = URL(string: url) else { continue }
+      
+      if let apiURL = await Self.validateServer(at: endpointURL) {
+        serverConfig = ServerConfig(
+          serverEndpoint: apiURL.absoluteString,
+          sessionKey: sessionKey
+        )
+        return
+      }
+    }
+    
+    throw WidgetError.fetchFailed
   }
 
   private static func validateServer(at endpointURL: URL) async -> URL? {
