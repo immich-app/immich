@@ -87,10 +87,13 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
 
   late final ScrollController _scrollController;
 
-  double get _currentOffset =>
-      _scrollController.offset *
-      _scrubberHeight /
-      _scrollController.position.maxScrollExtent;
+  double get _currentOffset {
+    if (!_scrollController.hasClients) return 0.0;
+
+    return _scrollController.offset *
+        _scrubberHeight /
+        _scrollController.position.maxScrollExtent;
+  }
 
   @override
   void initState() {
@@ -194,12 +197,20 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
       _thumbAnimationController.forward();
     }
 
-    final newOffset =
-        details.globalPosition.dy - widget.topPadding - widget.bottomPadding;
+    // Calculate the drag area bounds considering both top and bottom padding
+    final dragAreaTop = widget.topPadding;
+    final dragAreaBottom = widget.timelineHeight - widget.bottomPadding;
+    final dragAreaHeight = dragAreaBottom - dragAreaTop;
+
+    // Get the position relative to the drag area
+    final relativePosition = details.globalPosition.dy - dragAreaTop;
 
     setState(() {
-      _thumbTopOffset = newOffset.clamp(0, _scrubberHeight);
-      final scrollPercentage = _thumbTopOffset / _scrubberHeight;
+      // Clamp the thumb position within the drag area
+      _thumbTopOffset = relativePosition.clamp(0.0, dragAreaHeight);
+
+      // Calculate scroll percentage based on the drag area height
+      final scrollPercentage = _thumbTopOffset / dragAreaHeight;
       final maxScrollExtent = _scrollController.position.maxScrollExtent;
       _scrollController.jumpTo(maxScrollExtent * scrollPercentage);
     });

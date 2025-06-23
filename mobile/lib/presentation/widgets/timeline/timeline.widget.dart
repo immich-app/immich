@@ -13,6 +13,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 
 class Timeline extends StatelessWidget {
   const Timeline({super.key});
@@ -66,18 +67,26 @@ class _SliverTimelineState extends State<_SliverTimeline> {
         return asyncSegments.widgetWhen(
           onData: (segments) {
             final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
+            final statusBarHeight = context.padding.top;
+            final totalAppBarHeight = statusBarHeight + kToolbarHeight;
+            const scrubberBottomPadding = 100.0;
 
             return PrimaryScrollController(
               controller: _scrollController,
               child: Scrubber(
                 layoutSegments: segments,
                 timelineHeight: maxHeight,
-                topPadding: context.padding.top + 10,
-                bottomPadding: context.padding.bottom + 10,
+                topPadding: totalAppBarHeight + 10,
+                bottomPadding: context.padding.bottom + scrubberBottomPadding,
                 child: CustomScrollView(
                   primary: true,
                   cacheExtent: maxHeight * 2,
                   slivers: [
+                    const ImmichSliverAppBar(
+                      floating: true,
+                      pinned: false,
+                      snap: false,
+                    ),
                     _SliverSegmentedList(
                       segments: segments,
                       delegate: SliverChildBuilderDelegate(
@@ -91,6 +100,11 @@ class _SliverTimelineState extends State<_SliverTimeline> {
                         addAutomaticKeepAlives: false,
                         // We add repaint boundary around tiles, so skip the auto boundaries
                         addRepaintBoundaries: false,
+                      ),
+                    ),
+                    const SliverPadding(
+                      padding: EdgeInsets.only(
+                        bottom: scrubberBottomPadding,
                       ),
                     ),
                   ],
