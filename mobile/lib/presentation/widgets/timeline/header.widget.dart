@@ -44,14 +44,13 @@ class TimelineHeader extends StatelessWidget {
           if (header == HeaderType.month || header == HeaderType.monthAndDay)
             Text(
               _formatMonth(context, date),
-              style: context.textTheme.labelLarge
-                  ?.copyWith(fontSize: 24, fontWeight: FontWeight.w500),
+              style: context.textTheme.headlineMedium,
             ),
           if (header == HeaderType.day || header == HeaderType.monthAndDay)
             Text(
               _formatDay(context, date),
               style: context.textTheme.labelLarge
-                  ?.copyWith(fontWeight: FontWeight.w500),
+                  ?.copyWith(fontWeight: FontWeight.w500, fontSize: 16),
             ),
         ],
       ),
