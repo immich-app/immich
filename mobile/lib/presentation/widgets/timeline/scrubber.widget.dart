@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -197,29 +198,95 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
       _thumbAnimationController.forward();
     }
 
-    // Calculate the drag area bounds considering both top and bottom padding
+    final dragPosition = _calculateDragPosition(details);
+    final nearestMonthSegment = _findNearestMonthSegment(dragPosition);
+
+    if (nearestMonthSegment != null) {
+      _snapToSegment(nearestMonthSegment);
+    }
+  }
+
+  /// Calculate the drag position relative to the scrubber area
+  ///
+  /// This method converts the global drag coordinates from the gesture detector
+  /// into a position relative to the scrubber's active area (excluding padding).
+  ///
+  /// The scrubber has padding at the top and bottom, so we need to:
+  /// 1. Calculate the actual draggable area (timelineHeight - topPadding - bottomPadding)
+  /// 2. Convert the global Y position to a position within this draggable area
+  /// 3. Clamp the result to ensure it stays within bounds (0 to dragAreaHeight)
+  ///
+  /// Example:
+  /// - If timelineHeight = 800, topPadding = 50, bottomPadding = 50
+  /// - Then dragAreaHeight = 700 (the actual scrubber area)
+  /// - If user drags to global Y position that's 100 pixels from the top
+  /// - The relative position would be 100 - 50 = 50 (50 pixels into the scrubber area)
+  double _calculateDragPosition(DragUpdateDetails details) {
     final dragAreaTop = widget.topPadding;
     final dragAreaBottom = widget.timelineHeight - widget.bottomPadding;
     final dragAreaHeight = dragAreaBottom - dragAreaTop;
 
-    // Get the position relative to the drag area
     final relativePosition = details.globalPosition.dy - dragAreaTop;
 
-    setState(() {
-      // Clamp the thumb position within the drag area
-      _thumbTopOffset = relativePosition.clamp(0.0, dragAreaHeight);
+    // Make sure the position stays within the scrubber's bounds
+    return relativePosition.clamp(0.0, dragAreaHeight);
+  }
 
-      // Calculate scroll percentage based on the drag area height
-      final scrollPercentage = _thumbTopOffset / dragAreaHeight;
-      final maxScrollExtent = _scrollController.position.maxScrollExtent;
-      _scrollController.jumpTo(maxScrollExtent * scrollPercentage);
+  /// Find the segment closest to the given position
+  _Segment? _findNearestMonthSegment(double position) {
+    _Segment? nearestSegment;
+    double minDistance = double.infinity;
+
+    for (final segment in _segments) {
+      final distance = (segment.startOffset - position).abs();
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestSegment = segment;
+      }
+    }
+
+    return nearestSegment;
+  }
+
+  /// Snap the scrubber thumb and scroll view to the given segment
+  void _snapToSegment(_Segment segment) {
+    setState(() {
+      _thumbTopOffset = segment.startOffset;
+
+      final layoutSegmentIndex = _findLayoutSegmentIndex(segment);
+
+      if (layoutSegmentIndex >= 0) {
+        _scrollToLayoutSegment(layoutSegmentIndex);
+      }
     });
+  }
+
+  int _findLayoutSegmentIndex(_Segment segment) {
+    return widget.layoutSegments.indexWhere(
+      (layoutSegment) {
+        final bucket = layoutSegment.bucket as TimeBucket;
+        return bucket.date.year == segment.date.year &&
+            bucket.date.month == segment.date.month;
+      },
+    );
+  }
+
+  void _scrollToLayoutSegment(int layoutSegmentIndex) {
+    final layoutSegment = widget.layoutSegments[layoutSegmentIndex];
+    final maxScrollExtent = _scrollController.position.maxScrollExtent;
+    final viewportHeight = _scrollController.position.viewportDimension;
+
+    final targetScrollOffset = layoutSegment.startOffset;
+    final centeredOffset = targetScrollOffset - (viewportHeight / 4) + 100;
+
+    _scrollController.jumpTo(centeredOffset.clamp(0.0, maxScrollExtent));
   }
 
   void _onDragEnd(WidgetRef ref) {
     ref.read(timelineStateProvider.notifier).setScrubbing(false);
     _labelAnimationController.reverse();
     _isDragging = false;
+
     _resetThumbTimer();
   }
 
