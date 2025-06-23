@@ -59,32 +59,6 @@ class TimelineHeader extends ConsumerWidget {
     final isDayHeader =
         header == HeaderType.day || header == HeaderType.monthAndDay;
 
-    Widget buildSelectAllIconButton() {
-      return IconButton(
-        onPressed: () => {
-          ref.read(multiSelectProvider.notifier).toggleBucketSelection(
-                assetOffset,
-                bucket.assetCount,
-              ),
-        },
-        icon: isMultiSelectEnabled && isAllSelected
-            ? Icon(
-                Icons.check_circle_rounded,
-                size: 26,
-                color: context.primaryColor,
-                semanticLabel:
-                    "unselect_all_in".tr(namedArgs: {"group": date.toString()}),
-              )
-            : Icon(
-                Icons.check_circle_outline_rounded,
-                size: 26,
-                color: context.colorScheme.onSurfaceSecondary,
-                semanticLabel:
-                    "select_all_in".tr(namedArgs: {"group": date.toString()}),
-              ),
-      );
-    }
-
     return Padding(
       padding: EdgeInsets.only(
         top: isMonthHeader ? 8.0 : 0.0,
@@ -95,7 +69,7 @@ class TimelineHeader extends ConsumerWidget {
         height: height,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             if (isMonthHeader)
               Row(
@@ -106,7 +80,15 @@ class TimelineHeader extends ConsumerWidget {
                   ),
                   const Spacer(),
                   if (header != HeaderType.monthAndDay)
-                    buildSelectAllIconButton(),
+                    _BulkSelectIconButton(
+                      isAllSelected: isAllSelected,
+                      onPressed: () => ref
+                          .read(multiSelectProvider.notifier)
+                          .toggleBucketSelection(
+                            assetOffset,
+                            bucket.assetCount,
+                          ),
+                    ),
                 ],
               ),
             if (isDayHeader)
@@ -119,12 +101,45 @@ class TimelineHeader extends ConsumerWidget {
                     ),
                   ),
                   const Spacer(),
-                  buildSelectAllIconButton(),
+                  _BulkSelectIconButton(
+                    isAllSelected: isAllSelected,
+                    onPressed: () => ref
+                        .read(multiSelectProvider.notifier)
+                        .toggleBucketSelection(assetOffset, bucket.assetCount),
+                  ),
                 ],
               ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _BulkSelectIconButton extends ConsumerWidget {
+  final bool isAllSelected;
+  final VoidCallback onPressed;
+
+  const _BulkSelectIconButton({
+    required this.isAllSelected,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: isAllSelected
+          ? Icon(
+              Icons.check_circle_rounded,
+              size: 26,
+              color: context.primaryColor,
+            )
+          : Icon(
+              Icons.check_circle_outline_rounded,
+              size: 26,
+              color: context.colorScheme.onSurfaceSecondary,
+            ),
     );
   }
 }
