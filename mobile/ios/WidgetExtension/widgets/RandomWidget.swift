@@ -63,10 +63,15 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
   ) async
     -> ImageEntry
   {
-    guard let api = try? await ImmichAPI() else {
-      return ImageEntry(date: Date(), image: nil, error: .noLogin)
+    var api: ImmichAPI
+    do {
+      api = try await ImmichAPI()
+    } catch let error as WidgetError {
+      return ImageEntry(date: Date(), image: nil, error: error)
+    } catch {
+      return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
     }
-
+    
     guard
       let randomImage = try? await api.fetchSearchResults(
         with: SearchFilters(size: 1)
@@ -100,15 +105,21 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     let now = Date()
 
     // If we don't have a server config, return an entry with an error
-    guard let api = try? await ImmichAPI() else {
-      entries.append(ImageEntry(date: now, image: nil, error: .noLogin))
+    var api: ImmichAPI
+    do {
+      api = try await ImmichAPI()
+    } catch let error as WidgetError {
+      entries.append(ImageEntry(date: now, image: nil, error: error))
+      return Timeline(entries: entries, policy: .atEnd)
+    } catch {
+      entries.append(ImageEntry(date: now, image: nil, error: .fetchFailed))
       return Timeline(entries: entries, policy: .atEnd)
     }
 
     // nil if album is NONE or nil
     let albumId =
       configuration.album?.id != "NONE" ? configuration.album?.id : nil
-    var albumName: String? = albumId != nil ? configuration.album?.albumName : nil
+    let albumName: String? = albumId != nil ? configuration.album?.albumName : nil
     
     if albumId != nil {
       // make sure the album exists on server, otherwise show error

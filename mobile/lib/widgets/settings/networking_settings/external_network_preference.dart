@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/services/widget.service.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/endpoint_input.dart';
 
 class ExternalNetworkPreference extends HookConsumerWidget {
@@ -35,6 +36,8 @@ class ExternalNetworkPreference extends HookConsumerWidget {
         StoreKey.externalEndpointList,
         jsonString,
       );
+
+      ref.read(widgetServiceProvider).writeServerList();
     }
 
     updateValidationStatus(String url, int index, AuxCheckStatus status) {

@@ -20,8 +20,11 @@ struct ImmichMemoryProvider: TimelineProvider {
     completion: @escaping @Sendable (ImageEntry) -> Void
   ) {
     Task {
-      guard let api = try? await ImmichAPI() else {
-        completion(ImageEntry(date: Date(), image: nil, error: .noLogin))
+      var api: ImmichAPI
+      do {
+        api = try await ImmichAPI()
+      } catch let error as WidgetError {
+        completion(ImageEntry(date: Date(), image: nil, error: error))
         return
       }
 
@@ -79,9 +82,13 @@ struct ImmichMemoryProvider: TimelineProvider {
     Task {
       var entries: [ImageEntry] = []
       let now = Date()
-
-      guard let api = try? await ImmichAPI() else {
-        entries.append(ImageEntry(date: now, image: nil, error: .noLogin))
+      
+      
+      var api: ImmichAPI
+      do {
+        api = try await ImmichAPI()
+      } catch let error as WidgetError {
+        entries.append(ImageEntry(date: now, image: nil, error: error))
         completion(Timeline(entries: entries, policy: .atEnd))
         return
       }

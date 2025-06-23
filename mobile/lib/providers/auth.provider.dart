@@ -118,10 +118,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }) async {
     await _apiService.setAccessToken(accessToken);
 
-    await _widgetService.writeCredentials(
-      Store.get(StoreKey.serverEndpoint),
-      accessToken,
-    );
+    await _widgetService.writeSessionKey(accessToken);
+    await _widgetService.writeServerList();
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
     String deviceId =
@@ -190,6 +188,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> saveLocalEndpoint(String url) async {
     await Store.put(StoreKey.localEndpoint, url);
+    await _widgetService.writeServerList();
   }
 
   String? getSavedWifiName() {

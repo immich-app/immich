@@ -17,6 +17,14 @@ enum AssetType: String, Codable {
   case other = "OTHER"
 }
 
+struct ServerWellKnown: Codable {
+  struct APIInfo: Codable{
+    let endpoint: String
+  }
+  
+  let api: APIInfo
+}
+
 struct SearchResult: Codable {
   let id: String
   let type: AssetType
@@ -66,13 +74,50 @@ class ImmichAPI {
     if serverURL == "" || sessionKey == "" {
       throw WidgetError.noLogin
     }
-
-    serverConfig = ServerConfig(
-      serverEndpoint: serverURL,
-      sessionKey: sessionKey
-    )
+        
+    // check if the stored value is an array of URLs
+    if serverURL.starts(with: "[") {
+      guard let urls = try? JSONDecoder().decode([String].self, from: serverURL.data(using: .utf8)!) else {
+        throw WidgetError.noLogin
+      }
+      
+      for url in urls {
+        guard let endpointURL = URL(string: url) else { continue }
+        
+        if let apiURL = await Self.validateServer(at: endpointURL) {
+          serverConfig = ServerConfig(
+            serverEndpoint: apiURL.absoluteString,
+            sessionKey: sessionKey
+          )
+          return
+        }
+      }
+      
+      throw WidgetError.fetchFailed
+    } else {
+      serverConfig = ServerConfig(
+        serverEndpoint: serverURL,
+        sessionKey: sessionKey
+      )
+    }
   }
 
+  private static func validateServer(at endpointURL: URL) async -> URL? {
+    let baseURL = URL(string: endpointURL.scheme! + "://" + endpointURL.host!)!
+    
+    var pingURL = baseURL
+    pingURL.appendPathComponent(".well-known")
+    pingURL.appendPathComponent("immich")
+    
+    guard let (serverPingJSON, _) = try? await URLSession.shared.data(from: pingURL) else { return nil }
+    guard let apiInfo = try? JSONDecoder().decode(ServerWellKnown.self, from: serverPingJSON) else {  return nil }
+    
+    var apiURL = baseURL
+    apiURL.appendPathComponent(apiInfo.api.endpoint)
+    
+    return apiURL
+  }
+  
   private func buildRequestURL(
     serverConfig: ServerConfig,
     endpoint: String,
