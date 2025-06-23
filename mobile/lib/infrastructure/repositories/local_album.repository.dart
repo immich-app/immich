@@ -6,6 +6,7 @@ import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.d
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/utils/database.utils.dart';
 import 'package:platform/platform.dart';
 
 class DriftLocalAlbumRepository extends DriftDatabaseRepository
@@ -370,31 +371,20 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
       batch.deleteWhere(_db.localAssetEntity, (f) => f.id.isIn(ids));
     });
   }
-}
 
-extension on LocalAlbumEntityData {
-  LocalAlbum toDto({int assetCount = 0}) {
-    return LocalAlbum(
-      id: id,
-      name: name,
-      updatedAt: updatedAt,
-      assetCount: assetCount,
-      backupSelection: backupSelection,
-    );
-  }
-}
-
-extension on LocalAssetEntityData {
-  LocalAsset toDto() {
-    return LocalAsset(
-      id: id,
-      name: name,
-      checksum: checksum,
-      type: type,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      durationInSeconds: durationInSeconds,
-      isFavorite: isFavorite,
+  @override
+  Future<void> update(LocalAlbum album) {
+    return (_db.update(_db.localAlbumEntity)
+          ..where(
+            (a) => a.id.equals(album.id),
+          ))
+        .write(
+      LocalAlbumEntityCompanion.insert(
+        id: album.id,
+        name: album.name,
+        updatedAt: Value(album.updatedAt),
+        backupSelection: album.backupSelection,
+      ),
     );
   }
 }
