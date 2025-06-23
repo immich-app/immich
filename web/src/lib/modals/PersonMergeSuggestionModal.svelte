@@ -8,7 +8,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { mergePerson, type PersonResponseDto } from '@immich/sdk';
   import { Button, HStack, IconButton, Modal, ModalBody, ModalFooter } from '@immich/ui';
-  import { mdiArrowLeft, mdiMerge } from '@mdi/js';
+  import { mdiArrowLeft, mdiCallMerge, mdiSwapHorizontal } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import ImageThumbnail from '../components/assets/thumbnail/image-thumbnail.svelte';
@@ -62,7 +62,7 @@
 
 <Modal title="{$t('merge_people')} - {title}" {onClose}>
   <ModalBody>
-    <div class="flex items-center justify-center py-4 md:h-36 md:py-4">
+    <div class="flex items-center justify-center gap-2 py-4 md:h-36">
       {#if !choosePersonToMerge}
         <div class="flex h-20 w-20 items-center px-1 md:h-24 md:w-24 md:px-2">
           <ImageThumbnail
@@ -73,15 +73,24 @@
             widthStyle="100%"
           />
         </div>
-        <div class="mx-0.5 flex md:mx-2">
-          <IconButton
-            shape="round"
-            variant="ghost"
-            color="secondary"
-            aria-label={$t('swap_merge_direction')}
-            icon={mdiMerge}
-            onclick={() => ([personToMerge, personToBeMergedInto] = [personToBeMergedInto, personToMerge])}
-          />
+
+        <div class="grid grid-rows-3">
+          <div></div>
+          <div class="flex flex-col h-full items-center justify-center">
+            <div class="flex h-full items-center justify-center">
+              <Icon path={mdiCallMerge} size={48} class="rotate-90 dark:text-white" />
+            </div>
+          </div>
+          <div>
+            <IconButton
+              shape="round"
+              color="secondary"
+              variant="ghost"
+              aria-label={$t('swap_merge_direction')}
+              icon={mdiSwapHorizontal}
+              onclick={() => ([personToMerge, personToBeMergedInto] = [personToBeMergedInto, personToMerge])}
+            />
+          </div>
         </div>
 
         <button
