@@ -1,4 +1,5 @@
 import { plainDateTimeCompare, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
+import { AssetOrder } from '@immich/sdk';
 import type { MonthGroup } from '../month-group.svelte';
 import type { TimelineManager } from '../timeline-manager.svelte';
 import type { AssetDescriptor, Direction, TimelineAsset } from '../types';
@@ -113,11 +114,10 @@ export async function retrieveRange(timelineManager: TimelineManager, start: Ass
   if (!endMonthGroup || !endAsset) {
     return [];
   }
-  let direction: Direction = 'earlier';
-  if (plainDateTimeCompare(true, startAsset.localDateTime, endAsset.localDateTime) < 0) {
+  const assetOrder: AssetOrder = timelineManager.getAssetOrder();
+  if (plainDateTimeCompare(assetOrder === AssetOrder.Desc, startAsset.localDateTime, endAsset.localDateTime) < 0) {
     [startAsset, endAsset] = [endAsset, startAsset];
     [startMonthGroup, endMonthGroup] = [endMonthGroup, startMonthGroup];
-    direction = 'earlier';
   }
 
   const range: TimelineAsset[] = [];
@@ -126,7 +126,6 @@ export async function retrieveRange(timelineManager: TimelineManager, start: Ass
     startMonthGroup,
     startDayGroup,
     startAsset,
-    direction,
   })) {
     range.push(targetAsset);
     if (targetAsset.id === endAsset.id) {
