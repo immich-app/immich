@@ -1,8 +1,10 @@
 import 'dart:math' as math;
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
@@ -10,6 +12,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment_builder.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 class FixedSegment extends Segment {
   final double tileHeight;
@@ -97,7 +100,7 @@ class FixedSegment extends Segment {
           // Bucket is already loaded, show the assets
           if (timelineService.hasRange(assetIndex, count)) {
             final assets = timelineService.getAssets(assetIndex, count);
-            return _buildAssetRow(ctx, assets);
+            return _buildAssetRow(ctx, assets, assetIndex, timelineService);
           }
 
           // Bucket is not loaded, show placeholders and load the bucket
@@ -113,20 +116,42 @@ class FixedSegment extends Segment {
                 );
               }
 
-              return _buildAssetRow(ctxx, snap.requireData);
+              return _buildAssetRow(
+                ctxx,
+                snap.requireData,
+                assetIndex,
+                timelineService,
+              );
             },
           );
         },
       );
 
-  Widget _buildAssetRow(BuildContext context, List<BaseAsset> assets) =>
+  Widget _buildAssetRow(
+    BuildContext context,
+    List<BaseAsset> assets,
+    int rowIndex,
+    TimelineService timelineService,
+  ) =>
       FixedTimelineRow(
         dimension: tileHeight,
         spacing: spacing,
         textDirection: Directionality.of(context),
         children: List.generate(
           assets.length,
-          (i) => RepaintBoundary(child: ThumbnailTile(assets[i])),
+          (i) => RepaintBoundary(
+            child: GestureDetector(
+              onTap: () {
+                context.pushRoute(
+                  AssetViewerRoute(
+                    initialIndex: rowIndex + i,
+                    timelineService: timelineService,
+                  ),
+                );
+              },
+              child: ThumbnailTile(assets[i]),
+            ),
+          ),
         ),
       );
 }

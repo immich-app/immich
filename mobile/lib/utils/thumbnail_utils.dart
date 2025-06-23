@@ -1,4 +1,6 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -53,3 +55,8 @@ String getAltText(
         });
   return (template, args);
 }
+
+/// assets need different hero tags across tabs / modals
+/// otherwise, hero animations are performed across tabs (looks buggy!)
+int getHeroOffset(BuildContext context) =>
+    TabsRouterScope.of(context)?.controller.activeIndex ?? 10;

@@ -114,6 +114,7 @@ class PhotoViewGallery extends StatefulWidget {
     this.reverse = false,
     this.pageController,
     this.onPageChanged,
+    this.controllerChangedCallback,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.scrollPhysics,
@@ -138,6 +139,7 @@ class PhotoViewGallery extends StatefulWidget {
     this.reverse = false,
     this.pageController,
     this.onPageChanged,
+    this.controllerChangedCallback,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.scrollPhysics,
@@ -184,6 +186,9 @@ class PhotoViewGallery extends StatefulWidget {
 
   /// An callback to be called on a page change
   final PhotoViewGalleryPageChangedCallback? onPageChanged;
+
+  /// Mirror to [PhotoView.controllerChangedCallback]
+  final ValueChanged<PhotoViewControllerBase?>? controllerChangedCallback;
 
   /// Mirror to [PhotoView.scaleStateChangedCallback]
   final ValueChanged<PhotoViewScaleState>? scaleStateChangedCallback;
@@ -260,6 +265,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             controller: pageOption.controller,
             scaleStateController: pageOption.scaleStateController,
             customSize: widget.customSize,
+            controllerChangedCallback: widget.controllerChangedCallback,
             scaleStateChangedCallback: scaleStateChangedCallback,
             enableRotation: widget.enableRotation,
             initialScale: pageOption.initialScale,
@@ -291,6 +297,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             semanticLabel: pageOption.semanticLabel,
             wantKeepAlive: widget.wantKeepAlive,
             controller: pageOption.controller,
+            controllerChangedCallback: widget.controllerChangedCallback,
             scaleStateController: pageOption.scaleStateController,
             customSize: widget.customSize,
             gaplessPlayback: widget.gaplessPlayback,

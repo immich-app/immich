@@ -404,6 +404,58 @@ class ArchiveRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [AssetViewerPage]
+class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
+  AssetViewerRoute({
+    Key? key,
+    required int initialIndex,
+    required TimelineService timelineService,
+    List<PageRouteInfo>? children,
+  }) : super(
+          AssetViewerRoute.name,
+          args: AssetViewerRouteArgs(
+            key: key,
+            initialIndex: initialIndex,
+            timelineService: timelineService,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'AssetViewerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<AssetViewerRouteArgs>();
+      return AssetViewerPage(
+        key: args.key,
+        initialIndex: args.initialIndex,
+        timelineService: args.timelineService,
+      );
+    },
+  );
+}
+
+class AssetViewerRouteArgs {
+  const AssetViewerRouteArgs({
+    this.key,
+    required this.initialIndex,
+    required this.timelineService,
+  });
+
+  final Key? key;
+
+  final int initialIndex;
+
+  final TimelineService timelineService;
+
+  @override
+  String toString() {
+    return 'AssetViewerRouteArgs{key: $key, initialIndex: $initialIndex, timelineService: $timelineService}';
+  }
+}
+
+/// generated route for
 /// [BackupAlbumSelectionPage]
 class BackupAlbumSelectionRoute extends PageRouteInfo<void> {
   const BackupAlbumSelectionRoute({List<PageRouteInfo>? children})

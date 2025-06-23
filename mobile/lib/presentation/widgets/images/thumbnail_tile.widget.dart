@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/utils/thumbnail_utils.dart';
 
 class ThumbnailTile extends StatelessWidget {
   const ThumbnailTile(
@@ -20,7 +21,12 @@ class ThumbnailTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Positioned.fill(child: Thumbnail(asset: asset, fit: fit, size: size)),
+        Positioned.fill(
+          child: Hero(
+            tag: '${asset.heroTag}_${getHeroOffset(context)}',
+            child: Thumbnail(asset: asset, fit: fit, size: size),
+          ),
+        ),
         if (asset.isVideo)
           Align(
             alignment: Alignment.topRight,

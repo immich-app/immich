@@ -246,6 +246,9 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   }
 
   void animateScale(double from, double to) {
+    if (!mounted) {
+      return;
+    }
     _scaleAnimation = Tween<double>(
       begin: from,
       end: to,
@@ -256,6 +259,9 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   }
 
   void animatePosition(Offset from, Offset to) {
+    if (!mounted) {
+      return;
+    }
     _positionAnimation = Tween<Offset>(begin: from, end: to)
         .animate(_positionAnimationController);
     _positionAnimationController
@@ -264,6 +270,9 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   }
 
   void animateRotation(double from, double to) {
+    if (!mounted) {
+      return;
+    }
     _rotationAnimation = Tween<double>(begin: from, end: to)
         .animate(_rotationAnimationController);
     _rotationAnimationController

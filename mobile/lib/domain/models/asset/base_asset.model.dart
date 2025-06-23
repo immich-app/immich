@@ -40,7 +40,17 @@ sealed class BaseAsset {
 
   bool get isImage => type == AssetType.image;
   bool get isVideo => type == AssetType.video;
+
+  double? get aspectRatio {
+    if (width != null && height != null && height! > 0) {
+      return width! / height!;
+    }
+    return null;
+  }
+
+  // Overridden in subclasses
   AssetState get storage;
+  String get heroTag;
 
   @override
   String toString() {

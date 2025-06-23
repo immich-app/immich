@@ -238,6 +238,7 @@ class PhotoView extends StatefulWidget {
     this.wantKeepAlive = false,
     this.gaplessPlayback = false,
     this.heroAttributes,
+    this.controllerChangedCallback,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.semanticLabel,
@@ -278,6 +279,7 @@ class PhotoView extends StatefulWidget {
     this.backgroundDecoration,
     this.wantKeepAlive = false,
     this.heroAttributes,
+    this.controllerChangedCallback,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.controller,
@@ -343,6 +345,8 @@ class PhotoView extends StatefulWidget {
   /// Defines the size of the scaling base of the image inside [PhotoView],
   /// by default it is `MediaQuery.of(context).size`.
   final Size? customSize;
+
+  final ValueChanged<PhotoViewControllerBase?>? controllerChangedCallback;
 
   /// A [Function] to be called whenever the scaleState changes, this happens when the user double taps the content ou start to pinch-in.
   final ValueChanged<PhotoViewScaleState>? scaleStateChangedCallback;
@@ -458,6 +462,7 @@ class _PhotoViewState extends State<PhotoView>
     if (widget.controller == null) {
       _controlledController = true;
       _controller = PhotoViewController();
+      widget.controllerChangedCallback?.call(_controller);
     } else {
       _controlledController = false;
       _controller = widget.controller!;
@@ -480,6 +485,7 @@ class _PhotoViewState extends State<PhotoView>
       if (!_controlledController) {
         _controlledController = true;
         _controller = PhotoViewController();
+        widget.controllerChangedCallback?.call(_controller);
       }
     } else {
       _controlledController = false;
@@ -502,6 +508,7 @@ class _PhotoViewState extends State<PhotoView>
   void dispose() {
     if (_controlledController) {
       _controller.dispose();
+      widget.controllerChangedCallback?.call(null);
     }
     if (_controlledScaleStateController) {
       _scaleStateController.dispose();
