@@ -1,14 +1,12 @@
 import 'dart:io';
 
-import 'package:immich_mobile/domain/interfaces/storage.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-class StorageRepository implements IStorageRepository {
+class StorageRepository {
   final _log = Logger('StorageRepository');
 
-  @override
   Future<File?> getFileForAsset(LocalAsset asset) async {
     File? file;
     try {

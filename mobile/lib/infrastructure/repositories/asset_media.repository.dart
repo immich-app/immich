@@ -1,13 +1,11 @@
 import 'dart:typed_data';
 import 'dart:ui';
 
-import 'package:immich_mobile/domain/interfaces/asset_media.interface.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-class AssetMediaRepository implements IAssetMediaRepository {
+class AssetMediaRepository {
   const AssetMediaRepository();
 
-  @override
   Future<Uint8List?> getThumbnail(
     String id, {
     int quality = 80,

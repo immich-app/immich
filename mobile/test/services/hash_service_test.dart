@@ -6,9 +6,9 @@ import 'package:collection/collection.dart';
 import 'package:file/memory.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/interfaces/device_asset.interface.dart';
 import 'package:immich_mobile/domain/models/device_asset.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/device_asset.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:mocktail/mocktail.dart';
@@ -25,7 +25,7 @@ class MockAssetEntity extends Mock implements AssetEntity {}
 void main() {
   late HashService sut;
   late BackgroundService mockBackgroundService;
-  late IDeviceAssetRepository mockDeviceAssetRepository;
+  late IsarDeviceAssetRepository mockDeviceAssetRepository;
 
   setUp(() {
     mockBackgroundService = MockBackgroundService();

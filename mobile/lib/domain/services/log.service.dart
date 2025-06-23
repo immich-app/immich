@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/interfaces/log.interface.dart';
-import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:logging/logging.dart';
 
 /// Service responsible for handling application logging.
@@ -14,8 +14,8 @@ import 'package:logging/logging.dart';
 /// writes them to a persistent [ILogRepository], and manages log levels
 /// via [IStoreRepository]
 class LogService {
-  final ILogRepository _logRepository;
-  final IStoreRepository _storeRepository;
+  final IsarLogRepository _logRepository;
+  final IsarStoreRepository _storeRepository;
 
   final List<LogMessage> _msgBuffer = [];
 
@@ -37,8 +37,8 @@ class LogService {
   }
 
   static Future<LogService> init({
-    required ILogRepository logRepository,
-    required IStoreRepository storeRepository,
+    required IsarLogRepository logRepository,
+    required IsarStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     _instance ??= await create(
@@ -50,8 +50,8 @@ class LogService {
   }
 
   static Future<LogService> create({
-    required ILogRepository logRepository,
-    required IStoreRepository storeRepository,
+    required IsarLogRepository logRepository,
+    required IsarStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     final instance = LogService._(logRepository, storeRepository, shouldBuffer);
