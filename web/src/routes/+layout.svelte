@@ -78,7 +78,7 @@
   const { release } = websocketStore;
 
   const handleRelease = async (release: ReleaseEvent) => {
-    if (!release || !release.isAvailable || !$user.isAdmin) {
+    if (!release?.isAvailable || !$user.isAdmin) {
       return;
     }
 
