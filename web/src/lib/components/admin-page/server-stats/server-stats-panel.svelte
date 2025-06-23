@@ -117,13 +117,11 @@
                 / {getByteUnitString(user.quotaSizeInBytes, $locale, 0)}
               {/if}
               <span class="text-immich-primary dark:text-immich-dark-primary">
-                {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes > 0}
-                  ({(user.usage / user.quotaSizeInBytes).toLocaleString($locale, {
+                {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
+                  ({(user.quotaSizeInBytes === 0 ? 1 : user.usage / user.quotaSizeInBytes).toLocaleString($locale, {
                     style: 'percent',
                     maximumFractionDigits: 0,
                   })})
-                {:else if user.quotaSizeInBytes !== null && user.quotaSizeInBytes === 0}
-                  ({(1).toLocaleString($locale, { style: 'percent', maximumFractionDigits: 0 })})
                 {:else}
                   ({$t('unlimited')})
                 {/if}
