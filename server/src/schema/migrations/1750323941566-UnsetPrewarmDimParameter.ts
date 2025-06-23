@@ -18,7 +18,7 @@ export async function up(qb: Kysely<any>): Promise<void> {
     if (key === 'vchordrq.prewarm_dim') {
       continue;
     }
-    await sql.raw(`alter database "${db}" set ${key} to ${value};`).execute(qb);
+    await sql.raw(`alter database "${db}" set "${key}" to '${value}';`).execute(qb);
   }
 }
 
