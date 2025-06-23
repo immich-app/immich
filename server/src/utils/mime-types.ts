@@ -101,6 +101,8 @@ const sidecar: Record<string, string[]> = {
 const types = { ...image, ...video, ...sidecar };
 
 const isType = (filename: string, r: Record<string, string[]>) => extname(filename).toLowerCase() in r;
+const isDjiImg = (filename: string, r: Record<string, string[]>) =>
+  !(extname(filename).toLowerCase() in r) && filename.startsWith('dji_fly_');
 
 const lookup = (filename: string) => types[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream';
 const toExtension = (mimeType: string) => {
@@ -116,7 +118,7 @@ export const mimeTypes = {
   video,
   raw,
 
-  isAsset: (filename: string) => isType(filename, image) || isType(filename, video),
+  isAsset: (filename: string) => isType(filename, image) || isType(filename, video) || isDjiImg(filename, image),
   isImage: (filename: string) => isType(filename, image),
   isWebSupportedImage: (filename: string) => isType(filename, webSupportedImage),
   isProfile: (filename: string) => isType(filename, profile),
