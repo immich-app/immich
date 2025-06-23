@@ -41,8 +41,6 @@ class TimelineHeader extends ConsumerWidget {
     }
 
     final date = (bucket as TimeBucket).date;
-    final isMultiSelectEnabled =
-        ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
     List<BaseAsset> bucketAssets;
     try {
