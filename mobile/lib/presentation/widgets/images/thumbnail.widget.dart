@@ -14,7 +14,6 @@ class Thumbnail extends StatelessWidget {
     this.size = const Size.square(256),
     this.fit = BoxFit.cover,
     super.key,
-    required bool isSelected,
   });
 
   final BaseAsset asset;

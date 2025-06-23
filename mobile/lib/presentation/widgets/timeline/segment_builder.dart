@@ -22,7 +22,7 @@ abstract class SegmentBuilder {
       case HeaderType.day:
         return kTimelineHeaderExtent * 0.90;
       case HeaderType.monthAndDay:
-        return kTimelineHeaderExtent * 1.5;
+        return kTimelineHeaderExtent * 1.6;
       case HeaderType.none:
         return 0.0;
     }

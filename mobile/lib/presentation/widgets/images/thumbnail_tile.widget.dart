@@ -29,8 +29,7 @@ class ThumbnailTile extends ConsumerWidget {
     final assetContainerColor = context.isDarkTheme
         ? context.primaryColor.darken(amount: 0.6)
         : context.primaryColor.lighten(amount: 0.8);
-    final isMultiSelectEnabled =
-        ref.watch(multiSelectProvider.select((state) => state.isEnabled));
+
     final isSelected = ref
         .watch(multiSelectProvider.select((state) => state.selectedAssets))
         .contains(asset);
@@ -38,13 +37,13 @@ class ThumbnailTile extends ConsumerWidget {
     return Stack(
       children: [
         AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: Durations.short4,
           curve: Curves.decelerate,
           decoration: BoxDecoration(
-            color: isMultiSelectEnabled && isSelected
+            color: isSelected
                 ? (canDeselect ? assetContainerColor : Colors.grey)
                 : null,
-            border: isMultiSelectEnabled && isSelected
+            border: isSelected
                 ? Border.all(
                     color: canDeselect ? assetContainerColor : Colors.grey,
                     width: 8,
@@ -52,7 +51,7 @@ class ThumbnailTile extends ConsumerWidget {
                 : const Border(),
           ),
           child: ClipRRect(
-            borderRadius: isMultiSelectEnabled && isSelected
+            borderRadius: isSelected
                 ? const BorderRadius.all(Radius.circular(15.0))
                 : BorderRadius.zero,
             child: Stack(
@@ -62,7 +61,6 @@ class ThumbnailTile extends ConsumerWidget {
                     asset: asset,
                     fit: fit,
                     size: size,
-                    isSelected: isSelected,
                   ),
                 ),
                 if (asset.isVideo)
@@ -99,12 +97,15 @@ class ThumbnailTile extends ConsumerWidget {
             ),
           ),
         ),
-        if (isMultiSelectEnabled)
+        if (isSelected)
           Padding(
             padding: const EdgeInsets.all(3.0),
             child: Align(
               alignment: Alignment.topLeft,
-              child: _SelectionIndicator(isSelected: isSelected),
+              child: _SelectionIndicator(
+                isSelected: isSelected,
+                color: assetContainerColor,
+              ),
             ),
           ),
       ],
@@ -114,22 +115,19 @@ class ThumbnailTile extends ConsumerWidget {
 
 class _SelectionIndicator extends StatelessWidget {
   final bool isSelected;
-
+  final Color? color;
   const _SelectionIndicator({
     required this.isSelected,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    final assetContainerColor = context.isDarkTheme
-        ? context.primaryColor.darken(amount: 0.6)
-        : context.primaryColor.lighten(amount: 0.8);
-
     if (isSelected) {
       return Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: assetContainerColor,
+          color: color,
         ),
         child: Icon(
           Icons.check_circle_rounded,

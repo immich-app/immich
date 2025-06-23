@@ -62,6 +62,23 @@ class FixedSegment extends Segment {
     return gridIndex + firstRowBelow - 1;
   }
 
+  void _handleOnTap(WidgetRef ref, BaseAsset asset) {
+    if (!ref.read(multiSelectProvider.select((s) => s.isEnabled))) {
+      return;
+    }
+
+    ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
+  }
+
+  void _handleOnLongPress(WidgetRef ref, BaseAsset asset) {
+    if (ref.read(multiSelectProvider.select((s) => s.isEnabled))) {
+      return;
+    }
+
+    ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+    ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
+  }
+
   @override
   Widget builder(BuildContext context, int index) {
     final rowIndexInSegment = index - (firstIndex + 1);
@@ -74,7 +91,7 @@ class FixedSegment extends Segment {
         bucket: bucket,
         header: header,
         height: headerExtent,
-        offset: firstAssetIndex,
+        assetOffset: firstAssetIndex,
       );
     }
 
@@ -86,25 +103,6 @@ class FixedSegment extends Segment {
           final isScrubbing =
               ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
           final timelineService = ref.read(timelineServiceProvider);
-          final isMultiSelectEnabled =
-              ref.watch(multiSelectProvider.select((s) => s.isEnabled));
-
-          void handleOnTap(BaseAsset asset) {
-            if (!isMultiSelectEnabled) {
-              return;
-            }
-
-            ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
-          }
-
-          void handleOnLongPress(BaseAsset asset) {
-            if (isMultiSelectEnabled) {
-              return;
-            }
-
-            ref.read(hapticFeedbackProvider.notifier).heavyImpact();
-            ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
-          }
 
           // Timeline is being scrubbed, show placeholders
           if (isScrubbing) {
@@ -122,8 +120,8 @@ class FixedSegment extends Segment {
             return _buildAssetRow(
               ctx,
               assets,
-              onTap: (asset) => handleOnTap(asset),
-              onLongPress: (asset) => handleOnLongPress(asset),
+              onTap: (asset) => _handleOnTap(ref, asset),
+              onLongPress: (asset) => _handleOnLongPress(ref, asset),
             );
           }
 
@@ -143,8 +141,8 @@ class FixedSegment extends Segment {
               return _buildAssetRow(
                 ctxx,
                 snap.requireData,
-                onTap: (asset) => handleOnTap(asset),
-                onLongPress: (asset) => handleOnLongPress(asset),
+                onTap: (asset) => _handleOnTap(ref, asset),
+                onLongPress: (asset) => _handleOnLongPress(ref, asset),
               );
             },
           );

@@ -6,13 +6,13 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 final multiSelectProvider =
-    StateNotifierProvider<MultiSelectProviderNotifier, MultiSelectState>(
-  (ref) => MultiSelectProviderNotifier(ref.watch(timelineServiceProvider)),
+    NotifierProvider<MultiSelectNotifier, MultiSelectState>(
+  MultiSelectNotifier.new,
   dependencies: [timelineServiceProvider],
 );
 
 class MultiSelectState {
-  final List<BaseAsset> selectedAssets;
+  final Set<BaseAsset> selectedAssets;
 
   MultiSelectState({
     required this.selectedAssets,
@@ -21,7 +21,7 @@ class MultiSelectState {
   bool get isEnabled => selectedAssets.isNotEmpty;
 
   MultiSelectState copyWith({
-    List<BaseAsset>? selectedAssets,
+    Set<BaseAsset>? selectedAssets,
   }) {
     return MultiSelectState(
       selectedAssets: selectedAssets ?? this.selectedAssets,
@@ -43,13 +43,17 @@ class MultiSelectState {
   int get hashCode => selectedAssets.hashCode;
 }
 
-class MultiSelectProviderNotifier extends StateNotifier<MultiSelectState> {
-  MultiSelectProviderNotifier(this._timelineService)
-      : super(
-          MultiSelectState(selectedAssets: []),
-        );
+class MultiSelectNotifier extends Notifier<MultiSelectState> {
+  late final TimelineService _timelineService;
 
-  final TimelineService _timelineService;
+  @override
+  MultiSelectState build() {
+    _timelineService = ref.read(timelineServiceProvider);
+
+    return MultiSelectState(
+      selectedAssets: {},
+    );
+  }
 
   void selectAsset(BaseAsset asset) {
     if (state.selectedAssets.contains(asset)) {
@@ -57,7 +61,7 @@ class MultiSelectProviderNotifier extends StateNotifier<MultiSelectState> {
     }
 
     state = state.copyWith(
-      selectedAssets: [...state.selectedAssets, asset],
+      selectedAssets: {...state.selectedAssets, asset},
     );
   }
 
@@ -67,7 +71,7 @@ class MultiSelectProviderNotifier extends StateNotifier<MultiSelectState> {
     }
 
     state = state.copyWith(
-      selectedAssets: state.selectedAssets.where((a) => a != asset).toList(),
+      selectedAssets: state.selectedAssets.where((a) => a != asset).toSet(),
     );
   }
 
@@ -84,14 +88,10 @@ class MultiSelectProviderNotifier extends StateNotifier<MultiSelectState> {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
     final selectedAssets = state.selectedAssets.toSet();
 
-    for (final asset in assets) {
-      if (!selectedAssets.contains(asset)) {
-        selectedAssets.add(asset);
-      }
-    }
+    selectedAssets.addAll(assets);
 
     state = state.copyWith(
-      selectedAssets: selectedAssets.toList(),
+      selectedAssets: selectedAssets,
     );
   }
 
@@ -99,23 +99,34 @@ class MultiSelectProviderNotifier extends StateNotifier<MultiSelectState> {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
     final selectedAssets = state.selectedAssets.toSet();
 
-    for (final asset in assets) {
-      if (selectedAssets.contains(asset)) {
-        selectedAssets.remove(asset);
-      }
-    }
+    selectedAssets.removeAll(assets);
 
-    state = state.copyWith(
-      selectedAssets: selectedAssets.toList(),
-    );
+    state = state.copyWith(selectedAssets: selectedAssets);
   }
 
-  void toggleBucketSelection(int offset, int bucketCount) {
-    if (state.selectedAssets.isEmpty) {
-      selectBucket(offset, bucketCount);
+  void toggleBucketSelection(int offset, int bucketCount) async {
+    final assets = await _timelineService.loadAssets(offset, bucketCount);
+    toggleBucketSelectionByAssets(assets);
+  }
+
+  void toggleBucketSelectionByAssets(List<BaseAsset> bucketAssets) {
+    if (bucketAssets.isEmpty) return;
+
+    // Check if all assets in this bucket are currently selected
+    final allSelected =
+        bucketAssets.every((asset) => state.selectedAssets.contains(asset));
+
+    final selectedAssets = state.selectedAssets.toSet();
+
+    if (allSelected) {
+      // If all assets in this bucket are selected, deselect them
+      selectedAssets.removeAll(bucketAssets);
     } else {
-      deselectBucket(offset, bucketCount);
+      // If not all assets in this bucket are selected, select them all
+      selectedAssets.addAll(bucketAssets);
     }
+
+    state = state.copyWith(selectedAssets: selectedAssets);
   }
 }
 

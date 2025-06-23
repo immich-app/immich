@@ -12,14 +12,14 @@ class TimelineHeader extends ConsumerWidget {
   final Bucket bucket;
   final HeaderType header;
   final double height;
-  final int offset;
+  final int assetOffset;
 
   const TimelineHeader({
     super.key,
     required this.bucket,
     required this.header,
     required this.height,
-    required this.offset,
+    required this.assetOffset,
   });
 
   String _formatMonth(BuildContext context, DateTime date) {
@@ -48,69 +48,82 @@ class TimelineHeader extends ConsumerWidget {
     try {
       bucketAssets = ref
           .watch(timelineServiceProvider)
-          .getAssets(offset, bucket.assetCount);
+          .getAssets(assetOffset, bucket.assetCount);
     } catch (e) {
       bucketAssets = <BaseAsset>[];
     }
 
     final isAllSelected = ref.watch(bucketSelectionProvider(bucketAssets));
+    final isMonthHeader =
+        header == HeaderType.month || header == HeaderType.monthAndDay;
+    final isDayHeader =
+        header == HeaderType.day || header == HeaderType.monthAndDay;
+
+    Widget buildSelectAllIconButton() {
+      return IconButton(
+        onPressed: () => {
+          ref.read(multiSelectProvider.notifier).toggleBucketSelection(
+                assetOffset,
+                bucket.assetCount,
+              ),
+        },
+        icon: isMultiSelectEnabled && isAllSelected
+            ? Icon(
+                Icons.check_circle_rounded,
+                size: 26,
+                color: context.primaryColor,
+                semanticLabel:
+                    "unselect_all_in".tr(namedArgs: {"group": date.toString()}),
+              )
+            : Icon(
+                Icons.check_circle_outline_rounded,
+                size: 26,
+                color: context.colorScheme.onSurfaceSecondary,
+                semanticLabel:
+                    "select_all_in".tr(namedArgs: {"group": date.toString()}),
+              ),
+      );
+    }
 
     return Padding(
-      padding: const EdgeInsets.only(
-        top: 2,
+      padding: EdgeInsets.only(
+        top: isMonthHeader ? 8.0 : 0.0,
         left: 12.0,
         right: 12.0,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            height: height,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                if (header == HeaderType.month ||
-                    header == HeaderType.monthAndDay)
+      child: SizedBox(
+        height: height,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            if (isMonthHeader)
+              Row(
+                children: [
                   Text(
                     _formatMonth(context, date),
                     style: context.textTheme.labelLarge?.copyWith(fontSize: 24),
                   ),
-                if (header == HeaderType.day ||
-                    header == HeaderType.monthAndDay)
+                  const Spacer(),
+                  if (header != HeaderType.monthAndDay)
+                    buildSelectAllIconButton(),
+                ],
+              ),
+            if (isDayHeader)
+              Row(
+                children: [
                   Text(
                     _formatDay(context, date),
                     style: context.textTheme.labelLarge?.copyWith(
                       fontSize: 15,
                     ),
                   ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          GestureDetector(
-            onTap: () => {
-              ref
-                  .read(multiSelectProvider.notifier)
-                  .toggleBucketSelection(offset, bucket.assetCount),
-            },
-            child: isMultiSelectEnabled && isAllSelected
-                ? Icon(
-                    Icons.check_circle_rounded,
-                    size: 26,
-                    color: context.primaryColor,
-                    semanticLabel: "unselect_all_in"
-                        .tr(namedArgs: {"group": date.toString()}),
-                  )
-                : Icon(
-                    Icons.check_circle_outline_rounded,
-                    size: 26,
-                    color: context.colorScheme.onSurfaceSecondary,
-                    semanticLabel: "select_all_in"
-                        .tr(namedArgs: {"group": date.toString()}),
-                  ),
-          ),
-        ],
+                  const Spacer(),
+                  buildSelectAllIconButton(),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }
