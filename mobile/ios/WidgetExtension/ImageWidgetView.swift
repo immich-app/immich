@@ -24,27 +24,11 @@ struct ImageEntry: TimelineEntry {
 struct ImmichWidgetView: View {
   var entry: ImageEntry
 
-  func getErrorText(_ error: WidgetError?) -> String {
-    switch error {
-    case .noLogin:
-      return "Login to Immich"
-
-    case .fetchFailed:
-      return "Unable to connect to your Immich instance"
-
-    case .albumNotFound:
-      return "Album not found"
-
-    default:
-      return "An unknown error occured"
-    }
-  }
-
   var body: some View {
     if entry.image == nil {
       VStack {
         Image("LaunchImage")
-        Text(getErrorText(entry.error))
+        Text(entry.error?.errorDescription ?? "")
           .minimumScaleFactor(0.25)
           .multilineTextAlignment(.center)
           .foregroundStyle(.secondary)
