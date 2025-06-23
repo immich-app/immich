@@ -173,9 +173,9 @@ class TabShellPage extends HookConsumerWidget {
                     ],
                   )
                 : heroedChild,
-            bottomNavigationBar: multiselectEnabled || isScreenLandscape
-                ? null
-                : bottomNavigationBar(tabsRouter),
+            // bottomNavigationBar: multiselectEnabled || isScreenLandscape
+            //     ? null
+            //     : bottomNavigationBar(tabsRouter),
           ),
         );
       },

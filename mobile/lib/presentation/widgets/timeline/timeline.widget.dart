@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/bottom_app_bar/home_bottom_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
@@ -73,42 +74,48 @@ class _SliverTimelineState extends State<_SliverTimeline> {
 
             return PrimaryScrollController(
               controller: _scrollController,
-              child: Scrubber(
-                layoutSegments: segments,
-                timelineHeight: maxHeight,
-                topPadding: totalAppBarHeight + 10,
-                bottomPadding: context.padding.bottom + scrubberBottomPadding,
-                child: CustomScrollView(
-                  primary: true,
-                  cacheExtent: maxHeight * 2,
-                  slivers: [
-                    const ImmichSliverAppBar(
-                      floating: true,
-                      pinned: false,
-                      snap: false,
+              child: Stack(
+                children: [
+                  Scrubber(
+                    layoutSegments: segments,
+                    timelineHeight: maxHeight,
+                    topPadding: totalAppBarHeight + 10,
+                    bottomPadding:
+                        context.padding.bottom + scrubberBottomPadding,
+                    child: CustomScrollView(
+                      primary: true,
+                      cacheExtent: maxHeight * 2,
+                      slivers: [
+                        const ImmichSliverAppBar(
+                          floating: true,
+                          pinned: false,
+                          snap: false,
+                        ),
+                        _SliverSegmentedList(
+                          segments: segments,
+                          delegate: SliverChildBuilderDelegate(
+                            (ctx, index) {
+                              if (index >= childCount) return null;
+                              final segment = segments.findByIndex(index);
+                              return segment?.builder(ctx, index) ??
+                                  const SizedBox.shrink();
+                            },
+                            childCount: childCount,
+                            addAutomaticKeepAlives: false,
+                            // We add repaint boundary around tiles, so skip the auto boundaries
+                            addRepaintBoundaries: false,
+                          ),
+                        ),
+                        const SliverPadding(
+                          padding: EdgeInsets.only(
+                            bottom: scrubberBottomPadding,
+                          ),
+                        ),
+                      ],
                     ),
-                    _SliverSegmentedList(
-                      segments: segments,
-                      delegate: SliverChildBuilderDelegate(
-                        (ctx, index) {
-                          if (index >= childCount) return null;
-                          final segment = segments.findByIndex(index);
-                          return segment?.builder(ctx, index) ??
-                              const SizedBox.shrink();
-                        },
-                        childCount: childCount,
-                        addAutomaticKeepAlives: false,
-                        // We add repaint boundary around tiles, so skip the auto boundaries
-                        addRepaintBoundaries: false,
-                      ),
-                    ),
-                    const SliverPadding(
-                      padding: EdgeInsets.only(
-                        bottom: scrubberBottomPadding,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  const HomeBottomAppBar(),
+                ],
               ),
             );
           },
