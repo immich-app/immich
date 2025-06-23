@@ -77,7 +77,7 @@
   const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
   const { release } = websocketStore;
 
-  const handleRelease = async (release: ReleaseEvent) => {
+  const handleRelease = async (release?: ReleaseEvent) => {
     if (!release?.isAvailable || !$user.isAdmin) {
       return;
     }
