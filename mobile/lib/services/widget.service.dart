@@ -47,7 +47,7 @@ class WidgetService {
     final String? localEndpoint = Store.tryGet(StoreKey.localEndpoint);
     final String? serverUrl = Store.tryGet(StoreKey.serverUrl);
 
-    final List<dynamic> serverUrlList = endpointList.map((e) => e.url).toList();
+    final List<String> serverUrlList = endpointList.map((e) => e.url).toList();
 
     if (localEndpoint != null) {
       serverUrlList.insert(0, localEndpoint);
@@ -57,7 +57,10 @@ class WidgetService {
       serverUrlList.insert(0, serverUrl);
     }
 
-    return serverUrlList.cast<String>();
+    // remove duplicates
+    final Set<String> uniqueServerUrls = serverUrlList.toSet();
+
+    return uniqueServerUrls.toList();
   }
 
   Future<void> clearCredentials() async {
