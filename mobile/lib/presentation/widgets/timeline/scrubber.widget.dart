@@ -97,14 +97,14 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
   double get _scrubberHeight =>
       widget.timelineHeight - widget.topPadding - widget.bottomPadding;
 
-  ScrollController? _scrollController;
+  late ScrollController _scrollController;
 
   double get _currentOffset {
-    if (_scrollController?.hasClients != true) return 0.0;
+    if (_scrollController.hasClients != true) return 0.0;
 
-    return _scrollController!.offset *
+    return _scrollController.offset *
         _scrubberHeight /
-        _scrollController!.position.maxScrollExtent;
+        _scrollController.position.maxScrollExtent;
   }
 
   @override
@@ -137,7 +137,7 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _scrollController ??= PrimaryScrollController.of(context);
+    _scrollController = PrimaryScrollController.of(context);
   }
 
   @override
@@ -284,13 +284,13 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
 
   void _scrollToLayoutSegment(int layoutSegmentIndex) {
     final layoutSegment = widget.layoutSegments[layoutSegmentIndex];
-    final maxScrollExtent = _scrollController?.position.maxScrollExtent;
-    final viewportHeight = _scrollController?.position.viewportDimension;
+    final maxScrollExtent = _scrollController.position.maxScrollExtent;
+    final viewportHeight = _scrollController.position.viewportDimension;
 
     final targetScrollOffset = layoutSegment.startOffset;
-    final centeredOffset = targetScrollOffset - (viewportHeight! / 4) + 100;
+    final centeredOffset = targetScrollOffset - (viewportHeight / 4) + 100;
 
-    _scrollController?.jumpTo(centeredOffset.clamp(0.0, maxScrollExtent!));
+    _scrollController.jumpTo(centeredOffset.clamp(0.0, maxScrollExtent));
   }
 
   void _onDragEnd(WidgetRef ref) {
@@ -304,7 +304,7 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext ctx) {
     Text? label;
-    if (_scrollController?.hasClients == true) {
+    if (_scrollController.hasClients == true) {
       // Cache to avoid multiple calls to [_currentOffset]
       final scrollOffset = _currentOffset;
       final labelText = _segments
