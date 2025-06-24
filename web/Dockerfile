@@ -4,7 +4,7 @@ RUN apk add --no-cache tini
 USER node
 WORKDIR /usr/src/app
 COPY --chown=node:node package*.json ./
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 ENV CHOKIDAR_USEPOLLING=true
 EXPOSE 24678
 EXPOSE 3000

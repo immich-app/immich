@@ -21,8 +21,8 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.8.0",
-    "@immich/cli": "file:../cli",
-    "@immich/sdk": "file:../open-api/typescript-sdk",
+    "@immich/cli": "workspace:^",
+    "@immich/sdk": "workspace:^",
     "@playwright/test": "^1.44.1",
     "@types/luxon": "^3.4.2",
     "@types/node": "^22.15.32",

@@ -1,0 +1,21 @@
+packages:
+  - open-api/typescript-sdk
+  - server
+  - cli
+  - web
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@scarf/scarf'
+  - '@swc/core'
+  - '@tailwindcss/oxide'
+  - bcrypt
+  - canvas
+  - cpu-features
+  - es5-ext
+  - esbuild
+  - msgpackr-extract
+  - protobufjs
+  - sharp
+  - ssh2
+  - utimes

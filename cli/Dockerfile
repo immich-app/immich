@@ -2,17 +2,17 @@ FROM node:22.16.0-alpine3.20@sha256:2289fb1fba0f4633b08ec47b94a89c7e20b829fc5679
 
 WORKDIR /usr/src/open-api/typescript-sdk
 COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 COPY open-api/typescript-sdk/ ./
-RUN npm run build
+RUN pnpm build
 
 WORKDIR /usr/src/app
 
-COPY cli/package.json cli/package-lock.json ./
-RUN npm ci
+COPY cli/package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 COPY cli .
-RUN npm run build
+RUN pnpm build
 
 WORKDIR /import
 

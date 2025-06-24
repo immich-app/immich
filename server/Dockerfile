@@ -3,9 +3,9 @@ FROM ghcr.io/immich-app/base-server-dev:202505131114@sha256:cf4507bbbf307e9b6d8e
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
-COPY server/package.json server/package-lock.json ./
+COPY server/package.json pnpm-lock.yaml ./
 COPY server/patches ./patches
-RUN npm ci && \
+RUN pnpm install --frozen-lockfile && \
     # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
     # they're marked as optional dependencies, so we need to copy them manually after pruning
     rm -rf node_modules/@img/sharp-libvips* && \
@@ -77,7 +77,7 @@ RUN dart --disable-analytics
 FROM dev AS prod
 
 COPY server .
-RUN npm run build
+RUN pnpm build
 RUN npm prune --omit=dev --omit=optional
 COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 COPY --from=dev /usr/src/app/node_modules/exiftool-vendored.pl ./node_modules/exiftool-vendored.pl
@@ -87,16 +87,16 @@ FROM node:22.16.0-alpine3.20@sha256:2289fb1fba0f4633b08ec47b94a89c7e20b829fc5679
 
 WORKDIR /usr/src/open-api/typescript-sdk
 COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 COPY open-api/typescript-sdk/ ./
-RUN npm run build
+RUN pnpm build
 
 WORKDIR /usr/src/app
 COPY web/package*.json web/svelte.config.js ./
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 COPY web ./
 COPY i18n ../i18n
-RUN npm run build
+RUN pnpm build
 
 
 # prod build
@@ -111,7 +111,7 @@ COPY --from=prod /usr/src/app/dist ./dist
 COPY --from=prod /usr/src/app/bin ./bin
 COPY --from=web /usr/src/app/build /build/www
 COPY server/resources resources
-COPY server/package.json server/package-lock.json ./
+COPY server/package.json pnpm-lock.yaml ./
 COPY server/start*.sh ./
 COPY "docker/scripts/get-cpus.sh" ./
 RUN npm install -g @immich/cli && npm cache clean --force

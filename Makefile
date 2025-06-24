@@ -34,7 +34,7 @@ open-api-typescript:
 	cd ./open-api && bash ./bin/generate-open-api.sh typescript
 
 sql:
-	npm --prefix server run sync:sql
+	pnpm --dir server run sync:sql
 
 attach-server:
 	docker exec -it docker_immich-server_1 sh
@@ -45,30 +45,30 @@ renovate:
 MODULES = e2e server web cli sdk docs .github
 
 audit-%:
-	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) audit fix
+	pnpm --dir $(subst sdk,open-api/typescript-sdk,$*) audit fix
 install-%:
-	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) i
+	pnpm --dir $(subst sdk,open-api/typescript-sdk,$*) i
 ci-%:
-	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) ci
+	pnpm --dir $(subst sdk,open-api/typescript-sdk,$*) install --frozen-lockfile
 build-cli: build-sdk
 build-web: build-sdk
 build-%: install-%
-	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) run build
+	pnpm --dir $(subst sdk,open-api/typescript-sdk,$*) build
 format-%:
-	npm --prefix $* run format:fix
+	pnpm --dir $* format:fix
 lint-%:
-	npm --prefix $* run lint:fix
+	pnpm --dir $* lint:fix
 check-%:
-	npm --prefix $* run check
+	pnpm --dir $* check
 check-web:
-	npm --prefix web run check:typescript
-	npm --prefix web run check:svelte
+	pnpm --dir web check:typescript
+	pnpm --dir web check:svelte
 test-%:
-	npm --prefix $* run test
+	pnpm --dir $* test
 test-e2e:
 	docker compose -f ./e2e/docker-compose.yml build
-	npm --prefix e2e run test
-	npm --prefix e2e run test:web
+	pnpm --dir e2e test
+	pnpm --dir e2e test:web
 test-medium:
 	docker run \
     --rm \
@@ -78,9 +78,9 @@ test-medium:
     -v ./server/tsconfig.json:/usr/src/app/tsconfig.json \
     -e NODE_ENV=development \
     immich-server:latest \
-    -c "npm ci && npm run test:medium -- --run"
+    -c "pnpm install --frozen-lockfile && pnpm test:medium -- --run"
 test-medium-dev:
-	docker exec -it immich_server /bin/sh -c "npm run test:medium"
+	docker exec -it immich_server /bin/sh -c "pnpm test:medium"
 
 build-all: $(foreach M,$(filter-out e2e .github,$(MODULES)),build-$M) ;
 install-all: $(foreach M,$(filter-out .github,$(MODULES)),install-$M) ;
