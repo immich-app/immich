@@ -51,7 +51,10 @@ class DeepLinkService {
 
     // Deep link resolution failed, safely handle it based on the app state
     if (deepLinkRoute == null) {
-      if (isColdStart) return DeepLink.defaultPath;
+      if (isColdStart) {
+        return DeepLink.defaultPath;
+      }
+
       return DeepLink.none;
     }
 
