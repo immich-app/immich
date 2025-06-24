@@ -1,8 +1,8 @@
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { Mutex } from 'async-mutex';
 import { type AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
+import { Mutex } from 'async-mutex';
 import { readonly, writable } from 'svelte/store';
 
 function createAssetViewingStore() {
