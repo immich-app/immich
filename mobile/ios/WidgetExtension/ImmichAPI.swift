@@ -102,7 +102,13 @@ class ImmichAPI {
   }
 
   private static func validateServer(at endpointURL: URL) async -> URL? {
-    let baseURL = URL(string: endpointURL.scheme! + "://" + endpointURL.host!)!
+    // build a URL that is only scheme, host, and port
+    var components = URLComponents()
+    components.scheme = endpointURL.scheme
+    components.host = endpointURL.host
+    components.port = endpointURL.port
+
+    guard let baseURL = components.url else { return nil }
     
     var pingURL = baseURL
     pingURL.appendPathComponent(".well-known")
