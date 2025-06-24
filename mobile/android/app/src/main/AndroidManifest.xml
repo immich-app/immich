@@ -104,20 +104,18 @@
           <category android:name="android.intent.category.DEFAULT" />
           <category android:name="android.intent.category.BROWSABLE" />
 
+          <data android:scheme="https" />
+
           <data
-              android:scheme="https"
               android:host="my.immich.app"
               android:path="/" />
           <data
-              android:scheme="https"
               android:host="my.immich.app"
               android:pathPrefix="/albums/" />
           <data
-              android:scheme="https"
               android:host="my.immich.app"
               android:pathPrefix="/memories/" />
           <data
-              android:scheme="https"
               android:host="my.immich.app"
               android:pathPrefix="/photos/" />
       </intent-filter>
