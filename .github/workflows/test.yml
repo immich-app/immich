@@ -499,7 +499,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - uses: immich-app/devtools/actions/success-check@6b81b1572e466f7f48ba3c823159ce3f4a4d66a6 # success-check-action-0.0.3
+      - uses: immich-app/devtools/actions/success-check@68f10eb389bb02a3cf9d1156111964c549eb421b # 0.0.4
         with:
           needs: ${{ toJSON(needs) }}
 
@@ -516,7 +516,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2.19.0
+        uses: subosito/flutter-action@395322a6cded4e9ed503aebd4cc1965625f8e59a # v2.20.0
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
@@ -668,7 +668,7 @@ jobs:
       contents: read
     services:
       postgres:
-        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3
+        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3@sha256:1f5583fe3397210a0fbc7f11b0cec18bacc4a99e3e8ea0548e9bd6bcf26ec37a
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
