@@ -83,6 +83,12 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     }
   }
 
+  void clearSelection() {
+    state = state.copyWith(
+      selectedAssets: {},
+    );
+  }
+
   /// Bucket bulk operations
   void selectBucket(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
