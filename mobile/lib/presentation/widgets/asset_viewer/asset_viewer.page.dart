@@ -82,7 +82,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     platform = widget.platform ?? const LocalPlatform();
     totalAssets = ref.read(timelineServiceProvider).totalAssets;
     bottomSheetController = DraggableScrollableController();
-    _onPageChanged(widget.initialIndex);
+    _onAssetChanged(widget.initialIndex);
   }
 
   @override
@@ -120,7 +120,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  void _onPageChanged(int index) {
+  void _onAssetChanged(int index) {
     // This will trigger the pre-caching of assets for the next and previous pages.
     // This ensures that the images are ready when the user navigates to them.
     ref.read(timelineServiceProvider).preCacheAssets(index).then((_) {
@@ -130,6 +130,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       final asset = ref.read(timelineServiceProvider).getAsset(index);
       ref.read(currentAssetNotifier.notifier).setAsset(asset);
     });
+  }
+
+  void _onPageChanged(int index, PhotoViewControllerBase controller) {
+    _onAssetChanged(index);
+    viewController = controller;
   }
 
   void _onDragStart(
@@ -363,16 +368,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     );
   }
 
-  void _controllerChangedCallback(PhotoViewControllerBase? controller) {
-    if (controller == null) {
-      return;
-    }
-
-    viewController = controller;
+  void _onPageBuild(PhotoViewControllerBase controller) {
     if (showingBottomSheet) {
       final verticalOffset = (context.height * bottomSheetController.size) -
           (context.height * _kBottomSheetMinimumExtent);
-      viewController?.position = Offset(0, -verticalOffset);
+      controller.position = Offset(0, -verticalOffset);
     }
   }
 
@@ -392,11 +392,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         ,
         itemCount: totalAssets,
         onPageChanged: _onPageChanged,
+        onPageBuild: _onPageBuild,
         builder: _assetBuilder,
         backgroundDecoration: BoxDecoration(color: backgroundColor),
         enableRotation: true,
         enablePanAlways: true,
-        controllerChangedCallback: _controllerChangedCallback,
       ),
     );
   }

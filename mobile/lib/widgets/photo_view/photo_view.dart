@@ -15,6 +15,11 @@ export 'src/photo_view_computed_scale.dart';
 export 'src/photo_view_scale_state.dart';
 export 'src/utils/photo_view_hero_attributes.dart';
 
+typedef PhotoViewControllerCallback = PhotoViewControllerBase Function();
+typedef PhotoViewControllerCallbackBuilder = void Function(
+  PhotoViewControllerCallback photoViewMethod,
+);
+
 /// A [StatefulWidget] that contains all the photo view rendering elements.
 ///
 /// Sample code to use within an image:
@@ -238,7 +243,8 @@ class PhotoView extends StatefulWidget {
     this.wantKeepAlive = false,
     this.gaplessPlayback = false,
     this.heroAttributes,
-    this.controllerChangedCallback,
+    this.onPageBuild,
+    required this.controllerCallbackBuilder,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.semanticLabel,
@@ -279,7 +285,8 @@ class PhotoView extends StatefulWidget {
     this.backgroundDecoration,
     this.wantKeepAlive = false,
     this.heroAttributes,
-    this.controllerChangedCallback,
+    this.onPageBuild,
+    required this.controllerCallbackBuilder,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.controller,
@@ -346,7 +353,11 @@ class PhotoView extends StatefulWidget {
   /// by default it is `MediaQuery.of(context).size`.
   final Size? customSize;
 
-  final ValueChanged<PhotoViewControllerBase?>? controllerChangedCallback;
+  // Called when a new PhotoView widget is built
+  final ValueChanged<PhotoViewControllerBase>? onPageBuild;
+
+  // Called from the parent during page change to get the new controller
+  final PhotoViewControllerCallbackBuilder controllerCallbackBuilder;
 
   /// A [Function] to be called whenever the scaleState changes, this happens when the user double taps the content ou start to pinch-in.
   final ValueChanged<PhotoViewScaleState>? scaleStateChangedCallback;
@@ -462,7 +473,7 @@ class _PhotoViewState extends State<PhotoView>
     if (widget.controller == null) {
       _controlledController = true;
       _controller = PhotoViewController();
-      widget.controllerChangedCallback?.call(_controller);
+      widget.onPageBuild?.call(_controller);
     } else {
       _controlledController = false;
       _controller = widget.controller!;
@@ -477,6 +488,8 @@ class _PhotoViewState extends State<PhotoView>
     }
 
     _scaleStateController.outputScaleStateStream.listen(scaleStateListener);
+    // Pass a ref to the method back to the gallery so it can fetch the controller on page changes
+    widget.controllerCallbackBuilder(_controllerGetter);
   }
 
   @override
@@ -485,7 +498,7 @@ class _PhotoViewState extends State<PhotoView>
       if (!_controlledController) {
         _controlledController = true;
         _controller = PhotoViewController();
-        widget.controllerChangedCallback?.call(_controller);
+        widget.onPageBuild?.call(_controller);
       }
     } else {
       _controlledController = false;
@@ -508,7 +521,6 @@ class _PhotoViewState extends State<PhotoView>
   void dispose() {
     if (_controlledController) {
       _controller.dispose();
-      widget.controllerChangedCallback?.call(null);
     }
     if (_controlledScaleStateController) {
       _scaleStateController.dispose();
@@ -521,6 +533,8 @@ class _PhotoViewState extends State<PhotoView>
       widget.scaleStateChangedCallback!(_scaleStateController.scaleState);
     }
   }
+
+  PhotoViewControllerBase _controllerGetter() => _controller;
 
   @override
   Widget build(BuildContext context) {

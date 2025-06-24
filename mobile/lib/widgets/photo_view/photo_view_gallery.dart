@@ -4,13 +4,14 @@ import 'package:immich_mobile/widgets/photo_view/photo_view.dart'
     show
         LoadingBuilder,
         PhotoView,
+        PhotoViewControllerCallback,
+        PhotoViewImageDragEndCallback,
+        PhotoViewImageDragStartCallback,
+        PhotoViewImageDragUpdateCallback,
+        PhotoViewImageLongPressStartCallback,
+        PhotoViewImageScaleEndCallback,
         PhotoViewImageTapDownCallback,
         PhotoViewImageTapUpCallback,
-        PhotoViewImageDragStartCallback,
-        PhotoViewImageDragEndCallback,
-        PhotoViewImageDragUpdateCallback,
-        PhotoViewImageScaleEndCallback,
-        PhotoViewImageLongPressStartCallback,
         ScaleStateCycle;
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_controller.dart';
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_scalestate_controller.dart';
@@ -19,7 +20,8 @@ import 'package:immich_mobile/widgets/photo_view/src/photo_view_scale_state.dart
 import 'package:immich_mobile/widgets/photo_view/src/utils/photo_view_hero_attributes.dart';
 
 /// A type definition for a [Function] that receives a index after a page change in [PhotoViewGallery]
-typedef PhotoViewGalleryPageChangedCallback = void Function(int index);
+typedef PhotoViewGalleryPageChangedCallback = void Function(
+    int index, PhotoViewControllerBase controller);
 
 /// A type definition for a [Function] that defines a page in [PhotoViewGallery.build]
 typedef PhotoViewGalleryBuilder = PhotoViewGalleryPageOptions Function(
@@ -114,7 +116,7 @@ class PhotoViewGallery extends StatefulWidget {
     this.reverse = false,
     this.pageController,
     this.onPageChanged,
-    this.controllerChangedCallback,
+    this.onPageBuild,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.scrollPhysics,
@@ -139,7 +141,7 @@ class PhotoViewGallery extends StatefulWidget {
     this.reverse = false,
     this.pageController,
     this.onPageChanged,
-    this.controllerChangedCallback,
+    this.onPageBuild,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.scrollPhysics,
@@ -187,8 +189,8 @@ class PhotoViewGallery extends StatefulWidget {
   /// An callback to be called on a page change
   final PhotoViewGalleryPageChangedCallback? onPageChanged;
 
-  /// Mirror to [PhotoView.controllerChangedCallback]
-  final ValueChanged<PhotoViewControllerBase?>? controllerChangedCallback;
+  /// Mirror to [PhotoView.onPageBuild]
+  final ValueChanged<PhotoViewControllerBase>? onPageBuild;
 
   /// Mirror to [PhotoView.scaleStateChangedCallback]
   final ValueChanged<PhotoViewScaleState>? scaleStateChangedCallback;
@@ -216,6 +218,7 @@ class PhotoViewGallery extends StatefulWidget {
 class _PhotoViewGalleryState extends State<PhotoViewGallery> {
   late final PageController _controller =
       widget.pageController ?? PageController();
+  late PhotoViewControllerCallback _getController;
 
   void scaleStateChangedCallback(PhotoViewScaleState scaleState) {
     if (widget.scaleStateChangedCallback != null) {
@@ -234,6 +237,14 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
     return widget.pageOptions!.length;
   }
 
+  void _getControllerCallbackBuilder(PhotoViewControllerCallback method) {
+    _getController = method;
+  }
+
+  void _onPageChange(int page) {
+    widget.onPageChanged?.call(page, _getController());
+  }
+
   @override
   Widget build(BuildContext context) {
     // Enable corner hit test
@@ -242,7 +253,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
       child: PageView.builder(
         reverse: widget.reverse,
         controller: _controller,
-        onPageChanged: widget.onPageChanged,
+        onPageChanged: _onPageChange,
         itemCount: itemCount,
         itemBuilder: _buildItem,
         scrollDirection: widget.scrollDirection,
@@ -265,7 +276,8 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             controller: pageOption.controller,
             scaleStateController: pageOption.scaleStateController,
             customSize: widget.customSize,
-            controllerChangedCallback: widget.controllerChangedCallback,
+            onPageBuild: widget.onPageBuild,
+            controllerCallbackBuilder: _getControllerCallbackBuilder,
             scaleStateChangedCallback: scaleStateChangedCallback,
             enableRotation: widget.enableRotation,
             initialScale: pageOption.initialScale,
@@ -297,7 +309,8 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             semanticLabel: pageOption.semanticLabel,
             wantKeepAlive: widget.wantKeepAlive,
             controller: pageOption.controller,
-            controllerChangedCallback: widget.controllerChangedCallback,
+            onPageBuild: widget.onPageBuild,
+            controllerCallbackBuilder: _getControllerCallbackBuilder,
             scaleStateController: pageOption.scaleStateController,
             customSize: widget.customSize,
             gaplessPlayback: widget.gaplessPlayback,
