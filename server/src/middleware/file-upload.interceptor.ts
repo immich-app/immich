@@ -10,6 +10,8 @@ import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { RouteKey } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MetadataRepository } from 'src/repositories/metadata.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { ImmichFile, UploadFile, UploadFiles } from 'src/types';
 import { asRequest, mapToUploadFile } from 'src/utils/asset.util';
@@ -55,6 +57,8 @@ export class FileUploadInterceptor implements NestInterceptor {
     private reflect: Reflector,
     private assetService: AssetMediaService,
     private logger: LoggingRepository,
+    private metadataRepository: MetadataRepository,
+    private storageRepository: StorageRepository,
   ) {
     this.logger.setContext(FileUploadInterceptor.name);
 
@@ -133,6 +137,9 @@ export class FileUploadInterceptor implements NestInterceptor {
         hash.destroy();
         callback(error);
       } else {
+        if (this.isAssetUploadFile(file) && info?.path) {
+          await this.processExifCreationTime(info.path, request, file);
+        }
         callback(null, { ...info, checksum: hash.digest() });
       }
     });
@@ -165,6 +172,30 @@ export class FileUploadInterceptor implements NestInterceptor {
       default: {
         return null;
       }
+    }
+  }
+
+  private async processExifCreationTime(filePath: string, request: AuthRequest, file: Express.Multer.File) {
+    try {
+      const exifTags = await this.metadataRepository.readTags(filePath);
+      
+      const hasCreationTime = exifTags.DateTimeOriginal || 
+                             exifTags.CreateDate || 
+                             exifTags.CreationDate;
+      
+      if (!hasCreationTime) {
+        const stats = await this.storageRepository.stat(filePath);
+        const creationTime = stats.birthtime || stats.mtime;
+        
+        await this.metadataRepository.writeTags(filePath, {
+          DateTimeOriginal: creationTime,
+          CreateDate: creationTime,
+        });
+        
+        this.logger.log(`Added creation time to EXIF for file: ${filePath}`);
+      }
+    } catch (error) {
+      this.logger.warn(`Failed to process EXIF creation time for ${filePath}: ${error.message}`);
     }
   }
 }
