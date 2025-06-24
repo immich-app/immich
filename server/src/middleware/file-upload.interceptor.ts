@@ -195,9 +195,12 @@ export class FileUploadInterceptor implements NestInterceptor {
         const stats = await this.storageRepository.stat(filePath);
         const creationTime = stats.birthtime || stats.mtime;
         
+        // Convert Date to EXIF datetime format (YYYY:MM:DD HH:MM:SS)
+        const exifDateTime = this.formatDateForExif(creationTime);
+        
         await this.metadataRepository.writeTags(filePath, {
-          DateTimeOriginal: creationTime,
-          CreateDate: creationTime,
+          DateTimeOriginal: exifDateTime,
+          CreateDate: exifDateTime,
         });
         
         this.logger.log(`Added creation time to EXIF for file: ${filePath}`);
@@ -205,5 +208,16 @@ export class FileUploadInterceptor implements NestInterceptor {
     } catch (error) {
       this.logger.warn(`Failed to process EXIF creation time for ${filePath}: ${error.message}`);
     }
+  }
+
+  private formatDateForExif(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}:${month}:${day} ${hours}:${minutes}:${seconds}`;
   }
 }
