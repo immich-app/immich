@@ -44,12 +44,16 @@ List<_Segment> _buildSegments({
   required List<Segment> layoutSegments,
   required double timelineHeight,
 }) {
+  const double offsetThreshold = 20.0;
+
   final segments = <_Segment>[];
   if (layoutSegments.isEmpty || layoutSegments.first.bucket is! TimeBucket) {
     return [];
   }
 
   final formatter = DateFormat.yMMM();
+  DateTime? lastDate;
+  double lastOffset = -offsetThreshold;
   for (final layoutSegment in layoutSegments) {
     final scrollPercentage =
         layoutSegment.startOffset / layoutSegments.last.endOffset;
@@ -58,13 +62,21 @@ List<_Segment> _buildSegments({
     final date = (layoutSegment.bucket as TimeBucket).date;
     final label = formatter.format(date);
 
+    final showSegment = lastOffset + offsetThreshold <= startOffset &&
+        (lastDate == null || date.year != lastDate.year);
+
     segments.add(
       _Segment(
         date: date,
         startOffset: startOffset,
         scrollLabel: label,
+        showSegment: showSegment,
       ),
     );
+    lastDate = date;
+    if (showSegment) {
+      lastOffset = startOffset;
+    }
   }
 
   return segments;
@@ -317,6 +329,16 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
       child: Stack(
         children: [
           RepaintBoundary(child: widget.child),
+          // Scroll Segments
+          for (final segment in _segments)
+            PositionedDirectional(
+              top: widget.topPadding + segment.startOffset,
+              end: 100,
+              child: _AnimatedVisibility(
+                visible: _isDragging,
+                child: _SegmentWidget(segment),
+              ),
+            ),
           PositionedDirectional(
             top: _thumbTopOffset + widget.topPadding,
             end: 0,
@@ -335,6 +357,60 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AnimatedVisibility extends StatelessWidget {
+  final bool visible;
+  final Widget child;
+
+  const _AnimatedVisibility({
+    required this.visible,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: kTimelineScrubberFadeInDuration,
+      transitionBuilder: (child, animation) =>
+          _SlideFadeTransition(animation: animation, child: child),
+      child: visible ? child : const SizedBox.shrink(),
+    );
+  }
+}
+
+class _SegmentWidget extends StatelessWidget {
+  final _Segment _segment;
+
+  const _SegmentWidget(this._segment);
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        margin: const EdgeInsets.only(right: 12.0),
+        child: Material(
+          elevation: 4.0,
+          color: context.colorScheme.inverseSurface,
+          borderRadius: const BorderRadius.all(Radius.circular(16.0)),
+          child: _segment.showSegment
+              ? Container(
+                  constraints: const BoxConstraints(maxHeight: 28),
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  alignment: Alignment.center,
+                  child: Text(
+                    _segment.date.year.toString(),
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      color: context.colorScheme.onInverseSurface,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
       ),
     );
   }
@@ -506,22 +582,26 @@ class _Segment {
   final DateTime date;
   final double startOffset;
   final String scrollLabel;
+  final bool showSegment;
 
   const _Segment({
     required this.date,
     required this.startOffset,
     required this.scrollLabel,
+    this.showSegment = false,
   });
 
   _Segment copyWith({
     DateTime? date,
     double? startOffset,
     String? scrollLabel,
+    bool? showSegment,
   }) {
     return _Segment(
       date: date ?? this.date,
       startOffset: startOffset ?? this.startOffset,
       scrollLabel: scrollLabel ?? this.scrollLabel,
+      showSegment: showSegment ?? this.showSegment,
     );
   }
 
