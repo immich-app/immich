@@ -138,9 +138,17 @@ export class FileUploadInterceptor implements NestInterceptor {
         callback(error);
       } else {
         if (this.isAssetUploadFile(file) && info?.path) {
-          await this.processExifCreationTime(info.path, request, file);
+          this.processExifCreationTime(info.path, request, file)
+            .then(() => {
+              callback(null, { ...info, checksum: hash.digest() });
+            })
+            .catch((processError) => {
+              this.logger.warn(`EXIF processing failed but continuing with upload: ${processError.message}`);
+              callback(null, { ...info, checksum: hash.digest() });
+            });
+        } else {
+          callback(null, { ...info, checksum: hash.digest() });
         }
-        callback(null, { ...info, checksum: hash.digest() });
       }
     });
   }
