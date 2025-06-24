@@ -206,7 +206,8 @@ export class FileUploadInterceptor implements NestInterceptor {
         this.logger.log(`Added creation time to EXIF for file: ${filePath}`);
       }
     } catch (error) {
-      this.logger.warn(`Failed to process EXIF creation time for ${filePath}: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to process EXIF creation time for ${filePath}: ${errorMessage}`);
     }
   }
 
