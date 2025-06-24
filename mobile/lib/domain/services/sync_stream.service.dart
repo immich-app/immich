@@ -1,21 +1,21 @@
 import 'dart:async';
 
-import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
-import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class SyncStreamService {
   final Logger _logger = Logger('SyncStreamService');
 
-  final ISyncApiRepository _syncApiRepository;
-  final ISyncStreamRepository _syncStreamRepository;
+  final SyncApiRepository _syncApiRepository;
+  final SyncStreamRepository _syncStreamRepository;
   final bool Function()? _cancelChecker;
 
   SyncStreamService({
-    required ISyncApiRepository syncApiRepository,
-    required ISyncStreamRepository syncStreamRepository,
+    required SyncApiRepository syncApiRepository,
+    required SyncStreamRepository syncStreamRepository,
     bool Function()? cancelChecker,
   })  : _syncApiRepository = syncApiRepository,
         _syncStreamRepository = syncStreamRepository,

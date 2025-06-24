@@ -5,7 +5,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { getConfig, type SystemConfigDto } from '@immich/sdk';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
 
   let config: SystemConfigDto | undefined = $state();
   let adminSettingsComponent = $state<ReturnType<typeof AdminSettings>>();
@@ -14,14 +14,12 @@
     config = await getConfig();
   });
 
-  export const save = async () => {
-    await adminSettingsComponent?.handleSave({ storageTemplate: config?.storageTemplate });
-  };
+  onDestroy(() => adminSettingsComponent?.handleSave({ storageTemplate: config?.storageTemplate }));
 </script>
 
 <div class="flex flex-col">
   <p>
-    <FormatMessage key="admin.storage_template_onboarding_description">
+    <FormatMessage key="admin.storage_template_onboarding_description_v2">
       {#snippet children({ message })}
         <a class="underline" href="https://immich.app/docs/administration/storage-template">{message}</a>
       {/snippet}

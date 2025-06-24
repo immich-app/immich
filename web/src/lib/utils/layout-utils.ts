@@ -96,6 +96,7 @@ export function justifiedLayout(assets: (TimelineAsset | AssetResponseDto)[], op
     containerWidth: options.rowWidth,
     boxSpacing: options.spacing,
     targetRowHeightTolerange: options.heightTolerance,
+    containerPadding: 0,
   };
 
   const result = createJustifiedLayout(

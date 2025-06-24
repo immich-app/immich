@@ -3,10 +3,10 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
-import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../fixtures/sync_stream.stub.dart';
@@ -30,8 +30,8 @@ class _MockCancellationWrapper extends Mock implements _CancellationWrapper {}
 
 void main() {
   late SyncStreamService sut;
-  late ISyncStreamRepository mockSyncStreamRepo;
-  late ISyncApiRepository mockSyncApiRepo;
+  late SyncStreamRepository mockSyncStreamRepo;
+  late SyncApiRepository mockSyncApiRepo;
   late Function(List<SyncEvent>, Function()) handleEventsCallback;
   late _MockAbortCallbackWrapper mockAbortCallbackWrapper;
 

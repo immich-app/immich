@@ -3,9 +3,9 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/hash.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../fixtures/album.stub.dart';
