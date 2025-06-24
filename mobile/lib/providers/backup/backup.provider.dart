@@ -9,8 +9,6 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/interfaces/backup_album.interface.dart';
-import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
@@ -24,6 +22,7 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
@@ -108,7 +107,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final BackgroundService _backgroundService;
   final GalleryPermissionNotifier _galleryPermissionNotifier;
   final AlbumMediaRepository _albumMediaRepository;
-  final IFileMediaRepository _fileMediaRepository;
+  final FileMediaRepository _fileMediaRepository;
   final BackupAlbumService _backupAlbumService;
   final Ref ref;
 

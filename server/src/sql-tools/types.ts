@@ -252,7 +252,7 @@ export enum DatabaseActionType {
   SET_DEFAULT = 'SET DEFAULT',
 }
 
-export type ColumnStorage = 'default' | 'external' | 'extended' | 'main' | 'default';
+export type ColumnStorage = 'default' | 'external' | 'extended' | 'main';
 
 export type ColumnType =
   | 'bigint'

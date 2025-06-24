@@ -3,14 +3,12 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:photo_manager/photo_manager.dart' hide AssetType;
 
 final fileMediaRepositoryProvider = Provider((ref) => FileMediaRepository());
 
-class FileMediaRepository implements IFileMediaRepository {
-  @override
+class FileMediaRepository {
   Future<Asset?> saveImage(
     Uint8List data, {
     required String title,
@@ -25,7 +23,6 @@ class FileMediaRepository implements IFileMediaRepository {
     return AssetMediaRepository.toAsset(entity);
   }
 
-  @override
   Future<Asset?> saveImageWithFile(
     String filePath, {
     String? title,
@@ -39,7 +36,6 @@ class FileMediaRepository implements IFileMediaRepository {
     return AssetMediaRepository.toAsset(entity);
   }
 
-  @override
   Future<Asset?> saveLivePhoto({
     required File image,
     required File video,
@@ -53,7 +49,6 @@ class FileMediaRepository implements IFileMediaRepository {
     return AssetMediaRepository.toAsset(entity);
   }
 
-  @override
   Future<Asset?> saveVideo(
     File file, {
     required String title,
@@ -67,14 +62,11 @@ class FileMediaRepository implements IFileMediaRepository {
     return AssetMediaRepository.toAsset(entity);
   }
 
-  @override
   Future<void> clearFileCache() => PhotoManager.clearFileCache();
 
-  @override
   Future<void> enableBackgroundAccess() =>
       PhotoManager.setIgnorePermissionCheck(true);
 
-  @override
   Future<void> requestExtendedPermissions() =>
       PhotoManager.requestPermissionExtend();
 }

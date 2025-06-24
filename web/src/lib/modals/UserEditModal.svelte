@@ -5,7 +5,7 @@
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, Field, Modal, ModalBody, ModalFooter, Switch } from '@immich/ui';
+  import { Button, Field, HStack, Modal, ModalBody, ModalFooter, Switch } from '@immich/ui';
   import { mdiAccountEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -115,11 +115,11 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full">
+    <HStack fullWidth>
       <Button shape="round" color="secondary" fullWidth form="edit-user-form" onclick={() => onClose()}
         >{$t('cancel')}</Button
       >
       <Button type="submit" shape="round" fullWidth form="edit-user-form">{$t('confirm')}</Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>

@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
 import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 
 import '../../test_utils/medium_factory.dart';
 
@@ -24,7 +24,7 @@ void main() {
   group('getAll', () {
     test('sorts albums by backupSelection & isIosSharedAlbum', () async {
       final localAlbumRepo =
-          mediumFactory.getRepository<ILocalAlbumRepository>();
+          mediumFactory.getRepository<DriftLocalAlbumRepository>();
       await localAlbumRepo.upsert(
         mediumFactory.localAlbum(
           id: '1',
