@@ -329,30 +329,31 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
       child: Stack(
         children: [
           RepaintBoundary(child: widget.child),
-          // Scroll Segments
-          for (final segment in _segments)
-            PositionedDirectional(
-              top: widget.topPadding + segment.startOffset,
-              end: 100,
-              child: _AnimatedVisibility(
-                visible: _isDragging,
-                child: _SegmentWidget(segment),
-              ),
+          // Scroll Segments - wrapped in RepaintBoundary for better performance
+          RepaintBoundary(
+            child: _SegmentsLayer(
+              key: ValueKey('segments_${_isDragging}_${_segments.length}'),
+              segments: _segments,
+              topPadding: widget.topPadding,
+              isDragging: _isDragging,
             ),
+          ),
           PositionedDirectional(
             top: _thumbTopOffset + widget.topPadding,
             end: 0,
-            child: Consumer(
-              builder: (_, ref, child) => GestureDetector(
-                onVerticalDragStart: (_) => _onDragStart(ref),
-                onVerticalDragUpdate: _onDragUpdate,
-                onVerticalDragEnd: (_) => _onDragEnd(ref),
-                child: child,
-              ),
-              child: _Scrubber(
-                thumbAnimation: _thumbAnimation,
-                labelAnimation: _labelAnimation,
-                label: label,
+            child: RepaintBoundary(
+              child: Consumer(
+                builder: (_, ref, child) => GestureDetector(
+                  onVerticalDragStart: (_) => _onDragStart(ref),
+                  onVerticalDragUpdate: _onDragUpdate,
+                  onVerticalDragEnd: (_) => _onDragEnd(ref),
+                  child: child,
+                ),
+                child: _Scrubber(
+                  thumbAnimation: _thumbAnimation,
+                  labelAnimation: _labelAnimation,
+                  label: label,
+                ),
               ),
             ),
           ),
@@ -362,22 +363,37 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
   }
 }
 
-class _AnimatedVisibility extends StatelessWidget {
-  final bool visible;
-  final Widget child;
+class _SegmentsLayer extends StatelessWidget {
+  final List<_Segment> segments;
+  final double topPadding;
+  final bool isDragging;
 
-  const _AnimatedVisibility({
-    required this.visible,
-    required this.child,
+  const _SegmentsLayer({
+    super.key,
+    required this.segments,
+    required this.topPadding,
+    required this.isDragging,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: kTimelineScrubberFadeInDuration,
-      transitionBuilder: (child, animation) =>
-          _SlideFadeTransition(animation: animation, child: child),
-      child: visible ? child : const SizedBox.shrink(),
+    return Visibility(
+      visible: isDragging,
+      child: Stack(
+        children: segments
+            .where((segment) => segment.showSegment)
+            .map(
+              (segment) => PositionedDirectional(
+                key: ValueKey('segment_${segment.date.millisecondsSinceEpoch}'),
+                top: topPadding + segment.startOffset,
+                end: 100,
+                child: RepaintBoundary(
+                  child: _SegmentWidget(segment),
+                ),
+              ),
+            )
+            .toList(),
+      ),
     );
   }
 }
@@ -393,23 +409,20 @@ class _SegmentWidget extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(right: 12.0),
         child: Material(
-          elevation: 4.0,
-          color: context.colorScheme.inverseSurface,
+          color: context.colorScheme.surface,
           borderRadius: const BorderRadius.all(Radius.circular(16.0)),
-          child: _segment.showSegment
-              ? Container(
-                  constraints: const BoxConstraints(maxHeight: 28),
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  alignment: Alignment.center,
-                  child: Text(
-                    _segment.date.year.toString(),
-                    style: context.textTheme.bodyLarge?.copyWith(
-                      color: context.colorScheme.onInverseSurface,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                )
-              : const SizedBox.shrink(),
+          child: Container(
+            constraints: const BoxConstraints(maxHeight: 28),
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            alignment: Alignment.center,
+            child: Text(
+              _segment.date.year.toString(),
+              style: context.textTheme.labelMedium?.copyWith(
+                fontFamily: "OverpassMono",
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ),
       ),
     );
