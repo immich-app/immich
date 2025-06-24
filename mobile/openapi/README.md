@@ -169,6 +169,8 @@ Class | Method | HTTP request | Description
 *PartnersApi* | [**removePartner**](doc//PartnersApi.md#removepartner) | **DELETE** /partners/{id} | 
 *PartnersApi* | [**updatePartner**](doc//PartnersApi.md#updatepartner) | **PUT** /partners/{id} | 
 *PeopleApi* | [**createPerson**](doc//PeopleApi.md#createperson) | **POST** /people | 
+*PeopleApi* | [**deletePeople**](doc//PeopleApi.md#deletepeople) | **DELETE** /people | 
+*PeopleApi* | [**deletePerson**](doc//PeopleApi.md#deleteperson) | **DELETE** /people/{id} | 
 *PeopleApi* | [**getAllPeople**](doc//PeopleApi.md#getallpeople) | **GET** /people | 
 *PeopleApi* | [**getPerson**](doc//PeopleApi.md#getperson) | **GET** /people/{id} | 
 *PeopleApi* | [**getPersonStatistics**](doc//PeopleApi.md#getpersonstatistics) | **GET** /people/{id}/statistics | 
