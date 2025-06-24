@@ -4,11 +4,11 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -47,7 +47,7 @@ final assetServiceProvider = Provider(
 class AssetService {
   final AssetApiRepository _assetApiRepository;
   final AssetRepository _assetRepository;
-  final IExifInfoRepository _exifInfoRepository;
+  final IsarExifRepository _exifInfoRepository;
   final IsarUserRepository _isarUserRepository;
   final ETagRepository _etagRepository;
   final BackupAlbumRepository _backupRepository;

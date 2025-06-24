@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../infrastructure/repository.mock.dart';
@@ -15,7 +15,7 @@ final _kBackupFailedSince = DateTime.utc(2023);
 
 void main() {
   late StoreService sut;
-  late IStoreRepository mockStoreRepo;
+  late IsarStoreRepository mockStoreRepo;
   late StreamController<StoreDto<Object>> controller;
 
   setUp(() async {
