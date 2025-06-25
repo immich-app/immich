@@ -125,8 +125,9 @@ jobs:
           ALIAS: ${{ secrets.ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          if [[ $IS_MAIN == 'true' ]]; then
             flutter build apk --release
             flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
           else
