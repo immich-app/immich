@@ -5,7 +5,7 @@ import {
   JobCountsDto,
   JobName,
   JobStatusDto,
-  sendJobCommand
+  sendJobCommand,
 } from '@immich/sdk';
 import { authenticate, BaseOptions, logError, withError } from 'src/utils';
 
@@ -42,7 +42,11 @@ const JOB_STATUS_COLUMN_HEADERS: Readonly<Record<keyof JobCountsDto, string>> = 
  * @param baseOptions Immich CLI base options.
  * @param commandOptions Options for the command, such as whether to output in JSON format.
  */
-export async function getJobsStatus(jobName: JobName | undefined, baseOptions: BaseOptions, commandOptions: GetJobStatusOptions) {
+export async function getJobsStatus(
+  jobName: JobName | undefined,
+  baseOptions: BaseOptions,
+  commandOptions: GetJobStatusOptions,
+) {
   await authenticate(baseOptions);
 
   if (jobName) {
@@ -75,13 +79,15 @@ export async function startJob(jobName: JobName, baseOptions: BaseOptions, comma
     force = undefined;
   }
 
-  const [error, response] = await withError(sendJobCommand({
-    id: jobName,
-    jobCommandDto: {
-      command: JobCommand.Start,
-      force,
-    }
-  }));
+  const [error, response] = await withError(
+    sendJobCommand({
+      id: jobName,
+      jobCommandDto: {
+        command: JobCommand.Start,
+        force,
+      },
+    }),
+  );
 
   if (error) {
     logError(error, `Failed to start job: ${jobName}. Got error`);
@@ -117,12 +123,14 @@ export async function pauseJobExecutions(jobName: JobName, baseOptions: BaseOpti
 
   ensureJobNameIsValid(jobName);
 
-  const [error, response] = await withError(sendJobCommand({
-    id: jobName,
-    jobCommandDto: {
-      command: JobCommand.Pause
-    }
-  }));
+  const [error, response] = await withError(
+    sendJobCommand({
+      id: jobName,
+      jobCommandDto: {
+        command: JobCommand.Pause,
+      },
+    }),
+  );
 
   if (error) {
     logError(error, `Failed to pause executions of job "${jobName}". Got error`);
@@ -143,17 +151,23 @@ export async function pauseJobExecutions(jobName: JobName, baseOptions: BaseOpti
  * @param baseOptions Immich CLI base options.
  * @param commandOptions Options for the command, such as whether to output in JSON format.
  */
-export async function resumeJobExecutions(jobName: JobName, baseOptions: BaseOptions, commandOptions: ResumeJobOptions) {
+export async function resumeJobExecutions(
+  jobName: JobName,
+  baseOptions: BaseOptions,
+  commandOptions: ResumeJobOptions,
+) {
   await authenticate(baseOptions);
 
   ensureJobNameIsValid(jobName);
 
-  const [error, response] = await withError(sendJobCommand({
-    id: jobName,
-    jobCommandDto: {
-      command: JobCommand.Resume
-    }
-  }));
+  const [error, response] = await withError(
+    sendJobCommand({
+      id: jobName,
+      jobCommandDto: {
+        command: JobCommand.Resume,
+      },
+    }),
+  );
 
   if (error) {
     logError(error, `Failed to resume executions of job "${jobName}". Got error`);
@@ -207,19 +221,21 @@ async function getStatusOfAllJobs(commandOptions: CommonJobStatusOptions) {
     return;
   }
 
-  console.table(Object.entries(status).map(([name, status]) => {
-    const row: Record<string, string | number | boolean> = {
-      name,
-      isQueueActive: status.queueStatus.isActive,
-      isQueuePaused: status.queueStatus.isPaused,
-    };
+  console.table(
+    Object.entries(status).map(([name, status]) => {
+      const row: Record<string, string | number | boolean> = {
+        name,
+        isQueueActive: status.queueStatus.isActive,
+        isQueuePaused: status.queueStatus.isPaused,
+      };
 
-    for (const [key, value] of Object.entries(status.jobCounts)) {
-      row[JOB_STATUS_COLUMN_HEADERS[key as keyof JobCountsDto]] = value;
-    }
+      for (const [key, value] of Object.entries(status.jobCounts)) {
+        row[JOB_STATUS_COLUMN_HEADERS[key as keyof JobCountsDto]] = value;
+      }
 
-    return row;
-  }));
+      return row;
+    }),
+  );
 }
 
 /**
@@ -237,7 +253,7 @@ async function waitForJobCompletion(jobName: JobName): Promise<JobStatusDto> {
       return jobStatus;
     }
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
 

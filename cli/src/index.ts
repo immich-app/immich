@@ -35,8 +35,7 @@ program
   .description('Remove stored credentials')
   .action(() => logout(program.opts()));
 
-const jobsCommand = program.createCommand('jobs')
-  .description('Manage background jobs');
+const jobsCommand = program.createCommand('jobs').description('Manage background jobs');
 
 jobsCommand
   .command('pause')
@@ -68,7 +67,7 @@ jobsCommand
   .usage('<jobName> [options]')
   .addOption(
     new Option('-w, --wait', 'Wait for the job to complete before returning')
-      .env("IMMICH_WAIT_JOB_COMPLETION")
+      .env('IMMICH_WAIT_JOB_COMPLETION')
       .default(false),
   )
   .addOption(
@@ -77,7 +76,10 @@ jobsCommand
       .default(false),
   )
   .addOption(
-    new Option('--all', 'Execute this job on all assets. Depending on the job, this may clear existing data previously created by the job')
+    new Option(
+      '--all',
+      'Execute this job on all assets. Depending on the job, this may clear existing data previously created by the job',
+    )
       .conflicts('refresh')
       .conflicts('onlyMissing'),
   )
@@ -87,16 +89,12 @@ jobsCommand
       .conflicts('all')
       .conflicts('refresh'),
   )
-  .addOption(
-    new Option('--refresh', '(Re)run this job on all assets')
-      .conflicts('all')
-      .conflicts('onlyMissing'),
-  )
+  .addOption(new Option('--refresh', '(Re)run this job on all assets').conflicts('all').conflicts('onlyMissing'))
   .argument('<jobName>', 'Name of the job to run')
   .action((jobName, options) => startJob(jobName, program.opts(), options));
 
 jobsCommand
-  .command("status")
+  .command('status')
   .description('Get the status of all jobs or the status of a specific job')
   .usage('[jobName] [options]')
   .addOption(
