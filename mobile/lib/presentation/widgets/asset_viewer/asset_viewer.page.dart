@@ -104,28 +104,32 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
-    if (index >= 0 && index < totalAssets) {
-      final asset = ref.read(timelineServiceProvider).getAsset(index);
-      await precacheImage(
-        getFullImageProvider(
-          asset,
-          size: Size(
-            context.width,
-            context.height,
-          ),
-        ),
-        context,
-        onError: (_, __) {},
-      );
+    if (index < 0 || index >= totalAssets) {
+      return;
     }
+
+    final asset = ref.read(timelineServiceProvider).getAsset(index);
+    await precacheImage(
+      getFullImageProvider(
+        asset,
+        size: Size(
+          context.width,
+          context.height,
+        ),
+      ),
+      context,
+      onError: (_, __) {},
+    );
   }
 
   void _onAssetChanged(int index) {
     // This will trigger the pre-caching of assets for the next and previous pages.
     // This ensures that the images are ready when the user navigates to them.
     ref.read(timelineServiceProvider).preCacheAssets(index).then((_) {
-      unawaited(_precacheImage((index - 1).clamp(0, totalAssets - 1)));
-      unawaited(_precacheImage((index + 1).clamp(0, totalAssets - 1)));
+      unawaited(_precacheImage((index - 1)));
+      unawaited(_precacheImage((index + 1)));
+      unawaited(_precacheImage((index - 2)));
+      unawaited(_precacheImage((index + 2)));
 
       final asset = ref.read(timelineServiceProvider).getAsset(index);
       ref.read(currentAssetNotifier.notifier).setAsset(asset);
@@ -140,17 +144,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onDragStart(
     BuildContext _,
     DragStartDetails details,
-    PhotoViewControllerBase controller,
+    PhotoViewControllerValue value,
   ) {
     dragDownPosition = details.localPosition;
-    initialPhotoViewState = controller.value;
+    initialPhotoViewState = value;
   }
 
-  void _onDragEnd(
-    BuildContext ctx,
-    DragEndDetails _,
-    PhotoViewControllerBase controller,
-  ) {
+  void _onDragEnd(BuildContext ctx, _, __) {
     dragInProgress = false;
     if (shouldPopOnDrag) {
       ctx.maybePop();
@@ -171,7 +171,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     setState(() {
       shouldPopOnDrag = false;
       hasDraggedDown = null;
-      controller.animateMultiple(
+      viewController?.animateMultiple(
         position: initialPhotoViewState.position,
         scale: initialPhotoViewState.scale,
         rotation: initialPhotoViewState.rotation,
@@ -180,11 +180,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     });
   }
 
-  void _onDragUpdate(
-    BuildContext ctx,
-    DragUpdateDetails details,
-    PhotoViewControllerBase controller,
-  ) {
+  void _onDragUpdate(BuildContext ctx, DragUpdateDetails details, _) {
     if (blockGestures) {
       return;
     }
@@ -193,18 +189,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final delta = details.localPosition - dragDownPosition;
     hasDraggedDown ??= delta.dy > 0;
     if (!hasDraggedDown! || showingBottomSheet) {
-      _handleDragUp(ctx, delta, controller);
+      _handleDragUp(ctx, delta);
       return;
     }
 
-    _handleDragDown(ctx, delta, controller);
+    _handleDragDown(ctx, delta);
   }
 
-  void _handleDragUp(
-    BuildContext ctx,
-    Offset delta,
-    PhotoViewControllerBase controller,
-  ) {
+  void _handleDragUp(BuildContext ctx, Offset delta) {
     const double openThreshold = 50;
     const double closeThreshold = 25;
 
@@ -212,14 +204,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final distanceToOrigin = (Offset.zero - position).distance;
 
     if (showingBottomSheet && distanceToOrigin < closeThreshold) {
-      controller.animateMultiple(position: Offset.zero);
       // Prevents the user from dragging the bottom sheet further down
       blockGestures = true;
       sheetCloseNotifier?.close();
       return;
     }
 
-    controller.updateMultiple(position: position);
+    viewController?.updateMultiple(position: position);
     if (showingBottomSheet && bottomSheetController.isAttached) {
       final centre = (ctx.height * _kBottomSheetMinimumExtent);
       bottomSheetController.jumpTo((centre + distanceToOrigin) / ctx.height);
@@ -261,7 +252,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           setState(() {
             showingBottomSheet = false;
             sheetCloseNotifier = null;
-            controller.animateMultiple(position: Offset.zero);
+            viewController?.animateMultiple(position: Offset.zero);
             shouldPopOnDrag = false;
             hasDraggedDown = null;
           });
@@ -304,11 +295,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     return false;
   }
 
-  void _handleDragDown(
-    BuildContext ctx,
-    Offset delta,
-    PhotoViewControllerBase controller,
-  ) {
+  void _handleDragDown(BuildContext ctx, Offset delta) {
     const double dragRatio = 0.2;
     const double popThreshold = 180;
 
@@ -324,7 +311,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     setState(() {
       backgroundOpacity = (255 * (1.0 - (scaleReduction / dragRatio))).round();
-      controller.updateMultiple(
+      viewController?.updateMultiple(
         position: initialPhotoViewState.position + delta,
         scale: updatedScale,
       );
@@ -358,12 +345,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       tightMode: true,
       initialScale: PhotoViewComputedScale.contained * 0.99,
       minScale: PhotoViewComputedScale.contained * 0.99,
-      errorBuilder: (_, __, ___) => FullImage(
-        asset,
-        fit: BoxFit.contain,
-        size: Size(
-          ctx.width,
-          ctx.height,
+      errorBuilder: (_, __, ___) => Container(
+        width: ctx.width,
+        height: ctx.height,
+        color: backgroundColor,
+        child: FullImage(
+          asset,
+          fit: BoxFit.contain,
+          size: Size(
+            ctx.width,
+            ctx.height,
+          ),
         ),
       ),
       onDragStart: _onDragStart,
@@ -387,6 +379,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       // Currently it is not possible to scroll the asset when the bottom sheet is open all the way.
       // Issue: https://github.com/flutter/flutter/issues/109037
       // TODO: Add a custom scrum builder once the fix lands on stable
+      backgroundColor: Colors.transparent,
       body: PhotoViewGallery.builder(
         gaplessPlayback: true,
         loadingBuilder: _placeholderBuilder,

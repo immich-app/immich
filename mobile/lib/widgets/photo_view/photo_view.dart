@@ -653,21 +653,21 @@ typedef PhotoViewImageTapDownCallback = Function(
 typedef PhotoViewImageDragStartCallback = Function(
   BuildContext context,
   DragStartDetails details,
-  PhotoViewControllerBase controller,
+  PhotoViewControllerValue controllerValue,
 );
 
 /// A type definition for a callback when the user drags
 typedef PhotoViewImageDragUpdateCallback = Function(
   BuildContext context,
   DragUpdateDetails details,
-  PhotoViewControllerBase controller,
+  PhotoViewControllerValue controllerValue,
 );
 
 /// A type definition for a callback when the user taps down the photoview region
 typedef PhotoViewImageDragEndCallback = Function(
   BuildContext context,
   DragEndDetails details,
-  PhotoViewControllerBase controller,
+  PhotoViewControllerValue controllerValue,
 );
 
 /// A type definition for a callback when a user finished scale

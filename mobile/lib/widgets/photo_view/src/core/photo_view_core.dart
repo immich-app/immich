@@ -294,18 +294,18 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     }
   }
 
-  void animatedControllerListener(
-    PhotoViewControllerAnimValue value,
-  ) {
-    if (value.position != null) {
-      animatePosition(controller.position, value.position!);
+  void _animateControllerPosition(Offset position) {
+    animatePosition(controller.position, position);
+  }
+
+  void _animateControllerScale(double scale) {
+    if (controller.scale != null) {
+      animateScale(controller.scale!, scale);
     }
-    if (value.scale != null && controller.scale != null) {
-      animateScale(controller.scale!, value.scale!);
-    }
-    if (value.rotation != null) {
-      animateRotation(controller.rotation, value.rotation!);
-    }
+  }
+
+  void _animateControllerRotation(double rotation) {
+    animateRotation(controller.rotation, rotation);
   }
 
   @override
@@ -313,7 +313,9 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     super.initState();
     initDelegate();
     addAnimateOnScaleStateUpdate(animateOnScaleStateUpdate);
-    controller.addAnimatedControllerListener(animatedControllerListener);
+    controller.positionAnimationBuilder(_animateControllerPosition);
+    controller.scaleAnimationBuilder(_animateControllerScale);
+    controller.rotationAnimationBuilder(_animateControllerRotation);
 
     cachedScaleBoundaries = widget.scaleBoundaries;
 
@@ -406,16 +408,22 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             onScaleUpdate: onScaleUpdate,
             onScaleEnd: onScaleEnd,
             onDragStart: widget.onDragStart != null
-                ? (details) =>
-                    widget.onDragStart!(context, details, widget.controller)
+                ? (details) => widget.onDragStart!(
+                      context,
+                      details,
+                      widget.controller.value,
+                    )
                 : null,
             onDragEnd: widget.onDragEnd != null
                 ? (details) =>
-                    widget.onDragEnd!(context, details, widget.controller)
+                    widget.onDragEnd!(context, details, widget.controller.value)
                 : null,
             onDragUpdate: widget.onDragUpdate != null
-                ? (details) =>
-                    widget.onDragUpdate!(context, details, widget.controller)
+                ? (details) => widget.onDragUpdate!(
+                      context,
+                      details,
+                      widget.controller.value,
+                    )
                 : null,
             hitDetector: this,
             onTapUp: widget.onTapUp != null
