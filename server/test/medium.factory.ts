@@ -7,6 +7,7 @@ import { AssetFace } from 'src/database';
 import { Albums, AssetJobStatus, Assets, DB, FaceSearch, Person, Sessions } from 'src/db';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetType, AssetVisibility, SourceType, SyncRequestType } from 'src/enum';
+import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
@@ -24,6 +25,7 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { UserRepository } from 'src/repositories/user.repository';
@@ -40,6 +42,7 @@ const sha256 = (value: string) => createHash('sha256').update(value).digest('bas
 
 // type Repositories = Omit<ServiceOverrides, 'access' | 'telemetry'>;
 type RepositoriesTypes = {
+  access: AccessRepository;
   activity: ActivityRepository;
   album: AlbumRepository;
   albumUser: AlbumUserRepository;
@@ -58,6 +61,7 @@ type RepositoriesTypes = {
   person: PersonRepository;
   search: SearchRepository;
   session: SessionRepository;
+  storage: StorageRepository;
   sync: SyncRepository;
   systemMetadata: SystemMetadataRepository;
   versionHistory: VersionHistoryRepository;
@@ -180,6 +184,10 @@ export const newMediumService = <R extends RepositoryOptions, S extends BaseServ
 
 export const getRepository = <K extends keyof RepositoriesTypes>(key: K, db: Kysely<DB>) => {
   switch (key) {
+    case 'access': {
+      return new AccessRepository(db);
+    }
+
     case 'activity': {
       return new ActivityRepository(db);
     }
@@ -352,6 +360,10 @@ const getRepositoryMock = <K extends keyof RepositoryMocks>(key: K) => {
       return automock(SessionRepository);
     }
 
+    case 'storage': {
+      return automock(StorageRepository, { args: [{ setContext: () => {} }] });
+    }
+
     case 'sync': {
       return automock(SyncRepository);
     }
@@ -411,7 +423,7 @@ export const asDeps = (repositories: ServiceOverrides) => {
     repositories.session || getRepositoryMock('session'),
     repositories.sharedLink,
     repositories.stack,
-    repositories.storage,
+    repositories.storage || getRepositoryMock('storage'),
     repositories.sync || getRepositoryMock('sync'),
     repositories.systemMetadata || getRepositoryMock('systemMetadata'),
     repositories.tag,

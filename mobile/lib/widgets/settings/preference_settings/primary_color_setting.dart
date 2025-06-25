@@ -137,8 +137,8 @@ class PrimaryColorSetting extends HookConsumerWidget {
                 dense: true,
                 activeColor: context.primaryColor,
                 tileColor: context.colorScheme.surfaceContainerHigh,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(15)),
                 ),
                 title: Text(
                   'theme_setting_system_primary_color_title'

@@ -60,6 +60,29 @@ describe(PersonController.name, () => {
     });
   });
 
+  describe('DELETE /people', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).delete('/people');
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should require uuids in the body', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .delete('/people')
+        .send({ ids: ['invalid'] });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest([expect.stringContaining('must be a UUID')]));
+    });
+
+    it('should respond with 204', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .delete(`/people`)
+        .send({ ids: [factory.uuid()] });
+      expect(status).toBe(204);
+      expect(service.deleteAll).toHaveBeenCalled();
+    });
+  });
+
   describe('GET /people/:id', () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).get(`/people/${factory.uuid()}`);
@@ -153,6 +176,25 @@ describe(PersonController.name, () => {
         .send({ birthDate: '9999-01-01' });
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest(['Birth date cannot be in the future']));
+    });
+  });
+
+  describe('DELETE /people/:id', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).delete(`/people/${factory.uuid()}`);
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should require a valid uuid', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).delete(`/people/invalid`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest([expect.stringContaining('must be a UUID')]));
+    });
+
+    it('should respond with 204', async () => {
+      const { status } = await request(ctx.getHttpServer()).delete(`/people/${factory.uuid()}`);
+      expect(status).toBe(204);
+      expect(service.delete).toHaveBeenCalled();
     });
   });
 

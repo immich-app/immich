@@ -4,14 +4,13 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:immich_mobile/domain/interfaces/asset_media.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/image/cache/thumbnail_image_cache_manager.dart';
 
 class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
-  final IAssetMediaRepository _assetMediaRepository =
+  final AssetMediaRepository _assetMediaRepository =
       const AssetMediaRepository();
   final CacheManager? cacheManager;
 

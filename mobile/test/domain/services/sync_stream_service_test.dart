@@ -1,11 +1,9 @@
-// ignore_for_file: avoid-declaring-call-method, avoid-unnecessary-futures
-
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -31,7 +29,7 @@ class _MockCancellationWrapper extends Mock implements _CancellationWrapper {}
 void main() {
   late SyncStreamService sut;
   late SyncStreamRepository mockSyncStreamRepo;
-  late ISyncApiRepository mockSyncApiRepo;
+  late SyncApiRepository mockSyncApiRepo;
   late Function(List<SyncEvent>, Function()) handleEventsCallback;
   late _MockAbortCallbackWrapper mockAbortCallbackWrapper;
 
@@ -46,7 +44,6 @@ void main() {
 
     when(() => mockSyncApiRepo.streamChanges(any()))
         .thenAnswer((invocation) async {
-      // ignore: avoid-unsafe-collection-methods
       handleEventsCallback = invocation.positionalArguments.first;
     });
 

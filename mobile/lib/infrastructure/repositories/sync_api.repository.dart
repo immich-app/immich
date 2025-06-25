@@ -3,24 +3,21 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
-class SyncApiRepository implements ISyncApiRepository {
+class SyncApiRepository {
   final Logger _logger = Logger('SyncApiRepository');
   final ApiService _api;
   SyncApiRepository(this._api);
 
-  @override
   Future<void> ack(List<String> data) {
     return _api.syncApi.sendSyncAck(SyncAckSetDto(acks: data));
   }
 
-  @override
   Future<void> streamChanges(
     Function(List<SyncEvent>, Function() abort) onData, {
     int batchSize = kSyncEventBatchSize,

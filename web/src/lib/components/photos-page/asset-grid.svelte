@@ -30,7 +30,12 @@
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { toTimelineAsset, type ScrubberListener, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
+  import {
+    getTimes,
+    toTimelineAsset,
+    type ScrubberListener,
+    type TimelinePlainYearMonth,
+  } from '$lib/utils/timeline-util';
   import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
@@ -766,6 +771,13 @@
   $effect(() => {
     if (shiftKeyIsDown && lastAssetMouseEvent) {
       void selectAssetCandidates(lastAssetMouseEvent);
+    }
+  });
+
+  $effect(() => {
+    if ($showAssetViewer) {
+      const { localDateTime } = getTimes($viewingAsset.fileCreatedAt, DateTime.local().offset / 60);
+      void timelineManager.loadMonthGroup({ year: localDateTime.year, month: localDateTime.month });
     }
   });
 </script>
