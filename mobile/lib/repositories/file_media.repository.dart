@@ -6,9 +6,11 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:photo_manager/photo_manager.dart' hide AssetType;
 
-final fileMediaRepositoryProvider = Provider((ref) => FileMediaRepository());
+final fileMediaRepositoryProvider =
+    Provider((ref) => const FileMediaRepository());
 
 class FileMediaRepository {
+  const FileMediaRepository();
   Future<Asset?> saveImage(
     Uint8List data, {
     required String title,

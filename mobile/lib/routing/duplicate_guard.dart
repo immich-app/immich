@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 
 /// Guards against duplicate navigation to this route
 class DuplicateGuard extends AutoRouteGuard {
-  DuplicateGuard();
+  const DuplicateGuard();
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     // Duplicate navigation

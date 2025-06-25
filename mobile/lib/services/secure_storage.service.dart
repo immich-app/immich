@@ -10,7 +10,7 @@ final secureStorageServiceProvider = Provider(
 class SecureStorageService {
   final SecureStorageRepository _secureStorageRepository;
 
-  SecureStorageService(this._secureStorageRepository);
+  const SecureStorageService(this._secureStorageRepository);
 
   Future<void> write(String key, String value) async {
     await _secureStorageRepository.write(key, value);

@@ -106,7 +106,7 @@ class AppRouter extends RootStackRouter {
     LocalAuthService localAuthService,
   ) {
     _authGuard = AuthGuard(apiService);
-    _duplicateGuard = DuplicateGuard();
+    _duplicateGuard = const DuplicateGuard();
     _lockedGuard =
         LockedGuard(apiService, secureStorageService, localAuthService);
     _backupPermissionGuard = BackupPermissionGuard(galleryPermissionNotifier);
@@ -365,5 +365,8 @@ class AppRouter extends RootStackRouter {
       page: MainTimelineRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
+    // required to handle all deeplinks in deep_link.service.dart
+    // auto_route_library#1722
+    RedirectRoute(path: '*', redirectTo: '/'),
   ];
 }

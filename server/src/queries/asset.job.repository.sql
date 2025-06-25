@@ -394,7 +394,6 @@ where
     "asset_job_status"."metadataExtractedAt" is null
     or "asset_job_status"."assetId" is null
   )
-  and "assets"."visibility" != $1
   and "assets"."deletedAt" is null
 
 -- AssetJobRepository.getForStorageTemplateJob

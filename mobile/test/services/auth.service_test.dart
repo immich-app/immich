@@ -187,7 +187,7 @@ void main() {
       when(() => authRepository.getPreferredWifiName())
           .thenReturn('DifferentWifi');
       when(() => authRepository.getExternalEndpointList()).thenReturn([
-        AuxilaryEndpoint(
+        const AuxilaryEndpoint(
           url: 'https://external.endpoint',
           status: AuxCheckStatus.valid,
         ),
@@ -214,11 +214,11 @@ void main() {
       when(() => authRepository.getPreferredWifiName())
           .thenReturn('DifferentWifi');
       when(() => authRepository.getExternalEndpointList()).thenReturn([
-        AuxilaryEndpoint(
+        const AuxilaryEndpoint(
           url: 'https://external.endpoint',
           status: AuxCheckStatus.valid,
         ),
-        AuxilaryEndpoint(
+        const AuxilaryEndpoint(
           url: 'https://external.endpoint2',
           status: AuxCheckStatus.valid,
         ),
@@ -249,11 +249,11 @@ void main() {
       when(() => authRepository.getPreferredWifiName())
           .thenReturn('DifferentWifi');
       when(() => authRepository.getExternalEndpointList()).thenReturn([
-        AuxilaryEndpoint(
+        const AuxilaryEndpoint(
           url: 'https://external.endpoint',
           status: AuxCheckStatus.valid,
         ),
-        AuxilaryEndpoint(
+        const AuxilaryEndpoint(
           url: 'https://external.endpoint2',
           status: AuxCheckStatus.valid,
         ),
@@ -302,7 +302,7 @@ void main() {
       when(() => authRepository.getPreferredWifiName())
           .thenReturn('DifferentWifi');
       when(() => authRepository.getExternalEndpointList()).thenReturn([
-        AuxilaryEndpoint(
+        const AuxilaryEndpoint(
           url: 'https://external.endpoint',
           status: AuxCheckStatus.valid,
         ),

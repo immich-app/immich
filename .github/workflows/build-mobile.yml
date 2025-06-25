@@ -73,7 +73,7 @@ jobs:
           cache: 'gradle'
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2.19.0
+        uses: subosito/flutter-action@395322a6cded4e9ed503aebd4cc1965625f8e59a # v2.20.0
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml

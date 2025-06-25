@@ -5,12 +5,12 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -25,7 +25,7 @@ class BackupVerificationService {
   final UserService _userService;
   final FileMediaRepository _fileMediaRepository;
   final AssetRepository _assetRepository;
-  final IExifInfoRepository _exifInfoRepository;
+  final IsarExifRepository _exifInfoRepository;
 
   const BackupVerificationService(
     this._userService,

@@ -14,6 +14,8 @@ import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 
 class Timeline extends StatelessWidget {
@@ -65,6 +67,8 @@ class _SliverTimelineState extends State<_SliverTimeline> {
         final asyncSegments = ref.watch(timelineSegmentProvider);
         final maxHeight =
             ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
+        final isMultiSelectEnabled =
+            ref.watch(multiSelectProvider.select((s) => s.isEnabled));
         return asyncSegments.widgetWhen(
           onData: (segments) {
             final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
@@ -86,10 +90,14 @@ class _SliverTimelineState extends State<_SliverTimeline> {
                       primary: true,
                       cacheExtent: maxHeight * 2,
                       slivers: [
-                        const ImmichSliverAppBar(
-                          floating: true,
-                          pinned: false,
-                          snap: false,
+                        SliverAnimatedOpacity(
+                          duration: Durations.medium1,
+                          opacity: isMultiSelectEnabled ? 0 : 1,
+                          sliver: const ImmichSliverAppBar(
+                            floating: true,
+                            pinned: false,
+                            snap: false,
+                          ),
                         ),
                         _SliverSegmentedList(
                           segments: segments,
@@ -114,6 +122,12 @@ class _SliverTimelineState extends State<_SliverTimeline> {
                       ],
                     ),
                   ),
+                  if (isMultiSelectEnabled)
+                    const Positioned(
+                      top: 60,
+                      left: 25,
+                      child: _MultiSelectStatusButton(),
+                    ),
                   const HomeBottomAppBar(),
                 ],
               ),
@@ -382,5 +396,29 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
     }
 
     childManager.didFinishLayout();
+  }
+}
+
+class _MultiSelectStatusButton extends ConsumerWidget {
+  const _MultiSelectStatusButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectCount =
+        ref.watch(multiSelectProvider.select((s) => s.selectedAssets.length));
+    return ElevatedButton.icon(
+      onPressed: () => ref.read(multiSelectProvider.notifier).clearSelection(),
+      icon: Icon(
+        Icons.close_rounded,
+        color: context.colorScheme.onPrimary,
+      ),
+      label: Text(
+        selectCount.toString(),
+        style: context.textTheme.titleMedium?.copyWith(
+          height: 2.5,
+          color: context.colorScheme.onPrimary,
+        ),
+      ),
+    );
   }
 }

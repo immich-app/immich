@@ -15,7 +15,7 @@ final assetRepositoryProvider =
     Provider((ref) => AssetRepository(ref.watch(dbProvider)));
 
 class AssetRepository extends DatabaseRepository {
-  AssetRepository(super.db);
+  const AssetRepository(super.db);
 
   Future<List<Asset>> getByAlbum(
     Album album, {

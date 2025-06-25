@@ -105,7 +105,9 @@ class QuickAccessButtons extends ConsumerWidget {
           color: context.colorScheme.onSurface.withAlpha(10),
           width: 1,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(20),
+        ),
         gradient: LinearGradient(
           colors: [
             context.colorScheme.primary.withAlpha(10),
@@ -240,7 +242,9 @@ class PeopleCollectionCard extends ConsumerWidget {
                 height: size,
                 width: size,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(20),
+                  ),
                   gradient: LinearGradient(
                     colors: [
                       context.colorScheme.primary.withAlpha(30),

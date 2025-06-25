@@ -8,7 +8,7 @@ import 'package:thumbhash/thumbhash.dart';
 class ThumbHashProvider extends ImageProvider<ThumbHashProvider> {
   final String thumbHash;
 
-  ThumbHashProvider({
+  const ThumbHashProvider({
     required this.thumbHash,
   });
 

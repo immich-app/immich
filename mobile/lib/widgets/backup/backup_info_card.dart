@@ -18,7 +18,9 @@ class BackupInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20), // if you need this
+        borderRadius: const BorderRadius.all(
+          Radius.circular(20), // if you need this
+        ),
         side: BorderSide(
           color: context.colorScheme.outlineVariant,
           width: 1,

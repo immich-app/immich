@@ -1,4 +1,4 @@
-import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
+import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
@@ -21,7 +21,7 @@ class MockAssetRepository extends Mock implements AssetRepository {}
 
 class MockBackupRepository extends Mock implements BackupAlbumRepository {}
 
-class MockExifInfoRepository extends Mock implements IExifInfoRepository {}
+class MockExifInfoRepository extends Mock implements IsarExifRepository {}
 
 class MockETagRepository extends Mock implements ETagRepository {}
 
