@@ -137,7 +137,7 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _scrollController ??= PrimaryScrollController.of(context);
+    _scrollController = PrimaryScrollController.of(context);
   }
 
   @override
