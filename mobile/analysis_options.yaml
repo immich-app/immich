@@ -131,64 +131,64 @@ dart_code_metrics:
   rules:
     # All rules from "recommended" preset
     # Show potential errors
-  #  - avoid-cascade-after-if-null
-  #  - avoid-collection-methods-with-unrelated-types
-  #  - avoid-duplicate-exports
+    - avoid-cascade-after-if-null
+    - avoid-collection-methods-with-unrelated-types
+    - avoid-duplicate-exports
   #  - avoid-dynamic
-  #  - avoid-missing-enum-constant-in-map
+    - avoid-missing-enum-constant-in-map
   #  - avoid-passing-async-when-sync-expected
-  #  - avoid-throw-in-catch-block
+    - avoid-throw-in-catch-block
     - avoid-unused-parameters
-  #  - avoid-unnecessary-type-assertions
-  #  - avoid-unnecessary-type-casts
-  #  - avoid-unrelated-type-assertions
-  #  - avoid-unrelated-type-casts
-  #  - no-empty-block
-  #  - no-equal-then-else
-  #  - prefer-correct-test-file-name
+    - avoid-unnecessary-type-assertions
+    - avoid-unnecessary-type-casts
+    - avoid-unrelated-type-assertions
+    - avoid-unrelated-type-casts
+    - no-empty-block
+    - no-equal-then-else
+    - prefer-correct-test-file-name
   #  - prefer-match-file-name
-  #  - prefer-return-await
-  #  - avoid-self-assignment
-  #  - avoid-self-compare
+    - prefer-return-await
+    - avoid-self-assignment
+    - avoid-self-compare
   #  - avoid-shadowing
   #  - prefer-iterable-of
-  #  - no-equal-switch-case
-  #  - no-equal-conditions
-  #  - avoid-equal-expressions
-  #  - avoid-missed-calls
-  #  - avoid-unnecessary-negations
-  #  - avoid-unused-generics
-  #  - function-always-returns-null
-  #  - avoid-throw-objects-without-tostring
+    - no-equal-switch-case
+    - no-equal-conditions
+    - avoid-equal-expressions
+    - avoid-missed-calls
+    - avoid-unnecessary-negations
+    - avoid-unused-generics
+    - function-always-returns-null
+    - avoid-throw-objects-without-tostring
   #  - avoid-unsafe-collection-methods
-  #  - prefer-wildcard-pattern
-  #  - no-equal-switch-expression-cases
-  #  - avoid-future-tostring
-  #  - avoid-unassigned-late-fields
-  #  - avoid-nested-futures
-  #  - avoid-generics-shadowing
-  #  - prefer-parentheses-with-if-null
-  #  - no-equal-nested-conditions
-  #  - avoid-shadowed-extension-methods
-  #  - avoid-unnecessary-conditionals
-  #  - avoid-double-slash-imports
-  #  - avoid-map-keys-contains
-  #  - prefer-correct-json-casts
-  #  - avoid-duplicate-mixins
+    - prefer-wildcard-pattern
+    - no-equal-switch-expression-cases
+    - avoid-future-tostring
+    - avoid-unassigned-late-fields
+    - avoid-nested-futures
+    - avoid-generics-shadowing
+    - prefer-parentheses-with-if-null
+    - no-equal-nested-conditions
+    - avoid-shadowed-extension-methods
+    - avoid-unnecessary-conditionals
+    - avoid-double-slash-imports
+    - avoid-map-keys-contains
+    - prefer-correct-json-casts
+    - avoid-duplicate-mixins
   #  - avoid-nullable-interpolation
   #  - avoid-unused-instances
-  #  - prefer-correct-for-loop-increment
-  #  - prefer-public-exception-classes
-  #  - avoid-uncaught-future-errors
-  #  - always-remove-listener
-  #  - avoid-unnecessary-setstate
-  #  - check-for-equals-in-render-object-setters
-  #  - consistent-update-render-object
-  #  - use-setstate-synchronously
-  #  - avoid-incomplete-copy-with
-  #  - proper-super-calls
-  #  - dispose-fields
-  #  - avoid-empty-setstate
+    - prefer-correct-for-loop-increment
+    - prefer-public-exception-classes
+    - avoid-uncaught-future-errors
+    - always-remove-listener
+    - avoid-unnecessary-setstate
+    - check-for-equals-in-render-object-setters
+    - consistent-update-render-object
+    - use-setstate-synchronously
+    - avoid-incomplete-copy-with
+    - proper-super-calls
+    - dispose-fields
+    - avoid-empty-setstate
   #  - avoid-state-constructors
   #  - avoid-recursive-widget-calls
   #  - avoid-missing-image-alt

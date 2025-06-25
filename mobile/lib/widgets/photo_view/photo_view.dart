@@ -470,6 +470,7 @@ class _PhotoViewState extends State<PhotoView>
 
   @override
   void didUpdateWidget(PhotoView oldWidget) {
+    super.didUpdateWidget(oldWidget);
     if (widget.controller == null) {
       if (!_controlledController) {
         _controlledController = true;
@@ -489,7 +490,6 @@ class _PhotoViewState extends State<PhotoView>
       _controlledScaleStateController = false;
       _scaleStateController = widget.scaleStateController!;
     }
-    super.didUpdateWidget(oldWidget);
   }
 
   @override

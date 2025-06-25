@@ -14,7 +14,7 @@ class StackService {
 
   Future<StackResponseDto?> getStack(String stackId) async {
     try {
-      return _api.stacksApi.getStack(stackId);
+      return await _api.stacksApi.getStack(stackId);
     } catch (error) {
       debugPrint("Error while fetching stack: $error");
     }
@@ -23,7 +23,7 @@ class StackService {
 
   Future<StackResponseDto?> createStack(List<String> assetIds) async {
     try {
-      return _api.stacksApi.createStack(
+      return await _api.stacksApi.createStack(
         StackCreateDto(assetIds: assetIds),
       );
     } catch (error) {

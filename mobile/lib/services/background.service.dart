@@ -164,7 +164,7 @@ class BackgroundService {
   }) async {
     try {
       if (_isBackgroundInitialized) {
-        return _backgroundChannel.invokeMethod<bool>(
+        return await _backgroundChannel.invokeMethod<bool>(
           'updateNotification',
           [title, content, progress, max, indeterminate, isDetail, onlyIfFG],
         );
