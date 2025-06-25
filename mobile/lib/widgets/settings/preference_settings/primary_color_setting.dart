@@ -7,9 +7,9 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/theme/color_scheme.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
+import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 
 class PrimaryColorSetting extends HookConsumerWidget {
   const PrimaryColorSetting({
@@ -136,8 +136,8 @@ class PrimaryColorSetting extends HookConsumerWidget {
                 dense: true,
                 activeColor: context.primaryColor,
                 tileColor: context.colorScheme.surfaceContainerHigh,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(15)),
                 ),
                 title: Text(
                   'theme_setting_system_primary_color_title'.tr(),

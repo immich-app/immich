@@ -138,7 +138,7 @@ class _ProfileIndicator extends ConsumerWidget {
         useRootNavigator: false,
         builder: (ctx) => const ImmichAppBarDialog(),
       ),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: const BorderRadius.all(Radius.circular(12)),
       child: Badge(
         label: Container(
           decoration: BoxDecoration(
@@ -185,7 +185,7 @@ class _BackupIndicator extends ConsumerWidget {
 
     return InkWell(
       onTap: () => context.pushRoute(const BackupControllerRoute()),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: const BorderRadius.all(Radius.circular(12)),
       child: Badge(
         label: Container(
           width: widgetSize / 2,

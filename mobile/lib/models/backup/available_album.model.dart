@@ -4,7 +4,7 @@ class AvailableAlbum {
   final Album album;
   final int assetCount;
   final DateTime? lastBackup;
-  AvailableAlbum({
+  const AvailableAlbum({
     required this.album,
     required this.assetCount,
     this.lastBackup,

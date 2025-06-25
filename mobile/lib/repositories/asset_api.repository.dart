@@ -56,18 +56,12 @@ class AssetApiRepository extends ApiRepository {
     );
   }
 
-  _mapVisibility(AssetVisibilityEnum visibility) {
-    switch (visibility) {
-      case AssetVisibilityEnum.timeline:
-        return AssetVisibility.timeline;
-      case AssetVisibilityEnum.hidden:
-        return AssetVisibility.hidden;
-      case AssetVisibilityEnum.locked:
-        return AssetVisibility.locked;
-      case AssetVisibilityEnum.archive:
-        return AssetVisibility.archive;
-    }
-  }
+  _mapVisibility(AssetVisibilityEnum visibility) => switch (visibility) {
+        AssetVisibilityEnum.timeline => AssetVisibility.timeline,
+        AssetVisibilityEnum.hidden => AssetVisibility.hidden,
+        AssetVisibilityEnum.locked => AssetVisibility.locked,
+        AssetVisibilityEnum.archive => AssetVisibility.archive,
+      };
 
   Future<String?> getAssetMIMEType(String assetId) async {
     final response = await checkNull(_api.getAssetInfo(assetId));

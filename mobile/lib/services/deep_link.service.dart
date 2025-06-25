@@ -25,7 +25,7 @@ class DeepLinkService {
   final CurrentAsset _currentAsset;
   final CurrentAlbum _currentAlbum;
 
-  DeepLinkService(
+  const DeepLinkService(
     this._memoryService,
     this._assetService,
     this._albumService,
@@ -38,16 +38,12 @@ class DeepLinkService {
     final intent = link.uri.host;
     final queryParams = link.uri.queryParameters;
 
-    PageRouteInfo<dynamic>? deepLinkRoute;
-
-    switch (intent) {
-      case "memory":
-        deepLinkRoute = await _buildMemoryDeepLink(queryParams['id'] ?? '');
-      case "asset":
-        deepLinkRoute = await _buildAssetDeepLink(queryParams['id'] ?? '');
-      case "album":
-        deepLinkRoute = await _buildAlbumDeepLink(queryParams['id'] ?? '');
-    }
+    PageRouteInfo<dynamic>? deepLinkRoute = switch (intent) {
+      "memory" => await _buildMemoryDeepLink(queryParams['id'] ?? ''),
+      "asset" => await _buildAssetDeepLink(queryParams['id'] ?? ''),
+      "album" => await _buildAlbumDeepLink(queryParams['id'] ?? ''),
+      _ => null,
+    };
 
     // Deep link resolution failed, safely handle it based on the app state
     if (deepLinkRoute == null) {
@@ -98,7 +94,7 @@ class DeepLinkService {
     ]);
   }
 
-  Future<MemoryRoute?> _buildMemoryDeepLink(String memoryId) async {
+  Future<PageRouteInfo?> _buildMemoryDeepLink(String memoryId) async {
     final memory = await _memoryService.getMemoryById(memoryId);
 
     if (memory == null) {
@@ -108,7 +104,7 @@ class DeepLinkService {
     return MemoryRoute(memories: [memory], memoryIndex: 0);
   }
 
-  Future<GalleryViewerRoute?> _buildAssetDeepLink(String assetId) async {
+  Future<PageRouteInfo?> _buildAssetDeepLink(String assetId) async {
     final asset = await _assetService.getAssetByRemoteId(assetId);
 
     if (asset == null) {
@@ -126,7 +122,7 @@ class DeepLinkService {
     );
   }
 
-  Future<AlbumViewerRoute?> _buildAlbumDeepLink(String albumId) async {
+  Future<PageRouteInfo?> _buildAlbumDeepLink(String albumId) async {
     final album = await _albumService.getAlbumByRemoteId(albumId);
 
     if (album == null) {

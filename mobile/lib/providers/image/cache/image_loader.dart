@@ -42,6 +42,6 @@ class ImageLoader {
     }
 
     // If we get here, the image failed to load from the cache stream
-    throw ImageLoadingException('Could not load image from stream');
+    throw const ImageLoadingException('Could not load image from stream');
   }
 }

@@ -11,7 +11,7 @@ final widgetServiceProvider = Provider((ref) {
 class WidgetService {
   final WidgetRepository _repository;
 
-  WidgetService(this._repository);
+  const WidgetService(this._repository);
 
   Future<void> writeCredentials(String serverURL, String sessionKey) async {
     await _repository.setAppGroupId(appShareGroupId);

@@ -13,7 +13,7 @@ class NetworkService {
   final NetworkRepository _repository;
   final IPermissionRepository _permissionRepository;
 
-  NetworkService(this._repository, this._permissionRepository);
+  const NetworkService(this._repository, this._permissionRepository);
 
   Future<bool> getLocationWhenInUserPermission() {
     return _permissionRepository.hasLocationWhenInUsePermission();

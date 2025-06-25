@@ -1,5 +1,3 @@
-// ignore_for_file: avoid-declaring-call-method, avoid-unnecessary-futures
-
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -46,7 +44,6 @@ void main() {
 
     when(() => mockSyncApiRepo.streamChanges(any()))
         .thenAnswer((invocation) async {
-      // ignore: avoid-unsafe-collection-methods
       handleEventsCallback = invocation.positionalArguments.first;
     });
 

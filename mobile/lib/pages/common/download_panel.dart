@@ -90,8 +90,10 @@ class DownloadTaskTile extends StatelessWidget {
       width: context.width - 32,
       child: Card(
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(16),
+          ),
         ),
         child: ListTile(
           minVerticalPadding: 18,

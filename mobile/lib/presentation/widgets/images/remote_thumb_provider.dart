@@ -15,7 +15,7 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
   final double width;
   final CacheManager? cacheManager;
 
-  RemoteThumbProvider({
+  const RemoteThumbProvider({
     required this.assetId,
     this.height = kTimelineFixedTileExtent,
     this.width = kTimelineFixedTileExtent,

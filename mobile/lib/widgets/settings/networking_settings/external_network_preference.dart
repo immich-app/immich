@@ -17,8 +17,9 @@ class ExternalNetworkPreference extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final entries =
-        useState([AuxilaryEndpoint(url: '', status: AuxCheckStatus.unknown)]);
+    final entries = useState(
+      [const AuxilaryEndpoint(url: '', status: AuxCheckStatus.unknown)],
+    );
     final canSave = useState(false);
 
     saveEndpointList() {
@@ -169,7 +170,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                           ? () {
                               entries.value = [
                                 ...entries.value,
-                                AuxilaryEndpoint(
+                                const AuxilaryEndpoint(
                                   url: '',
                                   status: AuxCheckStatus.unknown,
                                 ),

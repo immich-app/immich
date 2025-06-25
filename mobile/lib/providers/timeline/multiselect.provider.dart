@@ -14,7 +14,7 @@ final multiSelectProvider =
 class MultiSelectState {
   final Set<BaseAsset> selectedAssets;
 
-  MultiSelectState({
+  const MultiSelectState({
     required this.selectedAssets,
   });
 
@@ -50,7 +50,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   MultiSelectState build() {
     _timelineService = ref.read(timelineServiceProvider);
 
-    return MultiSelectState(
+    return const MultiSelectState(
       selectedAssets: {},
     );
   }

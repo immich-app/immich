@@ -185,7 +185,7 @@ class MapAssetGrid extends HookConsumerWidget {
                         },
                         loading: () => const SizedBox.shrink(),
                       )
-                  : _MapNoAssetsInSheet(),
+                  : const _MapNoAssetsInSheet(),
             ),
           ),
           _MapSheetDragRegion(
@@ -201,6 +201,8 @@ class MapAssetGrid extends HookConsumerWidget {
 }
 
 class _MapNoAssetsInSheet extends StatelessWidget {
+  const _MapNoAssetsInSheet();
+
   @override
   Widget build(BuildContext context) {
     const image = Image(

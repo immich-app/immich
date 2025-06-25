@@ -4,7 +4,7 @@ class RootFolder {
   final List<RecursiveFolder> subfolders;
   final String path;
 
-  RootFolder({
+  const RootFolder({
     required this.subfolders,
     required this.path,
   });

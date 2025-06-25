@@ -8,7 +8,7 @@ import 'package:immich_mobile/repositories/asset.repository.dart';
 class EntityService {
   final AssetRepository _assetRepository;
   final IsarUserRepository _isarUserRepository;
-  EntityService(
+  const EntityService(
     this._assetRepository,
     this._isarUserRepository,
   );
