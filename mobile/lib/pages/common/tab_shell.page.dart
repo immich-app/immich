@@ -11,13 +11,12 @@ import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 
 @RoutePage()
-class TabShellPage extends HookConsumerWidget {
+class TabShellPage extends ConsumerWidget {
   const TabShellPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isScreenLandscape =
-        MediaQuery.orientationOf(context) == Orientation.landscape;
+    final isScreenLandscape = context.orientation == Orientation.landscape;
 
     Widget buildIcon({required Widget icon, required bool isProcessing}) {
       if (!isProcessing) return icon;
@@ -173,9 +172,9 @@ class TabShellPage extends HookConsumerWidget {
                     ],
                   )
                 : heroedChild,
-            // bottomNavigationBar: multiselectEnabled || isScreenLandscape
-            //     ? null
-            //     : bottomNavigationBar(tabsRouter),
+            bottomNavigationBar: multiselectEnabled || isScreenLandscape
+                ? null
+                : bottomNavigationBar(tabsRouter),
           ),
         );
       },

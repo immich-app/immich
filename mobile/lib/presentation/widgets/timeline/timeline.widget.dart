@@ -16,7 +16,6 @@ import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
-import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 
 class Timeline extends StatelessWidget {
   const Timeline({super.key});
@@ -122,13 +121,14 @@ class _SliverTimelineState extends State<_SliverTimeline> {
                       ],
                     ),
                   ),
-                  if (isMultiSelectEnabled)
+                  if (isMultiSelectEnabled) ...[
                     const Positioned(
                       top: 60,
                       left: 25,
                       child: _MultiSelectStatusButton(),
                     ),
-                  const HomeBottomAppBar(),
+                    const HomeBottomAppBar(),
+                  ],
                 ],
               ),
             );
