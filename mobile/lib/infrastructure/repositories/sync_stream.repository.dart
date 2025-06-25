@@ -21,14 +21,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> deleteUsersV1(Iterable<SyncUserDeleteV1> data) async {
     try {
-      await _db.batch((batch) {
-        for (final user in data) {
-          batch.delete(
-            _db.userEntity,
-            UserEntityCompanion(id: Value(user.userId)),
-          );
-        }
-      });
+      await _db.userEntity
+          .deleteWhere((row) => row.id.isIn(data.map((e) => e.userId)));
     } catch (error, stack) {
       _logger.severe('Error: SyncUserDeleteV1', error, stack);
       rethrow;
@@ -104,14 +98,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     String debugLabel = 'user',
   }) async {
     try {
-      await _db.batch((batch) {
-        for (final asset in data) {
-          batch.delete(
-            _db.remoteAssetEntity,
-            RemoteAssetEntityCompanion(id: Value(asset.assetId)),
-          );
-        }
-      });
+      await _db.remoteAssetEntity
+          .deleteWhere((row) => row.id.isIn(data.map((e) => e.assetId)));
     } catch (e, s) {
       _logger.severe('Error: deleteAssetsV1 - $debugLabel', e, s);
       rethrow;
@@ -199,14 +187,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> deleteAlbumsV1(Iterable<SyncAlbumDeleteV1> data) async {
     try {
-      await _db.batch((batch) {
-        for (final album in data) {
-          batch.delete(
-            _db.remoteAlbumEntity,
-            RemoteAlbumEntityCompanion(id: Value(album.albumId)),
-          );
-        }
-      });
+      await _db.remoteAlbumEntity
+          .deleteWhere((row) => row.id.isIn(data.map((e) => e.albumId)));
     } catch (e, s) {
       _logger.severe('Error: deleteAlbumsV1', e, s);
       rethrow;
