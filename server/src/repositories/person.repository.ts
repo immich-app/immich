@@ -138,6 +138,7 @@ export class PersonRepository {
       .stream();
   }
 
+  @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
   async getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions) {
     const items = await this.db
       .selectFrom('person')
@@ -179,8 +180,9 @@ export class PersonRepository {
       )
       .$if(!options?.closestFaceAssetId, (qb) =>
         qb
+          .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
           .orderBy((eb) => eb.fn.count('asset_faces.assetId'), 'desc')
-          .orderBy(sql`NULLIF(person.name, '') asc nulls last`)
+          .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
           .orderBy('person.createdAt'),
       )
       .$if(!options?.withHidden, (qb) => qb.where('person.isHidden', '=', false))

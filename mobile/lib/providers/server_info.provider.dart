@@ -1,36 +1,35 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
-
-import 'package:immich_mobile/models/server_info/server_info.model.dart';
-import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_mobile/models/server_info/server_config.model.dart';
+import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/models/server_info/server_features.model.dart';
+import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
+import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:logging/logging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class ServerInfoNotifier extends StateNotifier<ServerInfo> {
   ServerInfoNotifier(this._serverInfoService)
       : super(
-          ServerInfo(
-            serverVersion: const ServerVersion(
+          const ServerInfo(
+            serverVersion: ServerVersion(
               major: 0,
               minor: 0,
               patch: 0,
             ),
-            latestVersion: const ServerVersion(
+            latestVersion: ServerVersion(
               major: 0,
               minor: 0,
               patch: 0,
             ),
-            serverFeatures: const ServerFeatures(
+            serverFeatures: ServerFeatures(
               map: true,
               trash: true,
               oauthEnabled: false,
               passwordLogin: true,
             ),
-            serverConfig: const ServerConfig(
+            serverConfig: ServerConfig(
               trashDays: 30,
               oauthButtonText: '',
               externalDomain: '',
@@ -38,7 +37,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
                   'https://tiles.immich.cloud/v1/style/light.json',
               mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
             ),
-            serverDiskInfo: const ServerDiskInfo(
+            serverDiskInfo: ServerDiskInfo(
               diskAvailable: "0",
               diskSize: "0",
               diskUse: "0",

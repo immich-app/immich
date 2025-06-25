@@ -108,6 +108,30 @@
     }
     await modalManager.show(SlideshowSettingsModal);
   };
+
+  onMount(() => {
+    function exitFullscreenHandler() {
+      const doc = document as Document & {
+        webkitIsFullScreen?: boolean;
+      };
+
+      if (
+        // eslint-disable-next-line tscompat/tscompat
+        !document.fullscreenElement &&
+        !doc.webkitIsFullScreen
+      ) {
+        onClose();
+      }
+    }
+
+    document.addEventListener('fullscreenchange', exitFullscreenHandler);
+    document.addEventListener('webkitfullscreenchange', exitFullscreenHandler);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', exitFullscreenHandler);
+      document.removeEventListener('webkitfullscreenchange', exitFullscreenHandler);
+    };
+  });
 </script>
 
 <svelte:document

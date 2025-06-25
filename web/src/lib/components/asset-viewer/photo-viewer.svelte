@@ -193,8 +193,8 @@
     if (loader?.complete) {
       onload();
     }
-    loader?.addEventListener('load', onload);
-    loader?.addEventListener('error', onerror);
+    loader?.addEventListener('load', onload, { passive: true });
+    loader?.addEventListener('error', onerror, { passive: true });
     return () => {
       loader?.removeEventListener('load', onload);
       loader?.removeEventListener('error', onerror);

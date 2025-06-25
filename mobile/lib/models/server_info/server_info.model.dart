@@ -13,7 +13,7 @@ class ServerInfo {
   final bool isNewReleaseAvailable;
   final String versionMismatchErrorMessage;
 
-  ServerInfo({
+  const ServerInfo({
     required this.serverVersion,
     required this.latestVersion,
     required this.serverFeatures,

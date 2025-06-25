@@ -5,7 +5,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import { updatePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiCake } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import DateInput from '../components/elements/date-input.svelte';
@@ -65,13 +65,13 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full">
+    <HStack fullWidth>
       <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>
         {$t('cancel')}
       </Button>
       <Button type="submit" shape="round" color="primary" fullWidth form="set-birth-date-form">
         {$t('save')}
       </Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>

@@ -35,7 +35,7 @@
     children,
   }: Props = $props();
 
-  let scrollbarClass = $derived(scrollbar ? 'immich-scrollbar p-2' : 'scrollbar-hidden');
+  let scrollbarClass = $derived(scrollbar ? 'immich-scrollbar' : 'scrollbar-hidden');
   let hasTitleClass = $derived(title ? 'top-16 h-[calc(100%-(--spacing(16)))]' : 'top-0 h-full');
 </script>
 
@@ -60,7 +60,7 @@
   {/if}
 
   <main class="relative">
-    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
+    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto p-2" use:useActions={use}>
       {@render children?.()}
     </div>
 

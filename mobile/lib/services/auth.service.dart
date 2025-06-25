@@ -5,8 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/interfaces/auth.interface.dart';
-import 'package:immich_mobile/interfaces/auth_api.interface.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -29,8 +27,8 @@ final authServiceProvider = Provider(
 );
 
 class AuthService {
-  final IAuthApiRepository _authApiRepository;
-  final IAuthRepository _authRepository;
+  final AuthApiRepository _authApiRepository;
+  final AuthRepository _authRepository;
   final ApiService _apiService;
   final NetworkService _networkService;
   final BackgroundSyncManager _backgroundSyncManager;

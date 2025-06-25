@@ -4,17 +4,12 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
-import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/interfaces/asset.interface.dart';
-import 'package:immich_mobile/interfaces/asset_api.interface.dart';
-import 'package:immich_mobile/interfaces/asset_media.interface.dart';
-import 'package:immich_mobile/interfaces/backup_album.interface.dart';
-import 'package:immich_mobile/interfaces/etag.interface.dart';
+import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
@@ -50,25 +45,25 @@ final assetServiceProvider = Provider(
 );
 
 class AssetService {
-  final IAssetApiRepository _assetApiRepository;
-  final IAssetRepository _assetRepository;
-  final IExifInfoRepository _exifInfoRepository;
-  final IUserRepository _userRepository;
-  final IETagRepository _etagRepository;
-  final IBackupAlbumRepository _backupRepository;
+  final AssetApiRepository _assetApiRepository;
+  final AssetRepository _assetRepository;
+  final IsarExifRepository _exifInfoRepository;
+  final IsarUserRepository _isarUserRepository;
+  final ETagRepository _etagRepository;
+  final BackupAlbumRepository _backupRepository;
   final ApiService _apiService;
   final SyncService _syncService;
   final BackupService _backupService;
   final AlbumService _albumService;
   final UserService _userService;
-  final IAssetMediaRepository _assetMediaRepository;
+  final AssetMediaRepository _assetMediaRepository;
   final log = Logger('AssetService');
 
   AssetService(
     this._assetApiRepository,
     this._assetRepository,
     this._exifInfoRepository,
-    this._userRepository,
+    this._isarUserRepository,
     this._etagRepository,
     this._backupRepository,
     this._apiService,
@@ -85,7 +80,9 @@ class AssetService {
     final syncedUserIds = await _etagRepository.getAllIds();
     final List<UserDto> syncedUsers = syncedUserIds.isEmpty
         ? []
-        : (await _userRepository.getByUserIds(syncedUserIds)).nonNulls.toList();
+        : (await _isarUserRepository.getByUserIds(syncedUserIds))
+            .nonNulls
+            .toList();
     final Stopwatch sw = Stopwatch()..start();
     final bool changes = await _syncService.syncRemoteAssetsToDb(
       users: syncedUsers,
@@ -551,5 +548,10 @@ class AssetService {
     }).toList();
 
     await _assetRepository.updateAll(updatedAssets);
+  }
+
+  Future<Asset?> getAssetByRemoteId(String remoteId) async {
+    final assets = await _assetRepository.getAllByRemoteId([remoteId]);
+    return assets.isNotEmpty ? assets.first : null;
   }
 }

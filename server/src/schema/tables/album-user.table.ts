@@ -1,4 +1,4 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AlbumUserRole } from 'src/enum';
 import { album_user_after_insert, album_users_delete_audit } from 'src/schema/functions';
 import { AlbumTable } from 'src/schema/tables/album.table';
@@ -7,6 +7,7 @@ import {
   AfterDeleteTrigger,
   AfterInsertTrigger,
   Column,
+  CreateDateColumn,
   ForeignKeyColumn,
   Index,
   Table,
@@ -50,6 +51,12 @@ export class AlbumUserTable {
 
   @Column({ type: 'character varying', default: AlbumUserRole.EDITOR })
   role!: AlbumUserRole;
+
+  @CreateIdColumn({ indexName: 'IDX_album_users_create_id' })
+  createId?: string;
+
+  @CreateDateColumn()
+  createdAt!: Date;
 
   @UpdateIdColumn({ indexName: 'IDX_album_users_update_id' })
   updateId?: string;

@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/utils/translation.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 
 String getAltText(
   ExifInfo? exifInfo,
@@ -14,7 +14,7 @@ String getAltText(
   }
   final (template, args) =
       getAltTextTemplate(exifInfo, fileCreatedAt, type, peopleNames);
-  return t(template, args);
+  return template.t(args: args);
 }
 
 (String, Map<String, String>) getAltTextTemplate(

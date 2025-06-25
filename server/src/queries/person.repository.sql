@@ -12,6 +12,38 @@ delete from "person"
 where
   "person"."id" in ($1)
 
+-- PersonRepository.getAllForUser
+select
+  "person".*
+from
+  "person"
+  inner join "asset_faces" on "asset_faces"."personId" = "person"."id"
+  inner join "assets" on "asset_faces"."assetId" = "assets"."id"
+  and "assets"."visibility" = 'timeline'
+  and "assets"."deletedAt" is null
+where
+  "person"."ownerId" = $1
+  and "asset_faces"."deletedAt" is null
+  and "person"."isHidden" = $2
+group by
+  "person"."id"
+having
+  (
+    "person"."name" != $3
+    or count("asset_faces"."assetId") >= $4
+  )
+order by
+  "person"."isHidden" asc,
+  "person"."isFavorite" desc,
+  NULLIF(person.name, '') is null asc,
+  count("asset_faces"."assetId") desc,
+  NULLIF(person.name, '') asc nulls last,
+  "person"."createdAt"
+limit
+  $5
+offset
+  $6
+
 -- PersonRepository.getAllWithoutFaces
 select
   "person".*

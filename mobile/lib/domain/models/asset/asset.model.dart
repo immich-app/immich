@@ -11,6 +11,7 @@ enum AssetVisibility {
 class Asset extends BaseAsset {
   final String id;
   final String? localId;
+  final String? thumbHash;
   final AssetVisibility visibility;
 
   const Asset({
@@ -25,8 +26,13 @@ class Asset extends BaseAsset {
     super.height,
     super.durationInSeconds,
     super.isFavorite = false,
+    this.thumbHash,
     this.visibility = AssetVisibility.timeline,
   });
+
+  @override
+  AssetState get storage =>
+      localId == null ? AssetState.remote : AssetState.merged;
 
   @override
   String toString() {
@@ -41,6 +47,7 @@ class Asset extends BaseAsset {
    durationInSeconds: ${durationInSeconds ?? "<NA>"},
    localId: ${localId ?? "<NA>"},
    isFavorite: $isFavorite,
+    thumbHash: ${thumbHash ?? "<NA>"},
     visibility: $visibility,
  }''';
   }
@@ -52,10 +59,15 @@ class Asset extends BaseAsset {
     return super == other &&
         id == other.id &&
         localId == other.localId &&
+        thumbHash == other.thumbHash &&
         visibility == other.visibility;
   }
 
   @override
   int get hashCode =>
-      super.hashCode ^ id.hashCode ^ localId.hashCode ^ visibility.hashCode;
+      super.hashCode ^
+      id.hashCode ^
+      localId.hashCode ^
+      thumbHash.hashCode ^
+      visibility.hashCode;
 }

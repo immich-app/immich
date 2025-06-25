@@ -236,7 +236,6 @@
     "storage_template_migration_info": "Perubahan templat hanya akan digunakan pada aset baharu. Untuk menggunakan templat secara retroaktif pada aset-aset yang dimuat naik sebelum ini, jalankan <link>{job}</link>.",
     "storage_template_migration_job": "Kerja Migrasi Templat Storan",
     "storage_template_more_details": "Untuk butiran lanjut tentang ciri ini, rujuk kepada <template-link>Templat Storan</template-link> dan <implications-link>implikasi</implications-link>",
-    "storage_template_onboarding_description": "Apabila didayakan, ciri ini akan menyusun fail secara automatik berdasarkan templat yang ditentukan pengguna. Disebabkan isu kestabilan, ciri ini telah dimatikan secara umum. Untuk mendapatkan maklumat lanjut, sila lihat <link>dokumentasi</link>.",
     "storage_template_path_length": "Anggaran kepanjangan laluan: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Templat Storan",
     "storage_template_settings_description": "Urus struktur folder dan nama fail aset dimuat naik",

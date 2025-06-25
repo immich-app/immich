@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { LibraryResponseDto } from '@immich/sdk';
-  import { Button, Field, Input, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, Field, HStack, Input, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiRenameOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -29,9 +29,9 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-2 w-full">
+    <HStack fullWidth>
       <Button shape="round" fullWidth color="secondary" onclick={() => onClose()}>{$t('cancel')}</Button>
       <Button shape="round" fullWidth type="submit" form="rename-library-form">{$t('save')}</Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>

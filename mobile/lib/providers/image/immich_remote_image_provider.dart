@@ -23,7 +23,7 @@ class ImmichRemoteImageProvider
   /// The image cache manager
   final CacheManager? cacheManager;
 
-  ImmichRemoteImageProvider({
+  const ImmichRemoteImageProvider({
     required this.assetId,
     this.cacheManager,
   });
