@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Activity } from 'src/database';
 import {
   ActivityCreateDto,
@@ -58,10 +58,23 @@ export class ActivityService extends BaseService {
     }
 
     if (!activity) {
+      const album = await this.albumRepository.getById(common.albumId, { withAssets: false });
+      if (!album) {
+        throw new BadRequestException('Album not found');
+      }
       activity = await this.activityRepository.create({
         ...common,
         isLiked: dto.type === ReactionType.LIKE,
         comment: dto.comment,
+      });
+      const allUsersExceptUs = [...album.albumUsers.map(({ user }) => user.id), album.owner.id].filter(
+        (userId) => userId !== auth.user.id,
+      );
+      await this.eventRepository.emit('activity.change', {
+        recipientId: allUsersExceptUs,
+        userId: common.userId,
+        albumId: activity.albumId,
+        assetId: activity.assetId,
       });
     }
 

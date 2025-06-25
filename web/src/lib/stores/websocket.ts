@@ -16,9 +16,19 @@ export interface ReleaseEvent {
 export interface Events {
   on_upload_success: (asset: AssetResponseDto) => void;
   on_user_delete: (id: string) => void;
+  on_activity_change: (data: { albumId: string; assetId: string | null }) => void;
+  on_album_update: (data: { albumId: string; assetId: string[]; status: 'added' | 'removed' }) => void;
+  on_asset_person: ({
+    assetId,
+    personId,
+  }: {
+    assetId: string;
+    personId: string | undefined;
+    status: 'created' | 'removed' | 'removed_soft';
+  }) => void;
   on_asset_delete: (assetId: string) => void;
   on_asset_trash: (assetIds: string[]) => void;
-  on_asset_update: (asset: AssetResponseDto) => void;
+  on_asset_update: (assetIds: string[]) => void;
   on_asset_hidden: (assetId: string) => void;
   on_asset_restore: (assetIds: string[]) => void;
   on_asset_stack_update: (assetIds: string[]) => void;

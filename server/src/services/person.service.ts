@@ -627,11 +627,28 @@ export class PersonService extends BaseService {
       boundingBoxY2: dto.y + dto.height,
       sourceType: SourceType.MANUAL,
     });
+
+    await this.eventRepository.emit('asset.person', {
+      assetId: dto.assetId,
+      userId: auth.user.id,
+      personId: dto.personId,
+      status: 'created',
+    });
   }
 
   async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.FACE_DELETE, ids: [id] });
+    const assetPerson = await this.personRepository.getAssetPersonByFaceId(id);
+    if (!assetPerson) {
+      throw new NotFoundException('Asset face not found');
+    }
 
-    return dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id);
+    await (dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id));
+    await this.eventRepository.emit('asset.person', {
+      userId: auth.user.id,
+      assetId: assetPerson.assetId,
+      personId: assetPerson.personId ?? undefined,
+      status: dto.force ? 'removed' : 'removed_soft',
+    });
   }
 }
