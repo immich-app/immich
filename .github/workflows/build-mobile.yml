@@ -65,13 +65,7 @@ jobs:
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
-
-      - name: Install missing deps
-        run: |
-          sudo add-apt-repository ppa:rmescandon/yq
-          sudo apt-get update
-          sudo apt-get install -y yq xz-utils ninja-build zstd
-
+      
       - name: Create the Keystore
         env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
