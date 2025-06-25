@@ -328,3 +328,12 @@ set
   "deletedAt" = $1
 where
   "asset_faces"."id" = $2
+
+-- PersonRepository.getForPeopleDelete
+select
+  "id",
+  "thumbnailPath"
+from
+  "person"
+where
+  "id" in ($1)
