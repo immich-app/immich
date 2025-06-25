@@ -1,90 +1,80 @@
 import { Kysely } from 'kysely';
 import { DB } from 'src/db';
+import { AccessRepository } from 'src/repositories/access.repository';
+import { DatabaseRepository } from 'src/repositories/database.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { PersonRepository } from 'src/repositories/person.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { PersonService } from 'src/services/person.service';
-import { mediumFactory, newMediumService } from 'test/medium.factory';
+import { newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
 
-describe.concurrent(PersonService.name, () => {
-  let defaultDatabase: Kysely<DB>;
+let defaultDatabase: Kysely<DB>;
 
-  const createSut = (db?: Kysely<DB>) => {
-    return newMediumService(PersonService, {
-      database: db || defaultDatabase,
-      repos: {
-        access: 'real',
-        database: 'real',
-        person: 'real',
-        storage: 'mock',
-      },
-    });
-  };
-
-  beforeEach(async () => {
-    defaultDatabase = await getKyselyDB();
+const setup = (db?: Kysely<DB>) => {
+  return newMediumService(PersonService, {
+    database: db || defaultDatabase,
+    real: [AccessRepository, DatabaseRepository, PersonRepository],
+    mock: [LoggingRepository, StorageRepository],
   });
+};
 
+beforeAll(async () => {
+  defaultDatabase = await getKyselyDB();
+});
+
+describe(PersonService.name, () => {
   describe('delete', () => {
     it('should throw an error when there is no access', async () => {
-      const { sut } = createSut();
+      const { sut } = setup();
       const auth = factory.auth();
       const personId = factory.uuid();
       await expect(sut.delete(auth, personId)).rejects.toThrow('Not found or no person.delete access');
     });
 
     it('should delete the person', async () => {
-      const { sut, getRepository, mocks } = createSut();
-
-      const user = mediumFactory.userInsert();
+      const { sut, ctx } = setup();
+      const personRepo = ctx.get(PersonRepository);
+      const storageMock = ctx.getMock(StorageRepository);
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id });
       const auth = factory.auth({ user });
-      const person = mediumFactory.personInsert({ ownerId: auth.user.id });
-      mocks.storage.unlink.mockResolvedValue();
-
-      const userRepo = getRepository('user');
-      await userRepo.create(user);
-
-      const personRepo = getRepository('person');
-      await personRepo.create(person);
+      storageMock.unlink.mockResolvedValue();
 
       await expect(personRepo.getById(person.id)).resolves.toEqual(expect.objectContaining({ id: person.id }));
       await expect(sut.delete(auth, person.id)).resolves.toBeUndefined();
       await expect(personRepo.getById(person.id)).resolves.toBeUndefined();
 
-      expect(mocks.storage.unlink).toHaveBeenCalledWith(person.thumbnailPath);
+      expect(storageMock.unlink).toHaveBeenCalledWith(person.thumbnailPath);
     });
   });
 
   describe('deleteAll', () => {
     it('should throw an error when there is no access', async () => {
-      const { sut } = createSut();
+      const { sut } = setup();
       const auth = factory.auth();
       const personId = factory.uuid();
       await expect(sut.deleteAll(auth, { ids: [personId] })).rejects.toThrow('Not found or no person.delete access');
     });
 
     it('should delete the person', async () => {
-      const { sut, getRepository, mocks } = createSut();
-
-      const user = mediumFactory.userInsert();
+      const { sut, ctx } = setup();
+      const storageMock = ctx.getMock(StorageRepository);
+      const personRepo = ctx.get(PersonRepository);
+      const { user } = await ctx.newUser();
+      const { person: person1 } = await ctx.newPerson({ ownerId: user.id });
+      const { person: person2 } = await ctx.newPerson({ ownerId: user.id });
       const auth = factory.auth({ user });
-      const person1 = mediumFactory.personInsert({ ownerId: auth.user.id });
-      const person2 = mediumFactory.personInsert({ ownerId: auth.user.id });
-      mocks.storage.unlink.mockResolvedValue();
-
-      const userRepo = getRepository('user');
-      await userRepo.create(user);
-
-      const personRepo = getRepository('person');
-      await personRepo.create(person1);
-      await personRepo.create(person2);
+      storageMock.unlink.mockResolvedValue();
 
       await expect(sut.deleteAll(auth, { ids: [person1.id, person2.id] })).resolves.toBeUndefined();
       await expect(personRepo.getById(person1.id)).resolves.toBeUndefined();
       await expect(personRepo.getById(person2.id)).resolves.toBeUndefined();
 
-      expect(mocks.storage.unlink).toHaveBeenCalledTimes(2);
-      expect(mocks.storage.unlink).toHaveBeenCalledWith(person1.thumbnailPath);
-      expect(mocks.storage.unlink).toHaveBeenCalledWith(person2.thumbnailPath);
+      expect(storageMock.unlink).toHaveBeenCalledTimes(2);
+      expect(storageMock.unlink).toHaveBeenCalledWith(person1.thumbnailPath);
+      expect(storageMock.unlink).toHaveBeenCalledWith(person2.thumbnailPath);
     });
   });
 });
