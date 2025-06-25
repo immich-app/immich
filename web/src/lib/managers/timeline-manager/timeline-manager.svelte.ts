@@ -41,6 +41,7 @@ export class TimelineManager {
   isInitialized = $state(false);
   months: MonthGroup[] = $state([]);
   topSectionHeight = $state(0);
+  bottomSectionHeight = $state(60);
   timelineHeight = $derived(this.months.reduce((accumulator, b) => accumulator + b.height, 0) + this.topSectionHeight);
   assetCount = $derived(this.months.reduce((accumulator, b) => accumulator + b.assetsCount, 0));
 
@@ -539,5 +540,14 @@ export class TimelineManager {
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
       isMismatched(this.#options.isTrashed, asset.isTrashed)
     );
+  }
+
+  getMaxScrollPercent() {
+    const totalHeight = this.timelineHeight + this.bottomSectionHeight + this.topSectionHeight;
+    return (totalHeight - this.viewportHeight) / totalHeight;
+  }
+
+  getMaxScroll() {
+    return this.topSectionHeight + this.bottomSectionHeight + (this.timelineHeight - this.viewportHeight);
   }
 }
