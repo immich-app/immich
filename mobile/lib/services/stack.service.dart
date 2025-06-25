@@ -7,7 +7,7 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:openapi/api.dart';
 
 class StackService {
-  StackService(this._api, this._assetRepository);
+  const StackService(this._api, this._assetRepository);
 
   final ApiService _api;
   final AssetRepository _assetRepository;

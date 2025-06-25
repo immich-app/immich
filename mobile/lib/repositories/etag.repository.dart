@@ -8,7 +8,7 @@ final etagRepositoryProvider =
     Provider((ref) => ETagRepository(ref.watch(dbProvider)));
 
 class ETagRepository extends DatabaseRepository {
-  ETagRepository(super.db);
+  const ETagRepository(super.db);
 
   Future<List<String>> getAllIds() => db.eTags.where().idProperty().findAll();
 

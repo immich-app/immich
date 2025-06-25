@@ -63,7 +63,8 @@ class FixedSegment extends Segment {
   }
 
   void _handleOnTap(WidgetRef ref, BaseAsset asset) {
-    if (!ref.read(multiSelectProvider.select((s) => s.isEnabled))) {
+    final multiSelectState = ref.read(multiSelectProvider);
+    if (!multiSelectState.isEnabled) {
       return;
     }
 
@@ -71,7 +72,8 @@ class FixedSegment extends Segment {
   }
 
   void _handleOnLongPress(WidgetRef ref, BaseAsset asset) {
-    if (ref.read(multiSelectProvider.select((s) => s.isEnabled))) {
+    final multiSelectState = ref.read(multiSelectProvider);
+    if (multiSelectState.isEnabled) {
       return;
     }
 
@@ -98,55 +100,63 @@ class FixedSegment extends Segment {
     return _buildRow(firstAssetIndex + assetIndex, numberOfAssets);
   }
 
-  Widget _buildRow(int assetIndex, int count) => Consumer(
-        builder: (ctx, ref, _) {
-          final isScrubbing =
-              ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
-          final timelineService = ref.read(timelineServiceProvider);
+  Widget _buildRow(int assetIndex, int count) => RepaintBoundary(
+        child: Consumer(
+          builder: (ctx, ref, _) {
+            final isScrubbing =
+                ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
+            final timelineService = ref.read(timelineServiceProvider);
 
-          // Timeline is being scrubbed, show placeholders
-          if (isScrubbing) {
-            return SegmentBuilder.buildPlaceholder(
-              ctx,
-              count,
-              size: Size.square(tileHeight),
-              spacing: spacing,
-            );
-          }
+            // Create stable callback references to prevent unnecessary rebuilds
+            onTap(BaseAsset asset) => _handleOnTap(ref, asset);
+            onLongPress(BaseAsset asset) => _handleOnLongPress(ref, asset);
 
-          // Bucket is already loaded, show the assets
-          if (timelineService.hasRange(assetIndex, count)) {
-            final assets = timelineService.getAssets(assetIndex, count);
-            return _buildAssetRow(
-              ctx,
-              assets,
-              onTap: (asset) => _handleOnTap(ref, asset),
-              onLongPress: (asset) => _handleOnLongPress(ref, asset),
-            );
-          }
-
-          // Bucket is not loaded, show placeholders and load the bucket
-          return FutureBuilder(
-            future: timelineService.loadAssets(assetIndex, count),
-            builder: (ctxx, snap) {
-              if (snap.connectionState != ConnectionState.done) {
-                return SegmentBuilder.buildPlaceholder(
-                  ctx,
-                  count,
-                  size: Size.square(tileHeight),
-                  spacing: spacing,
-                );
-              }
-
-              return _buildAssetRow(
-                ctxx,
-                snap.requireData,
-                onTap: (asset) => _handleOnTap(ref, asset),
-                onLongPress: (asset) => _handleOnLongPress(ref, asset),
+            // Timeline is being scrubbed, show placeholders
+            if (isScrubbing) {
+              return SegmentBuilder.buildPlaceholder(
+                ctx,
+                count,
+                size: Size.square(tileHeight),
+                spacing: spacing,
               );
-            },
-          );
-        },
+            }
+
+            // Bucket is already loaded, show the assets
+            if (timelineService.hasRange(assetIndex, count)) {
+              final assets = timelineService.getAssets(assetIndex, count);
+              return _buildAssetRow(
+                ctx,
+                assets,
+                baseAssetIndex: assetIndex,
+                onTap: onTap,
+                onLongPress: onLongPress,
+              );
+            }
+
+            // Bucket is not loaded, show placeholders and load the bucket
+            return FutureBuilder(
+              future: timelineService.loadAssets(assetIndex, count),
+              builder: (ctxx, snap) {
+                if (snap.connectionState != ConnectionState.done) {
+                  return SegmentBuilder.buildPlaceholder(
+                    ctx,
+                    count,
+                    size: Size.square(tileHeight),
+                    spacing: spacing,
+                  );
+                }
+
+                return _buildAssetRow(
+                  ctxx,
+                  snap.requireData,
+                  baseAssetIndex: assetIndex,
+                  onTap: onTap,
+                  onLongPress: onLongPress,
+                );
+              },
+            );
+          },
+        ),
       );
 
   Widget _buildAssetRow(
@@ -154,6 +164,7 @@ class FixedSegment extends Segment {
     List<BaseAsset> assets, {
     required void Function(BaseAsset) onTap,
     required void Function(BaseAsset) onLongPress,
+    required int baseAssetIndex,
   }) =>
       FixedTimelineRow(
         dimension: tileHeight,
@@ -161,13 +172,59 @@ class FixedSegment extends Segment {
         textDirection: Directionality.of(context),
         children: List.generate(
           assets.length,
-          (i) => RepaintBoundary(
-            child: GestureDetector(
-              onTap: () => onTap(assets[i]),
-              onLongPress: () => onLongPress(assets[i]),
-              child: ThumbnailTile(assets[i]),
-            ),
+          (i) => _AssetTileWidget(
+            key: ValueKey(_generateUniqueKey(assets[i], baseAssetIndex + i)),
+            asset: assets[i],
+            onTap: onTap,
+            onLongPress: onLongPress,
           ),
         ),
       );
+
+  /// Generates a unique key for an asset that handles different asset types
+  /// and prevents duplicate keys even when assets have the same name/timestamp
+  String _generateUniqueKey(BaseAsset asset, int assetIndex) {
+    // Try to get the most unique identifier based on asset type
+    if (asset is Asset) {
+      // For remote/merged assets, use the remote ID which is globally unique
+      return 'asset_${asset.id}';
+    } else if (asset is LocalAsset) {
+      // For local assets, use the local ID which should be unique per device
+      return 'local_${asset.id}';
+    } else {
+      // Fallback for any other BaseAsset implementation
+      // Use checksum if available for additional uniqueness
+      final checksum = asset.checksum;
+      if (checksum != null && checksum.isNotEmpty) {
+        return 'checksum_${checksum.hashCode}';
+      } else {
+        // Last resort: use global asset index + object hash for uniqueness
+        return 'fallback_${assetIndex}_${asset.hashCode}_${asset.createdAt.microsecondsSinceEpoch}';
+      }
+    }
+  }
+}
+
+class _AssetTileWidget extends StatelessWidget {
+  final BaseAsset asset;
+  final void Function(BaseAsset) onTap;
+  final void Function(BaseAsset) onLongPress;
+
+  const _AssetTileWidget({
+    super.key,
+    required this.asset,
+    required this.onTap,
+    required this.onLongPress,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: () => onTap(asset),
+        onLongPress: () => onLongPress(asset),
+        child: ThumbnailTile(asset),
+      ),
+    );
+  }
 }

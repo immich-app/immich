@@ -7,7 +7,7 @@ class AuthState {
   final bool isAdmin;
   final String profileImagePath;
 
-  AuthState({
+  const AuthState({
     required this.deviceId,
     required this.userId,
     required this.userEmail,

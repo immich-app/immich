@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 class Person {
-  Person({
+  const Person({
     required this.id,
     this.birthDate,
     required this.isHidden,

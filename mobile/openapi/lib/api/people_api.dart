@@ -63,6 +63,85 @@ class PeopleApi {
     return null;
   }
 
+  /// Performs an HTTP 'DELETE /people' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<Response> deletePeopleWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/people';
+
+    // ignore: prefer_final_locals
+    Object? postBody = bulkIdsDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<void> deletePeople(BulkIdsDto bulkIdsDto,) async {
+    final response = await deletePeopleWithHttpInfo(bulkIdsDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Performs an HTTP 'DELETE /people/{id}' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> deletePersonWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/people/{id}'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> deletePerson(String id,) async {
+    final response = await deletePersonWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'GET /people' operation and returns the [Response].
   /// Parameters:
   ///

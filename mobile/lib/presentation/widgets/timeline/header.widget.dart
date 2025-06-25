@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
@@ -80,12 +81,15 @@ class TimelineHeader extends ConsumerWidget {
                   if (header != HeaderType.monthAndDay)
                     _BulkSelectIconButton(
                       isAllSelected: isAllSelected,
-                      onPressed: () => ref
-                          .read(multiSelectProvider.notifier)
-                          .toggleBucketSelection(
-                            assetOffset,
-                            bucket.assetCount,
-                          ),
+                      onPressed: () {
+                        ref
+                            .read(multiSelectProvider.notifier)
+                            .toggleBucketSelection(
+                              assetOffset,
+                              bucket.assetCount,
+                            );
+                        ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+                      },
                     ),
                 ],
               ),
@@ -101,9 +105,15 @@ class TimelineHeader extends ConsumerWidget {
                   const Spacer(),
                   _BulkSelectIconButton(
                     isAllSelected: isAllSelected,
-                    onPressed: () => ref
-                        .read(multiSelectProvider.notifier)
-                        .toggleBucketSelection(assetOffset, bucket.assetCount),
+                    onPressed: () {
+                      ref
+                          .read(multiSelectProvider.notifier)
+                          .toggleBucketSelection(
+                            assetOffset,
+                            bucket.assetCount,
+                          );
+                      ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+                    },
                   ),
                 ],
               ),

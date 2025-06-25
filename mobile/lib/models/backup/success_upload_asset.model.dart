@@ -5,7 +5,7 @@ class SuccessUploadAsset {
   final String remoteAssetId;
   final bool isDuplicate;
 
-  SuccessUploadAsset({
+  const SuccessUploadAsset({
     required this.candidate,
     required this.remoteAssetId,
     required this.isDuplicate,

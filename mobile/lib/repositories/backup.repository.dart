@@ -10,7 +10,7 @@ final backupAlbumRepositoryProvider =
     Provider((ref) => BackupAlbumRepository(ref.watch(dbProvider)));
 
 class BackupAlbumRepository extends DatabaseRepository {
-  BackupAlbumRepository(super.db);
+  const BackupAlbumRepository(super.db);
 
   Future<List<BackupAlbum>> getAll({BackupAlbumSort? sort}) {
     final baseQuery = db.backupAlbums.where();

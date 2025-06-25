@@ -67,7 +67,6 @@ import { newDatabaseRepositoryMock } from 'test/repositories/database.repository
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
-import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { ITelemetryRepositoryMock, newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
@@ -278,7 +277,7 @@ export const newTestService = <T extends BaseService>(
     notification: automock(NotificationRepository),
     oauth: automock(OAuthRepository, { args: [loggerMock] }),
     partner: automock(PartnerRepository, { strict: false }),
-    person: newPersonRepositoryMock(),
+    person: automock(PersonRepository, { strict: false }),
     process: automock(ProcessRepository),
     search: automock(SearchRepository, { strict: false }),
     // eslint-disable-next-line no-sparse-arrays

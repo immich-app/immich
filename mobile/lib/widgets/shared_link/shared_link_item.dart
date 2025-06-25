@@ -240,7 +240,7 @@ class SharedLinkItem extends ConsumerWidget {
               verticalOffset: 0,
               decoration: BoxDecoration(
                 color: colorScheme.primary.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
               ),
               textStyle: TextStyle(
                 color: isDarkMode ? Colors.black : Colors.white,
@@ -268,7 +268,7 @@ class SharedLinkItem extends ConsumerWidget {
                   verticalOffset: 0,
                   decoration: BoxDecoration(
                     color: colorScheme.primary.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
                   ),
                   textStyle: TextStyle(
                     color: isDarkMode ? Colors.black : Colors.white,

@@ -2769,6 +2769,15 @@ export function updatePartner({ id, updatePartnerDto }: {
         body: updatePartnerDto
     })));
 }
+export function deletePeople({ bulkIdsDto }: {
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/people", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: bulkIdsDto
+    })));
+}
 export function getAllPeople({ closestAssetId, closestPersonId, page, size, withHidden }: {
     closestAssetId?: string;
     closestPersonId?: string;
@@ -2812,6 +2821,14 @@ export function updatePeople({ peopleUpdateDto }: {
         method: "PUT",
         body: peopleUpdateDto
     })));
+}
+export function deletePerson({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/people/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
 }
 export function getPerson({ id }: {
     id: string;

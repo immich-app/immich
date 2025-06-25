@@ -11,7 +11,7 @@ class MapState {
   final AsyncValue<String> lightStyleFetched;
   final AsyncValue<String> darkStyleFetched;
 
-  MapState({
+  const MapState({
     this.themeMode = ThemeMode.system,
     this.showFavoriteOnly = false,
     this.includeArchived = false,

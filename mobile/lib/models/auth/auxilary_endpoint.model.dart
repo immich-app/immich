@@ -5,7 +5,7 @@ class AuxilaryEndpoint {
   final String url;
   final AuxCheckStatus status;
 
-  AuxilaryEndpoint({
+  const AuxilaryEndpoint({
     required this.url,
     required this.status,
   });
@@ -55,7 +55,7 @@ class AuxilaryEndpoint {
 
 class AuxCheckStatus {
   final String name;
-  AuxCheckStatus({
+  const AuxCheckStatus({
     required this.name,
   });
   const AuxCheckStatus._(this.name);

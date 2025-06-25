@@ -1663,6 +1663,22 @@ class TabControllerRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [TabShellPage]
+class TabShellRoute extends PageRouteInfo<void> {
+  const TabShellRoute({List<PageRouteInfo>? children})
+      : super(TabShellRoute.name, initialChildren: children);
+
+  static const String name = 'TabShellRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const TabShellPage();
+    },
+  );
+}
+
+/// generated route for
 /// [TrashPage]
 class TrashRoute extends PageRouteInfo<void> {
   const TrashRoute({List<PageRouteInfo>? children})

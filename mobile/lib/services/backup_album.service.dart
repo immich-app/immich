@@ -9,7 +9,7 @@ final backupAlbumServiceProvider = Provider<BackupAlbumService>((ref) {
 class BackupAlbumService {
   final BackupAlbumRepository _backupAlbumRepository;
 
-  BackupAlbumService(this._backupAlbumRepository);
+  const BackupAlbumService(this._backupAlbumRepository);
 
   Future<List<BackupAlbum>> getAll({BackupAlbumSort? sort}) {
     return _backupAlbumRepository.getAll(sort: sort);

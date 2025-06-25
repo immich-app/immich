@@ -4,7 +4,7 @@ import 'package:openapi/api.dart';
 class MapMarker {
   final LatLng latLng;
   final String assetRemoteId;
-  MapMarker({
+  const MapMarker({
     required this.latLng,
     required this.assetRemoteId,
   });

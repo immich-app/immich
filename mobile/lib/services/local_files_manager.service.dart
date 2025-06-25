@@ -3,10 +3,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logging/logging.dart';
 
 final localFileManagerServiceProvider = Provider<LocalFilesManagerService>(
-  (ref) => LocalFilesManagerService(),
+  (ref) => const LocalFilesManagerService(),
 );
 
 class LocalFilesManagerService {
+  const LocalFilesManagerService();
   static final Logger _logger = Logger('LocalFilesManager');
   static const MethodChannel _channel = MethodChannel('file_trash');
 
