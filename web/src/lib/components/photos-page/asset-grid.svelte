@@ -777,7 +777,7 @@
   $effect(() => {
     if ($showAssetViewer) {
       const { localDateTime } = getTimes($viewingAsset.fileCreatedAt, DateTime.local().offset / 60);
-      timelineManager.loadMonthGroup({ year: localDateTime.year, month: localDateTime.month });
+      void timelineManager.loadMonthGroup({ year: localDateTime.year, month: localDateTime.month });
     }
   });
 </script>
