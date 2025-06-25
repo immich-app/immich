@@ -8,4 +8,6 @@ class MapAssetsInBoundsUpdated extends MapEvent {
   const MapAssetsInBoundsUpdated(this.assetRemoteIds);
 }
 
-class MapCloseBottomSheet extends MapEvent {}
+class MapCloseBottomSheet extends MapEvent {
+  const MapCloseBottomSheet();
+}

@@ -121,7 +121,6 @@ void main() {
         time.elapse(const Duration(seconds: 6));
         final insert = verify(() => mockLogRepo.insertAll(captureAny()));
         insert.called(1);
-        // ignore: prefer-correct-json-casts
         final captured = insert.captured.firstOrNull as List<LogMessage>;
         expect(captured.firstOrNull?.message, _kInfoLog.message);
         expect(captured.firstOrNull?.logger, _kInfoLog.logger);

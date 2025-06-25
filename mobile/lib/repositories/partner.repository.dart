@@ -11,7 +11,7 @@ final partnerRepositoryProvider = Provider(
 );
 
 class PartnerRepository extends DatabaseRepository {
-  PartnerRepository(super.db);
+  const PartnerRepository(super.db);
 
   Future<List<UserDto>> getSharedBy() async {
     return (await db.users

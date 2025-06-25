@@ -511,16 +511,11 @@ class SearchPage extends HookConsumerWidget {
       search();
     }
 
-    IconData getSearchPrefixIcon() {
-      switch (textSearchType.value) {
-        case TextSearchType.context:
-          return Icons.image_search_rounded;
-        case TextSearchType.filename:
-          return Icons.abc_rounded;
-        case TextSearchType.description:
-          return Icons.text_snippet_outlined;
-      }
-    }
+    IconData getSearchPrefixIcon() => switch (textSearchType.value) {
+          TextSearchType.context => Icons.image_search_rounded,
+          TextSearchType.filename => Icons.abc_rounded,
+          TextSearchType.description => Icons.text_snippet_outlined,
+        };
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -533,8 +528,10 @@ class SearchPage extends HookConsumerWidget {
               style: MenuStyle(
                 elevation: const WidgetStatePropertyAll(1),
                 shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+                  const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(24),
+                    ),
                   ),
                 ),
                 padding: const WidgetStatePropertyAll(
@@ -631,7 +628,9 @@ class SearchPage extends HookConsumerWidget {
               color: context.colorScheme.onSurface.withAlpha(0),
               width: 0,
             ),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(24),
+            ),
             gradient: LinearGradient(
               colors: [
                 context.colorScheme.primary.withValues(alpha: 0.075),
@@ -823,7 +822,9 @@ class QuickLinkList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(20),
+        ),
         border: Border.all(
           color: context.colorScheme.outline.withAlpha(10),
           width: 1,

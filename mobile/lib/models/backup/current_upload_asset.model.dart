@@ -9,7 +9,7 @@ class CurrentUploadAsset {
   final int? fileSize;
   final bool? iCloudAsset;
 
-  CurrentUploadAsset({
+  const CurrentUploadAsset({
     required this.id,
     required this.fileCreatedAt,
     required this.fileName,

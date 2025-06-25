@@ -18,7 +18,7 @@ final albumRepositoryProvider =
     Provider((ref) => AlbumRepository(ref.watch(dbProvider)));
 
 class AlbumRepository extends DatabaseRepository {
-  AlbumRepository(super.db);
+  const AlbumRepository(super.db);
 
   Future<int> count({bool? local}) {
     final baseQuery = db.albums.where();

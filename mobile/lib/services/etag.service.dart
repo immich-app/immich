@@ -7,7 +7,7 @@ final etagServiceProvider =
 class ETagService {
   final ETagRepository _eTagRepository;
 
-  ETagService(this._eTagRepository);
+  const ETagService(this._eTagRepository);
 
   Future<void> clearTable() {
     return _eTagRepository.clearTable();

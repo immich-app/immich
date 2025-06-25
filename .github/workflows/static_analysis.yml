@@ -109,7 +109,7 @@ jobs:
         working-directory: ./mobile
 
       - name: Run DCM
-        run: dcm analyze lib
+        run: dcm analyze lib --fatal-style --fatal-warnings
         working-directory: ./mobile
 
   zizmor:

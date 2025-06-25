@@ -1,12 +1,12 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/models/albums/album_viewer_page_state.model.dart';
 import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/entities/album.entity.dart';
 
 class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
   AlbumViewerNotifier(this.ref)
       : super(
-          AlbumViewerPageState(
+          const AlbumViewerPageState(
             editTitleText: "",
             isEditAlbum: false,
             editDescriptionText: "",

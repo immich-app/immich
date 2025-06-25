@@ -8,7 +8,7 @@ class SearchResultPageState {
   final bool isSmart;
   final List<Asset> searchResult;
 
-  SearchResultPageState({
+  const SearchResultPageState({
     required this.isLoading,
     required this.isSuccess,
     required this.isError,

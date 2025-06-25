@@ -13,7 +13,7 @@ final timelineRepositoryProvider =
     Provider((ref) => TimelineRepository(ref.watch(dbProvider)));
 
 class TimelineRepository extends DatabaseRepository {
-  TimelineRepository(super.db);
+  const TimelineRepository(super.db);
 
   Future<List<String>> getTimelineUserIds(String id) {
     return db.users
