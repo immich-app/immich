@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/widgets/photo_view/src/utils/ignorable_change_notifier.dart';
 
+typedef PhotoViewAnimationControllerBuilder = void Function(double? value);
+
 /// The interface in which controllers will be implemented.
 ///
 /// It concerns storing the state ([PhotoViewControllerValue]) and streaming its updates.

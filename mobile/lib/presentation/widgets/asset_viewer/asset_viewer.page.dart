@@ -234,6 +234,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
             duration: Duration.zero,
             reverseDuration: Duration.zero,
           ),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+          ),
+          backgroundColor: ctx.colorScheme.surfaceContainerLowest,
           builder: (_) {
             return NotificationListener<Notification>(
               onNotification: _onNotification,
@@ -369,6 +373,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onPageBuild(PhotoViewControllerBase controller) {
+    viewController ??= controller;
     if (showingBottomSheet) {
       final verticalOffset = (context.height * bottomSheetController.size) -
           (context.height * _kBottomSheetMinimumExtent);
