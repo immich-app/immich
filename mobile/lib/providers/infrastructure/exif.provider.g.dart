@@ -6,11 +6,11 @@ part of 'exif.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$exifRepositoryHash() => r'f0abe778ed61fbb257001fdf2ac6e17814011fee';
+String _$exifRepositoryHash() => r'bf4a3f6a50d954a23d317659b4f3e2f381066463';
 
 /// See also [exifRepository].
 @ProviderFor(exifRepository)
-final exifRepositoryProvider = Provider<IExifInfoRepository>.internal(
+final exifRepositoryProvider = Provider<IsarExifRepository>.internal(
   exifRepository,
   name: r'exifRepositoryProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -22,6 +22,6 @@ final exifRepositoryProvider = Provider<IExifInfoRepository>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef ExifRepositoryRef = ProviderRef<IExifInfoRepository>;
+typedef ExifRepositoryRef = ProviderRef<IsarExifRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

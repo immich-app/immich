@@ -11,7 +11,7 @@ class SSLClientCertStoreVal {
   final Uint8List data;
   final String? password;
 
-  SSLClientCertStoreVal(this.data, this.password);
+  const SSLClientCertStoreVal(this.data, this.password);
 
   void save() {
     final b64Str = base64Encode(data);

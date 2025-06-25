@@ -1,7 +1,20 @@
-import { Body, Controller, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Next,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
+import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceUpdateDto,
@@ -49,6 +62,13 @@ export class PersonController {
     return this.service.updateAll(auth, dto);
   }
 
+  @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Authenticated({ permission: Permission.PERSON_DELETE })
+  deletePeople(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
+    return this.service.deleteAll(auth, dto);
+  }
+
   @Get(':id')
   @Authenticated({ permission: Permission.PERSON_READ })
   getPerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<PersonResponseDto> {
@@ -63,6 +83,13 @@ export class PersonController {
     @Body() dto: PersonUpdateDto,
   ): Promise<PersonResponseDto> {
     return this.service.update(auth, id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Authenticated({ permission: Permission.PERSON_DELETE })
+  deletePerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.delete(auth, id);
   }
 
   @Get(':id/statistics')

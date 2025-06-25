@@ -4546,6 +4546,39 @@
       }
     },
     "/people": {
+      "delete": {
+        "operationId": "deletePeople",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "People"
+        ]
+      },
       "get": {
         "operationId": "getAllPeople",
         "parameters": [
@@ -4711,6 +4744,39 @@
       }
     },
     "/people/{id}": {
+      "delete": {
+        "operationId": "deletePerson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "People"
+        ]
+      },
       "get": {
         "operationId": "getPerson",
         "parameters": [
@@ -8503,7 +8569,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.135.2",
+    "version": "1.135.3",
     "contact": {}
   },
   "tags": [],

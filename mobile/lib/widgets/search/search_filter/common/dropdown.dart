@@ -18,10 +18,10 @@ class SearchDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final menuStyle = MenuStyle(
+    final menuStyle = const MenuStyle(
       shape: WidgetStatePropertyAll<OutlinedBorder>(
         RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.all(Radius.circular(15)),
         ),
       ),
     );

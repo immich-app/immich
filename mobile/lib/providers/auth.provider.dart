@@ -45,7 +45,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     this._secureStorageService,
     this._widgetService,
   ) : super(
-          AuthState(
+          const AuthState(
             deviceId: "",
             userId: "",
             userEmail: "",
@@ -89,7 +89,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _cleanUp() async {
-    state = AuthState(
+    state = const AuthState(
       deviceId: "",
       userId: "",
       userEmail: "",

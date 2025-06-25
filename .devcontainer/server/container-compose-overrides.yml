@@ -3,6 +3,7 @@ services:
     build:
       target: dev-container-server
     env_file: !reset []
+    hostname: immich-dev
     environment:
       - IMMICH_SERVER_URL=http://127.0.0.1:2283/
     volumes: !override
