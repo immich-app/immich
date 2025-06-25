@@ -16,7 +16,7 @@ func buildEntry(
   )!
   let image = try await api.fetchImage(asset: asset)
 
-  return ImageEntry(date: entryDate, image: image, subtitle: subtitle, deeplink: asset.deeplink)
+  return ImageEntry(date: entryDate, image: image, subtitle: subtitle, deepLink: asset.deepLink)
 }
 
 func generateRandomEntries(
