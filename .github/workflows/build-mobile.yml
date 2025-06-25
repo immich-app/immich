@@ -65,7 +65,7 @@ jobs:
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
-      
+
       - name: Create the Keystore
         env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
