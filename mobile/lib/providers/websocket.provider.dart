@@ -94,7 +94,11 @@ class WebsocketState {
 class WebsocketNotifier extends StateNotifier<WebsocketState> {
   WebsocketNotifier(this._ref)
       : super(
-          const WebsocketState(socket: null, isConnected: false, pendingChanges: []),
+          const WebsocketState(
+            socket: null,
+            isConnected: false,
+            pendingChanges: [],
+          ),
         );
 
   final _log = Logger('WebsocketNotifier');
