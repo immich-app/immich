@@ -108,7 +108,7 @@ class _PinPainter extends CustomPainter {
   final double primaryRadius;
   final double secondaryRadius;
 
-  _PinPainter({
+  const _PinPainter({
     required this.primaryColor,
     required this.secondaryColor,
     required this.primaryRadius,

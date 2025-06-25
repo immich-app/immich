@@ -38,7 +38,15 @@ class SyncEntityType {
   static const albumV1 = SyncEntityType._(r'AlbumV1');
   static const albumDeleteV1 = SyncEntityType._(r'AlbumDeleteV1');
   static const albumUserV1 = SyncEntityType._(r'AlbumUserV1');
+  static const albumUserBackfillV1 = SyncEntityType._(r'AlbumUserBackfillV1');
   static const albumUserDeleteV1 = SyncEntityType._(r'AlbumUserDeleteV1');
+  static const albumAssetV1 = SyncEntityType._(r'AlbumAssetV1');
+  static const albumAssetBackfillV1 = SyncEntityType._(r'AlbumAssetBackfillV1');
+  static const albumAssetExifV1 = SyncEntityType._(r'AlbumAssetExifV1');
+  static const albumAssetExifBackfillV1 = SyncEntityType._(r'AlbumAssetExifBackfillV1');
+  static const albumToAssetV1 = SyncEntityType._(r'AlbumToAssetV1');
+  static const albumToAssetDeleteV1 = SyncEntityType._(r'AlbumToAssetDeleteV1');
+  static const albumToAssetBackfillV1 = SyncEntityType._(r'AlbumToAssetBackfillV1');
   static const syncAckV1 = SyncEntityType._(r'SyncAckV1');
 
   /// List of all possible values in this [enum][SyncEntityType].
@@ -58,7 +66,15 @@ class SyncEntityType {
     albumV1,
     albumDeleteV1,
     albumUserV1,
+    albumUserBackfillV1,
     albumUserDeleteV1,
+    albumAssetV1,
+    albumAssetBackfillV1,
+    albumAssetExifV1,
+    albumAssetExifBackfillV1,
+    albumToAssetV1,
+    albumToAssetDeleteV1,
+    albumToAssetBackfillV1,
     syncAckV1,
   ];
 
@@ -113,7 +129,15 @@ class SyncEntityTypeTypeTransformer {
         case r'AlbumV1': return SyncEntityType.albumV1;
         case r'AlbumDeleteV1': return SyncEntityType.albumDeleteV1;
         case r'AlbumUserV1': return SyncEntityType.albumUserV1;
+        case r'AlbumUserBackfillV1': return SyncEntityType.albumUserBackfillV1;
         case r'AlbumUserDeleteV1': return SyncEntityType.albumUserDeleteV1;
+        case r'AlbumAssetV1': return SyncEntityType.albumAssetV1;
+        case r'AlbumAssetBackfillV1': return SyncEntityType.albumAssetBackfillV1;
+        case r'AlbumAssetExifV1': return SyncEntityType.albumAssetExifV1;
+        case r'AlbumAssetExifBackfillV1': return SyncEntityType.albumAssetExifBackfillV1;
+        case r'AlbumToAssetV1': return SyncEntityType.albumToAssetV1;
+        case r'AlbumToAssetDeleteV1': return SyncEntityType.albumToAssetDeleteV1;
+        case r'AlbumToAssetBackfillV1': return SyncEntityType.albumToAssetBackfillV1;
         case r'SyncAckV1': return SyncEntityType.syncAckV1;
         default:
           if (!allowNull) {

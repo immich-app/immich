@@ -96,8 +96,8 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
                   child: Material(
                     color: context.colorScheme.surfaceContainerHighest,
                     elevation: 3,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50.0),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(50.0)),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(5.0),

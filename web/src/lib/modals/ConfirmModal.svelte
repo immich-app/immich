@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Modal, ModalBody, ModalFooter, type Color } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter, type Color } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -38,13 +38,13 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full">
+    <HStack fullWidth>
       <Button shape="round" color="secondary" fullWidth onclick={() => onClose(false)}>
         {$t('cancel')}
       </Button>
       <Button shape="round" color={confirmColor} fullWidth onclick={handleConfirm} {disabled}>
         {confirmText}
       </Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>

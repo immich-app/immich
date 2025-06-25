@@ -1,6 +1,6 @@
 import { TableOptions } from 'src/sql-tools/from-code/decorators/table.decorator';
 import { Processor, SchemaBuilder } from 'src/sql-tools/from-code/processors/type';
-import { asMetadataKey, asSnakeCase } from 'src/sql-tools/helpers';
+import { addWarning, asMetadataKey, asSnakeCase } from 'src/sql-tools/helpers';
 
 export const processTables: Processor = (builder, items) => {
   for (const {
@@ -45,7 +45,7 @@ export const onMissingTable = (
   propertyName?: symbol | string,
 ) => {
   const label = object.constructor.name + (propertyName ? '.' + String(propertyName) : '');
-  builder.warnings.push(`[${context}] Unable to find table (${label})`);
+  addWarning(builder, context, `Unable to find table (${label})`);
 };
 
 const METADATA_KEY = asMetadataKey('table-metadata');

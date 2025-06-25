@@ -7,6 +7,7 @@
 </script>
 
 <script lang="ts">
+  import { afterNavigate } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
@@ -22,7 +23,7 @@
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import maplibregl, { GlobeControl, type GeoJSONSource, type LngLatLike } from 'maplibre-gl';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import {
     AttributionControl,
@@ -213,6 +214,17 @@
     }
   };
 
+  afterNavigate(() => {
+    if (map) {
+      map.resize();
+
+      if (globalThis.location.hash) {
+        const hashChangeEvent = new HashChangeEvent('hashchange');
+        globalThis.dispatchEvent(hashChangeEvent);
+      }
+    }
+  });
+
   onMount(async () => {
     if (!mapMarkers) {
       mapMarkers = await loadMapMarkers();
@@ -251,7 +263,11 @@
   });
 
   $effect(() => {
-    map?.jumpTo({ center, zoom });
+    if (!center || !zoom) {
+      return;
+    }
+
+    untrack(() => map?.jumpTo({ center, zoom }));
   });
 </script>
 
@@ -311,7 +327,7 @@
         features: mapMarkers?.map((marker) => asFeature(marker)) ?? [],
       }}
       id="geojson"
-      cluster={{ radius: 35, maxZoom: 17 }}
+      cluster={{ radius: 35, maxZoom: 18 }}
     >
       <MarkerLayer
         applyToClusters

@@ -8,6 +8,32 @@ enum WidgetError: Error {
   case unknown
   case albumNotFound
   case unableToResize
+  case invalidImage
+  case invalidURL
+}
+
+extension WidgetError: LocalizedError {
+  public var errorDescription: String? {
+    switch self {
+    case .noLogin:
+      return "Login to Immich"
+
+    case .fetchFailed:
+      return "Unable to connect to your Immich instance"
+
+    case .albumNotFound:
+      return "Album not found"
+        
+    case .invalidURL:
+      return "An invalid URL was used"
+        
+    case .invalidImage:
+      return "An invalid image was received"
+
+    default:
+      return "An unknown error occured"
+    }
+  }
 }
 
 enum AssetType: String, Codable {
@@ -146,7 +172,7 @@ class ImmichAPI {
     return try JSONDecoder().decode([MemoryResult].self, from: data)
   }
 
-  func fetchImage(asset: SearchResult) async throws -> UIImage {
+  func fetchImage(asset: SearchResult) async throws(WidgetError) -> UIImage {
     let thumbnailParams = [URLQueryItem(name: "size", value: "preview")]
     let assetEndpoint = "/assets/" + asset.id + "/thumbnail"
 
@@ -157,16 +183,24 @@ class ImmichAPI {
         params: thumbnailParams
       )
     else {
-      throw URLError(.badURL)
+      throw .invalidURL
+    }
+    
+    guard let imageSource = CGImageSourceCreateWithURL(fetchURL as CFURL, nil) else {
+      throw .invalidURL
     }
 
-    let (data, _) = try await URLSession.shared.data(from: fetchURL)
-
-    guard let img = UIImage(data: data) else {
-      throw URLError(.badServerResponse)
+    let decodeOptions: [NSString: Any] = [
+        kCGImageSourceCreateThumbnailFromImageAlways: true,
+        kCGImageSourceThumbnailMaxPixelSize: 400,
+        kCGImageSourceCreateThumbnailWithTransform: true
+    ]
+    
+    guard let thumbnail = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, decodeOptions as CFDictionary) else {
+      throw .fetchFailed
     }
 
-    return img
+    return UIImage(cgImage: thumbnail)
   }
 
   func fetchAlbums() async throws -> [Album] {

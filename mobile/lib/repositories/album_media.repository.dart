@@ -4,14 +4,13 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
-import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:photo_manager/photo_manager.dart' hide AssetType;
 
 final albumMediaRepositoryProvider =
     Provider((ref) => const AlbumMediaRepository());
 
-class AlbumMediaRepository implements IAlbumMediaRepository {
+class AlbumMediaRepository {
   const AlbumMediaRepository();
 
   bool get useCustomFilter =>
@@ -41,7 +40,6 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
             )
           : null;
 
-  @override
   Future<List<Album>> getAll() async {
     final filter = useCustomFilter
         ? CustomFilter.sql(where: '${CustomColumns.base.width} > 0')
@@ -52,7 +50,6 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
     return assetPathEntities.map(_toAlbum).toList();
   }
 
-  @override
   Future<List<String>> getAssetIds(String albumId) async {
     final album =
         await AssetPathEntity.fromId(albumId, filterOption: _getAlbumFilter());
@@ -61,14 +58,12 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
     return assets.map((e) => e.id).toList();
   }
 
-  @override
   Future<int> getAssetCount(String albumId) async {
     final album =
         await AssetPathEntity.fromId(albumId, filterOption: _getAlbumFilter());
     return album.assetCountAsync;
   }
 
-  @override
   Future<List<Asset>> getAssets(
     String albumId, {
     int start = 0,
@@ -97,12 +92,7 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
     return assets.map(AssetMediaRepository.toAsset).toList().cast();
   }
 
-  @override
-  Future<Album> get(
-    String id, {
-    DateTime? modifiedFrom,
-    DateTime? modifiedUntil,
-  }) async {
+  Future<Album> get(String id) async {
     final assetPathEntity = await AssetPathEntity.fromId(
       id,
       filterOption: _getAlbumFilter(containsPathModified: true),
