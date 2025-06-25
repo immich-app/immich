@@ -6,6 +6,7 @@ struct ImageEntry: TimelineEntry {
   var image: UIImage?
   var subtitle: String? = nil
   var error: WidgetError? = nil
+  var deepLink: URL? = nil
 
   // Resizes the stored image to a maximum width of 450 pixels
   mutating func resize() {
@@ -54,6 +55,7 @@ struct ImmichWidgetView: View {
         }
         .padding(16)
       }
+      .widgetURL(entry.deepLink)
     }
   }
 }
