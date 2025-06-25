@@ -100,6 +100,7 @@ enum AppSettingsEnum<T> {
 }
 
 class AppSettingsService {
+  const AppSettingsService();
   T getSetting<T>(AppSettingsEnum<T> setting) {
     return Store.get(setting.storeKey, setting.defaultValue);
   }

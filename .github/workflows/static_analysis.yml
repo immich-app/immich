@@ -49,7 +49,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2.19.0
+        uses: subosito/flutter-action@395322a6cded4e9ed503aebd4cc1965625f8e59a # v2.20.0
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
@@ -109,7 +109,7 @@ jobs:
         working-directory: ./mobile
 
       - name: Run DCM
-        run: dcm analyze lib
+        run: dcm analyze lib --fatal-style --fatal-warnings
         working-directory: ./mobile
 
   zizmor:
@@ -134,7 +134,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@ff0a06e83cb2de871e5a09832bc6a81e7276941f # v3.28.18
+        uses: github/codeql-action/upload-sarif@ce28f5bb42b7a9f2c824e633a3f6ee835bab6858 # v3.29.0
         with:
           sarif_file: results.sarif
           category: zizmor

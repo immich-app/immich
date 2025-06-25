@@ -32,6 +32,7 @@ import 'package:immich_mobile/pages/common/native_video_viewer.page.dart';
 import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/pages/common/tab_controller.page.dart';
+import 'package:immich_mobile/pages/common/tab_shell.page.dart';
 import 'package:immich_mobile/pages/editing/crop.page.dart';
 import 'package:immich_mobile/pages/editing/edit.page.dart';
 import 'package:immich_mobile/pages/editing/filter.page.dart';
@@ -107,7 +108,7 @@ class AppRouter extends RootStackRouter {
     LocalAuthService localAuthService,
   ) {
     _authGuard = AuthGuard(apiService);
-    _duplicateGuard = DuplicateGuard();
+    _duplicateGuard = const DuplicateGuard();
     _lockedGuard =
         LockedGuard(apiService, secureStorageService, localAuthService);
     _backupPermissionGuard = BackupPermissionGuard(galleryPermissionNotifier);
@@ -136,6 +137,30 @@ class AppRouter extends RootStackRouter {
       children: [
         AutoRoute(
           page: PhotosRoute.page,
+          guards: [_authGuard, _duplicateGuard],
+        ),
+        AutoRoute(
+          page: SearchRoute.page,
+          guards: [_authGuard, _duplicateGuard],
+          maintainState: false,
+        ),
+        AutoRoute(
+          page: LibraryRoute.page,
+          guards: [_authGuard, _duplicateGuard],
+        ),
+        AutoRoute(
+          page: AlbumsRoute.page,
+          guards: [_authGuard, _duplicateGuard],
+        ),
+      ],
+      transitionsBuilder: TransitionsBuilders.fadeIn,
+    ),
+    CustomRoute(
+      page: TabShellRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+      children: [
+        AutoRoute(
+          page: MainTimelineRoute.page,
           guards: [_authGuard, _duplicateGuard],
         ),
         AutoRoute(
@@ -354,5 +379,8 @@ class AppRouter extends RootStackRouter {
         ),
       ),
     ),
+    // required to handle all deeplinks in deep_link.service.dart
+    // auto_route_library#1722
+    RedirectRoute(path: '*', redirectTo: '/'),
   ];
 }

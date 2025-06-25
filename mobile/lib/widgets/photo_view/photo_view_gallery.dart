@@ -386,7 +386,7 @@ class PhotoViewGalleryPageOptions {
         childSize = null,
         assert(imageProvider != null);
 
-  PhotoViewGalleryPageOptions.customChild({
+  const PhotoViewGalleryPageOptions.customChild({
     required this.child,
     this.childSize,
     this.semanticLabel,

@@ -105,7 +105,9 @@ class AlbumsPage extends HookConsumerWidget {
                   color: context.colorScheme.onSurface.withAlpha(0),
                   width: 0,
                 ),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(24),
+                ),
                 gradient: LinearGradient(
                   colors: [
                     context.colorScheme.primary.withValues(alpha: 0.075),
@@ -301,7 +303,9 @@ class QuickFilterButton extends StatelessWidget {
         ),
         shape: WidgetStateProperty.all(
           RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(20),
+            ),
             side: BorderSide(
               color: context.colorScheme.onSurface.withAlpha(25),
               width: 1,
@@ -334,8 +338,10 @@ class SortButton extends ConsumerWidget {
       style: MenuStyle(
         elevation: const WidgetStatePropertyAll(1),
         shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(24),
+            ),
           ),
         ),
         padding: const WidgetStatePropertyAll(
@@ -384,8 +390,10 @@ class SortButton extends ConsumerWidget {
                       : Colors.transparent,
                 ),
                 shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+                  const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(24),
+                    ),
                   ),
                 ),
               ),

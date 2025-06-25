@@ -7,7 +7,7 @@ const Symbol _zoneTxn = #zoneTxn;
 
 abstract class DatabaseRepository implements IDatabaseRepository {
   final Isar db;
-  DatabaseRepository(this.db);
+  const DatabaseRepository(this.db);
 
   bool get inTxn => Zone.current[_zoneTxn] != null;
 

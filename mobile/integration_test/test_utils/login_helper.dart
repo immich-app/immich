@@ -7,7 +7,7 @@ import 'general_helper.dart';
 class ImmichTestLoginHelper {
   final WidgetTester tester;
 
-  ImmichTestLoginHelper(this.tester);
+  const ImmichTestLoginHelper(this.tester);
 
   Future<void> waitForLoginScreen() async {
     await pumpUntilFound(tester, find.text("Login"));
@@ -60,11 +60,11 @@ class ImmichTestLoginHelper {
     await tester.tap(button);
   }
 
-  Future<void> assertLoginSuccess({int timeoutSeconds = 15}) async {
+  Future<void> assertLoginSuccess() async {
     await pumpUntilFound(tester, find.text("home_page_building_timeline".tr()));
   }
 
-  Future<void> assertLoginFailed({int timeoutSeconds = 15}) async {
+  Future<void> assertLoginFailed() async {
     await pumpUntilFound(tester, find.text("login_form_failed_login".tr()));
   }
 }

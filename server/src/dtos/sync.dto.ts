@@ -145,6 +145,18 @@ export class SyncAlbumV1 {
   order!: AssetOrder;
 }
 
+export class SyncAlbumToAssetV1 {
+  albumId!: string;
+  assetId!: string;
+}
+
+export class SyncAlbumToAssetDeleteV1 {
+  albumId!: string;
+  assetId!: string;
+}
+
+export class SyncAckV1 {}
+
 export type SyncItem = {
   [SyncEntityType.UserV1]: SyncUserV1;
   [SyncEntityType.UserDeleteV1]: SyncUserDeleteV1;
@@ -163,7 +175,14 @@ export type SyncItem = {
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserBackfillV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserDeleteV1]: SyncAlbumUserDeleteV1;
-  [SyncEntityType.SyncAckV1]: object;
+  [SyncEntityType.AlbumAssetV1]: SyncAssetV1;
+  [SyncEntityType.AlbumAssetBackfillV1]: SyncAssetV1;
+  [SyncEntityType.AlbumAssetExifV1]: SyncAssetExifV1;
+  [SyncEntityType.AlbumAssetExifBackfillV1]: SyncAssetExifV1;
+  [SyncEntityType.AlbumToAssetV1]: SyncAlbumToAssetV1;
+  [SyncEntityType.AlbumToAssetBackfillV1]: SyncAlbumToAssetV1;
+  [SyncEntityType.AlbumToAssetDeleteV1]: SyncAlbumToAssetDeleteV1;
+  [SyncEntityType.SyncAckV1]: SyncAckV1;
 };
 
 const responseDtos = [
@@ -178,6 +197,8 @@ const responseDtos = [
   SyncAlbumDeleteV1,
   SyncAlbumUserV1,
   SyncAlbumUserDeleteV1,
+  SyncAlbumToAssetV1,
+  SyncAckV1,
 ];
 
 export const extraSyncModels = responseDtos;

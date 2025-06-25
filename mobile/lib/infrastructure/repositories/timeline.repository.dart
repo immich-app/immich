@@ -3,15 +3,13 @@ import 'dart:async';
 import 'package:drift/drift.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/interfaces/timeline.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:stream_transform/stream_transform.dart';
 
-class DriftTimelineRepository extends DriftDatabaseRepository
-    implements ITimelineRepository {
+class DriftTimelineRepository extends DriftDatabaseRepository {
   final Drift _db;
 
   const DriftTimelineRepository(super._db) : _db = _db;
@@ -28,7 +26,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository
     return buckets;
   }
 
-  @override
   Stream<List<Bucket>> watchMainBucket(
     List<String> userIds, {
     GroupAssetsBy groupBy = GroupAssetsBy.day,
@@ -49,7 +46,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository
         .throttle(const Duration(seconds: 3), trailing: true);
   }
 
-  @override
   Future<List<BaseAsset>> getMainBucketAssets(
     List<String> userIds, {
     required int offset,
@@ -90,7 +86,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository
         .get();
   }
 
-  @override
   Stream<List<Bucket>> watchLocalBucket(
     String albumId, {
     GroupAssetsBy groupBy = GroupAssetsBy.day,
@@ -124,7 +119,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository
     }).watch();
   }
 
-  @override
   Future<List<BaseAsset>> getLocalBucketAssets(
     String albumId, {
     required int offset,

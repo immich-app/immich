@@ -5,4 +5,4 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'app_settings.provider.g.dart';
 
 @Riverpod(keepAlive: true)
-AppSettingsService appSettingsService(Ref _) => AppSettingsService();
+AppSettingsService appSettingsService(Ref _) => const AppSettingsService();

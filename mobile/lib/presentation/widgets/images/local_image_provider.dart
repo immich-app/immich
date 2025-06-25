@@ -4,8 +4,6 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:immich_mobile/domain/interfaces/asset_media.interface.dart';
-import 'package:immich_mobile/domain/interfaces/storage.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
@@ -15,7 +13,7 @@ import 'package:immich_mobile/providers/image/exceptions/image_loading_exception
 import 'package:logging/logging.dart';
 
 class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
-  final IAssetMediaRepository _assetMediaRepository =
+  final AssetMediaRepository _assetMediaRepository =
       const AssetMediaRepository();
   final CacheManager? cacheManager;
 
@@ -95,9 +93,9 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
 }
 
 class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
-  final IAssetMediaRepository _assetMediaRepository =
+  final AssetMediaRepository _assetMediaRepository =
       const AssetMediaRepository();
-  final IStorageRepository _storageRepository = const StorageRepository();
+  final StorageRepository _storageRepository = const StorageRepository();
 
   final LocalAsset asset;
   final Size size;
