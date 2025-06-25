@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/bottom_app_bar/home_bottom_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
@@ -120,12 +121,14 @@ class _SliverTimelineState extends State<_SliverTimeline> {
                       ],
                     ),
                   ),
-                  if (isMultiSelectEnabled)
+                  if (isMultiSelectEnabled) ...[
                     const Positioned(
                       top: 60,
                       left: 25,
                       child: _MultiSelectStatusButton(),
                     ),
+                    const HomeBottomAppBar(),
+                  ],
                 ],
               ),
             );

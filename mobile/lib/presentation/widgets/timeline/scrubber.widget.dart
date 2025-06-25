@@ -13,7 +13,7 @@ import 'package:intl/intl.dart' hide TextDirection;
 
 /// A widget that will display a BoxScrollView with a ScrollThumb that can be dragged
 /// for quick navigation of the BoxScrollView.
-class Scrubber extends StatefulWidget {
+class Scrubber extends ConsumerStatefulWidget {
   /// The view that will be scrolled with the scroll thumb
   final CustomScrollView child;
 
@@ -37,7 +37,7 @@ class Scrubber extends StatefulWidget {
   }) : assert(child.scrollDirection == Axis.vertical);
 
   @override
-  State createState() => ScrubberState();
+  ConsumerState createState() => ScrubberState();
 }
 
 List<_Segment> _buildSegments({
@@ -82,7 +82,8 @@ List<_Segment> _buildSegments({
   return segments;
 }
 
-class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
+class ScrubberState extends ConsumerState<Scrubber>
+    with TickerProviderStateMixin {
   double _thumbTopOffset = 0.0;
   bool _isDragging = false;
   List<_Segment> _segments = [];
@@ -175,6 +176,13 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
       return false;
     }
 
+    if (notification is ScrollStartNotification ||
+        notification is ScrollUpdateNotification) {
+      ref.read(timelineStateProvider.notifier).setScrolling(true);
+    } else if (notification is ScrollEndNotification) {
+      ref.read(timelineStateProvider.notifier).setScrolling(false);
+    }
+
     setState(() {
       if (notification is ScrollUpdateNotification) {
         _thumbTopOffset = _currentOffset;
@@ -191,7 +199,7 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
     return false;
   }
 
-  void _onDragStart(WidgetRef ref) {
+  void _onDragStart(DragStartDetails _) {
     ref.read(timelineStateProvider.notifier).setScrubbing(true);
     setState(() {
       _isDragging = true;
@@ -293,10 +301,12 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
     _scrollController.jumpTo(centeredOffset.clamp(0.0, maxScrollExtent));
   }
 
-  void _onDragEnd(WidgetRef ref) {
+  void _onDragEnd(DragEndDetails _) {
     ref.read(timelineStateProvider.notifier).setScrubbing(false);
     _labelAnimationController.reverse();
-    _isDragging = false;
+    setState(() {
+      _isDragging = false;
+    });
 
     _resetThumbTimer();
   }
@@ -342,13 +352,10 @@ class ScrubberState extends State<Scrubber> with TickerProviderStateMixin {
             top: _thumbTopOffset + widget.topPadding,
             end: 0,
             child: RepaintBoundary(
-              child: Consumer(
-                builder: (_, ref, child) => GestureDetector(
-                  onVerticalDragStart: (_) => _onDragStart(ref),
-                  onVerticalDragUpdate: _onDragUpdate,
-                  onVerticalDragEnd: (_) => _onDragEnd(ref),
-                  child: child,
-                ),
+              child: GestureDetector(
+                onVerticalDragStart: _onDragStart,
+                onVerticalDragUpdate: _onDragUpdate,
+                onVerticalDragEnd: _onDragEnd,
                 child: _Scrubber(
                   thumbAnimation: _thumbAnimation,
                   labelAnimation: _labelAnimation,

@@ -40,19 +40,28 @@ class TimelineArgs {
 
 class TimelineState {
   final bool isScrubbing;
+  final bool isScrolling;
 
-  const TimelineState({this.isScrubbing = false});
+  const TimelineState({
+    this.isScrubbing = false,
+    this.isScrolling = false,
+  });
+
+  bool get isInteracting => isScrubbing || isScrolling;
 
   @override
   bool operator ==(covariant TimelineState other) {
-    return isScrubbing == other.isScrubbing;
+    return isScrubbing == other.isScrubbing && isScrolling == other.isScrolling;
   }
 
   @override
-  int get hashCode => isScrubbing.hashCode;
+  int get hashCode => isScrubbing.hashCode ^ isScrolling.hashCode;
 
-  TimelineState copyWith({bool? isScrubbing}) {
-    return TimelineState(isScrubbing: isScrubbing ?? this.isScrubbing);
+  TimelineState copyWith({bool? isScrubbing, bool? isScrolling}) {
+    return TimelineState(
+      isScrubbing: isScrubbing ?? this.isScrubbing,
+      isScrolling: isScrolling ?? this.isScrolling,
+    );
   }
 }
 
@@ -63,8 +72,15 @@ class TimelineStateNotifier extends Notifier<TimelineState> {
     state = state.copyWith(isScrubbing: isScrubbing);
   }
 
+  void setScrolling(bool isScrolling) {
+    state = state.copyWith(isScrolling: isScrolling);
+  }
+
   @override
-  TimelineState build() => const TimelineState(isScrubbing: false);
+  TimelineState build() => const TimelineState(
+        isScrubbing: false,
+        isScrolling: false,
+      );
 }
 
 // This provider watches the buckets from the timeline service & args and serves the segments.
