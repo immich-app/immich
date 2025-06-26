@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { updateAlbumInfo } from '@immich/sdk';
+  import ContenteditableText from '$lib/components/shared-components/contenteditable-text.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import AutogrowTextarea from '$lib/components/shared-components/autogrow-textarea.svelte';
+  import { updateAlbumInfo } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -28,11 +28,12 @@
 </script>
 
 {#if isOwned}
-  <AutogrowTextarea
-    content={description}
+  <ContenteditableText
+    value={description}
     class="w-full mt-2 text-black dark:text-white border-b-2 border-transparent border-gray-500 bg-transparent text-base outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:focus:border-immich-dark-primary hover:border-gray-400"
-    onContentUpdate={handleUpdateDescription}
+    onUpdate={handleUpdateDescription}
     placeholder={$t('add_a_description')}
+    isCtrlEnter={true}
   />
 {:else if description}
   <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">
