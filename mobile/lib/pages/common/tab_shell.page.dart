@@ -143,7 +143,7 @@ class TabShellPage extends ConsumerWidget {
       routes: [
         const MainTimelineRoute(),
         SearchRoute(),
-        const AlbumsRoute(),
+        const DriftAlbumsRoute(),
         const LibraryRoute(),
       ],
       duration: const Duration(milliseconds: 600),

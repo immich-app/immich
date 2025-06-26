@@ -51,6 +51,7 @@ class SyncStreamService {
 
     final type = batch.first.type;
     await _handleSyncData(type, batch.map((e) => e.data));
+    print("Processed ${batch.last.ack.length} events of type $type");
     await _syncApiRepository.ack([batch.last.ack]);
     batch.clear();
   }
