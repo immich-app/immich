@@ -1,7 +1,8 @@
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { DB } from 'src/db';
-import { AssetFileType } from 'src/enum';
+import { AssetFileType, MemoryType } from 'src/enum';
+import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -11,6 +12,7 @@ import { SystemMetadataRepository } from 'src/repositories/system-metadata.repos
 import { UserRepository } from 'src/repositories/user.repository';
 import { MemoryService } from 'src/services/memory.service';
 import { newMediumService } from 'test/medium.factory';
+import { factory } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
 
 let defaultDatabase: Kysely<DB>;
@@ -19,6 +21,7 @@ const setup = (db?: Kysely<DB>) => {
   return newMediumService(MemoryService, {
     database: db || defaultDatabase,
     real: [
+      AccessRepository,
       AssetRepository,
       DatabaseRepository,
       MemoryRepository,
@@ -34,6 +37,74 @@ const setup = (db?: Kysely<DB>) => {
 describe(MemoryService.name, () => {
   beforeEach(async () => {
     defaultDatabase = await getKyselyDB();
+  });
+
+  describe('create', () => {
+    it('should create a new memory', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const dto = {
+        type: MemoryType.ON_THIS_DAY,
+        data: { year: 2021 },
+        memoryAt: new Date(2021),
+      };
+
+      await expect(sut.create(auth, dto)).resolves.toEqual({
+        id: expect.any(String),
+        type: dto.type,
+        data: dto.data,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        isSaved: false,
+        memoryAt: dto.memoryAt,
+        ownerId: user.id,
+        assets: [],
+      });
+    });
+
+    it('should create a new memory (with assets)', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      const auth = factory.auth({ user });
+      const dto = {
+        type: MemoryType.ON_THIS_DAY,
+        data: { year: 2021 },
+        memoryAt: new Date(2021),
+        assetIds: [asset1.id, asset2.id],
+      };
+
+      await expect(sut.create(auth, dto)).resolves.toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          assets: [expect.objectContaining({ id: asset1.id }), expect.objectContaining({ id: asset2.id })],
+        }),
+      );
+    });
+
+    it('should create a new memory and ignore assets the user does not have access to', async () => {
+      const { sut, ctx } = setup();
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user1.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user2.id });
+      const auth = factory.auth({ user: user1 });
+      const dto = {
+        type: MemoryType.ON_THIS_DAY,
+        data: { year: 2021 },
+        memoryAt: new Date(2021),
+        assetIds: [asset1.id, asset2.id],
+      };
+
+      await expect(sut.create(auth, dto)).resolves.toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          assets: [expect.objectContaining({ id: asset1.id })],
+        }),
+      );
+    });
   });
 
   describe('onMemoryCreate', () => {
