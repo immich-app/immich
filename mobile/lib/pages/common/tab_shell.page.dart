@@ -172,9 +172,9 @@ class TabShellPage extends ConsumerWidget {
                     ],
                   )
                 : heroedChild,
-            // bottomNavigationBar: multiselectEnabled || isScreenLandscape
-            //     ? null
-            //     : bottomNavigationBar(tabsRouter),
+            bottomNavigationBar: multiselectEnabled || isScreenLandscape
+                ? null
+                : bottomNavigationBar(tabsRouter),
           ),
         );
       },
