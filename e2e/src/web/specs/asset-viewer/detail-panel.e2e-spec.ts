@@ -59,7 +59,7 @@ test.describe('Detail Panel', () => {
     await utils.setAuthCookies(context, admin.accessToken);
     await page.goto(`/share/${sharedLink.key}/photos/${asset.id}`);
 
-    const textarea = page.getByRole('textbox', { name: 'Add a description' });
+    const textarea = page.getByTestId('contenteditable-text');
     await page.getByRole('button', { name: 'Info' }).click();
     await expect(textarea).toBeVisible();
     await expect(textarea).not.toBeDisabled();
@@ -71,9 +71,9 @@ test.describe('Detail Panel', () => {
     await page.waitForSelector('#immich-asset-viewer');
 
     await page.getByRole('button', { name: 'Info' }).click();
-    const textarea = page.getByRole('textbox', { name: 'Add a description' });
+    const textarea = page.getByTestId('contenteditable-text');
     await textarea.fill('new description');
-    await expect(textarea).toHaveValue('new description');
+    await expect(textarea).toHaveText('new description', { useInnerText: true });
 
     await page.getByRole('button', { name: 'Info' }).click();
     await expect(textarea).not.toBeVisible();
@@ -81,6 +81,6 @@ test.describe('Detail Panel', () => {
     await expect(textarea).toBeVisible();
 
     await utils.waitForWebsocketEvent({ event: 'assetUpdate', id: asset.id });
-    await expect(textarea).toHaveValue('new description');
+    await expect(textarea).toHaveText('new description', { useInnerText: true });
   });
 });
