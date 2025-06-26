@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/repositories/widget.repository.dart';
