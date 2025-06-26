@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -11,13 +12,13 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
-import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
-import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
+import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
 @RoutePage()
@@ -26,11 +27,7 @@ class DriftAlbumsPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albums =
-        ref.watch(albumProvider).where((album) => album.isRemote).toList();
-    final albumSortOption = ref.watch(albumSortByOptionsProvider);
-    final albumSortIsReverse = ref.watch(albumSortOrderProvider);
-    final sorted = albumSortOption.sortFn(albums, albumSortIsReverse);
+    final albumsFuture = ref.watch(remoteAlbumRepository).getAll();
     final isGrid = useState(false);
     final searchController = useTextEditingController();
     final debounceTimer = useRef<Timer?>(null);
@@ -75,31 +72,15 @@ class DriftAlbumsPage extends HookConsumerWidget {
       onSearch('', QuickFilterMode.all);
     }
 
-    return Scaffold(
-      appBar: ImmichAppBar(
-        showUploadButton: false,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.add_rounded,
-              size: 28,
-            ),
-            onPressed: () => context.pushRoute(
-              CreateAlbumRoute(),
-            ),
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        displacement: 70,
-        onRefresh: () async {
-          await ref.read(albumProvider.notifier).refreshRemoteAlbums();
-        },
-        child: ListView(
-          shrinkWrap: true,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
-          children: [
-            Container(
+    return CustomScrollView(
+      slivers: [
+        const ImmichSliverAppBar(),
+
+        /// Search Bar
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          sliver: SliverToBoxAdapter(
+            child: Container(
               decoration: BoxDecoration(
                 border: Border.all(
                   color: context.colorScheme.onSurface.withAlpha(0),
@@ -137,8 +118,14 @@ class DriftAlbumsPage extends HookConsumerWidget {
                 onTapOutside: (_) => searchFocusNode.unfocus(),
               ),
             ),
-            const SizedBox(height: 8),
-            Wrap(
+          ),
+        ),
+
+        /// Quick Filter Buttons
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverToBoxAdapter(
+            child: Wrap(
               spacing: 4,
               runSpacing: 4,
               children: [
@@ -174,7 +161,14 @@ class DriftAlbumsPage extends HookConsumerWidget {
                 ),
               ],
             ),
-            Row(
+          ),
+        ),
+
+        /// Quick Sort and View Mode
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverToBoxAdapter(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const SortButton(),
@@ -189,94 +183,98 @@ class DriftAlbumsPage extends HookConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 5),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 500),
-              child: isGrid.value
-                  ? GridView.builder(
-                      shrinkWrap: true,
-                      physics: const ClampingScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 250,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        childAspectRatio: .7,
-                      ),
-                      itemBuilder: (context, index) {
-                        return AlbumThumbnailCard(
-                          album: sorted[index],
-                          onTap: () => context.pushRoute(
-                            AlbumViewerRoute(albumId: sorted[index].id),
-                          ),
-                          showOwner: true,
-                        );
-                      },
-                      itemCount: sorted.length,
-                    )
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: sorted.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: LargeLeadingTile(
-                            title: Text(
-                              sorted[index].name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: context.textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            subtitle: sorted[index].ownerId != null
-                                ? Text(
-                                    '${'items_count'.t(
-                                      context: context,
-                                      args: {
-                                        'count': sorted[index].assetCount,
-                                      },
-                                    )} • ${sorted[index].ownerId != userId ? 'shared_by_user'.t(
-                                        context: context,
-                                        args: {
-                                          'user': sorted[index].ownerName!,
-                                        },
-                                      ) : 'owned'.t(context: context)}',
-                                    overflow: TextOverflow.ellipsis,
-                                    style:
-                                        context.textTheme.bodyMedium?.copyWith(
-                                      color: context
-                                          .colorScheme.onSurfaceSecondary,
-                                    ),
-                                  )
-                                : null,
-                            onTap: () => context.pushRoute(
-                              AlbumViewerRoute(albumId: sorted[index].id),
-                            ),
-                            leadingPadding: const EdgeInsets.only(
-                              right: 16,
-                            ),
-                            leading: ClipRRect(
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(15),
-                              ),
-                              child: ImmichThumbnail(
-                                asset: sorted[index].thumbnail.value,
-                                width: 80,
-                                height: 80,
-                              ),
-                            ),
-                            // minVerticalPadding: 1,
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
+          ),
         ),
-      ),
-      resizeToAvoidBottomInset: false,
+
+        /// Albums Lists
+        SliverList.builder(
+          itemBuilder: (context, index) {
+            return null;
+          },
+        ),
+
+        FutureBuilder(
+          future: albumsFuture,
+          builder: (_, snap) {
+            final albums = snap.data ?? [];
+            if (albums.isEmpty) {
+              return const SliverToBoxAdapter(child: SizedBox.shrink());
+            }
+
+            albums.sortBy((a) => a.name);
+            return SliverList.builder(
+              itemBuilder: (_, index) {
+                final album = albums[index];
+
+                return Padding(
+                  padding: const EdgeInsets.only(
+                    left: 16.0,
+                    bottom: 8.0,
+                    right: 16.0,
+                  ),
+                  child: LargeLeadingTile(
+                    title: Text(
+                      album.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${'items_count'.t(
+                        context: context,
+                        args: {
+                          'count': 0,
+                        },
+                      )} • ${album.ownerId != userId ? 'shared_by_user'.t(
+                          context: context,
+                          args: {
+                            'user': album.ownerId,
+                          },
+                        ) : 'owned'.t(context: context)}',
+                      overflow: TextOverflow.ellipsis,
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: context.colorScheme.onSurfaceSecondary,
+                      ),
+                    ),
+                    onTap: () => context.router.push(
+                      RemoteTimelineRoute(albumId: album.id),
+                    ),
+                    leadingPadding: const EdgeInsets.only(
+                      right: 16,
+                    ),
+                    leading: album.thumbnailAssetId != null
+                        ? ClipRRect(
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(15),
+                            ),
+                            child: SizedBox(
+                              width: 80,
+                              height: 80,
+                              child: Thumbnail(
+                                remoteId: album.thumbnailAssetId,
+                              ),
+                            ),
+                          )
+                        : const SizedBox(
+                            width: 80,
+                            height: 80,
+                            child: Icon(
+                              Icons.photo_album_rounded,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          ),
+                    // minVerticalPadding: 1,
+                  ),
+                );
+              },
+              itemCount: albums.length,
+            );
+          },
+        ),
+      ],
     );
   }
 }
