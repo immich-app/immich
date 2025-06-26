@@ -46,7 +46,7 @@ class TimelineHeader extends ConsumerWidget {
     List<BaseAsset> bucketAssets;
     try {
       bucketAssets = ref
-          .watch(timelineServiceProvider)
+          .watch(timelineServiceNotifier)
           .getAssets(assetOffset, bucket.assetCount);
     } catch (e) {
       bucketAssets = <BaseAsset>[];

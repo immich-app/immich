@@ -105,7 +105,7 @@ class FixedSegment extends Segment {
           builder: (ctx, ref, _) {
             final isScrubbing =
                 ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
-            final timelineService = ref.read(timelineServiceProvider);
+            final timelineService = ref.read(timelineServiceNotifier);
 
             // Create stable callback references to prevent unnecessary rebuilds
             onTap(BaseAsset asset) => _handleOnTap(ref, asset);

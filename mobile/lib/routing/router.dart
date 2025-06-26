@@ -65,10 +65,8 @@ import 'package:immich_mobile/pages/search/recently_taken.page.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/feat_in_development.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/local_timeline.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/main_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/media_stat.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/remote_timeline.page.dart';
+import 'package:immich_mobile/presentation/pages/dev/timeline.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
@@ -359,11 +357,7 @@ class AppRouter extends RootStackRouter {
       guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(
-      page: LocalTimelineRoute.page,
-      guards: [_authGuard, _duplicateGuard],
-    ),
-    AutoRoute(
-      page: MainTimelineRoute.page,
+      page: LocalAlbumRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(
