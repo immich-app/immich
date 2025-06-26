@@ -1426,6 +1426,43 @@ class RemoteMediaSummaryRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [RemoteTimelinePage]
+class RemoteTimelineRoute extends PageRouteInfo<RemoteTimelineRouteArgs> {
+  RemoteTimelineRoute({
+    Key? key,
+    required String albumId,
+    List<PageRouteInfo>? children,
+  }) : super(
+          RemoteTimelineRoute.name,
+          args: RemoteTimelineRouteArgs(key: key, albumId: albumId),
+          initialChildren: children,
+        );
+
+  static const String name = 'RemoteTimelineRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<RemoteTimelineRouteArgs>();
+      return RemoteTimelinePage(key: args.key, albumId: args.albumId);
+    },
+  );
+}
+
+class RemoteTimelineRouteArgs {
+  const RemoteTimelineRouteArgs({this.key, required this.albumId});
+
+  final Key? key;
+
+  final String albumId;
+
+  @override
+  String toString() {
+    return 'RemoteTimelineRouteArgs{key: $key, albumId: $albumId}';
+  }
+}
+
+/// generated route for
 /// [SearchPage]
 class SearchRoute extends PageRouteInfo<SearchRouteArgs> {
   SearchRoute({

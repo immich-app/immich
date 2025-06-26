@@ -198,6 +198,7 @@ const responseDtos = [
   SyncAlbumUserV1,
   SyncAlbumUserDeleteV1,
   SyncAlbumToAssetV1,
+  SyncAlbumToAssetDeleteV1,
   SyncAckV1,
 ];
 

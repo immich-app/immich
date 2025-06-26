@@ -249,6 +249,7 @@ part 'model/sync_ack_delete_dto.dart';
 part 'model/sync_ack_dto.dart';
 part 'model/sync_ack_set_dto.dart';
 part 'model/sync_album_delete_v1.dart';
+part 'model/sync_album_to_asset_delete_v1.dart';
 part 'model/sync_album_to_asset_v1.dart';
 part 'model/sync_album_user_delete_v1.dart';
 part 'model/sync_album_user_v1.dart';

@@ -13450,6 +13450,21 @@
         ],
         "type": "object"
       },
+      "SyncAlbumToAssetDeleteV1": {
+        "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId",
+          "assetId"
+        ],
+        "type": "object"
+      },
       "SyncAlbumToAssetV1": {
         "properties": {
           "albumId": {
