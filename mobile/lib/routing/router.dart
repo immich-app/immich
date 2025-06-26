@@ -68,6 +68,7 @@ import 'package:immich_mobile/presentation/pages/dev/feat_in_development.page.da
 import 'package:immich_mobile/presentation/pages/dev/local_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/main_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/media_stat.page.dart';
+import 'package:immich_mobile/presentation/pages/dev/remote_timeline.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
@@ -363,6 +364,10 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(
       page: MainTimelineRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: RemoteTimelineRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
     // required to handle all deeplinks in deep_link.service.dart

@@ -43,9 +43,13 @@ enum AssetType: String, Codable {
   case other = "OTHER"
 }
 
-struct SearchResult: Codable {
+struct Asset: Codable {
   let id: String
   let type: AssetType
+  
+  var deepLink: URL? {
+    return URL(string: "immich://asset?id=\(id)")
+  }
 }
 
 struct SearchFilters: Codable {
@@ -56,7 +60,7 @@ struct SearchFilters: Codable {
 
 struct MemoryResult: Codable {
   let id: String
-  var assets: [SearchResult]
+  var assets: [Asset]
   let type: String
 
   struct MemoryData: Codable {
@@ -127,7 +131,7 @@ class ImmichAPI {
   }
 
   func fetchSearchResults(with filters: SearchFilters) async throws
-    -> [SearchResult]
+    -> [Asset]
   {
     // get URL
     guard
@@ -147,7 +151,7 @@ class ImmichAPI {
     let (data, _) = try await URLSession.shared.data(for: request)
 
     // decode data
-    return try JSONDecoder().decode([SearchResult].self, from: data)
+    return try JSONDecoder().decode([Asset].self, from: data)
   }
 
   func fetchMemory(for date: Date) async throws -> [MemoryResult] {
@@ -172,7 +176,7 @@ class ImmichAPI {
     return try JSONDecoder().decode([MemoryResult].self, from: data)
   }
 
-  func fetchImage(asset: SearchResult) async throws(WidgetError) -> UIImage {
+  func fetchImage(asset: Asset) async throws(WidgetError) -> UIImage {
     let thumbnailParams = [URLQueryItem(name: "size", value: "preview")]
     let assetEndpoint = "/assets/" + asset.id + "/thumbnail"
 

@@ -88,7 +88,7 @@ enum AppSettingsEnum<T> {
   photoManagerCustomFilter<bool>(
     StoreKey.photoManagerCustomFilter,
     null,
-    false,
+    true,
   ),
   ;
 

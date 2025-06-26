@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/repositories/widget.repository.dart';
@@ -32,6 +33,8 @@ class WidgetService {
   }
 
   Future<void> refreshWidgets() async {
+    if (Platform.isAndroid) return;
+
     for (final name in kWidgetNames) {
       await _repository.refresh(name);
     }

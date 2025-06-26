@@ -609,7 +609,7 @@ jobs:
           persist-credentials: false
 
       - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@master
+        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
         with:
           ignore_paths: >-
             **/open-api/**

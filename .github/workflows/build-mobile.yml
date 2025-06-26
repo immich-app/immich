@@ -85,7 +85,7 @@ jobs:
 
       - name: Restore Gradle Cache
         id: cache-gradle-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         with:
           path: |
             ~/.gradle/caches
@@ -142,7 +142,7 @@ jobs:
 
       - name: Save Gradle Cache
         id: cache-gradle-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         if: github.ref == 'refs/heads/main'
         with:
           path: |

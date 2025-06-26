@@ -14,7 +14,7 @@ class AlbumMediaRepository {
   const AlbumMediaRepository();
 
   bool get useCustomFilter =>
-      Store.get(StoreKey.photoManagerCustomFilter, false);
+      Store.get(StoreKey.photoManagerCustomFilter, true);
 
   FilterOptionGroup? _getAlbumFilter({
     DateTimeCond? updateTimeCond,
