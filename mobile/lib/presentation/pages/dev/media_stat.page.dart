@@ -217,9 +217,12 @@ class RemoteMediaSummaryPage extends StatelessWidget {
                         leading: const Icon(Icons.photo_album_rounded),
                         name: album.name,
                         countFuture: countFuture,
-                        onTap: () => context.router.push(
-                          RemoteTimelineRoute(albumId: album.id),
-                        ),
+                        onTap: () {
+                          ref
+                              .read(timelineServiceNotifier.notifier)
+                              .remoteAlbum(albumId: album.id);
+                          context.router.push(const RemoteAlbumRoute());
+                        },
                       );
                     },
                     itemCount: albums.length,

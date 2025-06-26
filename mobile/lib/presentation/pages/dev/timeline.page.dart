@@ -21,3 +21,13 @@ class LocalAlbumPage extends StatelessWidget {
     return const Timeline();
   }
 }
+
+@RoutePage()
+class RemoteAlbumPage extends StatelessWidget {
+  const RemoteAlbumPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Timeline();
+  }
+}

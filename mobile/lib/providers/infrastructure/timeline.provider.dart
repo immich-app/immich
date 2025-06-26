@@ -47,6 +47,17 @@ class TimelineServiceNotifier extends Notifier<TimelineService> {
     ref.onDispose(service.dispose);
     state = service;
   }
+
+  void remoteAlbum({required String albumId}) {
+    final service = TimelineService(
+      assetSource: (offset, count) => _timelineRepository
+          .getRemoteBucketAssets(albumId, offset: offset, count: count),
+      bucketSource: () =>
+          _timelineRepository.watchRemoteBucket(albumId, groupBy: groupBy),
+    );
+    ref.onDispose(service.dispose);
+    state = service;
+  }
 }
 
 final timelineServiceNotifier =
