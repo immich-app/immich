@@ -113,6 +113,7 @@ dependencies {
   def serialization_version = '1.8.1'
   def compose_version = '1.1.1'
   def coil_version = '3.2.0'
+  def gson_version = '2.10.1'
 
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
@@ -127,12 +128,10 @@ dependencies {
 
   //Glance Widget
   implementation "androidx.glance:glance-appwidget:$compose_version"
+  implementation("com.google.code.gson:gson:$gson_version")
 
   implementation("io.coil-kt.coil3:coil-compose:$coil_version")
-  implementation("io.coil-kt.coil3:coil-network-okhttp:$coil_version") {
-    // Exclude OkHttp to avoid conflicts with the one used by Flutter
-    exclude group: 'com.squareup.okhttp3', module: 'okhttp'
-  }
+  implementation("io.coil-kt.coil3:coil-network-okhttp:$coil_version")
 }
 
 // This is uncommented in F-Droid build script
