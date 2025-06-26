@@ -160,5 +160,5 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
 };
 
 class _SyncAckV1 {
-  static _SyncAckV1? fromJson(dynamic _) => null;
+  static _SyncAckV1? fromJson(dynamic _) => _SyncAckV1();
 }

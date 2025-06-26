@@ -40,7 +40,10 @@ class _Summary extends StatelessWidget {
         } else if (snapshot.hasError) {
           subtitle = const Icon(Icons.error_rounded);
         } else {
-          subtitle = Text('${snapshot.data ?? 0}');
+          subtitle = Text(
+            '${snapshot.data ?? 0}',
+            style: ctx.textTheme.bodyLarge,
+          );
         }
         return ListTile(
           leading: leading,
