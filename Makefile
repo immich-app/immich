@@ -83,7 +83,7 @@ test-medium-dev:
 	docker exec -it immich_server /bin/sh -c "npm run test:medium"
 
 build-all: $(foreach M,$(filter-out e2e .github,$(MODULES)),build-$M) ;
-install-all: $(foreach M,$(filter-out .github,$(MODULES)),install-$M) ;
+install-all: $(foreach M,$(MODULES),install-$M) ;  
 ci-all: $(foreach M,$(filter-out .github,$(MODULES)),ci-$M) ;
 check-all: $(foreach M,$(filter-out sdk cli docs .github,$(MODULES)),check-$M) ;
 lint-all: $(foreach M,$(filter-out sdk docs .github,$(MODULES)),lint-$M) ;

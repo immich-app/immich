@@ -75,6 +75,7 @@ services:
       - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    shm_size: 128mb
     restart: always
 
   # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
