@@ -69,7 +69,7 @@ import 'package:immich_mobile/presentation/pages/dev/local_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/main_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/media_stat.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/remote_timeline.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_ablum.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_album.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';

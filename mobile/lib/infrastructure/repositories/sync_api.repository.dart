@@ -15,7 +15,6 @@ class SyncApiRepository {
   SyncApiRepository(this._api);
 
   Future<void> ack(List<String> data) {
-    print("Sending sync acks: $data");
     return _api.syncApi.sendSyncAck(SyncAckSetDto(acks: data));
   }
 

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -13,9 +12,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
@@ -27,13 +24,20 @@ class DriftAlbumsPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albumsFuture = ref.watch(remoteAlbumRepository).getAll();
+    final albumState = ref.watch(remoteAlbumProvider);
+    final albums = albumState.filteredAlbums;
+    final isLoading = albumState.isLoading;
+    final error = albumState.error;
     final isGrid = useState(false);
     final searchController = useTextEditingController();
     final debounceTimer = useRef<Timer?>(null);
     final filterMode = useState(QuickFilterMode.all);
     final userId = ref.watch(currentUserProvider)?.id;
     final searchFocusNode = useFocusNode();
+
+    Future<void> onRefresh() async {
+      await ref.read(remoteAlbumProvider.notifier).refresh();
+    }
 
     toggleViewMode() {
       isGrid.value = !isGrid.value;
@@ -42,7 +46,9 @@ class DriftAlbumsPage extends HookConsumerWidget {
     onSearch(String searchTerm, QuickFilterMode mode) {
       debounceTimer.value?.cancel();
       debounceTimer.value = Timer(const Duration(milliseconds: 300), () {
-        ref.read(albumProvider.notifier).searchAlbums(searchTerm, mode);
+        ref
+            .read(remoteAlbumProvider.notifier)
+            .searchAlbums(searchTerm, userId, mode);
       });
     }
 
@@ -52,6 +58,9 @@ class DriftAlbumsPage extends HookConsumerWidget {
 
     useEffect(
       () {
+        // Load albums when component mounts
+        Future.microtask(() => ref.read(remoteAlbumProvider.notifier).getAll());
+
         searchController.addListener(() {
           onSearch(searchController.text, filterMode.value);
         });
@@ -69,140 +78,161 @@ class DriftAlbumsPage extends HookConsumerWidget {
     clearSearch() {
       filterMode.value = QuickFilterMode.all;
       searchController.clear();
-      onSearch('', QuickFilterMode.all);
+      ref.read(remoteAlbumProvider.notifier).clearSearch();
     }
 
-    return CustomScrollView(
-      slivers: [
-        const ImmichSliverAppBar(),
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: CustomScrollView(
+        slivers: [
+          const ImmichSliverAppBar(),
 
-        /// Search Bar
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          sliver: SliverToBoxAdapter(
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: context.colorScheme.onSurface.withAlpha(0),
-                  width: 0,
-                ),
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(24),
-                ),
-                gradient: LinearGradient(
-                  colors: [
-                    context.colorScheme.primary.withValues(alpha: 0.075),
-                    context.colorScheme.primary.withValues(alpha: 0.09),
-                    context.colorScheme.primary.withValues(alpha: 0.075),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  transform: const GradientRotation(0.5 * pi),
-                ),
-              ),
-              child: SearchField(
-                autofocus: false,
-                contentPadding: const EdgeInsets.all(16),
-                hintText: 'search_albums'.tr(),
-                prefixIcon: const Icon(Icons.search_rounded),
-                suffixIcon: searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded),
-                        onPressed: clearSearch,
-                      )
-                    : null,
-                controller: searchController,
-                onChanged: (_) =>
-                    onSearch(searchController.text, filterMode.value),
-                focusNode: searchFocusNode,
-                onTapOutside: (_) => searchFocusNode.unfocus(),
-              ),
-            ),
-          ),
-        ),
-
-        /// Quick Filter Buttons
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverToBoxAdapter(
-            child: Wrap(
-              spacing: 4,
-              runSpacing: 4,
-              children: [
-                QuickFilterButton(
-                  label: 'all'.tr(),
-                  isSelected: filterMode.value == QuickFilterMode.all,
-                  onTap: () {
-                    changeFilter(QuickFilterMode.all);
-                    onSearch(searchController.text, QuickFilterMode.all);
-                  },
-                ),
-                QuickFilterButton(
-                  label: 'shared_with_me'.tr(),
-                  isSelected: filterMode.value == QuickFilterMode.sharedWithMe,
-                  onTap: () {
-                    changeFilter(QuickFilterMode.sharedWithMe);
-                    onSearch(
-                      searchController.text,
-                      QuickFilterMode.sharedWithMe,
-                    );
-                  },
-                ),
-                QuickFilterButton(
-                  label: 'my_albums'.tr(),
-                  isSelected: filterMode.value == QuickFilterMode.myAlbums,
-                  onTap: () {
-                    changeFilter(QuickFilterMode.myAlbums);
-                    onSearch(
-                      searchController.text,
-                      QuickFilterMode.myAlbums,
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        /// Quick Sort and View Mode
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverToBoxAdapter(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const SortButton(),
-                IconButton(
-                  icon: Icon(
-                    isGrid.value
-                        ? Icons.view_list_outlined
-                        : Icons.grid_view_outlined,
-                    size: 24,
+          /// Search Bar
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            sliver: SliverToBoxAdapter(
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: context.colorScheme.onSurface.withAlpha(0),
+                    width: 0,
                   ),
-                  onPressed: toggleViewMode,
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(24),
+                  ),
+                  gradient: LinearGradient(
+                    colors: [
+                      context.colorScheme.primary.withValues(alpha: 0.075),
+                      context.colorScheme.primary.withValues(alpha: 0.09),
+                      context.colorScheme.primary.withValues(alpha: 0.075),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    transform: const GradientRotation(0.5 * pi),
+                  ),
                 ),
-              ],
+                child: SearchField(
+                  autofocus: false,
+                  contentPadding: const EdgeInsets.all(16),
+                  hintText: 'search_albums'.tr(),
+                  prefixIcon: const Icon(Icons.search_rounded),
+                  suffixIcon: searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded),
+                          onPressed: clearSearch,
+                        )
+                      : null,
+                  controller: searchController,
+                  onChanged: (_) =>
+                      onSearch(searchController.text, filterMode.value),
+                  focusNode: searchFocusNode,
+                  onTapOutside: (_) => searchFocusNode.unfocus(),
+                ),
+              ),
             ),
           ),
-        ),
 
-        /// Albums Lists
-        SliverList.builder(
-          itemBuilder: (context, index) {
-            return null;
-          },
-        ),
+          /// Quick Filter Buttons
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverToBoxAdapter(
+              child: Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                children: [
+                  QuickFilterButton(
+                    label: 'all'.tr(),
+                    isSelected: filterMode.value == QuickFilterMode.all,
+                    onTap: () {
+                      changeFilter(QuickFilterMode.all);
+                      onSearch(searchController.text, QuickFilterMode.all);
+                    },
+                  ),
+                  QuickFilterButton(
+                    label: 'shared_with_me'.tr(),
+                    isSelected:
+                        filterMode.value == QuickFilterMode.sharedWithMe,
+                    onTap: () {
+                      changeFilter(QuickFilterMode.sharedWithMe);
+                      onSearch(
+                        searchController.text,
+                        QuickFilterMode.sharedWithMe,
+                      );
+                    },
+                  ),
+                  QuickFilterButton(
+                    label: 'my_albums'.tr(),
+                    isSelected: filterMode.value == QuickFilterMode.myAlbums,
+                    onTap: () {
+                      changeFilter(QuickFilterMode.myAlbums);
+                      onSearch(
+                        searchController.text,
+                        QuickFilterMode.myAlbums,
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
 
-        FutureBuilder(
-          future: albumsFuture,
-          builder: (_, snap) {
-            final albums = snap.data ?? [];
-            if (albums.isEmpty) {
-              return const SliverToBoxAdapter(child: SizedBox.shrink());
-            }
+          /// Quick Sort and View Mode
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverToBoxAdapter(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SortButton(),
+                  IconButton(
+                    icon: Icon(
+                      isGrid.value
+                          ? Icons.view_list_outlined
+                          : Icons.grid_view_outlined,
+                      size: 24,
+                    ),
+                    onPressed: toggleViewMode,
+                  ),
+                ],
+              ),
+            ),
+          ),
 
-            albums.sortBy((a) => a.name);
-            return SliverList.builder(
+          /// Albums Lists
+          if (isLoading)
+            const SliverToBoxAdapter(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            )
+          else if (error != null)
+            SliverToBoxAdapter(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(
+                    'Error loading albums: $error',
+                    style: TextStyle(
+                      color: context.colorScheme.error,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          else if (albums.isEmpty)
+            const SliverToBoxAdapter(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Text('No albums found'),
+                ),
+              ),
+            )
+          else
+            SliverList.builder(
               itemBuilder: (_, index) {
                 final album = albums[index];
 
@@ -225,7 +255,7 @@ class DriftAlbumsPage extends HookConsumerWidget {
                       '${'items_count'.t(
                         context: context,
                         args: {
-                          'count': 0,
+                          'count': album.assetCount,
                         },
                       )} • ${album.ownerId != userId ? 'shared_by_user'.t(
                           context: context,
@@ -266,15 +296,13 @@ class DriftAlbumsPage extends HookConsumerWidget {
                               color: Colors.grey,
                             ),
                           ),
-                    // minVerticalPadding: 1,
                   ),
                 );
               },
               itemCount: albums.length,
-            );
-          },
-        ),
-      ],
+            ),
+        ],
+      ),
     );
   }
 }
@@ -324,13 +352,13 @@ class QuickFilterButton extends StatelessWidget {
   }
 }
 
-class SortButton extends ConsumerWidget {
+class SortButton extends HookConsumerWidget {
   const SortButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albumSortOption = ref.watch(albumSortByOptionsProvider);
-    final albumSortIsReverse = ref.watch(albumSortOrderProvider);
+    final albumSortOption = useState(RemoteAlbumSortMode.lastModified);
+    final albumSortIsReverse = useState(false);
 
     return MenuAnchor(
       style: MenuStyle(
@@ -347,35 +375,39 @@ class SortButton extends ConsumerWidget {
         ),
       ),
       consumeOutsideTap: true,
-      menuChildren: AlbumSortMode.values
+      menuChildren: RemoteAlbumSortMode.values
           .map(
             (mode) => MenuItemButton(
-              leadingIcon: albumSortOption == mode
-                  ? albumSortIsReverse
+              leadingIcon: albumSortOption.value == mode
+                  ? albumSortIsReverse.value
                       ? Icon(
                           Icons.keyboard_arrow_down,
-                          color: albumSortOption == mode
+                          color: albumSortOption.value == mode
                               ? context.colorScheme.onPrimary
                               : context.colorScheme.onSurface,
                         )
                       : Icon(
                           Icons.keyboard_arrow_up_rounded,
-                          color: albumSortOption == mode
+                          color: albumSortOption.value == mode
                               ? context.colorScheme.onPrimary
                               : context.colorScheme.onSurface,
                         )
                   : const Icon(Icons.abc, color: Colors.transparent),
               onPressed: () {
-                final selected = albumSortOption == mode;
+                final selected = albumSortOption.value == mode;
                 // Switch direction
                 if (selected) {
-                  ref
-                      .read(albumSortOrderProvider.notifier)
-                      .changeSortDirection(!albumSortIsReverse);
+                  albumSortIsReverse.value = !albumSortIsReverse.value;
+                  ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(
+                        mode,
+                        isReverse: albumSortIsReverse.value,
+                      );
                 } else {
-                  ref
-                      .read(albumSortByOptionsProvider.notifier)
-                      .changeSortMode(mode);
+                  albumSortOption.value = mode;
+                  ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(
+                        mode,
+                        isReverse: albumSortIsReverse.value,
+                      );
                 }
               },
               style: ButtonStyle(
@@ -383,7 +415,7 @@ class SortButton extends ConsumerWidget {
                   const EdgeInsets.fromLTRB(16, 16, 32, 16),
                 ),
                 backgroundColor: WidgetStateProperty.all(
-                  albumSortOption == mode
+                  albumSortOption.value == mode
                       ? context.colorScheme.primary
                       : Colors.transparent,
                 ),
@@ -396,10 +428,10 @@ class SortButton extends ConsumerWidget {
                 ),
               ),
               child: Text(
-                mode.label.tr(),
+                mode.label,
                 style: context.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: albumSortOption == mode
+                  color: albumSortOption.value == mode
                       ? context.colorScheme.onPrimary
                       : context.colorScheme.onSurface.withAlpha(185),
                 ),
@@ -430,7 +462,7 @@ class SortButton extends ConsumerWidget {
                 ),
               ),
               Text(
-                albumSortOption.label.tr(),
+                albumSortOption.value.label,
                 style: context.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: context.colorScheme.onSurface.withAlpha(225),

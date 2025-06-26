@@ -21,6 +21,7 @@ class Album {
   final String? thumbnailAssetId;
   final bool isActivityEnabled;
   final AlbumAssetOrder order;
+  final int assetCount;
 
   const Album({
     required this.id,
@@ -32,6 +33,7 @@ class Album {
     this.thumbnailAssetId,
     required this.isActivityEnabled,
     required this.order,
+    required this.assetCount,
   });
 
   @override
@@ -46,6 +48,7 @@ class Album {
    isActivityEnabled: $isActivityEnabled,
    order: $order,
    thumbnailAssetId: ${thumbnailAssetId ?? "<NA>"}
+  assetCount: $assetCount
  }''';
   }
 
@@ -61,7 +64,8 @@ class Album {
         updatedAt == other.updatedAt &&
         thumbnailAssetId == other.thumbnailAssetId &&
         isActivityEnabled == other.isActivityEnabled &&
-        order == other.order;
+        order == other.order &&
+        assetCount == other.assetCount;
   }
 
   @override
@@ -74,6 +78,7 @@ class Album {
         updatedAt.hashCode ^
         thumbnailAssetId.hashCode ^
         isActivityEnabled.hashCode ^
-        order.hashCode;
+        order.hashCode ^
+        assetCount.hashCode;
   }
 }
