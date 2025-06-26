@@ -5,9 +5,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 @RoutePage()
@@ -138,7 +138,8 @@ class TabShellPage extends ConsumerWidget {
       );
     }
 
-    final multiselectEnabled = ref.watch(multiselectProvider);
+    final multiselectEnabled =
+        ref.watch(multiSelectProvider.select((state) => state.isEnabled));
     return AutoTabsRouter(
       routes: [
         const MainTimelineRoute(),
