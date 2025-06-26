@@ -96,10 +96,7 @@ export class SyncService extends BaseService {
         throw new BadRequestException(`Invalid ack type: ${type}`);
       }
 
-      if (checkpoints[type]) {
-        throw new BadRequestException('Only one ack per type is allowed');
-      }
-
+      // TODO pick the latest ack for each type, instead of using the last one
       checkpoints[type] = { sessionId, type, ack };
     }
 

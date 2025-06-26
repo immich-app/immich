@@ -13425,6 +13425,7 @@
         "properties": {
           "acks": {
             "items": {
+              "maxLength": 1000,
               "type": "string"
             },
             "type": "array"

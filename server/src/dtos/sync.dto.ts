@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsPositive, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsPositive, IsString, MaxLength } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AlbumUserRole, AssetOrder, AssetType, AssetVisibility, SyncEntityType, SyncRequestType } from 'src/enum';
 import { Optional, ValidateDate, ValidateUUID } from 'src/validation';
@@ -217,6 +217,7 @@ export class SyncAckDto {
 }
 
 export class SyncAckSetDto {
+  @MaxLength(1000)
   @IsString({ each: true })
   acks!: string[];
 }
