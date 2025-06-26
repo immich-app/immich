@@ -23,7 +23,7 @@
 </script>
 
 {#if disabled}
-  <div class="cursor-not-allowed {props.class}" role="textbox" aria-disabled={true}>
+  <div class="cursor-not-allowed {props.class}" role="textbox" aria-disabled={true} data-testid="contenteditable-text">
     {props.placeholder}
   </div>
 {:else}
@@ -48,6 +48,7 @@
       }
       props.onfocusout?.(e);
     }}
+    data-testid="contenteditable-text"
   ></div>
 {/if}
 
