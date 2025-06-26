@@ -21,7 +21,9 @@ import 'package:immich_mobile/widgets/photo_view/src/utils/photo_view_hero_attri
 
 /// A type definition for a [Function] that receives a index after a page change in [PhotoViewGallery]
 typedef PhotoViewGalleryPageChangedCallback = void Function(
-    int index, PhotoViewControllerBase controller);
+  int index,
+  PhotoViewControllerBase controller,
+);
 
 /// A type definition for a [Function] that defines a page in [PhotoViewGallery.build]
 typedef PhotoViewGalleryBuilder = PhotoViewGalleryPageOptions Function(

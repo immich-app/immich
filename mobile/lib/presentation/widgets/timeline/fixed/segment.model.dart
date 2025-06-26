@@ -14,7 +14,6 @@ import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/utils/thumbnail_utils.dart';
 
 class FixedSegment extends Segment {
   final double tileHeight;
@@ -38,32 +37,127 @@ class FixedSegment extends Segment {
 
   @override
   double indexToLayoutOffset(int index) {
-    index -= gridIndex;
-    if (index < 0) {
-      return startOffset;
-    }
-    return gridOffset + (mainAxisExtend * index);
+    final relativeIndex = index - gridIndex;
+    return relativeIndex < 0
+        ? startOffset
+        : gridOffset + (mainAxisExtend * relativeIndex);
   }
 
   @override
   int getMinChildIndexForScrollOffset(double scrollOffset) {
-    scrollOffset -= gridOffset;
-    if (!scrollOffset.isFinite || scrollOffset < 0) {
-      return firstIndex;
-    }
-    final rowsAbove = (scrollOffset / mainAxisExtend).floor();
-    return gridIndex + rowsAbove;
+    final adjustedOffset = scrollOffset - gridOffset;
+    if (!adjustedOffset.isFinite || adjustedOffset < 0) return firstIndex;
+    return gridIndex + (adjustedOffset / mainAxisExtend).floor();
   }
 
   @override
   int getMaxChildIndexForScrollOffset(double scrollOffset) {
-    scrollOffset -= gridOffset;
-    if (!scrollOffset.isFinite || scrollOffset < 0) {
-      return firstIndex;
-    }
-    final firstRowBelow = (scrollOffset / mainAxisExtend).ceil();
-    return gridIndex + firstRowBelow - 1;
+    final adjustedOffset = scrollOffset - gridOffset;
+    if (!adjustedOffset.isFinite || adjustedOffset < 0) return firstIndex;
+    return gridIndex + (adjustedOffset / mainAxisExtend).ceil() - 1;
   }
+
+  @override
+  Widget builder(BuildContext context, int index) {
+    final rowIndexInSegment = index - (firstIndex + 1);
+    final assetIndex = rowIndexInSegment * columnCount;
+    final assetCount = bucket.assetCount;
+    final numberOfAssets = math.min(columnCount, assetCount - assetIndex);
+
+    if (index == firstIndex) {
+      return TimelineHeader(
+        bucket: bucket,
+        header: header,
+        height: headerExtent,
+        assetOffset: firstAssetIndex,
+      );
+    }
+
+    return _FixedSegmentRow(
+      assetIndex: firstAssetIndex + assetIndex,
+      assetCount: numberOfAssets,
+      tileHeight: tileHeight,
+      spacing: spacing,
+    );
+  }
+}
+
+class _FixedSegmentRow extends ConsumerWidget {
+  final int assetIndex;
+  final int assetCount;
+  final double tileHeight;
+  final double spacing;
+
+  const _FixedSegmentRow({
+    required this.assetIndex,
+    required this.assetCount,
+    required this.tileHeight,
+    required this.spacing,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isScrubbing =
+        ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
+    final timelineService = ref.read(timelineServiceProvider);
+
+    if (isScrubbing) {
+      return _buildPlaceholder(context);
+    }
+
+    if (timelineService.hasRange(assetIndex, assetCount)) {
+      return _buildAssetRow(
+        context,
+        timelineService.getAssets(assetIndex, assetCount),
+      );
+    }
+
+    return FutureBuilder<List<BaseAsset>>(
+      future: timelineService.loadAssets(assetIndex, assetCount),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return _buildPlaceholder(context);
+        }
+        return _buildAssetRow(context, snapshot.requireData);
+      },
+    );
+  }
+
+  Widget _buildPlaceholder(BuildContext context) {
+    return SegmentBuilder.buildPlaceholder(
+      context,
+      assetCount,
+      size: Size.square(tileHeight),
+      spacing: spacing,
+    );
+  }
+
+  Widget _buildAssetRow(BuildContext context, List<BaseAsset> assets) {
+    return FixedTimelineRow(
+      dimension: tileHeight,
+      spacing: spacing,
+      textDirection: Directionality.of(context),
+      children: [
+        for (int i = 0; i < assets.length; i++)
+          _AssetTileWidget(
+            key: ValueKey(assets[i].heroTag),
+            asset: assets[i],
+            assetIndex: assetIndex + i,
+          ),
+      ],
+    );
+  }
+}
+
+class _AssetTileWidget extends ConsumerWidget {
+  final BaseAsset asset;
+  final int assetIndex;
+
+  const _AssetTileWidget({
+    super.key,
+    required this.asset,
+    required this.assetIndex,
+  });
 
   void _handleOnTap(
     BuildContext ctx,
@@ -96,128 +190,11 @@ class FixedSegment extends Segment {
   }
 
   @override
-  Widget builder(BuildContext context, int index) {
-    final rowIndexInSegment = index - (firstIndex + 1);
-    final assetIndex = rowIndexInSegment * columnCount;
-    final assetCount = bucket.assetCount;
-    final numberOfAssets = math.min(columnCount, assetCount - assetIndex);
-
-    if (index == firstIndex) {
-      return TimelineHeader(
-        bucket: bucket,
-        header: header,
-        height: headerExtent,
-        assetOffset: firstAssetIndex,
-      );
-    }
-
-    return _buildRow(firstAssetIndex + assetIndex, numberOfAssets);
-  }
-
-  Widget _buildRow(int assetIndex, int count) => RepaintBoundary(
-        child: Consumer(
-          builder: (ctx, ref, _) {
-            final isScrubbing =
-                ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
-            final timelineService = ref.read(timelineServiceProvider);
-
-            // Create stable callback references to prevent unnecessary rebuilds
-            onTap(int assetIndex, BaseAsset asset) =>
-                _handleOnTap(ctx, ref, assetIndex, asset);
-            onLongPress(BaseAsset asset) => _handleOnLongPress(ref, asset);
-
-            // Timeline is being scrubbed, show placeholders
-            if (isScrubbing) {
-              return SegmentBuilder.buildPlaceholder(
-                ctx,
-                count,
-                size: Size.square(tileHeight),
-                spacing: spacing,
-              );
-            }
-
-            // Bucket is already loaded, show the assets
-            if (timelineService.hasRange(assetIndex, count)) {
-              final assets = timelineService.getAssets(assetIndex, count);
-              return _buildAssetRow(
-                ctx,
-                assets,
-                onTap: onTap,
-                onLongPress: onLongPress,
-                assetBaseIndex: assetIndex,
-              );
-            }
-
-            // Bucket is not loaded, show placeholders and load the bucket
-            return FutureBuilder(
-              future: timelineService.loadAssets(assetIndex, count),
-              builder: (ctxx, snap) {
-                if (snap.connectionState != ConnectionState.done) {
-                  return SegmentBuilder.buildPlaceholder(
-                    ctx,
-                    count,
-                    size: Size.square(tileHeight),
-                    spacing: spacing,
-                  );
-                }
-
-                return _buildAssetRow(
-                  ctxx,
-                  snap.requireData,
-                  onTap: onTap,
-                  onLongPress: onLongPress,
-                  assetBaseIndex: assetIndex,
-                );
-              },
-            );
-          },
-        ),
-      );
-
-  Widget _buildAssetRow(
-    BuildContext context,
-    List<BaseAsset> assets, {
-    required void Function(int, BaseAsset) onTap,
-    required void Function(BaseAsset) onLongPress,
-    required int assetBaseIndex,
-  }) =>
-      FixedTimelineRow(
-        dimension: tileHeight,
-        spacing: spacing,
-        textDirection: Directionality.of(context),
-        children: List.generate(
-          assets.length,
-          (i) => _AssetTileWidget(
-            key: ValueKey('${assets[i].heroTag}_${getHeroOffset(context)}'),
-            asset: assets[i],
-            onTap: onTap,
-            onLongPress: onLongPress,
-            assetIndex: assetBaseIndex + i,
-          ),
-        ),
-      );
-}
-
-class _AssetTileWidget extends StatelessWidget {
-  final BaseAsset asset;
-  final void Function(int, BaseAsset) onTap;
-  final void Function(BaseAsset) onLongPress;
-  final int assetIndex;
-
-  const _AssetTileWidget({
-    super.key,
-    required this.asset,
-    required this.onTap,
-    required this.onLongPress,
-    required this.assetIndex,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () => onTap(assetIndex, asset),
-        onLongPress: () => onLongPress(asset),
+        onTap: () => _handleOnTap(context, ref, assetIndex, asset),
+        onLongPress: () => _handleOnLongPress(ref, asset),
         child: ThumbnailTile(asset),
       ),
     );

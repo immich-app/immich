@@ -5,7 +5,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/utils/thumbnail_utils.dart';
 
 class ThumbnailTile extends ConsumerWidget {
   const ThumbnailTile(
@@ -59,7 +58,7 @@ class ThumbnailTile extends ConsumerWidget {
               children: [
                 Positioned.fill(
                   child: Hero(
-                    tag: '${asset.heroTag}_${getHeroOffset(context)}',
+                    tag: asset.heroTag,
                     child: Thumbnail(
                       asset: asset,
                       fit: fit,

@@ -155,7 +155,9 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
       Logger('ImmichLocalImageProvider')
           .severe('Error loading local image ${key.asset.name}', error, stack);
     }
-    throw ImageLoadingException('Could not load image from local storage');
+    throw const ImageLoadingException(
+      'Could not load image from local storage',
+    );
   }
 
   @override

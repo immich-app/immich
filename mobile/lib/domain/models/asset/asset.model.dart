@@ -35,7 +35,7 @@ class Asset extends BaseAsset {
       localId == null ? AssetState.remote : AssetState.merged;
 
   @override
-  String get heroTag => '${localId ?? ""}_$id';
+  String get heroTag => '${localId ?? checksum}_$id';
 
   bool get hasLocal => localId != null;
 

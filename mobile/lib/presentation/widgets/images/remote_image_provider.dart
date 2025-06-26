@@ -79,7 +79,7 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
   final String assetId;
   final CacheManager? cacheManager;
 
-  RemoteFullImageProvider({
+  const RemoteFullImageProvider({
     required this.assetId,
     this.cacheManager,
   });
