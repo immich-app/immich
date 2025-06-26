@@ -19,6 +19,14 @@ class MultiSelectState {
   });
 
   bool get isEnabled => selectedAssets.isNotEmpty;
+  bool get hasRemote => selectedAssets.any(
+        (asset) =>
+            asset.storage == AssetState.remote ||
+            asset.storage == AssetState.merged,
+      );
+  bool get hasLocal => selectedAssets.any(
+        (asset) => asset.storage == AssetState.local,
+      );
 
   MultiSelectState copyWith({
     Set<BaseAsset>? selectedAssets,
