@@ -5,7 +5,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
 import { Albums, AssetJobStatus, Assets, DB, Exif, FaceSearch, Memories, Person, Sessions } from 'src/db';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
 import { AlbumUserRole, AssetType, AssetVisibility, MemoryType, SourceType, SyncRequestType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
@@ -17,6 +17,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
@@ -305,6 +306,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
       return automock(EmailRepository, { args: [{ setContext: () => {} }] });
     }
 
+    case EventRepository: {
+      return automock(EventRepository, { args: [undefined, undefined, { setContext: () => {} }] });
+    }
+
     case JobRepository: {
       return automock(JobRepository, {
         args: [
@@ -461,10 +466,13 @@ const sessionInsert = ({ id = newUuid(), userId, ...session }: Partial<Insertabl
 const userInsert = (user: Partial<Insertable<UserTable>> = {}) => {
   const id = user.id || newUuid();
 
-  const defaults: Insertable<UserTable> = {
+  const defaults = {
     email: `${id}@immich.cloud`,
     name: `User ${id}`,
     deletedAt: null,
+    isAdmin: false,
+    profileImagePath: '',
+    shouldChangePassword: true,
   };
 
   return { ...defaults, ...user, id };
@@ -513,6 +521,24 @@ const syncStream = () => {
   return new CustomWritable();
 };
 
+const loginDetails = () => {
+  return { isSecure: false, clientIp: '', deviceType: '', deviceOS: '' };
+};
+
+const loginResponse = (): LoginResponseDto => {
+  const user = userInsert({});
+  return {
+    accessToken: 'access-token',
+    userId: user.id,
+    userEmail: user.email,
+    name: user.name,
+    profileImagePath: user.profileImagePath,
+    isAdmin: user.isAdmin,
+    shouldChangePassword: user.shouldChangePassword,
+    isOnboarded: false,
+  };
+};
+
 export const mediumFactory = {
   assetInsert,
   assetFaceInsert,
@@ -524,4 +550,6 @@ export const mediumFactory = {
   syncStream,
   userInsert,
   memoryInsert,
+  loginDetails,
+  loginResponse,
 };
