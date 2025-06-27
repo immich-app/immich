@@ -57,7 +57,7 @@ Then please follow the steps in the following section for restoring the database
   <TabItem value="Linux system" label="Linux system" default>
 
 ```bash title='Backup'
-docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | gzip > "/path/to/backup/dump.sql.gz"
+docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=<DB_USERNAME> | gzip > "/path/to/backup/dump.sql.gz"
 ```
 
 ```bash title='Restore'
@@ -79,7 +79,7 @@ docker compose up -d            # Start remainder of Immich apps
   <TabItem value="Windows system (PowerShell)" label="Windows system (PowerShell)">
 
 ```powershell title='Backup'
-[System.IO.File]::WriteAllLines("C:\absolute\path\to\backup\dump.sql", (docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres))
+[System.IO.File]::WriteAllLines("C:\absolute\path\to\backup\dump.sql", (docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=<DB_USERNAME>))
 ```
 
 ```powershell title='Restore'
