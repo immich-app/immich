@@ -6,6 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class _Stat {
@@ -124,9 +125,12 @@ class LocalMediaSummaryPage extends StatelessWidget {
                         leading: const Icon(Icons.photo_album_rounded),
                         name: album.name,
                         countFuture: countFuture,
-                        onTap: () => context.router.push(
-                          LocalTimelineRoute(albumId: album.id),
-                        ),
+                        onTap: () {
+                          ref
+                              .read(timelineServiceNotifier.notifier)
+                              .localAlbum(albumId: album.id);
+                          context.router.push(const LocalAlbumRoute());
+                        },
                       );
                     },
                     itemCount: albums.length,
@@ -213,9 +217,12 @@ class RemoteMediaSummaryPage extends StatelessWidget {
                         leading: const Icon(Icons.photo_album_rounded),
                         name: album.name,
                         countFuture: countFuture,
-                        onTap: () => context.router.push(
-                          RemoteTimelineRoute(albumId: album.id),
-                        ),
+                        onTap: () {
+                          ref
+                              .read(timelineServiceNotifier.notifier)
+                              .remoteAlbum(albumId: album.id);
+                          context.router.push(const RemoteAlbumRoute());
+                        },
                       );
                     },
                     itemCount: albums.length,

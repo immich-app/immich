@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -8,7 +7,6 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 final multiSelectProvider =
     NotifierProvider<MultiSelectNotifier, MultiSelectState>(
   MultiSelectNotifier.new,
-  dependencies: [timelineServiceProvider],
 );
 
 class MultiSelectState {
@@ -48,7 +46,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
 
   @override
   MultiSelectState build() {
-    _timelineService = ref.read(timelineServiceProvider);
+    _timelineService = ref.read(timelineServiceNotifier);
 
     return const MultiSelectState(
       selectedAssets: {},
@@ -146,5 +144,4 @@ final bucketSelectionProvider = Provider.family<bool, List<BaseAsset>>(
     // Check if all assets in the bucket are selected
     return bucketAssets.every((asset) => selectedAssets.contains(asset));
   },
-  dependencies: [multiSelectProvider],
 );

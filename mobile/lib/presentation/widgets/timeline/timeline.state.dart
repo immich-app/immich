@@ -96,7 +96,7 @@ final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>(
     final groupBy = GroupAssetsBy
         .values[ref.watch(settingsProvider).get(Setting.groupAssetsBy)];
 
-    final timelineService = ref.watch(timelineServiceProvider);
+    final timelineService = ref.watch(timelineServiceNotifier);
     yield* timelineService.watchBuckets().map((buckets) {
       return FixedSegmentBuilder(
         buckets: buckets,
@@ -107,7 +107,7 @@ final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>(
       ).generate();
     });
   },
-  dependencies: [timelineServiceProvider, timelineArgsProvider],
+  dependencies: [timelineArgsProvider],
 );
 
 final timelineStateProvider =
