@@ -19,6 +19,7 @@
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
   <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
   <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+  <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
   <!-- Foreground service permission -->
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -90,35 +91,6 @@
         <data android:mimeType="video/*" />
       </intent-filter>
 
-      <!-- immich:// URL scheme handling -->
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="immich" />
-      </intent-filter>
-
-      <!-- my.immich.app deep link -->
-      <intent-filter android:autoVerify="true">
-          <action android:name="android.intent.action.VIEW" />
-          <category android:name="android.intent.category.DEFAULT" />
-          <category android:name="android.intent.category.BROWSABLE" />
-
-          <data android:scheme="https" />
-
-          <data
-              android:host="my.immich.app"
-              android:path="/" />
-          <data
-              android:host="my.immich.app"
-              android:pathPrefix="/albums/" />
-          <data
-              android:host="my.immich.app"
-              android:pathPrefix="/memories/" />
-          <data
-              android:host="my.immich.app"
-              android:pathPrefix="/photos/" />
-      </intent-filter>
     </activity>
 
 
