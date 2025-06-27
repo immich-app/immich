@@ -71,6 +71,7 @@ dependencies:
   uuid: ^4.5.1
   wakelock_plus: ^1.2.10
   worker_manager: ^7.2.3
+  install_plugin: ^2.0.0
 
   native_video_player:
     git:
