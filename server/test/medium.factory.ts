@@ -26,6 +26,7 @@ import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { UserRepository } from 'src/repositories/user.repository';
@@ -202,7 +203,11 @@ export class MediumTestContext<S extends BaseService = BaseService> {
 
 export class SyncTestContext extends MediumTestContext<SyncService> {
   constructor(database: Kysely<DB>) {
-    super(SyncService, { database, real: [SyncRepository, SessionRepository], mock: [LoggingRepository] });
+    super(SyncService, {
+      database,
+      real: [SyncRepository, SyncCheckpointRepository, SessionRepository],
+      mock: [LoggingRepository],
+    });
   }
 
   async syncStream(auth: AuthDto, types: SyncRequestType[]) {
@@ -239,6 +244,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case SearchRepository:
     case SessionRepository:
     case SyncRepository:
+    case SyncCheckpointRepository:
     case SystemMetadataRepository:
     case UserRepository:
     case VersionHistoryRepository: {
@@ -282,6 +288,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case PersonRepository:
     case SessionRepository:
     case SyncRepository:
+    case SyncCheckpointRepository:
     case SystemMetadataRepository:
     case UserRepository:
     case VersionHistoryRepository: {

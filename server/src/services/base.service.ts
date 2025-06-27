@@ -41,6 +41,7 @@ import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
@@ -91,6 +92,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   StackRepository,
   StorageRepository,
   SyncRepository,
+  SyncCheckpointRepository,
   SystemMetadataRepository,
   TagRepository,
   TelemetryRepository,
@@ -142,6 +144,7 @@ export class BaseService {
     protected stackRepository: StackRepository,
     protected storageRepository: StorageRepository,
     protected syncRepository: SyncRepository,
+    protected syncCheckpointRepository: SyncCheckpointRepository,
     protected systemMetadataRepository: SystemMetadataRepository,
     protected tagRepository: TagRepository,
     protected telemetryRepository: TelemetryRepository,
