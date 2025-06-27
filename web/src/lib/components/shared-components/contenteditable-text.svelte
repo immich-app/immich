@@ -13,13 +13,6 @@
   let { isCtrlEnter = false, value = $bindable(), disabled = false, onUpdate = () => null, ...props }: Props = $props();
 
   let lastValue = value;
-
-  const handlePaste = (e: ClipboardEvent) => {
-    e.preventDefault();
-    if (e.clipboardData) {
-      value = e.clipboardData.getData('text/plain');
-    }
-  };
 </script>
 
 {#if disabled}
@@ -34,12 +27,11 @@
       shortcut: { key: 'Enter', ctrl: isCtrlEnter },
       onShortcut: (e) => e.currentTarget.blur(),
     }}
-    contenteditable="true"
+    contenteditable="plaintext-only"
     class={props.class}
     role="textbox"
     aria-placeholder={props.placeholder}
     aria-multiline={isCtrlEnter}
-    onpaste={handlePaste}
     onkeydown={(e) => e.stopImmediatePropagation()}
     onfocusout={(e) => {
       if (lastValue !== value) {
@@ -53,7 +45,7 @@
 {/if}
 
 <style>
-  [contenteditable='true']:empty:not(:focus):before {
+  [contenteditable='plaintext-only']:empty:not(:focus):before {
     content: attr(placeholder);
     pointer-events: none;
     display: block;
