@@ -15,6 +15,21 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
   const DriftTimelineRepository(super._db) : _db = _db;
 
+  Stream<List<String>> watchTimelineUserIds(String userId) {
+    final query = _db.partnerEntity.selectOnly()
+      ..addColumns([_db.partnerEntity.sharedById])
+      ..where(
+        _db.partnerEntity.inTimeline.equals(true) &
+            _db.partnerEntity.sharedWithId.equals(userId),
+      );
+
+    return query
+        .map((row) => row.read(_db.partnerEntity.sharedById)!)
+        .watch()
+        // Add current user ID to the list
+        .map((users) => users..add(userId));
+  }
+
   List<Bucket> _generateBuckets(int count) {
     final numBuckets = (count / kTimelineNoneSegmentSize).floor();
     final buckets = List.generate(

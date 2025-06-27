@@ -4,6 +4,7 @@ import 'package:immich_mobile/infrastructure/repositories/timeline.repository.da
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 
 final timelineRepositoryProvider = Provider<DriftTimelineRepository>(
   (ref) => DriftTimelineRepository(ref.watch(driftProvider)),
@@ -24,4 +25,17 @@ final timelineFactoryProvider = Provider<TimelineFactory>(
     timelineRepository: ref.watch(timelineRepositoryProvider),
     settingsService: ref.watch(settingsProvider),
   ),
+);
+
+final timelineUsersProvider = StreamProvider<List<String>>(
+  (ref) {
+    final currentUserId = ref.watch(currentUserProvider.select((u) => u?.id));
+    if (currentUserId == null) {
+      return Stream.value([]);
+    }
+
+    return ref
+        .watch(timelineRepositoryProvider)
+        .watchTimelineUserIds(currentUserId);
+  },
 );
