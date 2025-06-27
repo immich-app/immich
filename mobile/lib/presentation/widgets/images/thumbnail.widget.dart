@@ -15,8 +15,10 @@ class Thumbnail extends StatelessWidget {
     this.size = const Size.square(256),
     this.fit = BoxFit.cover,
     super.key,
-  }) : assert(asset != null || remoteId != null,
-            'Either asset or remoteId must be provided');
+  }) : assert(
+          asset != null || remoteId != null,
+          'Either asset or remoteId must be provided',
+        );
 
   final BaseAsset? asset;
   final String? remoteId;
@@ -28,8 +30,10 @@ class Thumbnail extends StatelessWidget {
     String? remoteId,
     Size size = const Size.square(256),
   }) {
-    assert(asset != null || remoteId != null,
-        'Either asset or remoteId must be provided');
+    assert(
+      asset != null || remoteId != null,
+      'Either asset or remoteId must be provided',
+    );
 
     if (remoteId != null) {
       return RemoteThumbProvider(

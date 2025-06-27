@@ -1,14 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/domain/services/remote_album.service.dart';
 
 final remoteAlbumProvider =
     NotifierProvider<RemoteAlbumNotifier, RemoteAlbumState>(
   RemoteAlbumNotifier.new,
-  dependencies: [remoteAlbumRepository],
+  dependencies: [remoteAlbumServiceProvider],
 );
 
 class RemoteAlbumState {
@@ -68,11 +67,11 @@ class RemoteAlbumState {
 }
 
 class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
-  late final DriftRemoteAlbumRepository _remoteAlbumRepository;
+  late final RemoteAlbumService _remoteAlbumService;
 
   @override
   RemoteAlbumState build() {
-    _remoteAlbumRepository = ref.read(remoteAlbumRepository);
+    _remoteAlbumService = ref.read(remoteAlbumServiceProvider);
     return const RemoteAlbumState(albums: [], filteredAlbums: []);
   }
 
@@ -80,7 +79,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final albums = await _remoteAlbumRepository.getAll();
+      final albums = await _remoteAlbumService.getAll();
       state = state.copyWith(
         albums: albums,
         filteredAlbums: albums,
@@ -94,9 +93,13 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   }
 
   void sortAlbums(RemoteAlbumSortMode sortMode, {bool isReverse = false}) {
-    final sortedAlbums = sortMode.sortFn(state.albums, isReverse);
-    final sortedFilteredAlbums =
-        sortMode.sortFn(state.filteredAlbums, isReverse);
+    final sortedAlbums = _remoteAlbumService.sortAlbums(
+      state.albums,
+      sortMode,
+      isReverse: isReverse,
+    );
+    final sortedFilteredAlbums = _remoteAlbumService
+        .sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
     state = state.copyWith(
       albums: sortedAlbums,
       filteredAlbums: sortedFilteredAlbums,
@@ -140,34 +143,12 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     String? userId, [
     QuickFilterMode filterMode = QuickFilterMode.all,
   ]) {
-    final lowerQuery = query.toLowerCase();
-    List<Album> filtered = state.albums;
-
-    // Apply text search filter
-    if (query.isNotEmpty) {
-      filtered = filtered
-          .where(
-            (album) =>
-                album.name.toLowerCase().contains(lowerQuery) ||
-                album.description.toLowerCase().contains(lowerQuery),
-          )
-          .toList();
-    }
-
-    if (userId != null) {
-      switch (filterMode) {
-        case QuickFilterMode.myAlbums:
-          filtered =
-              filtered.where((album) => album.ownerId == userId).toList();
-          break;
-        case QuickFilterMode.sharedWithMe:
-          filtered =
-              filtered.where((album) => album.ownerId != userId).toList();
-          break;
-        case QuickFilterMode.all:
-          break;
-      }
-    }
+    final filtered = _remoteAlbumService.searchAlbums(
+      state.albums,
+      query,
+      userId,
+      filterMode,
+    );
 
     state = state.copyWith(
       filteredAlbums: filtered,
@@ -186,72 +167,8 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     RemoteAlbumSortMode sortMode, {
     bool isReverse = false,
   }) {
-    final sortedAlbums = sortMode.sortFn(state.filteredAlbums, isReverse);
+    final sortedAlbums = _remoteAlbumService
+        .sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
     state = state.copyWith(filteredAlbums: sortedAlbums);
   }
-}
-
-/// SORTING
-
-typedef AlbumSortFn = List<Album> Function(List<Album> albums, bool isReverse);
-
-class _RemoteAlbumSortHandlers {
-  const _RemoteAlbumSortHandlers._();
-
-  static const AlbumSortFn created = _sortByCreated;
-  static List<Album> _sortByCreated(List<Album> albums, bool isReverse) {
-    final sorted = albums.sortedBy((album) => album.createdAt);
-    return (isReverse ? sorted.reversed : sorted).toList();
-  }
-
-  static const AlbumSortFn title = _sortByTitle;
-  static List<Album> _sortByTitle(List<Album> albums, bool isReverse) {
-    final sorted = albums.sortedBy((album) => album.name);
-    return (isReverse ? sorted.reversed : sorted).toList();
-  }
-
-  static const AlbumSortFn lastModified = _sortByLastModified;
-  static List<Album> _sortByLastModified(List<Album> albums, bool isReverse) {
-    final sorted = albums.sortedBy((album) => album.updatedAt);
-    return (isReverse ? sorted.reversed : sorted).toList();
-  }
-
-  static const AlbumSortFn assetCount = _sortByAssetCount;
-  static List<Album> _sortByAssetCount(List<Album> albums, bool isReverse) {
-    final sorted =
-        albums.sorted((a, b) => a.assetCount.compareTo(b.assetCount));
-    return (isReverse ? sorted.reversed : sorted).toList();
-  }
-
-  static const AlbumSortFn mostRecent = _sortByMostRecent;
-  static List<Album> _sortByMostRecent(List<Album> albums, bool isReverse) {
-    final sorted = albums.sorted((a, b) {
-      // For most recent, we sort by updatedAt in descending order
-      return b.updatedAt.compareTo(a.updatedAt);
-    });
-    return (isReverse ? sorted.reversed : sorted).toList();
-  }
-
-  static const AlbumSortFn mostOldest = _sortByMostOldest;
-  static List<Album> _sortByMostOldest(List<Album> albums, bool isReverse) {
-    final sorted = albums.sorted((a, b) {
-      // For oldest, we sort by createdAt in ascending order
-      return a.createdAt.compareTo(b.createdAt);
-    });
-    return (isReverse ? sorted.reversed : sorted).toList();
-  }
-}
-
-enum RemoteAlbumSortMode {
-  title("Title", _RemoteAlbumSortHandlers.title),
-  assetCount("Asset Count", _RemoteAlbumSortHandlers.assetCount),
-  lastModified("Last Modified", _RemoteAlbumSortHandlers.lastModified),
-  created("Created Date", _RemoteAlbumSortHandlers.created),
-  mostRecent("Most Recent", _RemoteAlbumSortHandlers.mostRecent),
-  mostOldest("Oldest", _RemoteAlbumSortHandlers.mostOldest);
-
-  final String label;
-  final AlbumSortFn sortFn;
-
-  const RemoteAlbumSortMode(this.label, this.sortFn);
 }
