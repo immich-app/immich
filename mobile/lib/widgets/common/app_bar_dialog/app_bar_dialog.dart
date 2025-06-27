@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -5,14 +7,17 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
+import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/updater.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_profile_info.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_server_info.dart';
@@ -32,11 +37,12 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final isLoggingOut = useState(false);
 
-    useEffect(
-      () {
-        ref.read(backupProvider.notifier).updateDiskInfo();
-        ref.read(currentUserProvider.notifier).refresh();
-        return null;
+    ServerInfo serverInfoState = ref.watch(serverInfoProvider);
+
+    useEffect(() {
+      ref.read(backupProvider.notifier).updateDiskInfo();
+      ref.read(currentUserProvider.notifier).refresh();
+      return null;
       },
       [],
     );
@@ -202,11 +208,11 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     padding: const EdgeInsets.only(top: 12.0),
                     child:
                         const Text('backup_controller_page_storage_format').tr(
-                      namedArgs: {
-                        'used': usedDiskSpace,
-                        'total': totalDiskSpace,
-                      },
-                    ),
+                          namedArgs: {
+                            'used': usedDiskSpace,
+                            'total': totalDiskSpace,
+                          },
+                        ),
                   ),
                 ],
               ),
@@ -255,6 +261,37 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 style: context.textTheme.bodySmall,
               ).tr(),
             ),
+            if (Platform.isAndroid) ...[
+              const SizedBox(
+                width: 20,
+                child: Text("•", textAlign: TextAlign.center),
+              ),
+              InkWell(
+                onTap: () async {
+                  context.pop();
+                  Upgrade upgrade = new Upgrade();
+                  bool success = await upgrade.installApk(
+                    serverInfoState.isNewReleaseAvailable,
+                    serverInfoState.isVersionMismatch,
+                    serverInfoState.latestVersion,
+                  );
+                  final messenger = ScaffoldMessenger.of(context);
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        success
+                            ? 'APK download started!'
+                            : 'Upgrade failed or not required.',
+                      ),
+                    ),
+                  );
+                },
+                child: Text(
+                  "profile_drawer_try_upgrade",
+                  style: context.textTheme.bodySmall,
+                ).tr(),
+              ),
+            ],
           ],
         ),
       );
