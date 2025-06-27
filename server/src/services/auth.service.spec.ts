@@ -116,46 +116,33 @@ describe(AuthService.name, () => {
       const auth = factory.auth({ user });
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      mocks.user.getByEmail.mockResolvedValue({ ...user, password: 'hash-password' });
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
       mocks.user.update.mockResolvedValue(user);
 
       await sut.changePassword(auth, dto);
 
-      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, { withPassword: true });
+      expect(mocks.user.getForChangePassword).toHaveBeenCalledWith(user.id);
       expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
     });
 
-    it('should throw when auth user email is not found', async () => {
-      const auth = { user: { email: 'test@imimch.com' } } as AuthDto;
-      const dto = { password: 'old-password', newPassword: 'new-password' };
-
-      mocks.user.getByEmail.mockResolvedValue(void 0);
-
-      await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(UnauthorizedException);
-    });
-
     it('should throw when password does not match existing password', async () => {
-      const auth = { user: { email: 'test@imimch.com' } as UserAdmin };
+      const user = factory.user();
+      const auth = factory.auth({ user });
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
       mocks.crypto.compareBcrypt.mockReturnValue(false);
 
-      mocks.user.getByEmail.mockResolvedValue({
-        email: 'test@immich.com',
-        password: 'hash-password',
-      } as UserAdmin & { password: string });
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should throw when user does not have a password', async () => {
-      const auth = { user: { email: 'test@imimch.com' } } as AuthDto;
+      const user = factory.user();
+      const auth = factory.auth({ user });
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      mocks.user.getByEmail.mockResolvedValue({
-        email: 'test@immich.com',
-        password: '',
-      } as UserAdmin & { password: string });
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: '' });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
