@@ -6,7 +6,7 @@ import 'package:immich_mobile/utils/remote_album.utils.dart';
 class RemoteAlbumService {
   final DriftRemoteAlbumRepository _repository;
 
-  RemoteAlbumService(this._repository);
+  const RemoteAlbumService(this._repository);
 
   Future<List<Album>> getAll() {
     return _repository.getAll();
@@ -58,5 +58,3 @@ class RemoteAlbumService {
     return filtered;
   }
 }
-
-/// SORTING

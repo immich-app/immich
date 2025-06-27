@@ -6,7 +6,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -48,11 +47,11 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
     });
   }
 
-  void onSearch(String searchTerm, QuickFilterMode mode) {
+  void onSearch(String searchTerm, QuickFilterMode sortMode) {
     final userId = ref.watch(currentUserProvider)?.id;
     ref
         .read(remoteAlbumProvider.notifier)
-        .searchAlbums(searchTerm, userId, mode);
+        .searchAlbums(searchTerm, userId, sortMode);
   }
 
   Future<void> onRefresh() async {
@@ -65,9 +64,9 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
     });
   }
 
-  void changeFilter(QuickFilterMode mode) {
+  void changeFilter(QuickFilterMode sortMode) {
     setState(() {
-      filterMode = mode;
+      filterMode = sortMode;
     });
   }
 
@@ -144,7 +143,29 @@ class _SortButton extends ConsumerStatefulWidget {
 
 class _SortButtonState extends ConsumerState<_SortButton> {
   RemoteAlbumSortMode albumSortOption = RemoteAlbumSortMode.lastModified;
-  bool albumSortIsReverse = false;
+  bool albumSortIsReverse = true;
+
+  void onMenuTapped(RemoteAlbumSortMode sortMode) {
+    final selected = albumSortOption == sortMode;
+    // Switch direction
+    if (selected) {
+      setState(() {
+        albumSortIsReverse = !albumSortIsReverse;
+      });
+      ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(
+            sortMode,
+            isReverse: albumSortIsReverse,
+          );
+    } else {
+      setState(() {
+        albumSortOption = sortMode;
+      });
+      ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(
+            sortMode,
+            isReverse: albumSortIsReverse,
+          );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -165,49 +186,29 @@ class _SortButtonState extends ConsumerState<_SortButton> {
       consumeOutsideTap: true,
       menuChildren: RemoteAlbumSortMode.values
           .map(
-            (mode) => MenuItemButton(
-              leadingIcon: albumSortOption == mode
+            (sortMode) => MenuItemButton(
+              leadingIcon: albumSortOption == sortMode
                   ? albumSortIsReverse
                       ? Icon(
                           Icons.keyboard_arrow_down,
-                          color: albumSortOption == mode
+                          color: albumSortOption == sortMode
                               ? context.colorScheme.onPrimary
                               : context.colorScheme.onSurface,
                         )
                       : Icon(
                           Icons.keyboard_arrow_up_rounded,
-                          color: albumSortOption == mode
+                          color: albumSortOption == sortMode
                               ? context.colorScheme.onPrimary
                               : context.colorScheme.onSurface,
                         )
                   : const Icon(Icons.abc, color: Colors.transparent),
-              onPressed: () {
-                final selected = albumSortOption == mode;
-                // Switch direction
-                if (selected) {
-                  setState(() {
-                    albumSortIsReverse = !albumSortIsReverse;
-                  });
-                  ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(
-                        mode,
-                        isReverse: albumSortIsReverse,
-                      );
-                } else {
-                  setState(() {
-                    albumSortOption = mode;
-                  });
-                  ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(
-                        mode,
-                        isReverse: albumSortIsReverse,
-                      );
-                }
-              },
+              onPressed: () => onMenuTapped(sortMode),
               style: ButtonStyle(
                 padding: WidgetStateProperty.all(
                   const EdgeInsets.fromLTRB(16, 16, 32, 16),
                 ),
                 backgroundColor: WidgetStateProperty.all(
-                  albumSortOption == mode
+                  albumSortOption == sortMode
                       ? context.colorScheme.primary
                       : Colors.transparent,
                 ),
@@ -220,10 +221,10 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                 ),
               ),
               child: Text(
-                mode.key.t(context: context),
+                sortMode.key.t(context: context),
                 style: context.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: albumSortOption == mode
+                  color: albumSortOption == sortMode
                       ? context.colorScheme.onPrimary
                       : context.colorScheme.onSurface.withAlpha(185),
                 ),
@@ -244,14 +245,13 @@ class _SortButtonState extends ConsumerState<_SortButton> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(right: 5),
-                child: Transform.rotate(
-                  angle: 90 * pi / 180,
-                  child: Icon(
-                    Icons.compare_arrows_rounded,
-                    size: 18,
-                    color: context.colorScheme.onSurface.withAlpha(225),
-                  ),
-                ),
+                child: albumSortIsReverse
+                    ? const Icon(
+                        Icons.keyboard_arrow_down,
+                      )
+                    : const Icon(
+                        Icons.keyboard_arrow_up_rounded,
+                      ),
               ),
               Text(
                 albumSortOption.key.t(context: context),
@@ -687,7 +687,9 @@ class _GridAlbumCard extends StatelessWidget {
         elevation: 0,
         color: context.colorScheme.surfaceBright,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(16),
+          ),
           side: BorderSide(
             color: context.colorScheme.onSurface.withAlpha(25),
             width: 1,
