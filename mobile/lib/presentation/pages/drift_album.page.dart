@@ -13,12 +13,12 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/remote_album.utils.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
-
-import '../../providers/infrastructure/album.provider.dart';
 
 @RoutePage()
 class DriftAlbumsPage extends ConsumerStatefulWidget {
@@ -116,12 +116,19 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
             isGrid: isGrid,
             onToggleViewMode: toggleViewMode,
           ),
-          _AlbumList(
-            isLoading: isLoading,
-            error: error,
-            albums: albums,
-            userId: userId,
-          ),
+          isGrid
+              ? _AlbumGrid(
+                  albums: albums,
+                  userId: userId,
+                  isLoading: isLoading,
+                  error: error,
+                )
+              : _AlbumList(
+                  albums: albums,
+                  userId: userId,
+                  isLoading: isLoading,
+                  error: error,
+                ),
         ],
       ),
     );
@@ -213,7 +220,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                 ),
               ),
               child: Text(
-                mode.label,
+                mode.key.t(context: context),
                 style: context.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: albumSortOption == mode
@@ -247,7 +254,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                 ),
               ),
               Text(
-                albumSortOption.label,
+                albumSortOption.key.t(context: context),
                 style: context.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: context.colorScheme.onSurface.withAlpha(225),
@@ -511,74 +518,248 @@ class _AlbumList extends StatelessWidget {
       );
     }
 
-    return SliverList.builder(
-      itemBuilder: (_, index) {
-        final album = albums[index];
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      sliver: SliverList.builder(
+        itemBuilder: (_, index) {
+          final album = albums[index];
 
-        return Padding(
-          padding: const EdgeInsets.only(
-            left: 16.0,
-            bottom: 8.0,
-            right: 16.0,
-          ),
-          child: LargeLeadingTile(
-            title: Text(
-              album.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: context.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          return Padding(
+            padding: const EdgeInsets.only(
+              bottom: 8.0,
             ),
-            subtitle: Text(
-              '${'items_count'.t(
-                context: context,
-                args: {
-                  'count': album.assetCount,
-                },
-              )} • ${album.ownerId != userId ? 'shared_by_user'.t(
+            child: LargeLeadingTile(
+              title: Text(
+                album.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: context.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                '${'items_count'.t(
                   context: context,
                   args: {
-                    'user': album.ownerName,
+                    'count': album.assetCount,
                   },
-                ) : 'owned'.t(context: context)}',
-              overflow: TextOverflow.ellipsis,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.colorScheme.onSurfaceSecondary,
+                )} • ${album.ownerId != userId ? 'shared_by_user'.t(
+                    context: context,
+                    args: {
+                      'user': album.ownerName,
+                    },
+                  ) : 'owned'.t(context: context)}',
+                overflow: TextOverflow.ellipsis,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.colorScheme.onSurfaceSecondary,
+                ),
               ),
-            ),
-            onTap: () => context.router.push(
-              RemoteTimelineRoute(albumId: album.id),
-            ),
-            leadingPadding: const EdgeInsets.only(
-              right: 16,
-            ),
-            leading: album.thumbnailAssetId != null
-                ? ClipRRect(
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(15),
-                    ),
-                    child: SizedBox(
+              onTap: () => context.router.push(
+                RemoteTimelineRoute(albumId: album.id),
+              ),
+              leadingPadding: const EdgeInsets.only(
+                right: 16,
+              ),
+              leading: album.thumbnailAssetId != null
+                  ? ClipRRect(
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(15),
+                      ),
+                      child: SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: Thumbnail(
+                          remoteId: album.thumbnailAssetId,
+                        ),
+                      ),
+                    )
+                  : const SizedBox(
                       width: 80,
                       height: 80,
-                      child: Thumbnail(
-                        remoteId: album.thumbnailAssetId,
+                      child: Icon(
+                        Icons.photo_album_rounded,
+                        size: 40,
+                        color: Colors.grey,
                       ),
                     ),
-                  )
-                : const SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: Icon(
-                      Icons.photo_album_rounded,
-                      size: 40,
-                      color: Colors.grey,
-                    ),
-                  ),
+            ),
+          );
+        },
+        itemCount: albums.length,
+      ),
+    );
+  }
+}
+
+class _AlbumGrid extends StatelessWidget {
+  const _AlbumGrid({
+    required this.albums,
+    required this.userId,
+    required this.isLoading,
+    required this.error,
+  });
+
+  final List<Album> albums;
+  final String? userId;
+  final bool isLoading;
+  final String? error;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const SliverToBoxAdapter(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: CircularProgressIndicator(),
           ),
-        );
-      },
-      itemCount: albums.length,
+        ),
+      );
+    }
+
+    if (error != null) {
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Text(
+              'Error loading albums: $error',
+              style: TextStyle(
+                color: context.colorScheme.error,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (albums.isEmpty) {
+      return const SliverToBoxAdapter(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Text('No albums found'),
+          ),
+        ),
+      );
+    }
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      sliver: SliverGrid(
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 250,
+          mainAxisSpacing: 4,
+          crossAxisSpacing: 4,
+          childAspectRatio: .7,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final album = albums[index];
+            return _GridAlbumCard(
+              album: album,
+              userId: userId,
+            );
+          },
+          childCount: albums.length,
+        ),
+      ),
+    );
+  }
+}
+
+class _GridAlbumCard extends StatelessWidget {
+  const _GridAlbumCard({
+    required this.album,
+    required this.userId,
+  });
+
+  final Album album;
+  final String? userId;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.router.push(
+        RemoteTimelineRoute(albumId: album.id),
+      ),
+      child: Card(
+        elevation: 0,
+        color: context.colorScheme.surfaceBright,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: context.colorScheme.onSurface.withAlpha(25),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 2,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(15),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: album.thumbnailAssetId != null
+                      ? Thumbnail(
+                          remoteId: album.thumbnailAssetId,
+                        )
+                      : Container(
+                          color: context.colorScheme.surfaceContainerHighest,
+                          child: const Icon(
+                            Icons.photo_album_rounded,
+                            size: 40,
+                            color: Colors.grey,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 1,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      album.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      '${'items_count'.t(
+                        context: context,
+                        args: {
+                          'count': album.assetCount,
+                        },
+                      )} • ${album.ownerId != userId ? 'shared_by_user'.t(
+                          context: context,
+                          args: {
+                            'user': album.ownerName,
+                          },
+                        ) : 'owned'.t(context: context)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.textTheme.labelMedium?.copyWith(
+                        color: context.colorScheme.onSurfaceSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

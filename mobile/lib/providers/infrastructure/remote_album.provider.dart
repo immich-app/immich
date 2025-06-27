@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
+import 'package:immich_mobile/utils/remote_album.utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'album.provider.dart';
@@ -11,14 +12,12 @@ class RemoteAlbumState {
   final List<Album> filteredAlbums;
   final bool isLoading;
   final String? error;
-  final String searchQuery;
 
   const RemoteAlbumState({
     required this.albums,
     List<Album>? filteredAlbums,
     this.isLoading = false,
     this.error,
-    this.searchQuery = '',
   }) : filteredAlbums = filteredAlbums ?? albums;
 
   RemoteAlbumState copyWith({
@@ -26,20 +25,18 @@ class RemoteAlbumState {
     List<Album>? filteredAlbums,
     bool? isLoading,
     String? error,
-    String? searchQuery,
   }) {
     return RemoteAlbumState(
       albums: albums ?? this.albums,
       filteredAlbums: filteredAlbums ?? this.filteredAlbums,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
-      searchQuery: searchQuery ?? this.searchQuery,
     );
   }
 
   @override
   String toString() =>
-      'RemoteAlbumState(albums: ${albums.length}, filteredAlbums: ${filteredAlbums.length}, isLoading: $isLoading, error: $error, searchQuery: $searchQuery)';
+      'RemoteAlbumState(albums: ${albums.length}, filteredAlbums: ${filteredAlbums.length}, isLoading: $isLoading, error: $error)';
 
   @override
   bool operator ==(covariant RemoteAlbumState other) {
@@ -49,8 +46,7 @@ class RemoteAlbumState {
     return listEquals(other.albums, albums) &&
         listEquals(other.filteredAlbums, filteredAlbums) &&
         other.isLoading == isLoading &&
-        other.error == error &&
-        other.searchQuery == searchQuery;
+        other.error == error;
   }
 
   @override
@@ -58,8 +54,7 @@ class RemoteAlbumState {
       albums.hashCode ^
       filteredAlbums.hashCode ^
       isLoading.hashCode ^
-      error.hashCode ^
-      searchQuery.hashCode;
+      error.hashCode;
 }
 
 class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
@@ -144,14 +139,12 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
 
     state = state.copyWith(
       filteredAlbums: filtered,
-      searchQuery: query,
     );
   }
 
   void clearSearch() {
     state = state.copyWith(
       filteredAlbums: state.albums,
-      searchQuery: '',
     );
   }
 

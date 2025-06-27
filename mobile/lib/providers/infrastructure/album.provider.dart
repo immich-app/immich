@@ -1,10 +1,9 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
-
-import '../../domain/services/remote_album.service.dart';
 
 final localAlbumRepository = Provider<DriftLocalAlbumRepository>(
   (ref) => DriftLocalAlbumRepository(ref.watch(driftProvider)),
