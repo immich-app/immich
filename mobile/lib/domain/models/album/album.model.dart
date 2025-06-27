@@ -35,23 +35,23 @@ class Album {
     required this.isActivityEnabled,
     required this.order,
     required this.assetCount,
-    this.ownerName = "",
+    required this.ownerName,
   });
 
   @override
   String toString() {
     return '''Album {
-   id: $id,
-   name: $name,
-   ownerId: $ownerId,
-   description: $description,
-   createdAt: $createdAt,
-   updatedAt: $updatedAt,
-   isActivityEnabled: $isActivityEnabled,
-   order: $order,
-   thumbnailAssetId: ${thumbnailAssetId ?? "<NA>"}
-   assetCount: $assetCount
-   ownerName: $ownerName
+    id: $id,
+    name: $name,
+    ownerId: $ownerId,
+    description: $description,
+    createdAt: $createdAt,
+    updatedAt: $updatedAt,
+    isActivityEnabled: $isActivityEnabled,
+    order: $order,
+    thumbnailAssetId: ${thumbnailAssetId ?? "<NA>"}
+    assetCount: $assetCount
+    ownerName: $ownerName
  }''';
   }
 

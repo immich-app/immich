@@ -1,14 +1,7 @@
 import 'package:collection/collection.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-
-final remoteAlbumServiceProvider = Provider<RemoteAlbumService>(
-  (ref) => RemoteAlbumService(ref.watch(remoteAlbumRepository)),
-  dependencies: [remoteAlbumRepository],
-);
 
 class RemoteAlbumService {
   final DriftRemoteAlbumRepository _repository;

@@ -1,14 +1,10 @@
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
+import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final remoteAlbumProvider =
-    NotifierProvider<RemoteAlbumNotifier, RemoteAlbumState>(
-  RemoteAlbumNotifier.new,
-  dependencies: [remoteAlbumServiceProvider],
-);
+import 'album.provider.dart';
 
 class RemoteAlbumState {
   final List<Album> albums;
@@ -128,10 +124,6 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
 
   void sortByOldest({bool isReverse = false}) {
     sortAlbums(RemoteAlbumSortMode.mostOldest, isReverse: isReverse);
-  }
-
-  void clear() {
-    state = state.copyWith(albums: [], filteredAlbums: []);
   }
 
   Future<void> refresh() async {

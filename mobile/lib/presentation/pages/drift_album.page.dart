@@ -6,18 +6,19 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
+
+import '../../providers/infrastructure/album.provider.dart';
 
 @RoutePage()
 class DriftAlbumsPage extends ConsumerStatefulWidget {
@@ -30,19 +31,8 @@ class DriftAlbumsPage extends ConsumerStatefulWidget {
 class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
   bool isGrid = false;
   final searchController = TextEditingController();
-  Timer? debounceTimer;
   QuickFilterMode filterMode = QuickFilterMode.all;
   final searchFocusNode = FocusNode();
-
-  void onSearch(String searchTerm, QuickFilterMode mode) {
-    final userId = ref.watch(currentUserProvider)?.id;
-    debounceTimer?.cancel();
-    debounceTimer = Timer(const Duration(milliseconds: 300), () {
-      ref
-          .read(remoteAlbumProvider.notifier)
-          .searchAlbums(searchTerm, userId, mode);
-    });
-  }
 
   @override
   void initState() {
@@ -58,10 +48,40 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
     });
   }
 
+  void onSearch(String searchTerm, QuickFilterMode mode) {
+    final userId = ref.watch(currentUserProvider)?.id;
+    ref
+        .read(remoteAlbumProvider.notifier)
+        .searchAlbums(searchTerm, userId, mode);
+  }
+
+  Future<void> onRefresh() async {
+    await ref.read(remoteAlbumProvider.notifier).refresh();
+  }
+
+  void toggleViewMode() {
+    setState(() {
+      isGrid = !isGrid;
+    });
+  }
+
+  void changeFilter(QuickFilterMode mode) {
+    setState(() {
+      filterMode = mode;
+    });
+  }
+
+  void clearSearch() {
+    setState(() {
+      filterMode = QuickFilterMode.all;
+      searchController.clear();
+      ref.read(remoteAlbumProvider.notifier).clearSearch();
+    });
+  }
+
   @override
   void dispose() {
     searchController.dispose();
-    debounceTimer?.cancel();
     searchFocusNode.dispose();
     super.dispose();
   }
@@ -73,30 +93,6 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
     final isLoading = albumState.isLoading;
     final error = albumState.error;
     final userId = ref.watch(currentUserProvider)?.id;
-
-    Future<void> onRefresh() async {
-      await ref.read(remoteAlbumProvider.notifier).refresh();
-    }
-
-    void toggleViewMode() {
-      setState(() {
-        isGrid = !isGrid;
-      });
-    }
-
-    void changeFilter(QuickFilterMode mode) {
-      setState(() {
-        filterMode = mode;
-      });
-    }
-
-    void clearSearch() {
-      setState(() {
-        filterMode = QuickFilterMode.all;
-      });
-      searchController.clear();
-      ref.read(remoteAlbumProvider.notifier).clearSearch();
-    }
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -132,59 +128,14 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
   }
 }
 
-class QuickFilterButton extends StatelessWidget {
-  const QuickFilterButton({
-    super.key,
-    required this.isSelected,
-    required this.onTap,
-    required this.label,
-  });
-
-  final bool isSelected;
-  final VoidCallback onTap;
-  final String label;
+class _SortButton extends ConsumerStatefulWidget {
+  const _SortButton();
 
   @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: onTap,
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(
-          isSelected ? context.colorScheme.primary : Colors.transparent,
-        ),
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: const BorderRadius.all(
-              Radius.circular(20),
-            ),
-            side: BorderSide(
-              color: context.colorScheme.onSurface.withAlpha(25),
-              width: 1,
-            ),
-          ),
-        ),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isSelected
-              ? context.colorScheme.onPrimary
-              : context.colorScheme.onSurface,
-          fontSize: 14,
-        ),
-      ),
-    );
-  }
+  ConsumerState<_SortButton> createState() => _SortButtonState();
 }
 
-class SortButton extends ConsumerStatefulWidget {
-  const SortButton({super.key});
-
-  @override
-  ConsumerState<SortButton> createState() => _SortButtonState();
-}
-
-class _SortButtonState extends ConsumerState<SortButton> {
+class _SortButtonState extends ConsumerState<_SortButton> {
   RemoteAlbumSortMode albumSortOption = RemoteAlbumSortMode.lastModified;
   bool albumSortIsReverse = false;
 
@@ -394,7 +345,7 @@ class _QuickFilterButtonRow extends StatelessWidget {
           spacing: 4,
           runSpacing: 4,
           children: [
-            QuickFilterButton(
+            _QuickFilterButton(
               label: 'all'.tr(),
               isSelected: filterMode == QuickFilterMode.all,
               onTap: () {
@@ -402,7 +353,7 @@ class _QuickFilterButtonRow extends StatelessWidget {
                 onSearch(searchController.text, QuickFilterMode.all);
               },
             ),
-            QuickFilterButton(
+            _QuickFilterButton(
               label: 'shared_with_me'.tr(),
               isSelected: filterMode == QuickFilterMode.sharedWithMe,
               onTap: () {
@@ -413,7 +364,7 @@ class _QuickFilterButtonRow extends StatelessWidget {
                 );
               },
             ),
-            QuickFilterButton(
+            _QuickFilterButton(
               label: 'my_albums'.tr(),
               isSelected: filterMode == QuickFilterMode.myAlbums,
               onTap: () {
@@ -425,6 +376,50 @@ class _QuickFilterButtonRow extends StatelessWidget {
               },
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickFilterButton extends StatelessWidget {
+  const _QuickFilterButton({
+    required this.isSelected,
+    required this.onTap,
+    required this.label,
+  });
+
+  final bool isSelected;
+  final VoidCallback onTap;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: onTap,
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(
+          isSelected ? context.colorScheme.primary : Colors.transparent,
+        ),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: const BorderRadius.all(
+              Radius.circular(20),
+            ),
+            side: BorderSide(
+              color: context.colorScheme.onSurface.withAlpha(25),
+              width: 1,
+            ),
+          ),
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: isSelected
+              ? context.colorScheme.onPrimary
+              : context.colorScheme.onSurface,
+          fontSize: 14,
         ),
       ),
     );
@@ -448,7 +443,7 @@ class _QuickSortAndViewMode extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const SortButton(),
+            const _SortButton(),
             IconButton(
               icon: Icon(
                 isGrid ? Icons.view_list_outlined : Icons.grid_view_outlined,
