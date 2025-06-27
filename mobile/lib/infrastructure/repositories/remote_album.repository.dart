@@ -18,6 +18,10 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         _db.remoteAlbumAssetEntity.albumId.equalsExp(_db.remoteAlbumEntity.id),
         useColumns: false,
       ),
+      leftOuterJoin(
+        _db.userEntity,
+        _db.userEntity.id.equalsExp(_db.remoteAlbumEntity.ownerId),
+      ),
     ]);
     query
       ..addColumns([assetCount])
@@ -28,7 +32,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       for (final sort in sortBy) {
         orderings.add(
           switch (sort) {
-            SortRemoteAlbumsBy.id => OrderingTerm.asc(_db.remoteAssetEntity.id),
+            SortRemoteAlbumsBy.id => OrderingTerm.asc(_db.remoteAlbumEntity.id),
           },
         );
       }
@@ -37,16 +41,17 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
 
     return query
         .map(
-          (row) => row
-              .readTable(_db.remoteAlbumEntity)
-              .toDto(assetCount: row.read(assetCount) ?? 0),
+          (row) => row.readTable(_db.remoteAlbumEntity).toDto(
+                assetCount: row.read(assetCount) ?? 0,
+                ownerName: row.readTableOrNull(_db.userEntity)?.name,
+              ),
         )
         .get();
   }
 }
 
 extension on RemoteAlbumEntityData {
-  Album toDto({int assetCount = 0}) {
+  Album toDto({int assetCount = 0, String? ownerName}) {
     return Album(
       id: id,
       name: name,
@@ -58,6 +63,7 @@ extension on RemoteAlbumEntityData {
       isActivityEnabled: isActivityEnabled,
       order: order,
       assetCount: assetCount,
+      ownerName: ownerName ?? '',
     );
   }
 }

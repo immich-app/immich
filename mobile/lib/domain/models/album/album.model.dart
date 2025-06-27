@@ -22,6 +22,7 @@ class Album {
   final bool isActivityEnabled;
   final AlbumAssetOrder order;
   final int assetCount;
+  final String ownerName;
 
   const Album({
     required this.id,
@@ -34,6 +35,7 @@ class Album {
     required this.isActivityEnabled,
     required this.order,
     required this.assetCount,
+    this.ownerName = "",
   });
 
   @override
@@ -48,7 +50,8 @@ class Album {
    isActivityEnabled: $isActivityEnabled,
    order: $order,
    thumbnailAssetId: ${thumbnailAssetId ?? "<NA>"}
-  assetCount: $assetCount
+   assetCount: $assetCount
+   ownerName: $ownerName
  }''';
   }
 
@@ -65,7 +68,8 @@ class Album {
         thumbnailAssetId == other.thumbnailAssetId &&
         isActivityEnabled == other.isActivityEnabled &&
         order == other.order &&
-        assetCount == other.assetCount;
+        assetCount == other.assetCount &&
+        ownerName == other.ownerName;
   }
 
   @override
@@ -79,6 +83,7 @@ class Album {
         thumbnailAssetId.hashCode ^
         isActivityEnabled.hashCode ^
         order.hashCode ^
-        assetCount.hashCode;
+        assetCount.hashCode ^
+        ownerName.hashCode;
   }
 }
