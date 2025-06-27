@@ -13,8 +13,18 @@ type AuditTables =
   | 'assets_audit'
   | 'albums_audit'
   | 'album_users_audit'
-  | 'album_assets_audit';
-type UpsertTables = 'users' | 'partners' | 'assets' | 'exif' | 'albums' | 'albums_shared_users_users';
+  | 'album_assets_audit'
+  | 'memories_audit'
+  | 'memory_assets_audit';
+type UpsertTables =
+  | 'users'
+  | 'partners'
+  | 'assets'
+  | 'exif'
+  | 'albums'
+  | 'albums_shared_users_users'
+  | 'memories'
+  | 'memories_assets_assets';
 
 @Injectable()
 export class SyncRepository {
@@ -435,6 +445,61 @@ export class SyncRepository {
       .innerJoin('albums', 'albums.id', 'album_assets.albumsId')
       .leftJoin('albums_shared_users_users as album_users', 'album_users.albumsId', 'album_assets.albumsId')
       .where((eb) => eb.or([eb('albums.ownerId', '=', userId), eb('album_users.usersId', '=', userId)]))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getMemoryUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('memories')
+      .select([
+        'id',
+        'createdAt',
+        'updatedAt',
+        'deletedAt',
+        'ownerId',
+        'type',
+        'data',
+        'isSaved',
+        'memoryAt',
+        'seenAt',
+        'showAt',
+        'hideAt',
+      ])
+      .select('updateId')
+      .where('ownerId', '=', userId)
+      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getMemoryDeletes(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('memories_audit')
+      .select(['id', 'memoryId'])
+      .where('userId', '=', userId)
+      .$call((qb) => this.auditTableFilters(qb, ack))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getMemoryAssetUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('memories_assets_assets')
+      .select(['memoriesId as memoryId', 'assetsId as assetId'])
+      .select('updateId')
+      .where('memoriesId', 'in', (eb) => eb.selectFrom('memories').select('id').where('ownerId', '=', userId))
+      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getMemoryAssetDeletes(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('memory_assets_audit')
+      .select(['id', 'memoryId', 'assetId'])
+      .where('memoryId', 'in', (eb) => eb.selectFrom('memories').select('id').where('ownerId', '=', userId))
+      .$call((qb) => this.auditTableFilters(qb, ack))
       .stream();
   }
 
