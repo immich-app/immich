@@ -66,12 +66,6 @@ jobs:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
 
-      - name: Install missing deps
-        run: |
-          sudo add-apt-repository ppa:rmescandon/yq
-          sudo apt-get update
-          sudo apt-get install -y yq xz-utils ninja-build zstd
-
       - name: Create the Keystore
         env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
@@ -101,11 +95,6 @@ jobs:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
           cache: true
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
-        with:
-          packages: ''
 
       - name: Get Packages
         working-directory: ./mobile
