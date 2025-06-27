@@ -5,8 +5,11 @@ import 'package:drift/drift.dart' hide Column;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/drift_store.repository.dart';
 import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
@@ -14,6 +17,32 @@ import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 final _features = [
+  _Feature(
+    name: 'test',
+    icon: Icons.abc,
+    onTap: (_, ref) {
+      final UserDto value = UserDto(
+        id: "1234",
+        email: "alex@email.com",
+        name: "alex",
+        isAdmin: true,
+        updatedAt: DateTime.now(),
+      );
+
+      ref
+          .read(driftStoreRepositoryProvider)
+          .insert(StoreKey.serverUrl, "https://example.com");
+
+      final readback =
+          ref.read(driftStoreRepositoryProvider).tryGet(StoreKey.serverUrl);
+
+      readback.then((value) {
+        print("Read back: $value");
+      });
+
+      return Future.value();
+    },
+  ),
   _Feature(
     name: 'Sync Local',
     icon: Icons.photo_album_rounded,

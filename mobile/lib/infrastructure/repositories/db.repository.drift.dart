@@ -23,9 +23,11 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.
     as i10;
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart'
     as i11;
-import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart'
     as i12;
-import 'package:drift/internal/modular.dart' as i13;
+import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+    as i13;
+import 'package:drift/internal/modular.dart' as i14;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -51,8 +53,9 @@ abstract class $Drift extends i0.GeneratedDatabase {
       i10.$RemoteAlbumAssetEntityTable(this);
   late final i11.$RemoteAlbumUserEntityTable remoteAlbumUserEntity =
       i11.$RemoteAlbumUserEntityTable(this);
-  i12.MergedAssetDrift get mergedAssetDrift => i13.ReadDatabaseContainer(this)
-      .accessor<i12.MergedAssetDrift>(i12.MergedAssetDrift.new);
+  late final i12.$StoreEntityTable storeEntity = i12.$StoreEntityTable(this);
+  i13.MergedAssetDrift get mergedAssetDrift => i14.ReadDatabaseContainer(this)
+      .accessor<i13.MergedAssetDrift>(i13.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -71,7 +74,8 @@ abstract class $Drift extends i0.GeneratedDatabase {
         remoteExifEntity,
         remoteAlbumEntity,
         remoteAlbumAssetEntity,
-        remoteAlbumUserEntity
+        remoteAlbumUserEntity,
+        storeEntity
       ];
   @override
   i0.StreamQueryUpdateRules get streamUpdateRules =>
@@ -208,4 +212,6 @@ class $DriftManager {
           _db, _db.remoteAlbumAssetEntity);
   i11.$$RemoteAlbumUserEntityTableTableManager get remoteAlbumUserEntity => i11
       .$$RemoteAlbumUserEntityTableTableManager(_db, _db.remoteAlbumUserEntity);
+  i12.$$StoreEntityTableTableManager get storeEntity =>
+      i12.$$StoreEntityTableTableManager(_db, _db.storeEntity);
 }

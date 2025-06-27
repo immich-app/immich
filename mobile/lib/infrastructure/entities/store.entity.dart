@@ -1,13 +1,13 @@
-import 'package:isar/isar.dart';
+import 'package:drift/drift.dart';
+import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
-part 'store.entity.g.dart';
+class StoreEntity extends Table with DriftDefaultsMixin {
+  const StoreEntity();
 
-/// Internal class for `Store`, do not use elsewhere.
-@Collection(inheritance: false)
-class StoreValue {
-  final Id id;
-  final int? intValue;
-  final String? strValue;
+  IntColumn get id => integer()();
+  IntColumn get intValue => integer().nullable()();
+  TextColumn get strValue => text().nullable()();
 
-  const StoreValue(this.id, {this.intValue, this.strValue});
+  @override
+  Set<Column> get primaryKey => {id};
 }

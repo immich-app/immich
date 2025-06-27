@@ -13,10 +13,12 @@ import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/isar_store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/drift_store.repository.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -48,6 +50,10 @@ abstract final class Bootstrap {
     );
   }
 
+  static Future<Drift> initDrift() async {
+    return Drift();
+  }
+
   static Future<void> initDomain(
     Isar db, {
     bool shouldBufferLogs = true,
@@ -56,6 +62,19 @@ abstract final class Bootstrap {
     await LogService.init(
       logRepository: IsarLogRepository(db),
       storeRepository: IsarStoreRepository(db),
+      shouldBuffer: shouldBufferLogs,
+    );
+  }
+
+  static Future<void> initDomainWithDrift(
+    Drift db, {
+    bool shouldBufferLogs = true,
+  }) async {
+    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    final isarDb = await initIsar();
+    await LogService.init(
+      logRepository: IsarLogRepository(isarDb),
+      storeRepository: DriftStoreRepository(db),
       shouldBuffer: shouldBufferLogs,
     );
   }
