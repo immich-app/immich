@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
 import 'package:immich_mobile/widgets/asset_viewer/motion_photo_button.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 
 class TopControlAppBar extends HookConsumerWidget {
   const TopControlAppBar({
@@ -57,6 +58,7 @@ class TopControlAppBar extends HookConsumerWidget {
             asset.remoteId != null
         ? ref.watch(activityStatisticsProvider(album.remoteId!, asset.remoteId))
         : 0;
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     Widget buildFavoriteButton(a) {
       return IconButton(
@@ -203,26 +205,38 @@ class TopControlAppBar extends HookConsumerWidget {
       actionsIconTheme: const IconThemeData(size: iconSize),
       shape: const Border(),
       actions: [
-        if (asset.isRemote && isOwner) buildFavoriteButton(a),
+        if (asset.isRemote && isOwner && !isReadonlyModeEnabled)
+          buildFavoriteButton(a),
         if (isOwner &&
             !isInHomePage &&
             !(isInTrash ?? false) &&
             !isInLockedView)
           buildLocateButton(),
-        if (asset.livePhotoVideoId != null) const MotionPhotoButton(),
-        if (asset.isLocal && !asset.isRemote) buildUploadButton(),
-        if (asset.isRemote && !asset.isLocal && isOwner) buildDownloadButton(),
+        if (asset.livePhotoVideoId != null && !isReadonlyModeEnabled)
+          const MotionPhotoButton(),
+        if (asset.isLocal && !asset.isRemote && !isReadonlyModeEnabled)
+          buildUploadButton(),
+        if (asset.isRemote &&
+            !asset.isLocal &&
+            isOwner &&
+            !isReadonlyModeEnabled)
+          buildDownloadButton(),
         if (asset.isRemote &&
             (isOwner || isPartner) &&
             !asset.isTrashed &&
-            !isInLockedView)
+            !isInLockedView &&
+            !isReadonlyModeEnabled)
           buildAddToAlbumButton(),
-        if (isCasting || (asset.isRemote && websocketConnected))
+        if (isCasting ||
+            (asset.isRemote && websocketConnected) && !isReadonlyModeEnabled)
           buildCastButton(),
-        if (asset.isTrashed) buildRestoreButton(),
-        if (album != null && album.shared && !isInLockedView)
+        if (asset.isTrashed && !isReadonlyModeEnabled) buildRestoreButton(),
+        if (album != null &&
+            album.shared &&
+            !isInLockedView &&
+            !isReadonlyModeEnabled)
           buildActivitiesButton(),
-        buildMoreInfoButton(),
+        if (!isReadonlyModeEnabled) buildMoreInfoButton(),
       ],
     );
   }

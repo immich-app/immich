@@ -6,6 +6,7 @@ import 'package:immich_mobile/extensions/asset_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 
 class AssetDateTime extends ConsumerWidget {
@@ -23,6 +24,7 @@ class AssetDateTime extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final watchedAsset = ref.watch(assetDetailProvider(asset));
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     String formattedDateTime = getDateTimeString(asset);
 
     void editDateTime() async {
@@ -42,7 +44,7 @@ class AssetDateTime extends ConsumerWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        if (asset.isRemote)
+        if (asset.isRemote && !isReadonlyModeEnabled)
           IconButton(
             onPressed: editDateTime,
             icon: const Icon(Icons.edit_outlined),
