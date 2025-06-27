@@ -9,7 +9,7 @@ final biometricRepositoryProvider =
 class BiometricRepository {
   final LocalAuthentication _localAuth;
 
-  BiometricRepository(this._localAuth);
+  const BiometricRepository(this._localAuth);
 
   Future<BiometricStatus> getStatus() async {
     final bool canAuthenticateWithBiometrics =

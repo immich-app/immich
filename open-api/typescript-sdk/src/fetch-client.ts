@@ -2769,6 +2769,15 @@ export function updatePartner({ id, updatePartnerDto }: {
         body: updatePartnerDto
     })));
 }
+export function deletePeople({ bulkIdsDto }: {
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/people", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: bulkIdsDto
+    })));
+}
 export function getAllPeople({ closestAssetId, closestPersonId, page, size, withHidden }: {
     closestAssetId?: string;
     closestPersonId?: string;
@@ -2812,6 +2821,14 @@ export function updatePeople({ peopleUpdateDto }: {
         method: "PUT",
         body: peopleUpdateDto
     })));
+}
+export function deletePerson({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/people/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
 }
 export function getPerson({ id }: {
     id: string;
@@ -4061,6 +4078,13 @@ export enum SyncEntityType {
     AlbumUserV1 = "AlbumUserV1",
     AlbumUserBackfillV1 = "AlbumUserBackfillV1",
     AlbumUserDeleteV1 = "AlbumUserDeleteV1",
+    AlbumAssetV1 = "AlbumAssetV1",
+    AlbumAssetBackfillV1 = "AlbumAssetBackfillV1",
+    AlbumAssetExifV1 = "AlbumAssetExifV1",
+    AlbumAssetExifBackfillV1 = "AlbumAssetExifBackfillV1",
+    AlbumToAssetV1 = "AlbumToAssetV1",
+    AlbumToAssetDeleteV1 = "AlbumToAssetDeleteV1",
+    AlbumToAssetBackfillV1 = "AlbumToAssetBackfillV1",
     SyncAckV1 = "SyncAckV1"
 }
 export enum SyncRequestType {
@@ -4071,7 +4095,10 @@ export enum SyncRequestType {
     PartnerAssetsV1 = "PartnerAssetsV1",
     PartnerAssetExifsV1 = "PartnerAssetExifsV1",
     AlbumsV1 = "AlbumsV1",
-    AlbumUsersV1 = "AlbumUsersV1"
+    AlbumUsersV1 = "AlbumUsersV1",
+    AlbumToAssetsV1 = "AlbumToAssetsV1",
+    AlbumAssetsV1 = "AlbumAssetsV1",
+    AlbumAssetExifsV1 = "AlbumAssetExifsV1"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",

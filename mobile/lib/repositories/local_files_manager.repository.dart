@@ -7,7 +7,7 @@ final localFilesManagerRepositoryProvider = Provider(
 );
 
 class LocalFilesManagerRepository {
-  LocalFilesManagerRepository(this._service);
+  const LocalFilesManagerRepository(this._service);
 
   final LocalFilesManagerService _service;
 

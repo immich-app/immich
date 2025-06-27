@@ -5,7 +5,7 @@ class SettingsRadioGroup<T> {
   final String title;
   final T value;
 
-  SettingsRadioGroup({required this.title, required this.value});
+  const SettingsRadioGroup({required this.title, required this.value});
 }
 
 class SettingsRadioListTile<T> extends StatelessWidget {

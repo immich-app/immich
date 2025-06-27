@@ -8,6 +8,9 @@ import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_album.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
@@ -40,6 +43,9 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     LocalAlbumAssetEntity,
     RemoteAssetEntity,
     RemoteExifEntity,
+    RemoteAlbumEntity,
+    RemoteAlbumAssetEntity,
+    RemoteAlbumUserEntity,
   ],
   include: {
     'package:immich_mobile/infrastructure/entities/merged_asset.drift',

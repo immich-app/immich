@@ -3,7 +3,7 @@ import { ExpressionBuilder, Insertable, Kysely, Selectable, sql, Updateable } fr
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFaces, DB, FaceSearch, Person } from 'src/db';
-import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
+import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, AssetVisibility, SourceType } from 'src/enum';
 import { removeUndefinedKeys } from 'src/utils/database';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
@@ -102,6 +102,7 @@ export class PersonRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
+  @Chunked()
   async delete(ids: string[]): Promise<void> {
     if (ids.length === 0) {
       return;
@@ -516,5 +517,14 @@ export class PersonRepository {
     if (reindexVectors) {
       await sql`REINDEX TABLE face_search`.execute(this.db);
     }
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @Chunked()
+  getForPeopleDelete(ids: string[]) {
+    if (ids.length === 0) {
+      return Promise.resolve([]);
+    }
+    return this.db.selectFrom('person').select(['id', 'thumbnailPath']).where('id', 'in', ids).execute();
   }
 }

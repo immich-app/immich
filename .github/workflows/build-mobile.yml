@@ -58,7 +58,7 @@ jobs:
       contents: read
     # Skip when PR from a fork
     if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' && needs.pre-job.outputs.should_run == 'true' }}
-    runs-on: macos-14
+    runs-on: mich
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -66,24 +66,46 @@ jobs:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
 
-      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-          cache: 'gradle'
-
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2.19.0
-        with:
-          channel: 'stable'
-          flutter-version-file: ./mobile/pubspec.yaml
-          cache: true
+      - name: Install missing deps
+        run: |
+          sudo add-apt-repository ppa:rmescandon/yq
+          sudo apt-get update
+          sudo apt-get install -y yq xz-utils ninja-build zstd
 
       - name: Create the Keystore
         env:
           KEY_JKS: ${{ secrets.KEY_JKS }}
         working-directory: ./mobile
-        run: echo $KEY_JKS | base64 -d > android/key.jks
+        run: printf "%s" $KEY_JKS | base64 -d > android/key.jks
+
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Restore Gradle Cache
+        id: cache-gradle-restore
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.android/sdk
+            mobile/android/.gradle
+            mobile/.dart_tool
+          key: build-mobile-gradle-${{ runner.os }}-main
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@395322a6cded4e9ed503aebd4cc1965625f8e59a # v2.20.0
+        with:
+          channel: 'stable'
+          flutter-version-file: ./mobile/pubspec.yaml
+          cache: true
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+        with:
+          packages: ''
 
       - name: Get Packages
         working-directory: ./mobile
@@ -103,12 +125,30 @@ jobs:
           ALIAS: ${{ secrets.ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
         run: |
-          flutter build apk --release
-          flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
+          if [[ $IS_MAIN == 'true' ]]; then
+            flutter build apk --release
+            flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
+          else
+            flutter build apk --debug --split-per-abi --target-platform android-arm64
+          fi
 
       - name: Publish Android Artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: release-apk-signed
           path: mobile/build/app/outputs/flutter-apk/*.apk
+
+      - name: Save Gradle Cache
+        id: cache-gradle-save
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.android/sdk
+            mobile/android/.gradle
+            mobile/.dart_tool
+          key: ${{ steps.cache-gradle-restore.outputs.cache-primary-key }}

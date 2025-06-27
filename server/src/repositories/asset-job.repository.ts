@@ -273,8 +273,7 @@ export class AssetJobRepository {
           .leftJoin('asset_job_status', 'asset_job_status.assetId', 'assets.id')
           .where((eb) =>
             eb.or([eb('asset_job_status.metadataExtractedAt', 'is', null), eb('asset_job_status.assetId', 'is', null)]),
-          )
-          .where('assets.visibility', '!=', AssetVisibility.HIDDEN),
+          ),
       )
       .where('assets.deletedAt', 'is', null)
       .stream();

@@ -3,7 +3,7 @@ import WidgetKit
 
 func buildEntry(
   api: ImmichAPI,
-  asset: SearchResult,
+  asset: Asset,
   dateOffset: Int,
   subtitle: String? = nil
 )
@@ -15,7 +15,8 @@ func buildEntry(
     to: Date.now
   )!
   let image = try await api.fetchImage(asset: asset)
-  return ImageEntry(date: entryDate, image: image, subtitle: subtitle)
+
+  return ImageEntry(date: entryDate, image: image, subtitle: subtitle, deepLink: asset.deepLink)
 }
 
 func generateRandomEntries(

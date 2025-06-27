@@ -4546,6 +4546,39 @@
       }
     },
     "/people": {
+      "delete": {
+        "operationId": "deletePeople",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "People"
+        ]
+      },
       "get": {
         "operationId": "getAllPeople",
         "parameters": [
@@ -4711,6 +4744,39 @@
       }
     },
     "/people/{id}": {
+      "delete": {
+        "operationId": "deletePerson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "People"
+        ]
+      },
       "get": {
         "operationId": "getPerson",
         "parameters": [
@@ -13361,12 +13427,17 @@
             "items": {
               "type": "string"
             },
+            "maxItems": 1000,
             "type": "array"
           }
         },
         "required": [
           "acks"
         ],
+        "type": "object"
+      },
+      "SyncAckV1": {
+        "properties": {},
         "type": "object"
       },
       "SyncAlbumDeleteV1": {
@@ -13377,6 +13448,36 @@
         },
         "required": [
           "albumId"
+        ],
+        "type": "object"
+      },
+      "SyncAlbumToAssetDeleteV1": {
+        "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId",
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "SyncAlbumToAssetV1": {
+        "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId",
+          "assetId"
         ],
         "type": "object"
       },
@@ -13708,6 +13809,13 @@
           "AlbumUserV1",
           "AlbumUserBackfillV1",
           "AlbumUserDeleteV1",
+          "AlbumAssetV1",
+          "AlbumAssetBackfillV1",
+          "AlbumAssetExifV1",
+          "AlbumAssetExifBackfillV1",
+          "AlbumToAssetV1",
+          "AlbumToAssetDeleteV1",
+          "AlbumToAssetBackfillV1",
           "SyncAckV1"
         ],
         "type": "string"
@@ -13755,7 +13863,10 @@
           "PartnerAssetsV1",
           "PartnerAssetExifsV1",
           "AlbumsV1",
-          "AlbumUsersV1"
+          "AlbumUsersV1",
+          "AlbumToAssetsV1",
+          "AlbumAssetsV1",
+          "AlbumAssetExifsV1"
         ],
         "type": "string"
       },

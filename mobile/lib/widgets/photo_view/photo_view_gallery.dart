@@ -12,7 +12,6 @@ import 'package:immich_mobile/widgets/photo_view/photo_view.dart'
         PhotoViewImageScaleEndCallback,
         PhotoViewImageLongPressStartCallback,
         ScaleStateCycle;
-
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_controller.dart';
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_scalestate_controller.dart';
 import 'package:immich_mobile/widgets/photo_view/src/core/photo_view_gesture_detector.dart';
@@ -358,7 +357,7 @@ class PhotoViewGalleryPageOptions {
         childSize = null,
         assert(imageProvider != null);
 
-  PhotoViewGalleryPageOptions.customChild({
+  const PhotoViewGalleryPageOptions.customChild({
     required this.child,
     this.childSize,
     this.heroAttributes,

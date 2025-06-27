@@ -18,7 +18,7 @@ final albumRepositoryProvider =
     Provider((ref) => AlbumRepository(ref.watch(dbProvider)));
 
 class AlbumRepository extends DatabaseRepository {
-  AlbumRepository(super.db);
+  const AlbumRepository(super.db);
 
   Future<int> count({bool? local}) {
     final baseQuery = db.albums.where();
@@ -92,6 +92,10 @@ class AlbumRepository extends DatabaseRepository {
   }
 
   Future<Album?> get(int id) => db.albums.get(id);
+
+  Future<Album?> getByRemoteId(String remoteId) {
+    return db.albums.filter().remoteIdEqualTo(remoteId).findFirst();
+  }
 
   Future<void> removeUsers(Album album, List<UserDto> users) => txn(
         () => album.sharedUsers.update(unlink: users.map(entity.User.fromDto)),

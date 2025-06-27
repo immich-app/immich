@@ -22,12 +22,12 @@ export class ViewRepository {
       .where('localDateTime', 'is not', null)
       .execute();
 
-    return results.map((row) => row.directoryPath.replaceAll(/^\/|\/$/g, ''));
+    return results.map((row) => row.directoryPath.replaceAll(/\/$/g, ''));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   async getAssetsByOriginalPath(userId: string, partialPath: string) {
-    const normalizedPath = partialPath.replaceAll(/^\/|\/$/g, '');
+    const normalizedPath = partialPath.replaceAll(/\/$/g, '');
 
     return this.db
       .selectFrom('assets')

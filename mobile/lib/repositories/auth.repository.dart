@@ -22,7 +22,7 @@ final authRepositoryProvider = Provider<AuthRepository>(
 class AuthRepository extends DatabaseRepository {
   final Drift _drift;
 
-  AuthRepository(super.db, this._drift);
+  const AuthRepository(super.db, this._drift);
 
   Future<void> clearLocalData() {
     return db.writeTxn(() {
@@ -34,6 +34,12 @@ class AuthRepository extends DatabaseRepository {
         db.users.clear(),
         _drift.remoteAssetEntity.deleteAll(),
         _drift.remoteExifEntity.deleteAll(),
+        _drift.userEntity.deleteAll(),
+        _drift.userMetadataEntity.deleteAll(),
+        _drift.partnerEntity.deleteAll(),
+        _drift.remoteAlbumEntity.deleteAll(),
+        _drift.remoteAlbumAssetEntity.deleteAll(),
+        _drift.remoteAlbumUserEntity.deleteAll(),
       ]);
     });
   }

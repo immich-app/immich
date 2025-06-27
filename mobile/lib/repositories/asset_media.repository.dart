@@ -6,9 +6,11 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:photo_manager/photo_manager.dart' hide AssetType;
 
-final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository());
+final assetMediaRepositoryProvider =
+    Provider((ref) => const AssetMediaRepository());
 
 class AssetMediaRepository {
+  const AssetMediaRepository();
   Future<List<String>> deleteAll(List<String> ids) =>
       PhotoManager.editor.deleteWithIds(ids);
 
