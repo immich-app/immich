@@ -1,8 +1,8 @@
 import 'package:collection/collection.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final remoteAlbumProvider =
     NotifierProvider<RemoteAlbumNotifier, RemoteAlbumState>(
