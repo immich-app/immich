@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
@@ -19,64 +18,80 @@ import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
 @RoutePage()
-class DriftAlbumsPage extends HookConsumerWidget {
+class DriftAlbumsPage extends ConsumerStatefulWidget {
   const DriftAlbumsPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DriftAlbumsPage> createState() => _DriftAlbumsPageState();
+}
+
+class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
+  bool isGrid = false;
+  final searchController = TextEditingController();
+  Timer? debounceTimer;
+  QuickFilterMode filterMode = QuickFilterMode.all;
+  final searchFocusNode = FocusNode();
+
+  void onSearch(String searchTerm, QuickFilterMode mode) {
+    final userId = ref.watch(currentUserProvider)?.id;
+    debounceTimer?.cancel();
+    debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      ref
+          .read(remoteAlbumProvider.notifier)
+          .searchAlbums(searchTerm, userId, mode);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Load albums when component mounts
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(remoteAlbumProvider.notifier).getAll();
+    });
+
+    searchController.addListener(() {
+      onSearch(searchController.text, filterMode);
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    debounceTimer?.cancel();
+    searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final albumState = ref.watch(remoteAlbumProvider);
     final albums = albumState.filteredAlbums;
     final isLoading = albumState.isLoading;
     final error = albumState.error;
-    final isGrid = useState(false);
-    final searchController = useTextEditingController();
-    final debounceTimer = useRef<Timer?>(null);
-    final filterMode = useState(QuickFilterMode.all);
     final userId = ref.watch(currentUserProvider)?.id;
-    final searchFocusNode = useFocusNode();
 
     Future<void> onRefresh() async {
       await ref.read(remoteAlbumProvider.notifier).refresh();
     }
 
-    toggleViewMode() {
-      isGrid.value = !isGrid.value;
-    }
-
-    onSearch(String searchTerm, QuickFilterMode mode) {
-      debounceTimer.value?.cancel();
-      debounceTimer.value = Timer(const Duration(milliseconds: 300), () {
-        ref
-            .read(remoteAlbumProvider.notifier)
-            .searchAlbums(searchTerm, userId, mode);
+    void toggleViewMode() {
+      setState(() {
+        isGrid = !isGrid;
       });
     }
 
-    changeFilter(QuickFilterMode mode) {
-      filterMode.value = mode;
+    void changeFilter(QuickFilterMode mode) {
+      setState(() {
+        filterMode = mode;
+      });
     }
 
-    useEffect(
-      () {
-        // Load albums when component mounts
-        Future.microtask(() => ref.read(remoteAlbumProvider.notifier).getAll());
-
-        searchController.addListener(() {
-          onSearch(searchController.text, filterMode.value);
-        });
-
-        return () {
-          searchController.removeListener(() {
-            onSearch(searchController.text, filterMode.value);
-          });
-          debounceTimer.value?.cancel();
-        };
-      },
-      [],
-    );
-
-    clearSearch() {
-      filterMode.value = QuickFilterMode.all;
+    void clearSearch() {
+      setState(() {
+        filterMode = QuickFilterMode.all;
+      });
       searchController.clear();
       ref.read(remoteAlbumProvider.notifier).clearSearch();
     }
@@ -123,8 +138,7 @@ class DriftAlbumsPage extends HookConsumerWidget {
                         )
                       : null,
                   controller: searchController,
-                  onChanged: (_) =>
-                      onSearch(searchController.text, filterMode.value),
+                  onChanged: (_) => onSearch(searchController.text, filterMode),
                   focusNode: searchFocusNode,
                   onTapOutside: (_) => searchFocusNode.unfocus(),
                 ),
@@ -142,7 +156,7 @@ class DriftAlbumsPage extends HookConsumerWidget {
                 children: [
                   QuickFilterButton(
                     label: 'all'.tr(),
-                    isSelected: filterMode.value == QuickFilterMode.all,
+                    isSelected: filterMode == QuickFilterMode.all,
                     onTap: () {
                       changeFilter(QuickFilterMode.all);
                       onSearch(searchController.text, QuickFilterMode.all);
@@ -150,8 +164,7 @@ class DriftAlbumsPage extends HookConsumerWidget {
                   ),
                   QuickFilterButton(
                     label: 'shared_with_me'.tr(),
-                    isSelected:
-                        filterMode.value == QuickFilterMode.sharedWithMe,
+                    isSelected: filterMode == QuickFilterMode.sharedWithMe,
                     onTap: () {
                       changeFilter(QuickFilterMode.sharedWithMe);
                       onSearch(
@@ -162,7 +175,7 @@ class DriftAlbumsPage extends HookConsumerWidget {
                   ),
                   QuickFilterButton(
                     label: 'my_albums'.tr(),
-                    isSelected: filterMode.value == QuickFilterMode.myAlbums,
+                    isSelected: filterMode == QuickFilterMode.myAlbums,
                     onTap: () {
                       changeFilter(QuickFilterMode.myAlbums);
                       onSearch(
@@ -186,7 +199,7 @@ class DriftAlbumsPage extends HookConsumerWidget {
                   const SortButton(),
                   IconButton(
                     icon: Icon(
-                      isGrid.value
+                      isGrid
                           ? Icons.view_list_outlined
                           : Icons.grid_view_outlined,
                       size: 24,
@@ -352,14 +365,19 @@ class QuickFilterButton extends StatelessWidget {
   }
 }
 
-class SortButton extends HookConsumerWidget {
+class SortButton extends ConsumerStatefulWidget {
   const SortButton({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final albumSortOption = useState(RemoteAlbumSortMode.lastModified);
-    final albumSortIsReverse = useState(false);
+  ConsumerState<SortButton> createState() => _SortButtonState();
+}
 
+class _SortButtonState extends ConsumerState<SortButton> {
+  RemoteAlbumSortMode albumSortOption = RemoteAlbumSortMode.lastModified;
+  bool albumSortIsReverse = false;
+
+  @override
+  Widget build(BuildContext context) {
     return MenuAnchor(
       style: MenuStyle(
         elevation: const WidgetStatePropertyAll(1),
@@ -378,35 +396,39 @@ class SortButton extends HookConsumerWidget {
       menuChildren: RemoteAlbumSortMode.values
           .map(
             (mode) => MenuItemButton(
-              leadingIcon: albumSortOption.value == mode
-                  ? albumSortIsReverse.value
+              leadingIcon: albumSortOption == mode
+                  ? albumSortIsReverse
                       ? Icon(
                           Icons.keyboard_arrow_down,
-                          color: albumSortOption.value == mode
+                          color: albumSortOption == mode
                               ? context.colorScheme.onPrimary
                               : context.colorScheme.onSurface,
                         )
                       : Icon(
                           Icons.keyboard_arrow_up_rounded,
-                          color: albumSortOption.value == mode
+                          color: albumSortOption == mode
                               ? context.colorScheme.onPrimary
                               : context.colorScheme.onSurface,
                         )
                   : const Icon(Icons.abc, color: Colors.transparent),
               onPressed: () {
-                final selected = albumSortOption.value == mode;
+                final selected = albumSortOption == mode;
                 // Switch direction
                 if (selected) {
-                  albumSortIsReverse.value = !albumSortIsReverse.value;
+                  setState(() {
+                    albumSortIsReverse = !albumSortIsReverse;
+                  });
                   ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(
                         mode,
-                        isReverse: albumSortIsReverse.value,
+                        isReverse: albumSortIsReverse,
                       );
                 } else {
-                  albumSortOption.value = mode;
+                  setState(() {
+                    albumSortOption = mode;
+                  });
                   ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(
                         mode,
-                        isReverse: albumSortIsReverse.value,
+                        isReverse: albumSortIsReverse,
                       );
                 }
               },
@@ -415,7 +437,7 @@ class SortButton extends HookConsumerWidget {
                   const EdgeInsets.fromLTRB(16, 16, 32, 16),
                 ),
                 backgroundColor: WidgetStateProperty.all(
-                  albumSortOption.value == mode
+                  albumSortOption == mode
                       ? context.colorScheme.primary
                       : Colors.transparent,
                 ),
@@ -431,7 +453,7 @@ class SortButton extends HookConsumerWidget {
                 mode.label,
                 style: context.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: albumSortOption.value == mode
+                  color: albumSortOption == mode
                       ? context.colorScheme.onPrimary
                       : context.colorScheme.onSurface.withAlpha(185),
                 ),
@@ -462,7 +484,7 @@ class SortButton extends HookConsumerWidget {
                 ),
               ),
               Text(
-                albumSortOption.value.label,
+                albumSortOption.label,
                 style: context.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: context.colorScheme.onSurface.withAlpha(225),
