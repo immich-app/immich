@@ -65,6 +65,8 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.AssetExifsV1,
   SyncRequestType.AlbumAssetExifsV1,
   SyncRequestType.PartnerAssetExifsV1,
+  SyncRequestType.MemoriesV1,
+  SyncRequestType.MemoryToAssetsV1,
 ];
 
 const throwSessionRequired = () => {
@@ -120,108 +122,70 @@ export class SyncService extends BaseService {
 
     const checkpoints = await this.syncRepository.getCheckpoints(sessionId);
     const checkpointMap: CheckpointMap = Object.fromEntries(checkpoints.map(({ type, ack }) => [type, fromAck(ack)]));
+    const handlers: Record<SyncRequestType, () => Promise<void>> = {
+      [SyncRequestType.UsersV1]: () => this.syncUsersV1(response, checkpointMap),
+      [SyncRequestType.PartnersV1]: () => this.syncPartnersV1(response, checkpointMap, auth),
+      [SyncRequestType.AssetsV1]: () => this.syncAssetsV1(response, checkpointMap, auth),
+      [SyncRequestType.AssetExifsV1]: () => this.syncAssetExifsV1(response, checkpointMap, auth),
+      [SyncRequestType.PartnerAssetsV1]: () => this.syncPartnerAssetsV1(response, checkpointMap, auth, sessionId),
+      [SyncRequestType.PartnerAssetExifsV1]: () =>
+        this.syncPartnerAssetExifsV1(response, checkpointMap, auth, sessionId),
+      [SyncRequestType.AlbumsV1]: () => this.syncAlbumsV1(response, checkpointMap, auth),
+      [SyncRequestType.AlbumUsersV1]: () => this.syncAlbumUsersV1(response, checkpointMap, auth, sessionId),
+      [SyncRequestType.AlbumAssetsV1]: () => this.syncAlbumAssetsV1(response, checkpointMap, auth, sessionId),
+      [SyncRequestType.AlbumToAssetsV1]: () => this.syncAlbumToAssetsV1(response, checkpointMap, auth, sessionId),
+      [SyncRequestType.AlbumAssetExifsV1]: () => this.syncAlbumAssetExifsV1(response, checkpointMap, auth, sessionId),
+      [SyncRequestType.MemoriesV1]: () => this.syncMemoriesV1(response, checkpointMap, auth),
+      [SyncRequestType.MemoryToAssetsV1]: () => this.syncMemoryAssetsV1(response, checkpointMap, auth),
+    };
 
     for (const type of SYNC_TYPES_ORDER.filter((type) => dto.types.includes(type))) {
-      switch (type) {
-        case SyncRequestType.UsersV1: {
-          await this.syncUsersV1(response, checkpointMap);
-          break;
-        }
-
-        case SyncRequestType.PartnersV1: {
-          await this.syncPartnersV1(response, checkpointMap, auth);
-          break;
-        }
-
-        case SyncRequestType.AssetsV1: {
-          await this.syncAssetsV1(response, checkpointMap, auth);
-          break;
-        }
-
-        case SyncRequestType.AssetExifsV1: {
-          await this.syncAssetExifsV1(response, checkpointMap, auth);
-          break;
-        }
-
-        case SyncRequestType.PartnerAssetsV1: {
-          await this.syncPartnerAssetsV1(response, checkpointMap, auth, sessionId);
-
-          break;
-        }
-
-        case SyncRequestType.PartnerAssetExifsV1: {
-          await this.syncPartnerAssetExifsV1(response, checkpointMap, auth, sessionId);
-          break;
-        }
-
-        case SyncRequestType.AlbumsV1: {
-          await this.syncAlbumsV1(response, checkpointMap, auth);
-          break;
-        }
-
-        case SyncRequestType.AlbumUsersV1: {
-          await this.syncAlbumUsersV1(response, checkpointMap, auth, sessionId);
-          break;
-        }
-
-        case SyncRequestType.AlbumAssetsV1: {
-          await this.syncAlbumAssetsV1(response, checkpointMap, auth, sessionId);
-          break;
-        }
-
-        case SyncRequestType.AlbumToAssetsV1: {
-          await this.syncAlbumToAssetsV1(response, checkpointMap, auth, sessionId);
-          break;
-        }
-
-        case SyncRequestType.AlbumAssetExifsV1: {
-          await this.syncAlbumAssetExifsV1(response, checkpointMap, auth, sessionId);
-          break;
-        }
-
-        default: {
-          this.logger.warn(`Unsupported sync type: ${type}`);
-          break;
-        }
-      }
+      const handler = handlers[type];
+      await handler();
     }
 
     response.end();
   }
 
   private async syncUsersV1(response: Writable, checkpointMap: CheckpointMap) {
-    const deletes = this.syncRepository.getUserDeletes(checkpointMap[SyncEntityType.UserDeleteV1]);
+    const deleteType = SyncEntityType.UserDeleteV1;
+    const deletes = this.syncRepository.getUserDeletes(checkpointMap[deleteType]);
     for await (const { id, ...data } of deletes) {
-      send(response, { type: SyncEntityType.UserDeleteV1, ids: [id], data });
+      send(response, { type: deleteType, ids: [id], data });
     }
 
-    const upserts = this.syncRepository.getUserUpserts(checkpointMap[SyncEntityType.UserV1]);
+    const upsertType = SyncEntityType.UserV1;
+    const upserts = this.syncRepository.getUserUpserts(checkpointMap[upsertType]);
     for await (const { updateId, ...data } of upserts) {
-      send(response, { type: SyncEntityType.UserV1, ids: [updateId], data });
+      send(response, { type: upsertType, ids: [updateId], data });
     }
   }
 
   private async syncPartnersV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto) {
-    const deletes = this.syncRepository.getPartnerDeletes(auth.user.id, checkpointMap[SyncEntityType.PartnerDeleteV1]);
+    const deleteType = SyncEntityType.PartnerDeleteV1;
+    const deletes = this.syncRepository.getPartnerDeletes(auth.user.id, checkpointMap[deleteType]);
     for await (const { id, ...data } of deletes) {
-      send(response, { type: SyncEntityType.PartnerDeleteV1, ids: [id], data });
+      send(response, { type: deleteType, ids: [id], data });
     }
 
-    const upserts = this.syncRepository.getPartnerUpserts(auth.user.id, checkpointMap[SyncEntityType.PartnerV1]);
+    const upsertType = SyncEntityType.PartnerV1;
+    const upserts = this.syncRepository.getPartnerUpserts(auth.user.id, checkpointMap[upsertType]);
     for await (const { updateId, ...data } of upserts) {
-      send(response, { type: SyncEntityType.PartnerV1, ids: [updateId], data });
+      send(response, { type: upsertType, ids: [updateId], data });
     }
   }
 
   private async syncAssetsV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto) {
-    const deletes = this.syncRepository.getAssetDeletes(auth.user.id, checkpointMap[SyncEntityType.AssetDeleteV1]);
+    const deleteType = SyncEntityType.AssetDeleteV1;
+    const deletes = this.syncRepository.getAssetDeletes(auth.user.id, checkpointMap[deleteType]);
     for await (const { id, ...data } of deletes) {
-      send(response, { type: SyncEntityType.AssetDeleteV1, ids: [id], data });
+      send(response, { type: deleteType, ids: [id], data });
     }
 
-    const upserts = this.syncRepository.getAssetUpserts(auth.user.id, checkpointMap[SyncEntityType.AssetV1]);
+    const upsertType = SyncEntityType.AssetV1;
+    const upserts = this.syncRepository.getAssetUpserts(auth.user.id, checkpointMap[upsertType]);
     for await (const { updateId, ...data } of upserts) {
-      send(response, { type: SyncEntityType.AssetV1, ids: [updateId], data: mapSyncAssetV1(data) });
+      send(response, { type: upsertType, ids: [updateId], data: mapSyncAssetV1(data) });
     }
   }
 
@@ -231,21 +195,17 @@ export class SyncService extends BaseService {
     auth: AuthDto,
     sessionId: string,
   ) {
-    const backfillType = SyncEntityType.PartnerAssetBackfillV1;
-    const upsertType = SyncEntityType.PartnerAssetV1;
     const deleteType = SyncEntityType.PartnerAssetDeleteV1;
-
-    const backfillCheckpoint = checkpointMap[backfillType];
-    const upsertCheckpoint = checkpointMap[upsertType];
-
     const deletes = this.syncRepository.getPartnerAssetDeletes(auth.user.id, checkpointMap[deleteType]);
-
     for await (const { id, ...data } of deletes) {
       send(response, { type: deleteType, ids: [id], data });
     }
 
+    const backfillType = SyncEntityType.PartnerAssetBackfillV1;
+    const backfillCheckpoint = checkpointMap[backfillType];
     const partners = await this.syncRepository.getPartnerBackfill(auth.user.id, backfillCheckpoint?.updateId);
-
+    const upsertType = SyncEntityType.PartnerAssetV1;
+    const upsertCheckpoint = checkpointMap[upsertType];
     if (upsertCheckpoint) {
       const endId = upsertCheckpoint.updateId;
 
@@ -283,9 +243,10 @@ export class SyncService extends BaseService {
   }
 
   private async syncAssetExifsV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto) {
-    const upserts = this.syncRepository.getAssetExifsUpserts(auth.user.id, checkpointMap[SyncEntityType.AssetExifV1]);
+    const upsertType = SyncEntityType.AssetExifV1;
+    const upserts = this.syncRepository.getAssetExifsUpserts(auth.user.id, checkpointMap[upsertType]);
     for await (const { updateId, ...data } of upserts) {
-      send(response, { type: SyncEntityType.AssetExifV1, ids: [updateId], data });
+      send(response, { type: upsertType, ids: [updateId], data });
     }
   }
 
@@ -296,13 +257,11 @@ export class SyncService extends BaseService {
     sessionId: string,
   ) {
     const backfillType = SyncEntityType.PartnerAssetExifBackfillV1;
-    const upsertType = SyncEntityType.PartnerAssetExifV1;
-
     const backfillCheckpoint = checkpointMap[backfillType];
-    const upsertCheckpoint = checkpointMap[upsertType];
-
     const partners = await this.syncRepository.getPartnerBackfill(auth.user.id, backfillCheckpoint?.updateId);
 
+    const upsertType = SyncEntityType.PartnerAssetExifV1;
+    const upsertCheckpoint = checkpointMap[upsertType];
     if (upsertCheckpoint) {
       const endId = upsertCheckpoint.updateId;
 
@@ -336,33 +295,31 @@ export class SyncService extends BaseService {
   }
 
   private async syncAlbumsV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto) {
-    const deletes = this.syncRepository.getAlbumDeletes(auth.user.id, checkpointMap[SyncEntityType.AlbumDeleteV1]);
-    for await (const { id, ...data } of deletes) {
-      send(response, { type: SyncEntityType.AlbumDeleteV1, ids: [id], data });
-    }
-
-    const upserts = this.syncRepository.getAlbumUpserts(auth.user.id, checkpointMap[SyncEntityType.AlbumV1]);
-    for await (const { updateId, ...data } of upserts) {
-      send(response, { type: SyncEntityType.AlbumV1, ids: [updateId], data });
-    }
-  }
-
-  private async syncAlbumUsersV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto, sessionId: string) {
-    const backfillType = SyncEntityType.AlbumUserBackfillV1;
-    const upsertType = SyncEntityType.AlbumUserV1;
-    const deleteType = SyncEntityType.AlbumUserDeleteV1;
-
-    const backfillCheckpoint = checkpointMap[backfillType];
-    const upsertCheckpoint = checkpointMap[upsertType];
-
-    const deletes = this.syncRepository.getAlbumUserDeletes(auth.user.id, checkpointMap[deleteType]);
-
+    const deleteType = SyncEntityType.AlbumDeleteV1;
+    const deletes = this.syncRepository.getAlbumDeletes(auth.user.id, checkpointMap[deleteType]);
     for await (const { id, ...data } of deletes) {
       send(response, { type: deleteType, ids: [id], data });
     }
 
-    const albums = await this.syncRepository.getAlbumBackfill(auth.user.id, backfillCheckpoint?.updateId);
+    const upsertType = SyncEntityType.AlbumV1;
+    const upserts = this.syncRepository.getAlbumUpserts(auth.user.id, checkpointMap[upsertType]);
+    for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
 
+  private async syncAlbumUsersV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto, sessionId: string) {
+    const deleteType = SyncEntityType.AlbumUserDeleteV1;
+    const deletes = this.syncRepository.getAlbumUserDeletes(auth.user.id, checkpointMap[deleteType]);
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const backfillType = SyncEntityType.AlbumUserBackfillV1;
+    const backfillCheckpoint = checkpointMap[backfillType];
+    const albums = await this.syncRepository.getAlbumBackfill(auth.user.id, backfillCheckpoint?.updateId);
+    const upsertType = SyncEntityType.AlbumUserV1;
+    const upsertCheckpoint = checkpointMap[upsertType];
     if (upsertCheckpoint) {
       const endId = upsertCheckpoint.updateId;
 
@@ -397,13 +354,10 @@ export class SyncService extends BaseService {
 
   private async syncAlbumAssetsV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto, sessionId: string) {
     const backfillType = SyncEntityType.AlbumAssetBackfillV1;
-    const upsertType = SyncEntityType.AlbumAssetV1;
-
     const backfillCheckpoint = checkpointMap[backfillType];
-    const upsertCheckpoint = checkpointMap[upsertType];
-
     const albums = await this.syncRepository.getAlbumBackfill(auth.user.id, backfillCheckpoint?.updateId);
-
+    const upsertType = SyncEntityType.AlbumAssetV1;
+    const upsertCheckpoint = checkpointMap[upsertType];
     if (upsertCheckpoint) {
       const endId = upsertCheckpoint.updateId;
 
@@ -443,13 +397,10 @@ export class SyncService extends BaseService {
     sessionId: string,
   ) {
     const backfillType = SyncEntityType.AlbumAssetExifBackfillV1;
-    const upsertType = SyncEntityType.AlbumAssetExifV1;
-
     const backfillCheckpoint = checkpointMap[backfillType];
-    const upsertCheckpoint = checkpointMap[upsertType];
-
     const albums = await this.syncRepository.getAlbumBackfill(auth.user.id, backfillCheckpoint?.updateId);
-
+    const upsertType = SyncEntityType.AlbumAssetExifV1;
+    const upsertCheckpoint = checkpointMap[upsertType];
     if (upsertCheckpoint) {
       const endId = upsertCheckpoint.updateId;
 
@@ -488,22 +439,17 @@ export class SyncService extends BaseService {
     auth: AuthDto,
     sessionId: string,
   ) {
-    const backfillType = SyncEntityType.AlbumToAssetBackfillV1;
-    const upsertType = SyncEntityType.AlbumToAssetV1;
-
-    const backfillCheckpoint = checkpointMap[backfillType];
-    const upsertCheckpoint = checkpointMap[upsertType];
-
-    const deletes = this.syncRepository.getAlbumToAssetDeletes(
-      auth.user.id,
-      checkpointMap[SyncEntityType.AlbumToAssetDeleteV1],
-    );
+    const deleteType = SyncEntityType.AlbumToAssetDeleteV1;
+    const deletes = this.syncRepository.getAlbumToAssetDeletes(auth.user.id, checkpointMap[deleteType]);
     for await (const { id, ...data } of deletes) {
-      send(response, { type: SyncEntityType.AlbumToAssetDeleteV1, ids: [id], data });
+      send(response, { type: deleteType, ids: [id], data });
     }
 
+    const backfillType = SyncEntityType.AlbumToAssetBackfillV1;
+    const backfillCheckpoint = checkpointMap[backfillType];
     const albums = await this.syncRepository.getAlbumBackfill(auth.user.id, backfillCheckpoint?.updateId);
-
+    const upsertType = SyncEntityType.AlbumToAssetV1;
+    const upsertCheckpoint = checkpointMap[upsertType];
     if (upsertCheckpoint) {
       const endId = upsertCheckpoint.updateId;
 
@@ -531,6 +477,34 @@ export class SyncService extends BaseService {
     }
 
     const upserts = this.syncRepository.getAlbumToAssetUpserts(auth.user.id, checkpointMap[upsertType]);
+    for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
+
+  private async syncMemoriesV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto) {
+    const deleteType = SyncEntityType.MemoryDeleteV1;
+    const deletes = this.syncRepository.getMemoryDeletes(auth.user.id, checkpointMap[SyncEntityType.MemoryDeleteV1]);
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.MemoryV1;
+    const upserts = this.syncRepository.getMemoryUpserts(auth.user.id, checkpointMap[upsertType]);
+    for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
+
+  private async syncMemoryAssetsV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto) {
+    const deleteType = SyncEntityType.MemoryToAssetDeleteV1;
+    const deletes = this.syncRepository.getMemoryAssetDeletes(auth.user.id, checkpointMap[deleteType]);
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.MemoryToAssetV1;
+    const upserts = this.syncRepository.getMemoryAssetUpserts(auth.user.id, checkpointMap[upsertType]);
     for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });
     }

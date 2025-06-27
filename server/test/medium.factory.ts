@@ -4,9 +4,9 @@ import { DateTime } from 'luxon';
 import { createHash, randomBytes } from 'node:crypto';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
-import { Albums, AssetJobStatus, Assets, DB, Exif, FaceSearch, Person, Sessions } from 'src/db';
+import { Albums, AssetJobStatus, Assets, DB, Exif, FaceSearch, Memories, Person, Sessions } from 'src/db';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AlbumUserRole, AssetType, AssetVisibility, SourceType, SyncRequestType } from 'src/enum';
+import { AlbumUserRole, AssetType, AssetVisibility, MemoryType, SourceType, SyncRequestType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -127,6 +127,17 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     const asset = mediumFactory.assetInsert(dto);
     const result = await this.get(AssetRepository).create(asset);
     return { asset, result };
+  }
+
+  async newMemory(dto: Partial<Insertable<Memories>> = {}) {
+    const memory = mediumFactory.memoryInsert(dto);
+    const result = await this.get(MemoryRepository).create(memory, new Set<string>());
+    return { memory, result };
+  }
+
+  async newMemoryAsset(dto: { memoryId: string; assetId: string }) {
+    const result = await this.get(MemoryRepository).addAssetIds(dto.memoryId, [dto.assetId]);
+    return { memoryAsset: dto, result };
   }
 
   async newExif(dto: Insertable<Exif>) {
@@ -452,6 +463,28 @@ const userInsert = (user: Partial<Insertable<UserTable>> = {}) => {
   return { ...defaults, ...user, id };
 };
 
+const memoryInsert = (memory: Partial<Insertable<Memories>> = {}) => {
+  const id = memory.id || newUuid();
+  const date = newDate();
+
+  const defaults: Insertable<Memories> = {
+    id,
+    createdAt: date,
+    updatedAt: date,
+    deletedAt: null,
+    type: MemoryType.ON_THIS_DAY,
+    data: { year: 2025 },
+    showAt: null,
+    hideAt: null,
+    seenAt: null,
+    isSaved: false,
+    memoryAt: date,
+    ownerId: memory.ownerId || newUuid(),
+  };
+
+  return { ...defaults, ...memory, id };
+};
+
 class CustomWritable extends Writable {
   private data = '';
 
@@ -483,4 +516,5 @@ export const mediumFactory = {
   sessionInsert,
   syncStream,
   userInsert,
+  memoryInsert,
 };

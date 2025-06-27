@@ -572,6 +572,14 @@ class ApiClient {
           return SyncAssetV1.fromJson(value);
         case 'SyncEntityType':
           return SyncEntityTypeTypeTransformer().decode(value);
+        case 'SyncMemoryAssetDeleteV1':
+          return SyncMemoryAssetDeleteV1.fromJson(value);
+        case 'SyncMemoryAssetV1':
+          return SyncMemoryAssetV1.fromJson(value);
+        case 'SyncMemoryDeleteV1':
+          return SyncMemoryDeleteV1.fromJson(value);
+        case 'SyncMemoryV1':
+          return SyncMemoryV1.fromJson(value);
         case 'SyncPartnerDeleteV1':
           return SyncPartnerDeleteV1.fromJson(value);
         case 'SyncPartnerV1':

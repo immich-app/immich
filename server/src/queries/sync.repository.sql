@@ -652,3 +652,78 @@ where
   )
 order by
   "exif"."updateId" asc
+
+-- SyncRepository.getMemoryUpserts
+select
+  "id",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "ownerId",
+  "type",
+  "data",
+  "isSaved",
+  "memoryAt",
+  "seenAt",
+  "showAt",
+  "hideAt",
+  "updateId"
+from
+  "memories"
+where
+  "ownerId" = $1
+  and "updatedAt" < now() - interval '1 millisecond'
+order by
+  "updateId" asc
+
+-- SyncRepository.getMemoryDeletes
+select
+  "id",
+  "memoryId"
+from
+  "memories_audit"
+where
+  "userId" = $1
+  and "deletedAt" < now() - interval '1 millisecond'
+order by
+  "id" asc
+
+-- SyncRepository.getMemoryAssetUpserts
+select
+  "memoriesId" as "memoryId",
+  "assetsId" as "assetId",
+  "updateId"
+from
+  "memories_assets_assets"
+where
+  "memoriesId" in (
+    select
+      "id"
+    from
+      "memories"
+    where
+      "ownerId" = $1
+  )
+  and "updatedAt" < now() - interval '1 millisecond'
+order by
+  "updateId" asc
+
+-- SyncRepository.getMemoryAssetDeletes
+select
+  "id",
+  "memoryId",
+  "assetId"
+from
+  "memory_assets_audit"
+where
+  "memoryId" in (
+    select
+      "id"
+    from
+      "memories"
+    where
+      "ownerId" = $1
+  )
+  and "deletedAt" < now() - interval '1 millisecond'
+order by
+  "id" asc

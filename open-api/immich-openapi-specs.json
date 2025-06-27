@@ -13794,11 +13794,11 @@
         "enum": [
           "UserV1",
           "UserDeleteV1",
-          "PartnerV1",
-          "PartnerDeleteV1",
           "AssetV1",
           "AssetDeleteV1",
           "AssetExifV1",
+          "PartnerV1",
+          "PartnerDeleteV1",
           "PartnerAssetV1",
           "PartnerAssetBackfillV1",
           "PartnerAssetDeleteV1",
@@ -13816,9 +13816,124 @@
           "AlbumToAssetV1",
           "AlbumToAssetDeleteV1",
           "AlbumToAssetBackfillV1",
+          "MemoryV1",
+          "MemoryDeleteV1",
+          "MemoryToAssetV1",
+          "MemoryToAssetDeleteV1",
           "SyncAckV1"
         ],
         "type": "string"
+      },
+      "SyncMemoryAssetDeleteV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "memoryId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "memoryId"
+        ],
+        "type": "object"
+      },
+      "SyncMemoryAssetV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "memoryId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "memoryId"
+        ],
+        "type": "object"
+      },
+      "SyncMemoryDeleteV1": {
+        "properties": {
+          "memoryId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "memoryId"
+        ],
+        "type": "object"
+      },
+      "SyncMemoryV1": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "hideAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isSaved": {
+            "type": "boolean"
+          },
+          "memoryAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "seenAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "showAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemoryType"
+              }
+            ]
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "data",
+          "deletedAt",
+          "hideAt",
+          "id",
+          "isSaved",
+          "memoryAt",
+          "ownerId",
+          "seenAt",
+          "showAt",
+          "type",
+          "updatedAt"
+        ],
+        "type": "object"
       },
       "SyncPartnerDeleteV1": {
         "properties": {
@@ -13866,7 +13981,9 @@
           "AlbumUsersV1",
           "AlbumToAssetsV1",
           "AlbumAssetsV1",
-          "AlbumAssetExifsV1"
+          "AlbumAssetExifsV1",
+          "MemoriesV1",
+          "MemoryToAssetsV1"
         ],
         "type": "string"
       },

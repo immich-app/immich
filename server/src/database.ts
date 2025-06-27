@@ -13,7 +13,7 @@ import {
   UserAvatarColor,
   UserStatus,
 } from 'src/enum';
-import { OnThisDayData, UserMetadataItem } from 'src/types';
+import { UserMetadataItem } from 'src/types';
 
 export type AuthUser = {
   id: string;
@@ -95,7 +95,7 @@ export type Memory = {
   showAt: Date | null;
   hideAt: Date | null;
   type: MemoryType;
-  data: OnThisDayData;
+  data: object;
   ownerId: string;
   isSaved: boolean;
   assets: MapAsset[];
