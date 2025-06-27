@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -62,8 +63,14 @@ class ImmichSliverAppBar extends ConsumerWidget {
             ),
           ),
         IconButton(
-          icon: const Icon(Icons.science_rounded),
-          onPressed: () => context.pushRoute(const FeatInDevRoute()),
+          icon: const Icon(Icons.swipe_left_alt_rounded),
+          onPressed: () => context.pop(),
+        ),
+        IconButton(
+          onPressed: () => ref.read(backgroundSyncProvider).syncRemote(),
+          icon: const Icon(
+            Icons.sync,
+          ),
         ),
         if (isCasting)
           Padding(
