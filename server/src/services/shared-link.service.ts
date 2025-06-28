@@ -174,7 +174,7 @@ export class SharedLinkService extends BaseService {
     return results;
   }
 
-  async getMetadataTags(auth: AuthDto): Promise<null | OpenGraphTags> {
+  async getMetadataTags(auth: AuthDto, defaultDomain?: string): Promise<null | OpenGraphTags> {
     if (!auth.sharedLink || auth.sharedLink.password) {
       return null;
     }
@@ -190,7 +190,7 @@ export class SharedLinkService extends BaseService {
     return {
       title: sharedLink.album ? sharedLink.album.albumName : 'Public Share',
       description: sharedLink.description || `${assetCount} shared photos & videos`,
-      imageUrl: new URL(imagePath, getExternalDomain(config.server)).href,
+      imageUrl: new URL(imagePath, getExternalDomain(config.server, defaultDomain)).href,
     };
   }
 

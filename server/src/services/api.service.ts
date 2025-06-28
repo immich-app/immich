@@ -86,7 +86,10 @@ export class ApiService {
         try {
           const key = shareMatches[1];
           const auth = await this.authService.validateSharedLink(key);
-          const meta = await this.sharedLinkService.getMetadataTags(auth);
+          const meta = await this.sharedLinkService.getMetadataTags(
+            auth,
+            request.host ? `${request.protocol}://${request.host}` : undefined,
+          );
           if (meta) {
             html = render(index, meta);
           }
