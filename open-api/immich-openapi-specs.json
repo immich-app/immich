@@ -9607,6 +9607,9 @@
           "id": {
             "type": "string"
           },
+          "payload": {
+            "$ref": "#/components/schemas/SyncAssetV1"
+          },
           "status": {
             "allOf": [
               {
