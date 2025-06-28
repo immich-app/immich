@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
-// ignore: import_rule_isar
-import 'package:isar/isar.dart';
 
 const kDevLoggerTag = 'DEV';
 
@@ -14,28 +13,38 @@ abstract final class DLog {
   const DLog();
 
   static Stream<List<LogMessage>> watchLog() {
-    final db = Isar.getInstance();
-    if (db == null) {
-      return const Stream.empty();
-    }
+    final db = Drift();
 
-    return db.loggerMessages
-        .filter()
-        .context1EqualTo(kDevLoggerTag)
-        .sortByCreatedAtDesc()
-        .watch(fireImmediately: true)
-        .map((logs) => logs.map((log) => log.toDto()).toList());
+    final query = db.select(db.loggerMessageEntity)
+      ..where((tbl) => tbl.context1.equals(kDevLoggerTag))
+      ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
+
+    return query.watch().map(
+          (rows) => rows
+              .map(
+                (row) => LogMessage(
+                  message: row.message,
+                  level: row.level,
+                  createdAt: row.createdAt,
+                  logger: row.context1,
+                  error: row.details,
+                  stack: row.context2,
+                ),
+              )
+              .toList(),
+        );
   }
 
   static void clearLog() {
-    final db = Isar.getInstance();
-    if (db == null) {
-      return;
-    }
+    final db = Drift();
 
-    db.writeTxnSync(() {
-      db.loggerMessages.filter().context1EqualTo(kDevLoggerTag).deleteAllSync();
-    });
+    unawaited(
+      db.transaction(() async {
+        await (db.delete(db.loggerMessageEntity)
+              ..where((tbl) => tbl.context1.equals(kDevLoggerTag)))
+            .go();
+      }),
+    );
   }
 
   static void log(String message, [Object? error, StackTrace? stackTrace]) {
@@ -49,10 +58,7 @@ abstract final class DLog {
       debugPrint('StackTrace: $stackTrace');
     }
 
-    final isar = Isar.getInstance();
-    if (isar == null) {
-      return;
-    }
+    final db = Drift();
 
     final record = LogMessage(
       message: message,
@@ -63,6 +69,6 @@ abstract final class DLog {
       stack: stackTrace?.toString(),
     );
 
-    unawaited(IsarLogRepository(isar).insert(record));
+    unawaited(LogRepository(db).insert(record));
   }
 }

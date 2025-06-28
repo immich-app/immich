@@ -58,9 +58,10 @@ abstract final class Bootstrap {
     Isar db, {
     bool shouldBufferLogs = true,
   }) async {
+    final driftDb = Drift();
     await StoreService.init(storeRepository: IsarStoreRepository(db));
     await LogService.init(
-      logRepository: IsarLogRepository(db),
+      logRepository: LogRepository(driftDb),
       storeRepository: IsarStoreRepository(db),
       shouldBuffer: shouldBufferLogs,
     );
@@ -71,9 +72,8 @@ abstract final class Bootstrap {
     bool shouldBufferLogs = true,
   }) async {
     await StoreService.init(storeRepository: DriftStoreRepository(db));
-    final isarDb = await initIsar();
     await LogService.init(
-      logRepository: IsarLogRepository(isarDb),
+      logRepository: LogRepository(db),
       storeRepository: DriftStoreRepository(db),
       shouldBuffer: shouldBufferLogs,
     );

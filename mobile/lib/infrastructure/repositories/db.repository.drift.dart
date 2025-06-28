@@ -25,9 +25,11 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.d
     as i11;
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart'
     as i12;
-import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/log.entity.drift.dart'
     as i13;
-import 'package:drift/internal/modular.dart' as i14;
+import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+    as i14;
+import 'package:drift/internal/modular.dart' as i15;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -54,8 +56,10 @@ abstract class $Drift extends i0.GeneratedDatabase {
   late final i11.$RemoteAlbumUserEntityTable remoteAlbumUserEntity =
       i11.$RemoteAlbumUserEntityTable(this);
   late final i12.$StoreEntityTable storeEntity = i12.$StoreEntityTable(this);
-  i13.MergedAssetDrift get mergedAssetDrift => i14.ReadDatabaseContainer(this)
-      .accessor<i13.MergedAssetDrift>(i13.MergedAssetDrift.new);
+  late final i13.$LoggerMessageEntityTable loggerMessageEntity =
+      i13.$LoggerMessageEntityTable(this);
+  i14.MergedAssetDrift get mergedAssetDrift => i15.ReadDatabaseContainer(this)
+      .accessor<i14.MergedAssetDrift>(i14.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -75,7 +79,8 @@ abstract class $Drift extends i0.GeneratedDatabase {
         remoteAlbumEntity,
         remoteAlbumAssetEntity,
         remoteAlbumUserEntity,
-        storeEntity
+        storeEntity,
+        loggerMessageEntity
       ];
   @override
   i0.StreamQueryUpdateRules get streamUpdateRules =>
@@ -214,4 +219,6 @@ class $DriftManager {
       .$$RemoteAlbumUserEntityTableTableManager(_db, _db.remoteAlbumUserEntity);
   i12.$$StoreEntityTableTableManager get storeEntity =>
       i12.$$StoreEntityTableTableManager(_db, _db.storeEntity);
+  i13.$$LoggerMessageEntityTableTableManager get loggerMessageEntity =>
+      i13.$$LoggerMessageEntityTableTableManager(_db, _db.loggerMessageEntity);
 }

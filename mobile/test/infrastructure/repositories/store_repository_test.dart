@@ -1,12 +1,13 @@
+import 'package:drift/drift.dart' hide isNull;
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:isar/isar.dart';
+import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/drift_store.repository.dart';
 
 import '../../fixtures/user.stub.dart';
-import '../../test_utils.dart';
 
 const _kTestAccessToken = "#TestToken";
 final _kTestBackupFailed = DateTime(2025, 2, 20, 11, 45);
@@ -14,16 +15,28 @@ const _kTestVersion = 10;
 const _kTestColorfulInterface = false;
 final _kTestUser = UserStub.admin;
 
-Future<void> _addIntStoreValue(Isar db, StoreKey key, int? value) async {
-  await db.storeValues.put(StoreValue(key.id, intValue: value, strValue: null));
+Future<void> _addIntStoreValue(Drift db, StoreKey key, int? value) async {
+  await db.into(db.storeEntity).insert(
+    StoreEntityCompanion.insert(
+      id: key.id,
+      intValue: Value(value),
+      strValue: const Value(null),
+    ),
+  );
 }
 
-Future<void> _addStrStoreValue(Isar db, StoreKey key, String? value) async {
-  await db.storeValues.put(StoreValue(key.id, intValue: null, strValue: value));
+Future<void> _addStrStoreValue(Drift db, StoreKey key, String? value) async {
+  await db.into(db.storeEntity).insert(
+    StoreEntityCompanion.insert(
+      id: key.id,
+      intValue: const Value(null),
+      strValue: Value(value),
+    ),
+  );
 }
 
-Future<void> _populateStore(Isar db) async {
-  await db.writeTxn(() async {
+Future<void> _populateStore(Drift db) async {
+  await db.transaction(() async {
     await _addIntStoreValue(
       db,
       StoreKey.colorfulInterface,
@@ -40,12 +53,12 @@ Future<void> _populateStore(Isar db) async {
 }
 
 void main() {
-  late Isar db;
-  late IsarStoreRepository sut;
+  late Drift db;
+  late DriftStoreRepository sut;
 
   setUp(() async {
-    db = await TestUtils.initIsar();
-    sut = IsarStoreRepository(db);
+    db = Drift(NativeDatabase.memory());
+    sut = DriftStoreRepository(db);
   });
 
   group('Store Repository converters:', () {
@@ -105,10 +118,16 @@ void main() {
     });
 
     test('deleteAll()', () async {
-      final count = await db.storeValues.count();
+      final countQuery = db.selectOnly(db.storeEntity)
+        ..addColumns([db.storeEntity.id.count()]);
+      final countResult = await countQuery.getSingle();
+      final count = countResult.read(db.storeEntity.id.count()) ?? 0;
       expect(count, isNot(isZero));
       await sut.deleteAll();
-      expectLater(await db.storeValues.count(), isZero);
+      
+      final newCountResult = await countQuery.getSingle();
+      final newCount = newCountResult.read(db.storeEntity.id.count()) ?? 0;
+      expect(newCount, isZero);
     });
   });
 
