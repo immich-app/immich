@@ -87,11 +87,16 @@ export class StorageCore {
   }
 
   static getPersonThumbnailPath(person: ThumbnailPathEntity) {
-    return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, person.ownerId, `${person.id}.jpeg`);
+    return StorageCore.getNestedPath(StorageFolder.THUMBNAILS_PEOPLE, person.ownerId, `${person.id}.jpeg`);
   }
 
   static getImagePath(asset: ThumbnailPathEntity, type: GeneratedImageType, format: 'jpeg' | 'webp') {
-    return StorageCore.getNestedPath(StorageFolder.THUMBNAILS, asset.ownerId, `${asset.id}-${type}.${format}`);
+    let thumbFolder = StorageFolder.THUMBNAILS;
+    // Subdir for thumbnails, separate from previews etc.
+    if (type == AssetPathType.THUMBNAIL) {
+      thumbFolder = StorageFolder.THUMBNAILS_THUMBNAILS;
+    }
+    return StorageCore.getNestedPath(thumbFolder, asset.ownerId, `${asset.id}-${type}.${format}`);
   }
 
   static getEncodedVideoPath(asset: ThumbnailPathEntity) {
