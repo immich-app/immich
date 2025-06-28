@@ -4,7 +4,7 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-packageExtensionsChecksum: sha256-da8GREkR2VnR5zDxp+RNh2YOpcUGfK6mRCcdi/oaiJs=
+packageExtensionsChecksum: sha256-t7qDSUqV3Pl8rRmMiIhOA84jJVqO+p2tFU2Kyq0Wu3I=
 
 importers:
 
@@ -10410,6 +10410,7 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
+      - supports-color
 
   node-abi@3.75.0:
     dependencies:
@@ -11168,6 +11169,8 @@ snapshots:
     dependencies:
       color: 4.2.3
       detect-libc: 2.0.4
+      node-addon-api: 8.4.0
+      node-gyp: 11.2.0
       semver: 7.7.2
     optionalDependencies:
       '@img/sharp-darwin-arm64': 0.34.2
@@ -11191,6 +11194,8 @@ snapshots:
       '@img/sharp-win32-arm64': 0.34.2
       '@img/sharp-win32-ia32': 0.34.2
       '@img/sharp-win32-x64': 0.34.2
+    transitivePeerDependencies:
+      - supports-color
 
   shebang-command@2.0.0:
     dependencies:

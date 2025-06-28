@@ -4,9 +4,10 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-packageExtensionsChecksum: sha256-da8GREkR2VnR5zDxp+RNh2YOpcUGfK6mRCcdi/oaiJs=
+packageExtensionsChecksum: sha256-t7qDSUqV3Pl8rRmMiIhOA84jJVqO+p2tFU2Kyq0Wu3I=
 
 importers:
+
   .:
     devDependencies:
       prettier:
@@ -14,13 +15,12 @@ importers:
         version: 3.6.2
 
 packages:
+
   prettier@3.6.2:
-    resolution:
-      {
-        integrity: sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==,
-      }
-    engines: { node: '>=14' }
+    resolution: {integrity: sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==}
+    engines: {node: '>=14'}
     hasBin: true
 
 snapshots:
+
   prettier@3.6.2: {}

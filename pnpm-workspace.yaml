@@ -39,6 +39,9 @@ packageExtensions:
     dependencies:
       '@img/sharp-libvips-linux-x64': '*'
       '@img/sharp-libvips-linux-arm64': '*'
+      node-addon-api: '*'
+      node-gyp: '*'
+
 preferWorkspacePackages: true
 
 shamefullyHoist: true
