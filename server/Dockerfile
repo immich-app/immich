@@ -31,7 +31,7 @@ COPY --chown=node:node \
     pnpm-workspace.yaml \
     ./
 RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
-    pnpm fetch 
+    pnpm fetch && pnpm rebuild
 
 ENTRYPOINT ["tini", "--", "/bin/sh"]
 
