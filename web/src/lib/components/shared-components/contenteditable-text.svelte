@@ -13,6 +13,13 @@
   let { isCtrlEnter = false, value = $bindable(), disabled = false, onUpdate = () => null, ...props }: Props = $props();
 
   let lastValue = value;
+
+  $effect(() => {
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=1615852
+    if (value === '\n') {
+      value = '';
+    }
+  });
 </script>
 
 {#if disabled}
