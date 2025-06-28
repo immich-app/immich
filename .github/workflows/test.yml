@@ -88,7 +88,7 @@ jobs:
         with:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run package manager install
         run: pnpm install
@@ -134,7 +134,7 @@ jobs:
         with:
           node-version-file: './cli/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Setup typescript-sdk
         run: pnpm install && pnpm run build
@@ -184,7 +184,7 @@ jobs:
         with:
           node-version-file: './cli/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
@@ -227,7 +227,7 @@ jobs:
         with:
           node-version-file: './web/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
@@ -273,7 +273,7 @@ jobs:
         with:
           node-version-file: './web/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
@@ -311,7 +311,7 @@ jobs:
         with:
           node-version-file: './web/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Install dependencies
         run: pnpm --filter=immich-web install --frozen-lockfile
@@ -360,7 +360,7 @@ jobs:
         with:
           node-version-file: './e2e/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
@@ -408,7 +408,7 @@ jobs:
         with:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run npm install
         run: pnpm install --frozen-lockfile
@@ -446,7 +446,7 @@ jobs:
         with:
           node-version-file: './e2e/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
@@ -499,7 +499,7 @@ jobs:
         with:
           node-version-file: './e2e/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run setup typescript-sdk
         run: pnpm install --frozen-lockfile && pnpm build
@@ -622,7 +622,7 @@ jobs:
         with:
           node-version-file: './.github/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run npm install
         run: pnpm install --frozen-lockfile
@@ -668,7 +668,7 @@ jobs:
         with:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Install server dependencies
         run: pnpm --filter immich install --frozen-lockfile
@@ -734,7 +734,7 @@ jobs:
         with:
           node-version-file: './server/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Install server dependencies
         run: pnpm install --frozen-lockfile

@@ -42,7 +42,7 @@ jobs:
           node-version-file: './server/.nvmrc'
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Setup typescript-sdk
         run: pnpm install && pnpm run build

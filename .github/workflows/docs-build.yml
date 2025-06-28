@@ -61,7 +61,7 @@ jobs:
         with:
           node-version-file: './cli/.nvmrc'
           cache: 'pnpm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run install
         run: pnpm install

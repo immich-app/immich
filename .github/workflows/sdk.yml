@@ -25,13 +25,13 @@ jobs:
         with:
           node-version-file: './open-api/typescript-sdk/.nvmrc'
           registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Install deps
-        run: npm ci
+        run: pnpm ci
       - name: Build
-        run: npm run build
+        run: pnpm run build
       - name: Publish
-        run: npm publish
+        run: pnpm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
