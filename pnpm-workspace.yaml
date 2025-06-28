@@ -5,6 +5,7 @@ packages:
   - open-api/typescript-sdk
   - server
   - web
+  - .github
 
 dedupePeerDependents: false
 
