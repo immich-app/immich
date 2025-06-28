@@ -26,10 +26,10 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
@@ -61,6 +61,12 @@
   import { t } from 'svelte-i18n';
   import { Tween } from 'svelte/motion';
 
+  interface Props {
+    assetManager: AssetManager;
+  }
+
+  let { assetManager = $bindable() }: Props = $props();
+
   let memoryGallery: HTMLElement | undefined = $state();
   let memoryWrapper: HTMLElement | undefined = $state();
   let galleryInView = $state(false);
@@ -76,7 +82,6 @@
   let isSaved = $derived(current?.memory.isSaved);
   let viewerHeight = $state(0);
 
-  const { isViewing } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
   // need to include padding in the viewport for gallery
   const galleryViewport: Viewport = $derived({ height: viewport.height, width: viewport.width - 32 });
@@ -85,7 +90,7 @@
   let videoPlayer: HTMLVideoElement | undefined = $state();
   const asHref = (asset: { id: string }) => `?${QueryParameter.ID}=${asset.id}`;
   const handleNavigate = async (asset?: { id: string }) => {
-    if ($isViewing) {
+    if (assetManager.showAssetViewer) {
       return asset;
     }
 
@@ -251,7 +256,7 @@
     if (playerInitialized || isVideoAssetButPlayerHasNotLoadedYet) {
       return;
     }
-    if ($isViewing) {
+    if (assetManager.showAssetViewer) {
       handlePromiseError(handleAction('initPlayer[AssetViewOpen]', 'pause'));
     } else {
       handlePromiseError(handleAction('initPlayer[AssetViewClosed]', 'reset'));
@@ -296,7 +301,7 @@
 </script>
 
 <svelte:document
-  use:shortcuts={$isViewing
+  use:shortcuts={assetManager.showAssetViewer
     ? []
     : [
         { shortcut: { key: 'ArrowRight' }, onShortcut: () => handleNextAsset() },
@@ -640,6 +645,7 @@
       bind:this={memoryGallery}
     >
       <GalleryViewer
+        {assetManager}
         onNext={handleNextAsset}
         onPrevious={handlePreviousAsset}
         assets={currentTimelineAssets}

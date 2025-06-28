@@ -12,7 +12,7 @@
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import type { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -20,7 +20,6 @@
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
@@ -36,7 +35,7 @@
     type ScrubberListener,
     type TimelinePlainYearMonth,
   } from '$lib/utils/timeline-util';
-  import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { AssetVisibility, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
@@ -53,6 +52,7 @@
     enableRouting: boolean;
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
+    assetManager: AssetManager;
     removeAction?:
       | AssetAction.UNARCHIVE
       | AssetAction.ARCHIVE
@@ -78,6 +78,7 @@
     enableRouting,
     timelineManager = $bindable(),
     assetInteraction,
+    assetManager = $bindable(),
     removeAction = null,
     withStacked = false,
     showArchiveIcon = false,
@@ -91,8 +92,6 @@
     empty,
   }: Props = $props();
 
-  let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
-
   let element: HTMLElement | undefined = $state();
 
   let timelineElement: HTMLElement | undefined = $state();
@@ -102,6 +101,8 @@
   let scrubberMonth: { year: number; month: number } | undefined = $state(undefined);
   let scrubOverallPercent: number = $state(0);
   let scrubberWidth = $state(0);
+
+  let asset = $derived(assetManager.asset);
 
   // 60 is the bottom spacer element at 60px
   let bottomSectionHeight = 60;
@@ -177,7 +178,7 @@
   };
 
   const completeNav = async () => {
-    const scrollTarget = $gridScrollTarget?.at;
+    const scrollTarget = assetManager.gridScrollTarget?.at;
     let scrolled = false;
     if (scrollTarget) {
       scrolled = await scrollToAssetId(scrollTarget);
@@ -212,9 +213,9 @@
           setTimeout(() => {
             const asset = $page.url.searchParams.get('at');
             if (asset) {
-              $gridScrollTarget = { at: asset };
+              assetManager.gridScrollTarget = { at: asset };
               void navigate(
-                { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
+                { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: assetManager.gridScrollTarget },
                 { replaceState: true, forceNavigate: true },
               );
             } else {
@@ -438,12 +439,11 @@
   };
 
   const handlePrevious = async () => {
-    const laterAsset = await timelineManager.getLaterAsset($viewingAsset);
+    const laterAsset = await timelineManager.getLaterAsset(asset);
 
     if (laterAsset) {
-      const preloadAsset = await timelineManager.getLaterAsset(laterAsset);
-      const asset = await getAssetInfo({ id: laterAsset.id, key: authManager.key });
-      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
+      // TODO: If preloadAsset is undefined, throw an exception.
+      // assetManager.preloadAssets = [await timelineManager.getLaterAsset(laterAsset)];
       await navigate({ targetRoute: 'current', assetId: laterAsset.id });
     }
 
@@ -451,11 +451,10 @@
   };
 
   const handleNext = async () => {
-    const earlierAsset = await timelineManager.getEarlierAsset($viewingAsset);
+    const earlierAsset = await timelineManager.getEarlierAsset(asset);
+
     if (earlierAsset) {
-      const preloadAsset = await timelineManager.getEarlierAsset(earlierAsset);
-      const asset = await getAssetInfo({ id: earlierAsset.id, key: authManager.key });
-      assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
+      // assetManager.preloadAssets = [await timelineManager.getEarlierAsset(earlierAsset)];
       await navigate({ targetRoute: 'current', assetId: earlierAsset.id });
     }
 
@@ -466,18 +465,21 @@
     const randomAsset = await timelineManager.getRandomAsset();
 
     if (randomAsset) {
-      const asset = await getAssetInfo({ id: randomAsset.id, key: authManager.key });
-      assetViewingStore.setAsset(asset);
       await navigate({ targetRoute: 'current', assetId: randomAsset.id });
-      return asset;
     }
+
+    return !!randomAsset;
   };
 
   const handleClose = async (asset: { id: string }) => {
-    assetViewingStore.showAssetViewer(false);
+    assetManager.showAssetViewer = false;
     showSkeleton = true;
-    $gridScrollTarget = { at: asset.id };
-    await navigate({ targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget });
+    assetManager.gridScrollTarget = { at: asset.id };
+    await navigate({
+      targetRoute: 'current',
+      assetId: null,
+      assetGridRouteSearchParams: assetManager.gridScrollTarget,
+    });
   };
 
   const handlePreAction = async (action: Action) => {
@@ -722,7 +724,7 @@
 
   let shortcutList = $derived(
     (() => {
-      if (searchStore.isSearchEnabled || $showAssetViewer) {
+      if (searchStore.isSearchEnabled || assetManager.showAssetViewer) {
         return [];
       }
 
@@ -775,8 +777,8 @@
   });
 
   $effect(() => {
-    if ($showAssetViewer) {
-      const { localDateTime } = getTimes($viewingAsset.fileCreatedAt, DateTime.local().offset / 60);
+    if (assetManager.showAssetViewer) {
+      const { localDateTime } = getTimes(asset.fileCreatedAt, DateTime.local().offset / 60);
       void timelineManager.loadMonthGroup({ year: localDateTime.year, month: localDateTime.month });
     }
   });
@@ -923,12 +925,11 @@
 </section>
 
 <Portal target="body">
-  {#if $showAssetViewer}
+  {#if assetManager.showAssetViewer}
     {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
       <AssetViewer
+        {assetManager}
         {withStacked}
-        asset={$viewingAsset}
-        preloadAssets={$preloadAssets}
         {isShared}
         {album}
         {person}

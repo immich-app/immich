@@ -21,6 +21,7 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
+  import type { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
@@ -32,7 +33,6 @@
     AssetTypeEnum,
     AssetVisibility,
     type AlbumResponseDto,
-    type AssetResponseDto,
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
@@ -55,7 +55,7 @@
   import { t } from 'svelte-i18n';
 
   interface Props {
-    asset: AssetResponseDto;
+    assetManager: AssetManager;
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     stack?: StackResponseDto | null;
@@ -75,7 +75,7 @@
   }
 
   let {
-    asset,
+    assetManager = $bindable(),
     album = null,
     person = null,
     stack = null,
@@ -92,6 +92,8 @@
     onClose,
     motionPhoto,
   }: Props = $props();
+
+  let asset = $derived(assetManager.asset);
 
   const sharedLink = getSharedLink();
   let isOwner = $derived($user && asset.ownerId === $user?.id);
@@ -158,7 +160,7 @@
     {/if}
 
     {#if !isOwner && showDownloadButton}
-      <DownloadAction asset={toTimelineAsset(asset)} />
+      <DownloadAction {assetManager} />
     {/if}
 
     {#if showDetailButton}
@@ -177,7 +179,7 @@
           <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
         {/if}
         {#if showDownloadButton}
-          <DownloadAction asset={toTimelineAsset(asset)} menuItem />
+          <DownloadAction {assetManager} menuItem />
         {/if}
 
         {#if !isLocked}

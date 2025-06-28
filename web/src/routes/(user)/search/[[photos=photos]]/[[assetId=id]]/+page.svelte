@@ -23,10 +23,10 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences } from '$lib/stores/user.store';
@@ -47,11 +47,17 @@
   } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
-  import { tick } from 'svelte';
+  import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
+
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   const MAX_ASSET_COUNT = 5000;
-  let { isViewing: showAssetViewer } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
 
   // The GalleryViewer pushes it's own history state, which causes weird
@@ -83,8 +89,17 @@
 
   let timelineManager = new TimelineManager();
 
+  const assetManager = new AssetManager();
+  $effect(() => {
+    if (data.assetId) {
+      assetManager.showAssetViewer = true;
+      void assetManager.updateOptions({ assetId: data.assetId });
+    }
+  });
+  onDestroy(() => assetManager.destroy());
+
   const onEscape = () => {
-    if ($showAssetViewer) {
+    if (assetManager.showAssetViewer) {
       return;
     }
 
@@ -379,6 +394,7 @@
       <GalleryViewer
         assets={searchResultAssets}
         {assetInteraction}
+        {assetManager}
         onIntersected={loadNextPage}
         showArchiveIcon={true}
         {viewport}

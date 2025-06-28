@@ -31,13 +31,13 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -75,13 +75,21 @@
   let { data }: Props = $props();
 
   let numberOfAssets = $state(data.statistics.assets);
-  let { isViewing: showAssetViewer } = assetViewingStore;
 
   const timelineManager = new TimelineManager();
   $effect(() => void timelineManager.updateOptions({ visibility: AssetVisibility.Timeline, personId: data.person.id }));
   onDestroy(() => timelineManager.destroy());
 
   const assetInteraction = new AssetInteraction();
+
+  const assetManager = new AssetManager();
+  $effect(() => {
+    if (data.assetId) {
+      assetManager.showAssetViewer = true;
+      void assetManager.updateOptions({ assetId: data.assetId });
+    }
+  });
+  onDestroy(() => assetManager.destroy());
 
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
   let isEditingName = $state(false);
@@ -123,7 +131,7 @@
   });
 
   const handleEscape = async () => {
-    if ($showAssetViewer) {
+    if (assetManager.showAssetViewer) {
       return;
     }
     if (assetInteraction.selectionActive) {
@@ -388,6 +396,7 @@
       {person}
       {timelineManager}
       {assetInteraction}
+      {assetManager}
       isSelectionMode={viewMode === PersonPageViewMode.SELECT_PERSON}
       singleSelect={viewMode === PersonPageViewMode.SELECT_PERSON}
       onSelect={handleSelectFeaturePhoto}

@@ -14,6 +14,7 @@
   import { AssetAction } from '$lib/constants';
 
   import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetVisibility } from '@immich/sdk';
@@ -33,6 +34,15 @@
 
   const assetInteraction = new AssetInteraction();
 
+  const assetManager = new AssetManager();
+  $effect(() => {
+    if (data.assetId) {
+      assetManager.showAssetViewer = true;
+      void assetManager.updateOptions({ assetId: data.assetId });
+    }
+  });
+  onDestroy(() => assetManager.destroy());
+
   const handleEscape = () => {
     if (assetInteraction.selectionActive) {
       assetInteraction.clearMultiselect();
@@ -51,6 +61,7 @@
     enableRouting={true}
     {timelineManager}
     {assetInteraction}
+    {assetManager}
     removeAction={AssetAction.UNARCHIVE}
     onEscape={handleEscape}
   >

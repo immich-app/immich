@@ -34,6 +34,7 @@
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -43,7 +44,6 @@
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
@@ -95,7 +95,6 @@
 
   let { data = $bindable() }: Props = $props();
 
-  let { isViewing: showAssetViewer, setAssetId, gridScrollTarget } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
@@ -108,6 +107,15 @@
 
   const assetInteraction = new AssetInteraction();
   const timelineInteraction = new AssetInteraction();
+
+  const assetManager = new AssetManager();
+  $effect(() => {
+    if (data.assetId) {
+      assetManager.showAssetViewer = true;
+      void assetManager.updateOptions({ assetId: data.assetId });
+    }
+  });
+  onDestroy(() => assetManager.destroy());
 
   afterNavigate(({ from }) => {
     let url: string | undefined = from?.url?.pathname;
@@ -148,7 +156,8 @@
         ? await timelineManager.getRandomAsset()
         : timelineManager.months[0]?.dayGroups[0]?.viewerAssets[0]?.asset;
     if (asset) {
-      handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
+      await navigate({ targetRoute: 'current', assetId: asset.id });
+      $slideshowState = SlideshowState.PlaySlideshow;
     }
   };
 
@@ -166,7 +175,7 @@
       viewMode = AlbumPageViewMode.VIEW;
       return;
     }
-    if ($showAssetViewer) {
+    if (assetManager.showAssetViewer) {
       return;
     }
     if (assetInteraction.selectionActive) {
@@ -346,7 +355,7 @@
   const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
 
   $effect(() => {
-    if ($showAssetViewer || !isShared) {
+    if (assetManager.showAssetViewer || !isShared) {
       return;
     }
 
@@ -361,7 +370,9 @@
   let isOwned = $derived($user.id == album.ownerId);
 
   let showActivityStatus = $derived(
-    album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || activityManager.commentCount > 0),
+    album.albumUsers.length > 0 &&
+      !assetManager.showAssetViewer &&
+      (album.isActivityEnabled || activityManager.commentCount > 0),
   );
   let isEditor = $derived(
     album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
@@ -449,6 +460,7 @@
         {album}
         {timelineManager}
         assetInteraction={currentAssetIntersection}
+        {assetManager}
         {isShared}
         {isSelectionMode}
         {singleSelect}
@@ -626,7 +638,7 @@
                 onclick={async () => {
                   timelineManager.suspendTransitions = true;
                   viewMode = AlbumPageViewMode.SELECT_ASSETS;
-                  oldAt = { at: $gridScrollTarget?.at };
+                  oldAt = { at: assetManager.gridScrollTarget?.at };
                   await navigate(
                     { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: null } },
                     { replaceState: true },
@@ -648,7 +660,7 @@
             {/if}
 
             {#if $featureFlags.loaded && $featureFlags.map}
-              <AlbumMap {album} />
+              <AlbumMap {assetManager} {album} />
             {/if}
 
             {#if album.assetCount > 0}
@@ -735,7 +747,7 @@
       {/if}
     {/if}
   </div>
-  {#if album.albumUsers.length > 0 && album && isShowActivity && $user && !$showAssetViewer}
+  {#if album.albumUsers.length > 0 && album && isShowActivity && $user && !assetManager.showAssetViewer}
     <div class="flex">
       <div
         transition:fly={{ duration: 150 }}

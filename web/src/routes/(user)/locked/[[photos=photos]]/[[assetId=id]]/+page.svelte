@@ -12,6 +12,7 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetVisibility, lockAuthSession } from '@immich/sdk';
@@ -32,6 +33,15 @@
   onDestroy(() => timelineManager.destroy());
 
   const assetInteraction = new AssetInteraction();
+
+  const assetManager = new AssetManager();
+  $effect(() => {
+    if (data.assetId) {
+      assetManager.showAssetViewer = true;
+      void assetManager.updateOptions({ assetId: data.assetId });
+    }
+  });
+  onDestroy(() => assetManager.destroy());
 
   const handleEscape = () => {
     if (assetInteraction.selectionActive) {
@@ -62,6 +72,7 @@
     enableRouting={true}
     {timelineManager}
     {assetInteraction}
+    {assetManager}
     onEscape={handleEscape}
     removeAction={AssetAction.SET_VISIBILITY_TIMELINE}
   >

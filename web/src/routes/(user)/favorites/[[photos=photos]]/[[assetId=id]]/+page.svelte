@@ -17,6 +17,7 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { preferences } from '$lib/stores/user.store';
@@ -37,6 +38,15 @@
 
   const assetInteraction = new AssetInteraction();
 
+  const assetManager = new AssetManager();
+  $effect(() => {
+    if (data.assetId) {
+      assetManager.showAssetViewer = true;
+      void assetManager.updateOptions({ assetId: data.assetId });
+    }
+  });
+  onDestroy(() => assetManager.destroy());
+
   const handleEscape = () => {
     if (assetInteraction.selectionActive) {
       assetInteraction.clearMultiselect();
@@ -56,6 +66,7 @@
     withStacked={true}
     {timelineManager}
     {assetInteraction}
+    {assetManager}
     removeAction={AssetAction.UNFAVORITE}
     onEscape={handleEscape}
   >

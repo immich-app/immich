@@ -3,16 +3,18 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import type { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
+  import { addSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
@@ -22,14 +24,14 @@
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
+    assetManager: AssetManager;
     sharedLink: SharedLinkResponseDto;
     isOwned: boolean;
   }
 
-  let { sharedLink = $bindable(), isOwned }: Props = $props();
+  let { assetManager = $bindable(), sharedLink = $bindable(), isOwned }: Props = $props();
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
   const assetInteraction = new AssetInteraction();
@@ -86,6 +88,13 @@
       }
     }
   };
+
+  $effect(() => {
+    // TODO: defer init until trigger updateOptions
+    if (assets.length === 1) {
+      void assetManager.updateOptions({ assetId: assets[0].id });
+    }
+  });
 </script>
 
 <section>
@@ -142,19 +151,17 @@
       </ControlAppBar>
     {/if}
     <section class="my-[160px] mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
-      <GalleryViewer {assets} {assetInteraction} {viewport} />
+      <GalleryViewer {assets} {assetInteraction} {assetManager} {viewport} />
     </section>
   {:else if assets.length === 1}
-    {#await getAssetInfo({ id: assets[0].id, key: authManager.key }) then asset}
-      <AssetViewer
-        {asset}
-        showCloseButton={false}
-        onAction={handleAction}
-        onPrevious={() => Promise.resolve(false)}
-        onNext={() => Promise.resolve(false)}
-        onRandom={() => Promise.resolve(undefined)}
-        onClose={() => {}}
-      />
-    {/await}
+    <AssetViewer
+      {assetManager}
+      showCloseButton={false}
+      onAction={handleAction}
+      onPrevious={() => Promise.resolve(false)}
+      onNext={() => Promise.resolve(false)}
+      onRandom={() => Promise.resolve(false)}
+      onClose={() => {}}
+    />
   {/if}
 </section>

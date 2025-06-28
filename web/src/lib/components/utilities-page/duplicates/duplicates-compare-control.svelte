@@ -2,7 +2,7 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
@@ -15,12 +15,12 @@
 
   interface Props {
     assets: AssetResponseDto[];
+    assetManager: AssetManager;
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
-  let { assets, onResolve, onStack }: Props = $props();
-  const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
+  let { assets, assetManager, onResolve, onStack }: Props = $props();
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
@@ -39,35 +39,34 @@
   });
 
   onDestroy(() => {
-    assetViewingStore.showAssetViewer(false);
+    assetManager.showAssetViewer = false;
   });
 
-  const onNext = () => {
-    const index = getAssetIndex($viewingAsset.id) + 1;
+  const onNext = async () => {
+    const index = getAssetIndex(assetManager.asset.id) + 1;
     if (index >= assets.length) {
-      return Promise.resolve(false);
+      return false;
     }
-    setAsset(assets[index]);
-    return Promise.resolve(true);
+    await navigate({ targetRoute: 'current', assetId: assets[index].id });
+    return true;
   };
 
-  const onPrevious = () => {
-    const index = getAssetIndex($viewingAsset.id) - 1;
+  const onPrevious = async () => {
+    const index = getAssetIndex(assetManager.asset.id) - 1;
     if (index < 0) {
-      return Promise.resolve(false);
+      return false;
     }
-    setAsset(assets[index]);
-    return Promise.resolve(true);
+    await navigate({ targetRoute: 'current', assetId: assets[index].id });
+    return true;
   };
 
-  const onRandom = () => {
+  const onRandom = async () => {
     if (assets.length <= 0) {
-      return Promise.resolve(undefined);
+      return false;
     }
     const index = Math.floor(Math.random() * assets.length);
-    const asset = assets[index];
-    setAsset(asset);
-    return Promise.resolve(asset);
+    await navigate({ targetRoute: 'current', assetId: assets[index].id });
+    return true;
   };
 
   const onSelectAsset = (asset: AssetResponseDto) => {
@@ -102,9 +101,7 @@
     { shortcut: { key: 'a' }, onShortcut: onSelectAll },
     {
       shortcut: { key: 's' },
-      onShortcut: () => {
-        setAsset(assets[0]);
-      },
+      onShortcut: () => navigate({ targetRoute: 'current', assetId: assets[0].id }),
     },
     { shortcut: { key: 'd' }, onShortcut: onSelectNone },
     { shortcut: { key: 'c', shift: true }, onShortcut: handleResolve },
@@ -170,23 +167,23 @@
         {asset}
         {onSelectAsset}
         isSelected={selectedAssetIds.has(asset.id)}
-        onViewAsset={(asset) => setAsset(asset)}
+        onViewAsset={(asset) => navigate({ targetRoute: 'current', assetId: asset.id })}
       />
     {/each}
   </div>
 </div>
 
-{#if $showAssetViewer}
+{#if assetManager.showAssetViewer}
   {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
-        asset={$viewingAsset}
+        {assetManager}
         showNavigation={assets.length > 1}
         {onNext}
         {onPrevious}
         {onRandom}
         onClose={() => {
-          assetViewingStore.showAssetViewer(false);
+          assetManager.showAssetViewer = false;
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
         }}
       />

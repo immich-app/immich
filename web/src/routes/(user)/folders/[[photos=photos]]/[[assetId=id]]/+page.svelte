@@ -21,8 +21,8 @@
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { foldersStore } from '$lib/stores/folders.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
@@ -32,6 +32,8 @@
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
+  import { onDestroy } from 'svelte';
 
   interface Props {
     data: PageData;
@@ -42,6 +44,15 @@
   const viewport: Viewport = $state({ width: 0, height: 0 });
 
   const assetInteraction = new AssetInteraction();
+
+  const assetManager = new AssetManager();
+  $effect(() => {
+    if (data.assetId) {
+      assetManager.showAssetViewer = true;
+      void assetManager.updateOptions({ assetId: data.assetId });
+    }
+  });
+  onDestroy(() => assetManager.destroy());
 
   const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths(data.tree.path, folderName));
 
@@ -106,6 +117,7 @@
         <GalleryViewer
           assets={data.pathAssets}
           {assetInteraction}
+          {assetManager}
           {viewport}
           showAssetName={true}
           pageHeaderOffset={54}

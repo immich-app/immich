@@ -13,6 +13,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -41,6 +42,15 @@
   onDestroy(() => timelineManager.destroy());
 
   const assetInteraction = new AssetInteraction();
+
+  const assetManager = new AssetManager();
+  $effect(() => {
+    if (data.assetId) {
+      assetManager.showAssetViewer = true;
+      void assetManager.updateOptions({ assetId: data.assetId });
+    }
+  });
+  onDestroy(() => assetManager.destroy());
 
   const handleEmptyTrash = async () => {
     const isConfirmed = await modalManager.showDialog({ prompt: $t('empty_trash_confirmation') });
@@ -117,7 +127,7 @@
       </HStack>
     {/snippet}
 
-    <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape}>
+    <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} {assetManager} onEscape={handleEscape}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>

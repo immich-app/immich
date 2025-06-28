@@ -4,11 +4,11 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import type { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
@@ -29,6 +29,7 @@
   interface Props {
     assets: (TimelineAsset | AssetResponseDto)[];
     assetInteraction: AssetInteraction;
+    assetManager: AssetManager;
     disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
     viewport: Viewport;
@@ -46,6 +47,7 @@
   let {
     assets = $bindable(),
     assetInteraction,
+    assetManager = $bindable(),
     disableAssetSelect = false,
     showArchiveIcon = false,
     viewport,
@@ -59,8 +61,6 @@
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
   }: Props = $props();
-
-  let { isViewing: isViewerOpen, asset: viewingAsset, setAssetId } = assetViewingStore;
 
   let geometry: CommonJustifiedLayout | undefined = $state();
 
@@ -151,8 +151,7 @@
   });
   const viewAssetHandler = async (asset: TimelineAsset) => {
     currentViewAssetIndex = assets.findIndex((a) => a.id == asset.id);
-    await setAssetId(assets[currentViewAssetIndex].id);
-    await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+    await navigate({ targetRoute: 'current', assetId: assets[currentViewAssetIndex].id });
   };
 
   const selectAllAssets = () => {
@@ -292,7 +291,7 @@
 
   const shortcutList = $derived(
     (() => {
-      if ($isViewerOpen) {
+      if (assetManager.showAssetViewer) {
         return [];
       }
 
@@ -344,7 +343,7 @@
     }
   };
 
-  const handleRandom = async (): Promise<{ id: string } | undefined> => {
+  const handleRandom = async (): Promise<boolean> => {
     try {
       let asset: { id: string } | undefined;
       if (onRandom) {
@@ -357,14 +356,14 @@
       }
 
       if (!asset) {
-        return;
+        return false;
       }
 
       await navigateToAsset(asset);
-      return asset;
+      return true;
     } catch (error) {
       handleError(error, $t('errors.cannot_navigate_next_asset'));
-      return;
+      return false;
     }
   };
 
@@ -395,9 +394,8 @@
   };
 
   const navigateToAsset = async (asset?: { id: string }) => {
-    if (asset && asset.id !== $viewingAsset.id) {
-      await setAssetId(asset.id);
-      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+    if (asset && asset.id !== assetManager.asset.id) {
+      await navigate({ targetRoute: 'current', assetId: asset.id });
     }
   };
 
@@ -415,7 +413,7 @@
         } else if (currentViewAssetIndex === assets.length) {
           await handlePrevious();
         } else {
-          await setAssetId(assets[currentViewAssetIndex].id);
+          await navigate({ targetRoute: 'current', assetId: assets[currentViewAssetIndex].id });
         }
         break;
       }
@@ -512,16 +510,16 @@
 {/if}
 
 <!-- Overlay Asset Viewer -->
-{#if $isViewerOpen}
+{#if assetManager.showAssetViewer}
   <Portal target="body">
     <AssetViewer
-      asset={$viewingAsset}
+      {assetManager}
       onAction={handleAction}
       onPrevious={handlePrevious}
       onNext={handleNext}
       onRandom={handleRandom}
       onClose={() => {
-        assetViewingStore.showAssetViewer(false);
+        assetManager.showAssetViewer = false;
         handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
       }}
     />

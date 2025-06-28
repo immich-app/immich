@@ -22,9 +22,9 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import {
@@ -39,11 +39,26 @@
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
-  let { isViewing: showAssetViewer } = assetViewingStore;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
+
   const timelineManager = new TimelineManager();
   void timelineManager.updateOptions({ visibility: AssetVisibility.Timeline, withStacked: true, withPartners: true });
   onDestroy(() => timelineManager.destroy());
+
+  const assetManager = new AssetManager();
+  $effect(() => {
+    if (data.assetId) {
+      assetManager.showAssetViewer = true;
+      void assetManager.updateOptions({ assetId: data.assetId });
+    }
+  });
+  onDestroy(() => assetManager.destroy());
 
   const assetInteraction = new AssetInteraction();
 
@@ -59,7 +74,7 @@
     return assetInteraction.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });
   const handleEscape = () => {
-    if ($showAssetViewer) {
+    if (assetManager.showAssetViewer) {
       return;
     }
     if (assetInteraction.selectionActive) {
@@ -93,6 +108,7 @@
     enableRouting={true}
     {timelineManager}
     {assetInteraction}
+    {assetManager}
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
     withStacked

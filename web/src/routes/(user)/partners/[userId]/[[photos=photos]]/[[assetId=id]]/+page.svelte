@@ -8,6 +8,7 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import { AppRoute } from '$lib/constants';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetVisibility } from '@immich/sdk';
@@ -34,6 +35,15 @@
   onDestroy(() => timelineManager.destroy());
   const assetInteraction = new AssetInteraction();
 
+  const assetManager = new AssetManager();
+  $effect(() => {
+    if (data.assetId) {
+      assetManager.showAssetViewer = true;
+      void assetManager.updateOptions({ assetId: data.assetId });
+    }
+  });
+  onDestroy(() => assetManager.destroy());
+
   const handleEscape = () => {
     if (assetInteraction.selectionActive) {
       assetInteraction.clearMultiselect();
@@ -43,7 +53,7 @@
 </script>
 
 <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
-  <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape} />
+  <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} {assetManager} onEscape={handleEscape} />
 </main>
 
 {#if assetInteraction.selectionActive}

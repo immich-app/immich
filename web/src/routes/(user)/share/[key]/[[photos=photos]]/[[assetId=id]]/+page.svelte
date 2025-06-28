@@ -5,14 +5,14 @@
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import PasswordField from '$lib/components/shared-components/password-field.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { setSharedLink } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
   import { getMySharedLink, SharedLinkType } from '@immich/sdk';
   import { Button } from '@immich/ui';
-  import { tick } from 'svelte';
+  import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -22,11 +22,19 @@
 
   let { data }: Props = $props();
 
-  let { gridScrollTarget } = assetViewingStore;
   let { sharedLink, passwordRequired, sharedLinkKey: key, meta } = $state(data);
   let { title, description } = $state(meta);
   let isOwned = $derived($user ? $user.id === sharedLink?.userId : false);
   let password = $state('');
+
+  const assetManager = new AssetManager();
+  $effect(() => {
+    if (data.assetId) {
+      assetManager.showAssetViewer = true;
+      void assetManager.updateOptions({ assetId: data.assetId });
+    }
+  });
+  onDestroy(() => assetManager.destroy());
 
   const handlePasswordSubmit = async () => {
     try {
@@ -39,7 +47,7 @@
         $t('shared_photos_and_videos_count', { values: { assetCount: sharedLink.assets.length } });
       await tick();
       await navigate(
-        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
+        { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: assetManager.gridScrollTarget },
         { forceNavigate: true, replaceState: true },
       );
     } catch (error) {
@@ -88,10 +96,10 @@
 {/if}
 
 {#if !passwordRequired && sharedLink?.type == SharedLinkType.Album}
-  <AlbumViewer {sharedLink} />
+  <AlbumViewer {assetManager} {sharedLink} />
 {/if}
 {#if !passwordRequired && sharedLink?.type == SharedLinkType.Individual}
   <div class="immich-scrollbar">
-    <IndividualSharedViewer {sharedLink} {isOwned} />
+    <IndividualSharedViewer {assetManager} {sharedLink} {isOwned} />
   </div>
 {/if}

@@ -19,6 +19,8 @@
   import { mdiCheckOutline, mdiInformationOutline, mdiKeyboard, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { onDestroy } from 'svelte';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
 
   interface Props {
     data: PageData;
@@ -35,6 +37,15 @@
     action: string;
     info?: string;
   }
+
+  const assetManager = new AssetManager();
+  $effect(() => {
+    if (data.assetId) {
+      assetManager.showAssetViewer = true;
+      void assetManager.updateOptions({ assetId: data.assetId });
+    }
+  });
+  onDestroy(() => assetManager.destroy());
 
   const duplicateShortcuts: Shortcuts = {
     general: [],
@@ -207,6 +218,7 @@
       {#key duplicates[0].duplicateId}
         <DuplicatesCompareControl
           assets={duplicates[0].assets}
+          {assetManager}
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[0].duplicateId, assets)}

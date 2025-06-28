@@ -1,7 +1,8 @@
 <script lang="ts">
+  import type { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import MapModal from '$lib/modals/MapModal.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { navigate } from '$lib/utils/navigation';
   import { getAlbumInfo, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiMapOutline } from '@mdi/js';
@@ -9,12 +10,12 @@
   import { t } from 'svelte-i18n';
 
   interface Props {
+    assetManager: AssetManager;
     album: AlbumResponseDto;
   }
 
-  let { album }: Props = $props();
+  let { assetManager = $bindable(), album }: Props = $props();
   let abortController: AbortController;
-  let { setAssetId } = assetViewingStore;
 
   let mapMarkers: MapMarkerResponseDto[] = $state([]);
 
@@ -24,7 +25,7 @@
 
   onDestroy(() => {
     abortController?.abort();
-    assetViewingStore.showAssetViewer(false);
+    assetManager.showAssetViewer = false;
   });
 
   async function loadMapMarkers() {
@@ -56,7 +57,7 @@
     const assetIds = await modalManager.show(MapModal, { mapMarkers });
 
     if (assetIds) {
-      await setAssetId(assetIds[0]);
+      await navigate({ targetRoute: 'current', assetId: assetIds[0] });
     }
   }
 </script>

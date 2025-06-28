@@ -7,22 +7,21 @@
   import AssetViewerNavBar from '$lib/components/asset-viewer/asset-viewer-nav-bar.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetJobMessage, getSharedLink, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { navigate } from '$lib/utils/navigation';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetJobName,
     AssetTypeEnum,
-    getAllAlbums,
     getStack,
     runAssetJobs,
     type AlbumResponseDto,
@@ -48,8 +47,7 @@
   type HasAsset = boolean;
 
   interface Props {
-    asset: AssetResponseDto;
-    preloadAssets?: TimelineAsset[];
+    assetManager: AssetManager;
     showNavigation?: boolean;
     withStacked?: boolean;
     isShared?: boolean;
@@ -61,13 +59,12 @@
     onClose: (asset: AssetResponseDto) => void;
     onNext: () => Promise<HasAsset>;
     onPrevious: () => Promise<HasAsset>;
-    onRandom: () => Promise<{ id: string } | undefined>;
+    onRandom: () => Promise<HasAsset>;
     copyImage?: () => Promise<void>;
   }
 
   let {
-    asset = $bindable(),
-    preloadAssets = $bindable([]),
+    assetManager = $bindable(),
     showNavigation = true,
     withStacked = false,
     isShared = false,
@@ -83,7 +80,6 @@
     copyImage = $bindable(),
   }: Props = $props();
 
-  const { setAssetId } = assetViewingStore;
   const {
     restartProgress: restartSlideshowProgress,
     stopProgress: stopSlideshowProgress,
@@ -94,10 +90,13 @@
   const stackThumbnailSize = 60;
   const stackSelectedThumbnailSize = 65;
 
-  let appearsInAlbums: AlbumResponseDto[] = $state([]);
+  let asset = $derived(assetManager.asset);
+  let preloadAssets = $derived(assetManager.preloadAssets);
+  let albums = $derived(assetManager.albums);
+
   let shouldPlayMotionPhoto = $state(false);
   let sharedLink = getSharedLink();
-  let enableDetailPanel = asset.hasMetadata;
+  let enableDetailPanel = $derived(asset.hasMetadata);
   let slideshowStateUnsubscribe: () => void;
   let shuffleSlideshowUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined = $state();
@@ -146,7 +145,7 @@
     }
   };
 
-  onMount(async () => {
+  onMount(() => {
     unsubscribes.push(
       websocketEvents.on('on_upload_success', (asset) => onAssetUpdate({ event: 'upload', asset })),
       websocketEvents.on('on_asset_update', (asset) => onAssetUpdate({ event: 'update', asset })),
@@ -169,9 +168,7 @@
       }
     });
 
-    if (!sharedLink) {
-      await handleGetAllAlbums();
-    }
+    // TODO: empty shared link returns 404.
   });
 
   onDestroy(() => {
@@ -189,18 +186,6 @@
 
     activityManager.reset();
   });
-
-  const handleGetAllAlbums = async () => {
-    if (authManager.key) {
-      return;
-    }
-
-    try {
-      appearsInAlbums = await getAllAlbums({ assetId: asset.id });
-    } catch (error) {
-      console.error('Error getting album that asset belong to', error);
-    }
-  };
 
   const handleOpenActivity = () => {
     if ($isShowDetail) {
@@ -238,11 +223,11 @@
     let hasNext = false;
 
     if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
-      hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
+      hasNext = order === 'previous' ? await slideshowHistory.previous() : await slideshowHistory.next();
       if (!hasNext) {
-        const asset = await onRandom();
-        if (asset) {
-          slideshowHistory.queue(asset);
+        await onRandom();
+        if (assetManager.asset) {
+          slideshowHistory.queue(assetManager.asset);
           hasNext = true;
         }
       }
@@ -281,8 +266,9 @@
 
   let assetViewerHtmlElement = $state<HTMLElement>();
 
-  const slideshowHistory = new SlideshowHistory((asset) => {
-    handlePromiseError(setAssetId(asset.id).then(() => ($restartSlideshowProgress = true)));
+  const slideshowHistory = new SlideshowHistory(async (asset) => {
+    await navigate({ targetRoute: 'current', assetId: asset.id });
+    $restartSlideshowProgress = true;
   });
 
   const handleVideoStarted = () => {
@@ -325,7 +311,7 @@
   const handleAction = async (action: Action) => {
     switch (action.type) {
       case AssetAction.ADD_TO_ALBUM: {
-        await handleGetAllAlbums();
+        await assetManager.refreshAlbums();
         break;
       }
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
@@ -364,11 +350,6 @@
       handlePromiseError(activityManager.init(album.id, asset.id));
     }
   });
-  $effect(() => {
-    if (asset.id) {
-      handlePromiseError(handleGetAllAlbums());
-    }
-  });
 </script>
 
 <svelte:document bind:fullscreenElement />
@@ -383,7 +364,7 @@
   {#if $slideshowState === SlideshowState.None && !isShowEditor}
     <div class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
       <AssetViewerNavBar
-        {asset}
+        {assetManager}
         {album}
         {person}
         {stack}
@@ -529,7 +510,7 @@
       class="row-start-1 row-span-4 w-[360px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
       translate="yes"
     >
-      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} onClose={() => ($isShowDetail = false)} />
+      <DetailPanel {asset} currentAlbum={album} {albums} onClose={() => ($isShowDetail = false)} />
     </div>
   {/if}
 

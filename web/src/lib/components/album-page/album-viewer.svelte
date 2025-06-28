@@ -4,9 +4,9 @@
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import type { AssetManager } from '$lib/managers/asset-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
@@ -25,15 +25,14 @@
   import AlbumSummary from './album-summary.svelte';
 
   interface Props {
+    assetManager: AssetManager;
     sharedLink: SharedLinkResponseDto;
     user?: UserResponseDto | undefined;
   }
 
-  let { sharedLink, user = undefined }: Props = $props();
+  let { assetManager = $bindable(), sharedLink, user = undefined }: Props = $props();
 
   const album = sharedLink.album as AlbumResponseDto;
-
-  let { isViewing: showAssetViewer } = assetViewingStore;
 
   const timelineManager = new TimelineManager();
   $effect(() => void timelineManager.updateOptions({ albumId: album.id, order: album.order }));
@@ -53,7 +52,7 @@
   use:shortcut={{
     shortcut: { key: 'Escape' },
     onShortcut: () => {
-      if (!$showAssetViewer && assetInteraction.selectionActive) {
+      if (!assetManager.showAssetViewer && assetInteraction.selectionActive) {
         cancelMultiselect(assetInteraction);
       }
     },
@@ -61,7 +60,7 @@
 />
 
 <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
-  <AssetGrid enableRouting={true} {album} {timelineManager} {assetInteraction}>
+  <AssetGrid enableRouting={true} {album} {timelineManager} {assetInteraction} {assetManager}>
     <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->
       <h1
@@ -129,7 +128,7 @@
           />
         {/if}
         {#if sharedLink.showMetadata && $featureFlags.loaded && $featureFlags.map}
-          <AlbumMap {album} />
+          <AlbumMap {assetManager} {album} />
         {/if}
         <ThemeButton />
       {/snippet}

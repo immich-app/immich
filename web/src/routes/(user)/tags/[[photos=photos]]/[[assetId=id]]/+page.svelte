@@ -20,6 +20,7 @@
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { AssetManager } from '$lib/managers/asset-manager.svelte';
 
   interface Props {
     data: PageData;
@@ -32,6 +33,15 @@
   const timelineManager = new TimelineManager();
   $effect(() => void timelineManager.updateOptions({ deferInit: !tag, tagId: tag?.id }));
   onDestroy(() => timelineManager.destroy());
+
+  const assetManager = new AssetManager();
+  $effect(() => {
+    if (data.assetId) {
+      assetManager.showAssetViewer = true;
+      void assetManager.updateOptions({ assetId: data.assetId });
+    }
+  });
+  onDestroy(() => assetManager.destroy());
 
   let tags = $derived<TagResponseDto[]>(data.tags);
   const tree = $derived(TreeNode.fromTags(tags));
@@ -118,7 +128,13 @@
 
   <section class="mt-2 h-[calc(100%-(--spacing(20)))] overflow-auto immich-scrollbar">
     {#if tag.hasAssets}
-      <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} removeAction={AssetAction.UNARCHIVE}>
+      <AssetGrid
+        enableRouting={true}
+        {timelineManager}
+        {assetInteraction}
+        {assetManager}
+        removeAction={AssetAction.UNARCHIVE}
+      >
         {#snippet empty()}
           <TreeItemThumbnails items={tag.children} icon={mdiTag} onClick={handleNavigation} />
         {/snippet}

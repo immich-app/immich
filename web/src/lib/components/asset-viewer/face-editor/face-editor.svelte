@@ -2,7 +2,6 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { notificationController } from '$lib/components/shared-components/notification/notification';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -303,7 +302,8 @@
         },
       });
 
-      await assetViewingStore.setAssetId(assetId);
+      // TODO: manual tag face
+      // await assetViewingStore.setAssetId(assetId);
     } catch (error) {
       handleError(error, 'Error tagging face');
     } finally {
