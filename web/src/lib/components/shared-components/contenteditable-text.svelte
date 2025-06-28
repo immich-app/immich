@@ -41,6 +41,7 @@
       props.onfocusout?.(e);
     }}
     data-testid="contenteditable-text"
+    tabindex="0"
   ></div>
 {/if}
 
