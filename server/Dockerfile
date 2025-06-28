@@ -8,7 +8,7 @@ ENV PATH="${PATH}:/usr/src/app/bin" \
     COREPACK_ENABLE_AUTO_PIN=0 \
     COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
     npm_config_devdir=/buildcache/node_gyp
-    
+
 RUN corepack enable && \
     corepack install -g pnpm && \
     apt-get install --no-install-recommends -yqq tini
@@ -39,8 +39,7 @@ FROM dev AS dev-docker
 
 WORKDIR /usr/src/app
 VOLUME /usr/src/app/node_modules
-# Run this without build-cache, so these are cached in image itself
-# This will also build node-gyp binaries, like sharp/canvas
+# Actually install depdencies, to cache them in node_modules
 RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
     pnpm install --frozen-lockfile --offline
 
@@ -152,12 +151,13 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
 # web production build
 FROM dev AS web
 
-COPY --chown=node:node web .
+COPY --chown=node:node pnpm-workspace.yaml web ./
 COPY --from=sdk /usr/src/app /usr/src/open-api/typescript-sdk
 COPY --chown=node:node i18n /usr/src/i18n
+
 RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
     pnpm install --frozen-lockfile && \
-    pnpm build 
+    pnpm build
 
 FROM dev AS cli
 
@@ -167,7 +167,7 @@ COPY --from=sdk /usr/src/app /usr/src/open-api/typescript-sdk
 # the 'dev' stage did not includ the cli depenencies
 RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
     pnpm install --frozen-lockfile && \
-    pnpm build 
+    pnpm build
 
 # prod build
 FROM ghcr.io/immich-app/base-server-prod:202505061115@sha256:9971d3a089787f0bd01f4682141d3665bcf5efb3e101a88e394ffd25bee4eedb
