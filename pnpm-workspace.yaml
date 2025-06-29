@@ -23,6 +23,10 @@ ignoredBuiltDependencies:
   - ssh2
   - utimes
 
+ignoredOptionalDependencies:
+  - '@img/sharp-libvips-linux-arm64'
+  - '@img/sharp-libvips-linux-x64'
+  
 onlyBuiltDependencies: 
   - sharp
   - '@tailwindcss/oxide'
