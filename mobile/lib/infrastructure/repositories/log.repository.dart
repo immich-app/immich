@@ -1,46 +1,99 @@
+import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/log.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:isar/isar.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class IsarLogRepository extends IsarDatabaseRepository {
-  final Isar _db;
-  const IsarLogRepository(super.db) : _db = db;
+final driftLogRepositoryProvider = Provider<LogRepository>(
+  (ref) => LogRepository(ref.watch(driftProvider)),
+);
+
+class LogRepository {
+  final Drift _db;
+
+  const LogRepository(this._db);
 
   Future<bool> deleteAll() async {
-    await transaction(() async => await _db.loggerMessages.clear());
+    await _db.transaction(() async {
+      await _db.delete(_db.loggerMessageEntity).go();
+    });
     return true;
   }
 
   Future<List<LogMessage>> getAll() async {
-    final logs =
-        await _db.loggerMessages.where().sortByCreatedAtDesc().findAll();
-    return logs.map((l) => l.toDto()).toList();
+    final query = _db.select(_db.loggerMessageEntity)
+      ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
+    final results = await query.get();
+    return results
+        .map(
+          (row) => LogMessage(
+            message: row.message,
+            level: row.level,
+            createdAt: row.createdAt,
+            logger: row.context1,
+            error: row.details,
+            stack: row.context2,
+          ),
+        )
+        .toList();
   }
 
   Future<bool> insert(LogMessage log) async {
-    final logEntity = LoggerMessage.fromDto(log);
-    await transaction(() async {
-      await _db.loggerMessages.put(logEntity);
+    await _db.transaction(() async {
+      await _db.into(_db.loggerMessageEntity).insert(
+            LoggerMessageEntityCompanion.insert(
+              id: 0, // Will be auto-incremented by the database
+              message: log.message,
+              details: Value(log.error),
+              level: log.level,
+              createdAt: log.createdAt,
+              context1: Value(log.logger),
+              context2: Value(log.stack),
+            ),
+          );
     });
     return true;
   }
 
   Future<bool> insertAll(Iterable<LogMessage> logs) async {
-    await transaction(() async {
-      final logEntities =
-          logs.map((log) => LoggerMessage.fromDto(log)).toList();
-      await _db.loggerMessages.putAll(logEntities);
+    await _db.transaction(() async {
+      for (final log in logs) {
+        await _db.into(_db.loggerMessageEntity).insert(
+              LoggerMessageEntityCompanion.insert(
+                id: 0, // Will be auto-incremented by the database
+                message: log.message,
+                details: Value(log.error),
+                level: log.level,
+                createdAt: log.createdAt,
+                context1: Value(log.logger),
+                context2: Value(log.stack),
+              ),
+            );
+      }
     });
     return true;
   }
 
   Future<void> truncate({int limit = 250}) async {
-    await transaction(() async {
-      final count = await _db.loggerMessages.count();
+    await _db.transaction(() async {
+      final countQuery = _db.selectOnly(_db.loggerMessageEntity)
+        ..addColumns([_db.loggerMessageEntity.id.count()]);
+      final countResult = await countQuery.getSingle();
+      final count = countResult.read(_db.loggerMessageEntity.id.count()) ?? 0;
+
       if (count <= limit) return;
+
       final toRemove = count - limit;
-      await _db.loggerMessages.where().limit(toRemove).deleteAll();
+      final oldestIds = await (_db.select(_db.loggerMessageEntity)
+            ..orderBy([(t) => OrderingTerm.asc(t.createdAt)])
+            ..limit(toRemove))
+          .get();
+
+      final idsToDelete = oldestIds.map((row) => row.id).toList();
+      await (_db.delete(_db.loggerMessageEntity)
+            ..where((tbl) => tbl.id.isIn(idsToDelete)))
+          .go();
     });
   }
 }

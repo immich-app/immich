@@ -1,5 +1,7 @@
 import 'package:immich_mobile/domain/models/log.model.dart';
+import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 import 'package:isar/isar.dart';
+import 'package:drift/drift.dart';
 
 part 'log.entity.g.dart';
 
@@ -44,4 +46,22 @@ class LoggerMessage {
       context2: log.stack,
     );
   }
+}
+
+class LoggerMessageEntity extends Table with DriftDefaultsMixin {
+  const LoggerMessageEntity();
+
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get message => text()();
+
+  TextColumn get details => text().nullable()();
+
+  IntColumn get level => intEnum<LogLevel>()();
+
+  DateTimeColumn get createdAt => dateTime()();
+
+  TextColumn get context1 => text().nullable()();
+
+  TextColumn get context2 => text().nullable()();
 }
