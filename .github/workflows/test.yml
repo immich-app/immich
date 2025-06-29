@@ -234,7 +234,7 @@ jobs:
         working-directory: ./open-api/typescript-sdk
 
       - name: Run npm install
-        run: pnpm install --frozen-lockfile
+        run: pnpm rebuild && pnpm install --frozen-lockfile
 
       - name: Run linter
         run: pnpm lint:p
