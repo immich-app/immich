@@ -6,19 +6,36 @@ ENV COREPACK_ENABLE_AUTO_PIN=0 \
 RUN corepack enable && \
     corepack install -g pnpm 
 
-WORKDIR /usr/src/open-api/typescript-sdk
-COPY  pnpm-workspace.yaml open-api/typescript-sdk ./
-RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
-    pnpm install --frozen-lockfile && \
-    pnpm build
-
 WORKDIR /usr/src/app
+COPY --chown=node:node . .
 
-COPY pnpm-workspace.yaml cli ./
+WORKDIR /usr/src/app/web
+RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
+    pnpm install --frozen-lockfile && \
+    pnpm exec svelte-kit sync
+
+WORKDIR /usr/src/app/open-api/typescript-sdk
 RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
     pnpm install --frozen-lockfile && \
     pnpm build
+
+WORKDIR /usr/src/app/cli
+RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
+    pnpm install --frozen-lockfile --prod --no-optional && \
+    pnpm build
+
+RUN rm -rf /usr/src/app/web && \
+    rm -rf /usr/src/app/open-api && \
+    rm -rf /usr/src/app/cli/src && \
+    rm -rf /usr/src/app/cli/src && \
+    rm -rf /usr/src/app/server && \
+    rm -rf /usr/src/app/i18n && \
+    rm -rf /usr/src/app/e2e && \
+    rm -rf /usr/src/app/docs && \
+    rm -rf /usr/src/app/readme_i18n && \
+    rm -rf /usr/src/app/deployment && \
+    rm -rf /usr/src/app/docker 
 
 WORKDIR /import
 
-ENTRYPOINT ["node", "/usr/src/app/dist"]
+ENTRYPOINT ["node", "/usr/src/app/cli/dist"]
