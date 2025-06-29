@@ -12,10 +12,8 @@ overrides:
   '@img/sharp-libvips-darwin-arm64': '-'
   '@img/sharp-libvips-darwin-x64': '-'
   '@img/sharp-libvips-linux-arm': '-'
-  '@img/sharp-libvips-linux-arm64': '-'
   '@img/sharp-libvips-linux-ppc64': '-'
   '@img/sharp-libvips-linux-s390x': '-'
-  '@img/sharp-libvips-linux-x64': '-'
   '@img/sharp-libvips-linuxmusl-arm64': '-'
   '@img/sharp-libvips-linuxmusl-x64': '-'
   '@img/sharp-linux-arm': '-'
@@ -2667,6 +2665,16 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
+
+  '@img/sharp-libvips-linux-arm64@1.1.0':
+    resolution: {integrity: sha512-IVfGJa7gjChDET1dK9SekxFFdflarnUB8PwW8aGwEoF3oAsSDuNUTYS+SKDOyOJxQyDC1aPFMuRYLoDInyV9Ew==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@img/sharp-libvips-linux-x64@1.1.0':
+    resolution: {integrity: sha512-yRj2+reB8iMg9W5sULM3S74jVS7zqSzHG3Ol/twnAAkAhnGQnpjj6e4ayUz7V+FpKypwgs82xbRdYtchTTUB+Q==}
+    cpu: [x64]
+    os: [linux]
 
   '@immich/ui@0.22.8':
     resolution: {integrity: sha512-DVhDgz6drx7vfNhAssX4yYgOC3JpLm8uovLvz3n36skCNU6pm8GoSgH6gMGTM36sx5go3fvhHw5N3KR+A/7bjg==}
@@ -14802,6 +14810,12 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
+  '@img/sharp-libvips-linux-arm64@1.1.0':
+    optional: true
+
+  '@img/sharp-libvips-linux-x64@1.1.0':
+    optional: true
+
   '@immich/ui@0.22.8(svelte@5.34.9)':
     dependencies:
       '@mdi/js': 7.4.47
@@ -24339,6 +24353,9 @@ snapshots:
       node-addon-api: 8.4.0
       node-gyp: 11.2.0
       semver: 7.7.2
+    optionalDependencies:
+      '@img/sharp-libvips-linux-arm64': 1.1.0
+      '@img/sharp-libvips-linux-x64': 1.1.0
     transitivePeerDependencies:
       - supports-color
 
