@@ -16,10 +16,8 @@ overrides:
   '@img/sharp-libvips-linux-s390x': '-'
   '@img/sharp-libvips-linuxmusl-arm64': '-'
   '@img/sharp-libvips-linuxmusl-x64': '-'
-  '@img/sharp-linux-arm': '-'
   '@img/sharp-linux-arm64': '-'
   '@img/sharp-linux-s390x': '-'
-  '@img/sharp-linux-x64': '-'
   '@img/sharp-linuxmusl-arm64': '-'
   '@img/sharp-linuxmusl-x64': '-'
   '@img/sharp-wasm32': '-'
@@ -27,9 +25,11 @@ overrides:
   '@img/sharp-win32-ia32': '-'
   '@img/sharp-win32-x64': '-'
 
-packageExtensionsChecksum: sha256-+3CQBTn6aIiAKChHI1rjvanESIteO5iAX75+N7rQzRA=
+packageExtensionsChecksum: sha256-uKU6XDoPWW8XfP3C00ilevjoIqsJS+niS4oLfY0GV9M=
 
 importers:
+
+  .: {}
 
   .github:
     devDependencies:
@@ -2671,6 +2671,18 @@ packages:
 
   '@img/sharp-libvips-linux-x64@1.1.0':
     resolution: {integrity: sha512-yRj2+reB8iMg9W5sULM3S74jVS7zqSzHG3Ol/twnAAkAhnGQnpjj6e4ayUz7V+FpKypwgs82xbRdYtchTTUB+Q==}
+    cpu: [x64]
+    os: [linux]
+
+  '@img/sharp-linux-arm@0.34.2':
+    resolution: {integrity: sha512-0DZzkvuEOqQUP9mo2kjjKNok5AmnOr1jB2XYjkaoNRwpAYMDzRmAqUIa1nRi58S2WswqSfPOWLNOr0FDT3H5RQ==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [arm]
+    os: [linux]
+
+  '@img/sharp-linux-x64@0.34.2':
+    resolution: {integrity: sha512-sD7J+h5nFLMMmOXYH4DD9UtSNBD05tWSSdWAcEyzqW8Cn5UxXvsHAxmxSesYUsTOBmUnjtxghKDl15EvfqLFbQ==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [x64]
     os: [linux]
 
@@ -14814,6 +14826,14 @@ snapshots:
   '@img/sharp-libvips-linux-x64@1.1.0':
     optional: true
 
+  '@img/sharp-linux-arm@0.34.2':
+    optional: true
+
+  '@img/sharp-linux-x64@0.34.2':
+    optionalDependencies:
+      '@img/sharp-libvips-linux-x64': 1.1.0
+    optional: true
+
   '@immich/ui@0.22.8(svelte@5.34.9)':
     dependencies:
       '@mdi/js': 7.4.47
@@ -24354,6 +24374,8 @@ snapshots:
     optionalDependencies:
       '@img/sharp-libvips-linux-arm64': 1.1.0
       '@img/sharp-libvips-linux-x64': 1.1.0
+      '@img/sharp-linux-arm': 0.34.2
+      '@img/sharp-linux-x64': 0.34.2
     transitivePeerDependencies:
       - supports-color
 
