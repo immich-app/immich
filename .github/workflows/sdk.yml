@@ -31,9 +31,9 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Install deps
-        run: pnpm ci
+        run: pnpm install --frozen-lockfile
       - name: Build
-        run: pnpm run build
+        run: pnpm build
       - name: Publish
         run: pnpm publish
         env:
