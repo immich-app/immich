@@ -19,8 +19,11 @@ import {
   SourceType,
   SyncEntityType,
 } from 'src/enum';
+import { MemoryAssetAuditTable } from 'src/schema/tables/memory-asset-audit.table';
+import { MemoryAssetTable } from 'src/schema/tables/memory-asset.table';
+import { MemoryAuditTable } from 'src/schema/tables/memory-audit.table';
 import { UserTable } from 'src/schema/tables/user.table';
-import { OnThisDayData, UserMetadataItem } from 'src/types';
+import { UserMetadataItem } from 'src/types';
 
 export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 
@@ -92,14 +95,25 @@ export interface AlbumsAssetsAssets {
   albumsId: string;
   assetsId: string;
   createdAt: Generated<Timestamp>;
+  updatedAt: Generated<Timestamp>;
+  updateId: Generated<string>;
+}
+
+export interface AlbumAssetsAudit {
+  deletedAt: Generated<Timestamp>;
+  id: Generated<string>;
+  albumId: string;
+  assetId: string;
 }
 
 export interface AlbumsSharedUsersUsers {
   albumsId: string;
   role: Generated<AlbumUserRole>;
   usersId: string;
-  updatedAt: Generated<Timestamp>;
+  createId: Generated<string>;
+  createdAt: Generated<Timestamp>;
   updateId: Generated<string>;
+  updatedAt: Generated<Timestamp>;
 }
 
 export interface ApiKeys {
@@ -267,7 +281,7 @@ export interface Libraries {
 
 export interface Memories {
   createdAt: Generated<Timestamp>;
-  data: OnThisDayData;
+  data: object;
   deletedAt: Timestamp | null;
   hideAt: Timestamp | null;
   id: Generated<string>;
@@ -294,11 +308,6 @@ export interface Notifications {
   description: string | null;
   data: any | null;
   readAt: Timestamp | null;
-}
-
-export interface MemoriesAssetsAssets {
-  assetsId: string;
-  memoriesId: string;
 }
 
 export interface Migrations {
@@ -332,6 +341,7 @@ export interface PartnersAudit {
 
 export interface Partners {
   createdAt: Generated<Timestamp>;
+  createId: Generated<string>;
   inTimeline: Generated<boolean>;
   sharedById: string;
   sharedWithId: string;
@@ -484,6 +494,7 @@ export interface DB {
   albums: Albums;
   albums_audit: AlbumsAudit;
   albums_assets_assets: AlbumsAssetsAssets;
+  album_assets_audit: AlbumAssetsAudit;
   albums_shared_users_users: AlbumsSharedUsersUsers;
   album_users_audit: AlbumUsersAudit;
   api_keys: ApiKeys;
@@ -499,7 +510,9 @@ export interface DB {
   geodata_places: GeodataPlaces;
   libraries: Libraries;
   memories: Memories;
-  memories_assets_assets: MemoriesAssetsAssets;
+  memories_audit: MemoryAuditTable;
+  memories_assets_assets: MemoryAssetTable;
+  memory_assets_audit: MemoryAssetAuditTable;
   migrations: Migrations;
   notifications: Notifications;
   move_history: MoveHistory;

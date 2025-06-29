@@ -1,6 +1,6 @@
 <script lang="ts">
   import { copyToClipboard } from '$lib/utils';
-  import { Button, Code, IconButton, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
+  import { Button, Code, HStack, IconButton, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { mdiCheck, mdiContentCopy } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -35,10 +35,10 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full">
+    <HStack fullWidth>
       <Button shape="round" color="primary" fullWidth onclick={() => onClose()}>
         {$t('done')}
       </Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>

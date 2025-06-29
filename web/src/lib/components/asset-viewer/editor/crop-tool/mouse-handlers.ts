@@ -58,7 +58,7 @@ export function handleMouseDown(e: MouseEvent) {
   }
 
   document.body.style.userSelect = 'none';
-  globalThis.addEventListener('mouseup', handleMouseUp);
+  globalThis.addEventListener('mouseup', handleMouseUp, { passive: true });
 }
 
 export function handleMouseMove(e: MouseEvent) {

@@ -12,7 +12,6 @@
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
-  import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
@@ -31,7 +30,12 @@
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { toTimelineAsset, type ScrubberListener, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
+  import {
+    getTimes,
+    toTimelineAsset,
+    type ScrubberListener,
+    type TimelinePlainYearMonth,
+  } from '$lib/utils/timeline-util';
   import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
@@ -769,6 +773,13 @@
       void selectAssetCandidates(lastAssetMouseEvent);
     }
   });
+
+  $effect(() => {
+    if ($showAssetViewer) {
+      const { localDateTime } = getTimes($viewingAsset.fileCreatedAt, DateTime.local().offset / 60);
+      void timelineManager.loadMonthGroup({ year: localDateTime.year, month: localDateTime.month });
+    }
+  });
 </script>
 
 <svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
@@ -911,28 +922,26 @@
   </section>
 </section>
 
-{#if !albumMapViewManager.isInMapView}
-  <Portal target="body">
-    {#if $showAssetViewer}
-      {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-        <AssetViewer
-          {withStacked}
-          asset={$viewingAsset}
-          preloadAssets={$preloadAssets}
-          {isShared}
-          {album}
-          {person}
-          preAction={handlePreAction}
-          onAction={handleAction}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onRandom={handleRandom}
-          onClose={handleClose}
-        />
-      {/await}
-    {/if}
-  </Portal>
-{/if}
+<Portal target="body">
+  {#if $showAssetViewer}
+    {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+      <AssetViewer
+        {withStacked}
+        asset={$viewingAsset}
+        preloadAssets={$preloadAssets}
+        {isShared}
+        {album}
+        {person}
+        preAction={handlePreAction}
+        onAction={handleAction}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onRandom={handleRandom}
+        onClose={handleClose}
+      />
+    {/await}
+  {/if}
+</Portal>
 
 <style>
   #asset-grid {

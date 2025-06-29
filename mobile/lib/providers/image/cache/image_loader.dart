@@ -37,12 +37,11 @@ class ImageLoader {
       } else if (result is FileInfo) {
         // We have the file
         final buffer = await ui.ImmutableBuffer.fromFilePath(result.file.path);
-        final decoded = await decode(buffer);
-        return decoded;
+        return decode(buffer);
       }
     }
 
     // If we get here, the image failed to load from the cache stream
-    throw ImageLoadingException('Could not load image from stream');
+    throw const ImageLoadingException('Could not load image from stream');
   }
 }

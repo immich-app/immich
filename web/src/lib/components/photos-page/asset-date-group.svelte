@@ -145,19 +145,19 @@
       {#if !singleSelect && ((hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dayGroup.groupTitle))}
         <div
           transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
-          class="inline-block px-2 hover:cursor-pointer"
+          class="inline-block pe-2 hover:cursor-pointer"
           onclick={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
           onkeydown={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
         >
           {#if assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
-            <Icon path={mdiCheckCircle} size="24" color="#4250af" />
+            <Icon path={mdiCheckCircle} size="24" class="text-primary" />
           {:else}
             <Icon path={mdiCircleOutline} size="24" color="#757575" />
           {/if}
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize ms-2.5" title={dayGroup.groupTitle}>
+      <span class="w-full truncate first-letter:capitalize" title={dayGroup.groupTitle}>
         {dayGroup.groupTitle}
       </span>
     </div>

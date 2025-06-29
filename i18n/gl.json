@@ -239,7 +239,6 @@
     "storage_template_migration_info": "O modelo de almacenamento converterá todas as extensións a minúsculas. Os cambios no modelo só se aplicarán aos activos novos. Para aplicar retroactivamente o modelo aos activos cargados previamente, execute o <link>{job}</link>.",
     "storage_template_migration_job": "Traballo de Migración do Modelo de Almacenamento",
     "storage_template_more_details": "Para máis detalles sobre esta función, consulte o <template-link>Modelo de Almacenamento</template-link> e as súas <implications-link>implicacións</implications-link>",
-    "storage_template_onboarding_description": "Cando estea activada, esta función autoorganizará os ficheiros baseándose nun modelo definido polo usuario. Debido a problemas de estabilidade, a función desactivouse por defecto. Para obter máis información, consulte a <link>documentación</link>.",
     "storage_template_path_length": "Límite aproximado da lonxitude da ruta: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Modelo de Almacenamento",
     "storage_template_settings_description": "Xestionar a estrutura de cartafoles e o nome de ficheiro do activo cargado",

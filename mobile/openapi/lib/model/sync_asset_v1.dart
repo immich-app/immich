@@ -15,6 +15,7 @@ class SyncAssetV1 {
   SyncAssetV1({
     required this.checksum,
     required this.deletedAt,
+    required this.duration,
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     required this.id,
@@ -30,6 +31,8 @@ class SyncAssetV1 {
   String checksum;
 
   DateTime? deletedAt;
+
+  String? duration;
 
   DateTime? fileCreatedAt;
 
@@ -55,6 +58,7 @@ class SyncAssetV1 {
   bool operator ==(Object other) => identical(this, other) || other is SyncAssetV1 &&
     other.checksum == checksum &&
     other.deletedAt == deletedAt &&
+    other.duration == duration &&
     other.fileCreatedAt == fileCreatedAt &&
     other.fileModifiedAt == fileModifiedAt &&
     other.id == id &&
@@ -71,6 +75,7 @@ class SyncAssetV1 {
     // ignore: unnecessary_parenthesis
     (checksum.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
+    (duration == null ? 0 : duration!.hashCode) +
     (fileCreatedAt == null ? 0 : fileCreatedAt!.hashCode) +
     (fileModifiedAt == null ? 0 : fileModifiedAt!.hashCode) +
     (id.hashCode) +
@@ -83,7 +88,7 @@ class SyncAssetV1 {
     (visibility.hashCode);
 
   @override
-  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isFavorite=$isFavorite, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, thumbhash=$thumbhash, type=$type, visibility=$visibility]';
+  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isFavorite=$isFavorite, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, thumbhash=$thumbhash, type=$type, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -92,6 +97,11 @@ class SyncAssetV1 {
       json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
     } else {
     //  json[r'deletedAt'] = null;
+    }
+    if (this.duration != null) {
+      json[r'duration'] = this.duration;
+    } else {
+    //  json[r'duration'] = null;
     }
     if (this.fileCreatedAt != null) {
       json[r'fileCreatedAt'] = this.fileCreatedAt!.toUtc().toIso8601String();
@@ -133,6 +143,7 @@ class SyncAssetV1 {
       return SyncAssetV1(
         checksum: mapValueOfType<String>(json, r'checksum')!,
         deletedAt: mapDateTime(json, r'deletedAt', r''),
+        duration: mapValueOfType<String>(json, r'duration'),
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r''),
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r''),
         id: mapValueOfType<String>(json, r'id')!,
@@ -192,6 +203,7 @@ class SyncAssetV1 {
   static const requiredKeys = <String>{
     'checksum',
     'deletedAt',
+    'duration',
     'fileCreatedAt',
     'fileModifiedAt',
     'id',

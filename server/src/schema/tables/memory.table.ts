@@ -1,7 +1,9 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { MemoryType } from 'src/enum';
+import { memories_delete_audit } from 'src/schema/functions';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
+  AfterDeleteTrigger,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -10,11 +12,17 @@ import {
   Table,
   UpdateDateColumn,
 } from 'src/sql-tools';
-import { MemoryData } from 'src/types';
 
 @Table('memories')
 @UpdatedAtTrigger('memories_updated_at')
-export class MemoryTable<T extends MemoryType = MemoryType> {
+@AfterDeleteTrigger({
+  name: 'memories_delete_audit',
+  scope: 'statement',
+  function: memories_delete_audit,
+  referencingOldTableAs: 'old',
+  when: 'pg_trigger_depth() = 0',
+})
+export class MemoryTable {
   @PrimaryGeneratedColumn()
   id!: string;
 
@@ -31,10 +39,10 @@ export class MemoryTable<T extends MemoryType = MemoryType> {
   ownerId!: string;
 
   @Column()
-  type!: T;
+  type!: MemoryType;
 
   @Column({ type: 'jsonb' })
-  data!: MemoryData[T];
+  data!: object;
 
   /** unless set to true, will be automatically deleted in the future */
   @Column({ type: 'boolean', default: false })

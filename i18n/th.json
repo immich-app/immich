@@ -242,7 +242,6 @@
     "storage_template_migration_info": "เทมเพลตของการจัดเก็บข้อมูลจะเปลี่ยนตัวอักษรเป็นตัวพิมพ์เล็กทั้งหมด การเปลี่ยนแปลงเทมเพลตจะมีผลกับแอสเซ็ตใหม่เท่านั้น หากต้องการนำเทมเพลตไปใช้กับ Asset ที่อัปโหลดก่อนหน้านี้ ให้รัน <link>{job}</link>.",
     "storage_template_migration_job": "เทมเพลตการ Migration ข้อมูล",
     "storage_template_more_details": "สำหรับรายละเอียดเพิ่มเติมเกี่ยวกับฟีเจอร์นี้ โปรดดูที่ <template-link>Storage Template</template-link> และ <implications-link>ผลกระทบ</implications-link>",
-    "storage_template_onboarding_description": "เมื่อเปิดใช้งาน ฟีเจอร์นี้จะจัดระเบียบไฟล์โดยอัตโนมัติตามเทมเพลตที่ผู้ใช้กำหนด เนื่องจากปัญหาด้านความเสถียร ฟีเจอร์นี้จึงถูกปิดใช้งานเป็นค่าเริ่มต้น สำหรับข้อมูลเพิ่มเติม โปรดดูที่ <link>เอกสารประกอบ</link>",
     "storage_template_path_length": "ขีดจำกัดของความยาวพาธโดยประมาณ: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "เทมเพลตการจัดเก็บข้อมูล",
     "storage_template_settings_description": "จัดการโครงสร้างโฟลเดอร์และชื่อไฟล์ที่อัปโหลด",

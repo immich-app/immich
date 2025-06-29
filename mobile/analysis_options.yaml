@@ -56,7 +56,7 @@ custom_lint:
       allowed:
         # required / wanted
         - 'lib/infrastructure/repositories/album_media.repository.dart'
-        - 'lib/infrastructure/repositories/storage.repository.dart'
+        - 'lib/infrastructure/repositories/{storage,asset_media}.repository.dart'
         - 'lib/repositories/{album,asset,file}_media.repository.dart'
         # acceptable exceptions for the time being
         - lib/entities/asset.entity.dart # to provide local AssetEntity for now
@@ -146,6 +146,7 @@ dart_code_metrics:
   #  - no-empty-block
   #  - no-equal-then-else
   #  - prefer-correct-test-file-name
+    - prefer-const-border-radius
   #  - prefer-match-file-name
   #  - prefer-return-await
   #  - avoid-self-assignment
@@ -290,7 +291,8 @@ dart_code_metrics:
     # Style
   #  - prefer-trailing-comma
   #  - unnecessary-trailing-comma
-  #  - prefer-declaring-const-constructor
+    - prefer-declaring-const-constructor
   #  - prefer-single-widget-per-file
+    - prefer-switch-expression
   #  - prefer-prefixed-global-constants
   #  - prefer-correct-callback-field-name

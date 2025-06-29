@@ -80,7 +80,9 @@ class PartnerDetailPage extends HookConsumerWidget {
                 color: context.colorScheme.onSurface.withAlpha(10),
                 width: 1,
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(20),
+              ),
               gradient: LinearGradient(
                 colors: [
                   context.colorScheme.primary.withAlpha(10),

@@ -100,6 +100,16 @@ export class UserRepository {
       .executeTakeFirstOrThrow();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForChangePassword(id: string) {
+    return this.db
+      .selectFrom('users')
+      .select(['users.id', 'users.password'])
+      .where('users.id', '=', id)
+      .where('users.deletedAt', 'is', null)
+      .executeTakeFirstOrThrow();
+  }
+
   @GenerateSql({ params: [DummyValue.EMAIL] })
   getByEmail(email: string, options?: { withPassword?: boolean }) {
     return this.db

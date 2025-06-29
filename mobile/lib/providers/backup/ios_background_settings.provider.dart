@@ -7,7 +7,7 @@ class IOSBackgroundSettings {
   final DateTime? timeOfLastFetch;
   final DateTime? timeOfLastProcessing;
 
-  IOSBackgroundSettings({
+  const IOSBackgroundSettings({
     required this.appRefreshEnabled,
     required this.numberOfBackgroundTasksQueued,
     this.timeOfLastFetch,

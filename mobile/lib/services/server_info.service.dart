@@ -16,7 +16,7 @@ final serverInfoServiceProvider = Provider(
 class ServerInfoService {
   final ApiService _apiService;
 
-  ServerInfoService(this._apiService);
+  const ServerInfoService(this._apiService);
 
   Future<ServerDiskInfo?> getDiskInfo() async {
     try {

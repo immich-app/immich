@@ -872,6 +872,43 @@ class LocalMediaSummaryRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [LocalTimelinePage]
+class LocalTimelineRoute extends PageRouteInfo<LocalTimelineRouteArgs> {
+  LocalTimelineRoute({
+    Key? key,
+    required String albumId,
+    List<PageRouteInfo>? children,
+  }) : super(
+          LocalTimelineRoute.name,
+          args: LocalTimelineRouteArgs(key: key, albumId: albumId),
+          initialChildren: children,
+        );
+
+  static const String name = 'LocalTimelineRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<LocalTimelineRouteArgs>();
+      return LocalTimelinePage(key: args.key, albumId: args.albumId);
+    },
+  );
+}
+
+class LocalTimelineRouteArgs {
+  const LocalTimelineRouteArgs({this.key, required this.albumId});
+
+  final Key? key;
+
+  final String albumId;
+
+  @override
+  String toString() {
+    return 'LocalTimelineRouteArgs{key: $key, albumId: $albumId}';
+  }
+}
+
+/// generated route for
 /// [LockedPage]
 class LockedRoute extends PageRouteInfo<void> {
   const LockedRoute({List<PageRouteInfo>? children})
@@ -899,6 +936,22 @@ class LoginRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const LoginPage();
+    },
+  );
+}
+
+/// generated route for
+/// [MainTimelinePage]
+class MainTimelineRoute extends PageRouteInfo<void> {
+  const MainTimelineRoute({List<PageRouteInfo>? children})
+      : super(MainTimelineRoute.name, initialChildren: children);
+
+  static const String name = 'MainTimelineRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const MainTimelinePage();
     },
   );
 }
@@ -1373,6 +1426,43 @@ class RemoteMediaSummaryRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [RemoteTimelinePage]
+class RemoteTimelineRoute extends PageRouteInfo<RemoteTimelineRouteArgs> {
+  RemoteTimelineRoute({
+    Key? key,
+    required String albumId,
+    List<PageRouteInfo>? children,
+  }) : super(
+          RemoteTimelineRoute.name,
+          args: RemoteTimelineRouteArgs(key: key, albumId: albumId),
+          initialChildren: children,
+        );
+
+  static const String name = 'RemoteTimelineRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<RemoteTimelineRouteArgs>();
+      return RemoteTimelinePage(key: args.key, albumId: args.albumId);
+    },
+  );
+}
+
+class RemoteTimelineRouteArgs {
+  const RemoteTimelineRouteArgs({this.key, required this.albumId});
+
+  final Key? key;
+
+  final String albumId;
+
+  @override
+  String toString() {
+    return 'RemoteTimelineRouteArgs{key: $key, albumId: $albumId}';
+  }
+}
+
+/// generated route for
 /// [SearchPage]
 class SearchRoute extends PageRouteInfo<SearchRouteArgs> {
   SearchRoute({
@@ -1605,6 +1695,22 @@ class TabControllerRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const TabControllerPage();
+    },
+  );
+}
+
+/// generated route for
+/// [TabShellPage]
+class TabShellRoute extends PageRouteInfo<void> {
+  const TabShellRoute({List<PageRouteInfo>? children})
+      : super(TabShellRoute.name, initialChildren: children);
+
+  static const String name = 'TabShellRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const TabShellPage();
     },
   );
 }

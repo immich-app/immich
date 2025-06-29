@@ -63,6 +63,9 @@ final _features = [
       final db = ref.read(driftProvider);
       await db.remoteAssetEntity.deleteAll();
       await db.remoteExifEntity.deleteAll();
+      await db.remoteAlbumEntity.deleteAll();
+      await db.remoteAlbumUserEntity.deleteAll();
+      await db.remoteAlbumAssetEntity.deleteAll();
     },
   ),
   _Feature(
@@ -87,6 +90,11 @@ final _features = [
         await migrator.create(entity);
       }
     },
+  ),
+  _Feature(
+    name: 'Main Timeline',
+    icon: Icons.timeline_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
   ),
 ];
 
