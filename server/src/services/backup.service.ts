@@ -89,13 +89,12 @@ export class BackupService extends BaseService {
         ];
 
     databaseParams.push('--clean', '--if-exists');
-
+    const databaseVersion = await this.databaseRepository.getPostgresVersion();
     const backupFilePath = path.join(
       StorageCore.getBaseFolder(StorageFolder.BACKUPS),
-      `immich-db-backup-v${serverVersion.toString()}-${Date.now()}.sql.gz.tmp`,
-    );
+      `immich-db-backup-v${serverVersion.toString()}-Postgres-v${databaseVersion.split(' ')[0]}-TS-${Date.now()}.sql.gz.tmp`,
+);
 
-    const databaseVersion = await this.databaseRepository.getPostgresVersion();
     const databaseSemver = semver.coerce(databaseVersion);
     const databaseMajorVersion = databaseSemver?.major;
 
