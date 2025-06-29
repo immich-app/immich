@@ -93,7 +93,7 @@ export class BackupService extends BaseService {
     const backupFilePath = path.join(
       StorageCore.getBaseFolder(StorageFolder.BACKUPS),
       `immich-db-backup-v${serverVersion.toString()}-Postgres-v${databaseVersion.split(' ')[0]}-TS-${Date.now()}.sql.gz.tmp`,
-);
+    );
 
     const databaseSemver = semver.coerce(databaseVersion);
     const databaseMajorVersion = databaseSemver?.major;
