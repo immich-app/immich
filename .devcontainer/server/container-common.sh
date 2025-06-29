@@ -73,7 +73,11 @@ install_dependencies() {
     log "Installing dependencies"
     (
         cd "${IMMICH_WORKSPACE}" || exit 1
-        CI=1 run_cmd make install-all
+        export CI=1
+        run_cmd make ci-server
+        run_cmd make ci-sdk
+        run_cmd make build-sdk
+        run_cmd make ci-web
     )
     log ""
 }

@@ -10,7 +10,7 @@ cd "${IMMICH_WORKSPACE}/server" || (
     exit 1
 )
 
-pnpm install
+CI=1 pnpm install
 while true; do
     run_cmd pnpm exec nest start --debug "0.0.0.0:9230" --watch
     log "Nest API Server crashed with exit code $?.  Respawning in 3s ..."

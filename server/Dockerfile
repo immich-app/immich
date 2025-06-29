@@ -1,4 +1,5 @@
 # dev build
+# Note: can't use prod images to build web/server: sharp binding won't build since pkg-config missing
 FROM ghcr.io/immich-app/base-server-dev:202505131114@sha256:cf4507bbbf307e9b6d8ee9418993321f2b85867da8ce14d0a20ccaf9574cb995 AS dev
 
 ENV PATH="${PATH}:/usr/src/app/bin" \
@@ -25,11 +26,7 @@ RUN rm -rf /usr/src/app && \
 USER node
 
 WORKDIR /usr/src/app
-COPY --chown=node:node \
-    server/package.json \
-    server/pnpm-lock.yaml \
-    pnpm-workspace.yaml \
-    ./
+COPY --chown=node:node . .
 RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
     pnpm fetch
 
@@ -39,7 +36,7 @@ FROM dev AS dev-docker
 
 WORKDIR /usr/src/app
 VOLUME /usr/src/app/node_modules
-# Actually install depdencies, to cache them in node_modules
+# Actually install dependencies, to cache them in node_modules
 RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
     pnpm install --frozen-lockfile --offline
 
@@ -67,44 +64,18 @@ COPY --chmod=777 \
     ../.devcontainer/server/*.sh \
     /immich-devcontainer/
 
-WORKDIR /tmp/build
-COPY --chown=node:node \
-    package.json \
-    pnpm-lock.yaml \
-    ./
-# note: e2e is part of dockerignore, so it is not copied here
-COPY --chown=node:node \
-    web/package.json \
-    web/pnpm-lock.yaml \
-    ./web/
-COPY --chown=node:node \
-    cli/package.json \
-    cli/pnpm-lock.yaml \
-    ./cli/
-COPY --chown=node:node \
-    server/package.json \
-    server/pnpm-lock.yaml \
-    ./server/
-# note: docs is part of dockerignore, so it is not copied here
-COPY --chown=node:node open-api/typescript-sdk/package.json \
-    open-api/typescript-sdk/pnpm-lock.yaml \
-    ./open-api/typescript-sdk/
-
-# This will cache all dependencies
-RUN pnpm store prune && pnpm fetch 
 WORKDIR /workspaces/immich
-RUN rm -rf /tmp/build
 
 FROM dev-container-server AS dev-container-mobile
-USER root
+# USER root
 # Enable multiarch for arm64 if necessary
 RUN if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
     sudo dpkg --add-architecture amd64 && \
     sudo apt-get install -y --no-install-recommends \
-        qemu-user-static \
-        libc6:amd64 \
-        libstdc++6:amd64 \
-        libgcc1:amd64; \
+    qemu-user-static \
+    libc6:amd64 \
+    libstdc++6:amd64 \
+    libgcc1:amd64; \
     fi
 
 # Flutter SDK
@@ -116,55 +87,57 @@ ENV PATH=${PATH}:${FLUTTER_HOME}/bin
 
 # Flutter SDK
 RUN sudo mkdir -p ${FLUTTER_HOME} \
-  && sudo curl -C - --output flutter.tar.xz https://storage.googleapis.com/flutter_infra_release/releases/${FLUTTER_CHANNEL}/linux/flutter_linux_${FLUTTER_VERSION}-${FLUTTER_CHANNEL}.tar.xz \
-  && sudo tar -xf flutter.tar.xz --strip-components=1 -C ${FLUTTER_HOME} \
-  && sudo rm flutter.tar.xz \
-  && sudo chown -R node ${FLUTTER_HOME}
+    && sudo curl -C - --output flutter.tar.xz https://storage.googleapis.com/flutter_infra_release/releases/${FLUTTER_CHANNEL}/linux/flutter_linux_${FLUTTER_VERSION}-${FLUTTER_CHANNEL}.tar.xz \
+    && sudo tar -xf flutter.tar.xz --strip-components=1 -C ${FLUTTER_HOME} \
+    && sudo rm flutter.tar.xz \
+    && sudo chown -R node ${FLUTTER_HOME}
 
 RUN wget -qO- https://dcm.dev/pgp-key.public | sudo gpg --dearmor -o /usr/share/keyrings/dcm.gpg \
-  && echo 'deb [signed-by=/usr/share/keyrings/dcm.gpg arch=amd64] https://dcm.dev/debian stable main' | sudo tee /etc/apt/sources.list.d/dart_stable.list \
-  && sudo apt-get update \
-  && sudo apt-get install dcm -y
+    && echo 'deb [signed-by=/usr/share/keyrings/dcm.gpg arch=amd64] https://dcm.dev/debian stable main' | sudo tee /etc/apt/sources.list.d/dart_stable.list \
+    && sudo apt-get update \
+    && sudo apt-get install dcm -y
 
 COPY --chmod=777 ../.devcontainer/mobile/container-mobile-post-create.sh /immich-devcontainer/container-mobile-post-create.sh
 
 RUN dart --disable-analytics
 
 # server production build
-FROM dev AS prod
+FROM dev AS server-prod
 
-USER root
-RUN chown node:node /usr/src/app
-USER node
-COPY --chown=node:node server .
+WORKDIR /usr/src/app/server
 RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
-    pnpm install --frozen-lockfile --offline && \
-    pnpm build
+    pnpm install --frozen-lockfile && \
+    pnpm build 
 
-FROM dev AS sdk
+FROM dev AS sdk-prod
 
-COPY --chown=node:node open-api/typescript-sdk/ .
+WORKDIR /usr/src/app/open-api/typescript-sdk
 RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
-    pnpm install --frozen-lockfile --no-optional && \
+    pnpm install --frozen-lockfile && \
     pnpm build 
 
 # web production build
-FROM dev AS web
+FROM dev AS web-prod
 
-COPY --chown=node:node pnpm-workspace.yaml web ./
-COPY --from=sdk /usr/src/app /usr/src/open-api/typescript-sdk
-COPY --chown=node:node i18n /usr/src/i18n
+COPY --from=sdk-prod /usr/src/app/open-api/typescript-sdk /usr/src/app/open-api/typescript-sdk
+RUN rm -rf /usr/src/app/open-api/typescript-sdk/node_modules
+WORKDIR /usr/src/app/web
+# USER root
+RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
+    pnpm install --frozen-lockfile && \
+    pnpm rebuild && pnpm build 
 
+FROM dev AS cli-prod
+
+WORKDIR /usr/src/app/web
+RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
+    pnpm install --frozen-lockfile && \
+    pnpm exec svelte-kit sync
+WORKDIR /usr/src/app/open-api/typescript-sdk
 RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
     pnpm install --frozen-lockfile && \
     pnpm build
-
-FROM dev AS cli
-
-COPY --chown=node:node cli .
-COPY --from=sdk /usr/src/app /usr/src/open-api/typescript-sdk
-# the following command does not use --offline, because the cache created in 
-# the 'dev' stage did not includ the cli depenencies
+WORKDIR /usr/src/app/cli
 RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
     pnpm install --frozen-lockfile && \
     pnpm build
@@ -190,22 +163,26 @@ RUN mkdir -p /buildcache/pnpm_store && \
     chown -R node:node /usr/src/app && \
     chmod 755 /usr/src/app
 
-COPY --chown=node:node --from=prod /usr/src/app/dist ./dist 
-COPY --chown=node:node --from=prod /usr/src/app/bin ./bin
-COPY --chown=node:node --from=web /usr/src/app/build /build/www
-COPY --chown=node:node --from=cli /usr/src/app/dist ./cli
+COPY --chown=node:node --from=server-prod /usr/src/app/server/dist ./dist 
+COPY --chown=node:node --from=server-prod /usr/src/app/server/bin ./bin
+COPY --chown=node:node --from=server-prod /usr/src/app/server/package.json ./
+COPY --chown=node:node --from=web-prod /usr/src/app/node_modules/ ./node_modules
+COPY --chown=node:node --from=web-prod /usr/src/app/web/build /build/www
+COPY --chown=node:node --from=cli-prod /usr/src/app/cli/dist ./cli
 COPY --chown=node:node server/resources ./resources/
-COPY --chown=node:node server/package.json server/pnpm-lock.yaml pnpm-workspace.yaml server/start*.sh \
-                       docker/scripts/get-cpus.sh ./
+COPY --chown=node:node server/start*.sh \
+    docker/scripts/get-cpus.sh \
+    pnpm-workspace.yaml \
+    pnpm-lock.yaml ./
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
 
 USER node
 RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
-    pnpm install --frozen-lockfile --offline --prod --no-optional && \
+    pnpm install --prod --no-optional && \
     echo '#!/usr/bin/env node' > /usr/src/app/bin/immich && \
     echo 'require("../cli/index.js");' >> /usr/src/app/bin/immich && \
-    chmod +x /usr/src/app/bin/immich 
+    chmod +x /usr/src/app/bin/immich
 
 ENV PATH="${PATH}:/usr/src/app/bin"
 

@@ -14,12 +14,11 @@ WORKDIR /usr/src/app
 
 COPY --chown=node:node \
     ../open-api/typescript-sdk/package.json \
-    ../open-api/typescript-sdk/pnpm-lock.yaml \
     ../open-api/typescript-sdk/
     
 COPY --chown=node:node \
     ./web/package.json \
-    ./web/pnpm-lock.yaml \
+    ./pnpm-lock.yaml \
     pnpm-workspace.yaml \
     ./
 

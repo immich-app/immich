@@ -17,6 +17,8 @@ machine-learning/
 misc/
 mobile/
 
+node_modules/
+
 cli/coverage/
 cli/dist/
 cli/node_modules/
@@ -30,6 +32,7 @@ server/upload/
 server/src/queries
 server/dist/
 server/www/
+server/Dockerfile
 
 web/node_modules/
 web/coverage/
