@@ -64,7 +64,13 @@ COMMIT;
 
 ### Updating VectorChord
 
-When installing a new version of VectorChord, you will need to manually update the extension by connecting to the Immich database and running `ALTER EXTENSION vchord UPDATE;`.
+When installing a new version of VectorChord, you will need to manually update the extension and reindex by connecting to the Immich database and running:
+
+```
+ALTER EXTENSION vchord UPDATE;
+REINDEX INDEX face_index;
+REINDEX INDEX clip_index;
+```
 
 ## Migrating to VectorChord
 
@@ -76,6 +82,8 @@ Support for pgvecto.rs will be dropped in a later release, hence we recommend al
 
 The easiest option is to have both extensions installed during the migration:
 
+<details>
+<summary>Migration steps (automatic)</summary>
 1. Ensure you still have pgvecto.rs installed
 2. Install `pgvector` (`>= 0.7.0, < 1.0.0`). The easiest way to do this is on Debian/Ubuntu by adding the [PostgreSQL Apt repository][pg-apt] and then running `apt install postgresql-NN-pgvector`, where `NN` is your Postgres version (e.g., `16`)
 3. [Install VectorChord][vchord-install]
@@ -89,8 +97,12 @@ The easiest option is to have both extensions installed during the migration:
 11. Restart the Postgres database
 12. Uninstall pgvecto.rs (e.g. `apt-get purge vectors-pg14` on Debian-based environments, replacing `pg14` as appropriate). `pgvector` must remain installed as it provides the data types used by `vchord`
 
+</details>
+
 If it is not possible to have both VectorChord and pgvecto.rs installed at the same time, you can perform the migration with more manual steps:
 
+<details>
+<summary>Migration steps (manual)</summary>
 1. While pgvecto.rs is still installed, run the following SQL command using psql or your choice of database client. Take note of the number outputted by this command as you will need it later
 
 ```sql
@@ -123,13 +135,19 @@ ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE vector(512);
 
 5. Start Immich and let it create new indices using VectorChord
 
+</details>
+
 ### Migrating from pgvector
 
+<details>
+<summary>Migration steps</summary>
 1. Ensure you have at least 0.7.0 of pgvector installed. If it is below that, please upgrade it and run the SQL command `ALTER EXTENSION vector UPDATE;` using psql or your choice of database client
 2. Follow the Prerequisites to install VectorChord
 3. If Immich does not have superuser permissions, run the SQL command `CREATE EXTENSION vchord CASCADE;`
 4. Remove the `DB_VECTOR_EXTENSION=pgvector` environmental variable as it will make Immich still use pgvector if set
 5. Start Immich and let it create new indices using VectorChord
+
+</details>
 
 Note that VectorChord itself uses pgvector types, so you should not uninstall pgvector after following these steps.
 

@@ -2,7 +2,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/interfaces/timeline.interface.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/timeline.repository.dart';
@@ -18,7 +17,7 @@ final timelineServiceProvider = Provider<TimelineService>((ref) {
 });
 
 class TimelineService {
-  final ITimelineRepository _timelineRepository;
+  final TimelineRepository _timelineRepository;
   final AppSettingsService _appSettingsService;
   final UserService _userService;
 

@@ -13,7 +13,7 @@ class LoginResponse {
 
   final String userId;
 
-  LoginResponse({
+  const LoginResponse({
     required this.accessToken,
     required this.isAdmin,
     required this.name,

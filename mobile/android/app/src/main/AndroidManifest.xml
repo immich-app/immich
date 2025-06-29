@@ -90,6 +90,35 @@
         <data android:mimeType="video/*" />
       </intent-filter>
 
+      <!-- immich:// URL scheme handling -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="immich" />
+      </intent-filter>
+
+      <!-- my.immich.app deep link -->
+      <intent-filter android:autoVerify="true">
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+
+          <data android:scheme="https" />
+
+          <data
+              android:host="my.immich.app"
+              android:path="/" />
+          <data
+              android:host="my.immich.app"
+              android:pathPrefix="/albums/" />
+          <data
+              android:host="my.immich.app"
+              android:pathPrefix="/memories/" />
+          <data
+              android:host="my.immich.app"
+              android:pathPrefix="/photos/" />
+      </intent-filter>
     </activity>
 
 

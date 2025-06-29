@@ -7,6 +7,7 @@
 </script>
 
 <script lang="ts">
+  import { afterNavigate } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
@@ -22,7 +23,7 @@
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import maplibregl, { GlobeControl, type GeoJSONSource, type LngLatLike } from 'maplibre-gl';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import {
     AttributionControl,
@@ -73,6 +74,8 @@
     rounded = false,
     showSimpleControls = true,
   }: Props = $props();
+
+  const initialCenter = center;
 
   let map: maplibregl.Map | undefined = $state();
   let marker: maplibregl.Marker | null = null;
@@ -211,6 +214,17 @@
     }
   };
 
+  afterNavigate(() => {
+    if (map) {
+      map.resize();
+
+      if (globalThis.location.hash) {
+        const hashChangeEvent = new HashChangeEvent('hashchange');
+        globalThis.dispatchEvent(hashChangeEvent);
+      }
+    }
+  });
+
   onMount(async () => {
     if (!mapMarkers) {
       mapMarkers = await loadMapMarkers();
@@ -247,6 +261,14 @@
       },
     });
   });
+
+  $effect(() => {
+    if (!center || !zoom) {
+      return;
+    }
+
+    untrack(() => map?.jumpTo({ center, zoom }));
+  });
 </script>
 
 <!--  We handle style loading ourselves so we set style blank here -->
@@ -254,8 +276,8 @@
   {hash}
   style=""
   class="h-full {rounded ? 'rounded-2xl' : 'rounded-none'}"
-  {center}
   {zoom}
+  center={initialCenter}
   attributionControl={false}
   diffStyleUpdates={true}
   onload={(event) => {
@@ -305,7 +327,7 @@
         features: mapMarkers?.map((marker) => asFeature(marker)) ?? [],
       }}
       id="geojson"
-      cluster={{ radius: 35, maxZoom: 17 }}
+      cluster={{ radius: 35, maxZoom: 18 }}
     >
       <MarkerLayer
         applyToClusters

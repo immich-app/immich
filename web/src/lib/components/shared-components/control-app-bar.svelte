@@ -53,7 +53,7 @@
 
   onMount(() => {
     if (browser) {
-      document.addEventListener('scroll', onScroll);
+      document.addEventListener('scroll', onScroll, { passive: true });
     }
   });
 
@@ -62,8 +62,6 @@
       document.removeEventListener('scroll', onScroll);
     }
   });
-
-  let buttonClass = $derived(forceDark ? 'hover:text-immich-dark-gray' : undefined);
 </script>
 
 <div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full bg-transparent">
@@ -90,7 +88,6 @@
           variant="ghost"
           icon={backIcon}
           size="large"
-          class={buttonClass}
         />
       {/if}
       {@render leading?.()}

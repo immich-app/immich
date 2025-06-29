@@ -243,7 +243,6 @@
     "storage_template_migration_info": "Templat penyimpanan akan mengubah semua ekstensi ke huruf kecil. Perubahan templat hanya akan diterapkan pada aset baru. Untuk menerapkan templat pada setiap aset yang sebelumnya telah diunggah, jalankan <link>{job}</link>.",
     "storage_template_migration_job": "Tugas Migrasi Templat Ruang Penyimpanan",
     "storage_template_more_details": "Untuk detail lebih lanjut tentang fitur ini, pergi ke <template-link>Templat Penyimpanan</template-link> dan <implications-link>kekurangannya</implications-link>",
-    "storage_template_onboarding_description": "Ketika diaktifkan, fitur ini akan mengelola berkas secara otomatis berdasarkan templat pengguna. Karena masalah stabilitas, fitur ini telah dimatikan secara bawaan. Untuk informasi lebih lanjut, silakan lihat <link>dokumentasi</link>.",
     "storage_template_path_length": "Batas panjang jalur: <b>{length, number}</b>{limit, number}",
     "storage_template_settings": "Templat Penyimpanan",
     "storage_template_settings_description": "Kelola struktur folder dan nama berkas dari aset yang diunggah",

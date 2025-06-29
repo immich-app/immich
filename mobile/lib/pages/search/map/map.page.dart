@@ -156,7 +156,7 @@ class MapPage extends HookConsumerWidget {
       } else {
         // If no asset was previously selected and no new asset is available, close the bottom sheet
         if (selectedMarker.value == null) {
-          bottomSheetStreamController.add(MapCloseBottomSheet());
+          bottomSheetStreamController.add(const MapCloseBottomSheet());
         }
         selectedMarker.value = null;
       }

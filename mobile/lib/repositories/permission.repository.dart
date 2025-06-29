@@ -2,11 +2,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 final permissionRepositoryProvider = Provider((_) {
-  return PermissionRepository();
+  return const PermissionRepository();
 });
 
 class PermissionRepository implements IPermissionRepository {
-  PermissionRepository();
+  const PermissionRepository();
 
   @override
   Future<bool> hasLocationWhenInUsePermission() {

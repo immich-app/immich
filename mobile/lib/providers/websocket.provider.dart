@@ -56,7 +56,7 @@ class WebsocketState {
   final bool isConnected;
   final List<PendingChange> pendingChanges;
 
-  WebsocketState({
+  const WebsocketState({
     this.socket,
     required this.isConnected,
     required this.pendingChanges,
@@ -94,7 +94,11 @@ class WebsocketState {
 class WebsocketNotifier extends StateNotifier<WebsocketState> {
   WebsocketNotifier(this._ref)
       : super(
-          WebsocketState(socket: null, isConnected: false, pendingChanges: []),
+          const WebsocketState(
+            socket: null,
+            isConnected: false,
+            pendingChanges: [],
+          ),
         );
 
   final _log = Logger('WebsocketNotifier');

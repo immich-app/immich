@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.134.0
+ * 1.135.3
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -2769,6 +2769,15 @@ export function updatePartner({ id, updatePartnerDto }: {
         body: updatePartnerDto
     })));
 }
+export function deletePeople({ bulkIdsDto }: {
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/people", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: bulkIdsDto
+    })));
+}
 export function getAllPeople({ closestAssetId, closestPersonId, page, size, withHidden }: {
     closestAssetId?: string;
     closestPersonId?: string;
@@ -2812,6 +2821,14 @@ export function updatePeople({ peopleUpdateDto }: {
         method: "PUT",
         body: peopleUpdateDto
     })));
+}
+export function deletePerson({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/people/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
 }
 export function getPerson({ id }: {
     id: string;
@@ -4046,18 +4063,33 @@ export enum Error2 {
 export enum SyncEntityType {
     UserV1 = "UserV1",
     UserDeleteV1 = "UserDeleteV1",
-    PartnerV1 = "PartnerV1",
-    PartnerDeleteV1 = "PartnerDeleteV1",
     AssetV1 = "AssetV1",
     AssetDeleteV1 = "AssetDeleteV1",
     AssetExifV1 = "AssetExifV1",
+    PartnerV1 = "PartnerV1",
+    PartnerDeleteV1 = "PartnerDeleteV1",
     PartnerAssetV1 = "PartnerAssetV1",
+    PartnerAssetBackfillV1 = "PartnerAssetBackfillV1",
     PartnerAssetDeleteV1 = "PartnerAssetDeleteV1",
     PartnerAssetExifV1 = "PartnerAssetExifV1",
+    PartnerAssetExifBackfillV1 = "PartnerAssetExifBackfillV1",
     AlbumV1 = "AlbumV1",
     AlbumDeleteV1 = "AlbumDeleteV1",
     AlbumUserV1 = "AlbumUserV1",
-    AlbumUserDeleteV1 = "AlbumUserDeleteV1"
+    AlbumUserBackfillV1 = "AlbumUserBackfillV1",
+    AlbumUserDeleteV1 = "AlbumUserDeleteV1",
+    AlbumAssetV1 = "AlbumAssetV1",
+    AlbumAssetBackfillV1 = "AlbumAssetBackfillV1",
+    AlbumAssetExifV1 = "AlbumAssetExifV1",
+    AlbumAssetExifBackfillV1 = "AlbumAssetExifBackfillV1",
+    AlbumToAssetV1 = "AlbumToAssetV1",
+    AlbumToAssetDeleteV1 = "AlbumToAssetDeleteV1",
+    AlbumToAssetBackfillV1 = "AlbumToAssetBackfillV1",
+    MemoryV1 = "MemoryV1",
+    MemoryDeleteV1 = "MemoryDeleteV1",
+    MemoryToAssetV1 = "MemoryToAssetV1",
+    MemoryToAssetDeleteV1 = "MemoryToAssetDeleteV1",
+    SyncAckV1 = "SyncAckV1"
 }
 export enum SyncRequestType {
     UsersV1 = "UsersV1",
@@ -4067,7 +4099,12 @@ export enum SyncRequestType {
     PartnerAssetsV1 = "PartnerAssetsV1",
     PartnerAssetExifsV1 = "PartnerAssetExifsV1",
     AlbumsV1 = "AlbumsV1",
-    AlbumUsersV1 = "AlbumUsersV1"
+    AlbumUsersV1 = "AlbumUsersV1",
+    AlbumToAssetsV1 = "AlbumToAssetsV1",
+    AlbumAssetsV1 = "AlbumAssetsV1",
+    AlbumAssetExifsV1 = "AlbumAssetExifsV1",
+    MemoriesV1 = "MemoriesV1",
+    MemoryToAssetsV1 = "MemoryToAssetsV1"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",

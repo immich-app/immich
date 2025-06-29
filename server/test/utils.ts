@@ -47,6 +47,7 @@ import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
@@ -67,7 +68,6 @@ import { newDatabaseRepositoryMock } from 'test/repositories/database.repository
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
-import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { ITelemetryRepositoryMock, newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
@@ -218,6 +218,7 @@ export type ServiceOverrides = {
   stack: StackRepository;
   storage: StorageRepository;
   sync: SyncRepository;
+  syncCheckpoint: SyncCheckpointRepository;
   systemMetadata: SystemMetadataRepository;
   tag: TagRepository;
   telemetry: TelemetryRepository;
@@ -278,7 +279,7 @@ export const newTestService = <T extends BaseService>(
     notification: automock(NotificationRepository),
     oauth: automock(OAuthRepository, { args: [loggerMock] }),
     partner: automock(PartnerRepository, { strict: false }),
-    person: newPersonRepositoryMock(),
+    person: automock(PersonRepository, { strict: false }),
     process: automock(ProcessRepository),
     search: automock(SearchRepository, { strict: false }),
     // eslint-disable-next-line no-sparse-arrays
@@ -288,6 +289,7 @@ export const newTestService = <T extends BaseService>(
     stack: automock(StackRepository),
     storage: newStorageRepositoryMock(),
     sync: automock(SyncRepository),
+    syncCheckpoint: automock(SyncCheckpointRepository),
     systemMetadata: newSystemMetadataRepositoryMock(),
     // systemMetadata: automock(SystemMetadataRepository, { strict: false }),
     // eslint-disable-next-line no-sparse-arrays
@@ -337,6 +339,7 @@ export const newTestService = <T extends BaseService>(
     overrides.stack || (mocks.stack as As<StackRepository>),
     overrides.storage || (mocks.storage as As<StorageRepository>),
     overrides.sync || (mocks.sync as As<SyncRepository>),
+    overrides.syncCheckpoint || (mocks.syncCheckpoint as As<SyncCheckpointRepository>),
     overrides.systemMetadata || (mocks.systemMetadata as As<SystemMetadataRepository>),
     overrides.tag || (mocks.tag as As<TagRepository>),
     overrides.telemetry || (mocks.telemetry as unknown as TelemetryRepository),
@@ -373,18 +376,23 @@ function* newPngFactory() {
 
 const pngFactory = newPngFactory();
 
-const withDatabase = (url: string, name: string) => url.replace('/immich', `/${name}`);
+const templateName = 'mich';
+
+const withDatabase = (url: string, name: string) => url.replace(`/${templateName}`, `/${name}`);
 
 export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
   const testUrl = process.env.IMMICH_TEST_POSTGRES_URL!;
   const sql = postgres({
-    ...asPostgresConnectionConfig({ connectionType: 'url', url: withDatabase(testUrl, 'postgres') }),
+    ...asPostgresConnectionConfig({
+      connectionType: 'url',
+      url: withDatabase(testUrl, 'postgres'),
+    }),
     max: 1,
   });
 
   const randomSuffix = Math.random().toString(36).slice(2, 7);
   const dbName = `immich_${suffix ?? randomSuffix}`;
-  await sql.unsafe(`CREATE DATABASE ${dbName} WITH TEMPLATE immich OWNER postgres;`);
+  await sql.unsafe(`CREATE DATABASE ${dbName} WITH TEMPLATE ${templateName} OWNER postgres;`);
 
   return new Kysely<DB>(getKyselyConfig({ connectionType: 'url', url: withDatabase(testUrl, dbName) }));
 };
@@ -438,3 +446,7 @@ export async function* makeStream<T>(items: T[] = []): AsyncIterableIterator<T> 
     yield item;
   }
 }
+
+export const wait = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};

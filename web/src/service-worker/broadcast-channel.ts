@@ -1,4 +1,4 @@
-import { cancelLoad, getCachedOrFetch } from './cache';
+import { cancelLoad, getCachedOrFetch } from './fetch-event';
 
 export const installBroadcastChannelListener = () => {
   const broadcast = new BroadcastChannel('immich');
