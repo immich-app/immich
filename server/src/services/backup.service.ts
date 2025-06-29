@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import path from 'node:path';
 import semver from 'semver';
+import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum';
@@ -88,13 +89,12 @@ export class BackupService extends BaseService {
         ];
 
     databaseParams.push('--clean', '--if-exists');
-
+    const databaseVersion = await this.databaseRepository.getPostgresVersion();
     const backupFilePath = path.join(
       StorageCore.getBaseFolder(StorageFolder.BACKUPS),
-      `immich-db-backup-${Date.now()}.sql.gz.tmp`,
+      `immich-db-backup-v${serverVersion.toString()}-pg-v${databaseVersion.split(' ')[0]}-${Date.now()}.sql.gz.tmp`,
     );
 
-    const databaseVersion = await this.databaseRepository.getPostgresVersion();
     const databaseSemver = semver.coerce(databaseVersion);
     const databaseMajorVersion = databaseSemver?.major;
 
