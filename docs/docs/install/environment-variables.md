@@ -83,6 +83,7 @@ Information on the current workers can be found [here](/docs/administration/jobs
 | `DB_SSL_MODE`                       | Database SSL mode                                                            |            | server                         |
 | `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database vector extension (one of [`vectorchord`, `pgvector`, `pgvecto.rs`]) |            | server                         |
 | `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`])     |  `false`   | server                         |
+| `DB_STORAGE_TYPE`                   | By default assumes `SSD` but can be set to `HDD`                             |  `SSD`     | server                         |
 
 \*1: The values of `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE_NAME` are passed to the Postgres container as the variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in `docker-compose.yml`.
 
