@@ -20,7 +20,7 @@
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import { onDestroy } from 'svelte';
-  import { AssetManager } from '$lib/managers/asset-manager.svelte';
+  import { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
 
   interface Props {
     data: PageData;

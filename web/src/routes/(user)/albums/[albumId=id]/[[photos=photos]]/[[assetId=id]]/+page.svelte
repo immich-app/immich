@@ -34,7 +34,7 @@
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
-  import { AssetManager } from '$lib/managers/asset-manager.svelte';
+  import { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';

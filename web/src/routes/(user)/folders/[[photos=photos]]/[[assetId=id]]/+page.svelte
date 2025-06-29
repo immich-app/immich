@@ -32,7 +32,7 @@
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { AssetManager } from '$lib/managers/asset-manager.svelte';
+  import { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import { onDestroy } from 'svelte';
 
   interface Props {

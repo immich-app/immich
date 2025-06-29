@@ -1,6 +1,6 @@
 <script lang="ts">
   import MemoryViewer from '$lib/components/memory-page/memory-viewer.svelte';
-  import { AssetManager } from '$lib/managers/asset-manager.svelte';
+  import { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import { onDestroy } from 'svelte';
   import type { PageData } from './$types';
 

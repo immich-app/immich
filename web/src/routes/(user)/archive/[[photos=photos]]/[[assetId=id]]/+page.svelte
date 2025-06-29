@@ -14,7 +14,7 @@
   import { AssetAction } from '$lib/constants';
 
   import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
-  import { AssetManager } from '$lib/managers/asset-manager.svelte';
+  import { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetVisibility } from '@immich/sdk';

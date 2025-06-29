@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { AssetManager } from '$lib/managers/asset-manager.svelte';
+  import type { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import MapModal from '$lib/modals/MapModal.svelte';
   import { navigate } from '$lib/utils/navigation';

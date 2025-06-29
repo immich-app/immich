@@ -12,7 +12,7 @@
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
-  import type { AssetManager } from '$lib/managers/asset-manager.svelte';
+  import type { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -439,35 +439,38 @@
   };
 
   const handlePrevious = async () => {
-    const laterAsset = await timelineManager.getLaterAsset(asset);
-
-    if (laterAsset) {
-      // TODO: If preloadAsset is undefined, throw an exception.
-      // assetManager.preloadAssets = [await timelineManager.getLaterAsset(laterAsset)];
-      await navigate({ targetRoute: 'current', assetId: laterAsset.id });
+    let laterAsset = undefined;
+    if (asset) {
+      laterAsset = await timelineManager.getLaterAsset(asset);
+      if (laterAsset) {
+        // TODO: If preloadAsset is undefined, throw an exception.
+        // assetManager.preloadAssets = [await timelineManager.getLaterAsset(laterAsset)];
+        await navigate({ targetRoute: 'current', assetId: laterAsset.id });
+      }
     }
-
     return !!laterAsset;
   };
 
   const handleNext = async () => {
-    const earlierAsset = await timelineManager.getEarlierAsset(asset);
-
-    if (earlierAsset) {
-      // assetManager.preloadAssets = [await timelineManager.getEarlierAsset(earlierAsset)];
-      await navigate({ targetRoute: 'current', assetId: earlierAsset.id });
+    let earlierAsset = undefined;
+    if (asset) {
+      earlierAsset = await timelineManager.getEarlierAsset(asset);
+      if (earlierAsset) {
+        // assetManager.preloadAssets = [await timelineManager.getEarlierAsset(earlierAsset)];
+        await navigate({ targetRoute: 'current', assetId: earlierAsset.id });
+      }
     }
-
     return !!earlierAsset;
   };
 
   const handleRandom = async () => {
-    const randomAsset = await timelineManager.getRandomAsset();
-
-    if (randomAsset) {
-      await navigate({ targetRoute: 'current', assetId: randomAsset.id });
+    let randomAsset = undefined;
+    if (asset) {
+      randomAsset = await timelineManager.getRandomAsset();
+      if (randomAsset) {
+        await navigate({ targetRoute: 'current', assetId: randomAsset.id });
+      }
     }
-
     return !!randomAsset;
   };
 
@@ -777,7 +780,7 @@
   });
 
   $effect(() => {
-    if (assetManager.showAssetViewer) {
+    if (assetManager.showAssetViewer && asset) {
       const { localDateTime } = getTimes(asset.fileCreatedAt, DateTime.local().offset / 60);
       void timelineManager.loadMonthGroup({ year: localDateTime.year, month: localDateTime.month });
     }

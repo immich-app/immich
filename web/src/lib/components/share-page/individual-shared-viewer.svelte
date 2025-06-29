@@ -3,7 +3,7 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
-  import type { AssetManager } from '$lib/managers/asset-manager.svelte';
+  import type { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';

@@ -4,7 +4,7 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
-  import type { AssetManager } from '$lib/managers/asset-manager.svelte';
+  import type { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';

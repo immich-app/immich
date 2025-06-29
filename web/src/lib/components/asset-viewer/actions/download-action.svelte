@@ -1,7 +1,7 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import type { AssetManager } from '$lib/managers/asset-manager.svelte';
+  import type { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import { downloadFile } from '$lib/utils/asset-utils';
   import { IconButton } from '@immich/ui';
   import { mdiFolderDownloadOutline } from '@mdi/js';

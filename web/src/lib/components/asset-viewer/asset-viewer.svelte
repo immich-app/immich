@@ -7,7 +7,7 @@
   import AssetViewerNavBar from '$lib/components/asset-viewer/asset-viewer-nav-bar.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
-  import { AssetManager } from '$lib/managers/asset-manager.svelte';
+  import { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
@@ -96,7 +96,7 @@
 
   let shouldPlayMotionPhoto = $state(false);
   let sharedLink = getSharedLink();
-  let enableDetailPanel = $derived(asset.hasMetadata);
+  let enableDetailPanel = $derived(asset?.hasMetadata ?? false);
   let slideshowStateUnsubscribe: () => void;
   let shuffleSlideshowUnsubscribe: () => void;
   let previewStackedAsset: AssetResponseDto | undefined = $state();
@@ -442,8 +442,7 @@
         {#if asset.type === AssetTypeEnum.Image}
           {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
             <VideoViewer
-              assetId={asset.livePhotoVideoId}
-              cacheKey={asset.thumbhash}
+              {assetManager}
               projectionType={asset.exifInfo?.projectionType}
               loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
               onPreviousAsset={() => navigateAsset('previous')}
@@ -453,15 +452,14 @@
           {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
                 .toLowerCase()
                 .endsWith('.insp'))}
-            <ImagePanoramaViewer {asset} />
+            <ImagePanoramaViewer {assetManager} />
           {:else if isShowEditor && selectedEditType === 'crop'}
             <CropArea {asset} />
           {:else}
             <PhotoViewer
               bind:zoomToggle
               bind:copyImage
-              {asset}
-              {preloadAssets}
+              {assetManager}
               onPreviousAsset={() => navigateAsset('previous')}
               onNextAsset={() => navigateAsset('next')}
               {sharedLink}
@@ -470,8 +468,7 @@
           {/if}
         {:else}
           <VideoViewer
-            assetId={asset.id}
-            cacheKey={asset.thumbhash}
+            {assetManager}
             projectionType={asset.exifInfo?.projectionType}
             loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
             onPreviousAsset={() => navigateAsset('previous')}

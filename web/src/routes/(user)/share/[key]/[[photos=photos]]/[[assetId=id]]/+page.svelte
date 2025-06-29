@@ -5,7 +5,7 @@
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import PasswordField from '$lib/components/shared-components/password-field.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
-  import { AssetManager } from '$lib/managers/asset-manager.svelte';
+  import { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { setSharedLink } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';

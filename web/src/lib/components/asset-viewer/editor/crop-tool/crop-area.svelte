@@ -5,6 +5,7 @@
   import { onDestroy, onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
+  import type { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import {
     changedOriention,
     cropAspectRatio,
@@ -13,7 +14,6 @@
     rotateDegrees,
   } from '$lib/stores/asset-editor.store';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import type { AssetResponseDto } from '@immich/sdk';
   import { animateCropChange, recalculateCrop } from './crop-settings';
   import { cropAreaEl, cropFrame, imgElement, isResizingOrDragging, overlayEl, resetCropStore } from './crop-store';
   import { draw } from './drawing';
@@ -21,10 +21,10 @@
   import { handleMouseDown, handleMouseMove, handleMouseUp } from './mouse-handlers';
 
   interface Props {
-    asset: AssetResponseDto;
+    assetManager: AssetManager;
   }
 
-  let { asset }: Props = $props();
+  let { assetManager = $bindable() }: Props = $props();
 
   let img = $state<HTMLImageElement>();
 
