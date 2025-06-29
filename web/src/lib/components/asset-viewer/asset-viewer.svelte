@@ -105,7 +105,6 @@
   let fullscreenElement = $state<Element>();
   let unsubscribes: (() => void)[] = [];
   let selectedEditType: string = $state('');
-  let stack: StackResponseDto | null = $state(null);
 
   let zoomToggle = $state(() => void 0);
 
