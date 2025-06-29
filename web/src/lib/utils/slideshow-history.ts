@@ -2,7 +2,7 @@ export class SlideshowHistory {
   private history: { id: string }[] = [];
   private index = 0;
 
-  constructor(private onChange: (asset: { id: string }) => void) {}
+  constructor(private onChange: (asset: { id: string }) => Promise<void>) {}
 
   reset() {
     this.history = [];
@@ -18,23 +18,23 @@ export class SlideshowHistory {
     }
   }
 
-  next(): boolean {
+  async next(): Promise<boolean> {
     if (this.index === this.history.length - 1) {
       return false;
     }
 
     this.index++;
-    this.onChange(this.history[this.index]);
+    await this.onChange(this.history[this.index]);
     return true;
   }
 
-  previous(): boolean {
+  async previous(): Promise<boolean> {
     if (this.index === 0) {
       return false;
     }
 
     this.index--;
-    this.onChange(this.history[this.index]);
+    await this.onChange(this.history[this.index]);
     return true;
   }
 }

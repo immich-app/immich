@@ -1,7 +1,6 @@
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
 import { AppRoute } from '$lib/constants';
-import { getAssetInfo } from '@immich/sdk';
 import type { NavigationTarget } from '@sveltejs/kit';
 import { get } from 'svelte/store';
 
@@ -21,10 +20,6 @@ export const isLockedFolderRoute = (route?: string | null) => !!route?.startsWit
 
 export const isAssetViewerRoute = (target?: NavigationTarget | null) =>
   !!(target?.route.id?.endsWith('/[[assetId=id]]') && 'assetId' in (target?.params || {}));
-
-export function getAssetInfoFromParam({ assetId, key }: { assetId?: string; key?: string }) {
-  return assetId ? getAssetInfo({ id: assetId, key }) : undefined;
-}
 
 function currentUrlWithoutAsset() {
   const $page = get(page);

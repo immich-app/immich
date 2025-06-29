@@ -13,7 +13,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences, user } from '$lib/stores/user.store';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
@@ -22,7 +22,6 @@
   import { getParentPath } from '$lib/utils/tree-utils';
   import {
     AssetMediaSize,
-    getAssetInfo,
     updateAsset,
     type AlbumResponseDto,
     type AssetResponseDto,
@@ -83,19 +82,6 @@
 
   let isOwner = $derived($user?.id === asset.ownerId);
 
-  const handleNewAsset = async (newAsset: AssetResponseDto) => {
-    // TODO: check if reloading asset data is necessary
-    if (newAsset.id && !authManager.key) {
-      const data = await getAssetInfo({ id: asset.id });
-      people = data?.people || [];
-      unassignedFaces = data?.unassignedFaces || [];
-    }
-  };
-
-  $effect(() => {
-    handlePromiseError(handleNewAsset(asset));
-  });
-
   let latlng = $derived(
     (() => {
       const lat = asset.exifInfo?.latitude;
@@ -127,11 +113,8 @@
     return undefined;
   };
 
-  const handleRefreshPeople = async () => {
-    await getAssetInfo({ id: asset.id }).then((data) => {
-      people = data?.people || [];
-      unassignedFaces = data?.unassignedFaces || [];
-    });
+  // TODO: refresh people
+  const handleRefreshPeople = () => {
     showEditFaces = false;
   };
 

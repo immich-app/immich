@@ -1,17 +1,19 @@
 <script lang="ts">
+  import type { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { getAssetOriginalUrl } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
-  import { AssetMediaSize, viewAsset, type AssetResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, viewAsset } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   interface Props {
-    asset: AssetResponseDto;
+    assetManager: AssetManager;
   }
 
-  const { asset }: Props = $props();
+  // TODO: do not preload assets.
+  const { assetManager = $bindable() }: Props = $props();
 
   const loadAssetData = async (id: string) => {
     const data = await viewAsset({ id, size: AssetMediaSize.Preview, key: authManager.key });

@@ -1,7 +1,6 @@
 import { getAssetThumbnailUrl, setSharedLink } from '$lib/utils';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
-import { getAssetInfoFromParam } from '$lib/utils/navigation';
 import { getMySharedLink, isHttpError } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
@@ -12,7 +11,7 @@ export const load = (async ({ params, url }) => {
   const $t = await getFormatter();
 
   try {
-    const [sharedLink, asset] = await Promise.all([getMySharedLink({ key }), getAssetInfoFromParam(params)]);
+    const sharedLink = await getMySharedLink({ key });
     setSharedLink(sharedLink);
     const assetCount = sharedLink.assets.length;
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
@@ -21,7 +20,7 @@ export const load = (async ({ params, url }) => {
     return {
       sharedLink,
       sharedLinkKey: key,
-      asset,
+      assetId: params.assetId,
       meta: {
         title: sharedLink.album ? sharedLink.album.albumName : $t('public_share'),
         description: sharedLink.description || $t('shared_photos_and_videos_count', { values: { assetCount } }),
