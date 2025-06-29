@@ -22,10 +22,6 @@ ignoredBuiltDependencies:
   - protobufjs
   - ssh2
   - utimes
-
-ignoredOptionalDependencies:
-  - '@img/sharp-libvips-linux-arm64'
-  - '@img/sharp-libvips-linux-x64'
   
 onlyBuiltDependencies: 
   - sharp
@@ -74,6 +70,8 @@ packageExtensions:
     dependencies:
       node-addon-api: '*'
       node-gyp: '*'
+      '@img/sharp-libvips-linux-arm64': '^1.1.0'
+      '@img/sharp-libvips-linux-x64': '^1.1.0'
   '@immich/ui':
     dependencies:
       tailwindcss: '^4.1.11'
