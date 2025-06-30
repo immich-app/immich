@@ -52,6 +52,8 @@ class SyncApiRepository {
           SyncRequestType.albumAssetsV1,
           SyncRequestType.albumAssetExifsV1,
           SyncRequestType.albumToAssetsV1,
+          SyncRequestType.memoriesV1,
+          SyncRequestType.memoryToAssetsV1,
         ],
       ).toJson(),
     );
@@ -157,6 +159,10 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.albumToAssetBackfillV1: SyncAlbumToAssetV1.fromJson,
   SyncEntityType.albumToAssetDeleteV1: SyncAlbumToAssetDeleteV1.fromJson,
   SyncEntityType.syncAckV1: _SyncAckV1.fromJson,
+  SyncEntityType.memoryV1: SyncMemoryV1.fromJson,
+  SyncEntityType.memoryDeleteV1: SyncMemoryDeleteV1.fromJson,
+  SyncEntityType.memoryToAssetV1: SyncMemoryAssetV1.fromJson,
+  SyncEntityType.memoryToAssetDeleteV1: SyncMemoryAssetDeleteV1.fromJson,
 };
 
 class _SyncAckV1 {
