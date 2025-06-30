@@ -112,7 +112,7 @@ _Remember to run `docker compose up -d` to register the changes. Make sure you c
 
 These actions must be performed by the Immich administrator.
 
-- Click on your avatar on the upper right corner
+- Click on your avatar in the upper right corner
 - Click on Administration -> External Libraries
 - Click on Create an external library…
 - Select which user owns the library, this can not be changed later
