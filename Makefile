@@ -1,21 +1,21 @@
 dev:
-	docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans || make dev-down
+	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans
 
 dev-down:
 	docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans
 
 dev-update:
-	docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
+	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
 dev-scale:
 	docker compose -f ./docker/docker-compose.dev.yml up --build -V  --scale immich-server=3 --remove-orphans
 
 .PHONY: e2e
 e2e:
-	docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
+	COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
 
 prod:
-	docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
+	COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
 
 prod-down:
 	docker compose -f ./docker/docker-compose.prod.yml down --remove-orphans
@@ -56,9 +56,7 @@ map-package = $(subst sdk,@immich/sdk,$(subst cli,@immich/cli,$(subst docs,docum
 audit-%:
 	pnpm --filter $(call map-package,$*) audit fix
 install-%:
-	pnpm --filter $(call map-package,$*) install
-ci-%:
-	pnpm --filter $(call map-package,$*) install --frozen-lockfile
+	pnpm --filter $(call map-package,$*) install $(if $(FROZEN),--frozen-lockfile) $(if $(OFFLINE),--offline)
 build-cli: build-sdk
 build-web: build-sdk
 build-%: install-%
@@ -95,9 +93,6 @@ test-medium-dev:
 
 install-all: 
 	pnpm -r --filter '!documentation' install
-	
-ci-all: 
-	pnpm -r --filter '!documentation' install --frozen-lockfile
 
 build-all: $(foreach M,$(filter-out e2e docs .github,$(MODULES)),build-$M) ;
 
@@ -114,6 +109,8 @@ hygiene-all: audit-all
 
 test-all: 
 	pnpm -r --filter '!documentation' run "/^test/"
+
+setup-dev: install-server install-sdk build-sdk install-web
 
 prune:
 	pnpm store prune

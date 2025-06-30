@@ -16,7 +16,7 @@ name: immich-dev
 services:
   immich-server:
     container_name: immich_server
-    command: ['/usr/src/app/bin/immich-dev']
+    command: ['/usr/src/app/server/bin/immich-dev']
     image: immich-server-dev:latest
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -27,10 +27,9 @@ services:
       target: dev-docker
     restart: unless-stopped
     volumes:
-      - ../server:/usr/src/app
-      - ../open-api/:/usr/src/open-api
-      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
-      - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
+      - ..:/usr/src/app
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/server/upload
+      - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/server/upload/upload
       - /usr/src/app/node_modules
       - /etc/localtime:/etc/localtime:ro
     env_file:
@@ -71,16 +70,14 @@ services:
     build:
       context: ../
       dockerfile: web/Dockerfile
-    command: ['/usr/src/app/bin/immich-web']
+    command: ['/usr/src/app/web/bin/immich-web']
     env_file:
       - .env
     ports:
       - 3000:3000
       - 24678:24678
     volumes:
-      - ../web:/usr/src/app
-      - ../i18n:/usr/src/i18n
-      - ../open-api/:/usr/src/open-api
+      - ..:/usr/src/app
       # - ../../ui:/usr/ui
       - /usr/src/app/node_modules
     ulimits:

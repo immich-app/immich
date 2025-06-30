@@ -1,6 +1,6 @@
 # dev build
 # Note: can't use prod images to build web/server: sharp binding won't build since pkg-config missing
-FROM ghcr.io/immich-app/base-server-dev:202505131114@sha256:cf4507bbbf307e9b6d8ee9418993321f2b85867da8ce14d0a20ccaf9574cb995 AS dev
+FROM ghcr.io/midzelis/base-images/base-server-dev:latest AS dev
 
 ENV PATH="${PATH}:/usr/src/app/bin" \
     IMMICH_ENV=development \
@@ -36,13 +36,14 @@ FROM dev AS dev-docker
 
 WORKDIR /usr/src/app
 VOLUME /usr/src/app/node_modules
-# Actually install dependencies, to cache them in node_modules
-RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
-    pnpm install --frozen-lockfile --offline
+
+RUN pnpm fetch && make setup-dev
+
 
 FROM dev AS dev-container-server
 
 USER root
+RUN pnpm fetch
 # Remove app dir from dev container
 RUN rm -rf /usr/src/app
 
@@ -143,7 +144,7 @@ RUN --mount=type=cache,id=pnpm,target=/buildcache,uid=1000,gid=1000 \
     pnpm build
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:202505061115@sha256:9971d3a089787f0bd01f4682141d3665bcf5efb3e101a88e394ffd25bee4eedb
+FROM ghcr.io/midzelis/base-images/base-server-prod:latest 
 
 RUN corepack enable && \
     corepack install -g pnpm 

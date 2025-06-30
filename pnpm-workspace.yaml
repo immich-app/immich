@@ -40,13 +40,13 @@ overrides:
   '@img/sharp-libvips-linux-s390x': '-'
   # '@img/sharp-libvips-linux-x64': '-'
   '@img/sharp-libvips-linuxmusl-arm64': '-'
-  '@img/sharp-libvips-linuxmusl-x64': '-'
+  # '@img/sharp-libvips-linuxmusl-x64': '-'
   # '@img/sharp-linux-arm': '-'
   '@img/sharp-linux-arm64': '-'
   '@img/sharp-linux-s390x': '-'
   # '@img/sharp-linux-x64': '-'
   '@img/sharp-linuxmusl-arm64': '-'
-  '@img/sharp-linuxmusl-x64': '-'
+  # '@img/sharp-linuxmusl-x64': '-'
   '@img/sharp-wasm32': '-'
   '@img/sharp-win32-arm64': '-'
   '@img/sharp-win32-ia32': '-'
@@ -70,8 +70,6 @@ packageExtensions:
     dependencies:
       node-addon-api: '*'
       node-gyp: '*'
-      '@img/sharp-linux-arm64': '^0.34.2'
-      '@img/sharp-linux-x64': '^0.34.2'
   '@immich/ui':
     dependencies:
       tailwindcss: '^4.1.11'

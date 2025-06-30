@@ -4,30 +4,233 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  canvas: 2.11.2
-  sharp: ^0.34.2
-  '@img/sharp-darwin-arm64': '-'
-  '@img/sharp-darwin-x64': '-'
-  '@img/sharp-libvips-darwin-arm64': '-'
-  '@img/sharp-libvips-darwin-x64': '-'
-  '@img/sharp-libvips-linux-arm': '-'
-  '@img/sharp-libvips-linux-ppc64': '-'
-  '@img/sharp-libvips-linux-s390x': '-'
-  '@img/sharp-libvips-linuxmusl-arm64': '-'
-  '@img/sharp-linux-arm64': '-'
-  '@img/sharp-linux-s390x': '-'
-  '@img/sharp-linuxmusl-arm64': '-'
-  '@img/sharp-wasm32': '-'
-  '@img/sharp-win32-arm64': '-'
-  '@img/sharp-win32-ia32': '-'
-  '@img/sharp-win32-x64': '-'
-
-packageExtensionsChecksum: sha256-OKQJWXvw/5wjnkjESlE5+zrJ2KIPjfGGRpkAjonMYro=
-
 importers:
 
-  .: {}
+  .:
+    dependencies:
+      '@formatjs/icu-messageformat-parser':
+        specifier: ^2.9.8
+        version: 2.11.2
+      '@immich/sdk':
+        specifier: file:../open-api/typescript-sdk
+        version: file:../open-api/typescript-sdk
+      '@immich/ui':
+        specifier: ^0.22.8
+        version: 0.22.8(svelte@5.34.9)(tailwindcss@4.1.11)
+      '@mapbox/mapbox-gl-rtl-text':
+        specifier: 0.2.3
+        version: 0.2.3(mapbox-gl@1.13.3)
+      '@mdi/js':
+        specifier: ^7.4.47
+        version: 7.4.47
+      '@photo-sphere-viewer/core':
+        specifier: ^5.11.5
+        version: 5.13.3
+      '@photo-sphere-viewer/equirectangular-video-adapter':
+        specifier: ^5.11.5
+        version: 5.13.3(@photo-sphere-viewer/core@5.13.3)(@photo-sphere-viewer/video-plugin@5.13.3(@photo-sphere-viewer/core@5.13.3))
+      '@photo-sphere-viewer/resolution-plugin':
+        specifier: ^5.11.5
+        version: 5.13.3(@photo-sphere-viewer/core@5.13.3)(@photo-sphere-viewer/settings-plugin@5.13.3(@photo-sphere-viewer/core@5.13.3))
+      '@photo-sphere-viewer/settings-plugin':
+        specifier: ^5.11.5
+        version: 5.13.3(@photo-sphere-viewer/core@5.13.3)
+      '@photo-sphere-viewer/video-plugin':
+        specifier: ^5.11.5
+        version: 5.13.3(@photo-sphere-viewer/core@5.13.3)
+      '@zoom-image/svelte':
+        specifier: ^0.3.0
+        version: 0.3.4(svelte@5.34.9)
+      dom-to-image:
+        specifier: ^2.6.0
+        version: 2.6.0
+      fabric:
+        specifier: ^6.5.4
+        version: 6.7.0(encoding@0.1.13)
+      geojson:
+        specifier: ^0.5.0
+        version: 0.5.0
+      handlebars:
+        specifier: ^4.7.8
+        version: 4.7.8
+      happy-dom:
+        specifier: ^18.0.1
+        version: 18.0.1
+      intl-messageformat:
+        specifier: ^10.7.11
+        version: 10.7.16
+      justified-layout:
+        specifier: ^4.1.0
+        version: 4.1.0
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
+      luxon:
+        specifier: ^3.4.4
+        version: 3.6.1
+      maplibre-gl:
+        specifier: ^5.3.0
+        version: 5.6.0
+      pmtiles:
+        specifier: ^4.3.0
+        version: 4.3.0
+      qrcode:
+        specifier: ^1.5.4
+        version: 1.5.4
+      socket.io-client:
+        specifier: ~4.8.0
+        version: 4.8.1
+      svelte-gestures:
+        specifier: ^5.1.3
+        version: 5.1.4
+      svelte-i18n:
+        specifier: ^4.0.1
+        version: 4.0.1(svelte@5.34.9)
+      svelte-maplibre:
+        specifier: ^1.0.0
+        version: 1.0.0(svelte@5.34.9)
+      svelte-persisted-store:
+        specifier: ^0.12.0
+        version: 0.12.0(svelte@5.34.9)
+      tabbable:
+        specifier: ^6.2.0
+        version: 6.2.0
+      thumbhash:
+        specifier: ^0.1.1
+        version: 0.1.1
+    devDependencies:
+      '@eslint/eslintrc':
+        specifier: ^3.1.0
+        version: 3.3.1
+      '@eslint/js':
+        specifier: ^9.18.0
+        version: 9.30.0
+      '@faker-js/faker':
+        specifier: ^9.3.0
+        version: 9.8.0
+      '@koddsson/eslint-plugin-tscompat':
+        specifier: ^0.2.0
+        version: 0.2.0(eslint@9.30.0(jiti@2.4.2))(typescript@5.8.3)
+      '@socket.io/component-emitter':
+        specifier: ^3.1.0
+        version: 3.1.2
+      '@sveltejs/adapter-static':
+        specifier: ^3.0.8
+        version: 3.0.8(@sveltejs/kit@2.22.2(@sveltejs/vite-plugin-svelte@5.1.0(svelte@5.34.9)(vite@6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0)))(svelte@5.34.9)(vite@6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0)))
+      '@sveltejs/enhanced-img':
+        specifier: ^0.6.0
+        version: 0.6.1(@sveltejs/vite-plugin-svelte@5.1.0(svelte@5.34.9)(vite@6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0)))(rollup@4.44.1)(svelte@5.34.9)(vite@6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))
+      '@sveltejs/kit':
+        specifier: ^2.15.2
+        version: 2.22.2(@sveltejs/vite-plugin-svelte@5.1.0(svelte@5.34.9)(vite@6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0)))(svelte@5.34.9)(vite@6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^5.0.3
+        version: 5.1.0(svelte@5.34.9)(vite@6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))
+      '@tailwindcss/vite':
+        specifier: ^4.1.7
+        version: 4.1.11(vite@6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))
+      '@testing-library/jest-dom':
+        specifier: ^6.4.2
+        version: 6.6.3
+      '@testing-library/svelte':
+        specifier: ^5.2.8
+        version: 5.2.8(svelte@5.34.9)(vite@6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.15.34)(happy-dom@18.0.1)(jiti@2.4.2)(jsdom@26.1.0(canvas@2.11.2(encoding@0.1.13)))(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))
+      '@testing-library/user-event':
+        specifier: ^14.5.2
+        version: 14.6.1(@testing-library/dom@10.4.0)
+      '@types/chromecast-caf-sender':
+        specifier: ^1.0.11
+        version: 1.0.11
+      '@types/dom-to-image':
+        specifier: ^2.6.7
+        version: 2.6.7
+      '@types/justified-layout':
+        specifier: ^4.1.4
+        version: 4.1.4
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
+      '@types/luxon':
+        specifier: ^3.4.2
+        version: 3.6.2
+      '@types/qrcode':
+        specifier: ^1.5.5
+        version: 1.5.5
+      '@vitest/coverage-v8':
+        specifier: ^3.0.0
+        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.15.34)(happy-dom@18.0.1)(jiti@2.4.2)(jsdom@26.1.0(canvas@2.11.2(encoding@0.1.13)))(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))
+      autoprefixer:
+        specifier: ^10.4.17
+        version: 10.4.21(postcss@8.5.6)
+      dotenv:
+        specifier: ^16.4.7
+        version: 16.6.1
+      eslint:
+        specifier: ^9.18.0
+        version: 9.30.0(jiti@2.4.2)
+      eslint-config-prettier:
+        specifier: ^10.0.0
+        version: 10.1.5(eslint@9.30.0(jiti@2.4.2))
+      eslint-p:
+        specifier: ^0.23.0
+        version: 0.23.1(jiti@2.4.2)
+      eslint-plugin-compat:
+        specifier: ^6.0.2
+        version: 6.0.2(eslint@9.30.0(jiti@2.4.2))
+      eslint-plugin-svelte:
+        specifier: ^3.9.0
+        version: 3.10.1(eslint@9.30.0(jiti@2.4.2))(svelte@5.34.9)
+      eslint-plugin-unicorn:
+        specifier: ^59.0.0
+        version: 59.0.1(eslint@9.30.0(jiti@2.4.2))
+      factory.ts:
+        specifier: ^1.4.1
+        version: 1.4.2
+      globals:
+        specifier: ^16.0.0
+        version: 16.2.0
+      prettier:
+        specifier: ^3.4.2
+        version: 3.6.2
+      prettier-plugin-organize-imports:
+        specifier: ^4.0.0
+        version: 4.1.0(prettier@3.6.2)(typescript@5.8.3)
+      prettier-plugin-sort-json:
+        specifier: ^4.1.1
+        version: 4.1.1(prettier@3.6.2)
+      prettier-plugin-svelte:
+        specifier: ^3.3.3
+        version: 3.4.0(prettier@3.6.2)(svelte@5.34.9)
+      rollup-plugin-visualizer:
+        specifier: ^6.0.0
+        version: 6.0.3(rollup@4.44.1)
+      svelte:
+        specifier: ^5.25.3
+        version: 5.34.9
+      svelte-check:
+        specifier: ^4.1.5
+        version: 4.2.2(picomatch@4.0.2)(svelte@5.34.9)(typescript@5.8.3)
+      svelte-eslint-parser:
+        specifier: ^1.2.0
+        version: 1.2.0(svelte@5.34.9)
+      tailwindcss:
+        specifier: ^4.1.7
+        version: 4.1.11
+      tslib:
+        specifier: ^2.6.2
+        version: 2.8.1
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.3
+      typescript-eslint:
+        specifier: ^8.28.0
+        version: 8.35.0(eslint@9.30.0(jiti@2.4.2))(typescript@5.8.3)
+      vite:
+        specifier: ^6.0.0
+        version: 6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0)
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.34)(happy-dom@18.0.1)(jiti@2.4.2)(jsdom@26.1.0(canvas@2.11.2(encoding@0.1.13)))(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0)
 
   .github:
     devDependencies:
@@ -2231,6 +2434,9 @@ packages:
     resolution: {integrity: sha512-P1ml0nvOmEFdmu0smSXOqTS1sxU5tqvnc0dA4MTKV39kye+bhQnjkIKEE18fNOvxjyB86k8esoCIFM3x4RykOQ==}
     engines: {node: '>=18.0'}
 
+  '@emnapi/runtime@1.4.3':
+    resolution: {integrity: sha512-pBPWdu6MLKROBX05wSNKcNb++m5Er+KQ9QkB+WVM+pW2Kx9hoSrVTnu3BdkI5eBLZoKu/J6mW/B6i6bJB2ytXQ==}
+
   '@esbuild/aix-ppc64@0.19.12':
     resolution: {integrity: sha512-bmoCYyWdEL3wDQIVbcyzRyeKLgk2WtWLTWz1ZIAZF/EGbNOwSA6ew3PftJ1PqMiOOGu0OyFMzG53L0zqIpPeNA==}
     engines: {node: '>=12'}
@@ -2662,9 +2868,46 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
+  '@img/sharp-darwin-arm64@0.34.2':
+    resolution: {integrity: sha512-OfXHZPppddivUJnqyKoi5YVeHRkkNE2zUFT2gbpKxp/JZCFYEYubnMg+gOp6lWfasPrTS+KPosKqdI+ELYVDtg==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@img/sharp-darwin-x64@0.34.2':
+    resolution: {integrity: sha512-dYvWqmjU9VxqXmjEtjmvHnGqF8GrVjM2Epj9rJ6BUIXvk8slvNDJbhGFvIoXzkDhrJC2jUxNLz/GUjjvSzfw+g==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [x64]
+    os: [darwin]
+
+  '@img/sharp-libvips-darwin-arm64@1.1.0':
+    resolution: {integrity: sha512-HZ/JUmPwrJSoM4DIQPv/BfNh9yrOA8tlBbqbLz4JZ5uew2+o22Ik+tHQJcih7QJuSa0zo5coHTfD5J8inqj9DA==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@img/sharp-libvips-darwin-x64@1.1.0':
+    resolution: {integrity: sha512-Xzc2ToEmHN+hfvsl9wja0RlnXEgpKNmftriQp6XzY/RaSfwD9th+MSh0WQKzUreLKKINb3afirxW7A0fz2YWuQ==}
+    cpu: [x64]
+    os: [darwin]
+
   '@img/sharp-libvips-linux-arm64@1.1.0':
     resolution: {integrity: sha512-IVfGJa7gjChDET1dK9SekxFFdflarnUB8PwW8aGwEoF3oAsSDuNUTYS+SKDOyOJxQyDC1aPFMuRYLoDInyV9Ew==}
     cpu: [arm64]
+    os: [linux]
+
+  '@img/sharp-libvips-linux-arm@1.1.0':
+    resolution: {integrity: sha512-s8BAd0lwUIvYCJyRdFqvsj+BJIpDBSxs6ivrOPm/R7piTs5UIwY5OjXrP2bqXC9/moGsyRa37eYWYCOGVXxVrA==}
+    cpu: [arm]
+    os: [linux]
+
+  '@img/sharp-libvips-linux-ppc64@1.1.0':
+    resolution: {integrity: sha512-tiXxFZFbhnkWE2LA8oQj7KYR+bWBkiV2nilRldT7bqoEZ4HiDOcePr9wVDAZPi/Id5fT1oY9iGnDq20cwUz8lQ==}
+    cpu: [ppc64]
+    os: [linux]
+
+  '@img/sharp-libvips-linux-s390x@1.1.0':
+    resolution: {integrity: sha512-xukSwvhguw7COyzvmjydRb3x/09+21HykyapcZchiCUkTThEQEOMtBj9UhkaBRLuBrgLFzQ2wbxdeCCJW/jgJA==}
+    cpu: [s390x]
     os: [linux]
 
   '@img/sharp-libvips-linux-x64@1.1.0':
@@ -2672,9 +2915,20 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@img/sharp-libvips-linuxmusl-arm64@1.1.0':
+    resolution: {integrity: sha512-jYZdG+whg0MDK+q2COKbYidaqW/WTz0cc1E+tMAusiDygrM4ypmSCjOJPmFTvHHJ8j/6cAGyeDWZOsK06tP33w==}
+    cpu: [arm64]
+    os: [linux]
+
   '@img/sharp-libvips-linuxmusl-x64@1.1.0':
     resolution: {integrity: sha512-wK7SBdwrAiycjXdkPnGCPLjYb9lD4l6Ze2gSdAGVZrEL05AOUJESWU2lhlC+Ffn5/G+VKuSm6zzbQSzFX/P65A==}
     cpu: [x64]
+    os: [linux]
+
+  '@img/sharp-linux-arm64@0.34.2':
+    resolution: {integrity: sha512-D8n8wgWmPDakc83LORcfJepdOSN6MvWNzzz2ux0MnIbOqdieRZwVYY32zxVx+IFUT8er5KPcyU3XXsn+GzG/0Q==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [arm64]
     os: [linux]
 
   '@img/sharp-linux-arm@0.34.2':
@@ -2683,10 +2937,22 @@ packages:
     cpu: [arm]
     os: [linux]
 
+  '@img/sharp-linux-s390x@0.34.2':
+    resolution: {integrity: sha512-EGZ1xwhBI7dNISwxjChqBGELCWMGDvmxZXKjQRuqMrakhO8QoMgqCrdjnAqJq/CScxfRn+Bb7suXBElKQpPDiw==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [s390x]
+    os: [linux]
+
   '@img/sharp-linux-x64@0.34.2':
     resolution: {integrity: sha512-sD7J+h5nFLMMmOXYH4DD9UtSNBD05tWSSdWAcEyzqW8Cn5UxXvsHAxmxSesYUsTOBmUnjtxghKDl15EvfqLFbQ==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [x64]
+    os: [linux]
+
+  '@img/sharp-linuxmusl-arm64@0.34.2':
+    resolution: {integrity: sha512-NEE2vQ6wcxYav1/A22OOxoSOGiKnNmDzCYFOZ949xFmrWZOVII1Bp3NqVVpvj+3UeHMFyN5eP/V5hzViQ5CZNA==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [arm64]
     os: [linux]
 
   '@img/sharp-linuxmusl-x64@0.34.2':
@@ -2694,6 +2960,32 @@ packages:
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [x64]
     os: [linux]
+
+  '@img/sharp-wasm32@0.34.2':
+    resolution: {integrity: sha512-/VI4mdlJ9zkaq53MbIG6rZY+QRN3MLbR6usYlgITEzi4Rpx5S6LFKsycOQjkOGmqTNmkIdLjEvooFKwww6OpdQ==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [wasm32]
+
+  '@img/sharp-win32-arm64@0.34.2':
+    resolution: {integrity: sha512-cfP/r9FdS63VA5k0xiqaNaEoGxBg9k7uE+RQGzuK9fHt7jib4zAVVseR9LsE4gJcNWgT6APKMNnCcnyOtmSEUQ==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [arm64]
+    os: [win32]
+
+  '@img/sharp-win32-ia32@0.34.2':
+    resolution: {integrity: sha512-QLjGGvAbj0X/FXl8n1WbtQ6iVBpWU7JO94u/P2M4a8CFYsvQi4GW2mRy/JqkRx0qpBzaOdKJKw8uc930EX2AHw==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [ia32]
+    os: [win32]
+
+  '@img/sharp-win32-x64@0.34.2':
+    resolution: {integrity: sha512-aUdT6zEYtDKCaxkofmmJDJYGCf0+pJg3eU9/oBuqvEeoB9dKI6ZLc/1iLJCTuJQDO4ptntAlkUmHgGjyuobZbw==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [x64]
+    os: [win32]
+
+  '@immich/sdk@file:../open-api/typescript-sdk':
+    resolution: {directory: ../open-api/typescript-sdk, type: directory}
 
   '@immich/ui@0.22.8':
     resolution: {integrity: sha512-DVhDgz6drx7vfNhAssX4yYgOC3JpLm8uovLvz3n36skCNU6pm8GoSgH6gMGTM36sx5go3fvhHw5N3KR+A/7bjg==}
@@ -7925,7 +8217,7 @@ packages:
     resolution: {integrity: sha512-SYhBvTh89tTfCD/CRdSOm13mOBa42iTaTyfyEWBdKcGdPxPtLFBXuHR8XHb33YNYaP+lLbmSvBTsnoesCNJEsQ==}
     engines: {node: '>=14'}
     peerDependencies:
-      canvas: 2.11.2
+      canvas: ^2.5.0
     peerDependenciesMeta:
       canvas:
         optional: true
@@ -7934,7 +8226,7 @@ packages:
     resolution: {integrity: sha512-Cvc9WUhxSMEo4McES3P7oK3QaXldCfNWp7pl2NNeiIFlCoLr3kfq9kb1fxftiwk1FLV7CvpvDfonxtzUDeSOPg==}
     engines: {node: '>=18'}
     peerDependencies:
-      canvas: 2.11.2
+      canvas: ^3.0.0
     peerDependenciesMeta:
       canvas:
         optional: true
@@ -11273,7 +11565,6 @@ packages:
   token-types@6.0.1:
     resolution: {integrity: sha512-jK12SoPQ9D33HTOIQaOhc5tN4Vr+hlbiP/GSPviCyo8/7xgPG5j4AYvl7Zd4k8RhL55eT/IUhBGl7fL06w3mrQ==}
     engines: {node: '>=14.16'}
-    deprecated: Polluted dependency tree
 
   totalist@3.0.1:
     resolution: {integrity: sha512-sf4i37nQ2LBx4m3wB74y+ubopq6W/dIzXg0FDGjsYnZHVa1Da8FH853wlL2gtUhg+xJXjfk3kUZS3BRoQeoQBQ==}
@@ -14527,6 +14818,11 @@ snapshots:
       - uglify-js
       - webpack-cli
 
+  '@emnapi/runtime@1.4.3':
+    dependencies:
+      tslib: 2.8.1
+    optional: true
+
   '@esbuild/aix-ppc64@0.19.12':
     optional: true
 
@@ -14830,16 +15126,56 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
+  '@img/sharp-darwin-arm64@0.34.2':
+    optionalDependencies:
+      '@img/sharp-libvips-darwin-arm64': 1.1.0
+    optional: true
+
+  '@img/sharp-darwin-x64@0.34.2':
+    optionalDependencies:
+      '@img/sharp-libvips-darwin-x64': 1.1.0
+    optional: true
+
+  '@img/sharp-libvips-darwin-arm64@1.1.0':
+    optional: true
+
+  '@img/sharp-libvips-darwin-x64@1.1.0':
+    optional: true
+
   '@img/sharp-libvips-linux-arm64@1.1.0':
+    optional: true
+
+  '@img/sharp-libvips-linux-arm@1.1.0':
+    optional: true
+
+  '@img/sharp-libvips-linux-ppc64@1.1.0':
+    optional: true
+
+  '@img/sharp-libvips-linux-s390x@1.1.0':
     optional: true
 
   '@img/sharp-libvips-linux-x64@1.1.0':
     optional: true
 
+  '@img/sharp-libvips-linuxmusl-arm64@1.1.0':
+    optional: true
+
   '@img/sharp-libvips-linuxmusl-x64@1.1.0':
     optional: true
 
+  '@img/sharp-linux-arm64@0.34.2':
+    optionalDependencies:
+      '@img/sharp-libvips-linux-arm64': 1.1.0
+    optional: true
+
   '@img/sharp-linux-arm@0.34.2':
+    optionalDependencies:
+      '@img/sharp-libvips-linux-arm': 1.1.0
+    optional: true
+
+  '@img/sharp-linux-s390x@0.34.2':
+    optionalDependencies:
+      '@img/sharp-libvips-linux-s390x': 1.1.0
     optional: true
 
   '@img/sharp-linux-x64@0.34.2':
@@ -14847,10 +15183,33 @@ snapshots:
       '@img/sharp-libvips-linux-x64': 1.1.0
     optional: true
 
+  '@img/sharp-linuxmusl-arm64@0.34.2':
+    optionalDependencies:
+      '@img/sharp-libvips-linuxmusl-arm64': 1.1.0
+    optional: true
+
   '@img/sharp-linuxmusl-x64@0.34.2':
     optionalDependencies:
       '@img/sharp-libvips-linuxmusl-x64': 1.1.0
     optional: true
+
+  '@img/sharp-wasm32@0.34.2':
+    dependencies:
+      '@emnapi/runtime': 1.4.3
+    optional: true
+
+  '@img/sharp-win32-arm64@0.34.2':
+    optional: true
+
+  '@img/sharp-win32-ia32@0.34.2':
+    optional: true
+
+  '@img/sharp-win32-x64@0.34.2':
+    optional: true
+
+  '@immich/sdk@file:../open-api/typescript-sdk':
+    dependencies:
+      '@oazapfts/runtime': 1.0.4
 
   '@immich/ui@0.22.8(svelte@5.34.9)':
     dependencies:
@@ -14860,6 +15219,16 @@ snapshots:
       tailwind-merge: 2.6.0
       tailwind-variants: 1.0.0(tailwindcss@4.1.11)
       tailwindcss: 4.1.11
+
+  '@immich/ui@0.22.8(svelte@5.34.9)(tailwindcss@4.1.11)':
+    dependencies:
+      '@mdi/js': 7.4.47
+      bits-ui: 1.8.0(svelte@5.34.9)
+      svelte: 5.34.9
+      tailwind-merge: 2.6.0
+      tailwind-variants: 1.0.0(tailwindcss@4.1.11)
+    transitivePeerDependencies:
+      - tailwindcss
 
   '@inquirer/checkbox@4.1.8(@types/node@22.15.34)':
     dependencies:
@@ -16212,7 +16581,6 @@ snapshots:
     dependencies:
       '@photo-sphere-viewer/core': 5.13.3
       '@photo-sphere-viewer/video-plugin': 5.13.3(@photo-sphere-viewer/core@5.13.3)
-      three: 0.175.0
 
   '@photo-sphere-viewer/resolution-plugin@5.13.3(@photo-sphere-viewer/core@5.13.3)(@photo-sphere-viewer/settings-plugin@5.13.3(@photo-sphere-viewer/core@5.13.3))':
     dependencies:
@@ -16226,7 +16594,6 @@ snapshots:
   '@photo-sphere-viewer/video-plugin@5.13.3(@photo-sphere-viewer/core@5.13.3)':
     dependencies:
       '@photo-sphere-viewer/core': 5.13.3
-      three: 0.175.0
 
   '@photostructure/tz-lookup@11.2.0': {}
 
@@ -16544,7 +16911,6 @@ snapshots:
       zimmerframe: 1.1.2
     transitivePeerDependencies:
       - rollup
-      - supports-color
 
   '@sveltejs/kit@2.22.2(@sveltejs/vite-plugin-svelte@5.1.0(svelte@5.34.9)(vite@6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0)))(svelte@5.34.9)(vite@6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))':
     dependencies:
@@ -16850,6 +17216,14 @@ snapshots:
       dom-accessibility-api: 0.6.3
       lodash: 4.17.21
       redent: 3.0.0
+
+  '@testing-library/svelte@5.2.8(svelte@5.34.9)(vite@6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.15.34)(happy-dom@18.0.1)(jiti@2.4.2)(jsdom@26.1.0(canvas@2.11.2(encoding@0.1.13)))(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))':
+    dependencies:
+      '@testing-library/dom': 10.4.0
+      svelte: 5.34.9
+    optionalDependencies:
+      vite: 6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.34)(happy-dom@18.0.1)(jiti@2.4.2)(jsdom@26.1.0(canvas@2.11.2(encoding@0.1.13)))(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0)
 
   '@testing-library/svelte@5.2.8(svelte@5.34.9)(vite@6.3.5(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.15.34)(happy-dom@18.0.1)(jiti@2.4.2)(jsdom@26.1.0(canvas@2.11.2))(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))':
     dependencies:
@@ -19839,6 +20213,16 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  fabric@6.7.0(encoding@0.1.13):
+    optionalDependencies:
+      canvas: 2.11.2(encoding@0.1.13)
+      jsdom: 20.0.3(canvas@2.11.2(encoding@0.1.13))
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - supports-color
+      - utf-8-validate
+
   factory.ts@1.4.2:
     dependencies:
       clone-deep: 4.0.1
@@ -21053,6 +21437,42 @@ snapshots:
       argparse: 2.0.1
 
   jsbn@1.1.0: {}
+
+  jsdom@20.0.3(canvas@2.11.2(encoding@0.1.13)):
+    dependencies:
+      abab: 2.0.6
+      acorn: 8.15.0
+      acorn-globals: 7.0.1
+      cssom: 0.5.0
+      cssstyle: 2.3.0
+      data-urls: 3.0.2
+      decimal.js: 10.5.0
+      domexception: 4.0.0
+      escodegen: 2.1.0
+      form-data: 4.0.3
+      html-encoding-sniffer: 3.0.0
+      http-proxy-agent: 5.0.0
+      https-proxy-agent: 5.0.1
+      is-potential-custom-element-name: 1.0.1
+      nwsapi: 2.2.20
+      parse5: 7.3.0
+      saxes: 6.0.0
+      symbol-tree: 3.2.4
+      tough-cookie: 4.1.4
+      w3c-xmlserializer: 4.0.0
+      webidl-conversions: 7.0.0
+      whatwg-encoding: 2.0.0
+      whatwg-mimetype: 3.0.0
+      whatwg-url: 11.0.0
+      ws: 8.18.3
+      xml-name-validator: 4.0.0
+    optionalDependencies:
+      canvas: 2.11.2(encoding@0.1.13)
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+    optional: true
 
   jsdom@20.0.3(canvas@2.11.2):
     dependencies:
@@ -24386,18 +24806,29 @@ snapshots:
     dependencies:
       color: 4.2.3
       detect-libc: 2.0.4
-      node-addon-api: 8.4.0
-      node-gyp: 11.2.0
       semver: 7.7.2
     optionalDependencies:
+      '@img/sharp-darwin-arm64': 0.34.2
+      '@img/sharp-darwin-x64': 0.34.2
+      '@img/sharp-libvips-darwin-arm64': 1.1.0
+      '@img/sharp-libvips-darwin-x64': 1.1.0
+      '@img/sharp-libvips-linux-arm': 1.1.0
       '@img/sharp-libvips-linux-arm64': 1.1.0
+      '@img/sharp-libvips-linux-ppc64': 1.1.0
+      '@img/sharp-libvips-linux-s390x': 1.1.0
       '@img/sharp-libvips-linux-x64': 1.1.0
+      '@img/sharp-libvips-linuxmusl-arm64': 1.1.0
       '@img/sharp-libvips-linuxmusl-x64': 1.1.0
       '@img/sharp-linux-arm': 0.34.2
+      '@img/sharp-linux-arm64': 0.34.2
+      '@img/sharp-linux-s390x': 0.34.2
       '@img/sharp-linux-x64': 0.34.2
+      '@img/sharp-linuxmusl-arm64': 0.34.2
       '@img/sharp-linuxmusl-x64': 0.34.2
-    transitivePeerDependencies:
-      - supports-color
+      '@img/sharp-wasm32': 0.34.2
+      '@img/sharp-win32-arm64': 0.34.2
+      '@img/sharp-win32-ia32': 0.34.2
+      '@img/sharp-win32-x64': 0.34.2
 
   shebang-command@2.0.0:
     dependencies:
@@ -25616,7 +26047,6 @@ snapshots:
       sharp: 0.34.2
     transitivePeerDependencies:
       - rollup
-      - supports-color
 
   vite-node@3.2.4(@types/node@22.15.34)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0):
     dependencies:

@@ -2,6 +2,8 @@
 .github/
 .git/
 
+node_modules/
+
 design/
 docker/
 Dockerfile
@@ -16,8 +18,6 @@ fastlane/
 machine-learning/
 misc/
 mobile/
-
-node_modules/
 
 cli/coverage/
 cli/dist/
@@ -39,3 +39,4 @@ web/coverage/
 web/.svelte-kit
 web/build/
 web/.env
+web/Dockerfile
