@@ -3,20 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final actionServiceProvider = Provider<ActionService>(
   (ref) => ActionService(
     ref.watch(assetApiRepositoryProvider),
-    ref.watch(remoteAssetRepositoryProvider),
+    ref.watch(remoteAssetRepository),
   ),
 );
 
 class ActionService {
   final AssetApiRepository _assetApiRepository;
-  final RemoteAssetRepository _remoteAssetRepository;
+  final DriftRemoteAssetRepository _remoteAssetRepository;
 
   const ActionService(this._assetApiRepository, this._remoteAssetRepository);
 
@@ -79,6 +81,17 @@ class ActionService {
     await _remoteAssetRepository.updateVisibility(
       remoteIds,
       AssetVisibility.timeline,
+    );
+  }
+
+  Future<void> editLocation(List<String> remoteIds, LatLng location) async {
+    await _assetApiRepository.updateLocation(
+      remoteIds,
+      location,
+    );
+    await _remoteAssetRepository.updateLocation(
+      remoteIds,
+      location,
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
 import 'package:logging/logging.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final actionProvider = NotifierProvider<ActionNotifier, void>(
@@ -165,6 +166,20 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to remove assets from lock folder', error, stack);
+      return ActionResult(
+        count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
+
+  Future<ActionResult> editLocation(List<String> ids, LatLng location) async {
+    try {
+      await _service.editLocation(ids, location);
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to edit location for assets', error, stack);
       return ActionResult(
         count: ids.length,
         success: false,
