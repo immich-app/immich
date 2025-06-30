@@ -5,6 +5,7 @@ import { svelteTesting } from '@testing-library/svelte/vite';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 const upstream = {
   target: process.env.IMMICH_SERVER_URL || 'http://immich-server:2283/',
@@ -36,6 +37,7 @@ export default defineConfig({
     allowedHosts: true,
   },
   plugins: [
+    tsconfigPaths(),
     enhancedImages(),
     tailwindcss(),
     sveltekit(),
@@ -53,7 +55,7 @@ export default defineConfig({
   test: {
     include: ['src/**/*.{test,spec}.{js,ts}'],
     globals: true,
-    environment: 'jsdom',
+    environment: 'happy-dom',
     setupFiles: ['./src/test-data/setup.ts'],
     sequence: {
       hooks: 'list',

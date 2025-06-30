@@ -2,8 +2,11 @@
 .github/
 .git/
 
+node_modules/
+
 design/
 docker/
+Dockerfile
 !docker/scripts
 docs/
 !docs/package.json
@@ -29,9 +32,11 @@ server/upload/
 server/src/queries
 server/dist/
 server/www/
+server/Dockerfile
 
 web/node_modules/
 web/coverage/
 web/.svelte-kit
 web/build/
 web/.env
+web/Dockerfile

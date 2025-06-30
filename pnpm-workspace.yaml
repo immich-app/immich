@@ -1,0 +1,82 @@
+packages:
+  - cli
+  - docs
+  - e2e
+  - open-api/typescript-sdk
+  - server
+  - web
+  - .github
+
+dedupePeerDependents: false
+
+ignoredBuiltDependencies:
+  - canvas
+  - es5-ext
+  - esbuild
+  - '@nestjs/core'
+  - '@scarf/scarf'
+  - '@swc/core'
+  - bcrypt
+  - cpu-features
+  - msgpackr-extract
+  - protobufjs
+  - ssh2
+  - utimes
+  
+onlyBuiltDependencies: 
+  - sharp
+  - '@tailwindcss/oxide'
+
+overrides: 
+  "canvas": "2.11.2"
+  "sharp": "^0.34.2"
+  '@img/sharp-darwin-arm64': '-'
+  '@img/sharp-darwin-x64': '-'
+  '@img/sharp-libvips-darwin-arm64': '-'
+  '@img/sharp-libvips-darwin-x64': '-'
+  '@img/sharp-libvips-linux-arm': '-'
+  # '@img/sharp-libvips-linux-arm64': '-'
+  '@img/sharp-libvips-linux-ppc64': '-'
+  '@img/sharp-libvips-linux-s390x': '-'
+  # '@img/sharp-libvips-linux-x64': '-'
+  '@img/sharp-libvips-linuxmusl-arm64': '-'
+  # '@img/sharp-libvips-linuxmusl-x64': '-'
+  # '@img/sharp-linux-arm': '-'
+  '@img/sharp-linux-arm64': '-'
+  '@img/sharp-linux-s390x': '-'
+  # '@img/sharp-linux-x64': '-'
+  '@img/sharp-linuxmusl-arm64': '-'
+  # '@img/sharp-linuxmusl-x64': '-'
+  '@img/sharp-wasm32': '-'
+  '@img/sharp-win32-arm64': '-'
+  '@img/sharp-win32-ia32': '-'
+  '@img/sharp-win32-x64': '-'
+
+packageExtensions:
+# these packages use tslib, but do not declare it as a dependency
+  nestjs-kysely:
+    dependencies:
+      tslib: '*'
+  nestjs-otel:
+    dependencies:
+      tslib: '*'
+  '@photo-sphere-viewer/equirectangular-video-adapter':
+    dependencies:
+      three: '*'
+  '@photo-sphere-viewer/video-plugin':
+    dependencies:
+      three: '*'
+  sharp:
+    dependencies:
+      node-addon-api: '*'
+      node-gyp: '*'
+  '@immich/ui':
+    dependencies:
+      tailwindcss: '^4.1.11'
+  'tailwind-variants':
+    dependencies:
+      tailwindcss: '^4.1.11'
+
+preferWorkspacePackages: true
+
+shamefullyHoist: true

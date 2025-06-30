@@ -1,7 +1,7 @@
-diff --git a/node_modules/postgres/cf/src/connection.js b/node_modules/postgres/cf/src/connection.js
-index ee8b1e6..acf4566 100644
---- a/node_modules/postgres/cf/src/connection.js
-+++ b/node_modules/postgres/cf/src/connection.js
+diff --git a/cf/src/connection.js b/cf/src/connection.js
+index ee8b1e69055bef090d322a66c7d792b5b502f47a..acf45662b35a8d01fa0d198faf6337d9f6808f3f 100644
+--- a/cf/src/connection.js
++++ b/cf/src/connection.js
 @@ -387,8 +387,10 @@ function Connection(options, queues = {}, { onopen = noop, onend = noop, onclose
    }
  
@@ -14,10 +14,10 @@ index ee8b1e6..acf4566 100644
        query: { value: query.string, enumerable: options.debug },
        parameters: { value: query.parameters, enumerable: options.debug },
        args: { value: query.args, enumerable: options.debug },
-diff --git a/node_modules/postgres/cjs/src/connection.js b/node_modules/postgres/cjs/src/connection.js
-index f7f58d1..b7f2d65 100644
---- a/node_modules/postgres/cjs/src/connection.js
-+++ b/node_modules/postgres/cjs/src/connection.js
+diff --git a/cjs/src/connection.js b/cjs/src/connection.js
+index f7f58d147f344cb7f2420c2bd24c6b7917162033..b7f2d657c9e1d5fbc7ce4735f61abae972959b1e 100644
+--- a/cjs/src/connection.js
++++ b/cjs/src/connection.js
 @@ -385,8 +385,10 @@ function Connection(options, queues = {}, { onopen = noop, onend = noop, onclose
    }
  
@@ -30,10 +30,10 @@ index f7f58d1..b7f2d65 100644
        query: { value: query.string, enumerable: options.debug },
        parameters: { value: query.parameters, enumerable: options.debug },
        args: { value: query.args, enumerable: options.debug },
-diff --git a/node_modules/postgres/src/connection.js b/node_modules/postgres/src/connection.js
-index 97cc97e..26f508e 100644
---- a/node_modules/postgres/src/connection.js
-+++ b/node_modules/postgres/src/connection.js
+diff --git a/src/connection.js b/src/connection.js
+index 97cc97e1576d6c75f958c66e9cecbf8cd11ed450..26f508e2de12f09f27838aca8d88fa4721fe6677 100644
+--- a/src/connection.js
++++ b/src/connection.js
 @@ -385,8 +385,10 @@ function Connection(options, queues = {}, { onopen = noop, onend = noop, onclose
    }
  

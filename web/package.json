@@ -5,25 +5,24 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
-    "build": "vite build",
+    "build": "svelte-kit sync && vite build",
     "build:stats": "BUILD_STATS=true vite build",
     "package": "svelte-kit package",
     "preview": "vite preview",
     "check:svelte": "svelte-check --no-tsconfig --fail-on-warnings --compiler-warnings 'reactive_declaration_non_reactive_property:ignore' --ignore src/lib/components/photos-page/asset-grid.svelte",
-    "check:typescript": "tsc --noEmit",
+    "check:typescript": "svelte-kit sync && tsc --noEmit",
     "check:watch": "npm run check:svelte -- --watch",
     "check:code": "npm run format && npm run lint:p && npm run check:svelte && npm run check:typescript",
     "check:all": "npm run check:code && npm run test:cov",
-    "lint": "eslint . --max-warnings 0",
-    "lint:p": "eslint-p . --max-warnings 0 --concurrency=4",
-    "lint:fix": "npm run lint -- --fix",
+    "lint": "svelte-kit sync && eslint . --max-warnings 0",
+    "lint:p": "svelte-kit sync && eslint-p . --max-warnings 0 --concurrency=4",
+    "lint:fix": "svelte-kit sync && npm run lint -- --fix",
     "format": "prettier --check .",
     "format:fix": "prettier --write . && npm run format:i18n",
     "format:i18n": "npx --yes sort-json ../i18n/*.json",
     "test": "vitest --run",
     "test:cov": "vitest --coverage",
-    "test:watch": "vitest dev",
-    "prepare": "svelte-kit sync"
+    "test:watch": "vitest dev"
   },
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.9.8",
@@ -39,7 +38,9 @@
     "@zoom-image/svelte": "^0.3.0",
     "dom-to-image": "^2.6.0",
     "fabric": "^6.5.4",
+    "geojson": "^0.5.0",
     "handlebars": "^4.7.8",
+    "happy-dom": "^18.0.1",
     "intl-messageformat": "^10.7.11",
     "justified-layout": "^4.1.0",
     "lodash-es": "^4.17.21",
@@ -103,5 +104,6 @@
   },
   "volta": {
     "node": "22.16.0"
-  }
+  },
+  "packageManager": "pnpm@10.12.3+sha512.467df2c586056165580ad6dfb54ceaad94c5a30f80893ebdec5a44c5aa73c205ae4a5bb9d5ed6bb84ea7c249ece786642bbb49d06a307df218d03da41c317417"
 }

@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
 
-node /usr/src/app/node_modules/.bin/nest start --debug "0.0.0.0:9230" --watch -- "$@"
+cd /usr/src/app || exit
+FROZEN=1 OFFLINE=1 make setup-dev
+cd /usr/src/app/server || exit
+pnpm exec nest start --debug "0.0.0.0:9230" --watch -- "$@"

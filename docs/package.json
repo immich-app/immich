@@ -18,6 +18,7 @@
   "dependencies": {
     "@docusaurus/core": "~3.7.0",
     "@docusaurus/preset-classic": "~3.7.0",
+    "@docusaurus/theme-common": "~3.7.0",
     "@mdi/js": "^7.3.67",
     "@mdi/react": "^1.6.1",
     "@mdx-js/react": "^3.0.0",
@@ -26,6 +27,7 @@
     "clsx": "^2.0.0",
     "docusaurus-lunr-search": "^3.3.2",
     "docusaurus-preset-openapi": "^0.7.5",
+    "lunr": "^2.3.9",
     "postcss": "^8.4.25",
     "prism-react-renderer": "^2.3.1",
     "raw-loader": "^4.0.2",

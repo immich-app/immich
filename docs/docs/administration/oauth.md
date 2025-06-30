@@ -20,7 +20,6 @@ Immich supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an i
 Before enabling OAuth in Immich, a new client application needs to be configured in the 3rd-party authentication server. While the specifics of this setup vary from provider to provider, the general approach should be the same.
 
 1. Create a new (Client) Application
-
    1. The **Provider** type should be `OpenID Connect` or `OAuth2`
    2. The **Client type** should be `Confidential`
    3. The **Application** type should be `Web`
@@ -29,7 +28,6 @@ Before enabling OAuth in Immich, a new client application needs to be configured
 2. Configure Redirect URIs/Origins
 
    The **Sign-in redirect URIs** should include:
-
    - `app.immich:///oauth-callback` - for logging in with OAuth from the [Mobile App](/docs/features/mobile-app.mdx)
    - `http://DOMAIN:PORT/auth/login` - for logging in with OAuth from the Web Client
    - `http://DOMAIN:PORT/user-settings` - for manually linking OAuth in the Web Client
@@ -37,21 +35,17 @@ Before enabling OAuth in Immich, a new client application needs to be configured
    Redirect URIs should contain all the domains you will be using to access Immich. Some examples include:
 
    Mobile
-
    - `app.immich:///oauth-callback` (You **MUST** include this for iOS and Android mobile apps to work properly)
 
    Localhost
-
    - `http://localhost:2283/auth/login`
    - `http://localhost:2283/user-settings`
 
    Local IP
-
    - `http://192.168.0.200:2283/auth/login`
    - `http://192.168.0.200:2283/user-settings`
 
    Hostname
-
    - `https://immich.example.com/auth/login`
    - `https://immich.example.com/user-settings`
 
