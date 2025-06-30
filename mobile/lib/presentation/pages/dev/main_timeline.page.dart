@@ -7,25 +7,35 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 @RoutePage()
-class MainTimelinePage extends StatelessWidget {
+class MainTimelinePage extends ConsumerWidget {
   const MainTimelinePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ProviderScope(
-      overrides: [
-        timelineServiceProvider.overrideWith(
-          (ref) {
-            final timelineUsers =
-                ref.watch(timelineUsersProvider).valueOrNull ?? [];
-            final timelineService =
-                ref.watch(timelineFactoryProvider).main(timelineUsers);
-            ref.onDispose(() => unawaited(timelineService.dispose()));
-            return timelineService;
-          },
-        ),
-      ],
-      child: const Timeline(),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final timelineUsersAsync = ref.watch(timelineUsersProvider);
+
+    return timelineUsersAsync.when(
+      data: (timelineUsers) {
+        if (timelineUsers.isEmpty) {
+          return const Center(child: Text('No timeline users available'));
+        }
+
+        return ProviderScope(
+          overrides: [
+            timelineServiceProvider.overrideWith(
+              (ref) {
+                final timelineService =
+                    ref.watch(timelineFactoryProvider).main(timelineUsers);
+                ref.onDispose(() => unawaited(timelineService.dispose()));
+                return timelineService;
+              },
+            ),
+          ],
+          child: const Timeline(),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(child: Text('Error: $error')),
     );
   }
 }
