@@ -29,7 +29,6 @@
     "migrations:run": "node ./dist/bin/migrations.js run",
     "schema:drop": "node ./dist/bin/migrations.js query 'DROP schema public cascade; CREATE schema public;'",
     "schema:reset": "npm run schema:drop && npm run migrations:run",
-    "kysely:codegen": "npx kysely-codegen --include-pattern=\"(public|vectors).*\" --dialect postgres --url postgres://postgres:postgres@localhost/immich --log-level debug --out-file=./src/db.d.ts",
     "sync:open-api": "node ./dist/bin/sync-open-api.js",
     "sync:sql": "node ./dist/bin/sync-sql.js",
     "email:dev": "email dev -p 3050 --dir src/emails",

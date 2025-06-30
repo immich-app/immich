@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { Insertable, Updateable } from 'kysely';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { Person } from 'src/database';
-import { AssetFaces, FaceSearch } from 'src/db';
 import { Chunked, OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -37,6 +36,8 @@ import {
 } from 'src/enum';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { UpdateFacesData } from 'src/repositories/person.repository';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
+import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
@@ -317,8 +318,8 @@ export class PersonService extends BaseService {
     );
     this.logger.debug(`${faces.length} faces detected in ${previewFile.path}`);
 
-    const facesToAdd: (Insertable<AssetFaces> & { id: string })[] = [];
-    const embeddings: FaceSearch[] = [];
+    const facesToAdd: (Insertable<AssetFaceTable> & { id: string })[] = [];
+    const embeddings: FaceSearchTable[] = [];
     const mlFaceIds = new Set<string>();
 
     for (const face of asset.faces) {

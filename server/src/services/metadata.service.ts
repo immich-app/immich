@@ -9,7 +9,6 @@ import path from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { Asset, AssetFace } from 'src/database';
-import { AssetFaces, Exif, Person } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
   AssetType,
@@ -25,6 +24,9 @@ import {
 import { ArgOf } from 'src/repositories/event.repository';
 import { ReverseGeocodeResult } from 'src/repositories/map.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
+import { ExifTable } from 'src/schema/tables/exif.table';
+import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { isFaceImportEnabled } from 'src/utils/misc';
@@ -162,7 +164,7 @@ export class MetadataService extends BaseService {
 
   private async linkLivePhotos(
     asset: { id: string; type: AssetType; ownerId: string; libraryId: string | null },
-    exifInfo: Insertable<Exif>,
+    exifInfo: Insertable<ExifTable>,
   ): Promise<void> {
     if (!exifInfo.livePhotoCID) {
       return;
@@ -240,7 +242,7 @@ export class MetadataService extends BaseService {
       }
     }
 
-    const exifData: Insertable<Exif> = {
+    const exifData: Insertable<ExifTable> = {
       assetId: asset.id,
 
       // dates
@@ -710,10 +712,10 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    const facesToAdd: (Insertable<AssetFaces> & { assetId: string })[] = [];
+    const facesToAdd: (Insertable<AssetFaceTable> & { assetId: string })[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
-    const missing: (Insertable<Person> & { ownerId: string })[] = [];
+    const missing: (Insertable<PersonTable> & { ownerId: string })[] = [];
     const missingWithFaceAsset: { id: string; ownerId: string; faceAssetId: string }[] = [];
 
     const adjustedRegionInfo = this.orientRegionInfo(tags.RegionInfo, tags.Orientation);

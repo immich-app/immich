@@ -1,7 +1,7 @@
 import { Kysely } from 'kysely';
-import { DB } from 'src/db';
 import { SyncEntityType, SyncRequestType } from 'src/enum';
 import { MemoryRepository } from 'src/repositories/memory.repository';
+import { DB } from 'src/schema';
 import { SyncTestContext } from 'test/medium.factory';
 import { getKyselyDB } from 'test/utils';
 

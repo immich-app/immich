@@ -16,9 +16,9 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { parse } from 'pg-connection-string';
 import postgres, { Notice } from 'postgres';
 import { columns, Exif, Person } from 'src/database';
-import { DB } from 'src/db';
 import { AssetFileType, AssetVisibility, DatabaseExtension, DatabaseSslMode } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
+import { DB } from 'src/schema';
 import { DatabaseConnectionParams, VectorExtension } from 'src/types';
 
 type Ssl = 'require' | 'allow' | 'prefer' | 'verify-full' | boolean | object;

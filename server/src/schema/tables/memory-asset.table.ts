@@ -1,13 +1,16 @@
-import { ColumnType } from 'kysely';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { memory_assets_delete_audit } from 'src/schema/functions';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { MemoryTable } from 'src/schema/tables/memory.table';
-import { AfterDeleteTrigger, CreateDateColumn, ForeignKeyColumn, Table, UpdateDateColumn } from 'src/sql-tools';
-
-type Timestamp = ColumnType<Date, Date | string, Date | string>;
-type Generated<T> =
-  T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S, I | undefined, U> : ColumnType<T, T | undefined, T>;
+import {
+  AfterDeleteTrigger,
+  CreateDateColumn,
+  ForeignKeyColumn,
+  Generated,
+  Table,
+  Timestamp,
+  UpdateDateColumn,
+} from 'src/sql-tools';
 
 @Table('memories_assets_assets')
 @UpdatedAtTrigger('memory_assets_updated_at')

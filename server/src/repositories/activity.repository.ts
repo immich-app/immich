@@ -3,9 +3,10 @@ import { Insertable, Kysely, NotNull, sql } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { Activity, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetVisibility } from 'src/enum';
+import { DB } from 'src/schema';
+import { ActivityTable } from 'src/schema/tables/activity.table';
 import { asUuid } from 'src/utils/database';
 
 export interface ActivitySearch {
@@ -48,7 +49,7 @@ export class ActivityRepository {
   }
 
   @GenerateSql({ params: [{ albumId: DummyValue.UUID, userId: DummyValue.UUID }] })
-  async create(activity: Insertable<Activity>) {
+  async create(activity: Insertable<ActivityTable>) {
     return this.db
       .insertInto('activity')
       .values(activity)

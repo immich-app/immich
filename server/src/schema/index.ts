@@ -21,7 +21,7 @@ import { AlbumAuditTable } from 'src/schema/tables/album-audit.table';
 import { AlbumUserAuditTable } from 'src/schema/tables/album-user-audit.table';
 import { AlbumUserTable } from 'src/schema/tables/album-user.table';
 import { AlbumTable } from 'src/schema/tables/album.table';
-import { APIKeyTable } from 'src/schema/tables/api-key.table';
+import { ApiKeyTable } from 'src/schema/tables/api-key.table';
 import { AssetAuditTable } from 'src/schema/tables/asset-audit.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { AssetFileTable } from 'src/schema/tables/asset-files.table';
@@ -51,11 +51,12 @@ import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.ta
 import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { TagClosureTable } from 'src/schema/tables/tag-closure.table';
+import { TagTable } from 'src/schema/tables/tag.table';
 import { UserAuditTable } from 'src/schema/tables/user-audit.table';
 import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
-import { Database, Extensions } from 'src/sql-tools';
+import { Database, Extensions, Generated, Int8 } from 'src/sql-tools';
 
 @Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'plpgsql'])
 @Database({ name: 'immich' })
@@ -68,7 +69,7 @@ export class ImmichDatabase {
     AlbumUserAuditTable,
     AlbumUserTable,
     AlbumTable,
-    APIKeyTable,
+    ApiKeyTable,
     AssetAuditTable,
     AssetFaceTable,
     AssetJobStatusTable,
@@ -96,6 +97,7 @@ export class ImmichDatabase {
     StackTable,
     SessionSyncCheckpointTable,
     SystemMetadataTable,
+    TagTable,
     TagAssetTable,
     TagClosureTable,
     UserAuditTable,
@@ -121,4 +123,56 @@ export class ImmichDatabase {
   ];
 
   enum = [assets_status_enum, asset_face_source_type, asset_visibility_enum];
+}
+
+export interface Migrations {
+  id: Generated<number>;
+  name: string;
+  timestamp: Int8;
+}
+
+export interface DB {
+  activity: ActivityTable;
+  albums: AlbumTable;
+  albums_audit: AlbumAuditTable;
+  albums_assets_assets: AlbumAssetTable;
+  album_assets_audit: AlbumAssetAuditTable;
+  albums_shared_users_users: AlbumUserTable;
+  album_users_audit: AlbumUserAuditTable;
+  api_keys: ApiKeyTable;
+  asset_faces: AssetFaceTable;
+  asset_files: AssetFileTable;
+  asset_job_status: AssetJobStatusTable;
+  asset_stack: StackTable;
+  assets: AssetTable;
+  assets_audit: AssetAuditTable;
+  audit: AuditTable;
+  exif: ExifTable;
+  face_search: FaceSearchTable;
+  geodata_places: GeodataPlacesTable;
+  libraries: LibraryTable;
+  memories: MemoryTable;
+  memories_audit: MemoryAuditTable;
+  memories_assets_assets: MemoryAssetTable;
+  memory_assets_audit: MemoryAssetAuditTable;
+  migrations: Migrations;
+  notifications: NotificationTable;
+  move_history: MoveTable;
+  naturalearth_countries: NaturalEarthCountriesTable;
+  partners_audit: PartnerAuditTable;
+  partners: PartnerTable;
+  person: PersonTable;
+  sessions: SessionTable;
+  session_sync_checkpoints: SessionSyncCheckpointTable;
+  shared_link__asset: SharedLinkAssetTable;
+  shared_links: SharedLinkTable;
+  smart_search: SmartSearchTable;
+  system_metadata: SystemMetadataTable;
+  tag_asset: TagAssetTable;
+  tags: TagTable;
+  tags_closure: TagClosureTable;
+  user_metadata: UserMetadataTable;
+  users: UserTable;
+  users_audit: UserAuditTable;
+  version_history: VersionHistoryTable;
 }
