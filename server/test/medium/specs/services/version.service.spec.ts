@@ -1,11 +1,11 @@
 import { Kysely } from 'kysely';
 import { serverVersion } from 'src/constants';
-import { DB } from 'src/db';
 import { JobName } from 'src/enum';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { DB } from 'src/schema';
 import { VersionService } from 'src/services/version.service';
 import { newMediumService } from 'test/medium.factory';
 import { getKyselyDB } from 'test/utils';

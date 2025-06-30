@@ -1,7 +1,7 @@
 import { Kysely } from 'kysely';
-import { DB } from 'src/db';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { DB } from 'src/schema';
 import { AssetService } from 'src/services/asset.service';
 import { newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';

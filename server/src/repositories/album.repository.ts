@@ -3,9 +3,10 @@ import { ExpressionBuilder, Insertable, Kysely, NotNull, sql, Updateable } from 
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns, Exif } from 'src/database';
-import { Albums, DB } from 'src/db';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserCreateDto } from 'src/dtos/album.dto';
+import { DB } from 'src/schema';
+import { AlbumTable } from 'src/schema/tables/album.table';
 import { withDefaultVisibility } from 'src/utils/database';
 
 export interface AlbumAssetCount {
@@ -269,7 +270,7 @@ export class AlbumRepository {
     await this.addAssets(this.db, albumId, assetIds);
   }
 
-  create(album: Insertable<Albums>, assetIds: string[], albumUsers: AlbumUserCreateDto[]) {
+  create(album: Insertable<AlbumTable>, assetIds: string[], albumUsers: AlbumUserCreateDto[]) {
     return this.db.transaction().execute(async (tx) => {
       const newAlbum = await tx.insertInto('albums').values(album).returning('albums.id').executeTakeFirst();
 
@@ -302,7 +303,7 @@ export class AlbumRepository {
     });
   }
 
-  update(id: string, album: Updateable<Albums>) {
+  update(id: string, album: Updateable<AlbumTable>) {
     return this.db
       .updateTable('albums')
       .set(album)

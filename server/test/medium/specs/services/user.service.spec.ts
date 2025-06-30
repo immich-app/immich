@@ -1,6 +1,5 @@
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
-import { DB } from 'src/db';
 import { ImmichEnvironment, JobName, JobStatus } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
@@ -8,6 +7,7 @@ import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { UserRepository } from 'src/repositories/user.repository';
+import { DB } from 'src/schema';
 import { UserService } from 'src/services/user.service';
 import { mediumFactory, newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';

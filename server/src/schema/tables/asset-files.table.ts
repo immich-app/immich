@@ -5,8 +5,10 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
+  Generated,
   PrimaryGeneratedColumn,
   Table,
+  Timestamp,
   Unique,
   UpdateDateColumn,
 } from 'src/sql-tools';
@@ -16,20 +18,20 @@ import {
 @UpdatedAtTrigger('asset_files_updated_at')
 export class AssetFileTable {
   @PrimaryGeneratedColumn()
-  id!: string;
+  id!: Generated<string>;
 
   @ForeignKeyColumn(() => AssetTable, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     indexName: 'IDX_asset_files_assetId',
   })
-  assetId?: string;
+  assetId!: string;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Generated<Timestamp>;
 
   @Column()
   type!: AssetFileType;
@@ -38,5 +40,5 @@ export class AssetFileTable {
   path!: string;
 
   @UpdateIdColumn({ indexName: 'IDX_asset_files_update_id' })
-  updateId?: string;
+  updateId!: Generated<string>;
 }

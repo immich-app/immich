@@ -3,7 +3,6 @@ import { Insertable } from 'kysely';
 import { DateTime } from 'luxon';
 import { Writable } from 'node:stream';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
-import { SessionSyncCheckpoints } from 'src/db';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -17,6 +16,7 @@ import {
   SyncStreamDto,
 } from 'src/dtos/sync.dto';
 import { AssetVisibility, DatabaseAction, EntityType, Permission, SyncEntityType, SyncRequestType } from 'src/enum';
+import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
 import { BaseService } from 'src/services/base.service';
 import { SyncAck } from 'src/types';
 import { getMyPartnerIds } from 'src/utils/asset.util';
@@ -90,7 +90,7 @@ export class SyncService extends BaseService {
       return throwSessionRequired();
     }
 
-    const checkpoints: Record<string, Insertable<SessionSyncCheckpoints>> = {};
+    const checkpoints: Record<string, Insertable<SessionSyncCheckpointTable>> = {};
     for (const ack of dto.acks) {
       const { type } = fromAck(ack);
       // TODO proper ack validation via class validator
