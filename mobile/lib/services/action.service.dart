@@ -65,4 +65,34 @@ class ActionService {
       debugPrint('Error unarchive assets: $e');
     }
   }
+
+  Future<void> lock(List<String> remoteIds) async {
+    try {
+      await _assetApiRepository.updateVisibility(
+        remoteIds,
+        AssetVisibilityEnum.locked,
+      );
+      await _remoteAssetRepository.updateVisibility(
+        remoteIds,
+        AssetVisibility.locked,
+      );
+    } catch (e) {
+      debugPrint('Error lock assets: $e');
+    }
+  }
+
+  Future<void> unLock(List<String> remoteIds) async {
+    try {
+      await _assetApiRepository.updateVisibility(
+        remoteIds,
+        AssetVisibilityEnum.timeline,
+      );
+      await _remoteAssetRepository.updateVisibility(
+        remoteIds,
+        AssetVisibility.timeline,
+      );
+    } catch (e) {
+      debugPrint('Error unlock assets: $e');
+    }
+  }
 }
