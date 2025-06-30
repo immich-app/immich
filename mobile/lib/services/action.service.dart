@@ -38,8 +38,10 @@ class ActionService {
 
   Future<void> archive(List<String> remoteIds) async {
     try {
-      await _assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.archive);
-      await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.archive);
+      await _assetApiRepository.updateVisibility(
+          remoteIds, AssetVisibilityEnum.archive);
+      await _remoteAssetRepository.updateVisibility(
+          remoteIds, AssetVisibility.archive);
     } catch (e) {
       debugPrint('Error archive assets: $e');
     }
@@ -47,8 +49,10 @@ class ActionService {
 
   Future<void> unArchive(List<String> remoteIds) async {
     try {
-      await _assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.timeline);
-      await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.timeline);
+      await _assetApiRepository.updateVisibility(
+          remoteIds, AssetVisibilityEnum.timeline);
+      await _remoteAssetRepository.updateVisibility(
+          remoteIds, AssetVisibility.timeline);
     } catch (e) {
       debugPrint('Error unarchive assets: $e');
     }
