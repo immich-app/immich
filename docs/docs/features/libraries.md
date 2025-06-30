@@ -161,8 +161,6 @@ Folder view provides an additional view besides the timeline that is similar to 
 
 You can enable this feature under [`Account Settings > Features > Folder View`](https://my.immich.app/user-settings?isOpen=feature+folders)
 
-The UI is currently only available for the web; mobile will come in a subsequent release.
-
 <img src={require('./img/folder-view-1.webp').default} width="100%" title='Folder-view' />
 
 ### Set Custom Scan Interval
