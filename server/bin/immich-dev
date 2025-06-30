@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd /usr/src/app
+cd /usr/src/app || exit
 FROZEN=1 OFFLINE=1 make setup-dev
-cd /usr/src/app/server
+cd /usr/src/app/server || exit
 pnpm exec nest start --debug "0.0.0.0:9230" --watch -- "$@"
