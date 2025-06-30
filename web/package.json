@@ -86,6 +86,7 @@
     "eslint-plugin-unicorn": "^59.0.0",
     "factory.ts": "^1.4.1",
     "globals": "^16.0.0",
+    "happy-dom": "^18.0.1",
     "prettier": "^3.4.2",
     "prettier-plugin-organize-imports": "^4.0.0",
     "prettier-plugin-sort-json": "^4.1.1",
