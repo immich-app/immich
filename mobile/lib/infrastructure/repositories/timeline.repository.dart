@@ -70,36 +70,38 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     return _db.mergedAssetDrift
         .mergedAsset(userIds, limit: Limit(count, offset))
         .map(
-          (row) => row.remoteId != null
-              ? Asset(
-                  id: row.remoteId!,
-                  localId: row.localId,
-                  name: row.name,
-                  checksum: row.checksum,
-                  type: row.type,
-                  createdAt: row.createdAt,
-                  updatedAt: row.updatedAt,
-                  thumbHash: row.thumbHash,
-                  width: row.width,
-                  height: row.height,
-                  isFavorite: row.isFavorite,
-                  durationInSeconds: row.durationInSeconds,
-                )
-              : LocalAsset(
-                  id: row.localId!,
-                  remoteId: row.remoteId,
-                  name: row.name,
-                  checksum: row.checksum,
-                  type: row.type,
-                  createdAt: row.createdAt,
-                  updatedAt: row.updatedAt,
-                  width: row.width,
-                  height: row.height,
-                  isFavorite: row.isFavorite,
-                  durationInSeconds: row.durationInSeconds,
-                ),
-        )
-        .get();
+      (row) {
+        return row.remoteId != null && row.ownerId != null
+            ? RemoteAsset(
+                id: row.remoteId!,
+                localId: row.localId,
+                name: row.name,
+                ownerId: row.ownerId!,
+                checksum: row.checksum,
+                type: row.type,
+                createdAt: row.createdAt,
+                updatedAt: row.updatedAt,
+                thumbHash: row.thumbHash,
+                width: row.width,
+                height: row.height,
+                isFavorite: row.isFavorite,
+                durationInSeconds: row.durationInSeconds,
+              )
+            : LocalAsset(
+                id: row.localId!,
+                remoteId: row.remoteId,
+                name: row.name,
+                checksum: row.checksum,
+                type: row.type,
+                createdAt: row.createdAt,
+                updatedAt: row.updatedAt,
+                width: row.width,
+                height: row.height,
+                isFavorite: row.isFavorite,
+                durationInSeconds: row.durationInSeconds,
+              );
+      },
+    ).get();
   }
 
   Stream<List<Bucket>> watchLocalBucket(
