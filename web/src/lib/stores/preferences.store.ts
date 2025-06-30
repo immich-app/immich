@@ -82,6 +82,11 @@ export interface PlacesViewSettings {
   };
 }
 
+export interface SearchViewSettings {
+  sortBy: string;
+  sortOrder: string;
+}
+
 export interface SidebarSettings {
   people: boolean;
   sharing: boolean;
@@ -136,6 +141,17 @@ export enum PlacesGroupBy {
 export const placesViewSettings = persisted<PlacesViewSettings>('places-view-settings', {
   groupBy: PlacesGroupBy.None,
   collapsedGroups: {},
+});
+
+export enum AssetSortBy {
+  FileSize = 'FileSize',
+  DateCreated = 'DateCreated',
+  Duration = 'Duration',
+}
+
+export const searchViewSettings = persisted<SearchViewSettings>('search-view-settings', {
+  sortBy: AssetSortBy.FileSize,
+  sortOrder: SortOrder.Desc,
 });
 
 export const showDeleteModal = persisted<boolean>('delete-confirm-dialog', true, {});
