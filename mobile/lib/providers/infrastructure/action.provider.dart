@@ -25,4 +25,12 @@ class ActionNotifier extends Notifier<void> {
   Future<void> unFavorite(List<String> ids) async {
     await _service.unFavorite(ids);
   }
+
+  Future<void> archive(List<String> ids) async {
+    await _service.archive(ids);
+  }
+
+  Future<void> unArchive(List<String> ids) async {
+    await _service.unArchive(ids);
+  }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -31,6 +33,36 @@ class ActionService {
       await _remoteAssetRepository.updateFavorite(remoteIds, false);
     } catch (e) {
       debugPrint('Error unfavoriting assets: $e');
+    }
+  }
+
+  Future<void> archive(List<String> remoteIds) async {
+    try {
+      await _assetApiRepository.updateVisibility(
+        remoteIds,
+        AssetVisibilityEnum.archive,
+      );
+      await _remoteAssetRepository.updateVisibility(
+        remoteIds,
+        AssetVisibility.archive,
+      );
+    } catch (e) {
+      debugPrint('Error archive assets: $e');
+    }
+  }
+
+  Future<void> unArchive(List<String> remoteIds) async {
+    try {
+      await _assetApiRepository.updateVisibility(
+        remoteIds,
+        AssetVisibilityEnum.timeline,
+      );
+      await _remoteAssetRepository.updateVisibility(
+        remoteIds,
+        AssetVisibility.timeline,
+      );
+    } catch (e) {
+      debugPrint('Error unarchive assets: $e');
     }
   }
 }
