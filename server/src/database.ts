@@ -356,6 +356,13 @@ export const columns = {
     'assets.duration',
   ],
   syncAlbumUser: ['album_users.albumsId as albumId', 'album_users.usersId as userId', 'album_users.role'],
+  syncStack: [
+    'asset_stack.id',
+    'asset_stack.createdAt',
+    'asset_stack.updatedAt',
+    'asset_stack.primaryAssetId',
+    'asset_stack.ownerId',
+  ],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],
   syncAssetExif: [
     'exif.assetId',

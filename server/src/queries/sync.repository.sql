@@ -689,6 +689,66 @@ where
 order by
   "updateId" asc
 
+-- SyncRepository.partnerStack.getDeletes
+select
+  "id",
+  "stackId"
+from
+  "stacks_audit"
+where
+  "userId" in (
+    select
+      "sharedById"
+    from
+      "partners"
+    where
+      "sharedWithId" = $1
+  )
+  and "deletedAt" < now() - interval '1 millisecond'
+order by
+  "id" asc
+
+-- SyncRepository.partnerStack.getBackfill
+select
+  "asset_stack"."id",
+  "asset_stack"."createdAt",
+  "asset_stack"."updatedAt",
+  "asset_stack"."primaryAssetId",
+  "asset_stack"."ownerId",
+  "updateId"
+from
+  "asset_stack"
+where
+  "ownerId" = $1
+  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" <= $2
+  and "updateId" >= $3
+order by
+  "updateId" asc
+
+-- SyncRepository.partnerStack.getUpserts
+select
+  "asset_stack"."id",
+  "asset_stack"."createdAt",
+  "asset_stack"."updatedAt",
+  "asset_stack"."primaryAssetId",
+  "asset_stack"."ownerId",
+  "updateId"
+from
+  "asset_stack"
+where
+  "ownerId" in (
+    select
+      "sharedById"
+    from
+      "partners"
+    where
+      "sharedWithId" = $1
+  )
+  and "updatedAt" < now() - interval '1 millisecond'
+order by
+  "updateId" asc
+
 -- SyncRepository.stack.getDeletes
 select
   "id",
@@ -703,11 +763,11 @@ order by
 
 -- SyncRepository.stack.getUpserts
 select
-  "id",
-  "createdAt",
-  "updatedAt",
-  "primaryAssetId",
-  "ownerId",
+  "asset_stack"."id",
+  "asset_stack"."createdAt",
+  "asset_stack"."updatedAt",
+  "asset_stack"."primaryAssetId",
+  "asset_stack"."ownerId",
   "updateId"
 from
   "asset_stack"
