@@ -21,6 +21,7 @@ class PhotoViewGestureDetector extends StatelessWidget {
     this.onTapUp,
     this.onTapDown,
     this.behavior,
+    this.disableScaleGestures = false,
   });
 
   final GestureDoubleTapCallback? onDoubleTap;
@@ -42,6 +43,8 @@ class PhotoViewGestureDetector extends StatelessWidget {
   final Widget? child;
 
   final HitTestBehavior? behavior;
+
+  final bool disableScaleGestures;
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +102,8 @@ class PhotoViewGestureDetector extends StatelessWidget {
           ..dragStartBehavior = DragStartBehavior.start
           ..onStart = onScaleStart
           ..onUpdate = onScaleUpdate
-          ..onEnd = onScaleEnd;
+          ..onEnd = onScaleEnd
+          ..disableScaleGestures = disableScaleGestures;
       },
     );
 
@@ -125,10 +129,12 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
     this.validateAxis,
     this.touchSlopFactor = 1,
     PointerDeviceKind? kind,
+    this.disableScaleGestures = false,
   }) : super(supportedDevices: null);
   final HitCornersDetector? hitDetector;
   final Axis? validateAxis;
   final double touchSlopFactor;
+  bool disableScaleGestures;
 
   Map<int, Offset> _pointerLocations = <int, Offset>{};
 
@@ -156,7 +162,7 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
 
   @override
   void handleEvent(PointerEvent event) {
-    if (validateAxis != null) {
+    if (validateAxis != null && !disableScaleGestures) {
       bool didChangeConfiguration = false;
       if (event is PointerMoveEvent) {
         if (!event.synthesized) {

@@ -20,6 +20,12 @@ typedef PhotoViewControllerCallbackBuilder = void Function(
   PhotoViewControllerCallback photoViewMethod,
 );
 
+typedef PhotoViewScaleControllerCallback = PhotoViewScaleStateController
+    Function();
+typedef PhotoViewScaleControllerCallbackBuilder = void Function(
+  PhotoViewScaleControllerCallback photoViewMethod,
+);
+
 /// A [StatefulWidget] that contains all the photo view rendering elements.
 ///
 /// Sample code to use within an image:
@@ -245,6 +251,7 @@ class PhotoView extends StatefulWidget {
     this.heroAttributes,
     this.onPageBuild,
     required this.controllerCallbackBuilder,
+    required this.scaleControllerCallbackBuilder,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.semanticLabel,
@@ -267,6 +274,7 @@ class PhotoView extends StatefulWidget {
     this.tightMode,
     this.filterQuality,
     this.disableGestures,
+    this.disableScaleGestures,
     this.errorBuilder,
     this.enablePanAlways,
   })  : child = null,
@@ -287,6 +295,7 @@ class PhotoView extends StatefulWidget {
     this.heroAttributes,
     this.onPageBuild,
     required this.controllerCallbackBuilder,
+    required this.scaleControllerCallbackBuilder,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.controller,
@@ -307,6 +316,7 @@ class PhotoView extends StatefulWidget {
     this.gestureDetectorBehavior,
     this.tightMode,
     this.filterQuality,
+    this.disableScaleGestures,
     this.disableGestures,
     this.enablePanAlways,
   })  : semanticLabel = null,
@@ -358,6 +368,9 @@ class PhotoView extends StatefulWidget {
 
   // Called from the parent during page change to get the new controller
   final PhotoViewControllerCallbackBuilder controllerCallbackBuilder;
+
+  // Called from the parent during page change to get the new scale controller
+  final PhotoViewScaleControllerCallbackBuilder scaleControllerCallbackBuilder;
 
   /// A [Function] to be called whenever the scaleState changes, this happens when the user double taps the content ou start to pinch-in.
   final ValueChanged<PhotoViewScaleState>? scaleStateChangedCallback;
@@ -440,6 +453,9 @@ class PhotoView extends StatefulWidget {
   // Useful when custom gesture detector is used in child widget.
   final bool? disableGestures;
 
+  /// Mirror to [PhotoView.disableGestures]
+  final bool? disableScaleGestures;
+
   /// Enable pan the widget even if it's smaller than the hole parent widget.
   /// Useful when you want to drag a widget without restrictions.
   final bool? enablePanAlways;
@@ -490,6 +506,7 @@ class _PhotoViewState extends State<PhotoView>
     _scaleStateController.outputScaleStateStream.listen(scaleStateListener);
     // Pass a ref to the method back to the gallery so it can fetch the controller on page changes
     widget.controllerCallbackBuilder(_controllerGetter);
+    widget.scaleControllerCallbackBuilder(_scaleStateControllerGetter);
   }
 
   @override
@@ -536,6 +553,9 @@ class _PhotoViewState extends State<PhotoView>
 
   PhotoViewControllerBase _controllerGetter() => _controller;
 
+  PhotoViewScaleStateController _scaleStateControllerGetter() =>
+      _scaleStateController;
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -574,6 +594,7 @@ class _PhotoViewState extends State<PhotoView>
                 tightMode: widget.tightMode,
                 filterQuality: widget.filterQuality,
                 disableGestures: widget.disableGestures,
+                disableScaleGestures: widget.disableScaleGestures,
                 enablePanAlways: widget.enablePanAlways,
                 child: widget.child,
               )
@@ -605,6 +626,7 @@ class _PhotoViewState extends State<PhotoView>
                 tightMode: widget.tightMode,
                 filterQuality: widget.filterQuality,
                 disableGestures: widget.disableGestures,
+                disableScaleGestures: widget.disableScaleGestures,
                 errorBuilder: widget.errorBuilder,
                 enablePanAlways: widget.enablePanAlways,
                 index: widget.index,

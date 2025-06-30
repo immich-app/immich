@@ -370,7 +370,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                   ),
               itemCount: totalAssets.value,
               scrollDirection: Axis.horizontal,
-              onPageChanged: (value, _) {
+              onPageChanged: (value, _, __) {
                 final next = currentIndex.value < value ? value + 1 : value - 1;
 
                 ref.read(hapticFeedbackProvider.notifier).selectionClick();

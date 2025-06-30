@@ -12,6 +12,7 @@ import 'package:immich_mobile/widgets/photo_view/photo_view.dart'
         PhotoViewImageScaleEndCallback,
         PhotoViewImageTapDownCallback,
         PhotoViewImageTapUpCallback,
+        PhotoViewScaleControllerCallback,
         ScaleStateCycle;
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_controller.dart';
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_scalestate_controller.dart';
@@ -23,6 +24,7 @@ import 'package:immich_mobile/widgets/photo_view/src/utils/photo_view_hero_attri
 typedef PhotoViewGalleryPageChangedCallback = void Function(
   int index,
   PhotoViewControllerBase controller,
+  PhotoViewScaleStateController scaleStateController,
 );
 
 /// A type definition for a [Function] that defines a page in [PhotoViewGallery.build]
@@ -221,6 +223,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
   late final PageController _controller =
       widget.pageController ?? PageController();
   late PhotoViewControllerCallback _getController;
+  late PhotoViewScaleControllerCallback _scaleStateController;
 
   void scaleStateChangedCallback(PhotoViewScaleState scaleState) {
     if (widget.scaleStateChangedCallback != null) {
@@ -243,8 +246,14 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
     _getController = method;
   }
 
+  void _getScaleControllerCallbackBuilder(
+    PhotoViewScaleControllerCallback method,
+  ) {
+    _scaleStateController = method;
+  }
+
   void _onPageChange(int page) {
-    widget.onPageChanged?.call(page, _getController());
+    widget.onPageChanged?.call(page, _getController(), _scaleStateController());
   }
 
   @override
@@ -280,6 +289,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             customSize: widget.customSize,
             onPageBuild: widget.onPageBuild,
             controllerCallbackBuilder: _getControllerCallbackBuilder,
+            scaleControllerCallbackBuilder: _getScaleControllerCallbackBuilder,
             scaleStateChangedCallback: scaleStateChangedCallback,
             enableRotation: widget.enableRotation,
             initialScale: pageOption.initialScale,
@@ -298,6 +308,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             filterQuality: pageOption.filterQuality,
             basePosition: pageOption.basePosition,
             disableGestures: pageOption.disableGestures,
+            disableScaleGestures: pageOption.disableScaleGestures,
             heroAttributes: pageOption.heroAttributes,
             enablePanAlways: widget.enablePanAlways,
             child: pageOption.child,
@@ -313,6 +324,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             controller: pageOption.controller,
             onPageBuild: widget.onPageBuild,
             controllerCallbackBuilder: _getControllerCallbackBuilder,
+            scaleControllerCallbackBuilder: _getScaleControllerCallbackBuilder,
             scaleStateController: pageOption.scaleStateController,
             customSize: widget.customSize,
             gaplessPlayback: widget.gaplessPlayback,
@@ -334,6 +346,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             filterQuality: pageOption.filterQuality,
             basePosition: pageOption.basePosition,
             disableGestures: pageOption.disableGestures,
+            disableScaleGestures: pageOption.disableScaleGestures,
             enablePanAlways: widget.enablePanAlways,
             errorBuilder: pageOption.errorBuilder,
             heroAttributes: pageOption.heroAttributes,
@@ -382,6 +395,7 @@ class PhotoViewGalleryPageOptions {
     this.gestureDetectorBehavior,
     this.tightMode,
     this.filterQuality,
+    this.disableScaleGestures,
     this.disableGestures,
     this.errorBuilder,
   })  : child = null,
@@ -410,6 +424,7 @@ class PhotoViewGalleryPageOptions {
     this.gestureDetectorBehavior,
     this.tightMode,
     this.filterQuality,
+    this.disableScaleGestures,
     this.disableGestures,
   })  : errorBuilder = null,
         imageProvider = null;
@@ -479,6 +494,9 @@ class PhotoViewGalleryPageOptions {
 
   /// Mirror to [PhotoView.disableGestures]
   final bool? disableGestures;
+
+  /// Mirror to [PhotoView.disableGestures]
+  final bool? disableScaleGestures;
 
   /// Quality levels for image filters.
   final FilterQuality? filterQuality;

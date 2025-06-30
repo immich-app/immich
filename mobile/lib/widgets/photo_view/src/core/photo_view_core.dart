@@ -49,6 +49,7 @@ class PhotoViewCore extends StatefulWidget {
     required this.tightMode,
     required this.filterQuality,
     required this.disableGestures,
+    required this.disableScaleGestures,
     required this.enablePanAlways,
   }) : customChild = null;
 
@@ -74,6 +75,7 @@ class PhotoViewCore extends StatefulWidget {
     required this.tightMode,
     required this.filterQuality,
     required this.disableGestures,
+    required this.disableScaleGestures,
     required this.enablePanAlways,
   })  : semanticLabel = null,
         imageProvider = null,
@@ -106,6 +108,7 @@ class PhotoViewCore extends StatefulWidget {
   final HitTestBehavior? gestureDetectorBehavior;
   final bool tightMode;
   final bool disableGestures;
+  final bool disableScaleGestures;
   final bool enablePanAlways;
 
   final FilterQuality filterQuality;
@@ -179,7 +182,8 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
     updateMultiple(
       scale: newScale,
-      position: panEnabled ? delta : clampPosition(position: delta),
+      position:
+          panEnabled ? delta : clampPosition(position: delta * details.scale),
       rotation: rotationEnabled ? _rotationBefore! + details.rotation : null,
       rotationFocusPoint: rotationEnabled ? details.focalPoint : null,
     );
@@ -403,10 +407,11 @@ class PhotoViewCoreState extends State<PhotoViewCore>
           }
 
           return PhotoViewGestureDetector(
-            onDoubleTap: onDoubleTap,
-            onScaleStart: onScaleStart,
-            onScaleUpdate: onScaleUpdate,
-            onScaleEnd: onScaleEnd,
+            disableScaleGestures: widget.disableScaleGestures,
+            onDoubleTap: widget.disableScaleGestures ? null : onDoubleTap,
+            onScaleStart: widget.disableScaleGestures ? null : onScaleStart,
+            onScaleUpdate: widget.disableScaleGestures ? null : onScaleUpdate,
+            onScaleEnd: widget.disableScaleGestures ? null : onScaleEnd,
             onDragStart: widget.onDragStart != null
                 ? (details) => widget.onDragStart!(
                       context,
@@ -492,6 +497,7 @@ class _CenterWithOriginalSizeDelegate extends SingleChildLayoutDelegate {
 
     final double offsetX = halfWidth * (basePosition.x + 1);
     final double offsetY = halfHeight * (basePosition.y + 1);
+
     return Offset(offsetX, offsetY);
   }
 
