@@ -464,7 +464,6 @@
   "assets": "项目",
   "assets_added_count": "已添加{count, plural, one {#个项目} other {#个项目}}",
   "assets_added_to_album_count": "已添加{count, plural, one {#个项目} other {#个项目}}到相册",
-  "assets_added_to_name_count": "已添加{count, plural, one {#个项目} other {#个项目}}到{hasName, select, true {<b>{name}</b>} other {新相册}}",
   "assets_cannot_be_added_to_album_count": "无法添加 {count, plural, one {个项目} other {个项目}} 到相册中",
   "assets_count": "{count, plural, one {#个项目} other {#个项目}}",
   "assets_deleted_permanently": "{count} 个项目已被永久删除",
