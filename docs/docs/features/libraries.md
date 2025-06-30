@@ -56,7 +56,7 @@ Internally, Immich uses the [glob](https://www.npmjs.com/package/glob) package t
 
 ### Automatic watching (EXPERIMENTAL)
 
-This feature - currently hidden in the config file - is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Immich without needing to rescan.
+This feature is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Immich without needing to rescan.
 
 If your photos are on a network drive, automatic file watching likely won't work. In that case, you will have to rely on a periodic library refresh to pull in your changes.
 
