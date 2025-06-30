@@ -43,7 +43,9 @@ class HomeBottomAppBar extends ConsumerWidget {
               : const DeletePermanentActionButton(),
           const EditDateTimeActionButton(),
           const EditLocationActionButton(),
-          const MoveToLockFolderActionButton(),
+          const MoveToLockFolderActionButton(
+            source: ActionSource.timeline,
+          ),
           const StackActionButton(),
         ],
         if (multiselect.hasLocal) ...[

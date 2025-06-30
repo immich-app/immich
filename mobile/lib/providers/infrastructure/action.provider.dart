@@ -33,4 +33,12 @@ class ActionNotifier extends Notifier<void> {
   Future<void> unArchive(List<String> ids) async {
     await _service.unArchive(ids);
   }
+
+  Future<void> moveToLockFolder(List<String> ids) async {
+    await _service.moveToLockFolder(ids);
+  }
+
+  Future<void> removeFromLockFolder(List<String> ids) async {
+    await _service.removeFromLockFolder(ids);
+  }
 }
