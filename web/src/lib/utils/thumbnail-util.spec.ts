@@ -71,6 +71,7 @@ describe('getAltText', () => {
           second: testDate.getUTCSeconds(),
           millisecond: testDate.getUTCMilliseconds(),
         },
+        fileSizeInByte: 0,
         localDateTime: {
           year: testDate.getUTCFullYear(),
           month: testDate.getUTCMonth() + 1, // Note: getMonth() is 0-based

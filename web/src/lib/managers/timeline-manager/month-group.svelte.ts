@@ -173,6 +173,7 @@ export class MonthGroup {
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
         localDateTime,
         fileCreatedAt,
+        fileSizeInByte: 0,
         ownerId: bucketAssets.ownerId[i],
         projectionType: bucketAssets.projectionType[i],
         ratio: bucketAssets.ratio[i],

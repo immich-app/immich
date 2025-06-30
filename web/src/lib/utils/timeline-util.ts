@@ -174,6 +174,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     thumbhash: assetResponse.thumbhash,
     localDateTime,
     fileCreatedAt,
+    fileSizeInByte: assetResponse.exifInfo?.fileSizeInByte || 0,
     isFavorite: assetResponse.isFavorite,
     visibility: assetResponse.visibility,
     isTrashed: assetResponse.isTrashed,
