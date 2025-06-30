@@ -22,12 +22,13 @@
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
+  import AssetSortDropdown from '$lib/components/search-page/search-controls.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { lang, locale } from '$lib/stores/preferences.store';
+  import { AssetSortBy, SortOrder, lang, locale, searchViewSettings } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
@@ -99,6 +100,54 @@
     if (scrollY) {
       scrollYHistory = scrollY;
     }
+  });
+
+  $effect(() => {
+    const { sortBy, sortOrder } = $searchViewSettings;
+    if (searchResultAssets.length === 0) {
+      return;
+    }
+    searchResultAssets.sort((a, b) => {
+      switch (sortBy) {
+        case AssetSortBy.FileSize: {
+          const sizeA = a.fileSizeInByte || 0;
+          const sizeB = b.fileSizeInByte || 0;
+          return sortOrder === SortOrder.Asc ? sizeA - sizeB : sizeB - sizeA;
+        }
+
+        case AssetSortBy.DateCreated: {
+          const dateA = new Date(
+            a.fileCreatedAt.year,
+            a.fileCreatedAt.month - 1,
+            a.fileCreatedAt.day,
+            a.fileCreatedAt.hour,
+            a.fileCreatedAt.minute,
+            a.fileCreatedAt.second,
+            a.fileCreatedAt.millisecond,
+          ).getTime();
+          const dateB = new Date(
+            b.fileCreatedAt.year,
+            b.fileCreatedAt.month - 1,
+            b.fileCreatedAt.day,
+            b.fileCreatedAt.hour,
+            b.fileCreatedAt.minute,
+            b.fileCreatedAt.second,
+            b.fileCreatedAt.millisecond,
+          ).getTime();
+          return sortOrder === SortOrder.Asc ? dateA - dateB : dateB - dateA;
+        }
+
+        case AssetSortBy.Duration: {
+          const durationA = a.duration || '';
+          const durationB = b.duration || '';
+          return sortOrder === SortOrder.Asc ? durationA.localeCompare(durationB) : durationB.localeCompare(durationA);
+        }
+
+        default: {
+          return 0;
+        }
+      }
+    });
   });
 
   afterNavigate(({ from }) => {
@@ -356,6 +405,9 @@
         {/if}
       </div>
     {/each}
+    <div class="mt-2">
+      <AssetSortDropdown />
+    </div>
   </section>
 {/if}
 
