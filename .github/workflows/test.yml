@@ -453,6 +453,11 @@ jobs:
         working-directory: ./open-api/typescript-sdk
         if: ${{ !cancelled() }}
 
+      - name: Run setup web
+        run: pnpm install --frozen-lockfile && pnpm exec svelte-kit sync
+        working-directory: ./web
+        if: ${{ !cancelled() }}
+
       - name: Run setup cli
         run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./cli
