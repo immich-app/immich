@@ -18,7 +18,6 @@ import {
 @Table('memories')
 @UpdatedAtTrigger('memories_updated_at')
 @AfterDeleteTrigger({
-  name: 'memories_delete_audit',
   scope: 'statement',
   function: memories_delete_audit,
   referencingOldTableAs: 'old',

@@ -11,6 +11,7 @@ import {
   memories_delete_audit,
   memory_assets_delete_audit,
   partners_delete_audit,
+  stacks_delete_audit,
   updated_at,
   users_delete_audit,
 } from 'src/schema/functions';
@@ -46,6 +47,7 @@ import { SessionTable } from 'src/schema/tables/session.table';
 import { SharedLinkAssetTable } from 'src/schema/tables/shared-link-asset.table';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
 import { SmartSearchTable } from 'src/schema/tables/smart-search.table';
+import { StackAuditTable } from 'src/schema/tables/stack-audit.table';
 import { StackTable } from 'src/schema/tables/stack.table';
 import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
 import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table';
@@ -95,6 +97,7 @@ export class ImmichDatabase {
     SharedLinkTable,
     SmartSearchTable,
     StackTable,
+    StackAuditTable,
     SessionSyncCheckpointTable,
     SystemMetadataTable,
     TagTable,
@@ -120,6 +123,7 @@ export class ImmichDatabase {
     album_users_delete_audit,
     memories_delete_audit,
     memory_assets_delete_audit,
+    stacks_delete_audit,
   ];
 
   enum = [assets_status_enum, asset_face_source_type, asset_visibility_enum];
@@ -167,6 +171,7 @@ export interface DB {
   shared_link__asset: SharedLinkAssetTable;
   shared_links: SharedLinkTable;
   smart_search: SmartSearchTable;
+  stacks_audit: StackAuditTable;
   system_metadata: SystemMetadataTable;
   tag_asset: TagAssetTable;
   tags: TagTable;

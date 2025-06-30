@@ -15,7 +15,6 @@ import {
 @Table('partners')
 @UpdatedAtTrigger('partners_updated_at')
 @AfterDeleteTrigger({
-  name: 'partners_delete_audit',
   scope: 'statement',
   function: partners_delete_audit,
   referencingOldTableAs: 'old',

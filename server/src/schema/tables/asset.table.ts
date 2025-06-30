@@ -23,7 +23,6 @@ import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 @Table('assets')
 @UpdatedAtTrigger('assets_updated_at')
 @AfterDeleteTrigger({
-  name: 'assets_delete_audit',
   scope: 'statement',
   function: assets_delete_audit,
   referencingOldTableAs: 'old',

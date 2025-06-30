@@ -18,7 +18,6 @@ import {
 @Table('users')
 @UpdatedAtTrigger('users_updated_at')
 @AfterDeleteTrigger({
-  name: 'users_delete_audit',
   scope: 'statement',
   function: users_delete_audit,
   referencingOldTableAs: 'old',

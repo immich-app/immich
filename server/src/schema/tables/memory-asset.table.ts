@@ -15,7 +15,6 @@ import {
 @Table('memories_assets_assets')
 @UpdatedAtTrigger('memory_assets_updated_at')
 @AfterDeleteTrigger({
-  name: 'memory_assets_delete_audit',
   scope: 'statement',
   function: memory_assets_delete_audit,
   referencingOldTableAs: 'old',

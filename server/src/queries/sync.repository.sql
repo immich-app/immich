@@ -689,6 +689,34 @@ where
 order by
   "updateId" asc
 
+-- SyncRepository.stack.getDeletes
+select
+  "id",
+  "stackId"
+from
+  "stacks_audit"
+where
+  "userId" = $1
+  and "deletedAt" < now() - interval '1 millisecond'
+order by
+  "id" asc
+
+-- SyncRepository.stack.getUpserts
+select
+  "id",
+  "createdAt",
+  "updatedAt",
+  "primaryAssetId",
+  "ownerId",
+  "updateId"
+from
+  "asset_stack"
+where
+  "ownerId" = $1
+  and "updatedAt" < now() - interval '1 millisecond'
+order by
+  "updateId" asc
+
 -- SyncRepository.user.getDeletes
 select
   "id",

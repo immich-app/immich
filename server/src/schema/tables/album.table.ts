@@ -19,7 +19,6 @@ import {
 @Table({ name: 'albums', primaryConstraintName: 'PK_7f71c7b5bc7c87b8f94c9a93a00' })
 @UpdatedAtTrigger('albums_updated_at')
 @AfterDeleteTrigger({
-  name: 'albums_delete_audit',
   scope: 'statement',
   function: albums_delete_audit,
   referencingOldTableAs: 'old',

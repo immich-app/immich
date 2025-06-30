@@ -25,6 +25,7 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
@@ -40,6 +41,7 @@ import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { MemoryTable } from 'src/schema/tables/memory.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { SessionTable } from 'src/schema/tables/session.table';
+import { StackTable } from 'src/schema/tables/stack.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service';
 import { SyncService } from 'src/services/sync.service';
@@ -131,6 +133,19 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     const partner = { inTimeline: true, ...dto };
     const result = await this.get(PartnerRepository).create(partner);
     return { partner, result };
+  }
+
+  async newStack(dto: Omit<Insertable<StackTable>, 'primaryAssetId'>, assetIds: string[]) {
+    const date = factory.date();
+    const stack = {
+      id: factory.uuid(),
+      createdAt: date,
+      updatedAt: date,
+      ...dto,
+    };
+
+    const result = await this.get(StackRepository).create(stack, assetIds);
+    return { stack: { ...stack, primaryAssetId: assetIds[0] }, result };
   }
 
   async newAsset(dto: Partial<Insertable<AssetTable>> = {}) {
@@ -252,6 +267,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case PersonRepository:
     case SearchRepository:
     case SessionRepository:
+    case StackRepository:
     case SyncRepository:
     case SyncCheckpointRepository:
     case SystemMetadataRepository:

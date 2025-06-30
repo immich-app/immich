@@ -265,6 +265,8 @@ part 'model/sync_memory_v1.dart';
 part 'model/sync_partner_delete_v1.dart';
 part 'model/sync_partner_v1.dart';
 part 'model/sync_request_type.dart';
+part 'model/sync_stack_delete_v1.dart';
+part 'model/sync_stack_v1.dart';
 part 'model/sync_stream_dto.dart';
 part 'model/sync_user_delete_v1.dart';
 part 'model/sync_user_v1.dart';

@@ -15,7 +15,6 @@ import {
 @Table({ name: 'albums_assets_assets', primaryConstraintName: 'PK_c67bc36fa845fb7b18e0e398180' })
 @UpdatedAtTrigger('album_assets_updated_at')
 @AfterDeleteTrigger({
-  name: 'album_assets_delete_audit',
   scope: 'statement',
   function: album_assets_delete_audit,
   referencingOldTableAs: 'old',
