@@ -780,8 +780,12 @@ export class MetadataService extends BaseService {
     exifTags: ImmichTags,
     stats: Stats,
   ) {
-    const dateTime = firstDateTime(exifTags as Maybe<Tags>, EXIF_DATE_TAGS);
-    this.logger.verbose(`Date and time is ${dateTime} for asset ${asset.id}: ${asset.originalPath}`);
+    const result = firstDateTime(exifTags);
+    const tag = result?.tag;
+    const dateTime = result?.dateTime;
+    this.logger.verbose(
+      `Date and time is ${dateTime} using exifTag ${tag} for asset ${asset.id}: ${asset.originalPath}`,
+    );
 
     // timezone
     let timeZone = exifTags.tz ?? null;
