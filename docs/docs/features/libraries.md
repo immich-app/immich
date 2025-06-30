@@ -169,7 +169,7 @@ You can enable this feature under [`Account Settings > Features > Folders`](http
 Only an admin can do this.
 :::
 
-You can define a custom interval for the trigger external library rescan under Administration -> Settings -> Library.  
+You can define a custom interval for the trigger external library rescan under Administration -> Settings -> External Library.  
 You can set the scanning interval using the preset or cron format. For more information you can refer to [Crontab Guru](https://crontab.guru/).
 
 <img src={require('./img/library-custom-scan-interval.webp').default} width="75%" title='Set custom scan interval for external library' />
