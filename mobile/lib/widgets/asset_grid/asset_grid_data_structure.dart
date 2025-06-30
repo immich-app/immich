@@ -23,7 +23,7 @@ class RenderAssetGridElement {
   final int offset;
   final int totalCount;
 
-  RenderAssetGridElement(
+  const RenderAssetGridElement(
     this.type, {
     this.title,
     required this.date,

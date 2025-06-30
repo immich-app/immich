@@ -151,11 +151,11 @@ describe(SearchService.name, () => {
         },
       });
       const id = assetStub.livePhotoMotionAsset.id;
-      mocks.asset.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
 
       const result = await sut.handleSearchDuplicates({ id });
 
       expect(result).toBe(JobStatus.SKIPPED);
+      expect(mocks.assetJob.getForSearchDuplicatesJob).not.toHaveBeenCalled();
     });
 
     it('should skip if duplicate detection is disabled', async () => {
@@ -168,11 +168,11 @@ describe(SearchService.name, () => {
         },
       });
       const id = assetStub.livePhotoMotionAsset.id;
-      mocks.asset.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
 
       const result = await sut.handleSearchDuplicates({ id });
 
       expect(result).toBe(JobStatus.SKIPPED);
+      expect(mocks.assetJob.getForSearchDuplicatesJob).not.toHaveBeenCalled();
     });
 
     it('should fail if asset is not found', async () => {

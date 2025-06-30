@@ -42,11 +42,6 @@ interface LivePhotoSearchOptions {
   type: AssetType;
 }
 
-export enum TimeBucketSize {
-  DAY = 'DAY',
-  MONTH = 'MONTH',
-}
-
 interface AssetBuilderOptions {
   isFavorite?: boolean;
   isTrashed?: boolean;
@@ -490,13 +485,13 @@ export class AssetRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
+  @GenerateSql({ params: [{}] })
   async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     return this.db
       .with('assets', (qb) =>
         qb
           .selectFrom('assets')
-          .select(truncatedDate<Date>(TimeBucketSize.MONTH).as('timeBucket'))
+          .select(truncatedDate<Date>().as('timeBucket'))
           .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
           .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility === undefined, withDefaultVisibility)
@@ -525,7 +520,7 @@ export class AssetRepository {
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
       )
       .selectFrom('assets')
-      .select(sql<string>`"timeBucket"::date::text`.as('timeBucket'))
+      .select(sql<string>`("timeBucket" AT TIME ZONE 'UTC')::date::text`.as('timeBucket'))
       .select((eb) => eb.fn.countAll<number>().as('count'))
       .groupBy('timeBucket')
       .orderBy('timeBucket', options.order ?? 'desc')
@@ -576,7 +571,7 @@ export class AssetRepository {
           .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
-          .where(truncatedDate(TimeBucketSize.MONTH), '=', timeBucket.replace(/^[+-]/, ''))
+          .where(truncatedDate(), '=', timeBucket.replace(/^[+-]/, ''))
           .$if(!!options.albumId, (qb) =>
             qb.where((eb) =>
               eb.exists(

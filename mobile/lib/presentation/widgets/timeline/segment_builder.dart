@@ -15,18 +15,12 @@ abstract class SegmentBuilder {
     this.groupBy = GroupAssetsBy.day,
   });
 
-  static double headerExtent(HeaderType header) {
-    switch (header) {
-      case HeaderType.month:
-        return kTimelineHeaderExtent;
-      case HeaderType.day:
-        return kTimelineHeaderExtent * 0.90;
-      case HeaderType.monthAndDay:
-        return kTimelineHeaderExtent * 1.5;
-      case HeaderType.none:
-        return 0.0;
-    }
-  }
+  static double headerExtent(HeaderType header) => switch (header) {
+        HeaderType.month => kTimelineHeaderExtent,
+        HeaderType.day => kTimelineHeaderExtent * 0.90,
+        HeaderType.monthAndDay => kTimelineHeaderExtent * 1.6,
+        HeaderType.none => 0.0,
+      };
 
   static Widget buildPlaceholder(
     BuildContext context,

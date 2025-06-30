@@ -162,13 +162,17 @@ class _FilterButton extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(10),
+              ),
               border: isSelected
                   ? Border.all(color: context.primaryColor, width: 3)
                   : null,
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(10),
+              ),
               child: ColorFiltered(
                 colorFilter: filter,
                 child: FittedBox(

@@ -10,3 +10,5 @@ enum TextSearchType {
 }
 
 enum AssetVisibilityEnum { timeline, hidden, archive, locked }
+
+enum SortUserBy { id }

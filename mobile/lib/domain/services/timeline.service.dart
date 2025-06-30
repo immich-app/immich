@@ -3,11 +3,11 @@ import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/interfaces/timeline.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 
 typedef TimelineAssetSource = Future<List<BaseAsset>> Function(
@@ -18,11 +18,11 @@ typedef TimelineAssetSource = Future<List<BaseAsset>> Function(
 typedef TimelineBucketSource = Stream<List<Bucket>> Function();
 
 class TimelineFactory {
-  final ITimelineRepository _timelineRepository;
+  final DriftTimelineRepository _timelineRepository;
   final SettingsService _settingsService;
 
   const TimelineFactory({
-    required ITimelineRepository timelineRepository,
+    required DriftTimelineRepository timelineRepository,
     required SettingsService settingsService,
   })  : _timelineRepository = timelineRepository,
         _settingsService = settingsService;
@@ -44,6 +44,13 @@ class TimelineFactory {
             .getLocalBucketAssets(albumId, offset: offset, count: count),
         bucketSource: () =>
             _timelineRepository.watchLocalBucket(albumId, groupBy: groupBy),
+      );
+
+  TimelineService remoteAlbum({required String albumId}) => TimelineService(
+        assetSource: (offset, count) => _timelineRepository
+            .getRemoteBucketAssets(albumId, offset: offset, count: count),
+        bucketSource: () =>
+            _timelineRepository.watchRemoteBucket(albumId, groupBy: groupBy),
       );
 }
 

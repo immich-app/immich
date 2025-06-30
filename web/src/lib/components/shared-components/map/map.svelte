@@ -7,6 +7,7 @@
 </script>
 
 <script lang="ts">
+  import { afterNavigate } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
@@ -213,6 +214,17 @@
     }
   };
 
+  afterNavigate(() => {
+    if (map) {
+      map.resize();
+
+      if (globalThis.location.hash) {
+        const hashChangeEvent = new HashChangeEvent('hashchange');
+        globalThis.dispatchEvent(hashChangeEvent);
+      }
+    }
+  });
+
   onMount(async () => {
     if (!mapMarkers) {
       mapMarkers = await loadMapMarkers();
@@ -315,7 +327,7 @@
         features: mapMarkers?.map((marker) => asFeature(marker)) ?? [],
       }}
       id="geojson"
-      cluster={{ radius: 35, maxZoom: 17 }}
+      cluster={{ radius: 35, maxZoom: 18 }}
     >
       <MarkerLayer
         applyToClusters

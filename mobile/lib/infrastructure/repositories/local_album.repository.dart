@@ -1,22 +1,21 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:platform/platform.dart';
 
-class DriftLocalAlbumRepository extends DriftDatabaseRepository
-    implements ILocalAlbumRepository {
+enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum }
+
+class DriftLocalAlbumRepository extends DriftDatabaseRepository {
   final Drift _db;
   final Platform _platform;
   const DriftLocalAlbumRepository(this._db, {Platform? platform})
       : _platform = platform ?? const LocalPlatform(),
         super(_db);
 
-  @override
   Future<List<LocalAlbum>> getAll({Set<SortLocalAlbumsBy> sortBy = const {}}) {
     final assetCount = _db.localAlbumAssetEntity.assetId.count();
 
@@ -56,7 +55,6 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
         .get();
   }
 
-  @override
   Future<void> delete(String albumId) => transaction(() async {
         // Remove all assets that are only in this particular album
         // We cannot remove all assets in the album because they might be in other albums in iOS
@@ -72,7 +70,6 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
             .delete();
       });
 
-  @override
   Future<void> syncDeletes(
     String albumId,
     Iterable<String> assetIdsToKeep,
@@ -101,7 +98,6 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
     await deleteSmt.go();
   }
 
-  @override
   Future<void> upsert(
     LocalAlbum localAlbum, {
     Iterable<LocalAsset> toUpsert = const [],
@@ -134,7 +130,6 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
     });
   }
 
-  @override
   Future<void> updateAll(Iterable<LocalAlbum> albums) {
     return _db.transaction(() async {
       await _db.localAlbumEntity
@@ -185,7 +180,6 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
     });
   }
 
-  @override
   Future<List<LocalAsset>> getAssets(String albumId) {
     final query = _db.localAlbumAssetEntity.select().join(
       [
@@ -202,7 +196,6 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
         .get();
   }
 
-  @override
   Future<List<String>> getAssetIds(String albumId) {
     final query = _db.localAlbumAssetEntity.selectOnly()
       ..addColumns([_db.localAlbumAssetEntity.assetId])
@@ -212,7 +205,6 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
         .get();
   }
 
-  @override
   Future<void> processDelta({
     required List<LocalAsset> updates,
     required List<String> deletes,
@@ -253,7 +245,6 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository
     });
   }
 
-  @override
   Future<List<LocalAsset>> getAssetsToHash(String albumId) {
     final query = _db.localAlbumAssetEntity.select().join(
       [

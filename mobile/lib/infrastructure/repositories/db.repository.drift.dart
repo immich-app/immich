@@ -17,9 +17,15 @@ import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.d
     as i7;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart'
     as i8;
-import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart'
     as i9;
-import 'package:drift/internal/modular.dart' as i10;
+import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart'
+    as i10;
+import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart'
+    as i11;
+import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+    as i12;
+import 'package:drift/internal/modular.dart' as i13;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -39,8 +45,14 @@ abstract class $Drift extends i0.GeneratedDatabase {
       i7.$LocalAlbumAssetEntityTable(this);
   late final i8.$RemoteExifEntityTable remoteExifEntity =
       i8.$RemoteExifEntityTable(this);
-  i9.MergedAssetDrift get mergedAssetDrift => i10.ReadDatabaseContainer(this)
-      .accessor<i9.MergedAssetDrift>(i9.MergedAssetDrift.new);
+  late final i9.$RemoteAlbumEntityTable remoteAlbumEntity =
+      i9.$RemoteAlbumEntityTable(this);
+  late final i10.$RemoteAlbumAssetEntityTable remoteAlbumAssetEntity =
+      i10.$RemoteAlbumAssetEntityTable(this);
+  late final i11.$RemoteAlbumUserEntityTable remoteAlbumUserEntity =
+      i11.$RemoteAlbumUserEntityTable(this);
+  i12.MergedAssetDrift get mergedAssetDrift => i13.ReadDatabaseContainer(this)
+      .accessor<i12.MergedAssetDrift>(i12.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -56,7 +68,10 @@ abstract class $Drift extends i0.GeneratedDatabase {
         partnerEntity,
         localAlbumEntity,
         localAlbumAssetEntity,
-        remoteExifEntity
+        remoteExifEntity,
+        remoteAlbumEntity,
+        remoteAlbumAssetEntity,
+        remoteAlbumUserEntity
       ];
   @override
   i0.StreamQueryUpdateRules get streamUpdateRules =>
@@ -114,6 +129,52 @@ abstract class $Drift extends i0.GeneratedDatabase {
               i0.TableUpdate('remote_exif_entity', kind: i0.UpdateKind.delete),
             ],
           ),
+          i0.WritePropagation(
+            on: i0.TableUpdateQuery.onTableName('user_entity',
+                limitUpdateKind: i0.UpdateKind.delete),
+            result: [
+              i0.TableUpdate('remote_album_entity', kind: i0.UpdateKind.delete),
+            ],
+          ),
+          i0.WritePropagation(
+            on: i0.TableUpdateQuery.onTableName('remote_asset_entity',
+                limitUpdateKind: i0.UpdateKind.delete),
+            result: [
+              i0.TableUpdate('remote_album_entity', kind: i0.UpdateKind.update),
+            ],
+          ),
+          i0.WritePropagation(
+            on: i0.TableUpdateQuery.onTableName('remote_asset_entity',
+                limitUpdateKind: i0.UpdateKind.delete),
+            result: [
+              i0.TableUpdate('remote_album_asset_entity',
+                  kind: i0.UpdateKind.delete),
+            ],
+          ),
+          i0.WritePropagation(
+            on: i0.TableUpdateQuery.onTableName('remote_album_entity',
+                limitUpdateKind: i0.UpdateKind.delete),
+            result: [
+              i0.TableUpdate('remote_album_asset_entity',
+                  kind: i0.UpdateKind.delete),
+            ],
+          ),
+          i0.WritePropagation(
+            on: i0.TableUpdateQuery.onTableName('remote_album_entity',
+                limitUpdateKind: i0.UpdateKind.delete),
+            result: [
+              i0.TableUpdate('remote_album_user_entity',
+                  kind: i0.UpdateKind.delete),
+            ],
+          ),
+          i0.WritePropagation(
+            on: i0.TableUpdateQuery.onTableName('user_entity',
+                limitUpdateKind: i0.UpdateKind.delete),
+            result: [
+              i0.TableUpdate('remote_album_user_entity',
+                  kind: i0.UpdateKind.delete),
+            ],
+          ),
         ],
       );
   @override
@@ -140,4 +201,11 @@ class $DriftManager {
       .$$LocalAlbumAssetEntityTableTableManager(_db, _db.localAlbumAssetEntity);
   i8.$$RemoteExifEntityTableTableManager get remoteExifEntity =>
       i8.$$RemoteExifEntityTableTableManager(_db, _db.remoteExifEntity);
+  i9.$$RemoteAlbumEntityTableTableManager get remoteAlbumEntity =>
+      i9.$$RemoteAlbumEntityTableTableManager(_db, _db.remoteAlbumEntity);
+  i10.$$RemoteAlbumAssetEntityTableTableManager get remoteAlbumAssetEntity =>
+      i10.$$RemoteAlbumAssetEntityTableTableManager(
+          _db, _db.remoteAlbumAssetEntity);
+  i11.$$RemoteAlbumUserEntityTableTableManager get remoteAlbumUserEntity => i11
+      .$$RemoteAlbumUserEntityTableTableManager(_db, _db.remoteAlbumUserEntity);
 }

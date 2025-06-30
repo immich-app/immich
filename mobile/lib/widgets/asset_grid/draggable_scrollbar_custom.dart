@@ -479,6 +479,7 @@ class ArrowCustomPainter extends CustomPainter {
 
 ///This cut 2 lines in arrow shape
 class ArrowClipper extends CustomClipper<Path> {
+  const ArrowClipper();
   @override
   Path getClip(Size size) {
     Path path = Path();

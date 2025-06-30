@@ -43,7 +43,7 @@ struct RandomConfigurationAppIntent: WidgetConfigurationIntent {
     "Choose an album to show images from"
   }
 
-  @Parameter(title: "Album", default: NO_ALBUM)
+  @Parameter(title: "Album")
   var album: Album?
   
   @Parameter(title: "Show Album Name", default: false)

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 
 @RoutePage()
 class MainTimelinePage extends StatelessWidget {
@@ -17,9 +16,10 @@ class MainTimelinePage extends StatelessWidget {
       overrides: [
         timelineServiceProvider.overrideWith(
           (ref) {
-            final timelineService = ref
-                .watch(timelineFactoryProvider)
-                .main(ref.watch(timelineUsersIdsProvider));
+            final timelineUsers =
+                ref.watch(timelineUsersProvider).valueOrNull ?? [];
+            final timelineService =
+                ref.watch(timelineFactoryProvider).main(timelineUsers);
             ref.onDispose(() => unawaited(timelineService.dispose()));
             return timelineService;
           },

@@ -1,7 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsPositive, IsString } from 'class-validator';
+import { ArrayMaxSize, IsEnum, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { AlbumUserRole, AssetOrder, AssetType, AssetVisibility, SyncEntityType, SyncRequestType } from 'src/enum';
+import {
+  AlbumUserRole,
+  AssetOrder,
+  AssetType,
+  AssetVisibility,
+  MemoryType,
+  SyncEntityType,
+  SyncRequestType,
+} from 'src/enum';
 import { Optional, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class AssetFullSyncDto {
@@ -34,6 +43,15 @@ export class AssetDeltaSyncResponseDto {
   deleted!: string[];
 }
 
+export const extraSyncModels: Function[] = [];
+
+export const ExtraModel = (): ClassDecorator => {
+  return (object: Function) => {
+    extraSyncModels.push(object);
+  };
+};
+
+@ExtraModel()
 export class SyncUserV1 {
   id!: string;
   name!: string;
@@ -41,21 +59,25 @@ export class SyncUserV1 {
   deletedAt!: Date | null;
 }
 
+@ExtraModel()
 export class SyncUserDeleteV1 {
   userId!: string;
 }
 
+@ExtraModel()
 export class SyncPartnerV1 {
   sharedById!: string;
   sharedWithId!: string;
   inTimeline!: boolean;
 }
 
+@ExtraModel()
 export class SyncPartnerDeleteV1 {
   sharedById!: string;
   sharedWithId!: string;
 }
 
+@ExtraModel()
 export class SyncAssetV1 {
   id!: string;
   ownerId!: string;
@@ -74,10 +96,12 @@ export class SyncAssetV1 {
   visibility!: AssetVisibility;
 }
 
+@ExtraModel()
 export class SyncAssetDeleteV1 {
   assetId!: string;
 }
 
+@ExtraModel()
 export class SyncAssetExifV1 {
   assetId!: string;
   description!: string | null;
@@ -116,15 +140,18 @@ export class SyncAssetExifV1 {
   fps!: number | null;
 }
 
+@ExtraModel()
 export class SyncAlbumDeleteV1 {
   albumId!: string;
 }
 
+@ExtraModel()
 export class SyncAlbumUserDeleteV1 {
   albumId!: string;
   userId!: string;
 }
 
+@ExtraModel()
 export class SyncAlbumUserV1 {
   albumId!: string;
   userId!: string;
@@ -132,6 +159,7 @@ export class SyncAlbumUserV1 {
   role!: AlbumUserRole;
 }
 
+@ExtraModel()
 export class SyncAlbumV1 {
   id!: string;
   ownerId!: string;
@@ -144,6 +172,55 @@ export class SyncAlbumV1 {
   @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
   order!: AssetOrder;
 }
+
+@ExtraModel()
+export class SyncAlbumToAssetV1 {
+  albumId!: string;
+  assetId!: string;
+}
+
+@ExtraModel()
+export class SyncAlbumToAssetDeleteV1 {
+  albumId!: string;
+  assetId!: string;
+}
+
+@ExtraModel()
+export class SyncMemoryV1 {
+  id!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
+  deletedAt!: Date | null;
+  ownerId!: string;
+  @ApiProperty({ enumName: 'MemoryType', enum: MemoryType })
+  type!: MemoryType;
+  data!: object;
+  isSaved!: boolean;
+  memoryAt!: Date;
+  seenAt!: Date | null;
+  showAt!: Date | null;
+  hideAt!: Date | null;
+}
+
+@ExtraModel()
+export class SyncMemoryDeleteV1 {
+  memoryId!: string;
+}
+
+@ExtraModel()
+export class SyncMemoryAssetV1 {
+  memoryId!: string;
+  assetId!: string;
+}
+
+@ExtraModel()
+export class SyncMemoryAssetDeleteV1 {
+  memoryId!: string;
+  assetId!: string;
+}
+
+@ExtraModel()
+export class SyncAckV1 {}
 
 export type SyncItem = {
   [SyncEntityType.UserV1]: SyncUserV1;
@@ -163,24 +240,19 @@ export type SyncItem = {
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserBackfillV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserDeleteV1]: SyncAlbumUserDeleteV1;
-  [SyncEntityType.SyncAckV1]: object;
+  [SyncEntityType.AlbumAssetV1]: SyncAssetV1;
+  [SyncEntityType.AlbumAssetBackfillV1]: SyncAssetV1;
+  [SyncEntityType.AlbumAssetExifV1]: SyncAssetExifV1;
+  [SyncEntityType.AlbumAssetExifBackfillV1]: SyncAssetExifV1;
+  [SyncEntityType.AlbumToAssetV1]: SyncAlbumToAssetV1;
+  [SyncEntityType.AlbumToAssetBackfillV1]: SyncAlbumToAssetV1;
+  [SyncEntityType.AlbumToAssetDeleteV1]: SyncAlbumToAssetDeleteV1;
+  [SyncEntityType.MemoryV1]: SyncMemoryV1;
+  [SyncEntityType.MemoryDeleteV1]: SyncMemoryDeleteV1;
+  [SyncEntityType.MemoryToAssetV1]: SyncMemoryAssetV1;
+  [SyncEntityType.MemoryToAssetDeleteV1]: SyncMemoryAssetDeleteV1;
+  [SyncEntityType.SyncAckV1]: SyncAckV1;
 };
-
-const responseDtos = [
-  SyncUserV1,
-  SyncUserDeleteV1,
-  SyncPartnerV1,
-  SyncPartnerDeleteV1,
-  SyncAssetV1,
-  SyncAssetDeleteV1,
-  SyncAssetExifV1,
-  SyncAlbumV1,
-  SyncAlbumDeleteV1,
-  SyncAlbumUserV1,
-  SyncAlbumUserDeleteV1,
-];
-
-export const extraSyncModels = responseDtos;
 
 export class SyncStreamDto {
   @IsEnum(SyncRequestType, { each: true })
@@ -195,6 +267,7 @@ export class SyncAckDto {
 }
 
 export class SyncAckSetDto {
+  @ArrayMaxSize(1000)
   @IsString({ each: true })
   acks!: string[];
 }

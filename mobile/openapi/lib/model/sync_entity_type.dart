@@ -25,11 +25,11 @@ class SyncEntityType {
 
   static const userV1 = SyncEntityType._(r'UserV1');
   static const userDeleteV1 = SyncEntityType._(r'UserDeleteV1');
-  static const partnerV1 = SyncEntityType._(r'PartnerV1');
-  static const partnerDeleteV1 = SyncEntityType._(r'PartnerDeleteV1');
   static const assetV1 = SyncEntityType._(r'AssetV1');
   static const assetDeleteV1 = SyncEntityType._(r'AssetDeleteV1');
   static const assetExifV1 = SyncEntityType._(r'AssetExifV1');
+  static const partnerV1 = SyncEntityType._(r'PartnerV1');
+  static const partnerDeleteV1 = SyncEntityType._(r'PartnerDeleteV1');
   static const partnerAssetV1 = SyncEntityType._(r'PartnerAssetV1');
   static const partnerAssetBackfillV1 = SyncEntityType._(r'PartnerAssetBackfillV1');
   static const partnerAssetDeleteV1 = SyncEntityType._(r'PartnerAssetDeleteV1');
@@ -40,17 +40,28 @@ class SyncEntityType {
   static const albumUserV1 = SyncEntityType._(r'AlbumUserV1');
   static const albumUserBackfillV1 = SyncEntityType._(r'AlbumUserBackfillV1');
   static const albumUserDeleteV1 = SyncEntityType._(r'AlbumUserDeleteV1');
+  static const albumAssetV1 = SyncEntityType._(r'AlbumAssetV1');
+  static const albumAssetBackfillV1 = SyncEntityType._(r'AlbumAssetBackfillV1');
+  static const albumAssetExifV1 = SyncEntityType._(r'AlbumAssetExifV1');
+  static const albumAssetExifBackfillV1 = SyncEntityType._(r'AlbumAssetExifBackfillV1');
+  static const albumToAssetV1 = SyncEntityType._(r'AlbumToAssetV1');
+  static const albumToAssetDeleteV1 = SyncEntityType._(r'AlbumToAssetDeleteV1');
+  static const albumToAssetBackfillV1 = SyncEntityType._(r'AlbumToAssetBackfillV1');
+  static const memoryV1 = SyncEntityType._(r'MemoryV1');
+  static const memoryDeleteV1 = SyncEntityType._(r'MemoryDeleteV1');
+  static const memoryToAssetV1 = SyncEntityType._(r'MemoryToAssetV1');
+  static const memoryToAssetDeleteV1 = SyncEntityType._(r'MemoryToAssetDeleteV1');
   static const syncAckV1 = SyncEntityType._(r'SyncAckV1');
 
   /// List of all possible values in this [enum][SyncEntityType].
   static const values = <SyncEntityType>[
     userV1,
     userDeleteV1,
-    partnerV1,
-    partnerDeleteV1,
     assetV1,
     assetDeleteV1,
     assetExifV1,
+    partnerV1,
+    partnerDeleteV1,
     partnerAssetV1,
     partnerAssetBackfillV1,
     partnerAssetDeleteV1,
@@ -61,6 +72,17 @@ class SyncEntityType {
     albumUserV1,
     albumUserBackfillV1,
     albumUserDeleteV1,
+    albumAssetV1,
+    albumAssetBackfillV1,
+    albumAssetExifV1,
+    albumAssetExifBackfillV1,
+    albumToAssetV1,
+    albumToAssetDeleteV1,
+    albumToAssetBackfillV1,
+    memoryV1,
+    memoryDeleteV1,
+    memoryToAssetV1,
+    memoryToAssetDeleteV1,
     syncAckV1,
   ];
 
@@ -102,11 +124,11 @@ class SyncEntityTypeTypeTransformer {
       switch (data) {
         case r'UserV1': return SyncEntityType.userV1;
         case r'UserDeleteV1': return SyncEntityType.userDeleteV1;
-        case r'PartnerV1': return SyncEntityType.partnerV1;
-        case r'PartnerDeleteV1': return SyncEntityType.partnerDeleteV1;
         case r'AssetV1': return SyncEntityType.assetV1;
         case r'AssetDeleteV1': return SyncEntityType.assetDeleteV1;
         case r'AssetExifV1': return SyncEntityType.assetExifV1;
+        case r'PartnerV1': return SyncEntityType.partnerV1;
+        case r'PartnerDeleteV1': return SyncEntityType.partnerDeleteV1;
         case r'PartnerAssetV1': return SyncEntityType.partnerAssetV1;
         case r'PartnerAssetBackfillV1': return SyncEntityType.partnerAssetBackfillV1;
         case r'PartnerAssetDeleteV1': return SyncEntityType.partnerAssetDeleteV1;
@@ -117,6 +139,17 @@ class SyncEntityTypeTypeTransformer {
         case r'AlbumUserV1': return SyncEntityType.albumUserV1;
         case r'AlbumUserBackfillV1': return SyncEntityType.albumUserBackfillV1;
         case r'AlbumUserDeleteV1': return SyncEntityType.albumUserDeleteV1;
+        case r'AlbumAssetV1': return SyncEntityType.albumAssetV1;
+        case r'AlbumAssetBackfillV1': return SyncEntityType.albumAssetBackfillV1;
+        case r'AlbumAssetExifV1': return SyncEntityType.albumAssetExifV1;
+        case r'AlbumAssetExifBackfillV1': return SyncEntityType.albumAssetExifBackfillV1;
+        case r'AlbumToAssetV1': return SyncEntityType.albumToAssetV1;
+        case r'AlbumToAssetDeleteV1': return SyncEntityType.albumToAssetDeleteV1;
+        case r'AlbumToAssetBackfillV1': return SyncEntityType.albumToAssetBackfillV1;
+        case r'MemoryV1': return SyncEntityType.memoryV1;
+        case r'MemoryDeleteV1': return SyncEntityType.memoryDeleteV1;
+        case r'MemoryToAssetV1': return SyncEntityType.memoryToAssetV1;
+        case r'MemoryToAssetDeleteV1': return SyncEntityType.memoryToAssetDeleteV1;
         case r'SyncAckV1': return SyncEntityType.syncAckV1;
         default:
           if (!allowNull) {
