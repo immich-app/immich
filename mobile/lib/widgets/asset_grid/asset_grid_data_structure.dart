@@ -185,12 +185,15 @@ class RenderList {
     final formatMergedOtherYear = DateFormat.yMMMd();
 
     int offset = 0;
-    DateTime? last;
-    DateTime? current;
+    DateTime? lastGroupDate;
+    DateTime? currentGroupDate;
     int lastOffset = 0;
     int count = 0;
     int monthCount = 0;
     int lastMonthIndex = 0;
+
+    // Track section-specific timestamps for auto grouping
+    List<DateTime> sectionTimestamps = [];
 
     String formatDateRange(DateTime from, DateTime to) {
       final startDate = (from.year == currentYear
@@ -212,12 +215,12 @@ class RenderList {
     }
 
     void mergeMonth() {
-      if (last != null &&
+      if (lastGroupDate != null &&
           groupBy == GroupAssetsBy.auto &&
           monthCount <= 30 &&
           elements.length > lastMonthIndex + 1) {
         // merge all days into a single section
-        assert(elements[lastMonthIndex].date.month == last.month);
+        assert(elements[lastMonthIndex].date.month == lastGroupDate.month);
         final e = elements[lastMonthIndex];
 
         elements[lastMonthIndex] = RenderAssetGridElement(
@@ -232,9 +235,10 @@ class RenderList {
       }
     }
 
-    void addElems(DateTime d, DateTime? prevDate) {
-      final bool newMonth =
-          last == null || last.year != d.year || last.month != d.month;
+    void addElems(DateTime groupDate) {
+      final bool newMonth = lastGroupDate == null ||
+          lastGroupDate.year != groupDate.year ||
+          lastGroupDate.month != groupDate.month;
       if (newMonth) {
         mergeMonth();
         lastMonthIndex = elements.length;
@@ -250,27 +254,38 @@ class RenderList {
                 : RenderAssetGridElementType.assets);
         final sectionCount = j + sectionSize > count ? count - j : sectionSize;
         assert(sectionCount > 0 && sectionCount <= sectionSize);
+
+        // Calculate the correct time range for this specific section
+        String? sectionTitle;
+        if (j == 0) {
+          sectionTitle = groupDate.year == currentYear
+              ? formatSameYear.format(groupDate)
+              : formatOtherYear.format(groupDate);
+        } else if (groupBy == GroupAssetsBy.auto) {
+          // For auto grouping, get the actual start and end times for this section
+          final sectionStartIndex = j;
+          final sectionEndIndex = j + sectionCount - 1;
+          if (sectionEndIndex < sectionTimestamps.length) {
+            final sectionStart = sectionTimestamps[sectionStartIndex];
+            final sectionEnd = sectionTimestamps[sectionEndIndex];
+            sectionTitle = formatDateRange(sectionStart, sectionEnd);
+          }
+        }
+
         elements.add(
           RenderAssetGridElement(
             type,
-            date: d,
+            date: groupDate,
             count: sectionCount,
             totalCount: groupBy == GroupAssetsBy.auto ? sectionCount : count,
             offset: lastOffset + j,
-            title: j == 0
-                ? (d.year == currentYear
-                    ? formatSameYear.format(d)
-                    : formatOtherYear.format(d))
-                : (groupBy == GroupAssetsBy.auto
-                    ? formatDateRange(d, prevDate ?? d)
-                    : null),
+            title: sectionTitle,
           ),
         );
       }
       monthCount += count;
     }
 
-    DateTime? prevDate;
     while (true) {
       // this iterates all assets (only their createdAt property) in batches
       // memory usage is okay, however runtime is linear with number of assets
@@ -284,20 +299,24 @@ class RenderList {
               .findAll();
       int i = 0;
       for (final date in dates) {
-        final d = DateTime(
+        final normalizedGroupDate = DateTime(
           date.year,
           date.month,
           groupBy == GroupAssetsBy.month ? 1 : date.day,
         );
-        current ??= d;
-        if (current != d) {
-          addElems(current, prevDate);
-          last = current;
-          current = d;
+        currentGroupDate ??= normalizedGroupDate;
+        if (currentGroupDate != normalizedGroupDate) {
+          addElems(currentGroupDate);
+          lastGroupDate = currentGroupDate;
+          currentGroupDate = normalizedGroupDate;
           lastOffset = offset + i;
           count = 0;
+          // reset for next group
+          sectionTimestamps.clear();
         }
-        prevDate = date;
+
+        // Collect timestamps for this group (used for section time ranges)
+        sectionTimestamps.add(date);
         count++;
         i++;
       }
@@ -305,8 +324,8 @@ class RenderList {
       if (assets != null || dates.length != pageSize) break;
       offset += pageSize;
     }
-    if (count > 0 && current != null) {
-      addElems(current, prevDate);
+    if (count > 0 && currentGroupDate != null) {
+      addElems(currentGroupDate);
       mergeMonth();
     }
     assert(elements.every((e) => e.count <= sectionSize), "too large section");
