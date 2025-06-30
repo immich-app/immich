@@ -58,6 +58,7 @@ const image: Record<string, string[]> = {
   '.insp': ['image/jpeg'],
   '.jp2': ['image/jp2'],
   '.jpe': ['image/jpeg'],
+  '': ['image/jpeg'], // if no ext, use jpg
   '.jxl': ['image/jxl'],
   '.svg': ['image/svg'],
   '.tif': ['image/tiff'],
@@ -101,7 +102,6 @@ const sidecar: Record<string, string[]> = {
 const types = { ...image, ...video, ...sidecar };
 
 const isType = (filename: string, r: Record<string, string[]>) => extname(filename).toLowerCase() in r;
-
 const lookup = (filename: string) => types[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream';
 const toExtension = (mimeType: string) => {
   return (
