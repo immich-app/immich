@@ -13820,6 +13820,8 @@
           "MemoryDeleteV1",
           "MemoryToAssetV1",
           "MemoryToAssetDeleteV1",
+          "StackV1",
+          "StackDeleteV1",
           "SyncAckV1"
         ],
         "type": "string"
@@ -13983,9 +13985,50 @@
           "AlbumAssetsV1",
           "AlbumAssetExifsV1",
           "MemoriesV1",
-          "MemoryToAssetsV1"
+          "MemoryToAssetsV1",
+          "StacksV1"
         ],
         "type": "string"
+      },
+      "SyncStackDeleteV1": {
+        "properties": {
+          "stackId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "stackId"
+        ],
+        "type": "object"
+      },
+      "SyncStackV1": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "primaryAssetId": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "ownerId",
+          "primaryAssetId",
+          "updatedAt"
+        ],
+        "type": "object"
       },
       "SyncStreamDto": {
         "properties": {

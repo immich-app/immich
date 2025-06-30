@@ -28,7 +28,6 @@ import {
   function: album_user_after_insert,
 })
 @AfterDeleteTrigger({
-  name: 'album_users_delete_audit',
   scope: 'statement',
   function: album_users_delete_audit,
   referencingOldTableAs: 'old',

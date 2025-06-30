@@ -4089,6 +4089,8 @@ export enum SyncEntityType {
     MemoryDeleteV1 = "MemoryDeleteV1",
     MemoryToAssetV1 = "MemoryToAssetV1",
     MemoryToAssetDeleteV1 = "MemoryToAssetDeleteV1",
+    StackV1 = "StackV1",
+    StackDeleteV1 = "StackDeleteV1",
     SyncAckV1 = "SyncAckV1"
 }
 export enum SyncRequestType {
@@ -4104,7 +4106,8 @@ export enum SyncRequestType {
     AlbumAssetsV1 = "AlbumAssetsV1",
     AlbumAssetExifsV1 = "AlbumAssetExifsV1",
     MemoriesV1 = "MemoriesV1",
-    MemoryToAssetsV1 = "MemoryToAssetsV1"
+    MemoryToAssetsV1 = "MemoryToAssetsV1",
+    StacksV1 = "StacksV1"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",

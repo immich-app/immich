@@ -51,6 +51,8 @@ class SyncEntityType {
   static const memoryDeleteV1 = SyncEntityType._(r'MemoryDeleteV1');
   static const memoryToAssetV1 = SyncEntityType._(r'MemoryToAssetV1');
   static const memoryToAssetDeleteV1 = SyncEntityType._(r'MemoryToAssetDeleteV1');
+  static const stackV1 = SyncEntityType._(r'StackV1');
+  static const stackDeleteV1 = SyncEntityType._(r'StackDeleteV1');
   static const syncAckV1 = SyncEntityType._(r'SyncAckV1');
 
   /// List of all possible values in this [enum][SyncEntityType].
@@ -83,6 +85,8 @@ class SyncEntityType {
     memoryDeleteV1,
     memoryToAssetV1,
     memoryToAssetDeleteV1,
+    stackV1,
+    stackDeleteV1,
     syncAckV1,
   ];
 
@@ -150,6 +154,8 @@ class SyncEntityTypeTypeTransformer {
         case r'MemoryDeleteV1': return SyncEntityType.memoryDeleteV1;
         case r'MemoryToAssetV1': return SyncEntityType.memoryToAssetV1;
         case r'MemoryToAssetDeleteV1': return SyncEntityType.memoryToAssetDeleteV1;
+        case r'StackV1': return SyncEntityType.stackV1;
+        case r'StackDeleteV1': return SyncEntityType.stackDeleteV1;
         case r'SyncAckV1': return SyncEntityType.syncAckV1;
         default:
           if (!allowNull) {

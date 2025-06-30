@@ -204,3 +204,17 @@ export const memory_assets_delete_audit = registerFunction({
     END`,
   synchronize: false,
 });
+
+export const stacks_delete_audit = registerFunction({
+  name: 'stacks_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO stacks_audit ("stackId", "userId")
+      SELECT "id", "ownerId"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});

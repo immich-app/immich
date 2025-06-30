@@ -220,6 +220,20 @@ export class SyncMemoryAssetDeleteV1 {
 }
 
 @ExtraModel()
+export class SyncStackV1 {
+  id!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
+  primaryAssetId!: string;
+  ownerId!: string;
+}
+
+@ExtraModel()
+export class SyncStackDeleteV1 {
+  stackId!: string;
+}
+
+@ExtraModel()
 export class SyncAckV1 {}
 
 export type SyncItem = {
@@ -251,6 +265,8 @@ export type SyncItem = {
   [SyncEntityType.MemoryDeleteV1]: SyncMemoryDeleteV1;
   [SyncEntityType.MemoryToAssetV1]: SyncMemoryAssetV1;
   [SyncEntityType.MemoryToAssetDeleteV1]: SyncMemoryAssetDeleteV1;
+  [SyncEntityType.StackV1]: SyncStackV1;
+  [SyncEntityType.StackDeleteV1]: SyncStackDeleteV1;
   [SyncEntityType.SyncAckV1]: SyncAckV1;
 };
 

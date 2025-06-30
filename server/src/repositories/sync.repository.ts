@@ -14,7 +14,8 @@ type AuditTables =
   | 'album_users_audit'
   | 'album_assets_audit'
   | 'memories_audit'
-  | 'memory_assets_audit';
+  | 'memory_assets_audit'
+  | 'stacks_audit';
 type UpsertTables =
   | 'users'
   | 'partners'
@@ -23,7 +24,8 @@ type UpsertTables =
   | 'albums'
   | 'albums_shared_users_users'
   | 'memories'
-  | 'memories_assets_assets';
+  | 'memories_assets_assets'
+  | 'asset_stack';
 
 @Injectable()
 export class SyncRepository {
@@ -39,6 +41,7 @@ export class SyncRepository {
   partner: PartnerSync;
   partnerAsset: PartnerAssetsSync;
   partnerAssetExif: PartnerAssetExifsSync;
+  stack: StackSync;
   user: UserSync;
 
   constructor(@InjectKysely() private db: Kysely<DB>) {
@@ -54,6 +57,7 @@ export class SyncRepository {
     this.partner = new PartnerSync(this.db);
     this.partnerAsset = new PartnerAssetsSync(this.db);
     this.partnerAssetExif = new PartnerAssetExifsSync(this.db);
+    this.stack = new StackSync(this.db);
     this.user = new UserSync(this.db);
   }
 }
@@ -528,6 +532,28 @@ class PartnerAssetExifsSync extends BaseSync {
             eb.selectFrom('partners').select(['sharedById']).where('sharedWithId', '=', userId),
           ),
       )
+      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .stream();
+  }
+}
+
+class StackSync extends BaseSync {
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getDeletes(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('stacks_audit')
+      .select(['id', 'stackId'])
+      .where('userId', '=', userId)
+      .$call((qb) => this.auditTableFilters(qb, ack))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('asset_stack')
+      .select(['id', 'createdAt', 'updatedAt', 'primaryAssetId', 'ownerId', 'updateId'])
+      .where('ownerId', '=', userId)
       .$call((qb) => this.upsertTableFilters(qb, ack))
       .stream();
   }
