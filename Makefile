@@ -12,10 +12,16 @@ dev-scale:
 
 .PHONY: e2e
 e2e:
-	COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
+	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
+
+e2e-update:
+	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
+
+e2e-down:
+	docker compose -f ./e2e/docker-compose.yml down --remove-orphans
 
 prod:
-	COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
+	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
 
 prod-down:
 	docker compose -f ./docker/docker-compose.prod.yml down --remove-orphans
