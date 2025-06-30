@@ -9,7 +9,7 @@ function createAssetViewingStore() {
   const viewingAssetStoreState = writable<AssetResponseDto>();
   const preloadAssets = writable<TimelineAsset[]>([]);
   const viewState = writable<boolean>(false);
-  const viewingAssetMutex = writable<Mutex>(new Mutex());
+  const viewingAssetMutex = new Mutex();
   const gridScrollTarget = writable<AssetGridRouteSearchParams | null | undefined>();
 
   const setAsset = (asset: AssetResponseDto, assetsToPreload: TimelineAsset[] = []) => {

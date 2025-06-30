@@ -438,7 +438,7 @@
   };
 
   const handlePrevious = async () => {
-    const release = await $mutex.acquire();
+    const release = await mutex.acquire();
     const laterAsset = await timelineManager.getLaterAsset($viewingAsset);
 
     if (laterAsset) {
@@ -453,7 +453,7 @@
   };
 
   const handleNext = async () => {
-    const release = await $mutex.acquire();
+    const release = await mutex.acquire();
     const earlierAsset = await timelineManager.getEarlierAsset($viewingAsset);
 
     if (earlierAsset) {
