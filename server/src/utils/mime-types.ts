@@ -58,6 +58,7 @@ const image: Record<string, string[]> = {
   '.insp': ['image/jpeg'],
   '.jp2': ['image/jp2'],
   '.jpe': ['image/jpeg'],
+  '': ['image/jpeg'], // if no ext, use jpg
   '.jxl': ['image/jxl'],
   '.svg': ['image/svg'],
   '.tif': ['image/tiff'],
