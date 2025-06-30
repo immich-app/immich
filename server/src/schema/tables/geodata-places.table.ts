@@ -1,4 +1,4 @@
-import { Column, Index, PrimaryColumn, Table } from 'src/sql-tools';
+import { Column, Index, PrimaryColumn, Table, Timestamp } from 'src/sql-tools';
 
 @Table({ name: 'geodata_places', synchronize: false })
 @Index({
@@ -47,20 +47,20 @@ export class GeodataPlacesTable {
   countryCode!: string;
 
   @Column({ type: 'character varying', length: 20, nullable: true })
-  admin1Code!: string;
+  admin1Code!: string | null;
 
   @Column({ type: 'character varying', length: 80, nullable: true })
-  admin2Code!: string;
+  admin2Code!: string | null;
 
   @Column({ type: 'date' })
-  modificationDate!: Date;
+  modificationDate!: Timestamp;
 
   @Column({ type: 'character varying', nullable: true })
-  admin1Name!: string;
+  admin1Name!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
-  admin2Name!: string;
+  admin2Name!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
-  alternateNames!: string;
+  alternateNames!: string | null;
 }

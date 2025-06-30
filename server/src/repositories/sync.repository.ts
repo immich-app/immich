@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { DB } from 'src/schema';
 import { SyncAck } from 'src/types';
 
 type AuditTables =

@@ -32,7 +32,7 @@ class Thumbnail extends StatelessWidget {
       );
     }
 
-    if (asset is Asset) {
+    if (asset is RemoteAsset) {
       return RemoteThumbProvider(
         assetId: asset.id,
         height: size.height,
@@ -45,7 +45,8 @@ class Thumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thumbHash = asset is Asset ? (asset as Asset).thumbHash : null;
+    final thumbHash =
+        asset is RemoteAsset ? (asset as RemoteAsset).thumbHash : null;
     final provider = imageProvider(asset: asset, size: size);
 
     return OctoImage.fromSet(

@@ -1,7 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { hash } from 'bcrypt';
 import { Kysely } from 'kysely';
-import { DB } from 'src/db';
 import { AuthType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -13,6 +12,7 @@ import { SessionRepository } from 'src/repositories/session.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { UserRepository } from 'src/repositories/user.repository';
+import { DB } from 'src/schema';
 import { AuthService } from 'src/services/auth.service';
 import { mediumFactory, newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';

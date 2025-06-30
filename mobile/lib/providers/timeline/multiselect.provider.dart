@@ -13,9 +13,11 @@ final multiSelectProvider =
 
 class MultiSelectState {
   final Set<BaseAsset> selectedAssets;
+  final int lastUpdatedTime;
 
   const MultiSelectState({
     required this.selectedAssets,
+    required this.lastUpdatedTime,
   });
 
   bool get isEnabled => selectedAssets.isNotEmpty;
@@ -30,25 +32,29 @@ class MultiSelectState {
 
   MultiSelectState copyWith({
     Set<BaseAsset>? selectedAssets,
+    int? lastUpdatedTime,
   }) {
     return MultiSelectState(
       selectedAssets: selectedAssets ?? this.selectedAssets,
+      lastUpdatedTime: lastUpdatedTime ?? this.lastUpdatedTime,
     );
   }
 
   @override
-  String toString() => 'MultiSelectState(selectedAssets: $selectedAssets)';
+  String toString() =>
+      'MultiSelectState(selectedAssets: $selectedAssets, lastUpdatedTime: $lastUpdatedTime)';
 
   @override
   bool operator ==(covariant MultiSelectState other) {
     if (identical(this, other)) return true;
     final listEquals = const DeepCollectionEquality().equals;
 
-    return listEquals(other.selectedAssets, selectedAssets);
+    return listEquals(other.selectedAssets, selectedAssets) &&
+        other.lastUpdatedTime == lastUpdatedTime;
   }
 
   @override
-  int get hashCode => selectedAssets.hashCode;
+  int get hashCode => selectedAssets.hashCode ^ lastUpdatedTime.hashCode;
 }
 
 class MultiSelectNotifier extends Notifier<MultiSelectState> {
@@ -60,6 +66,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
 
     return const MultiSelectState(
       selectedAssets: {},
+      lastUpdatedTime: 0,
     );
   }
 
@@ -94,6 +101,13 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   void clearSelection() {
     state = state.copyWith(
       selectedAssets: {},
+    );
+  }
+
+  void reset() {
+    state = MultiSelectState(
+      selectedAssets: {},
+      lastUpdatedTime: DateTime.now().millisecondsSinceEpoch,
     );
   }
 

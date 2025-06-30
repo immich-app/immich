@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB, SessionSyncCheckpoints } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { SyncEntityType } from 'src/enum';
+import { DB } from 'src/schema';
+import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
 
 @Injectable()
 export class SyncCheckpointRepository {
@@ -18,7 +19,7 @@ export class SyncCheckpointRepository {
       .execute();
   }
 
-  upsertAll(items: Insertable<SessionSyncCheckpoints>[]) {
+  upsertAll(items: Insertable<SessionSyncCheckpointTable>[]) {
     return this.db
       .insertInto('session_sync_checkpoints')
       .values(items)

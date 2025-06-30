@@ -9,8 +9,10 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
+  Generated,
   Index,
   Table,
+  Timestamp,
   UpdateDateColumn,
 } from 'src/sql-tools';
 
@@ -50,17 +52,17 @@ export class AlbumUserTable {
   usersId!: string;
 
   @Column({ type: 'character varying', default: AlbumUserRole.EDITOR })
-  role!: AlbumUserRole;
+  role!: Generated<AlbumUserRole>;
 
   @CreateIdColumn({ indexName: 'IDX_album_users_create_id' })
-  createId?: string;
+  createId!: Generated<string>;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 
   @UpdateIdColumn({ indexName: 'IDX_album_users_update_id' })
-  updateId?: string;
+  updateId!: Generated<string>;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Generated<Timestamp>;
 }

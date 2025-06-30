@@ -3,9 +3,13 @@ import { Insertable, Kysely, NotNull, Selectable, UpdateResult, Updateable, sql 
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Stack } from 'src/database';
-import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { DB } from 'src/schema';
+import { AssetFileTable } from 'src/schema/tables/asset-files.table';
+import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
+import { AssetTable } from 'src/schema/tables/asset.table';
+import { ExifTable } from 'src/schema/tables/exif.table';
 import {
   anyUuid,
   asUuid,
@@ -110,7 +114,7 @@ interface GetByIdsRelations {
 export class AssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  async upsertExif(exif: Insertable<Exif>): Promise<void> {
+  async upsertExif(exif: Insertable<ExifTable>): Promise<void> {
     const value = { ...exif, assetId: asUuid(exif.assetId) };
     await this.db
       .insertInto('exif')
@@ -157,7 +161,7 @@ export class AssetRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID], { model: DummyValue.STRING }] })
   @Chunked()
-  async updateAllExif(ids: string[], options: Updateable<Exif>): Promise<void> {
+  async updateAllExif(ids: string[], options: Updateable<ExifTable>): Promise<void> {
     if (ids.length === 0) {
       return;
     }
@@ -165,7 +169,7 @@ export class AssetRepository {
     await this.db.updateTable('exif').set(options).where('assetId', 'in', ids).execute();
   }
 
-  async upsertJobStatus(...jobStatus: Insertable<AssetJobStatus>[]): Promise<void> {
+  async upsertJobStatus(...jobStatus: Insertable<AssetJobStatusTable>[]): Promise<void> {
     if (jobStatus.length === 0) {
       return;
     }
@@ -191,11 +195,11 @@ export class AssetRepository {
       .execute();
   }
 
-  create(asset: Insertable<Assets>) {
+  create(asset: Insertable<AssetTable>) {
     return this.db.insertInto('assets').values(asset).returningAll().executeTakeFirstOrThrow();
   }
 
-  createAll(assets: Insertable<Assets>[]) {
+  createAll(assets: Insertable<AssetTable>[]) {
     return this.db.insertInto('assets').values(assets).returningAll().execute();
   }
 
@@ -375,18 +379,18 @@ export class AssetRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID], { deviceId: DummyValue.STRING }] })
   @Chunked()
-  async updateAll(ids: string[], options: Updateable<Assets>): Promise<void> {
+  async updateAll(ids: string[], options: Updateable<AssetTable>): Promise<void> {
     if (ids.length === 0) {
       return;
     }
     await this.db.updateTable('assets').set(options).where('id', '=', anyUuid(ids)).execute();
   }
 
-  async updateByLibraryId(libraryId: string, options: Updateable<Assets>): Promise<void> {
+  async updateByLibraryId(libraryId: string, options: Updateable<AssetTable>): Promise<void> {
     await this.db.updateTable('assets').set(options).where('libraryId', '=', asUuid(libraryId)).execute();
   }
 
-  async update(asset: Updateable<Assets> & { id: string }) {
+  async update(asset: Updateable<AssetTable> & { id: string }) {
     const value = omitBy(asset, isUndefined);
     delete value.id;
     if (!isEmpty(value)) {
@@ -742,7 +746,7 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFile(file: Pick<Insertable<AssetFiles>, 'assetId' | 'path' | 'type'>): Promise<void> {
+  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>): Promise<void> {
     const value = { ...file, assetId: asUuid(file.assetId) };
     await this.db
       .insertInto('asset_files')
@@ -755,7 +759,7 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFiles(files: Pick<Insertable<AssetFiles>, 'assetId' | 'path' | 'type'>[]): Promise<void> {
+  async upsertFiles(files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>[]): Promise<void> {
     if (files.length === 0) {
       return;
     }
@@ -772,7 +776,7 @@ export class AssetRepository {
       .execute();
   }
 
-  async deleteFiles(files: Pick<Selectable<AssetFiles>, 'id'>[]): Promise<void> {
+  async deleteFiles(files: Pick<Selectable<AssetFileTable>, 'id'>[]): Promise<void> {
     if (files.length === 0) {
       return;
     }

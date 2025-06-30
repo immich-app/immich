@@ -1,11 +1,11 @@
 import { DatabaseAction, EntityType } from 'src/enum';
-import { Column, CreateDateColumn, Index, PrimaryColumn, Table } from 'src/sql-tools';
+import { Column, CreateDateColumn, Generated, Index, PrimaryColumn, Table, Timestamp } from 'src/sql-tools';
 
 @Table('audit')
 @Index({ name: 'IDX_ownerId_createdAt', columns: ['ownerId', 'createdAt'] })
 export class AuditTable {
   @PrimaryColumn({ type: 'serial', synchronize: false })
-  id!: number;
+  id!: Generated<number>;
 
   @Column()
   entityType!: EntityType;
@@ -20,5 +20,5 @@ export class AuditTable {
   ownerId!: string;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 }

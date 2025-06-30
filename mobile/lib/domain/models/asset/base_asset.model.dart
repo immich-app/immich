@@ -1,4 +1,4 @@
-part 'asset.model.dart';
+part 'remote_asset.model.dart';
 part 'local_asset.model.dart';
 
 enum AssetType {

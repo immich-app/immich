@@ -25,7 +25,7 @@ class ShareLinkActionButton extends ConsumerWidget {
   void timelineAction(BuildContext context, WidgetRef ref) {
     final ids = ref
         .read(multiSelectProvider.select((value) => value.selectedAssets))
-        .whereType<Asset>()
+        .whereType<RemoteAsset>()
         .toList()
         .map((asset) => asset.id)
         .toList();

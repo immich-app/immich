@@ -7,12 +7,15 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 @RoutePage()
-class MainTimelinePage extends StatelessWidget {
+class MainTimelinePage extends ConsumerWidget {
   const MainTimelinePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ProviderScope(
+      key: ref.watch(timelineUsersProvider).value != null
+          ? ValueKey(ref.watch(timelineUsersProvider).value)
+          : const ValueKey("main-timeline"),
       overrides: [
         timelineServiceProvider.overrideWith(
           (ref) {

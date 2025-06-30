@@ -3,8 +3,9 @@ import { ExpressionBuilder, Kysely, Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { AssetStack, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { DB } from 'src/schema';
+import { StackTable } from 'src/schema/tables/stack.table';
 import { asUuid, withDefaultVisibility } from 'src/utils/database';
 
 export interface StackSearch {
@@ -130,7 +131,7 @@ export class StackRepository {
     await this.db.deleteFrom('asset_stack').where('id', 'in', ids).execute();
   }
 
-  update(id: string, entity: Updateable<AssetStack>) {
+  update(id: string, entity: Updateable<StackTable>) {
     return this.db
       .updateTable('asset_stack')
       .set(entity)

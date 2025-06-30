@@ -36,7 +36,7 @@ class HomeBottomAppBar extends ConsumerWidget {
         if (multiselect.hasRemote) ...[
           const ShareLinkActionButton(source: ActionSource.timeline),
           const ArchiveActionButton(),
-          const FavoriteActionButton(),
+          const FavoriteActionButton(source: ActionSource.timeline),
           const DownloadActionButton(),
           isTrashEnable
               ? const TrashActionButton()
