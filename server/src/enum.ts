@@ -573,20 +573,21 @@ export enum DatabaseLock {
 }
 
 export enum SyncRequestType {
-  UsersV1 = 'UsersV1',
-  PartnersV1 = 'PartnersV1',
-  AssetsV1 = 'AssetsV1',
-  AssetExifsV1 = 'AssetExifsV1',
-  PartnerAssetsV1 = 'PartnerAssetsV1',
-  PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
   AlbumsV1 = 'AlbumsV1',
   AlbumUsersV1 = 'AlbumUsersV1',
   AlbumToAssetsV1 = 'AlbumToAssetsV1',
   AlbumAssetsV1 = 'AlbumAssetsV1',
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
+  AssetsV1 = 'AssetsV1',
+  AssetExifsV1 = 'AssetExifsV1',
   MemoriesV1 = 'MemoriesV1',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
+  PartnersV1 = 'PartnersV1',
+  PartnerAssetsV1 = 'PartnerAssetsV1',
+  PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
+  PartnerStacksV1 = 'PartnerStacksV1',
   StacksV1 = 'StacksV1',
+  UsersV1 = 'UsersV1',
 }
 
 export enum SyncEntityType {
@@ -605,6 +606,9 @@ export enum SyncEntityType {
   PartnerAssetDeleteV1 = 'PartnerAssetDeleteV1',
   PartnerAssetExifV1 = 'PartnerAssetExifV1',
   PartnerAssetExifBackfillV1 = 'PartnerAssetExifBackfillV1',
+  PartnerStackBackfillV1 = 'PartnerStackBackfillV1',
+  PartnerStackDeleteV1 = 'PartnerStackDeleteV1',
+  PartnerStackV1 = 'PartnerStackV1',
 
   AlbumV1 = 'AlbumV1',
   AlbumDeleteV1 = 'AlbumDeleteV1',
