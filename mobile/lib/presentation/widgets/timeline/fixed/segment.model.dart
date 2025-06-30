@@ -185,7 +185,7 @@ class FixedSegment extends Segment {
   /// and prevents duplicate keys even when assets have the same name/timestamp
   String _generateUniqueKey(BaseAsset asset, int assetIndex) {
     // Try to get the most unique identifier based on asset type
-    if (asset is Asset) {
+    if (asset is RemoteAsset) {
       // For remote/merged assets, use the remote ID which is globally unique
       return 'asset_${asset.id}';
     } else if (asset is LocalAsset) {
