@@ -19,9 +19,9 @@ typedef $$RemoteExifEntityTableCreateCompanionBuilder
   i0.Value<int?> height,
   i0.Value<int?> width,
   i0.Value<String?> exposureTime,
-  i0.Value<int?> fNumber,
+  i0.Value<double?> fNumber,
   i0.Value<int?> fileSize,
-  i0.Value<int?> focalLength,
+  i0.Value<double?> focalLength,
   i0.Value<double?> latitude,
   i0.Value<double?> longitude,
   i0.Value<int?> iso,
@@ -44,9 +44,9 @@ typedef $$RemoteExifEntityTableUpdateCompanionBuilder
   i0.Value<int?> height,
   i0.Value<int?> width,
   i0.Value<String?> exposureTime,
-  i0.Value<int?> fNumber,
+  i0.Value<double?> fNumber,
   i0.Value<int?> fileSize,
-  i0.Value<int?> focalLength,
+  i0.Value<double?> focalLength,
   i0.Value<double?> latitude,
   i0.Value<double?> longitude,
   i0.Value<int?> iso,
@@ -127,13 +127,13 @@ class $$RemoteExifEntityTableFilterComposer
       column: $table.exposureTime,
       builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<int> get fNumber => $composableBuilder(
+  i0.ColumnFilters<double> get fNumber => $composableBuilder(
       column: $table.fNumber, builder: (column) => i0.ColumnFilters(column));
 
   i0.ColumnFilters<int> get fileSize => $composableBuilder(
       column: $table.fileSize, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<int> get focalLength => $composableBuilder(
+  i0.ColumnFilters<double> get focalLength => $composableBuilder(
       column: $table.focalLength,
       builder: (column) => i0.ColumnFilters(column));
 
@@ -228,13 +228,13 @@ class $$RemoteExifEntityTableOrderingComposer
       column: $table.exposureTime,
       builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get fNumber => $composableBuilder(
+  i0.ColumnOrderings<double> get fNumber => $composableBuilder(
       column: $table.fNumber, builder: (column) => i0.ColumnOrderings(column));
 
   i0.ColumnOrderings<int> get fileSize => $composableBuilder(
       column: $table.fileSize, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get focalLength => $composableBuilder(
+  i0.ColumnOrderings<double> get focalLength => $composableBuilder(
       column: $table.focalLength,
       builder: (column) => i0.ColumnOrderings(column));
 
@@ -329,13 +329,13 @@ class $$RemoteExifEntityTableAnnotationComposer
   i0.GeneratedColumn<String> get exposureTime => $composableBuilder(
       column: $table.exposureTime, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get fNumber =>
+  i0.GeneratedColumn<double> get fNumber =>
       $composableBuilder(column: $table.fNumber, builder: (column) => column);
 
   i0.GeneratedColumn<int> get fileSize =>
       $composableBuilder(column: $table.fileSize, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get focalLength => $composableBuilder(
+  i0.GeneratedColumn<double> get focalLength => $composableBuilder(
       column: $table.focalLength, builder: (column) => column);
 
   i0.GeneratedColumn<double> get latitude =>
@@ -427,9 +427,9 @@ class $$RemoteExifEntityTableTableManager extends i0.RootTableManager<
             i0.Value<int?> height = const i0.Value.absent(),
             i0.Value<int?> width = const i0.Value.absent(),
             i0.Value<String?> exposureTime = const i0.Value.absent(),
-            i0.Value<int?> fNumber = const i0.Value.absent(),
+            i0.Value<double?> fNumber = const i0.Value.absent(),
             i0.Value<int?> fileSize = const i0.Value.absent(),
-            i0.Value<int?> focalLength = const i0.Value.absent(),
+            i0.Value<double?> focalLength = const i0.Value.absent(),
             i0.Value<double?> latitude = const i0.Value.absent(),
             i0.Value<double?> longitude = const i0.Value.absent(),
             i0.Value<int?> iso = const i0.Value.absent(),
@@ -475,9 +475,9 @@ class $$RemoteExifEntityTableTableManager extends i0.RootTableManager<
             i0.Value<int?> height = const i0.Value.absent(),
             i0.Value<int?> width = const i0.Value.absent(),
             i0.Value<String?> exposureTime = const i0.Value.absent(),
-            i0.Value<int?> fNumber = const i0.Value.absent(),
+            i0.Value<double?> fNumber = const i0.Value.absent(),
             i0.Value<int?> fileSize = const i0.Value.absent(),
-            i0.Value<int?> focalLength = const i0.Value.absent(),
+            i0.Value<double?> focalLength = const i0.Value.absent(),
             i0.Value<double?> latitude = const i0.Value.absent(),
             i0.Value<double?> longitude = const i0.Value.absent(),
             i0.Value<int?> iso = const i0.Value.absent(),
@@ -637,9 +637,9 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
   static const i0.VerificationMeta _fNumberMeta =
       const i0.VerificationMeta('fNumber');
   @override
-  late final i0.GeneratedColumn<int> fNumber = i0.GeneratedColumn<int>(
+  late final i0.GeneratedColumn<double> fNumber = i0.GeneratedColumn<double>(
       'f_number', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
+      type: i0.DriftSqlType.double, requiredDuringInsert: false);
   static const i0.VerificationMeta _fileSizeMeta =
       const i0.VerificationMeta('fileSize');
   @override
@@ -649,9 +649,9 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
   static const i0.VerificationMeta _focalLengthMeta =
       const i0.VerificationMeta('focalLength');
   @override
-  late final i0.GeneratedColumn<int> focalLength = i0.GeneratedColumn<int>(
-      'focal_length', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
+  late final i0.GeneratedColumn<double> focalLength =
+      i0.GeneratedColumn<double>('focal_length', aliasedName, true,
+          type: i0.DriftSqlType.double, requiredDuringInsert: false);
   static const i0.VerificationMeta _latitudeMeta =
       const i0.VerificationMeta('latitude');
   @override
@@ -879,11 +879,11 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
       exposureTime: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.string, data['${effectivePrefix}exposure_time']),
       fNumber: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}f_number']),
+          .read(i0.DriftSqlType.double, data['${effectivePrefix}f_number']),
       fileSize: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.int, data['${effectivePrefix}file_size']),
       focalLength: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}focal_length']),
+          .read(i0.DriftSqlType.double, data['${effectivePrefix}focal_length']),
       latitude: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.double, data['${effectivePrefix}latitude']),
       longitude: attachedDatabase.typeMapping
@@ -929,9 +929,9 @@ class RemoteExifEntityData extends i0.DataClass
   final int? height;
   final int? width;
   final String? exposureTime;
-  final int? fNumber;
+  final double? fNumber;
   final int? fileSize;
-  final int? focalLength;
+  final double? focalLength;
   final double? latitude;
   final double? longitude;
   final int? iso;
@@ -994,13 +994,13 @@ class RemoteExifEntityData extends i0.DataClass
       map['exposure_time'] = i0.Variable<String>(exposureTime);
     }
     if (!nullToAbsent || fNumber != null) {
-      map['f_number'] = i0.Variable<int>(fNumber);
+      map['f_number'] = i0.Variable<double>(fNumber);
     }
     if (!nullToAbsent || fileSize != null) {
       map['file_size'] = i0.Variable<int>(fileSize);
     }
     if (!nullToAbsent || focalLength != null) {
-      map['focal_length'] = i0.Variable<int>(focalLength);
+      map['focal_length'] = i0.Variable<double>(focalLength);
     }
     if (!nullToAbsent || latitude != null) {
       map['latitude'] = i0.Variable<double>(latitude);
@@ -1049,9 +1049,9 @@ class RemoteExifEntityData extends i0.DataClass
       height: serializer.fromJson<int?>(json['height']),
       width: serializer.fromJson<int?>(json['width']),
       exposureTime: serializer.fromJson<String?>(json['exposureTime']),
-      fNumber: serializer.fromJson<int?>(json['fNumber']),
+      fNumber: serializer.fromJson<double?>(json['fNumber']),
       fileSize: serializer.fromJson<int?>(json['fileSize']),
-      focalLength: serializer.fromJson<int?>(json['focalLength']),
+      focalLength: serializer.fromJson<double?>(json['focalLength']),
       latitude: serializer.fromJson<double?>(json['latitude']),
       longitude: serializer.fromJson<double?>(json['longitude']),
       iso: serializer.fromJson<int?>(json['iso']),
@@ -1077,9 +1077,9 @@ class RemoteExifEntityData extends i0.DataClass
       'height': serializer.toJson<int?>(height),
       'width': serializer.toJson<int?>(width),
       'exposureTime': serializer.toJson<String?>(exposureTime),
-      'fNumber': serializer.toJson<int?>(fNumber),
+      'fNumber': serializer.toJson<double?>(fNumber),
       'fileSize': serializer.toJson<int?>(fileSize),
-      'focalLength': serializer.toJson<int?>(focalLength),
+      'focalLength': serializer.toJson<double?>(focalLength),
       'latitude': serializer.toJson<double?>(latitude),
       'longitude': serializer.toJson<double?>(longitude),
       'iso': serializer.toJson<int?>(iso),
@@ -1103,9 +1103,9 @@ class RemoteExifEntityData extends i0.DataClass
           i0.Value<int?> height = const i0.Value.absent(),
           i0.Value<int?> width = const i0.Value.absent(),
           i0.Value<String?> exposureTime = const i0.Value.absent(),
-          i0.Value<int?> fNumber = const i0.Value.absent(),
+          i0.Value<double?> fNumber = const i0.Value.absent(),
           i0.Value<int?> fileSize = const i0.Value.absent(),
-          i0.Value<int?> focalLength = const i0.Value.absent(),
+          i0.Value<double?> focalLength = const i0.Value.absent(),
           i0.Value<double?> latitude = const i0.Value.absent(),
           i0.Value<double?> longitude = const i0.Value.absent(),
           i0.Value<int?> iso = const i0.Value.absent(),
@@ -1273,9 +1273,9 @@ class RemoteExifEntityCompanion
   final i0.Value<int?> height;
   final i0.Value<int?> width;
   final i0.Value<String?> exposureTime;
-  final i0.Value<int?> fNumber;
+  final i0.Value<double?> fNumber;
   final i0.Value<int?> fileSize;
-  final i0.Value<int?> focalLength;
+  final i0.Value<double?> focalLength;
   final i0.Value<double?> latitude;
   final i0.Value<double?> longitude;
   final i0.Value<int?> iso;
@@ -1344,9 +1344,9 @@ class RemoteExifEntityCompanion
     i0.Expression<int>? height,
     i0.Expression<int>? width,
     i0.Expression<String>? exposureTime,
-    i0.Expression<int>? fNumber,
+    i0.Expression<double>? fNumber,
     i0.Expression<int>? fileSize,
-    i0.Expression<int>? focalLength,
+    i0.Expression<double>? focalLength,
     i0.Expression<double>? latitude,
     i0.Expression<double>? longitude,
     i0.Expression<int>? iso,
@@ -1394,9 +1394,9 @@ class RemoteExifEntityCompanion
       i0.Value<int?>? height,
       i0.Value<int?>? width,
       i0.Value<String?>? exposureTime,
-      i0.Value<int?>? fNumber,
+      i0.Value<double?>? fNumber,
       i0.Value<int?>? fileSize,
-      i0.Value<int?>? focalLength,
+      i0.Value<double?>? focalLength,
       i0.Value<double?>? latitude,
       i0.Value<double?>? longitude,
       i0.Value<int?>? iso,
@@ -1464,13 +1464,13 @@ class RemoteExifEntityCompanion
       map['exposure_time'] = i0.Variable<String>(exposureTime.value);
     }
     if (fNumber.present) {
-      map['f_number'] = i0.Variable<int>(fNumber.value);
+      map['f_number'] = i0.Variable<double>(fNumber.value);
     }
     if (fileSize.present) {
       map['file_size'] = i0.Variable<int>(fileSize.value);
     }
     if (focalLength.present) {
-      map['focal_length'] = i0.Variable<int>(focalLength.value);
+      map['focal_length'] = i0.Variable<double>(focalLength.value);
     }
     if (latitude.present) {
       map['latitude'] = i0.Variable<double>(latitude.value);

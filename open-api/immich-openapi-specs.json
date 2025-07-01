@@ -13615,36 +13615,41 @@
             "type": "string"
           },
           "fNumber": {
+            "format": "double",
             "nullable": true,
-            "type": "integer"
+            "type": "number"
           },
           "fileSizeInByte": {
             "nullable": true,
             "type": "integer"
           },
           "focalLength": {
+            "format": "double",
             "nullable": true,
-            "type": "integer"
+            "type": "number"
           },
           "fps": {
+            "format": "double",
             "nullable": true,
-            "type": "integer"
+            "type": "number"
           },
           "iso": {
             "nullable": true,
             "type": "integer"
           },
           "latitude": {
+            "format": "double",
             "nullable": true,
-            "type": "integer"
+            "type": "number"
           },
           "lensModel": {
             "nullable": true,
             "type": "string"
           },
           "longitude": {
+            "format": "double",
             "nullable": true,
-            "type": "integer"
+            "type": "number"
           },
           "make": {
             "nullable": true,

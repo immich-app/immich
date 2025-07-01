@@ -1,16 +1,12 @@
 import 'package:drift/drift.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart'
     hide ExifInfo;
+import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-
-final remoteAssetRepositoryProvider = Provider<RemoteAssetRepository>(
-  (ref) => RemoteAssetRepository(ref.watch(driftProvider)),
-);
+import 'package:maplibre_gl/maplibre_gl.dart';
 
 class RemoteAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -42,6 +38,21 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
           _db.remoteAssetEntity,
           RemoteAssetEntityCompanion(visibility: Value(visibility)),
           where: (e) => e.id.equals(id),
+        );
+      }
+    });
+  }
+
+  Future<void> updateLocation(List<String> ids, LatLng location) {
+    return _db.batch((batch) async {
+      for (final id in ids) {
+        batch.update(
+          _db.remoteExifEntity,
+          RemoteExifEntityCompanion(
+            latitude: Value(location.latitude),
+            longitude: Value(location.longitude),
+          ),
+          where: (e) => e.assetId.equals(id),
         );
       }
     });

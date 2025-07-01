@@ -8,6 +8,10 @@ final localAssetRepository = Provider<DriftLocalAssetRepository>(
   (ref) => DriftLocalAssetRepository(ref.watch(driftProvider)),
 );
 
+final remoteAssetRepositoryProvider = Provider<RemoteAssetRepository>(
+  (ref) => RemoteAssetRepository(ref.watch(driftProvider)),
+);
+
 final assetServiceProvider = Provider(
   (ref) => AssetService(
     remoteAssetRepository: ref.watch(remoteAssetRepositoryProvider),

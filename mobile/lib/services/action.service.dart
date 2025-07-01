@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/common/location_picker.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final actionServiceProvider = Provider<ActionService>(
@@ -18,7 +21,10 @@ class ActionService {
   final AssetApiRepository _assetApiRepository;
   final RemoteAssetRepository _remoteAssetRepository;
 
-  const ActionService(this._assetApiRepository, this._remoteAssetRepository);
+  const ActionService(
+    this._assetApiRepository,
+    this._remoteAssetRepository,
+  );
 
   Future<void> shareLink(List<String> remoteIds, BuildContext context) async {
     context.pushRoute(
@@ -80,5 +86,39 @@ class ActionService {
       remoteIds,
       AssetVisibility.timeline,
     );
+  }
+
+  Future<bool> editLocation(
+    List<String> remoteIds,
+    BuildContext context,
+  ) async {
+    LatLng? initialLatLng;
+    if (remoteIds.length == 1) {
+      final exif = await _remoteAssetRepository.getExif(remoteIds[0]);
+
+      if (exif?.latitude != null && exif?.longitude != null) {
+        initialLatLng = LatLng(exif!.latitude!, exif.longitude!);
+      }
+    }
+
+    final location = await showLocationPicker(
+      context: context,
+      initialLatLng: initialLatLng,
+    );
+
+    if (location == null) {
+      return false;
+    }
+
+    await _assetApiRepository.updateLocation(
+      remoteIds,
+      location,
+    );
+    await _remoteAssetRepository.updateLocation(
+      remoteIds,
+      location,
+    );
+
+    return true;
   }
 }
