@@ -4,7 +4,6 @@ FROM ghcr.io/immich-app/base-server-dev:202505131114@sha256:cf4507bbbf307e9b6d8e
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
-COPY server/patches ./patches
 RUN npm ci && \
     # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
     # they're marked as optional dependencies, so we need to copy them manually after pruning
@@ -33,7 +32,7 @@ COPY --chown=node:node --chmod=777 ../.devcontainer/server/*.sh /immich-devconta
 USER node
 COPY --chown=node:node .. /tmp/create-dep-cache/
 WORKDIR /tmp/create-dep-cache
-RUN make ci-all && rm -rf /tmp/create-dep-cache 
+RUN make ci-all && rm -rf /tmp/create-dep-cache
 
 
 FROM dev-container-server AS dev-container-mobile
