@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import es.antonborri.home_widget.HomeWidgetPlugin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.OutputStreamWriter
@@ -17,6 +18,25 @@ import java.util.*
 
 
 class ImmichAPI(cfg: ServerConfig) {
+
+  companion object {
+    fun getServerConfig(context: Context): ServerConfig? {
+      val prefs = HomeWidgetPlugin.getData(context)
+
+      val serverURL = prefs.getString("widget_server_url", "") ?: ""
+      val sessionKey = prefs.getString("widget_auth_token", "") ?: ""
+
+      if (serverURL.isBlank() || sessionKey.isBlank()) {
+        return null
+      }
+
+      return ServerConfig(
+        serverURL,
+        sessionKey
+      )
+    }
+  }
+
 
   private val gson = Gson()
   private val serverConfig = cfg

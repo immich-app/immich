@@ -1,31 +1,14 @@
 package app.alextran.immich.widget
 
-/*
- * Copyright (C) 2021 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.*
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.work.*
-import com.google.gson.Gson
-import es.antonborri.home_widget.HomeWidgetPlugin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -45,7 +28,7 @@ class ImageDownloadWorker(
 
     private val uniqueWorkName = ImageDownloadWorker::class.java.simpleName
 
-    fun enqueue(context: Context, appWidgetId: Int, config: WidgetConfig) {
+    fun enqueue(context: Context, appWidgetId: Int, widgetType: WidgetType) {
       val manager = WorkManager.getInstance(context)
 
       val workRequest = PeriodicWorkRequestBuilder<ImageDownloadWorker>(
@@ -58,7 +41,7 @@ class ImageDownloadWorker(
         )
         .setInputData(
           Data.Builder()
-            .putString("config", Gson().toJson(config))
+            .putString("widgetType", widgetType.toString())
             .putInt("widgetId", appWidgetId)
             .build()
         )
@@ -78,45 +61,43 @@ class ImageDownloadWorker(
     }
   }
 
-  private fun getServerConfig(): ServerConfig? {
-    val prefs = HomeWidgetPlugin.getData(context)
 
-    val serverURL = prefs.getString("widget_server_url", "") ?: ""
-    val sessionKey = prefs.getString("widget_auth_token", "") ?: ""
-
-    if (serverURL == "" || sessionKey == "") {
-      return null
-    }
-
-    return ServerConfig(
-      serverURL,
-      sessionKey
-    )
-  }
 
   override suspend fun doWork(): Result {
     return try {
-      val configString = inputData.getString("config")
-      val config = Gson().fromJson(configString, WidgetConfig::class.java)
+      val widgetType = WidgetType.valueOf(inputData.getString("config") ?: "")
       val widgetId = inputData.getInt("widgetId", -1)
       val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(widgetId)
-      val serverConfig = getServerConfig() ?: return Result.success()
+      val currentState = getAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId)
+      val currentImgUUID = currentState[stringPreferencesKey("uuid")]
 
-      // clear current image if it exists
-      val state = getAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId)
-      val currentImgUUID = state[stringPreferencesKey("uuid")]
-      if (currentImgUUID != null) {
-        deleteImage(currentImgUUID)
+      val serverConfig = ImmichAPI.getServerConfig(context)
+
+      // clear any image caches and go to "login" state if no credentials
+      if (serverConfig == null) {
+        if (!currentImgUUID.isNullOrEmpty()) {
+          deleteImage(currentImgUUID)
+          updateWidget(widgetType, glanceId, "", WidgetState.LOG_IN)
+        }
+
+        return Result.success()
       }
 
       // fetch new image
-      val newBitmap = when (config.widgetType) {
-        WidgetType.RANDOM -> fetchRandom(serverConfig)
+      val newBitmap = when (widgetType) {
+        WidgetType.RANDOM -> fetchRandom(serverConfig, currentState)
       }
+
+      // clear current image if it exists
+      if (!currentImgUUID.isNullOrEmpty()) {
+        deleteImage(currentImgUUID)
+      }
+
+      // save a new image
       val imgUUID = saveImage(newBitmap)
 
       // trigger the update routine with new image uuid
-      updateWidget(config, glanceId, imgUUID)
+      updateWidget(widgetType, glanceId, imgUUID)
 
       Result.success()
     } catch (e: Exception) {
@@ -129,19 +110,29 @@ class ImageDownloadWorker(
     }
   }
 
-  private suspend fun updateWidget(config: WidgetConfig, glanceId: GlanceId, imageUUID: String) {
+  private suspend fun updateWidget(type: WidgetType, glanceId: GlanceId, imageUUID: String, widgetState: WidgetState = WidgetState.SUCCESS) {
     updateAppWidgetState(context, glanceId) { prefs ->
       prefs[longPreferencesKey("now")] = System.currentTimeMillis()
       prefs[stringPreferencesKey("uuid")] = imageUUID
+      prefs[stringPreferencesKey("state")] = widgetState.toString()
     }
 
-    RandomWidget().update(context,glanceId)
+    when (type) {
+      WidgetType.RANDOM -> RandomWidget().update(context,glanceId)
+    }
   }
 
-  private suspend fun fetchRandom(serverConfig: ServerConfig): Bitmap {
+  private suspend fun fetchRandom(serverConfig: ServerConfig, widgetData: Preferences): Bitmap {
     val api = ImmichAPI(serverConfig)
 
-    val random = api.fetchSearchResults(SearchFilters(AssetType.IMAGE, size=1))
+    val filters = SearchFilters(AssetType.IMAGE, size=1)
+    val albumId = widgetData[stringPreferencesKey("albumID")]
+
+    if (albumId != null) {
+      filters.albumIds = listOf(albumId)
+    }
+
+    val random = api.fetchSearchResults(filters)
     val image = api.fetchImage(random[0])
 
     return image

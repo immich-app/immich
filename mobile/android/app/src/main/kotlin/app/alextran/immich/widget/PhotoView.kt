@@ -14,7 +14,7 @@ import androidx.glance.text.Text
 import app.alextran.immich.R
 
 @Composable
-fun PhotoWidget(image: Bitmap?, error: String?, subtitle: String?) {
+fun PhotoView(image: Bitmap?, subtitle: String?, loggedIn: Boolean) {
 
   Box(
     modifier = GlanceModifier
@@ -28,12 +28,14 @@ fun PhotoWidget(image: Bitmap?, error: String?, subtitle: String?) {
         contentScale = ContentScale.Crop,
         modifier = GlanceModifier.fillMaxSize()
       )
+      if (subtitle != null)
+        Text(subtitle)
     } else {
       Image(
         provider = ImageProvider(R.drawable.splash),
         contentDescription = null,
       )
-      Text(error ?: "NOPERS")
+
     }
   }
 }

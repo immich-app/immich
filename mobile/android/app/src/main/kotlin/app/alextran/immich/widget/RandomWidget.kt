@@ -1,19 +1,14 @@
 package app.alextran.immich.widget
 
-import HomeWidgetGlanceState
-import HomeWidgetGlanceStateDefinition
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
 import androidx.datastore.preferences.core.MutablePreferences
-import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.appwidget.*
 import androidx.glance.*
 import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import java.io.File
-import java.util.prefs.Preferences
 
 class RandomWidget : GlanceAppWidget() {
   override var stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
@@ -23,7 +18,10 @@ class RandomWidget : GlanceAppWidget() {
       provideContent {
         val prefs = currentState<MutablePreferences>()
         val imageUUID = prefs[stringPreferencesKey("uuid")]
+
+        val subtitle: String? = prefs[stringPreferencesKey("subtitle")]
         var bitmap: Bitmap? = null
+        var loggedIn = true
 
         if (imageUUID != null) {
           // fetch a random photo from server
@@ -32,9 +30,11 @@ class RandomWidget : GlanceAppWidget() {
           if (file.exists()) {
             bitmap = loadScaledBitmap(file, 500, 500)
           }
+        } else if (ImmichAPI.getServerConfig(context) == null) {
+          loggedIn = false
         }
 
-        PhotoWidget(image = bitmap, error = "NOPE", subtitle = "hello")
+        PhotoView(image = bitmap, subtitle = subtitle, loggedIn = loggedIn)
       }
   }
 
