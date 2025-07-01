@@ -102,7 +102,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
   }) async {
     try {
       await _db.remoteAssetEntity.deleteWhere(
-          (row) => row.id.isIn(data.map((error) => error.assetId)));
+        (row) => row.id.isIn(data.map((error) => error.assetId)),
+      );
     } catch (error, stackTrace) {
       _logger.severe('Error: deleteAssetsV1 - $debugLabel', error, stackTrace);
       rethrow;
@@ -184,7 +185,10 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       });
     } catch (error, stackTrace) {
       _logger.severe(
-          'Error: updateAssetsExifV1 - $debugLabel', error, stackTrace);
+        'Error: updateAssetsExifV1 - $debugLabel',
+        error,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -192,7 +196,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
   Future<void> deleteAlbumsV1(Iterable<SyncAlbumDeleteV1> data) async {
     try {
       await _db.remoteAlbumEntity.deleteWhere(
-          (row) => row.id.isIn(data.map((error) => error.albumId)));
+        (row) => row.id.isIn(data.map((error) => error.albumId)),
+      );
     } catch (error, stackTrace) {
       _logger.severe('Error: deleteAlbumsV1', error, stackTrace);
       rethrow;
@@ -269,7 +274,10 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       });
     } catch (error, stackTrace) {
       _logger.severe(
-          'Error: updateAlbumUsersV1 - $debugLabel', error, stackTrace);
+        'Error: updateAlbumUsersV1 - $debugLabel',
+        error,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -316,7 +324,10 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       });
     } catch (error, stackTrace) {
       _logger.severe(
-          'Error: updateAlbumToAssetsV1 - $debugLabel', error, stackTrace);
+        'Error: updateAlbumToAssetsV1 - $debugLabel',
+        error,
+        stackTrace,
+      );
       rethrow;
     }
   }
@@ -354,7 +365,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
   Future<void> deleteMemoriesV1(Iterable<SyncMemoryDeleteV1> data) async {
     try {
       await _db.memoryEntity.deleteWhere(
-          (row) => row.id.isIn(data.map((error) => error.memoryId)));
+        (row) => row.id.isIn(data.map((error) => error.memoryId)),
+      );
     } catch (error, stackTrace) {
       _logger.severe('Error: deleteMemoriesV1', error, stackTrace);
       rethrow;

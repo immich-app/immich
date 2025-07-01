@@ -17,7 +17,7 @@ typedef $$MemoryEntityTableCreateCompanionBuilder = i1.MemoryEntityCompanion
   i0.Value<DateTime> updatedAt,
   i0.Value<DateTime?> deletedAt,
   required String ownerId,
-  required i2.MemoryType type,
+  required i2.MemoryTypeEnum type,
   required String data,
   i0.Value<bool> isSaved,
   required DateTime memoryAt,
@@ -32,7 +32,7 @@ typedef $$MemoryEntityTableUpdateCompanionBuilder = i1.MemoryEntityCompanion
   i0.Value<DateTime> updatedAt,
   i0.Value<DateTime?> deletedAt,
   i0.Value<String> ownerId,
-  i0.Value<i2.MemoryType> type,
+  i0.Value<i2.MemoryTypeEnum> type,
   i0.Value<String> data,
   i0.Value<bool> isSaved,
   i0.Value<DateTime> memoryAt,
@@ -93,7 +93,7 @@ class $$MemoryEntityTableFilterComposer
   i0.ColumnFilters<DateTime> get deletedAt => $composableBuilder(
       column: $table.deletedAt, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnWithTypeConverterFilters<i2.MemoryType, i2.MemoryType, int>
+  i0.ColumnWithTypeConverterFilters<i2.MemoryTypeEnum, i2.MemoryTypeEnum, int>
       get type => $composableBuilder(
           column: $table.type,
           builder: (column) => i0.ColumnWithTypeConverterFilters(column));
@@ -228,7 +228,7 @@ class $$MemoryEntityTableAnnotationComposer
   i0.GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
-  i0.GeneratedColumnWithTypeConverter<i2.MemoryType, int> get type =>
+  i0.GeneratedColumnWithTypeConverter<i2.MemoryTypeEnum, int> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
 
   i0.GeneratedColumn<String> get data =>
@@ -301,7 +301,7 @@ class $$MemoryEntityTableTableManager extends i0.RootTableManager<
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
             i0.Value<String> ownerId = const i0.Value.absent(),
-            i0.Value<i2.MemoryType> type = const i0.Value.absent(),
+            i0.Value<i2.MemoryTypeEnum> type = const i0.Value.absent(),
             i0.Value<String> data = const i0.Value.absent(),
             i0.Value<bool> isSaved = const i0.Value.absent(),
             i0.Value<DateTime> memoryAt = const i0.Value.absent(),
@@ -329,7 +329,7 @@ class $$MemoryEntityTableTableManager extends i0.RootTableManager<
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
             required String ownerId,
-            required i2.MemoryType type,
+            required i2.MemoryTypeEnum type,
             required String data,
             i0.Value<bool> isSaved = const i0.Value.absent(),
             required DateTime memoryAt,
@@ -451,10 +451,11 @@ class $MemoryEntityTable extends i3.MemoryEntity
       defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
           'REFERENCES user_entity (id) ON DELETE CASCADE'));
   @override
-  late final i0.GeneratedColumnWithTypeConverter<i2.MemoryType, int> type =
+  late final i0.GeneratedColumnWithTypeConverter<i2.MemoryTypeEnum, int> type =
       i0.GeneratedColumn<int>('type', aliasedName, false,
               type: i0.DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<i2.MemoryType>(i1.$MemoryEntityTable.$convertertype);
+          .withConverter<i2.MemoryTypeEnum>(
+              i1.$MemoryEntityTable.$convertertype);
   static const i0.VerificationMeta _dataMeta =
       const i0.VerificationMeta('data');
   @override
@@ -614,8 +615,8 @@ class $MemoryEntityTable extends i3.MemoryEntity
     return $MemoryEntityTable(attachedDatabase, alias);
   }
 
-  static i0.JsonTypeConverter2<i2.MemoryType, int, int> $convertertype =
-      const i0.EnumIndexConverter<i2.MemoryType>(i2.MemoryType.values);
+  static i0.JsonTypeConverter2<i2.MemoryTypeEnum, int, int> $convertertype =
+      const i0.EnumIndexConverter<i2.MemoryTypeEnum>(i2.MemoryTypeEnum.values);
   @override
   bool get withoutRowId => true;
   @override
@@ -629,7 +630,7 @@ class MemoryEntityData extends i0.DataClass
   final DateTime updatedAt;
   final DateTime? deletedAt;
   final String ownerId;
-  final i2.MemoryType type;
+  final i2.MemoryTypeEnum type;
   final String data;
   final bool isSaved;
   final DateTime memoryAt;
@@ -723,7 +724,7 @@ class MemoryEntityData extends i0.DataClass
           DateTime? updatedAt,
           i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
           String? ownerId,
-          i2.MemoryType? type,
+          i2.MemoryTypeEnum? type,
           String? data,
           bool? isSaved,
           DateTime? memoryAt,
@@ -807,7 +808,7 @@ class MemoryEntityCompanion extends i0.UpdateCompanion<i1.MemoryEntityData> {
   final i0.Value<DateTime> updatedAt;
   final i0.Value<DateTime?> deletedAt;
   final i0.Value<String> ownerId;
-  final i0.Value<i2.MemoryType> type;
+  final i0.Value<i2.MemoryTypeEnum> type;
   final i0.Value<String> data;
   final i0.Value<bool> isSaved;
   final i0.Value<DateTime> memoryAt;
@@ -834,7 +835,7 @@ class MemoryEntityCompanion extends i0.UpdateCompanion<i1.MemoryEntityData> {
     this.updatedAt = const i0.Value.absent(),
     this.deletedAt = const i0.Value.absent(),
     required String ownerId,
-    required i2.MemoryType type,
+    required i2.MemoryTypeEnum type,
     required String data,
     this.isSaved = const i0.Value.absent(),
     required DateTime memoryAt,
@@ -882,7 +883,7 @@ class MemoryEntityCompanion extends i0.UpdateCompanion<i1.MemoryEntityData> {
       i0.Value<DateTime>? updatedAt,
       i0.Value<DateTime?>? deletedAt,
       i0.Value<String>? ownerId,
-      i0.Value<i2.MemoryType>? type,
+      i0.Value<i2.MemoryTypeEnum>? type,
       i0.Value<String>? data,
       i0.Value<bool>? isSaved,
       i0.Value<DateTime>? memoryAt,
