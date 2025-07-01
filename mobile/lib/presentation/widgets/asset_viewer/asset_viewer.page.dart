@@ -9,7 +9,6 @@ import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.dart';
 import 'package:immich_mobile/presentation/widgets/images/full_image.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
-import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
@@ -360,17 +359,16 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   Widget _placeholderBuilder(BuildContext ctx, _, int index) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
-    return Hero(
-      tag: asset.heroTag,
-      child: Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: backgroundColor,
-        child: Thumbnail(
-          asset: asset,
-          fit: BoxFit.contain,
-        ),
-      ),
+    return PhotoView(
+      imageProvider: getThumbnailImageProvider(asset),
+      index: index,
+      backgroundDecoration: BoxDecoration(color: backgroundColor),
+      heroAttributes: PhotoViewHeroAttributes(tag: asset.heroTag),
+      tightMode: true,
+      initialScale: PhotoViewComputedScale.contained * 0.99,
+      minScale: PhotoViewComputedScale.contained * 0.99,
+      disableGestures: true,
+      disableScaleGestures: true,
     );
   }
 
