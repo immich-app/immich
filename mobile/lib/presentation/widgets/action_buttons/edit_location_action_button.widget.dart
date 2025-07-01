@@ -18,58 +18,18 @@ class EditLocationActionButton extends ConsumerWidget {
 
   const EditLocationActionButton({super.key, required this.source});
 
-  _onTap(BuildContext context, WidgetRef ref) {
-    switch (source) {
-      case ActionSource.timeline:
-        timelineAction(context, ref);
-      case ActionSource.viewer:
-        viewerAction(ref);
-    }
-  }
-
-  void timelineAction(BuildContext context, WidgetRef ref) async {
-    final user = ref.read(currentUserProvider);
-    if (user == null) {
-      return;
-    }
-
-    final assets = ref
-        .read(multiSelectProvider.select((value) => value.selectedAssets))
-        .whereType<RemoteAsset>()
-        .where((asset) => asset.ownerId == user.id)
-        .toList();
-
-    final ids = assets.map((asset) => asset.id).toList();
-
-    if (ids.isEmpty) {
-      return;
-    }
-
-    LatLng? initialLatLng;
-    if (ids.length == 1) {
-      final exif = await ref.read(remoteExifRepository).get(assets[0].id);
-
-      if (exif?.latitude != null && exif?.longitude != null) {
-        initialLatLng = LatLng(exif!.latitude!, exif.longitude!);
-      }
-    }
-
-    final location = await showLocationPicker(
-      context: context,
-      initialLatLng: initialLatLng,
-    );
-
-    if (location == null) {
+  _onTap(BuildContext context, WidgetRef ref) async {
+    if (!context.mounted) {
       return;
     }
 
     final result =
-        await ref.read(actionProvider.notifier).editLocation(ids, location);
+        await ref.read(actionProvider.notifier).editLocation(source, context);
     ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'edit_location_action_prompt'.t(
       context: context,
-      args: {'count': ids.length.toString()},
+      args: {'count': result.count.toString()},
     );
 
     if (context.mounted) {
@@ -82,12 +42,6 @@ class EditLocationActionButton extends ConsumerWidget {
         toastType: result.success ? ToastType.success : ToastType.error,
       );
     }
-  }
-
-  void viewerAction(WidgetRef _) {
-    UnimplementedError(
-      "Viewer action for edit location is not implemented yet.",
-    );
   }
 
   @override
