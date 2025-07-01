@@ -21,6 +21,8 @@ class Album {
   final String? thumbnailAssetId;
   final bool isActivityEnabled;
   final AlbumAssetOrder order;
+  final int assetCount;
+  final String ownerName;
 
   const Album({
     required this.id,
@@ -32,20 +34,24 @@ class Album {
     this.thumbnailAssetId,
     required this.isActivityEnabled,
     required this.order,
+    required this.assetCount,
+    required this.ownerName,
   });
 
   @override
   String toString() {
     return '''Album {
-   id: $id,
-   name: $name,
-   ownerId: $ownerId,
-   description: $description,
-   createdAt: $createdAt,
-   updatedAt: $updatedAt,
-   isActivityEnabled: $isActivityEnabled,
-   order: $order,
-   thumbnailAssetId: ${thumbnailAssetId ?? "<NA>"}
+    id: $id,
+    name: $name,
+    ownerId: $ownerId,
+    description: $description,
+    createdAt: $createdAt,
+    updatedAt: $updatedAt,
+    isActivityEnabled: $isActivityEnabled,
+    order: $order,
+    thumbnailAssetId: ${thumbnailAssetId ?? "<NA>"}
+    assetCount: $assetCount
+    ownerName: $ownerName
  }''';
   }
 
@@ -61,7 +67,9 @@ class Album {
         updatedAt == other.updatedAt &&
         thumbnailAssetId == other.thumbnailAssetId &&
         isActivityEnabled == other.isActivityEnabled &&
-        order == other.order;
+        order == other.order &&
+        assetCount == other.assetCount &&
+        ownerName == other.ownerName;
   }
 
   @override
@@ -74,6 +82,8 @@ class Album {
         updatedAt.hashCode ^
         thumbnailAssetId.hashCode ^
         isActivityEnabled.hashCode ^
-        order.hashCode;
+        order.hashCode ^
+        assetCount.hashCode ^
+        ownerName.hashCode;
   }
 }
