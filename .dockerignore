@@ -2,6 +2,9 @@
 .github/
 .git/
 
+node_modules
+.pnpm-store
+
 design/
 docker/
 Dockerfile

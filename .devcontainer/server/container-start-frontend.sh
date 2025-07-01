@@ -16,7 +16,7 @@ until curl --output /dev/null --silent --head --fail "http://127.0.0.1:${IMMICH_
 done
 
 while true; do
-    run_cmd node ./node_modules/.bin/vite dev --host 0.0.0.0 --port "${DEV_PORT}"
+    run_cmd pnpm exec vite dev --host 0.0.0.0 --port "${DEV_PORT}"
     log "Web crashed with exit code $?.  Respawning in 3s ..."
     sleep 3
 done

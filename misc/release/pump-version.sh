@@ -61,18 +61,18 @@ fi
 
 if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   echo "Pumping Server: $CURRENT_SERVER => $NEXT_SERVER"
-  npm --prefix server version "$SERVER_PUMP"
-  npm --prefix server ci
-  npm --prefix server run build
+  pnpm --filter immich version "$SERVER_PUMP"
+  pnpm --filter immich ci
+  pnpm --filter immich run build
   make open-api
-  npm --prefix open-api/typescript-sdk version "$SERVER_PUMP"
+  pnpm --prefix open-api/typescript-sdk version "$SERVER_PUMP"
   # TODO use $SERVER_PUMP once we pass 2.2.x
-  npm --prefix cli version patch
-  npm --prefix cli i --package-lock-only
-  npm --prefix web version "$SERVER_PUMP"
-  npm --prefix web i --package-lock-only
-  npm --prefix e2e version "$SERVER_PUMP"
-  npm --prefix e2e i --package-lock-only
+  pnpm --filter @immich/cli version patch
+  pnpm --filter @immich/cli i
+  pnpm --filter immich-web version "$SERVER_PUMP"
+  pnpm --filter immich-web i
+  pnpm --filter immich-e2e version "$SERVER_PUMP"
+  pnpm --filter immich-e2e i
   uvx --from=toml-cli toml set --toml-path=pyproject.toml project.version "$SERVER_PUMP"
 fi
 

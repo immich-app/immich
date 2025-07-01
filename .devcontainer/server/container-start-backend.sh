@@ -10,8 +10,9 @@ cd "${IMMICH_WORKSPACE}/server" || (
     exit 1
 )
 
+CI=1 pnpm install
 while true; do
-    run_cmd node ./node_modules/.bin/nest start --debug "0.0.0.0:9230" --watch
+    run_cmd pnpm exec nest start --debug "0.0.0.0:9230" --watch
     log "Nest API Server crashed with exit code $?.  Respawning in 3s ..."
     sleep 3
 done

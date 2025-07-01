@@ -60,6 +60,7 @@ import { io, type Socket } from 'socket.io-client';
 import { loginDto, signupDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
+export type { Emitter } from '@socket.io/component-emitter';
 
 type CommandResponse = { stdout: string; stderr: string; exitCode: number | null };
 type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete' | 'assetHidden';
@@ -78,16 +79,16 @@ export const tempDir = tmpdir();
 export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
 export const immichCli = (args: string[]) =>
-  executeCommand('node', ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args]).promise;
+  executeCommand('pnpm', ['exec', 'immich', '-d', `/${tempDir}/immich/`, ...args], { cwd: '../cli' }).promise;
 export const immichAdmin = (args: string[]) =>
   executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', `immich-admin ${args.join(' ')}`]);
 export const specialCharStrings = ["'", '"', ',', '{', '}', '*'];
 export const TEN_TIMES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-const executeCommand = (command: string, args: string[]) => {
+const executeCommand = (command: string, args: string[], options?: { cwd?: string }) => {
   let _resolve: (value: CommandResponse) => void;
   const promise = new Promise<CommandResponse>((resolve) => (_resolve = resolve));
-  const child = spawn(command, args, { stdio: 'pipe' });
+  const child = spawn(command, args, { stdio: 'pipe', cwd: options?.cwd });
 
   let stdout = '';
   let stderr = '';

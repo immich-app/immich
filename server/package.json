@@ -31,8 +31,7 @@
     "schema:reset": "npm run schema:drop && npm run migrations:run",
     "sync:open-api": "node ./dist/bin/sync-open-api.js",
     "sync:sql": "node ./dist/bin/sync-sql.js",
-    "email:dev": "email dev -p 3050 --dir src/emails",
-    "postinstall": "patch-package"
+    "email:dev": "email dev -p 3050 --dir src/emails"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.1",
@@ -155,7 +154,6 @@
     "mock-fs": "^5.2.0",
     "node-addon-api": "^8.3.1",
     "node-gyp": "^11.2.0",
-    "patch-package": "^8.0.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.0.2",
     "prettier-plugin-organize-imports": "^4.0.0",
@@ -178,5 +176,6 @@
   },
   "overrides": {
     "sharp": "^0.34.2"
-  }
+  },
+  "packageManager": "pnpm@10.12.3+sha512.467df2c586056165580ad6dfb54ceaad94c5a30f80893ebdec5a44c5aa73c205ae4a5bb9d5ed6bb84ea7c249ece786642bbb49d06a307df218d03da41c317417"
 }
