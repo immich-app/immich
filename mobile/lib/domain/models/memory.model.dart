@@ -8,7 +8,8 @@ enum MemoryTypeEnum {
 
 class MemoryData {
   final int year;
-  MemoryData({
+
+  const MemoryData({
     required this.year,
   });
 
@@ -67,7 +68,8 @@ class Memory {
   final DateTime? seenAt;
   final DateTime? showAt;
   final DateTime? hideAt;
-  Memory({
+
+  const Memory({
     required this.id,
     required this.createdAt,
     required this.updatedAt,

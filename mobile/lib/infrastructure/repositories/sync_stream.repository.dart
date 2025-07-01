@@ -373,9 +373,9 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> updateMemoryAssetsV1(Iterable<SyncMemoryAssetV1> data) {
+  Future<void> updateMemoryAssetsV1(Iterable<SyncMemoryAssetV1> data) async {
     try {
-      return _db.batch((batch) {
+      await _db.batch((batch) {
         for (final asset in data) {
           final companion = MemoryAssetEntityCompanion(
             memoryId: Value(asset.memoryId),
@@ -395,9 +395,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> deleteMemoryAssetsV1(Iterable<SyncMemoryAssetDeleteV1> data) {
+  Future<void> deleteMemoryAssetsV1(
+    Iterable<SyncMemoryAssetDeleteV1> data,
+  ) async {
     try {
-      return _db.batch((batch) {
+      await _db.batch((batch) {
         for (final asset in data) {
           batch.delete(
             _db.memoryAssetEntity,
