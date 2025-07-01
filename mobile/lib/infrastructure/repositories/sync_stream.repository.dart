@@ -321,9 +321,9 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> updateMemoriesV1(Iterable<SyncMemoryV1> data) {
+  Future<void> updateMemoriesV1(Iterable<SyncMemoryV1> data) async {
     try {
-      return _db.batch((batch) {
+      await _db.batch((batch) {
         for (final memory in data) {
           final companion = MemoryEntityCompanion(
             createdAt: Value(memory.createdAt),
