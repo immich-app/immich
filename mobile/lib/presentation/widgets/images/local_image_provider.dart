@@ -60,7 +60,7 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
       try {
         final buffer =
             await ImmutableBuffer.fromFilePath(fileFromCache.file.path);
-        return await decode(buffer);
+        return decode(buffer);
       } catch (_) {}
     }
 

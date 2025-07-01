@@ -9,6 +9,7 @@ import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.dart';
 import 'package:immich_mobile/presentation/widgets/images/full_image.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
@@ -83,7 +84,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     platform = widget.platform ?? const LocalPlatform();
     totalAssets = ref.read(timelineServiceProvider).totalAssets;
     bottomSheetController = DraggableScrollableController();
-    _onAssetChanged(widget.initialIndex);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _onAssetChanged(widget.initialIndex);
+    });
   }
 
   @override
@@ -121,15 +124,16 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onAssetChanged(int index) {
+    final asset = ref.read(timelineServiceProvider).getAsset(index);
+    ref.read(currentAssetNotifier.notifier).setAsset(asset);
+
     // This will trigger the pre-caching of adjacent assets ensuring
     // that they are ready when the user navigates to them.
-    ref.read(timelineServiceProvider).preCacheAssets(index).then((_) {
-      for (final offset in [-1, 1, -2, 2]) {
+    Future.delayed(Durations.medium4, () {
+      for (final offset in [-1, 1]) {
         unawaited(_precacheImage(index + offset));
       }
-
-      final asset = ref.read(timelineServiceProvider).getAsset(index);
-      ref.read(currentAssetNotifier.notifier).setAsset(asset);
+      unawaited(ref.read(timelineServiceProvider).preCacheAssets(index));
     });
   }
 
@@ -362,6 +366,15 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     return PhotoView(
       imageProvider: getThumbnailImageProvider(asset: asset),
       index: index,
+      loadingBuilder: (_, __, ___) => Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: backgroundColor,
+        child: Thumbnail(
+          asset: asset,
+          fit: BoxFit.contain,
+        ),
+      ),
       backgroundDecoration: BoxDecoration(color: backgroundColor),
       heroAttributes: PhotoViewHeroAttributes(tag: asset.heroTag),
       tightMode: true,
