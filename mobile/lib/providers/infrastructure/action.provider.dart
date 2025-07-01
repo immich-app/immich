@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
+import 'package:immich_mobile/services/timeline.service.dart';
 import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final actionProvider = NotifierProvider<ActionNotifier, void>(
   ActionNotifier.new,
   dependencies: [
-    actionServiceProvider,
+    multiSelectProvider,
     timelineServiceProvider,
-    multiselectProvider,
   ],
 );
 
@@ -32,7 +30,7 @@ class ActionResult {
 
 class ActionNotifier extends Notifier<void> {
   final Logger _logger = Logger('ActionNotifier');
-  late final ActionService _service;
+  late ActionService _service;
 
   ActionNotifier() : super();
 
