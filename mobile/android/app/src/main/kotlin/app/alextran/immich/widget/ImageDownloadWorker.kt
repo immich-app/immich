@@ -16,32 +16,25 @@ package app.alextran.immich.widget
  * limitations under the License.
  */
 
-import HomeWidgetGlanceState
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-
 import android.graphics.Bitmap
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.*
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
-import androidx.glance.appwidget.updateAll
-import androidx.glance.state.GlanceStateDefinition
 import androidx.work.*
 import com.google.gson.Gson
 import es.antonborri.home_widget.HomeWidgetPlugin
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.glance.appwidget.state.getAppWidgetState
+import androidx.glance.state.PreferencesGlanceStateDefinition
 
 class ImageDownloadWorker(
   private val context: Context,
@@ -106,15 +99,24 @@ class ImageDownloadWorker(
       val configString = inputData.getString("config")
       val config = Gson().fromJson(configString, WidgetConfig::class.java)
       val widgetId = inputData.getInt("widgetId", -1)
-
+      val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(widgetId)
       val serverConfig = getServerConfig() ?: return Result.success()
 
+      // clear current image if it exists
+      val state = getAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId)
+      val currentImgUUID = state[stringPreferencesKey("uuid")]
+      if (currentImgUUID != null) {
+        deleteImage(currentImgUUID)
+      }
+
+      // fetch new image
       val newBitmap = when (config.widgetType) {
         WidgetType.RANDOM -> fetchRandom(serverConfig)
       }
+      val imgUUID = saveImage(newBitmap)
 
-      saveImage(newBitmap, widgetId)
-      updateWidget(config, widgetId)
+      // trigger the update routine with new image uuid
+      updateWidget(config, glanceId, imgUUID)
 
       Result.success()
     } catch (e: Exception) {
@@ -127,13 +129,13 @@ class ImageDownloadWorker(
     }
   }
 
-  private suspend fun updateWidget(config: WidgetConfig, widgetID: Int) {
-    val manager = GlanceAppWidgetManager(context)
-    val glanceId = manager.getGlanceIdBy(widgetID)
+  private suspend fun updateWidget(config: WidgetConfig, glanceId: GlanceId, imageUUID: String) {
+    updateAppWidgetState(context, glanceId) { prefs ->
+      prefs[longPreferencesKey("now")] = System.currentTimeMillis()
+      prefs[stringPreferencesKey("uuid")] = imageUUID
+    }
 
-    RandomWidget().update(context, glanceId)
-
-    Log.w("WIDGET_BG", "SENT THE UPDATE COMMAND: $widgetID")
+    RandomWidget().update(context,glanceId)
   }
 
   private suspend fun fetchRandom(serverConfig: ServerConfig): Bitmap {
@@ -145,10 +147,18 @@ class ImageDownloadWorker(
     return image
   }
 
-  private suspend fun saveImage(bitmap: Bitmap, widgetId: Int) = withContext(Dispatchers.IO) {
-    val file = File(context.cacheDir, "widget_image_$widgetId.jpg")
+  private suspend fun deleteImage(uuid: String) = withContext(Dispatchers.IO) {
+    val file = File(context.cacheDir, "widget_image_$uuid.jpg")
+    file.delete()
+  }
+
+  private suspend fun saveImage(bitmap: Bitmap): String = withContext(Dispatchers.IO) {
+    val uuid = UUID.randomUUID().toString()
+    val file = File(context.cacheDir, "widget_image_$uuid.jpg")
     FileOutputStream(file).use { out ->
       bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
     }
+
+    uuid
   }
 }

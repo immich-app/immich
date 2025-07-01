@@ -5,30 +5,36 @@ import HomeWidgetGlanceStateDefinition
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.appwidget.*
 import androidx.glance.*
 import androidx.glance.state.GlanceStateDefinition
+import androidx.glance.state.PreferencesGlanceStateDefinition
 import java.io.File
+import java.util.prefs.Preferences
 
 class RandomWidget : GlanceAppWidget() {
-  override val stateDefinition: GlanceStateDefinition<HomeWidgetGlanceState>
-    get() = HomeWidgetGlanceStateDefinition()
+  override var stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
   override suspend fun provideGlance(context: Context, id: GlanceId) {
-      Log.w("WIDGET_UPDATE", "PROVIDED GLANCE")
-      // fetch a random photo from server
-      val appWidgetId = GlanceAppWidgetManager(context).getAppWidgetId(id)
-      val file = File(context.cacheDir, "widget_image_$appWidgetId.jpg")
-
-      var bitmap: Bitmap? = null
-
-      if (file.exists()) {
-        bitmap = loadScaledBitmap(file, 500, 500)
-      }
 
       provideContent {
-        PhotoWidget(image = bitmap, error = null, subtitle = "hello")
+        val prefs = currentState<MutablePreferences>()
+        val imageUUID = prefs[stringPreferencesKey("uuid")]
+        var bitmap: Bitmap? = null
+
+        if (imageUUID != null) {
+          // fetch a random photo from server
+          val file = File(context.cacheDir, "widget_image_$imageUUID.jpg")
+
+          if (file.exists()) {
+            bitmap = loadScaledBitmap(file, 500, 500)
+          }
+        }
+
+        PhotoWidget(image = bitmap, error = "NOPE", subtitle = "hello")
       }
   }
 

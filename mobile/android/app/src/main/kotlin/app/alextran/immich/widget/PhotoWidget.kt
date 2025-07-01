@@ -33,7 +33,6 @@ fun PhotoWidget(image: Bitmap?, error: String?, subtitle: String?) {
         provider = ImageProvider(R.drawable.splash),
         contentDescription = null,
       )
-      Text(subtitle ?: "NOPERS")
       Text(error ?: "NOPERS")
     }
   }
