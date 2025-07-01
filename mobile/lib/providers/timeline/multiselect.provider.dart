@@ -47,12 +47,10 @@ class MultiSelectState {
 }
 
 class MultiSelectNotifier extends Notifier<MultiSelectState> {
-  late final TimelineService _timelineService;
+  TimelineService get _timelineService => ref.read(timelineServiceProvider);
 
   @override
   MultiSelectState build() {
-    _timelineService = ref.read(timelineServiceProvider);
-
     return const MultiSelectState(selectedAssets: {});
   }
 
@@ -145,5 +143,5 @@ final bucketSelectionProvider = Provider.family<bool, List<BaseAsset>>(
     // Check if all assets in the bucket are selected
     return bucketAssets.every((asset) => selectedAssets.contains(asset));
   },
-  dependencies: [multiSelectProvider],
+  dependencies: [multiSelectProvider, timelineServiceProvider],
 );

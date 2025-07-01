@@ -15,9 +15,17 @@ final timelineArgsProvider = Provider.autoDispose<TimelineArgs>(
       throw UnimplementedError('Will be overridden through a ProviderScope.'),
 );
 
-final timelineServiceProvider = Provider.autoDispose<TimelineService>(
-  (ref) =>
-      throw UnimplementedError('Will be overridden through a ProviderScope.'),
+final timelineServiceProvider = Provider<TimelineService>(
+  (ref) {
+    final timelineUsers = ref.watch(timelineUsersProvider).valueOrNull ?? [];
+    final timelineService =
+        ref.watch(timelineFactoryProvider).main(timelineUsers);
+    ref.onDispose(timelineService.dispose);
+    return timelineService;
+  },
+  // Empty dependencies to inform the framework that this provider
+  // might be used in a ProviderScope
+  dependencies: [],
 );
 
 final timelineFactoryProvider = Provider<TimelineFactory>(

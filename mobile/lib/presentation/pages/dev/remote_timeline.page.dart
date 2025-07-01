@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -21,7 +19,7 @@ class RemoteTimelinePage extends StatelessWidget {
             final timelineService = ref
                 .watch(timelineFactoryProvider)
                 .remoteAlbum(albumId: albumId);
-            ref.onDispose(() => unawaited(timelineService.dispose()));
+            ref.onDispose(timelineService.dispose);
             return timelineService;
           },
         ),
