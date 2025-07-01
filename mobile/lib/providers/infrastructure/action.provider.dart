@@ -79,12 +79,12 @@ class ActionNotifier extends Notifier<void> {
     try {
       await _service.favorite(ids);
       return ActionResult(count: ids.length, success: true);
-    } catch (e, s) {
-      _logger.severe('Failed to favorite assets', e, s);
+    } catch (error, stack) {
+      _logger.severe('Failed to favorite assets', error, stack);
       return ActionResult(
         count: ids.length,
         success: false,
-        error: e.toString(),
+        error: error.toString(),
       );
     }
   }
@@ -102,12 +102,12 @@ class ActionNotifier extends Notifier<void> {
     try {
       await _service.unFavorite(ids);
       return ActionResult(count: ids.length, success: true);
-    } catch (e, s) {
-      _logger.severe('Failed to unfavorite assets', e, s);
+    } catch (error, stack) {
+      _logger.severe('Failed to unfavorite assets', error, stack);
       return ActionResult(
         count: ids.length,
         success: false,
-        error: e.toString(),
+        error: error.toString(),
       );
     }
   }
@@ -125,12 +125,12 @@ class ActionNotifier extends Notifier<void> {
     try {
       await _service.archive(ids);
       return ActionResult(count: ids.length, success: true);
-    } catch (e, s) {
-      _logger.severe('Failed to archive assets', e, s);
+    } catch (error, stack) {
+      _logger.severe('Failed to archive assets', error, stack);
       return ActionResult(
         count: ids.length,
         success: false,
-        error: e.toString(),
+        error: error.toString(),
       );
     }
   }
@@ -148,12 +148,12 @@ class ActionNotifier extends Notifier<void> {
     try {
       await _service.unArchive(ids);
       return ActionResult(count: ids.length, success: true);
-    } catch (e, s) {
-      _logger.severe('Failed to unarchive assets', e, s);
+    } catch (error, stack) {
+      _logger.severe('Failed to unarchive assets', error, stack);
       return ActionResult(
         count: ids.length,
         success: false,
-        error: e.toString(),
+        error: error.toString(),
       );
     }
   }
