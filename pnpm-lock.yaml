@@ -24,7 +24,7 @@ overrides:
   '@img/sharp-win32-ia32': '-'
   '@img/sharp-win32-x64': '-'
 
-packageExtensionsChecksum: sha256-kKp4WuqP6LFY18K22XKa6g92izKo4AtUDiriD3N5TzE=
+packageExtensionsChecksum: sha256-bPHBFm2fULBwol8cgK2PocPVAHwjoPp1sk4hiZ/su0Y=
 
 patchedDependencies:
   postgres@3.4.5:
@@ -748,7 +748,7 @@ importers:
         version: link:../open-api/typescript-sdk
       '@immich/ui':
         specifier: ^0.23.2
-        version: 0.23.3(@internationalized/date@3.8.2)(svelte@5.34.9)
+        version: 0.23.3(@internationalized/date@3.8.2)(svelte@5.34.9)(tailwindcss@4.1.11)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -14854,16 +14854,16 @@ snapshots:
       '@img/sharp-libvips-linuxmusl-x64': 1.1.0
     optional: true
 
-  '@immich/ui@0.23.3(@internationalized/date@3.8.2)(svelte@5.34.9)':
+  '@immich/ui@0.23.3(@internationalized/date@3.8.2)(svelte@5.34.9)(tailwindcss@4.1.11)':
     dependencies:
       '@mdi/js': 7.4.47
       bits-ui: 2.8.10(@internationalized/date@3.8.2)(svelte@5.34.9)
       svelte: 5.34.9
       tailwind-merge: 3.0.2
       tailwind-variants: 1.0.0(tailwindcss@4.1.11)
-      tailwindcss: 4.1.11
     transitivePeerDependencies:
       - '@internationalized/date'
+      - tailwindcss
 
   '@inquirer/checkbox@4.1.8(@types/node@22.15.34)':
     dependencies:
