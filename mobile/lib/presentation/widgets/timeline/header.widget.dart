@@ -9,7 +9,7 @@ import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
-class TimelineHeader extends ConsumerWidget {
+class TimelineHeader extends StatelessWidget {
   final Bucket bucket;
   final HeaderType header;
   final double height;
@@ -36,23 +36,13 @@ class TimelineHeader extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     if (bucket is! TimeBucket || header == HeaderType.none) {
       return const SizedBox.shrink();
     }
 
     final date = (bucket as TimeBucket).date;
 
-    List<BaseAsset> bucketAssets;
-    try {
-      bucketAssets = ref
-          .watch(timelineServiceProvider)
-          .getAssets(assetOffset, bucket.assetCount);
-    } catch (e) {
-      bucketAssets = <BaseAsset>[];
-    }
-
-    final isAllSelected = ref.watch(bucketSelectionProvider(bucketAssets));
     final isMonthHeader =
         header == HeaderType.month || header == HeaderType.monthAndDay;
     final isDayHeader =
@@ -80,16 +70,8 @@ class TimelineHeader extends ConsumerWidget {
                   const Spacer(),
                   if (header != HeaderType.monthAndDay)
                     _BulkSelectIconButton(
-                      isAllSelected: isAllSelected,
-                      onPressed: () {
-                        ref
-                            .read(multiSelectProvider.notifier)
-                            .toggleBucketSelection(
-                              assetOffset,
-                              bucket.assetCount,
-                            );
-                        ref.read(hapticFeedbackProvider.notifier).heavyImpact();
-                      },
+                      bucket: bucket,
+                      assetOffset: assetOffset,
                     ),
                 ],
               ),
@@ -104,16 +86,8 @@ class TimelineHeader extends ConsumerWidget {
                   ),
                   const Spacer(),
                   _BulkSelectIconButton(
-                    isAllSelected: isAllSelected,
-                    onPressed: () {
-                      ref
-                          .read(multiSelectProvider.notifier)
-                          .toggleBucketSelection(
-                            assetOffset,
-                            bucket.assetCount,
-                          );
-                      ref.read(hapticFeedbackProvider.notifier).heavyImpact();
-                    },
+                    bucket: bucket,
+                    assetOffset: assetOffset,
                   ),
                 ],
               ),
@@ -125,18 +99,35 @@ class TimelineHeader extends ConsumerWidget {
 }
 
 class _BulkSelectIconButton extends ConsumerWidget {
-  final bool isAllSelected;
-  final VoidCallback onPressed;
+  final Bucket bucket;
+  final int assetOffset;
 
   const _BulkSelectIconButton({
-    required this.isAllSelected,
-    required this.onPressed,
+    required this.bucket,
+    required this.assetOffset,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    List<BaseAsset> bucketAssets;
+    try {
+      bucketAssets = ref
+          .watch(timelineServiceProvider)
+          .getAssets(assetOffset, bucket.assetCount);
+    } catch (e) {
+      bucketAssets = <BaseAsset>[];
+    }
+
+    final isAllSelected = ref.watch(bucketSelectionProvider(bucketAssets));
+
     return IconButton(
-      onPressed: onPressed,
+      onPressed: () {
+        ref.read(multiSelectProvider.notifier).toggleBucketSelection(
+              assetOffset,
+              bucket.assetCount,
+            );
+        ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+      },
       icon: isAllSelected
           ? Icon(
               Icons.check_circle_rounded,
