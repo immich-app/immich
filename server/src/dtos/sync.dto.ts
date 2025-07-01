@@ -115,9 +115,9 @@ export class SyncAssetExifV1 {
   dateTimeOriginal!: Date | null;
   modifyDate!: Date | null;
   timeZone!: string | null;
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'number', format: 'double' })
   latitude!: number | null;
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'number', format: 'double' })
   longitude!: number | null;
   projectionType!: string | null;
   city!: string | null;
@@ -126,9 +126,9 @@ export class SyncAssetExifV1 {
   make!: string | null;
   model!: string | null;
   lensModel!: string | null;
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'number', format: 'double' })
   fNumber!: number | null;
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'number', format: 'double' })
   focalLength!: number | null;
   @ApiProperty({ type: 'integer' })
   iso!: number | null;
@@ -136,7 +136,7 @@ export class SyncAssetExifV1 {
   profileDescription!: string | null;
   @ApiProperty({ type: 'integer' })
   rating!: number | null;
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'number', format: 'double' })
   fps!: number | null;
 }
 

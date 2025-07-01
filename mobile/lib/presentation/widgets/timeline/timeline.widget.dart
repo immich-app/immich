@@ -407,7 +407,7 @@ class _MultiSelectStatusButton extends ConsumerWidget {
     final selectCount =
         ref.watch(multiSelectProvider.select((s) => s.selectedAssets.length));
     return ElevatedButton.icon(
-      onPressed: () => ref.read(multiSelectProvider.notifier).clearSelection(),
+      onPressed: () => ref.read(multiSelectProvider.notifier).reset(),
       icon: Icon(
         Icons.close_rounded,
         color: context.colorScheme.onPrimary,

@@ -64,7 +64,7 @@ class TimelineService {
   })  : _assetSource = assetSource,
         _bucketSource = bucketSource {
     _bucketSubscription =
-        _bucketSource().listen((_) => unawaited(_reloadBucket()));
+        _bucketSource().listen((_) => unawaited(reloadBucket()));
   }
 
   final AsyncMutex _mutex = AsyncMutex();
@@ -74,7 +74,7 @@ class TimelineService {
 
   Stream<List<Bucket>> Function() get watchBuckets => _bucketSource;
 
-  Future<void> _reloadBucket() => _mutex.run(() async {
+  Future<void> reloadBucket() => _mutex.run(() async {
         _buffer = await _assetSource(_bufferOffset, _buffer.length);
       });
 

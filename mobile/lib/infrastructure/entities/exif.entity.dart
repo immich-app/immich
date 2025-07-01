@@ -116,15 +116,15 @@ class RemoteExifEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get exposureTime => text().nullable()();
 
-  IntColumn get fNumber => integer().nullable()();
+  RealColumn get fNumber => real().nullable()();
 
   IntColumn get fileSize => integer().nullable()();
 
-  IntColumn get focalLength => integer().nullable()();
+  RealColumn get focalLength => real().nullable()();
 
-  IntColumn get latitude => integer().nullable()();
+  RealColumn get latitude => real().nullable()();
 
-  IntColumn get longitude => integer().nullable()();
+  RealColumn get longitude => real().nullable()();
 
   IntColumn get iso => integer().nullable()();
 

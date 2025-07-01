@@ -30,9 +30,9 @@ class HomeBottomAppBar extends ConsumerWidget {
 
     return BaseBottomSheet(
       initialChildSize: 0.25,
-      minChildSize: 0.22,
+      shouldCloseOnMinExtent: false,
       actions: [
-        const ShareActionButton(),
+        if (multiselect.isEnabled) const ShareActionButton(),
         if (multiselect.hasRemote) ...[
           const ShareLinkActionButton(source: ActionSource.timeline),
           const ArchiveActionButton(source: ActionSource.timeline),
@@ -42,8 +42,10 @@ class HomeBottomAppBar extends ConsumerWidget {
               ? const TrashActionButton()
               : const DeletePermanentActionButton(),
           const EditDateTimeActionButton(),
-          const EditLocationActionButton(),
-          const MoveToLockFolderActionButton(),
+          const EditLocationActionButton(source: ActionSource.timeline),
+          const MoveToLockFolderActionButton(
+            source: ActionSource.timeline,
+          ),
           const StackActionButton(),
         ],
         if (multiselect.hasLocal) ...[

@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -13,12 +12,8 @@ final multiSelectProvider =
 
 class MultiSelectState {
   final Set<BaseAsset> selectedAssets;
-  final int lastUpdatedTime;
 
-  const MultiSelectState({
-    required this.selectedAssets,
-    required this.lastUpdatedTime,
-  });
+  const MultiSelectState({required this.selectedAssets});
 
   bool get isEnabled => selectedAssets.isNotEmpty;
   bool get hasRemote => selectedAssets.any(
@@ -30,44 +25,33 @@ class MultiSelectState {
         (asset) => asset.storage == AssetState.local,
       );
 
-  MultiSelectState copyWith({
-    Set<BaseAsset>? selectedAssets,
-    int? lastUpdatedTime,
-  }) {
+  MultiSelectState copyWith({Set<BaseAsset>? selectedAssets}) {
     return MultiSelectState(
       selectedAssets: selectedAssets ?? this.selectedAssets,
-      lastUpdatedTime: lastUpdatedTime ?? this.lastUpdatedTime,
     );
   }
 
   @override
-  String toString() =>
-      'MultiSelectState(selectedAssets: $selectedAssets, lastUpdatedTime: $lastUpdatedTime)';
+  String toString() => 'MultiSelectState(selectedAssets: $selectedAssets)';
 
   @override
   bool operator ==(covariant MultiSelectState other) {
     if (identical(this, other)) return true;
     final listEquals = const DeepCollectionEquality().equals;
 
-    return listEquals(other.selectedAssets, selectedAssets) &&
-        other.lastUpdatedTime == lastUpdatedTime;
+    return listEquals(other.selectedAssets, selectedAssets);
   }
 
   @override
-  int get hashCode => selectedAssets.hashCode ^ lastUpdatedTime.hashCode;
+  int get hashCode => selectedAssets.hashCode;
 }
 
 class MultiSelectNotifier extends Notifier<MultiSelectState> {
-  late final TimelineService _timelineService;
+  TimelineService get _timelineService => ref.read(timelineServiceProvider);
 
   @override
   MultiSelectState build() {
-    _timelineService = ref.read(timelineServiceProvider);
-
-    return const MultiSelectState(
-      selectedAssets: {},
-      lastUpdatedTime: 0,
-    );
+    return const MultiSelectState(selectedAssets: {});
   }
 
   void selectAsset(BaseAsset asset) {
@@ -98,17 +82,8 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     }
   }
 
-  void clearSelection() {
-    state = state.copyWith(
-      selectedAssets: {},
-    );
-  }
-
   void reset() {
-    state = MultiSelectState(
-      selectedAssets: {},
-      lastUpdatedTime: DateTime.now().millisecondsSinceEpoch,
-    );
+    state = const MultiSelectState(selectedAssets: {});
   }
 
   /// Bucket bulk operations
@@ -168,5 +143,5 @@ final bucketSelectionProvider = Provider.family<bool, List<BaseAsset>>(
     // Check if all assets in the bucket are selected
     return bucketAssets.every((asset) => selectedAssets.contains(asset));
   },
-  dependencies: [multiSelectProvider],
+  dependencies: [multiSelectProvider, timelineServiceProvider],
 );
