@@ -68,14 +68,6 @@ class ActionNotifier extends Notifier<void> {
 
   Future<ActionResult> favorite(ActionSource source) async {
     final ids = _getIdsForSource<RemoteAsset>(source);
-    if (ids.isEmpty) {
-      return const ActionResult(
-        count: 0,
-        success: false,
-        error: 'No assets to favorite',
-      );
-    }
-
     try {
       await _service.favorite(ids);
       return ActionResult(count: ids.length, success: true);
@@ -91,14 +83,6 @@ class ActionNotifier extends Notifier<void> {
 
   Future<ActionResult> unFavorite(ActionSource source) async {
     final ids = _getIdsForSource<RemoteAsset>(source);
-    if (ids.isEmpty) {
-      return const ActionResult(
-        count: 0,
-        success: false,
-        error: 'No assets to unfavorite',
-      );
-    }
-
     try {
       await _service.unFavorite(ids);
       return ActionResult(count: ids.length, success: true);
@@ -114,14 +98,6 @@ class ActionNotifier extends Notifier<void> {
 
   Future<ActionResult> archive(ActionSource source) async {
     final ids = _getIdsForSource<RemoteAsset>(source);
-    if (ids.isEmpty) {
-      return const ActionResult(
-        count: 0,
-        success: false,
-        error: 'No assets to archive',
-      );
-    }
-
     try {
       await _service.archive(ids);
       return ActionResult(count: ids.length, success: true);
@@ -137,14 +113,6 @@ class ActionNotifier extends Notifier<void> {
 
   Future<ActionResult> unArchive(ActionSource source) async {
     final ids = _getIdsForSource<RemoteAsset>(source);
-    if (ids.isEmpty) {
-      return const ActionResult(
-        count: 0,
-        success: false,
-        error: 'No assets to unarchive',
-      );
-    }
-
     try {
       await _service.unArchive(ids);
       return ActionResult(count: ids.length, success: true);
