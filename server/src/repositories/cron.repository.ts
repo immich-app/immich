@@ -58,7 +58,7 @@ export class CronRepository {
       if (start) {
         job.start();
       } else {
-        job.stop();
+        void job.stop();
       }
     }
   }
