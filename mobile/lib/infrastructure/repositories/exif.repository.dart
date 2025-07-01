@@ -52,9 +52,7 @@ class DriftRemoteExifRepository extends DriftDatabaseRepository {
     final query = _db.remoteExifEntity.select()
       ..where((exif) => exif.assetId.equals(assetId));
 
-    return query
-        .map((asset) => asset.toDto())
-        .getSingleOrNull();
+    return query.map((asset) => asset.toDto()).getSingleOrNull();
   }
 }
 

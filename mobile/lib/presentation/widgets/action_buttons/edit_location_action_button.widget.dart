@@ -47,8 +47,7 @@ class EditLocationActionButton extends ConsumerWidget {
 
     LatLng? initialLatLng;
     if (ids.length == 1) {
-      final exif = await ref
-          .read(remoteExifRepository).get(assets[0].id);
+      final exif = await ref.read(remoteExifRepository).get(assets[0].id);
 
       if (exif?.latitude != null && exif?.longitude != null) {
         initialLatLng = LatLng(exif!.latitude!, exif.longitude!);
@@ -86,7 +85,9 @@ class EditLocationActionButton extends ConsumerWidget {
   }
 
   void viewerAction(WidgetRef _) {
-    UnimplementedError("Viewer action for edit location is not implemented yet.");
+    UnimplementedError(
+      "Viewer action for edit location is not implemented yet.",
+    );
   }
 
   @override
