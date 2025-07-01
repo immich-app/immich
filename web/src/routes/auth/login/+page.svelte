@@ -151,7 +151,7 @@
 
         <p class="text-center mt-4">
           <a
-            href="https://pixelunion.eu/support/forgot-password/"
+            href="/auth/reset-password"
             target="_blank"
             class="text-blue-500 hover:underline"
           >
