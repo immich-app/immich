@@ -16,23 +16,31 @@ package app.alextran.immich.widget
  * limitations under the License.
  */
 
+import HomeWidgetGlanceState
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
-import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
-import android.content.pm.PackageManager
+
 import android.graphics.Bitmap
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
-import androidx.core.content.FileProvider.getUriForFile
 import androidx.glance.*
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.appwidget.updateAll
+import androidx.glance.state.GlanceStateDefinition
 import androidx.work.*
 import com.google.gson.Gson
+import es.antonborri.home_widget.HomeWidgetPlugin
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 class ImageDownloadWorker(
@@ -44,53 +52,74 @@ class ImageDownloadWorker(
 
     private val uniqueWorkName = ImageDownloadWorker::class.java.simpleName
 
-    fun enqueue(context: Context, glanceId: GlanceId, config: WidgetConfig) {
+    fun enqueue(context: Context, appWidgetId: Int, config: WidgetConfig) {
       val manager = WorkManager.getInstance(context)
-      val requestBuilder = OneTimeWorkRequestBuilder<ImageDownloadWorker>().apply {
-        addTag(glanceId.toString())
-        setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-        setInputData(
-          Data.Builder()
-            .putString("config", Gson().toJson(config))
-            .putInt("glanceId", glanceId.hashCode())
+
+      val workRequest = PeriodicWorkRequestBuilder<ImageDownloadWorker>(
+        20, TimeUnit.MINUTES
+      )
+        .setConstraints(
+          Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
         )
-      }
+        .setInputData(
+          Data.Builder()
+            .putString("config", Gson().toJson(config))
+            .putInt("widgetId", appWidgetId)
+            .build()
+        )
+        .addTag(appWidgetId.toString())
+        .build()
 
-      manager.enqueueUniqueWork(
-        uniqueWorkName + glanceId.hashCode(),
-        ExistingWorkPolicy.KEEP,
-        requestBuilder.build()
+      manager.enqueueUniquePeriodicWork(
+        "$uniqueWorkName-$appWidgetId",
+        ExistingPeriodicWorkPolicy.UPDATE,
+        workRequest
       )
     }
 
-    /**
-     * Cancel any ongoing worker
-     */
     fun cancel(context: Context, glanceId: GlanceId) {
-      WorkManager.getInstance(context).cancelAllWorkByTag(glanceId.toString())
+      val appWidgetId = GlanceAppWidgetManager(context).getAppWidgetId(glanceId)
+      WorkManager.getInstance(context).cancelAllWorkByTag(appWidgetId.toString())
     }
+  }
+
+  private fun getServerConfig(): ServerConfig? {
+    val prefs = HomeWidgetPlugin.getData(context)
+
+    val serverURL = prefs.getString("widget_server_url", "") ?: ""
+    val sessionKey = prefs.getString("widget_auth_token", "") ?: ""
+
+    if (serverURL == "" || sessionKey == "") {
+      return null
+    }
+
+    return ServerConfig(
+      serverURL,
+      sessionKey
+    )
   }
 
   override suspend fun doWork(): Result {
     return try {
       val configString = inputData.getString("config")
       val config = Gson().fromJson(configString, WidgetConfig::class.java)
-      val glanceId = inputData.getInt("glanceId", -1)
+      val widgetId = inputData.getInt("widgetId", -1)
 
-      if (glanceId == -1) {
-        Result.failure()
+      val serverConfig = getServerConfig() ?: return Result.success()
+
+      val newBitmap = when (config.widgetType) {
+        WidgetType.RANDOM -> fetchRandom(serverConfig)
       }
 
-      fetchImage(config, glanceId)
-      updateWidget(config, glanceId)
+      saveImage(newBitmap, widgetId)
+      updateWidget(config, widgetId)
 
       Result.success()
     } catch (e: Exception) {
       Log.e(uniqueWorkName, "Error while loading image", e)
       if (runAttemptCount < 10) {
-        // Exponential backoff strategy will avoid the request to repeat
-        // too fast in case of failures.
         Result.retry()
       } else {
         Result.failure()
@@ -98,29 +127,26 @@ class ImageDownloadWorker(
     }
   }
 
-  private suspend fun updateWidget(config: WidgetConfig, glanceId: Int) {
+  private suspend fun updateWidget(config: WidgetConfig, widgetID: Int) {
     val manager = GlanceAppWidgetManager(context)
-    val glanceIds = manager.getGlanceIds(config.widgetType.widgetClass)
+    val glanceId = manager.getGlanceIdBy(widgetID)
 
-    for (id in glanceIds) {
-      if (id.hashCode() == glanceId) {
-        config.widgetType.widgetClass.getDeclaredConstructor().newInstance().updateAll(context)
-        break
-      }
-    }
+    RandomWidget().update(context, glanceId)
+
+    Log.w("WIDGET_BG", "SENT THE UPDATE COMMAND: $widgetID")
   }
 
-  private suspend fun fetchImage(config: WidgetConfig, glanceId: Int) {
-    val api = ImmichAPI(config.credentials)
+  private suspend fun fetchRandom(serverConfig: ServerConfig): Bitmap {
+    val api = ImmichAPI(serverConfig)
 
     val random = api.fetchSearchResults(SearchFilters(AssetType.IMAGE, size=1))
     val image = api.fetchImage(random[0])
 
-    saveImage(image, glanceId)
+    return image
   }
 
-  private suspend fun saveImage(bitmap: Bitmap, glanceId: Int) = withContext(Dispatchers.IO) {
-    val file = File(context.cacheDir, "widget_image_$glanceId.jpg")
+  private suspend fun saveImage(bitmap: Bitmap, widgetId: Int) = withContext(Dispatchers.IO) {
+    val file = File(context.cacheDir, "widget_image_$widgetId.jpg")
     FileOutputStream(file).use { out ->
       bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
     }

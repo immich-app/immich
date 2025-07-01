@@ -1,13 +1,7 @@
 package app.alextran.immich.widget
 
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.appwidget.GlanceAppWidget
-
-sealed class WidgetError : Exception() {
-  data object NoLogin : WidgetError()
-  data object FetchFailed : WidgetError()
-  data object Unknown : WidgetError()
-  data object AlbumNotFound : WidgetError()
-}
 
 enum class AssetType {
   IMAGE, VIDEO, AUDIO, OTHER
@@ -50,7 +44,12 @@ enum class WidgetType {
 data class WidgetConfig(
   val widgetType: WidgetType,
   val params: Map<String, String>,
-  val credentials: ServerConfig
 )
 
 data class ServerConfig(val serverEndpoint: String, val sessionKey: String)
+
+// this value is in HomeWidgetPlugin.PREFERENCES but is marked internal
+const val WIDGET_PREFERENCES = "HomeWidgetPreferences"
+
+val loggedInKey = stringPreferencesKey("isLoggedIn")
+val lastUpdatedKey = stringPreferencesKey("lastUpdated")

@@ -22,8 +22,7 @@ class ImmichAPI(cfg: ServerConfig) {
   private val serverConfig = cfg
 
   private fun buildRequestURL(endpoint: String, params: List<Pair<String, String>> = emptyList()): URL {
-    val baseUrl = URL(serverConfig.serverEndpoint)
-    val urlString = StringBuilder("${baseUrl.protocol}://${baseUrl.host}:${baseUrl.port}$endpoint?sessionKey=${URLEncoder.encode(serverConfig.sessionKey, "UTF-8")}")
+    val urlString = StringBuilder("${serverConfig.serverEndpoint}$endpoint?sessionKey=${serverConfig.sessionKey}")
 
     for ((key, value) in params) {
       urlString.append("&${URLEncoder.encode(key, "UTF-8")}=${URLEncoder.encode(value, "UTF-8")}")

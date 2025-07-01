@@ -10,6 +10,7 @@ import androidx.glance.background
 import androidx.glance.layout.Box
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.text.Text
 import app.alextran.immich.R
 
 @Composable
@@ -23,15 +24,17 @@ fun PhotoWidget(image: Bitmap?, error: String?, subtitle: String?) {
     if (image != null) {
       Image(
         provider = ImageProvider(image),
-        contentDescription = "Widget Image"
+        contentDescription = "Widget Image",
+        contentScale = ContentScale.Crop,
+        modifier = GlanceModifier.fillMaxSize()
       )
     } else {
       Image(
         provider = ImageProvider(R.drawable.splash),
         contentDescription = null,
-        contentScale = ContentScale.Crop,
-        modifier = GlanceModifier.fillMaxSize()
       )
+      Text(subtitle ?: "NOPERS")
+      Text(error ?: "NOPERS")
     }
   }
 }
