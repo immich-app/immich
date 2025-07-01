@@ -24,7 +24,7 @@ overrides:
   '@img/sharp-win32-ia32': '-'
   '@img/sharp-win32-x64': '-'
 
-packageExtensionsChecksum: sha256-OKQJWXvw/5wjnkjESlE5+zrJ2KIPjfGGRpkAjonMYro=
+packageExtensionsChecksum: sha256-kKp4WuqP6LFY18K22XKa6g92izKo4AtUDiriD3N5TzE=
 
 patchedDependencies:
   postgres@3.4.5:

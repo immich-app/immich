@@ -118,7 +118,7 @@ RUN pnpm install --frozen-lockfile && \
 
 WORKDIR /usr/src/app/
 RUN pnpm --filter @immich/cli --prod --no-optional deploy cli-pruned && \
-    pnpm --filter immich --prod --no-optional deploy server-pruned 
+    pnpm --filter immich --prod deploy server-pruned 
 
 RUN pnpm store prune
 

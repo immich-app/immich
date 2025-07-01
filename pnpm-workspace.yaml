@@ -68,9 +68,6 @@ packageExtensions:
     dependencies:
       node-addon-api: '*'
       node-gyp: '*'
-  '@immich/ui':
-    dependencies:
-      tailwindcss: ^4.1.11
   tailwind-variants:
     dependencies:
       tailwindcss: ^4.1.11
