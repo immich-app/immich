@@ -406,7 +406,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Issue: https://github.com/flutter/flutter/issues/109037
     // TODO: Add a custom scrum builder once the fix lands on stable
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.black.withAlpha(backgroundOpacity),
       body: PhotoViewGallery.builder(
         gaplessPlayback: true,
         loadingBuilder: _placeholderBuilder,
@@ -420,7 +420,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         onPageBuild: _onPageBuild,
         builder: _assetBuilder,
         backgroundDecoration: BoxDecoration(color: backgroundColor),
-        enableRotation: true,
         enablePanAlways: true,
       ),
     );
