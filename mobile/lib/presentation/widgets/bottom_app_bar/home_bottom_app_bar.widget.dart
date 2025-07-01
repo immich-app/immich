@@ -31,6 +31,7 @@ class HomeBottomAppBar extends ConsumerWidget {
     return BaseBottomSheet(
       initialChildSize: 0.25,
       minChildSize: 0.22,
+      expand: false,
       actions: [
         const ShareActionButton(),
         if (multiselect.hasRemote) ...[
