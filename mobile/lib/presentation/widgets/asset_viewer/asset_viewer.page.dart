@@ -20,6 +20,7 @@ import 'package:platform/platform.dart';
 class AssetViewerPage extends StatelessWidget {
   final int initialIndex;
   final TimelineService timelineService;
+
   const AssetViewerPage({
     super.key,
     required this.initialIndex,
@@ -40,6 +41,7 @@ class AssetViewerPage extends StatelessWidget {
 class AssetViewer extends ConsumerStatefulWidget {
   final int initialIndex;
   final Platform? platform;
+
   const AssetViewer({
     super.key,
     required this.initialIndex,
@@ -54,27 +56,26 @@ const double _kBottomSheetMinimumExtent = 0.4;
 const double _kBottomSheetSnapExtent = 0.7;
 
 class _AssetViewerState extends ConsumerState<AssetViewer> {
-  late Platform platform;
   late PageController pageController;
-
-  int totalAssets = 0;
-  int backgroundOpacity = 255;
-  bool isSnapping = false;
-  bool blockGestures = false;
-
-  Offset dragDownPosition = Offset.zero;
-  late PhotoViewControllerValue initialPhotoViewState;
-  bool dragInProgress = false;
-  bool shouldPopOnDrag = false;
-  bool? hasDraggedDown;
-  double previousExtent = _kBottomSheetMinimumExtent;
   late DraggableScrollableController bottomSheetController;
   PersistentBottomSheetController? sheetCloseNotifier;
-  // PhotoViewGallery takes care of disposing this controller
+  // PhotoViewGallery takes care of disposing it's controllers
   PhotoViewControllerBase? viewController;
-  double? initialScale;
   PhotoViewScaleStateController? scaleStateController;
+
+  late Platform platform;
+  late PhotoViewControllerValue initialPhotoViewState;
+  bool? hasDraggedDown;
+  bool isSnapping = false;
+  bool blockGestures = false;
+  bool dragInProgress = false;
+  bool shouldPopOnDrag = false;
   bool showingBottomSheet = false;
+  double? initialScale;
+  double previousExtent = _kBottomSheetMinimumExtent;
+  Offset dragDownPosition = Offset.zero;
+  int totalAssets = 0;
+  int backgroundOpacity = 255;
 
   @override
   void initState() {
@@ -100,6 +101,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     return Colors.black.withAlpha(backgroundOpacity);
   }
 
+  // This is used to calculate the scale of the asset when the bottom sheet is showing.
+  // It is a small increment to ensure that the asset is slightly zoomed in when the
+  // bottom sheet is showing, which emulates the zoom effect.
+  double get _getScaleForBottomSheet =>
+      (viewController?.prevValue.scale ?? viewController?.value.scale ?? 1.0) +
+      0.01;
+
   Future<void> _precacheImage(int index) async {
     if (!mounted || index < 0 || index >= totalAssets) {
       return;
@@ -113,13 +121,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     );
   }
 
-  double get _getScaleForBottomSheet =>
-      (viewController?.prevValue.scale ?? viewController?.value.scale ?? 1.0) +
-      0.01;
-
   void _onAssetChanged(int index) {
-    // This will trigger the pre-caching of assets for the next and previous pages.
-    // This ensures that the images are ready when the user navigates to them.
+    // This will trigger the pre-caching of adjacent assets ensuring
+    // that they are ready when the user navigates to them.
     ref.read(timelineServiceProvider).preCacheAssets(index).then((_) {
       for (final offset in [-1, 1, -2, 2]) {
         unawaited(_precacheImage(index + offset));
@@ -130,6 +134,15 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     });
   }
 
+  void _onPageBuild(PhotoViewControllerBase controller) {
+    viewController ??= controller;
+    if (showingBottomSheet) {
+      final verticalOffset = (context.height * bottomSheetController.size) -
+          (context.height * _kBottomSheetMinimumExtent);
+      controller.position = Offset(0, -verticalOffset);
+    }
+  }
+
   void _onPageChanged(
     int index,
     PhotoViewControllerBase controller,
@@ -138,6 +151,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _onAssetChanged(index);
     viewController = controller;
     scaleStateController = scaleController;
+
     // If the bottom sheet is showing, we need to adjust scale the asset to
     // emulate the zoom effect
     if (showingBottomSheet) {
@@ -218,51 +232,58 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
 
     viewController?.updateMultiple(position: position);
+    // Moves the bottom sheet when the asset is being dragged up
     if (showingBottomSheet && bottomSheetController.isAttached) {
       final centre = (ctx.height * _kBottomSheetMinimumExtent);
       bottomSheetController.jumpTo((centre + distanceToOrigin) / ctx.height);
     }
 
     if (distanceToOrigin > openThreshold && !showingBottomSheet) {
-      setState(() {
-        initialScale = viewController?.scale;
-        viewController?.animateMultiple(scale: _getScaleForBottomSheet);
-        showingBottomSheet = true;
-        previousExtent = _kBottomSheetMinimumExtent;
-        sheetCloseNotifier = showBottomSheet(
-          context: ctx,
-          sheetAnimationStyle: AnimationStyle(
-            duration: Duration.zero,
-            reverseDuration: Duration.zero,
-          ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-          ),
-          backgroundColor: ctx.colorScheme.surfaceContainerLowest,
-          builder: (_) {
-            return NotificationListener<Notification>(
-              onNotification: _onNotification,
-              child: AssetDetailBottomSheet(
-                controller: bottomSheetController,
-                initialChildSize: _kBottomSheetMinimumExtent,
-              ),
-            );
-          },
-        );
-        sheetCloseNotifier?.closed.then((_) {
-          setState(() {
-            showingBottomSheet = false;
-            sheetCloseNotifier = null;
-            viewController?.animateMultiple(
-              position: Offset.zero,
-              scale: initialScale,
-            );
-            shouldPopOnDrag = false;
-            hasDraggedDown = null;
-          });
-        });
-      });
+      _openBottomSheet(ctx);
     }
+  }
+
+  void _openBottomSheet(BuildContext ctx) {
+    setState(() {
+      initialScale = viewController?.scale;
+      viewController?.animateMultiple(scale: _getScaleForBottomSheet);
+      showingBottomSheet = true;
+      previousExtent = _kBottomSheetMinimumExtent;
+      sheetCloseNotifier = showBottomSheet(
+        context: ctx,
+        sheetAnimationStyle: AnimationStyle(
+          duration: Duration.zero,
+          reverseDuration: Duration.zero,
+        ),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+        ),
+        backgroundColor: ctx.colorScheme.surfaceContainerLowest,
+        builder: (_) {
+          return NotificationListener<Notification>(
+            onNotification: _onNotification,
+            child: AssetDetailBottomSheet(
+              controller: bottomSheetController,
+              initialChildSize: _kBottomSheetMinimumExtent,
+            ),
+          );
+        },
+      );
+      sheetCloseNotifier?.closed.then((_) => _handleSheetClose());
+    });
+  }
+
+  void _handleSheetClose() {
+    setState(() {
+      showingBottomSheet = false;
+      sheetCloseNotifier = null;
+      viewController?.animateMultiple(
+        position: Offset.zero,
+        scale: initialScale,
+      );
+      shouldPopOnDrag = false;
+      hasDraggedDown = null;
+    });
   }
 
   void _snapBottomSheet() {
@@ -285,18 +306,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
 
     if (delta is DraggableScrollableNotification) {
-      final verticalOffset = (context.height * delta.extent) -
-          (context.height * _kBottomSheetMinimumExtent);
-      if (verticalOffset > 0) {
-        viewController?.position = Offset(0, -verticalOffset);
-      }
-
-      final currentExtent = delta.extent;
-      final isDraggingDown = currentExtent < previousExtent;
-      previousExtent = currentExtent;
-      if (isDraggingDown && delta.extent < _kBottomSheetSnapExtent - 0.1) {
-        sheetCloseNotifier?.close();
-      }
+      _handleDraggableNotification(delta);
     }
 
     // Handle sheet snap manually so that the it snaps only at _kBottomSheetSnapExtent but not after
@@ -306,6 +316,23 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       _snapBottomSheet();
     }
     return false;
+  }
+
+  void _handleDraggableNotification(DraggableScrollableNotification delta) {
+    final verticalOffset = (context.height * delta.extent) -
+        (context.height * _kBottomSheetMinimumExtent);
+    // Moves the asset when the bottom sheet is being dragged
+    if (verticalOffset > 0) {
+      viewController?.position = Offset(0, -verticalOffset);
+    }
+
+    final currentExtent = delta.extent;
+    final isDraggingDown = currentExtent < previousExtent;
+    previousExtent = currentExtent;
+    // Closes the bottom sheet if the user is dragging down and the extent is less than the snap extent
+    if (isDraggingDown && delta.extent < _kBottomSheetSnapExtent - 0.1) {
+      sheetCloseNotifier?.close();
+    }
   }
 
   void _handleDragDown(BuildContext ctx, Offset delta) {
@@ -371,15 +398,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
     );
-  }
-
-  void _onPageBuild(PhotoViewControllerBase controller) {
-    viewController ??= controller;
-    if (showingBottomSheet) {
-      final verticalOffset = (context.height * bottomSheetController.size) -
-          (context.height * _kBottomSheetMinimumExtent);
-      controller.position = Offset(0, -verticalOffset);
-    }
   }
 
   @override
