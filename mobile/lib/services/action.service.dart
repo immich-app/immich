@@ -48,4 +48,26 @@ class ActionService {
       AssetVisibility.timeline,
     );
   }
+
+  Future<void> moveToLockFolder(List<String> remoteIds) async {
+    await _assetApiRepository.updateVisibility(
+      remoteIds,
+      AssetVisibilityEnum.locked,
+    );
+    await _remoteAssetRepository.updateVisibility(
+      remoteIds,
+      AssetVisibility.locked,
+    );
+  }
+
+  Future<void> removeFromLockFolder(List<String> remoteIds) async {
+    await _assetApiRepository.updateVisibility(
+      remoteIds,
+      AssetVisibilityEnum.timeline,
+    );
+    await _remoteAssetRepository.updateVisibility(
+      remoteIds,
+      AssetVisibility.timeline,
+    );
+  }
 }
