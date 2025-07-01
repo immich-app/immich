@@ -351,9 +351,9 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> deleteMemoriesV1(Iterable<SyncMemoryDeleteV1> data) {
+  Future<void> deleteMemoriesV1(Iterable<SyncMemoryDeleteV1> data) async {
     try {
-      return _db.memoryEntity.deleteWhere(
+      await _db.memoryEntity.deleteWhere(
           (row) => row.id.isIn(data.map((error) => error.memoryId)));
     } catch (error, stackTrace) {
       _logger.severe('Error: deleteMemoriesV1', error, stackTrace);
