@@ -8,3 +8,7 @@ part 'exif.provider.g.dart';
 @Riverpod(keepAlive: true)
 IsarExifRepository exifRepository(Ref ref) =>
     IsarExifRepository(ref.watch(isarProvider));
+
+final remoteExifRepository = Provider<DriftRemoteExifRepository>(
+  (ref) => DriftRemoteExifRepository(ref.watch(driftProvider)),
+);
