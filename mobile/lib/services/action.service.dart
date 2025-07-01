@@ -93,7 +93,7 @@ class ActionService {
     );
   }
 
-  Future<void> editLocation(
+  Future<bool> editLocation(
     List<String> remoteIds,
     BuildContext context,
   ) async {
@@ -112,7 +112,7 @@ class ActionService {
     );
 
     if (location == null) {
-      return;
+      return false;
     }
 
     await _assetApiRepository.updateLocation(
@@ -123,5 +123,7 @@ class ActionService {
       remoteIds,
       location,
     );
+
+    return true;
   }
 }

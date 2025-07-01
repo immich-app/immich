@@ -173,13 +173,17 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> editLocation(
+  Future<ActionResult?> editLocation(
     ActionSource source,
     BuildContext context,
   ) async {
     final ids = _getIdsForSource<RemoteAsset>(source);
     try {
-      await _service.editLocation(ids, context);
+      final isEdited = await _service.editLocation(ids, context);
+      if (!isEdited) {
+        return null;
+      }
+
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to edit location for assets', error, stack);

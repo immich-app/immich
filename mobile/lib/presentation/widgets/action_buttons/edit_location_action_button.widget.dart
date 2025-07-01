@@ -20,6 +20,10 @@ class EditLocationActionButton extends ConsumerWidget {
 
     final result =
         await ref.read(actionProvider.notifier).editLocation(source, context);
+    if (result == null) {
+      return;
+    }
+
     ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'edit_location_action_prompt'.t(
