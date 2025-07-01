@@ -82,7 +82,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
           _bottomSheetController?.closed.then((_) {
             _bottomSheetController = null;
             // Reset the multi-select state when the bottom sheet is closed
-            ref.read(multiSelectProvider.notifier).clearSelection();
+            ref.read(multiSelectProvider.notifier).reset();
           });
         } else {
           _bottomSheetController?.close();
