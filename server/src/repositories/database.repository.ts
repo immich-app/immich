@@ -15,11 +15,11 @@ import {
   VECTORCHORD_VERSION_RANGE,
   VECTORS_VERSION_RANGE,
 } from 'src/constants';
-import { DB } from 'src/db';
 import { GenerateSql } from 'src/decorators';
 import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { DB } from 'src/schema';
 import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
 import { vectorIndexQuery } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';

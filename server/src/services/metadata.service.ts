@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ContainerDirectoryItem, Maybe, Tags } from 'exiftool-vendored';
-import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
+import { ContainerDirectoryItem, ExifDateTime, Tags } from 'exiftool-vendored';
 import { Insertable } from 'kysely';
 import _ from 'lodash';
 import { Duration } from 'luxon';
@@ -10,7 +9,6 @@ import path from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { Asset, AssetFace } from 'src/database';
-import { AssetFaces, Exif, Person } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
   AssetType,
@@ -26,24 +24,55 @@ import {
 import { ArgOf } from 'src/repositories/event.repository';
 import { ReverseGeocodeResult } from 'src/repositories/map.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
+import { ExifTable } from 'src/schema/tables/exif.table';
+import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 
 /** look for a date from these tags (in order) */
-const EXIF_DATE_TAGS: Array<keyof Tags> = [
+const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
   'SubSecDateTimeOriginal',
-  'DateTimeOriginal',
   'SubSecCreateDate',
-  'CreationDate',
-  'CreateDate',
   'SubSecMediaCreateDate',
+  'DateTimeOriginal',
+  'CreateDate',
   'MediaCreateDate',
+  'CreationDate',
   'DateTimeCreated',
+  'GPSDateTime',
+  'DateTimeUTC',
+  'SonyDateTime2',
   // Undocumented, non-standard tag from insta360 in xmp.GPano namespace
-  'SourceImageCreateTime' as keyof Tags,
+  'SourceImageCreateTime' as keyof ImmichTags,
 ];
+
+export function firstDateTime(tags: ImmichTags) {
+  for (const tag of EXIF_DATE_TAGS) {
+    const tagValue = tags?.[tag];
+
+    if (tagValue instanceof ExifDateTime) {
+      return {
+        tag,
+        dateTime: tagValue,
+      };
+    }
+
+    if (typeof tagValue !== 'string') {
+      continue;
+    }
+
+    const exifDateTime = ExifDateTime.fromEXIF(tagValue);
+    if (exifDateTime) {
+      return {
+        tag,
+        dateTime: exifDateTime,
+      };
+    }
+  }
+}
 
 const validate = <T>(value: T): NonNullable<T> | null => {
   // handle lists of numbers
@@ -135,7 +164,7 @@ export class MetadataService extends BaseService {
 
   private async linkLivePhotos(
     asset: { id: string; type: AssetType; ownerId: string; libraryId: string | null },
-    exifInfo: Insertable<Exif>,
+    exifInfo: Insertable<ExifTable>,
   ): Promise<void> {
     if (!exifInfo.livePhotoCID) {
       return;
@@ -213,7 +242,7 @@ export class MetadataService extends BaseService {
       }
     }
 
-    const exifData: Insertable<Exif> = {
+    const exifData: Insertable<ExifTable> = {
       assetId: asset.id,
 
       // dates
@@ -407,7 +436,8 @@ export class MetadataService extends BaseService {
 
     // prefer dates from sidecar tags
     if (sidecarTags) {
-      const sidecarDate = firstDateTime(sidecarTags as Tags, EXIF_DATE_TAGS);
+      const result = firstDateTime(sidecarTags);
+      const sidecarDate = result?.dateTime;
       if (sidecarDate) {
         for (const tag of EXIF_DATE_TAGS) {
           delete mediaTags[tag];
@@ -682,10 +712,10 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    const facesToAdd: (Insertable<AssetFaces> & { assetId: string })[] = [];
+    const facesToAdd: (Insertable<AssetFaceTable> & { assetId: string })[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
-    const missing: (Insertable<Person> & { ownerId: string })[] = [];
+    const missing: (Insertable<PersonTable> & { ownerId: string })[] = [];
     const missingWithFaceAsset: { id: string; ownerId: string; faceAssetId: string }[] = [];
 
     const adjustedRegionInfo = this.orientRegionInfo(tags.RegionInfo, tags.Orientation);
@@ -748,8 +778,12 @@ export class MetadataService extends BaseService {
   }
 
   private getDates(asset: { id: string; originalPath: string }, exifTags: ImmichTags, stats: Stats) {
-    const dateTime = firstDateTime(exifTags as Maybe<Tags>, EXIF_DATE_TAGS);
-    this.logger.verbose(`Date and time is ${dateTime} for asset ${asset.id}: ${asset.originalPath}`);
+    const result = firstDateTime(exifTags);
+    const tag = result?.tag;
+    const dateTime = result?.dateTime;
+    this.logger.verbose(
+      `Date and time is ${dateTime} using exifTag ${tag} for asset ${asset.id}: ${asset.originalPath}`,
+    );
 
     // timezone
     let timeZone = exifTags.tz ?? null;

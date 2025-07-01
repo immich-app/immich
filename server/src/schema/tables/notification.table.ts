@@ -6,8 +6,10 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
+  Generated,
   PrimaryGeneratedColumn,
   Table,
+  Timestamp,
   UpdateDateColumn,
 } from 'src/sql-tools';
 
@@ -15,28 +17,28 @@ import {
 @UpdatedAtTrigger('notifications_updated_at')
 export class NotificationTable {
   @PrimaryGeneratedColumn()
-  id!: string;
+  id!: Generated<string>;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Generated<Timestamp>;
 
   @DeleteDateColumn()
-  deletedAt?: Date;
+  deletedAt!: Timestamp | null;
 
   @UpdateIdColumn({ indexName: 'IDX_notifications_update_id' })
-  updateId?: string;
+  updateId!: Generated<string>;
 
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: true })
   userId!: string;
 
   @Column({ default: NotificationLevel.Info })
-  level!: NotificationLevel;
+  level!: Generated<NotificationLevel>;
 
   @Column({ default: NotificationLevel.Info })
-  type!: NotificationType;
+  type!: Generated<NotificationType>;
 
   @Column({ type: 'jsonb', nullable: true })
   data!: any | null;
@@ -45,8 +47,8 @@ export class NotificationTable {
   title!: string;
 
   @Column({ type: 'text', nullable: true })
-  description!: string;
+  description!: string | null;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  readAt?: Date | null;
+  readAt!: Timestamp | null;
 }

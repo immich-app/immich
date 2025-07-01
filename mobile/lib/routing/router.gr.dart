@@ -603,6 +603,22 @@ class CropImageRouteArgs {
 }
 
 /// generated route for
+/// [DriftAlbumsPage]
+class DriftAlbumsRoute extends PageRouteInfo<void> {
+  const DriftAlbumsRoute({List<PageRouteInfo>? children})
+      : super(DriftAlbumsRoute.name, initialChildren: children);
+
+  static const String name = 'DriftAlbumsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftAlbumsPage();
+    },
+  );
+}
+
+/// generated route for
 /// [EditImagePage]
 class EditImageRoute extends PageRouteInfo<EditImageRouteArgs> {
   EditImageRoute({
@@ -1475,6 +1491,43 @@ class RemoteMediaSummaryRoute extends PageRouteInfo<void> {
       return const RemoteMediaSummaryPage();
     },
   );
+}
+
+/// generated route for
+/// [RemoteTimelinePage]
+class RemoteTimelineRoute extends PageRouteInfo<RemoteTimelineRouteArgs> {
+  RemoteTimelineRoute({
+    Key? key,
+    required String albumId,
+    List<PageRouteInfo>? children,
+  }) : super(
+          RemoteTimelineRoute.name,
+          args: RemoteTimelineRouteArgs(key: key, albumId: albumId),
+          initialChildren: children,
+        );
+
+  static const String name = 'RemoteTimelineRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<RemoteTimelineRouteArgs>();
+      return RemoteTimelinePage(key: args.key, albumId: args.albumId);
+    },
+  );
+}
+
+class RemoteTimelineRouteArgs {
+  const RemoteTimelineRouteArgs({this.key, required this.albumId});
+
+  final Key? key;
+
+  final String albumId;
+
+  @override
+  String toString() {
+    return 'RemoteTimelineRouteArgs{key: $key, albumId: $albumId}';
+  }
 }
 
 /// generated route for

@@ -3,9 +3,9 @@ import { Kysely } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Asset, columns } from 'src/database';
-import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
+import { DB } from 'src/schema';
 import { StorageAsset } from 'src/types';
 import {
   anyUuid,

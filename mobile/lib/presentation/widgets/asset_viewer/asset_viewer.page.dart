@@ -360,7 +360,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   Widget _placeholderBuilder(BuildContext ctx, _, int index) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
     return PhotoView(
-      imageProvider: getThumbnailImageProvider(asset),
+      imageProvider: getThumbnailImageProvider(asset: asset),
       index: index,
       backgroundDecoration: BoxDecoration(color: backgroundColor),
       heroAttributes: PhotoViewHeroAttributes(tag: asset.heroTag),

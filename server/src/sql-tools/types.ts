@@ -1,4 +1,4 @@
-import { Kysely } from 'kysely';
+import { Kysely, ColumnType as KyselyColumnType } from 'kysely';
 
 export type PostgresDB = {
   pg_am: {
@@ -476,3 +476,10 @@ export enum Reason {
   MissingInSource = 'missing in source',
   MissingInTarget = 'missing in target',
 }
+
+export type Timestamp = KyselyColumnType<Date, Date | string, Date | string>;
+export type Generated<T> =
+  T extends KyselyColumnType<infer S, infer I, infer U>
+    ? KyselyColumnType<S, I | undefined, U>
+    : KyselyColumnType<T, T | undefined, T>;
+export type Int8 = KyselyColumnType<number>;

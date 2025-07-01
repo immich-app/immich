@@ -1,18 +1,16 @@
 import { Kysely } from 'kysely';
-import { DB } from 'src/db';
 import { SyncEntityType, SyncRequestType } from 'src/enum';
-import { mediumFactory, newSyncAuthUser, newSyncTest } from 'test/medium.factory';
+import { DB } from 'src/schema';
+import { SyncTestContext } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
 import { getKyselyDB, wait } from 'test/utils';
 
 let defaultDatabase: Kysely<DB>;
 
 const setup = async (db?: Kysely<DB>) => {
-  const database = db || defaultDatabase;
-  const result = newSyncTest({ db: database });
-  const { auth, create } = newSyncAuthUser();
-  await create(database);
-  return { ...result, auth };
+  const ctx = new SyncTestContext(db || defaultDatabase);
+  const { auth, user, session } = await ctx.newSyncAuthUser();
+  return { auth, user, session, ctx };
 };
 
 beforeAll(async () => {
@@ -21,134 +19,89 @@ beforeAll(async () => {
 
 describe(SyncRequestType.PartnerAssetExifsV1, () => {
   it('should detect and sync the first partner asset exif', async () => {
-    const { auth, sut, getRepository, testSync } = await setup();
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
+    const { asset } = await ctx.newAsset({ ownerId: user2.id });
+    await ctx.newExif({ assetId: asset.id, make: 'Canon' });
 
-    const userRepo = getRepository('user');
-    const user2 = mediumFactory.userInsert();
-    await userRepo.create(user2);
-
-    const partnerRepo = getRepository('partner');
-    await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
-
-    const assetRepo = getRepository('asset');
-    const asset = mediumFactory.assetInsert({ ownerId: user2.id });
-    await assetRepo.create(asset);
-    await assetRepo.upsertExif({ assetId: asset.id, make: 'Canon' });
-
-    const initialSyncResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
-
-    expect(initialSyncResponse).toHaveLength(1);
-    expect(initialSyncResponse).toEqual(
-      expect.arrayContaining([
-        {
-          ack: expect.any(String),
-          data: {
-            assetId: asset.id,
-            city: null,
-            country: null,
-            dateTimeOriginal: null,
-            description: '',
-            exifImageHeight: null,
-            exifImageWidth: null,
-            exposureTime: null,
-            fNumber: null,
-            fileSizeInByte: null,
-            focalLength: null,
-            fps: null,
-            iso: null,
-            latitude: null,
-            lensModel: null,
-            longitude: null,
-            make: 'Canon',
-            model: null,
-            modifyDate: null,
-            orientation: null,
-            profileDescription: null,
-            projectionType: null,
-            rating: null,
-            state: null,
-            timeZone: null,
-          },
-          type: SyncEntityType.PartnerAssetExifV1,
+    const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
+    expect(response).toHaveLength(1);
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: {
+          assetId: asset.id,
+          city: null,
+          country: null,
+          dateTimeOriginal: null,
+          description: '',
+          exifImageHeight: null,
+          exifImageWidth: null,
+          exposureTime: null,
+          fNumber: null,
+          fileSizeInByte: null,
+          focalLength: null,
+          fps: null,
+          iso: null,
+          latitude: null,
+          lensModel: null,
+          longitude: null,
+          make: 'Canon',
+          model: null,
+          modifyDate: null,
+          orientation: null,
+          profileDescription: null,
+          projectionType: null,
+          rating: null,
+          state: null,
+          timeZone: null,
         },
-      ]),
-    );
+        type: SyncEntityType.PartnerAssetExifV1,
+      },
+    ]);
 
-    const acks = [initialSyncResponse[0].ack];
-    await sut.setAcks(auth, { acks });
-
-    const ackSyncResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
-    expect(ackSyncResponse).toHaveLength(0);
+    await ctx.syncAckAll(auth, response);
+    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toEqual([]);
   });
 
   it('should not sync partner asset exif for own user', async () => {
-    const { auth, getRepository, testSync } = await setup();
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
+    const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
+    await ctx.newExif({ assetId: asset.id, make: 'Canon' });
 
-    const userRepo = getRepository('user');
-    const user2 = mediumFactory.userInsert();
-    await userRepo.create(user2);
-
-    const partnerRepo = getRepository('partner');
-    await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
-
-    const assetRepo = getRepository('asset');
-    const asset = mediumFactory.assetInsert({ ownerId: auth.user.id });
-    await assetRepo.create(asset);
-    await assetRepo.upsertExif({ assetId: asset.id, make: 'Canon' });
-
-    await expect(testSync(auth, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
-    await expect(testSync(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toHaveLength(0);
+    await expect(ctx.syncStream(auth, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
+    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toHaveLength(0);
   });
 
   it('should not sync partner asset exif for unrelated user', async () => {
-    const { auth, getRepository, testSync } = await setup();
-
-    const userRepo = getRepository('user');
-
-    const user2 = mediumFactory.userInsert();
-    const user3 = mediumFactory.userInsert();
-    await Promise.all([userRepo.create(user2), userRepo.create(user3)]);
-
-    const partnerRepo = getRepository('partner');
-    await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
-
-    const assetRepo = getRepository('asset');
-    const asset = mediumFactory.assetInsert({ ownerId: user3.id });
-    await assetRepo.create(asset);
-    await assetRepo.upsertExif({ assetId: asset.id, make: 'Canon' });
-
-    const sessionRepo = getRepository('session');
-    const session = mediumFactory.sessionInsert({ userId: user3.id });
-    await sessionRepo.create(session);
-
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    const { user: user3 } = await ctx.newUser();
+    await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
+    const { asset } = await ctx.newAsset({ ownerId: user3.id });
+    await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+    const { session } = await ctx.newSession({ userId: user3.id });
     const authUser3 = factory.auth({ session, user: user3 });
-    await expect(testSync(authUser3, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
-    await expect(testSync(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toHaveLength(0);
+
+    await expect(ctx.syncStream(authUser3, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
+    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toHaveLength(0);
   });
 
   it('should backfill partner asset exif when a partner shared their library with you', async () => {
-    const { auth, sut, getRepository, testSync } = await setup();
-
-    const userRepo = getRepository('user');
-    const user2 = mediumFactory.userInsert();
-    const user3 = mediumFactory.userInsert();
-    await userRepo.create(user2);
-    await userRepo.create(user3);
-
-    const assetRepo = getRepository('asset');
-    const assetUser3 = mediumFactory.assetInsert({ ownerId: user3.id });
-    const assetUser2 = mediumFactory.assetInsert({ ownerId: user2.id });
-    await assetRepo.create(assetUser3);
-    await assetRepo.upsertExif({ assetId: assetUser3.id, make: 'Canon' });
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    const { user: user3 } = await ctx.newUser();
+    const { asset: assetUser3 } = await ctx.newAsset({ ownerId: user3.id });
+    await ctx.newExif({ assetId: assetUser3.id, make: 'Canon' });
     await wait(2);
-    await assetRepo.create(assetUser2);
-    await assetRepo.upsertExif({ assetId: assetUser2.id, make: 'Canon' });
+    const { asset: assetUser2 } = await ctx.newAsset({ ownerId: user2.id });
+    await ctx.newExif({ assetId: assetUser2.id, make: 'Canon' });
+    await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
 
-    const partnerRepo = getRepository('partner');
-    await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
-
-    const response = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
-
+    const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
     expect(response).toHaveLength(1);
     expect(response).toEqual(
       expect.arrayContaining([
@@ -162,189 +115,133 @@ describe(SyncRequestType.PartnerAssetExifsV1, () => {
       ]),
     );
 
-    const acks = response.map(({ ack }) => ack);
-    await sut.setAcks(auth, { acks });
+    await ctx.syncAckAll(auth, response);
+    await ctx.newPartner({ sharedById: user3.id, sharedWithId: auth.user.id });
 
-    await partnerRepo.create({ sharedById: user3.id, sharedWithId: auth.user.id });
-    const backfillResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
+    const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
+    expect(newResponse).toHaveLength(2);
+    expect(newResponse).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          assetId: assetUser3.id,
+        }),
+        type: SyncEntityType.PartnerAssetExifBackfillV1,
+      },
+      {
+        ack: expect.any(String),
+        data: {},
+        type: SyncEntityType.SyncAckV1,
+      },
+    ]);
 
-    expect(backfillResponse).toHaveLength(2);
-    expect(backfillResponse).toEqual(
-      expect.arrayContaining([
-        {
-          ack: expect.any(String),
-          data: expect.objectContaining({
-            assetId: assetUser3.id,
-          }),
-          type: SyncEntityType.PartnerAssetExifBackfillV1,
-        },
-        {
-          ack: expect.any(String),
-          data: {},
-          type: SyncEntityType.SyncAckV1,
-        },
-      ]),
-    );
-
-    const backfillAck = backfillResponse[1].ack;
-    await sut.setAcks(auth, { acks: [backfillAck] });
-
-    const finalResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
-
-    const finalAcks = finalResponse.map(({ ack }) => ack);
-    expect(finalAcks).toEqual([]);
+    await ctx.syncAckAll(auth, newResponse);
+    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toEqual([]);
   });
 
   it('should handle partners with users ids lower than a uuidv7', async () => {
-    const { auth, sut, getRepository, testSync } = await setup();
-
-    const userRepo = getRepository('user');
-    const user2 = mediumFactory.userInsert({ id: '00d4c0af-7695-4cf2-85e6-415eeaf449cb' });
-    const user3 = mediumFactory.userInsert({ id: '00e4c0af-7695-4cf2-85e6-415eeaf449cb' });
-    await userRepo.create(user2);
-    await userRepo.create(user3);
-
-    const assetRepo = getRepository('asset');
-    const assetUser3 = mediumFactory.assetInsert({ ownerId: user3.id });
-    await assetRepo.create(assetUser3);
-    await assetRepo.upsertExif({ assetId: assetUser3.id, make: 'assetUser3' });
-
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser({ id: '00d4c0af-7695-4cf2-85e6-415eeaf449cb' });
+    const { user: user3 } = await ctx.newUser({ id: '00e4c0af-7695-4cf2-85e6-415eeaf449cb' });
+    const { asset: assetUser3 } = await ctx.newAsset({ ownerId: user3.id });
+    await ctx.newExif({ assetId: assetUser3.id, make: 'assetUser3' });
     await wait(2);
+    const { asset: assetUser2 } = await ctx.newAsset({ ownerId: user2.id });
+    await ctx.newExif({ assetId: assetUser2.id, make: 'assetUser2' });
+    await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
 
-    const assetUser2 = mediumFactory.assetInsert({ ownerId: user2.id });
-    await assetRepo.create(assetUser2);
-    await assetRepo.upsertExif({ assetId: assetUser2.id, make: 'assetUser2' });
-
-    const partnerRepo = getRepository('partner');
-    await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
-
-    const response = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
-
+    const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
     expect(response).toHaveLength(1);
-    expect(response).toEqual(
-      expect.arrayContaining([
-        {
-          ack: expect.any(String),
-          data: expect.objectContaining({
-            assetId: assetUser2.id,
-          }),
-          type: SyncEntityType.PartnerAssetExifV1,
-        },
-      ]),
-    );
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          assetId: assetUser2.id,
+        }),
+        type: SyncEntityType.PartnerAssetExifV1,
+      },
+    ]);
 
-    const acks = response.map(({ ack }) => ack);
-    await sut.setAcks(auth, { acks });
-
+    await ctx.syncAckAll(auth, response);
     // This checks that our ack upsert is correct
-    const ackUpsertResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
-    expect(ackUpsertResponse).toEqual([]);
+    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toEqual([]);
+    await ctx.newPartner({ sharedById: user3.id, sharedWithId: auth.user.id });
 
-    await partnerRepo.create({ sharedById: user3.id, sharedWithId: auth.user.id });
+    const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
+    expect(newResponse).toHaveLength(2);
+    expect(newResponse).toEqual([
+      {
+        ack: expect.stringMatching(new RegExp(`${SyncEntityType.PartnerAssetExifBackfillV1}\\|.+?\\|.+`)),
+        data: expect.objectContaining({
+          assetId: assetUser3.id,
+        }),
+        type: SyncEntityType.PartnerAssetExifBackfillV1,
+      },
+      {
+        ack: expect.stringContaining(SyncEntityType.PartnerAssetExifBackfillV1),
+        data: {},
+        type: SyncEntityType.SyncAckV1,
+      },
+    ]);
 
-    const syncAckResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
-    expect(syncAckResponse).toHaveLength(2);
-    expect(syncAckResponse).toEqual(
-      expect.arrayContaining([
-        {
-          ack: expect.stringMatching(new RegExp(`${SyncEntityType.PartnerAssetExifBackfillV1}\\|.+?\\|.+`)),
-          data: expect.objectContaining({
-            assetId: assetUser3.id,
-          }),
-          type: SyncEntityType.PartnerAssetExifBackfillV1,
-        },
-        {
-          ack: expect.stringContaining(SyncEntityType.PartnerAssetExifBackfillV1),
-          data: {},
-          type: SyncEntityType.SyncAckV1,
-        },
-      ]),
-    );
-
-    const syncAckResponseAcks = syncAckResponse.map(({ ack }) => ack);
-    await sut.setAcks(auth, { acks: [syncAckResponseAcks[1]] });
-
-    const finalResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
-    expect(finalResponse).toEqual([]);
+    await ctx.syncAckAll(auth, newResponse);
+    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toEqual([]);
   });
 
   it('should only backfill partner assets created prior to the current partner asset checkpoint', async () => {
-    const { auth, sut, getRepository, testSync } = await setup();
-
-    const userRepo = getRepository('user');
-    const user2 = mediumFactory.userInsert();
-    const user3 = mediumFactory.userInsert();
-    await userRepo.create(user2);
-    await userRepo.create(user3);
-
-    const assetRepo = getRepository('asset');
-    const assetUser3 = mediumFactory.assetInsert({ ownerId: user3.id });
-    const assetUser2 = mediumFactory.assetInsert({ ownerId: user2.id });
-    const asset2User3 = mediumFactory.assetInsert({ ownerId: user3.id });
-    await assetRepo.create(assetUser3);
-    await assetRepo.upsertExif({ assetId: assetUser3.id, make: 'assetUser3' });
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    const { user: user3 } = await ctx.newUser();
+    const { asset: assetUser3 } = await ctx.newAsset({ ownerId: user3.id });
+    await ctx.newExif({ assetId: assetUser3.id, make: 'assetUser3' });
     await wait(2);
-    await assetRepo.create(assetUser2);
-    await assetRepo.upsertExif({ assetId: assetUser2.id, make: 'assetUser2' });
+    const { asset: assetUser2 } = await ctx.newAsset({ ownerId: user2.id });
+    await ctx.newExif({ assetId: assetUser2.id, make: 'assetUser2' });
     await wait(2);
-    await assetRepo.create(asset2User3);
-    await assetRepo.upsertExif({ assetId: asset2User3.id, make: 'asset2User3' });
+    const { asset: asset2User3 } = await ctx.newAsset({ ownerId: user3.id });
+    await ctx.newExif({ assetId: asset2User3.id, make: 'asset2User3' });
+    await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
 
-    const partnerRepo = getRepository('partner');
-    await partnerRepo.create({ sharedById: user2.id, sharedWithId: auth.user.id });
-
-    const response = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
-
+    const response = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
     expect(response).toHaveLength(1);
-    expect(response).toEqual(
-      expect.arrayContaining([
-        {
-          ack: expect.any(String),
-          data: expect.objectContaining({
-            assetId: assetUser2.id,
-          }),
-          type: SyncEntityType.PartnerAssetExifV1,
-        },
-      ]),
-    );
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          assetId: assetUser2.id,
+        }),
+        type: SyncEntityType.PartnerAssetExifV1,
+      },
+    ]);
 
-    const acks = response.map(({ ack }) => ack);
-    await sut.setAcks(auth, { acks });
+    await ctx.syncAckAll(auth, response);
+    await ctx.newPartner({ sharedById: user3.id, sharedWithId: auth.user.id });
 
-    await partnerRepo.create({ sharedById: user3.id, sharedWithId: auth.user.id });
-    const backfillResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
+    const newResponse = await ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1]);
+    expect(newResponse).toHaveLength(3);
+    expect(newResponse).toEqual([
+      {
+        ack: expect.stringMatching(new RegExp(`${SyncEntityType.PartnerAssetExifBackfillV1}\\|.+?\\|.+`)),
+        data: expect.objectContaining({
+          assetId: assetUser3.id,
+        }),
+        type: SyncEntityType.PartnerAssetExifBackfillV1,
+      },
+      {
+        ack: expect.stringContaining(SyncEntityType.PartnerAssetExifBackfillV1),
+        data: {},
+        type: SyncEntityType.SyncAckV1,
+      },
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          assetId: asset2User3.id,
+        }),
+        type: SyncEntityType.PartnerAssetExifV1,
+      },
+    ]);
 
-    expect(backfillResponse).toHaveLength(3);
-    expect(backfillResponse).toEqual(
-      expect.arrayContaining([
-        {
-          ack: expect.stringMatching(new RegExp(`${SyncEntityType.PartnerAssetExifBackfillV1}\\|.+?\\|.+`)),
-          data: expect.objectContaining({
-            assetId: assetUser3.id,
-          }),
-          type: SyncEntityType.PartnerAssetExifBackfillV1,
-        },
-        {
-          ack: expect.stringContaining(SyncEntityType.PartnerAssetExifBackfillV1),
-          data: {},
-          type: SyncEntityType.SyncAckV1,
-        },
-        {
-          ack: expect.any(String),
-          data: expect.objectContaining({
-            assetId: asset2User3.id,
-          }),
-          type: SyncEntityType.PartnerAssetExifV1,
-        },
-      ]),
-    );
-
-    const backfillAck = backfillResponse[1].ack;
-    const partnerAssetAck = backfillResponse[2].ack;
-    await sut.setAcks(auth, { acks: [backfillAck, partnerAssetAck] });
-    const finalResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
-
-    const finalAcks = finalResponse.map(({ ack }) => ack);
-    expect(finalAcks).toEqual([]);
+    await ctx.syncAckAll(auth, newResponse);
+    await expect(ctx.syncStream(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toEqual([]);
   });
 });

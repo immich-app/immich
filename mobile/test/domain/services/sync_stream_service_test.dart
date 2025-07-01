@@ -59,16 +59,28 @@ void main() {
         .thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateAssetsV1(any()))
         .thenAnswer(successHandler);
+    when(
+      () => mockSyncStreamRepo.updateAssetsV1(
+        any(),
+        debugLabel: any(named: 'debugLabel'),
+      ),
+    ).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteAssetsV1(any()))
         .thenAnswer(successHandler);
+    when(
+      () => mockSyncStreamRepo.deleteAssetsV1(
+        any(),
+        debugLabel: any(named: 'debugLabel'),
+      ),
+    ).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateAssetsExifV1(any()))
         .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updatePartnerAssetsV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.deletePartnerAssetsV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updatePartnerAssetsExifV1(any()))
-        .thenAnswer(successHandler);
+    when(
+      () => mockSyncStreamRepo.updateAssetsExifV1(
+        any(),
+        debugLabel: any(named: 'debugLabel'),
+      ),
+    ).thenAnswer(successHandler);
 
     sut = SyncStreamService(
       syncApiRepository: mockSyncApiRepo,

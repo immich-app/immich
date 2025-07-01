@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB } from 'src/db';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserRole, AssetVisibility } from 'src/enum';
+import { DB } from 'src/schema';
 import { asUuid } from 'src/utils/database';
 
 class ActivityAccess {

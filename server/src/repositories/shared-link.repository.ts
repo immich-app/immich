@@ -4,10 +4,11 @@ import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import _ from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Album, columns } from 'src/database';
-import { DB, SharedLinks } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { SharedLinkType } from 'src/enum';
+import { DB } from 'src/schema';
+import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
 
 export type SharedLinkSearchOptions = {
   userId: string;
@@ -183,7 +184,7 @@ export class SharedLinkRepository {
       .executeTakeFirst();
   }
 
-  async create(entity: Insertable<SharedLinks> & { assetIds?: string[] }) {
+  async create(entity: Insertable<SharedLinkTable> & { assetIds?: string[] }) {
     const { id } = await this.db
       .insertInto('shared_links')
       .values(_.omit(entity, 'assetIds'))
@@ -200,7 +201,7 @@ export class SharedLinkRepository {
     return this.getSharedLinks(id);
   }
 
-  async update(entity: Updateable<SharedLinks> & { id: string; assetIds?: string[] }) {
+  async update(entity: Updateable<SharedLinkTable> & { id: string; assetIds?: string[] }) {
     const { id } = await this.db
       .updateTable('shared_links')
       .set(_.omit(entity, 'assets', 'album', 'assetIds'))

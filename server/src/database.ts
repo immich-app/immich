@@ -1,5 +1,4 @@
 import { Selectable } from 'kysely';
-import { Albums, Exif as DatabaseExif } from 'src/db';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import {
   AlbumUserRole,
@@ -13,7 +12,9 @@ import {
   UserAvatarColor,
   UserStatus,
 } from 'src/enum';
-import { OnThisDayData, UserMetadataItem } from 'src/types';
+import { AlbumTable } from 'src/schema/tables/album.table';
+import { ExifTable } from 'src/schema/tables/exif.table';
+import { UserMetadataItem } from 'src/types';
 
 export type AuthUser = {
   id: string;
@@ -95,7 +96,7 @@ export type Memory = {
   showAt: Date | null;
   hideAt: Date | null;
   type: MemoryType;
-  data: OnThisDayData;
+  data: object;
   ownerId: string;
   isSaved: boolean;
   assets: MapAsset[];
@@ -193,7 +194,7 @@ export type SharedLink = {
   userId: string;
 };
 
-export type Album = Selectable<Albums> & {
+export type Album = Selectable<AlbumTable> & {
   owner: User;
   assets: MapAsset[];
 };
@@ -239,7 +240,7 @@ export type Session = {
   pinExpiresAt: Date | null;
 };
 
-export type Exif = Omit<Selectable<DatabaseExif>, 'updatedAt' | 'updateId'>;
+export type Exif = Omit<Selectable<ExifTable>, 'updatedAt' | 'updateId'>;
 
 export type Person = {
   createdAt: Date;
@@ -355,6 +356,13 @@ export const columns = {
     'assets.duration',
   ],
   syncAlbumUser: ['album_users.albumsId as albumId', 'album_users.usersId as userId', 'album_users.role'],
+  syncStack: [
+    'asset_stack.id',
+    'asset_stack.createdAt',
+    'asset_stack.updatedAt',
+    'asset_stack.primaryAssetId',
+    'asset_stack.ownerId',
+  ],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],
   syncAssetExif: [
     'exif.assetId',

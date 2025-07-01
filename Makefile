@@ -1,27 +1,33 @@
 dev:
-	docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans || make dev-down
+	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans
 
 dev-down:
 	docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans
 
 dev-update:
-	docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
+	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
 dev-scale:
-	docker compose -f ./docker/docker-compose.dev.yml up --build -V  --scale immich-server=3 --remove-orphans
+	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V  --scale immich-server=3 --remove-orphans
 
 .PHONY: e2e
 e2e:
-	docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
+	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
+
+e2e-update:
+	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
+
+e2e-down:
+	docker compose -f ./e2e/docker-compose.yml down --remove-orphans
 
 prod:
-	docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
+	@trap 'make prod-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
 
 prod-down:
 	docker compose -f ./docker/docker-compose.prod.yml down --remove-orphans
 
 prod-scale:
-	docker compose -f ./docker/docker-compose.prod.yml up --build -V --scale immich-server=3 --scale immich-microservices=3 --remove-orphans
+	@trap 'make prod-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --scale immich-server=3 --scale immich-microservices=3 --remove-orphans
 
 .PHONY: open-api
 open-api:
@@ -93,9 +99,11 @@ hygiene-all: lint-all format-all check-all sql audit-all;
 test-all: $(foreach M,$(filter-out sdk docs .github,$(MODULES)),test-$M) ;
 
 clean:
-	find . -name "node_modules" -type d -prune -exec rm -rf '{}' +
+	find . -name "node_modules" -type d -prune -exec rm -rf {} +
 	find . -name "dist" -type d -prune -exec rm -rf '{}' +
 	find . -name "build" -type d -prune -exec rm -rf '{}' +
 	find . -name "svelte-kit" -type d -prune -exec rm -rf '{}' +
-	docker compose -f ./docker/docker-compose.dev.yml rm -v -f || true
-	docker compose -f ./e2e/docker-compose.yml rm -v -f || true
+	command -v docker >/dev/null 2>&1 && docker compose -f ./docker/docker-compose.dev.yml rm -v -f || true
+	command -v docker >/dev/null 2>&1 && docker compose -f ./e2e/docker-compose.yml rm -v -f || true
+
+setup-dev: install-server install-sdk build-sdk install-web

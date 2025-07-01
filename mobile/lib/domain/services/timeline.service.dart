@@ -45,6 +45,13 @@ class TimelineFactory {
         bucketSource: () =>
             _timelineRepository.watchLocalBucket(albumId, groupBy: groupBy),
       );
+
+  TimelineService remoteAlbum({required String albumId}) => TimelineService(
+        assetSource: (offset, count) => _timelineRepository
+            .getRemoteBucketAssets(albumId, offset: offset, count: count),
+        bucketSource: () =>
+            _timelineRepository.watchRemoteBucket(albumId, groupBy: groupBy),
+      );
 }
 
 class TimelineService {
@@ -61,7 +68,7 @@ class TimelineService {
     _bucketSubscription = _bucketSource().listen((buckets) {
       _totalAssets =
           buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
-      unawaited(_reloadBucket());
+      unawaited(reloadBucket());
     });
   }
 
@@ -72,7 +79,7 @@ class TimelineService {
 
   Stream<List<Bucket>> Function() get watchBuckets => _bucketSource;
 
-  Future<void> _reloadBucket() => _mutex.run(() async {
+  Future<void> reloadBucket() => _mutex.run(() async {
         _buffer = await _assetSource(_bufferOffset, _buffer.length);
       });
 

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB, Libraries } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
 import { AssetType, AssetVisibility } from 'src/enum';
+import { DB } from 'src/schema';
+import { LibraryTable } from 'src/schema/tables/library.table';
 
 export enum AssetSyncResult {
   DO_NOTHING,
@@ -47,7 +48,7 @@ export class LibraryRepository {
       .execute();
   }
 
-  create(library: Insertable<Libraries>) {
+  create(library: Insertable<LibraryTable>) {
     return this.db.insertInto('libraries').values(library).returningAll().executeTakeFirstOrThrow();
   }
 
@@ -59,7 +60,7 @@ export class LibraryRepository {
     await this.db.updateTable('libraries').set({ deletedAt: new Date() }).where('libraries.id', '=', id).execute();
   }
 
-  update(id: string, library: Updateable<Libraries>) {
+  update(id: string, library: Updateable<LibraryTable>) {
     return this.db
       .updateTable('libraries')
       .set(library)

@@ -16,7 +16,7 @@ ImageProvider getFullImageProvider(
   final String assetId;
   if (asset is LocalAsset && asset.hasRemote) {
     assetId = asset.remoteId!;
-  } else if (asset is Asset) {
+  } else if (asset is RemoteAsset) {
     assetId = asset.id;
   } else {
     throw ArgumentError("Unsupported asset type: ${asset.runtimeType}");
@@ -25,18 +25,28 @@ ImageProvider getFullImageProvider(
   return RemoteFullImageProvider(assetId: assetId);
 }
 
-ImageProvider getThumbnailImageProvider(
-  BaseAsset asset, {
+ImageProvider getThumbnailImageProvider({
+  BaseAsset? asset,
+  String? remoteId,
   Size size = const Size.square(256),
 }) {
-  if (_shouldUseLocalAsset(asset)) {
+  assert(
+    asset != null || remoteId != null,
+    'Either asset or remoteId must be provided',
+  );
+
+  if (remoteId != null) {
+    return RemoteThumbProvider(assetId: remoteId);
+  }
+
+  if (_shouldUseLocalAsset(asset!)) {
     return LocalThumbProvider(asset: asset as LocalAsset, size: size);
   }
 
   final String assetId;
   if (asset is LocalAsset && asset.hasRemote) {
     assetId = asset.remoteId!;
-  } else if (asset is Asset) {
+  } else if (asset is RemoteAsset) {
     assetId = asset.id;
   } else {
     throw ArgumentError("Unsupported asset type: ${asset.runtimeType}");

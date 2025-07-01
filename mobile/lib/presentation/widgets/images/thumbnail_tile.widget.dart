@@ -30,9 +30,11 @@ class ThumbnailTile extends ConsumerWidget {
         ? context.primaryColor.darken(amount: 0.6)
         : context.primaryColor.lighten(amount: 0.8);
 
-    final isSelected = ref
-        .watch(multiSelectProvider.select((state) => state.selectedAssets))
-        .contains(asset);
+    final isSelected = ref.watch(
+      multiSelectProvider.select(
+        (multiselect) => multiselect.selectedAssets.contains(asset),
+      ),
+    );
 
     return Stack(
       children: [

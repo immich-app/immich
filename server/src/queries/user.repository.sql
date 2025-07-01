@@ -97,6 +97,16 @@ where
   "users"."id" = $1
   and "users"."deletedAt" is null
 
+-- UserRepository.getForChangePassword
+select
+  "users"."id",
+  "users"."password"
+from
+  "users"
+where
+  "users"."id" = $1
+  and "users"."deletedAt" is null
+
 -- UserRepository.getByEmail
 select
   "id",

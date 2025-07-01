@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { MemoryService } from 'src/services/memory.service';
+import { OnThisDayData } from 'src/types';
 import { factory, newUuid, newUuids } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -87,7 +88,7 @@ describe(MemoryService.name, () => {
       await expect(
         sut.create(factory.auth({ user: { id: userId } }), {
           type: memory.type,
-          data: memory.data,
+          data: memory.data as OnThisDayData,
           memoryAt: memory.memoryAt,
           isSaved: memory.isSaved,
           assetIds: [assetId],
@@ -117,7 +118,7 @@ describe(MemoryService.name, () => {
       await expect(
         sut.create(factory.auth({ user: { id: userId } }), {
           type: memory.type,
-          data: memory.data,
+          data: memory.data as OnThisDayData,
           assetIds: memory.assets.map((asset) => asset.id),
           memoryAt: memory.memoryAt,
         }),
@@ -135,7 +136,11 @@ describe(MemoryService.name, () => {
       mocks.memory.create.mockResolvedValue(memory);
 
       await expect(
-        sut.create(factory.auth(), { type: memory.type, data: memory.data, memoryAt: memory.memoryAt }),
+        sut.create(factory.auth(), {
+          type: memory.type,
+          data: memory.data as OnThisDayData,
+          memoryAt: memory.memoryAt,
+        }),
       ).resolves.toBeDefined();
     });
   });

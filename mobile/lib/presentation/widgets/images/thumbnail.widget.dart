@@ -9,20 +9,28 @@ import 'package:octo_image/octo_image.dart';
 
 class Thumbnail extends StatelessWidget {
   const Thumbnail({
-    required this.asset,
+    this.asset,
+    this.remoteId,
     this.size = const Size.square(256),
     this.fit = BoxFit.cover,
     super.key,
-  });
+  }) : assert(
+          asset != null || remoteId != null,
+          'Either asset or remoteId must be provided',
+        );
 
-  final BaseAsset asset;
+  final BaseAsset? asset;
+  final String? remoteId;
   final Size size;
   final BoxFit fit;
 
   @override
   Widget build(BuildContext context) {
-    final thumbHash = asset is Asset ? (asset as Asset).thumbHash : null;
-    final provider = getThumbnailImageProvider(asset, size: size);
+    final thumbHash =
+        asset is RemoteAsset ? (asset as RemoteAsset).thumbHash : null;
+    final provider =
+        getThumbnailImageProvider(asset: asset, remoteId: remoteId, size: size);
+
     return OctoImage.fromSet(
       image: provider,
       octoSet: OctoSet(

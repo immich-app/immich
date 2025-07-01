@@ -6,6 +6,7 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:stream_transform/stream_transform.dart';
 
@@ -13,6 +14,21 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   final Drift _db;
 
   const DriftTimelineRepository(super._db) : _db = _db;
+
+  Stream<List<String>> watchTimelineUserIds(String userId) {
+    final query = _db.partnerEntity.selectOnly()
+      ..addColumns([_db.partnerEntity.sharedById])
+      ..where(
+        _db.partnerEntity.inTimeline.equals(true) &
+            _db.partnerEntity.sharedWithId.equals(userId),
+      );
+
+    return query
+        .map((row) => row.read(_db.partnerEntity.sharedById)!)
+        .watch()
+        // Add current user ID to the list
+        .map((users) => users..add(userId));
+  }
 
   List<Bucket> _generateBuckets(int count) {
     final numBuckets = (count / kTimelineNoneSegmentSize).floor();
@@ -54,36 +70,38 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     return _db.mergedAssetDrift
         .mergedAsset(userIds, limit: Limit(count, offset))
         .map(
-          (row) => row.remoteId != null
-              ? Asset(
-                  id: row.remoteId!,
-                  localId: row.localId,
-                  name: row.name,
-                  checksum: row.checksum,
-                  type: row.type,
-                  createdAt: row.createdAt,
-                  updatedAt: row.updatedAt,
-                  thumbHash: row.thumbHash,
-                  width: row.width,
-                  height: row.height,
-                  isFavorite: row.isFavorite,
-                  durationInSeconds: row.durationInSeconds,
-                )
-              : LocalAsset(
-                  id: row.localId!,
-                  remoteId: row.remoteId,
-                  name: row.name,
-                  checksum: row.checksum,
-                  type: row.type,
-                  createdAt: row.createdAt,
-                  updatedAt: row.updatedAt,
-                  width: row.width,
-                  height: row.height,
-                  isFavorite: row.isFavorite,
-                  durationInSeconds: row.durationInSeconds,
-                ),
-        )
-        .get();
+      (row) {
+        return row.remoteId != null && row.ownerId != null
+            ? RemoteAsset(
+                id: row.remoteId!,
+                localId: row.localId,
+                name: row.name,
+                ownerId: row.ownerId!,
+                checksum: row.checksum,
+                type: row.type,
+                createdAt: row.createdAt,
+                updatedAt: row.updatedAt,
+                thumbHash: row.thumbHash,
+                width: row.width,
+                height: row.height,
+                isFavorite: row.isFavorite,
+                durationInSeconds: row.durationInSeconds,
+              )
+            : LocalAsset(
+                id: row.localId!,
+                remoteId: row.remoteId,
+                name: row.name,
+                checksum: row.checksum,
+                type: row.type,
+                createdAt: row.createdAt,
+                updatedAt: row.updatedAt,
+                width: row.width,
+                height: row.height,
+                isFavorite: row.isFavorite,
+                durationInSeconds: row.durationInSeconds,
+              );
+      },
+    ).get();
   }
 
   Stream<List<Bucket>> watchLocalBucket(
@@ -137,6 +155,62 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ..limit(count, offset: offset);
     return query
         .map((row) => row.readTable(_db.localAssetEntity).toDto())
+        .get();
+  }
+
+  Stream<List<Bucket>> watchRemoteBucket(
+    String albumId, {
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+  }) {
+    if (groupBy == GroupAssetsBy.none) {
+      return _db.remoteAlbumAssetEntity
+          .count(where: (row) => row.albumId.equals(albumId))
+          .map(_generateBuckets)
+          .watchSingle();
+    }
+
+    final assetCountExp = _db.remoteAssetEntity.id.count();
+    final dateExp = _db.remoteAssetEntity.createdAt.dateFmt(groupBy);
+
+    final query = _db.remoteAssetEntity.selectOnly()
+      ..addColumns([assetCountExp, dateExp])
+      ..join([
+        innerJoin(
+          _db.remoteAlbumAssetEntity,
+          _db.remoteAlbumAssetEntity.assetId
+              .equalsExp(_db.remoteAssetEntity.id),
+        ),
+      ])
+      ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
+      ..groupBy([dateExp])
+      ..orderBy([OrderingTerm.desc(dateExp)]);
+
+    return query.map((row) {
+      final timeline = row.read(dateExp)!.dateFmt(groupBy);
+      final assetCount = row.read(assetCountExp)!;
+      return TimeBucket(date: timeline, assetCount: assetCount);
+    }).watch();
+  }
+
+  Future<List<BaseAsset>> getRemoteBucketAssets(
+    String albumId, {
+    required int offset,
+    required int count,
+  }) {
+    final query = _db.remoteAssetEntity.select().join(
+      [
+        innerJoin(
+          _db.remoteAlbumAssetEntity,
+          _db.remoteAlbumAssetEntity.assetId
+              .equalsExp(_db.remoteAssetEntity.id),
+        ),
+      ],
+    )
+      ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
+      ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+      ..limit(count, offset: offset);
+    return query
+        .map((row) => row.readTable(_db.remoteAssetEntity).toDto())
         .get();
   }
 }
