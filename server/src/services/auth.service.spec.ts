@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { SALT_ROUNDS } from 'src/constants';
 import { UserAdmin } from 'src/database';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
 import { AuthType, Permission } from 'src/enum';
@@ -27,6 +28,7 @@ const oauthResponse = ({
   name,
   profileImagePath,
   isAdmin: false,
+  isOnboarded: false,
   shouldChangePassword: false,
 });
 
@@ -100,6 +102,7 @@ describe(AuthService.name, () => {
         name: user.name,
         profileImagePath: user.profileImagePath,
         isAdmin: user.isAdmin,
+        isOnboarded: false,
         shouldChangePassword: user.shouldChangePassword,
       });
 
@@ -113,46 +116,33 @@ describe(AuthService.name, () => {
       const auth = factory.auth({ user });
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      mocks.user.getByEmail.mockResolvedValue({ ...user, password: 'hash-password' });
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
       mocks.user.update.mockResolvedValue(user);
 
       await sut.changePassword(auth, dto);
 
-      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, true);
+      expect(mocks.user.getForChangePassword).toHaveBeenCalledWith(user.id);
       expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
     });
 
-    it('should throw when auth user email is not found', async () => {
-      const auth = { user: { email: 'test@imimch.com' } } as AuthDto;
-      const dto = { password: 'old-password', newPassword: 'new-password' };
-
-      mocks.user.getByEmail.mockResolvedValue(void 0);
-
-      await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(UnauthorizedException);
-    });
-
     it('should throw when password does not match existing password', async () => {
-      const auth = { user: { email: 'test@imimch.com' } as UserAdmin };
+      const user = factory.user();
+      const auth = factory.auth({ user });
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
       mocks.crypto.compareBcrypt.mockReturnValue(false);
 
-      mocks.user.getByEmail.mockResolvedValue({
-        email: 'test@immich.com',
-        password: 'hash-password',
-      } as UserAdmin & { password: string });
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should throw when user does not have a password', async () => {
-      const auth = { user: { email: 'test@imimch.com' } } as AuthDto;
+      const user = factory.user();
+      const auth = factory.auth({ user });
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      mocks.user.getByEmail.mockResolvedValue({
-        email: 'test@immich.com',
-        password: '',
-      } as UserAdmin & { password: string });
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: '' });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -252,6 +242,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -264,7 +255,7 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({
         user: sessionWithToken.user,
-        session: { id: session.id },
+        session: { id: session.id, hasElevatedPermission: false },
       });
     });
   });
@@ -375,6 +366,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -387,7 +379,7 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({
         user: sessionWithToken.user,
-        session: { id: session.id },
+        session: { id: session.id, hasElevatedPermission: false },
       });
     });
 
@@ -397,6 +389,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -416,6 +409,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        pinExpiresAt: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -697,7 +691,7 @@ describe(AuthService.name, () => {
       expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ quotaSizeInBytes: 1_073_741_824 }));
     });
 
-    it('should not set quota for 0 quota', async () => {
+    it('should set quota for 0 quota', async () => {
       const user = factory.userAdmin({ oauthId: 'oauth-id' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
@@ -719,7 +713,7 @@ describe(AuthService.name, () => {
         email: user.email,
         name: ' ',
         oauthId: user.oauthId,
-        quotaSizeInBytes: null,
+        quotaSizeInBytes: 0,
         storageLabel: null,
       });
     });
@@ -857,6 +851,83 @@ describe(AuthService.name, () => {
       await sut.unlink(auth);
 
       expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
+    });
+  });
+
+  describe('setupPinCode', () => {
+    it('should setup a PIN code', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+      const dto = { pinCode: '123456' };
+
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: null, password: '' });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.setupPinCode(auth, dto);
+
+      expect(mocks.user.getForPinCode).toHaveBeenCalledWith(user.id);
+      expect(mocks.crypto.hashBcrypt).toHaveBeenCalledWith('123456', SALT_ROUNDS);
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: expect.any(String) });
+    });
+
+    it('should fail if the user already has a PIN code', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+
+      await expect(sut.setupPinCode(auth, { pinCode: '123456' })).rejects.toThrow('User already has a PIN code');
+    });
+  });
+
+  describe('changePinCode', () => {
+    it('should change the PIN code', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+      const dto = { pinCode: '123456', newPinCode: '012345' };
+
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.user.update.mockResolvedValue(user);
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+
+      await sut.changePinCode(auth, dto);
+
+      expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('123456', '123456 (hashed)');
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: '012345 (hashed)' });
+    });
+
+    it('should fail if the PIN code does not match', async () => {
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+
+      await expect(
+        sut.changePinCode(factory.auth({ user }), { pinCode: '000000', newPinCode: '012345' }),
+      ).rejects.toThrow('Wrong PIN code');
+    });
+  });
+
+  describe('resetPinCode', () => {
+    it('should reset the PIN code', async () => {
+      const currentSession = factory.session();
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+      mocks.session.lockAll.mockResolvedValue(void 0);
+      mocks.session.update.mockResolvedValue(currentSession);
+
+      await sut.resetPinCode(factory.auth({ user }), { pinCode: '123456' });
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: null });
+      expect(mocks.session.lockAll).toHaveBeenCalledWith(user.id);
+    });
+
+    it('should throw if the PIN code does not match', async () => {
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+
+      await expect(sut.resetPinCode(factory.auth({ user }), { pinCode: '000000' })).rejects.toThrow('Wrong PIN code');
     });
   });
 });

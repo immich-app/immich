@@ -10,10 +10,13 @@ export enum AssetAction {
   ADD_TO_ALBUM = 'add-to-album',
   UNSTACK = 'unstack',
   KEEP_THIS_DELETE_OTHERS = 'keep-this-delete-others',
+  SET_STACK_PRIMARY_ASSET = 'set-stack-primary-asset',
+  SET_VISIBILITY_LOCKED = 'set-visibility-locked',
+  SET_VISIBILITY_TIMELINE = 'set-visibility-timeline',
 }
 
 export enum AppRoute {
-  ADMIN_USER_MANAGEMENT = '/admin/user-management',
+  ADMIN_USERS = '/admin/users',
   ADMIN_LIBRARY_MANAGEMENT = '/admin/library-management',
   ADMIN_SETTINGS = '/admin/system-settings',
   ADMIN_STATS = '/admin/server-status',
@@ -43,12 +46,14 @@ export enum AppRoute {
   AUTH_REGISTER = '/auth/register',
   AUTH_CHANGE_PASSWORD = '/auth/change-password',
   AUTH_ONBOARDING = '/auth/onboarding',
+  AUTH_PIN_PROMPT = '/auth/pin-prompt',
 
   UTILITIES = '/utilities',
   DUPLICATES = '/utilities/duplicates',
 
   FOLDERS = '/folders',
   TAGS = '/tags',
+  LOCKED = '/locked',
 }
 
 export enum ProjectionType {
@@ -64,6 +69,11 @@ export enum ProjectionType {
 
 export const dateFormats = {
   album: <Intl.DateTimeFormatOptions>{
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  },
+  settings: <Intl.DateTimeFormatOptions>{
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -264,9 +274,17 @@ export const locales = [
   { code: 'zu-ZA', name: 'Zulu (South Africa)' },
 ];
 
-export const defaultLang = { name: 'English', code: 'en', loader: () => import('$i18n/en.json') };
+interface Lang {
+  name: string;
+  code: string;
+  loader: () => Promise<{ default: object }>;
+  rtl?: boolean;
+  weblateCode?: string;
+}
 
-export const langs = [
+export const defaultLang: Lang = { name: 'English', code: 'en', loader: () => import('$i18n/en.json') };
+
+export const langs: Lang[] = [
   { name: 'Afrikaans', code: 'af', loader: () => import('$i18n/af.json') },
   { name: 'Arabic', code: 'ar', loader: () => import('$i18n/ar.json'), rtl: true },
   { name: 'Azerbaijani', code: 'az', loader: () => import('$i18n/az.json'), rtl: true },
@@ -350,7 +368,7 @@ export const langs = [
     weblateCode: 'zh_SIMPLIFIED',
     loader: () => import('$i18n/zh_SIMPLIFIED.json'),
   },
-  { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({}) },
+  { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({ default: {} }) },
 ];
 
 export enum ImmichProduct {
@@ -367,21 +385,15 @@ export enum SettingInputFieldType {
 }
 
 export const AlbumPageViewMode = {
-  LINK_SHARING: 'link-sharing',
-  SELECT_USERS: 'select-users',
   SELECT_THUMBNAIL: 'select-thumbnail',
   SELECT_ASSETS: 'select-assets',
-  VIEW_USERS: 'view-users',
   VIEW: 'view',
   OPTIONS: 'options',
 };
 
 export type AlbumPageViewMode =
-  | typeof AlbumPageViewMode.LINK_SHARING
-  | typeof AlbumPageViewMode.SELECT_USERS
   | typeof AlbumPageViewMode.SELECT_THUMBNAIL
   | typeof AlbumPageViewMode.SELECT_ASSETS
-  | typeof AlbumPageViewMode.VIEW_USERS
   | typeof AlbumPageViewMode.VIEW
   | typeof AlbumPageViewMode.OPTIONS;
 
@@ -389,8 +401,6 @@ export enum PersonPageViewMode {
   VIEW_ASSETS = 'view-assets',
   SELECT_PERSON = 'select-person',
   MERGE_PEOPLE = 'merge-people',
-  SUGGEST_MERGE = 'suggest-merge',
-  BIRTH_DATE = 'birth-date',
   UNASSIGN_ASSETS = 'unassign-faces',
 }
 
@@ -410,3 +420,5 @@ export enum ToggleVisibility {
   HIDE_UNNANEMD = 'hide-unnamed',
   SHOW_ALL = 'show-all',
 }
+
+export const assetViewerFadeDuration: number = 150;

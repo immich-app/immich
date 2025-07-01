@@ -17,7 +17,7 @@ export class CliService extends BaseService {
     }
 
     const providedPassword = await ask(mapUserAdmin(admin));
-    const password = providedPassword || this.cryptoRepository.newPassword(24);
+    const password = providedPassword || this.cryptoRepository.randomBytesAsText(24);
     const hashedPassword = await this.cryptoRepository.hashBcrypt(password, SALT_ROUNDS);
 
     await this.userRepository.update(admin.id, { password: hashedPassword });
@@ -35,6 +35,24 @@ export class CliService extends BaseService {
     const config = await this.getConfig({ withCache: false });
     config.passwordLogin.enabled = true;
     await this.updateConfig(config);
+  }
+
+  async grantAdminAccess(email: string): Promise<void> {
+    const user = await this.userRepository.getByEmail(email);
+    if (!user) {
+      throw new Error('User does not exist');
+    }
+
+    await this.userRepository.update(user.id, { isAdmin: true });
+  }
+
+  async revokeAdminAccess(email: string): Promise<void> {
+    const user = await this.userRepository.getByEmail(email);
+    if (!user) {
+      throw new Error('User does not exist');
+    }
+
+    await this.userRepository.update(user.id, { isAdmin: false });
   }
 
   async disableOAuthLogin(): Promise<void> {

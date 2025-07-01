@@ -1,6 +1,7 @@
 export { schemaDiff } from 'src/sql-tools/diff';
 export { schemaFromCode } from 'src/sql-tools/from-code';
 export * from 'src/sql-tools/from-code/decorators/after-delete.decorator';
+export * from 'src/sql-tools/from-code/decorators/after-insert.decorator';
 export * from 'src/sql-tools/from-code/decorators/before-update.decorator';
 export * from 'src/sql-tools/from-code/decorators/check.decorator';
 export * from 'src/sql-tools/from-code/decorators/column.decorator';
@@ -11,6 +12,7 @@ export * from 'src/sql-tools/from-code/decorators/delete-date-column.decorator';
 export * from 'src/sql-tools/from-code/decorators/extension.decorator';
 export * from 'src/sql-tools/from-code/decorators/extensions.decorator';
 export * from 'src/sql-tools/from-code/decorators/foreign-key-column.decorator';
+export * from 'src/sql-tools/from-code/decorators/foreign-key-constraint.decorator';
 export * from 'src/sql-tools/from-code/decorators/generated-column.decorator';
 export * from 'src/sql-tools/from-code/decorators/index.decorator';
 export * from 'src/sql-tools/from-code/decorators/primary-column.decorator';

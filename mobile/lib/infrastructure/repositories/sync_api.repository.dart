@@ -3,29 +3,26 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
-class SyncApiRepository implements ISyncApiRepository {
+class SyncApiRepository {
   final Logger _logger = Logger('SyncApiRepository');
   final ApiService _api;
   SyncApiRepository(this._api);
 
-  @override
   Future<void> ack(List<String> data) {
     return _api.syncApi.sendSyncAck(SyncAckSetDto(acks: data));
   }
 
-  @override
   Future<void> streamChanges(
     Function(List<SyncEvent>, Function() abort) onData, {
     int batchSize = kSyncEventBatchSize,
     http.Client? httpClient,
   }) async {
-    // ignore: avoid-unused-assignment
     final stopwatch = Stopwatch()..start();
     final client = httpClient ?? http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
@@ -45,11 +42,16 @@ class SyncApiRepository implements ISyncApiRepository {
       SyncStreamDto(
         types: [
           SyncRequestType.usersV1,
-          SyncRequestType.partnersV1,
           SyncRequestType.assetsV1,
-          SyncRequestType.partnerAssetsV1,
           SyncRequestType.assetExifsV1,
+          SyncRequestType.partnersV1,
+          SyncRequestType.partnerAssetsV1,
           SyncRequestType.partnerAssetExifsV1,
+          SyncRequestType.albumsV1,
+          SyncRequestType.albumUsersV1,
+          SyncRequestType.albumAssetsV1,
+          SyncRequestType.albumAssetExifsV1,
+          SyncRequestType.albumToAssetsV1,
         ],
       ).toJson(),
     );
@@ -65,8 +67,7 @@ class SyncApiRepository implements ISyncApiRepository {
     }
 
     try {
-      final response =
-          await client.send(request).timeout(const Duration(seconds: 20));
+      final response = await client.send(request);
 
       if (response.statusCode != 200) {
         final errorBody = await response.stream.bytesToString();
@@ -98,7 +99,7 @@ class SyncApiRepository implements ISyncApiRepository {
         await onData(_parseLines(lines), abort);
       }
     } catch (error, stack) {
-      _logger.severe("error processing stream", error, stack);
+      _logger.severe("Error processing stream", error, stack);
       return Future.error(error, stack);
     } finally {
       client.close();
@@ -106,35 +107,31 @@ class SyncApiRepository implements ISyncApiRepository {
     stopwatch.stop();
     _logger
         .info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
+    DLog.log("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
   }
 
   List<SyncEvent> _parseLines(List<String> lines) {
     final List<SyncEvent> data = [];
 
     for (final line in lines) {
-      try {
-        final jsonData = jsonDecode(line);
-        final type = SyncEntityType.fromJson(jsonData['type'])!;
-        final dataJson = jsonData['data'];
-        final ack = jsonData['ack'];
-        final converter = _kResponseMap[type];
-        if (converter == null) {
-          _logger.warning("[_parseSyncResponse] Unknown type $type");
-          continue;
-        }
-
-        data.add(SyncEvent(type: type, data: converter(dataJson), ack: ack));
-      } catch (error, stack) {
-        _logger.severe("[_parseSyncResponse] Error parsing json", error, stack);
+      final jsonData = jsonDecode(line);
+      final type = SyncEntityType.fromJson(jsonData['type'])!;
+      final dataJson = jsonData['data'];
+      final ack = jsonData['ack'];
+      final converter = _kResponseMap[type];
+      if (converter == null) {
+        _logger.warning("Unknown type $type");
+        continue;
       }
+
+      data.add(SyncEvent(type: type, data: converter(dataJson), ack: ack));
     }
 
     return data;
   }
 }
 
-// ignore: avoid-dynamic
-const _kResponseMap = <SyncEntityType, Function(dynamic)>{
+const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.userV1: SyncUserV1.fromJson,
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,
   SyncEntityType.partnerV1: SyncPartnerV1.fromJson,
@@ -143,6 +140,25 @@ const _kResponseMap = <SyncEntityType, Function(dynamic)>{
   SyncEntityType.assetDeleteV1: SyncAssetDeleteV1.fromJson,
   SyncEntityType.assetExifV1: SyncAssetExifV1.fromJson,
   SyncEntityType.partnerAssetV1: SyncAssetV1.fromJson,
+  SyncEntityType.partnerAssetBackfillV1: SyncAssetV1.fromJson,
   SyncEntityType.partnerAssetDeleteV1: SyncAssetDeleteV1.fromJson,
   SyncEntityType.partnerAssetExifV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.partnerAssetExifBackfillV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.albumV1: SyncAlbumV1.fromJson,
+  SyncEntityType.albumDeleteV1: SyncAlbumDeleteV1.fromJson,
+  SyncEntityType.albumUserV1: SyncAlbumUserV1.fromJson,
+  SyncEntityType.albumUserBackfillV1: SyncAlbumUserV1.fromJson,
+  SyncEntityType.albumUserDeleteV1: SyncAlbumUserDeleteV1.fromJson,
+  SyncEntityType.albumAssetV1: SyncAssetV1.fromJson,
+  SyncEntityType.albumAssetBackfillV1: SyncAssetV1.fromJson,
+  SyncEntityType.albumAssetExifV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.albumAssetExifBackfillV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.albumToAssetV1: SyncAlbumToAssetV1.fromJson,
+  SyncEntityType.albumToAssetBackfillV1: SyncAlbumToAssetV1.fromJson,
+  SyncEntityType.albumToAssetDeleteV1: SyncAlbumToAssetDeleteV1.fromJson,
+  SyncEntityType.syncAckV1: _SyncAckV1.fromJson,
 };
+
+class _SyncAckV1 {
+  static _SyncAckV1? fromJson(dynamic _) => _SyncAckV1();
+}

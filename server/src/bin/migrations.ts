@@ -125,6 +125,7 @@ const compare = async () => {
   const down = schemaDiff(target, source, {
     tables: { ignoreExtra: false },
     functions: { ignoreExtra: false },
+    extension: { ignoreMissing: true },
   });
 
   return { up, down };

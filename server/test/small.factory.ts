@@ -15,8 +15,8 @@ import {
 } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetStatus, AssetType, AssetVisibility, MemoryType, Permission, UserStatus } from 'src/enum';
-import { OnThisDayData } from 'src/types';
+import { AssetStatus, AssetType, AssetVisibility, MemoryType, Permission, UserMetadataKey, UserStatus } from 'src/enum';
+import { OnThisDayData, UserMetadataItem } from 'src/types';
 
 export const newUuid = () => randomUUID() as string;
 export const newUuids = () =>
@@ -24,7 +24,7 @@ export const newUuids = () =>
     .fill(0)
     .map(() => newUuid());
 export const newDate = () => new Date();
-export const newUpdateId = () => 'uuid-v7';
+export const newUuidV7 = () => 'uuid-v7';
 export const newSha1 = () => Buffer.from('this is a fake hash');
 export const newEmbedding = () => {
   const embedding = Array.from({ length: 512 })
@@ -58,7 +58,7 @@ const authFactory = ({
   }
 
   if (session) {
-    auth.session = { id: session.id };
+    auth.session = { id: session.id, hasElevatedPermission: false };
   }
 
   if (sharedLink) {
@@ -110,9 +110,10 @@ const partnerFactory = (partner: Partial<Partner> = {}) => {
     sharedBy,
     sharedWithId: sharedWith.id,
     sharedWith,
+    createId: newUuidV7(),
     createdAt: newDate(),
     updatedAt: newDate(),
-    updateId: newUpdateId(),
+    updateId: newUuidV7(),
     inTimeline: true,
     ...partner,
   };
@@ -122,11 +123,14 @@ const sessionFactory = (session: Partial<Session> = {}) => ({
   id: newUuid(),
   createdAt: newDate(),
   updatedAt: newDate(),
-  updateId: newUpdateId(),
+  updateId: newUuidV7(),
   deviceOS: 'android',
   deviceType: 'mobile',
   token: 'abc123',
+  parentId: null,
+  expiresAt: null,
   userId: newUuid(),
+  pinExpiresAt: newDate(),
   ...session,
 });
 
@@ -143,6 +147,12 @@ const userFactory = (user: Partial<User> = {}) => ({
   avatarColor: null,
   profileImagePath: '',
   profileChangedAt: newDate(),
+  metadata: [
+    {
+      key: UserMetadataKey.ONBOARDING,
+      value: 'true',
+    },
+  ] as UserMetadataItem[],
   ...user,
 });
 
@@ -192,7 +202,7 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   createdAt: newDate(),
   updatedAt: newDate(),
   deletedAt: null,
-  updateId: newUpdateId(),
+  updateId: newUuidV7(),
   status: AssetStatus.ACTIVE,
   checksum: newSha1(),
   deviceAssetId: '',
@@ -231,7 +241,7 @@ const activityFactory = (activity: Partial<Activity> = {}) => {
     albumId: newUuid(),
     createdAt: newDate(),
     updatedAt: newDate(),
-    updateId: newUpdateId(),
+    updateId: newUuidV7(),
     ...activity,
   };
 };
@@ -241,7 +251,7 @@ const apiKeyFactory = (apiKey: Partial<ApiKey> = {}) => ({
   userId: newUuid(),
   createdAt: newDate(),
   updatedAt: newDate(),
-  updateId: newUpdateId(),
+  updateId: newUuidV7(),
   name: 'Api Key',
   permissions: [Permission.ALL],
   ...apiKey,
@@ -251,7 +261,7 @@ const libraryFactory = (library: Partial<Library> = {}) => ({
   id: newUuid(),
   createdAt: newDate(),
   updatedAt: newDate(),
-  updateId: newUpdateId(),
+  updateId: newUuidV7(),
   deletedAt: null,
   refreshedAt: null,
   name: 'Library',
@@ -266,7 +276,7 @@ const memoryFactory = (memory: Partial<Memory> = {}) => ({
   id: newUuid(),
   createdAt: newDate(),
   updatedAt: newDate(),
-  updateId: newUpdateId(),
+  updateId: newUuidV7(),
   deletedAt: null,
   ownerId: newUuid(),
   type: MemoryType.ON_THIS_DAY,

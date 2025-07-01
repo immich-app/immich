@@ -2,14 +2,14 @@ import { Insertable, Kysely, Updateable } from 'kysely';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { DB, Notifications } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { NotificationSearchDto } from 'src/dtos/notification.dto';
+import { DB } from 'src/schema';
+import { NotificationTable } from 'src/schema/tables/notification.table';
 
 export class NotificationRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID] })
   cleanup() {
     return this.db
       .deleteFrom('notifications')
@@ -54,7 +54,7 @@ export class NotificationRepository {
       .execute();
   }
 
-  create(notification: Insertable<Notifications>) {
+  create(notification: Insertable<NotificationTable>) {
     return this.db
       .insertInto('notifications')
       .values(notification)
@@ -71,7 +71,7 @@ export class NotificationRepository {
       .executeTakeFirst();
   }
 
-  update(id: string, notification: Updateable<Notifications>) {
+  update(id: string, notification: Updateable<NotificationTable>) {
     return this.db
       .updateTable('notifications')
       .set(notification)
@@ -81,7 +81,7 @@ export class NotificationRepository {
       .executeTakeFirstOrThrow();
   }
 
-  async updateAll(ids: string[], notification: Updateable<Notifications>) {
+  async updateAll(ids: string[], notification: Updateable<NotificationTable>) {
     await this.db.updateTable('notifications').set(notification).where('id', 'in', ids).execute();
   }
 

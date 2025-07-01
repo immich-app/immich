@@ -1,4 +1,11 @@
-import { getServerConfig, getServerFeatures, type ServerConfigDto, type ServerFeaturesDto } from '@immich/sdk';
+import {
+  getConfig,
+  getServerConfig,
+  getServerFeatures,
+  type ServerConfigDto,
+  type ServerFeaturesDto,
+  type SystemConfigDto,
+} from '@immich/sdk';
 import { writable } from 'svelte/store';
 
 export type FeatureFlags = ServerFeaturesDto & { loaded: boolean };
@@ -37,9 +44,17 @@ export const serverConfig = writable<ServerConfig>({
   publicUsers: true,
 });
 
+export type SystemConfig = SystemConfigDto & { loaded: boolean };
+export const systemConfig = writable<SystemConfig>();
+
 export const retrieveServerConfig = async () => {
   const [flags, config] = await Promise.all([getServerFeatures(), getServerConfig()]);
 
   featureFlags.update(() => ({ ...flags, loaded: true }));
   serverConfig.update(() => ({ ...config, loaded: true }));
+};
+
+export const retrieveSystemConfig = async () => {
+  const config = await getConfig();
+  systemConfig.update(() => ({ ...config, loaded: true }));
 };

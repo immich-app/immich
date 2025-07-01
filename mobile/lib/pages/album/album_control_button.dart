@@ -26,9 +26,9 @@ class AlbumControlButton extends ConsumerWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 16),
+      padding: const EdgeInsets.only(left: 16.0),
       child: SizedBox(
-        height: 40,
+        height: 36,
         child: ListView(
           scrollDirection: Axis.horizontal,
           children: [

@@ -19,6 +19,8 @@
 </div>
 
 <style lang="postcss">
+  @reference "tailwindcss";
+
   .supporter-effect::after {
     @apply absolute inset-0 rounded-lg opacity-0 transition-opacity content-[''];
   }

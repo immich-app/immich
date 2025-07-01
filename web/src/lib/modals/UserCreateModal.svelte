@@ -9,6 +9,7 @@
     Button,
     Field,
     HelperText,
+    HStack,
     Input,
     Modal,
     ModalBody,
@@ -81,7 +82,7 @@
   };
 </script>
 
-<Modal title={$t('create_new_user')} {onClose} size="small" class="text-dark bg-light">
+<Modal title={$t('create_new_user')} {onClose} size="small">
   <ModalBody>
     <form onsubmit={onSubmit} autocomplete="off" id="create-new-user-form">
       {#if error}
@@ -131,10 +132,11 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full">
+    <HStack fullWidth>
       <Button color="secondary" fullWidth onclick={() => onClose()} shape="round">{$t('cancel')}</Button>
-      <Button type="submit" disabled={!valid} fullWidth shape="round" form="create-new-user-form">{$t('create')}</Button
-      >
-    </div>
+      <Button type="submit" disabled={!valid} fullWidth shape="round" form="create-new-user-form"
+        >{$t('create')}
+      </Button>
+    </HStack>
   </ModalFooter>
 </Modal>

@@ -9,6 +9,7 @@ import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
+import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -23,6 +24,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(localeProvider);
     BackUpState backupState = ref.watch(backupProvider);
     final theme = context.themeData;
     bool isHorizontal = !context.isMobile;
@@ -272,8 +274,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           right: horizontalPadding,
           bottom: isHorizontal ? 20 : 100,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(20),
+          ),
         ),
         child: SizedBox(
           child: SingleChildScrollView(

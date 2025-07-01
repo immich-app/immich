@@ -459,6 +459,7 @@ describe(PersonService.name, () => {
       await sut.handleQueueDetectFaces({ force: false });
 
       expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(false);
+      expect(mocks.person.vacuum).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACE_DETECTION,
@@ -475,6 +476,7 @@ describe(PersonService.name, () => {
 
       expect(mocks.person.deleteFaces).toHaveBeenCalledWith({ sourceType: SourceType.MACHINE_LEARNING });
       expect(mocks.person.delete).toHaveBeenCalledWith([personStub.withName.id]);
+      expect(mocks.person.vacuum).toHaveBeenCalledWith({ reindexVectors: true });
       expect(mocks.storage.unlink).toHaveBeenCalledWith(personStub.withName.thumbnailPath);
       expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
@@ -492,6 +494,7 @@ describe(PersonService.name, () => {
 
       expect(mocks.person.delete).not.toHaveBeenCalled();
       expect(mocks.person.deleteFaces).not.toHaveBeenCalled();
+      expect(mocks.person.vacuum).not.toHaveBeenCalled();
       expect(mocks.storage.unlink).not.toHaveBeenCalled();
       expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(undefined);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
@@ -521,6 +524,7 @@ describe(PersonService.name, () => {
       ]);
       expect(mocks.person.delete).toHaveBeenCalledWith([personStub.randomPerson.id]);
       expect(mocks.storage.unlink).toHaveBeenCalledWith(personStub.randomPerson.thumbnailPath);
+      expect(mocks.person.vacuum).toHaveBeenCalledWith({ reindexVectors: true });
     });
   });
 
@@ -584,6 +588,7 @@ describe(PersonService.name, () => {
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE, {
         lastRun: expect.any(String),
       });
+      expect(mocks.person.vacuum).not.toHaveBeenCalled();
     });
 
     it('should queue all assets', async () => {
@@ -611,6 +616,7 @@ describe(PersonService.name, () => {
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE, {
         lastRun: expect.any(String),
       });
+      expect(mocks.person.vacuum).toHaveBeenCalledWith({ reindexVectors: false });
     });
 
     it('should run nightly if new face has been added since last run', async () => {
@@ -629,11 +635,14 @@ describe(PersonService.name, () => {
       mocks.person.getAllWithoutFaces.mockResolvedValue([]);
       mocks.person.unassignFaces.mockResolvedValue();
 
-      await sut.handleQueueRecognizeFaces({ force: true, nightly: true });
+      await sut.handleQueueRecognizeFaces({ force: false, nightly: true });
 
       expect(mocks.systemMetadata.get).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE);
       expect(mocks.person.getLatestFaceDate).toHaveBeenCalledOnce();
-      expect(mocks.person.getAllFaces).toHaveBeenCalledWith(undefined);
+      expect(mocks.person.getAllFaces).toHaveBeenCalledWith({
+        personId: null,
+        sourceType: SourceType.MACHINE_LEARNING,
+      });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACIAL_RECOGNITION,
@@ -643,6 +652,7 @@ describe(PersonService.name, () => {
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE, {
         lastRun: expect.any(String),
       });
+      expect(mocks.person.vacuum).not.toHaveBeenCalled();
     });
 
     it('should skip nightly if no new face has been added since last run', async () => {
@@ -660,6 +670,7 @@ describe(PersonService.name, () => {
       expect(mocks.person.getAllFaces).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
       expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
+      expect(mocks.person.vacuum).not.toHaveBeenCalled();
     });
 
     it('should delete existing people if forced', async () => {
@@ -688,6 +699,7 @@ describe(PersonService.name, () => {
       ]);
       expect(mocks.person.delete).toHaveBeenCalledWith([personStub.randomPerson.id]);
       expect(mocks.storage.unlink).toHaveBeenCalledWith(personStub.randomPerson.thumbnailPath);
+      expect(mocks.person.vacuum).toHaveBeenCalledWith({ reindexVectors: false });
     });
   });
 

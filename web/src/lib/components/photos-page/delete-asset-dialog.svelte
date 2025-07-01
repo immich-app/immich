@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Checkbox from '$lib/components/elements/checkbox.svelte';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
+  import { Checkbox, Label } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
 
   interface Props {
     size: number;
@@ -23,7 +23,7 @@
   };
 </script>
 
-<ConfirmDialog
+<ConfirmModal
   title={$t('permanently_delete_assets_count', { values: { count: size } })}
   confirmText={$t('delete')}
   onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
@@ -38,8 +38,9 @@
     </p>
     <p><b>{$t('cannot_undo_this_action')}</b></p>
 
-    <div class="pt-4 flex justify-center items-center">
-      <Checkbox id="confirm-deletion-input" label={$t('do_not_show_again')} bind:checked />
+    <div class="pt-4 flex justify-center items-center gap-2">
+      <Checkbox id="confirm-deletion-input" bind:checked color="secondary" />
+      <Label label={$t('do_not_show_again')} for="confirm-deletion-input" />
     </div>
   {/snippet}
-</ConfirmDialog>
+</ConfirmModal>

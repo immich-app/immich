@@ -1,74 +1,77 @@
-import { Kysely } from 'kysely';
-import { DB } from 'src/db';
-import { AssetRepository } from 'src/repositories/asset.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { UserRepository } from 'src/repositories/user.repository';
-import { partners_delete_audit } from 'src/schema/functions';
-import { mediumFactory } from 'test/medium.factory';
+import { partners_delete_audit, stacks_delete_audit } from 'src/schema/functions';
+import { BaseService } from 'src/services/base.service';
+import { MediumTestContext } from 'test/medium.factory';
 import { getKyselyDB } from 'test/utils';
 
 describe('audit', () => {
-  let defaultDatabase: Kysely<DB>;
-  let assetRepo: AssetRepository;
-  let userRepo: UserRepository;
-  let partnerRepo: PartnerRepository;
+  let ctx: MediumTestContext;
 
   beforeAll(async () => {
-    defaultDatabase = await getKyselyDB();
-
-    assetRepo = new AssetRepository(defaultDatabase);
-    userRepo = new UserRepository(defaultDatabase);
-    partnerRepo = new PartnerRepository(defaultDatabase);
+    ctx = new MediumTestContext(BaseService, {
+      database: await getKyselyDB(),
+      real: [],
+      mock: [LoggingRepository],
+    });
   });
 
   describe(partners_delete_audit.name, () => {
     it('should not cascade user deletes to partners_audit', async () => {
-      const user1 = mediumFactory.userInsert();
-      const user2 = mediumFactory.userInsert();
-
-      await Promise.all([userRepo.create(user1), userRepo.create(user2)]);
+      const partnerRepo = ctx.get(PartnerRepository);
+      const userRepo = ctx.get(UserRepository);
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
       await partnerRepo.create({ sharedById: user1.id, sharedWithId: user2.id });
       await userRepo.delete(user1, true);
-
       await expect(
-        defaultDatabase.selectFrom('partners_audit').select(['id']).where('sharedById', '=', user1.id).execute(),
+        ctx.database.selectFrom('partners_audit').select(['id']).where('sharedById', '=', user1.id).execute(),
+      ).resolves.toHaveLength(0);
+    });
+  });
+
+  describe(stacks_delete_audit.name, () => {
+    it('should not cascade user deletes to stacks_audit', async () => {
+      const userRepo = ctx.get(UserRepository);
+      const { user } = await ctx.newUser();
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newStack({ ownerId: user.id }, [asset1.id, asset2.id]);
+      await userRepo.delete(user, true);
+      await expect(
+        ctx.database.selectFrom('stacks_audit').select(['id']).where('userId', '=', user.id).execute(),
       ).resolves.toHaveLength(0);
     });
   });
 
   describe('assets_audit', () => {
     it('should not cascade user deletes to assets_audit', async () => {
-      const user = mediumFactory.userInsert();
-      const asset = mediumFactory.assetInsert({ ownerId: user.id });
-
-      await userRepo.create(user);
-      await assetRepo.create(asset);
+      const userRepo = ctx.get(UserRepository);
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
       await userRepo.delete(user, true);
-
       await expect(
-        defaultDatabase.selectFrom('assets_audit').select(['id']).where('assetId', '=', asset.id).execute(),
+        ctx.database.selectFrom('assets_audit').select(['id']).where('assetId', '=', asset.id).execute(),
       ).resolves.toHaveLength(0);
     });
   });
 
   describe('exif', () => {
     it('should automatically set updatedAt and updateId when the row is updated', async () => {
-      const user = mediumFactory.userInsert();
-      const asset = mediumFactory.assetInsert({ ownerId: user.id });
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, make: 'Canon' });
 
-      await userRepo.create(user);
-      await assetRepo.create(asset);
-      await assetRepo.upsertExif({ assetId: asset.id, make: 'Canon' });
-
-      const before = await defaultDatabase
+      const before = await ctx.database
         .selectFrom('exif')
         .select(['updatedAt', 'updateId'])
         .where('assetId', '=', asset.id)
         .executeTakeFirstOrThrow();
 
-      await assetRepo.upsertExif({ assetId: asset.id, make: 'Canon 2' });
+      await ctx.newExif({ assetId: asset.id, make: 'Canon 2' });
 
-      const after = await defaultDatabase
+      const after = await ctx.database
         .selectFrom('exif')
         .select(['updatedAt', 'updateId'])
         .where('assetId', '=', asset.id)

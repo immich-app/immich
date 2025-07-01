@@ -3,8 +3,8 @@ import { getFormatter } from '$lib/utils/i18n';
 import { getConfig } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
-export const load = (async () => {
-  await authenticate({ admin: true });
+export const load = (async ({ url }) => {
+  await authenticate(url, { admin: true });
   const configs = await getConfig();
   const $t = await getFormatter();
 

@@ -5,15 +5,13 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
-import 'package:immich_mobile/interfaces/asset.interface.dart';
-import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
@@ -25,9 +23,9 @@ import 'package:immich_mobile/utils/diff.dart';
 /// Finds duplicates originating from missing EXIF information
 class BackupVerificationService {
   final UserService _userService;
-  final IFileMediaRepository _fileMediaRepository;
-  final IAssetRepository _assetRepository;
-  final IExifInfoRepository _exifInfoRepository;
+  final FileMediaRepository _fileMediaRepository;
+  final AssetRepository _assetRepository;
+  final IsarExifRepository _exifInfoRepository;
 
   const BackupVerificationService(
     this._userService,
@@ -123,7 +121,7 @@ class BackupVerificationService {
       String auth,
       String endpoint,
       RootIsolateToken rootIsolateToken,
-      IFileMediaRepository fileMediaRepository,
+      FileMediaRepository fileMediaRepository,
     }) tuple,
   ) async {
     assert(tuple.deleteCandidates.length == tuple.originals.length);
@@ -184,10 +182,10 @@ class BackupVerificationService {
           // for images: make sure they are pixel-wise identical
           // (skip first few KBs containing metadata)
           final Uint64List localImage =
-              _fakeDecodeImg(local, await file.readAsBytes());
+              _fakeDecodeImg(await file.readAsBytes());
           final res = await apiService.assetsApi
               .downloadAssetWithHttpInfo(remote.remoteId!);
-          final Uint64List remoteImage = _fakeDecodeImg(remote, res.bodyBytes);
+          final Uint64List remoteImage = _fakeDecodeImg(res.bodyBytes);
 
           final eq = const ListEquality().equals(remoteImage, localImage);
           return eq;
@@ -198,7 +196,7 @@ class BackupVerificationService {
     return false;
   }
 
-  static Uint64List _fakeDecodeImg(Asset asset, Uint8List bytes) {
+  static Uint64List _fakeDecodeImg(Uint8List bytes) {
     const headerLength = 131072; // assume header is at most 128 KB
     final start = bytes.length < headerLength * 2
         ? (bytes.length ~/ (4 * 8)) * 8

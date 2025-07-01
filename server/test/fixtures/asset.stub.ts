@@ -35,6 +35,7 @@ export const stackStub = (stackId: string, assets: (MapAsset & { exifInfo: Exif 
     primaryAssetId: assets[0].id,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    updateId: 'uuid-v7',
   };
 };
 
@@ -251,6 +252,10 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
     stack: null,
+    orientation: '',
+    projectionType: null,
+    height: 3840,
+    width: 2160,
     visibility: AssetVisibility.TIMELINE,
   }),
 

@@ -6,7 +6,7 @@ class SearchResult {
   final List<Asset> assets;
   final int? nextPage;
 
-  SearchResult({
+  const SearchResult({
     required this.assets,
     this.nextPage,
   });

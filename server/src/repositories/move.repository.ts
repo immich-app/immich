@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB, MoveHistory } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetPathType, PathType } from 'src/enum';
+import { DB } from 'src/schema';
+import { MoveTable } from 'src/schema/tables/move.table';
 
 @Injectable()
 export class MoveRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  create(entity: Insertable<MoveHistory>) {
+  create(entity: Insertable<MoveTable>) {
     return this.db.insertInto('move_history').values(entity).returningAll().executeTakeFirstOrThrow();
   }
 
@@ -23,7 +24,7 @@ export class MoveRepository {
       .executeTakeFirst();
   }
 
-  update(id: string, entity: Updateable<MoveHistory>) {
+  update(id: string, entity: Updateable<MoveTable>) {
     return this.db
       .updateTable('move_history')
       .set(entity)
@@ -37,7 +38,6 @@ export class MoveRepository {
     return this.db.deleteFrom('move_history').where('id', '=', id).returningAll().executeTakeFirstOrThrow();
   }
 
-  @GenerateSql()
   async cleanMoveHistory(): Promise<void> {
     await this.db
       .deleteFrom('move_history')
@@ -52,7 +52,7 @@ export class MoveRepository {
       .execute();
   }
 
-  @GenerateSql()
+  @GenerateSql({ params: [DummyValue.UUID] })
   async cleanMoveHistorySingle(assetId: string): Promise<void> {
     await this.db
       .deleteFrom('move_history')

@@ -5,7 +5,7 @@ import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
-  await authenticate();
+  await authenticate(url);
 
   const $t = await getFormatter();
   const licenseKey = url.searchParams.get('licenseKey');

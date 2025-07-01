@@ -3,8 +3,8 @@ import { getAssetInfoFromParam } from '$lib/utils/navigation';
 import { getAlbumInfo } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ params }) => {
-  await authenticate();
+export const load = (async ({ params, url }) => {
+  await authenticate(url);
   const [album, asset] = await Promise.all([
     getAlbumInfo({ id: params.albumId, withoutAssets: true }),
     getAssetInfoFromParam(params),

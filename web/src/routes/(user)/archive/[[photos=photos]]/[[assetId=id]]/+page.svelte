@@ -13,8 +13,9 @@
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
 
+  import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { AssetVisibility } from '@immich/sdk';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
@@ -26,9 +27,9 @@
   }
 
   let { data }: Props = $props();
-  const assetStore = new AssetStore();
-  void assetStore.updateOptions({ visibility: AssetVisibility.Archive });
-  onDestroy(() => assetStore.destroy());
+  const timelineManager = new TimelineManager();
+  void timelineManager.updateOptions({ visibility: AssetVisibility.Archive });
+  onDestroy(() => timelineManager.destroy());
 
   const assetInteraction = new AssetInteraction();
 
@@ -38,46 +39,17 @@
       return;
     }
   };
-</script>
 
-{#if assetInteraction.selectionActive}
-  <AssetSelectControlBar
-    assets={assetInteraction.selectedAssets}
-    clearSelect={() => assetInteraction.clearMultiselect()}
-  >
-    <ArchiveAction
-      unarchive
-      onArchive={(ids, isArchived) =>
-        assetStore.updateAssetOperation(ids, (asset) => {
-          asset.isArchived = isArchived;
-          return { remove: false };
-        })}
-    />
-    <CreateSharedLink />
-    <SelectAllAssets {assetStore} {assetInteraction} />
-    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-      <AddToAlbum />
-      <AddToAlbum shared />
-    </ButtonContextMenu>
-    <FavoriteAction
-      removeFavorite={assetInteraction.isAllFavorite}
-      onFavorite={(ids, isFavorite) =>
-        assetStore.updateAssetOperation(ids, (asset) => {
-          asset.isFavorite = isFavorite;
-          return { remove: false };
-        })}
-    />
-    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-      <DownloadAction menuItem />
-      <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
-    </ButtonContextMenu>
-  </AssetSelectControlBar>
-{/if}
+  const handleSetVisibility = (assetIds: string[]) => {
+    timelineManager.removeAssets(assetIds);
+    assetInteraction.clearMultiselect();
+  };
+</script>
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
   <AssetGrid
     enableRouting={true}
-    {assetStore}
+    {timelineManager}
     {assetInteraction}
     removeAction={AssetAction.UNARCHIVE}
     onEscape={handleEscape}
@@ -87,3 +59,38 @@
     {/snippet}
   </AssetGrid>
 </UserPageLayout>
+
+{#if assetInteraction.selectionActive}
+  <AssetSelectControlBar
+    assets={assetInteraction.selectedAssets}
+    clearSelect={() => assetInteraction.clearMultiselect()}
+  >
+    <ArchiveAction
+      unarchive
+      onArchive={(ids, visibility) =>
+        timelineManager.updateAssetOperation(ids, (asset) => {
+          asset.visibility = visibility;
+          return { remove: false };
+        })}
+    />
+    <CreateSharedLink />
+    <SelectAllAssets {timelineManager} {assetInteraction} />
+    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
+      <AddToAlbum />
+      <AddToAlbum shared />
+    </ButtonContextMenu>
+    <FavoriteAction
+      removeFavorite={assetInteraction.isAllFavorite}
+      onFavorite={(ids, isFavorite) =>
+        timelineManager.updateAssetOperation(ids, (asset) => {
+          asset.isFavorite = isFavorite;
+          return { remove: false };
+        })}
+    />
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+      <DownloadAction menuItem />
+      <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+      <DeleteAssets menuItem onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)} />
+    </ButtonContextMenu>
+  </AssetSelectControlBar>
+{/if}

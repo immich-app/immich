@@ -15,11 +15,3 @@ from
   "version_history"
 order by
   "createdAt" desc
-
--- VersionHistoryRepository.create
-insert into
-  "version_history" ("version")
-values
-  ($1)
-returning
-  *

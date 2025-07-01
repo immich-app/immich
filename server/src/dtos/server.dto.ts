@@ -37,6 +37,13 @@ export class ServerAboutResponseDto {
   thirdPartySupportUrl?: string;
 }
 
+export class ServerApkLinksDto {
+  arm64v8a!: string;
+  armeabiv7a!: string;
+  universal!: string;
+  x86_64!: string;
+}
+
 export class ServerStorageResponseDto {
   diskSize!: string;
   diskUse!: string;

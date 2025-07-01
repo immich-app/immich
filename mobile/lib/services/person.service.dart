@@ -1,8 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/interfaces/asset.interface.dart';
-import 'package:immich_mobile/interfaces/asset_api.interface.dart';
-import 'package:immich_mobile/interfaces/person_api.interface.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/person_api.repository.dart';
@@ -20,9 +18,9 @@ PersonService personService(Ref ref) => PersonService(
 
 class PersonService {
   final Logger _log = Logger("PersonService");
-  final IPersonApiRepository _personApiRepository;
-  final IAssetApiRepository _assetApiRepository;
-  final IAssetRepository _assetRepository;
+  final PersonApiRepository _personApiRepository;
+  final AssetApiRepository _assetApiRepository;
+  final AssetRepository _assetRepository;
 
   PersonService(
     this._personApiRepository,

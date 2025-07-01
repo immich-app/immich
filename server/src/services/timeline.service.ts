@@ -1,30 +1,28 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dtos/time-bucket.dto';
+import { TimeBucketAssetDto, TimeBucketDto, TimeBucketsResponseDto } from 'src/dtos/time-bucket.dto';
 import { AssetVisibility, Permission } from 'src/enum';
 import { TimeBucketOptions } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
+import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 
 @Injectable()
 export class TimelineService extends BaseService {
-  async getTimeBuckets(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketResponseDto[]> {
+  async getTimeBuckets(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketsResponseDto[]> {
     await this.timeBucketChecks(auth, dto);
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
-    return this.assetRepository.getTimeBuckets(timeBucketOptions);
+    return await this.assetRepository.getTimeBuckets(timeBucketOptions);
   }
 
-  async getTimeBucket(
-    auth: AuthDto,
-    dto: TimeBucketAssetDto,
-  ): Promise<AssetResponseDto[] | SanitizedAssetResponseDto[]> {
+  // pre-jsonified response
+  async getTimeBucket(auth: AuthDto, dto: TimeBucketAssetDto): Promise<string> {
     await this.timeBucketChecks(auth, dto);
-    const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
-    const assets = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
-    return !auth.sharedLink || auth.sharedLink?.showExif
-      ? assets.map((asset) => mapAsset(asset, { withStack: true, auth }))
-      : assets.map((asset) => mapAsset(asset, { stripMetadata: true, auth }));
+    const timeBucketOptions = await this.buildTimeBucketOptions(auth, { ...dto });
+
+    // TODO: use id cursor for pagination
+    const bucket = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
+    return bucket.assets;
   }
 
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
@@ -47,6 +45,10 @@ export class TimelineService extends BaseService {
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
+    if (dto.visibility === AssetVisibility.LOCKED) {
+      requireElevatedPermission(auth);
+    }
+
     if (dto.albumId) {
       await this.requireAccess({ auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
     } else {

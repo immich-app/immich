@@ -1,9 +1,10 @@
 <script lang="ts">
-  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import { mdiImageMinusOutline, mdiImageMultipleOutline } from '@mdi/js';
-  import { stackAssets, deleteStack } from '$lib/utils/asset-utils';
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import type { OnStack, OnUnstack } from '$lib/utils/actions';
+  import { deleteStack, stackAssets } from '$lib/utils/asset-utils';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { mdiImageMinusOutline, mdiImageMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -34,7 +35,7 @@
     }
     const unstackedAssets = await deleteStack([stack.id]);
     if (unstackedAssets) {
-      onUnstack?.(unstackedAssets);
+      onUnstack?.(unstackedAssets.map((a) => toTimelineAsset(a)));
     }
     clearSelect();
   };

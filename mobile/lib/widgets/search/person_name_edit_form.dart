@@ -9,7 +9,7 @@ class PersonNameEditFormResult {
   final bool success;
   final String updatedName;
 
-  PersonNameEditFormResult(this.success, this.updatedName);
+  const PersonNameEditFormResult(this.success, this.updatedName);
 }
 
 class PersonNameEditForm extends HookConsumerWidget {
@@ -35,6 +35,7 @@ class PersonNameEditForm extends HookConsumerWidget {
       content: SingleChildScrollView(
         child: TextFormField(
           controller: controller,
+          textCapitalization: TextCapitalization.words,
           autofocus: true,
           decoration: InputDecoration(
             hintText: 'name'.tr(),
@@ -46,7 +47,7 @@ class PersonNameEditForm extends HookConsumerWidget {
       actions: [
         TextButton(
           onPressed: () => context.pop(
-            PersonNameEditFormResult(false, ''),
+            const PersonNameEditFormResult(false, ''),
           ),
           child: Text(
             "cancel",

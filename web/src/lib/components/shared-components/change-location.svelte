@@ -1,20 +1,18 @@
 <script lang="ts">
-  import { timeDebounceOnSearch } from '$lib/constants';
-  import { lastChosenLocation } from '$lib/stores/asset-editor.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import ConfirmDialog from './dialog/confirm-dialog.svelte';
-
   import { clickOutside } from '$lib/actions/click-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
+  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import CoordinatesInput from '$lib/components/shared-components/coordinates-input.svelte';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import type Map from '$lib/components/shared-components/map/map.svelte';
-  import { timeToLoadTheMap } from '$lib/constants';
+  import { timeDebounceOnSearch, timeToLoadTheMap } from '$lib/constants';
+  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
+  import { lastChosenLocation } from '$lib/stores/asset-editor.store';
   import { delay } from '$lib/utils/asset-utils';
+  import { handleError } from '$lib/utils/handle-error';
   import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
-  import SearchBar from '../elements/search-bar.svelte';
-  import LoadingSpinner from './loading-spinner.svelte';
   interface Point {
     lng: number;
     lat: number;
@@ -112,7 +110,7 @@
   };
 </script>
 
-<ConfirmDialog
+<ConfirmModal
   confirmColor="primary"
   title={$t('change_location')}
   size="medium"
@@ -120,7 +118,7 @@
 >
   {#snippet promptSnippet()}
     <div class="flex flex-col w-full h-full gap-2">
-      <div class="relative w-64 sm:w-96">
+      <div class="relative w-64 sm:w-96 z-1">
         {#if suggestionContainer}
           <div use:listNavigation={suggestionContainer}>
             <button type="button" class="w-full" onclick={() => (hideSuggestion = false)}>
@@ -137,7 +135,7 @@
         {/if}
 
         <div
-          class="absolute z-[99] w-full"
+          class="absolute w-full"
           id="suggestion"
           bind:this={suggestionContainer}
           use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
@@ -162,7 +160,7 @@
       </div>
 
       <span>{$t('pick_a_location')}</span>
-      <div class="h-[500px] min-h-[300px] w-full">
+      <div class="h-[500px] min-h-[300px] w-full z-0">
         {#await import('../shared-components/map/map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->
@@ -190,6 +188,8 @@
             simplified={true}
             clickable={true}
             onClickPoint={(selected) => (point = selected)}
+            showSettings={false}
+            rounded
           />
         {/await}
       </div>
@@ -206,4 +206,4 @@
       </div>
     </div>
   {/snippet}
-</ConfirmDialog>
+</ConfirmModal>

@@ -1,28 +1,26 @@
-// ignore_for_file: avoid-unsafe-collection-methods
-
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/interfaces/device_asset.interface.dart';
 import 'package:immich_mobile/domain/models/device_asset.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/device_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/device_asset.provider.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:logging/logging.dart';
 
 class HashService {
   HashService({
-    required IDeviceAssetRepository deviceAssetRepository,
+    required IsarDeviceAssetRepository deviceAssetRepository,
     required BackgroundService backgroundService,
     this.batchSizeLimit = kBatchHashSizeLimit,
     this.batchFileLimit = kBatchHashFileLimit,
   })  : _deviceAssetRepository = deviceAssetRepository,
         _backgroundService = backgroundService;
 
-  final IDeviceAssetRepository _deviceAssetRepository;
+  final IsarDeviceAssetRepository _deviceAssetRepository;
   final BackgroundService _backgroundService;
   final int batchSizeLimit;
   final int batchFileLimit;

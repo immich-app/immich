@@ -1,4 +1,7 @@
+import 'package:drift/drift.dart' hide Query;
 import 'package:immich_mobile/domain/models/exif.model.dart' as domain;
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:isar/isar.dart';
 
@@ -89,4 +92,54 @@ class ExifInfo {
         iso: iso?.toInt(),
         exposureSeconds: exposureSeconds,
       );
+}
+
+class RemoteExifEntity extends Table with DriftDefaultsMixin {
+  const RemoteExifEntity();
+
+  TextColumn get assetId =>
+      text().references(RemoteAssetEntity, #id, onDelete: KeyAction.cascade)();
+
+  TextColumn get city => text().nullable()();
+
+  TextColumn get state => text().nullable()();
+
+  TextColumn get country => text().nullable()();
+
+  DateTimeColumn get dateTimeOriginal => dateTime().nullable()();
+
+  TextColumn get description => text().nullable()();
+
+  IntColumn get height => integer().nullable()();
+
+  IntColumn get width => integer().nullable()();
+
+  TextColumn get exposureTime => text().nullable()();
+
+  IntColumn get fNumber => integer().nullable()();
+
+  IntColumn get fileSize => integer().nullable()();
+
+  IntColumn get focalLength => integer().nullable()();
+
+  IntColumn get latitude => integer().nullable()();
+
+  IntColumn get longitude => integer().nullable()();
+
+  IntColumn get iso => integer().nullable()();
+
+  TextColumn get make => text().nullable()();
+
+  TextColumn get model => text().nullable()();
+
+  TextColumn get orientation => text().nullable()();
+
+  TextColumn get timeZone => text().nullable()();
+
+  IntColumn get rating => integer().nullable()();
+
+  TextColumn get projectionType => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {assetId};
 }

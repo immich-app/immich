@@ -40,8 +40,8 @@ export class OAuthRepository {
       redirect_uri: redirectUrl,
       scope: config.scope,
       state,
-      code_challenge: codeChallenge,
-      code_challenge_method: 'S256',
+      code_challenge: client.serverMetadata().supportsPKCE() ? codeChallenge : '',
+      code_challenge_method: client.serverMetadata().supportsPKCE() ? 'S256' : '',
     }).toString();
     return { url, state, codeVerifier };
   }

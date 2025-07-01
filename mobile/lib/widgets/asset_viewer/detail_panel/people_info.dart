@@ -31,6 +31,7 @@ class PeopleInfo extends ConsumerWidget {
     ) {
       return showDialog(
         context: context,
+        useRootNavigator: false,
         builder: (BuildContext context) {
           return PersonNameEditForm(personId: personId, personName: personName);
         },

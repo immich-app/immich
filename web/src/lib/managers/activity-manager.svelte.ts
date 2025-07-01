@@ -1,5 +1,6 @@
 import { user } from '$lib/stores/user.store';
 import { handlePromiseError } from '$lib/utils';
+import { handleError } from '$lib/utils/handle-error';
 import {
   createActivity,
   deleteActivity,
@@ -10,14 +11,32 @@ import {
   type ActivityCreateDto,
   type ActivityResponseDto,
 } from '@immich/sdk';
+import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
+
+type CacheKey = string;
+type ActivityCache = {
+  activities: ActivityResponseDto[];
+  commentCount: number;
+  likeCount: number;
+  isLiked: ActivityResponseDto | null;
+};
 
 class ActivityManager {
   #albumId = $state<string | undefined>();
   #assetId = $state<string | undefined>();
   #activities = $state<ActivityResponseDto[]>([]);
   #commentCount = $state(0);
+  #likeCount = $state(0);
   #isLiked = $state<ActivityResponseDto | null>(null);
+
+  #cache = new Map<CacheKey, ActivityCache>();
+
+  isLoading = $state(false);
+
+  get assetId() {
+    return this.#assetId;
+  }
 
   get activities() {
     return this.#activities;
@@ -27,13 +46,35 @@ class ActivityManager {
     return this.#commentCount;
   }
 
+  get likeCount() {
+    return this.#likeCount;
+  }
+
   get isLiked() {
     return this.#isLiked;
   }
 
-  init(albumId: string, assetId?: string) {
+  #getCacheKey(albumId: string, assetId?: string) {
+    return `${albumId}:${assetId ?? ''}`;
+  }
+
+  async init(albumId: string, assetId?: string) {
+    if (assetId && assetId === this.#assetId) {
+      return;
+    }
+
     this.#albumId = albumId;
     this.#assetId = assetId;
+    try {
+      await activityManager.refreshActivities(albumId, assetId);
+    } catch (error) {
+      handleError(error, get(t)('errors.unable_to_get_comments_number'));
+    }
+  }
+
+  #invalidateCache(albumId: string, assetId?: string) {
+    this.#cache.delete(this.#getCacheKey(albumId));
+    this.#cache.delete(this.#getCacheKey(albumId, assetId));
   }
 
   async addActivity(dto: ActivityCreateDto) {
@@ -48,6 +89,11 @@ class ActivityManager {
       this.#commentCount++;
     }
 
+    if (activity.type === ReactionType.Like) {
+      this.#likeCount++;
+    }
+
+    this.#invalidateCache(this.#albumId, this.#assetId);
     handlePromiseError(this.refreshActivities(this.#albumId, this.#assetId));
     return activity;
   }
@@ -61,11 +107,16 @@ class ActivityManager {
       this.#commentCount--;
     }
 
+    if (activity.type === ReactionType.Like) {
+      this.#likeCount--;
+    }
+
     this.#activities = index
       ? this.#activities.splice(index, 1)
       : this.#activities.filter(({ id }) => id !== activity.id);
 
     await deleteActivity({ id: activity.id });
+    this.#invalidateCache(this.#albumId, this.#assetId);
     handlePromiseError(this.refreshActivities(this.#albumId, this.#assetId));
   }
 
@@ -87,6 +138,20 @@ class ActivityManager {
   }
 
   async refreshActivities(albumId: string, assetId?: string) {
+    this.isLoading = true;
+
+    const cacheKey = this.#getCacheKey(albumId, assetId);
+
+    if (this.#cache.has(cacheKey)) {
+      const cached = this.#cache.get(cacheKey)!;
+      this.#activities = cached.activities;
+      this.#commentCount = cached.commentCount;
+      this.#likeCount = cached.likeCount;
+      this.#isLiked = cached.isLiked ?? null;
+      this.isLoading = false;
+      return;
+    }
+
     this.#activities = await getActivities({ albumId, assetId });
 
     const [liked] = await getActivities({
@@ -98,8 +163,18 @@ class ActivityManager {
     });
     this.#isLiked = liked ?? null;
 
-    const { comments } = await getActivityStatistics({ albumId, assetId });
+    const { comments, likes } = await getActivityStatistics({ albumId, assetId });
     this.#commentCount = comments;
+    this.#likeCount = likes;
+
+    this.#cache.set(cacheKey, {
+      activities: this.#activities,
+      commentCount: this.#commentCount,
+      likeCount: this.#likeCount,
+      isLiked: this.#isLiked,
+    });
+
+    this.isLoading = false;
   }
 
   reset() {
@@ -107,6 +182,7 @@ class ActivityManager {
     this.#assetId = undefined;
     this.#activities = [];
     this.#commentCount = 0;
+    this.#likeCount = 0;
   }
 }
 

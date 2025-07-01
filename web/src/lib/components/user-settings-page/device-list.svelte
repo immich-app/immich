@@ -1,11 +1,11 @@
 <script lang="ts">
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { deleteAllSessions, deleteSession, getSessions, type SessionResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
+  import { t } from 'svelte-i18n';
   import { handleError } from '../../utils/handle-error';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import DeviceCard from './device-card.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
-  import { t } from 'svelte-i18n';
-  import { Button } from '@immich/ui';
 
   interface Props {
     devices: SessionResponseDto[];
@@ -19,10 +19,7 @@
   let otherDevices = $derived(devices.filter((device) => !device.current));
 
   const handleDelete = async (device: SessionResponseDto) => {
-    const isConfirmed = await dialogController.show({
-      prompt: $t('logout_this_device_confirmation'),
-    });
-
+    const isConfirmed = await modalManager.showDialog({ prompt: $t('logout_this_device_confirmation') });
     if (!isConfirmed) {
       return;
     }
@@ -38,7 +35,7 @@
   };
 
   const handleDeleteAll = async () => {
-    const isConfirmed = await dialogController.show({ prompt: $t('logout_all_device_confirmation') });
+    const isConfirmed = await modalManager.showDialog({ prompt: $t('logout_all_device_confirmation') });
     if (!isConfirmed) {
       return;
     }

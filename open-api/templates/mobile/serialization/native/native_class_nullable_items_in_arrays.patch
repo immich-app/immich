@@ -1,0 +1,13 @@
+diff --git a/open-api/templates/mobile/serialization/native/native_class.mustache b/open-api/templates/mobile/serialization/native/native_class.mustache
+index 9a7b1439b..9f40d5b0b 100644
+--- a/open-api/templates/mobile/serialization/native/native_class.mustache
++++ b/open-api/templates/mobile/serialization/native/native_class.mustache
+@@ -32,7 +32,7 @@ class {{{classname}}} {
+       {{/required}}
+     {{/isNullable}}
+   {{/isEnum}}
+-  {{{datatypeWithEnum}}}{{#isNullable}}?{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}?{{/defaultValue}}{{/required}}{{/isNullable}} {{{name}}};
++  {{#isArray}}{{#uniqueItems}}Set{{/uniqueItems}}{{^uniqueItems}}List{{/uniqueItems}}<{{{items.dataType}}}{{#items.isNullable}}?{{/items.isNullable}}>{{/isArray}}{{^isArray}}{{{datatypeWithEnum}}}{{/isArray}}{{#isNullable}}?{{/isNullable}}{{^isNullable}}{{^required}}{{^defaultValue}}?{{/defaultValue}}{{/required}}{{/isNullable}} {{{name}}};
+ 
+ {{/vars}}
+   @override

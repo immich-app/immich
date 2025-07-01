@@ -3,14 +3,15 @@ import { Kysely } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Asset, columns } from 'src/database';
-import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
+import { DB } from 'src/schema';
 import { StorageAsset } from 'src/types';
 import {
   anyUuid,
   asUuid,
   toJson,
+  withDefaultVisibility,
   withExif,
   withExifInner,
   withFaces,
@@ -28,16 +29,7 @@ export class AssetJobRepository {
       .selectFrom('assets')
       .where('assets.id', '=', asUuid(id))
       .leftJoin('smart_search', 'assets.id', 'smart_search.assetId')
-      .select((eb) => [
-        'id',
-        'type',
-        'ownerId',
-        'duplicateId',
-        'stackId',
-        'visibility',
-        'smart_search.embedding',
-        withFiles(eb, AssetFileType.PREVIEW),
-      ])
+      .select(['id', 'type', 'ownerId', 'duplicateId', 'stackId', 'visibility', 'smart_search.embedding'])
       .limit(1)
       .executeTakeFirst();
   }
@@ -146,10 +138,17 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [], stream: true })
   streamForSearchDuplicates(force?: boolean) {
-    return this.assetsWithPreviews()
-      .where((eb) => eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'assets.id'))))
-      .$if(!force, (qb) => qb.where('job_status.duplicatesDetectedAt', 'is', null))
+    return this.db
+      .selectFrom('assets')
       .select(['assets.id'])
+      .where('assets.deletedAt', 'is', null)
+      .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
+      .$call(withDefaultVisibility)
+      .$if(!force, (qb) =>
+        qb
+          .innerJoin('asset_job_status as job_status', 'job_status.assetId', 'assets.id')
+          .where('job_status.duplicatesDetectedAt', 'is', null),
+      )
       .stream();
   }
 
@@ -228,7 +227,7 @@ export class AssetJobRepository {
             .select(['asset_stack.id', 'asset_stack.primaryAssetId'])
             .select((eb) => eb.fn<Asset[]>('array_agg', [eb.table('stacked')]).as('assets'))
             .where('stacked.deletedAt', 'is not', null)
-            .where('stacked.visibility', '!=', AssetVisibility.ARCHIVE)
+            .where('stacked.visibility', '=', AssetVisibility.TIMELINE)
             .whereRef('stacked.stackId', '=', 'asset_stack.id')
             .groupBy('asset_stack.id')
             .as('stacked_assets'),
@@ -274,8 +273,7 @@ export class AssetJobRepository {
           .leftJoin('asset_job_status', 'asset_job_status.assetId', 'assets.id')
           .where((eb) =>
             eb.or([eb('asset_job_status.metadataExtractedAt', 'is', null), eb('asset_job_status.assetId', 'is', null)]),
-          )
-          .where('assets.visibility', '!=', AssetVisibility.HIDDEN),
+          ),
       )
       .where('assets.deletedAt', 'is', null)
       .stream();

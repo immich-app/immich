@@ -80,8 +80,7 @@ class DraggableScrollbar extends StatefulWidget {
     this.labelTextBuilder,
     this.labelConstraints,
   })  : assert(child.scrollDirection == Axis.vertical),
-        scrollThumbBuilder =
-            _thumbRRectBuilder(scrollThumbKey, alwaysVisibleScrollThumb);
+        scrollThumbBuilder = _thumbRRectBuilder(alwaysVisibleScrollThumb);
 
   DraggableScrollbar.arrows({
     super.key,
@@ -97,8 +96,7 @@ class DraggableScrollbar extends StatefulWidget {
     this.labelTextBuilder,
     this.labelConstraints,
   })  : assert(child.scrollDirection == Axis.vertical),
-        scrollThumbBuilder =
-            _thumbArrowBuilder(scrollThumbKey, alwaysVisibleScrollThumb);
+        scrollThumbBuilder = _thumbArrowBuilder(alwaysVisibleScrollThumb);
 
   DraggableScrollbar.semicircle({
     super.key,
@@ -201,7 +199,6 @@ class DraggableScrollbar extends StatefulWidget {
   }
 
   static ScrollThumbBuilder _thumbArrowBuilder(
-    Key? scrollThumbKey,
     bool alwaysVisibleScrollThumb,
   ) {
     return (
@@ -213,7 +210,7 @@ class DraggableScrollbar extends StatefulWidget {
       BoxConstraints? labelConstraints,
     }) {
       final scrollThumb = ClipPath(
-        clipper: ArrowClipper(),
+        clipper: const ArrowClipper(),
         child: Container(
           height: height,
           width: 20.0,
@@ -239,7 +236,6 @@ class DraggableScrollbar extends StatefulWidget {
   }
 
   static ScrollThumbBuilder _thumbRRectBuilder(
-    Key? scrollThumbKey,
     bool alwaysVisibleScrollThumb,
   ) {
     return (
@@ -574,6 +570,7 @@ class ArrowCustomPainter extends CustomPainter {
 
 ///This cut 2 lines in arrow shape
 class ArrowClipper extends CustomClipper<Path> {
+  const ArrowClipper();
   @override
   Path getClip(Size size) {
     Path path = Path();

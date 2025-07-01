@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 2
 ---
 
 # Quick start
@@ -10,11 +10,20 @@ to install and use it.
 
 ## Requirements
 
-Check the [requirements page](/docs/install/requirements) to get started.
+- A system with at least 4GB of RAM and 2 CPU cores.
+- [Docker](https://docs.docker.com/engine/install/)
+
+> For a more detailed list of requirements, see the [requirements page](/docs/install/requirements).
+
+---
 
 ## Set up the server
 
-Follow the [Docker Compose (Recommended)](/docs/install/docker-compose) instructions to install the server.
+import DockerComposeSteps from '/docs/partials/_docker-compose-install-steps.mdx';
+
+<DockerComposeSteps />
+
+---
 
 ## Try the web app
 
@@ -25,6 +34,8 @@ import RegisterAdminUser from '/docs/partials/_register-admin.md';
 Try uploading a picture from your browser.
 
 <img src={require('./img/upload-button.webp').default} title="Upload button" />
+
+---
 
 ## Try the mobile app
 
@@ -56,6 +67,8 @@ You can select the **Jobs** tab to see Immich processing your photos.
 
 <img src={require('/docs/guides/img/jobs-tab.webp').default} title="Jobs tab" width={300} />
 
+---
+
 ## Review the database backup and restore process
 
 Immich has built-in database backups. You can refer to the
@@ -64,6 +77,8 @@ Immich has built-in database backups. You can refer to the
 :::danger
 The database only contains metadata and user information. You must setup manual backups of the images and videos stored in `UPLOAD_LOCATION`.
 :::
+
+---
 
 ## Where to go from here?
 

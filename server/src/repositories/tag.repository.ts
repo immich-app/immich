@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { DB, TagAsset, Tags } from 'src/db';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { DB } from 'src/schema';
+import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
+import { TagTable } from 'src/schema/tables/tag.table';
 
 @Injectable()
 export class TagRepository {
@@ -68,16 +70,16 @@ export class TagRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getAll(userId: string) {
-    return this.db.selectFrom('tags').select(columns.tag).where('userId', '=', userId).orderBy('value asc').execute();
+    return this.db.selectFrom('tags').select(columns.tag).where('userId', '=', userId).orderBy('value').execute();
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, color: DummyValue.STRING, value: DummyValue.STRING }] })
-  create(tag: Insertable<Tags>) {
+  create(tag: Insertable<TagTable>) {
     return this.db.insertInto('tags').values(tag).returningAll().executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { color: DummyValue.STRING }] })
-  update(id: string, dto: Updateable<Tags>) {
+  update(id: string, dto: Updateable<TagTable>) {
     return this.db.updateTable('tags').set(dto).where('id', '=', id).returningAll().executeTakeFirstOrThrow();
   }
 
@@ -126,9 +128,9 @@ export class TagRepository {
     await this.db.deleteFrom('tag_asset').where('tagsId', '=', tagId).where('assetsId', 'in', assetIds).execute();
   }
 
-  @GenerateSql({ params: [{ assetId: DummyValue.UUID, tagsIds: [DummyValue.UUID] }] })
+  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, tagsIds: [DummyValue.UUID] }]] })
   @Chunked()
-  upsertAssetIds(items: Insertable<TagAsset>[]) {
+  upsertAssetIds(items: Insertable<TagAssetTable>[]) {
     if (items.length === 0) {
       return Promise.resolve([]);
     }
@@ -160,7 +162,6 @@ export class TagRepository {
     });
   }
 
-  @GenerateSql()
   async deleteEmptyTags() {
     // TODO rewrite as a single statement
     await this.db.transaction().execute(async (tx) => {

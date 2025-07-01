@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
-import { TagAsset } from 'src/db';
 import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -14,6 +13,7 @@ import {
   mapTag,
 } from 'src/dtos/tag.dto';
 import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 import { upsertTags } from 'src/utils/tag';
@@ -81,7 +81,7 @@ export class TagService extends BaseService {
       this.checkAccess({ auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds }),
     ]);
 
-    const items: Insertable<TagAsset>[] = [];
+    const items: Insertable<TagAssetTable>[] = [];
     for (const tagsId of tagIds) {
       for (const assetsId of assetIds) {
         items.push({ tagsId, assetsId });

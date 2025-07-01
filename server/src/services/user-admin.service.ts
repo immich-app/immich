@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { SALT_ROUNDS } from 'src/constants';
+import { AssetStatsDto, AssetStatsResponseDto, mapStats } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import {
@@ -18,7 +19,10 @@ import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/uti
 @Injectable()
 export class UserAdminService extends BaseService {
   async search(auth: AuthDto, dto: UserAdminSearchDto): Promise<UserAdminResponseDto[]> {
-    const users = await this.userRepository.getList({ withDeleted: dto.withDeleted });
+    const users = await this.userRepository.getList({
+      id: dto.id,
+      withDeleted: dto.withDeleted,
+    });
     return users.map((user) => mapUserAdmin(user));
   }
 
@@ -48,6 +52,10 @@ export class UserAdminService extends BaseService {
   async update(auth: AuthDto, id: string, dto: UserAdminUpdateDto): Promise<UserAdminResponseDto> {
     const user = await this.findOrFail(id, {});
 
+    if (dto.isAdmin !== undefined && dto.isAdmin !== auth.user.isAdmin && auth.user.id === id) {
+      throw new BadRequestException('Admin status can only be changed by another admin');
+    }
+
     if (dto.quotaSizeInBytes && user.quotaSizeInBytes !== dto.quotaSizeInBytes) {
       await this.userRepository.syncUsage(id);
     }
@@ -70,6 +78,10 @@ export class UserAdminService extends BaseService {
       dto.password = await this.cryptoRepository.hashBcrypt(dto.password, SALT_ROUNDS);
     }
 
+    if (dto.pinCode) {
+      dto.pinCode = await this.cryptoRepository.hashBcrypt(dto.pinCode, SALT_ROUNDS);
+    }
+
     if (dto.storageLabel === '') {
       dto.storageLabel = null;
     }
@@ -81,9 +93,9 @@ export class UserAdminService extends BaseService {
 
   async delete(auth: AuthDto, id: string, dto: UserAdminDeleteDto): Promise<UserAdminResponseDto> {
     const { force } = dto;
-    const { isAdmin } = await this.findOrFail(id, {});
-    if (isAdmin) {
-      throw new ForbiddenException('Cannot delete admin user');
+    await this.findOrFail(id, {});
+    if (auth.user.id === id) {
+      throw new ForbiddenException('Cannot delete your own account');
     }
 
     await this.albumRepository.softDeleteAll(id);
@@ -103,6 +115,11 @@ export class UserAdminService extends BaseService {
     await this.albumRepository.restoreAll(id);
     const user = await this.userRepository.restore(id);
     return mapUserAdmin(user);
+  }
+
+  async getStatistics(auth: AuthDto, id: string, dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
+    const stats = await this.assetRepository.getStatistics(id, dto);
+    return mapStats(stats);
   }
 
   async getPreferences(auth: AuthDto, id: string): Promise<UserPreferencesResponseDto> {

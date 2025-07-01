@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/interfaces/asset_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:openapi/api.dart';
@@ -12,13 +12,12 @@ final assetApiRepositoryProvider = Provider(
   ),
 );
 
-class AssetApiRepository extends ApiRepository implements IAssetApiRepository {
+class AssetApiRepository extends ApiRepository {
   final AssetsApi _api;
   final SearchApi _searchApi;
 
   AssetApiRepository(this._api, this._searchApi);
 
-  @override
   Future<Asset> update(String id, {String? description}) async {
     final response = await checkNull(
       _api.updateAsset(id, UpdateAssetDto(description: description)),
@@ -26,7 +25,6 @@ class AssetApiRepository extends ApiRepository implements IAssetApiRepository {
     return Asset.remote(response);
   }
 
-  @override
   Future<List<Asset>> search({List<String> personIds = const []}) async {
     // TODO this always fetches all assets, change API and usage to actually do pagination
     final List<Asset> result = [];
@@ -47,5 +45,37 @@ class AssetApiRepository extends ApiRepository implements IAssetApiRepository {
       currentPage++;
     }
     return result;
+  }
+
+  Future<void> updateVisibility(
+    List<String> ids,
+    AssetVisibilityEnum visibility,
+  ) async {
+    return _api.updateAssets(
+      AssetBulkUpdateDto(ids: ids, visibility: _mapVisibility(visibility)),
+    );
+  }
+
+  Future<void> updateFavorite(
+    List<String> ids,
+    bool isFavorite,
+  ) async {
+    return _api.updateAssets(
+      AssetBulkUpdateDto(ids: ids, isFavorite: isFavorite),
+    );
+  }
+
+  _mapVisibility(AssetVisibilityEnum visibility) => switch (visibility) {
+        AssetVisibilityEnum.timeline => AssetVisibility.timeline,
+        AssetVisibilityEnum.hidden => AssetVisibility.hidden,
+        AssetVisibilityEnum.locked => AssetVisibility.locked,
+        AssetVisibilityEnum.archive => AssetVisibility.archive,
+      };
+
+  Future<String?> getAssetMIMEType(String assetId) async {
+    final response = await checkNull(_api.getAssetInfo(assetId));
+
+    // we need to get the MIME of the thumbnail once that gets added to the API
+    return response.originalMimeType;
   }
 }

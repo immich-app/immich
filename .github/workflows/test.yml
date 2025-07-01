@@ -17,6 +17,7 @@ jobs:
     permissions:
       contents: read
     outputs:
+      should_run_i18n: ${{ steps.found_paths.outputs.i18n == 'true' || steps.should_force.outputs.should_force == 'true' }}
       should_run_web: ${{ steps.found_paths.outputs.web == 'true' || steps.should_force.outputs.should_force == 'true' }}
       should_run_server: ${{ steps.found_paths.outputs.server == 'true' || steps.should_force.outputs.should_force == 'true' }}
       should_run_cli: ${{ steps.found_paths.outputs.cli == 'true' || steps.should_force.outputs.should_force == 'true' }}
@@ -28,14 +29,16 @@ jobs:
       should_run_.github: ${{ steps.found_paths.outputs['.github'] == 'true' || steps.should_force.outputs.should_force == 'true' }} # redundant to have should_force but if someone changes the trigger then this won't have to be changed
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - id: found_paths
-        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         with:
           filters: |
+            i18n:
+              - 'i18n/**'
             web:
               - 'web/**'
               - 'i18n/**'
@@ -73,14 +76,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run npm install
         run: npm ci
@@ -98,7 +103,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Run small tests & coverage
-        run: npm run test:cov
+        run: npm test
         if: ${{ !cancelled() }}
 
   cli-unit-tests:
@@ -114,14 +119,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './cli/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Setup typescript-sdk
         run: npm ci && npm run build
@@ -143,7 +150,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Run unit tests & coverage
-        run: npm run test:cov
+        run: npm run test
         if: ${{ !cancelled() }}
 
   cli-unit-tests-win:
@@ -159,14 +166,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './cli/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Setup typescript-sdk
         run: npm ci && npm run build
@@ -181,7 +190,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Run unit tests & coverage
-        run: npm run test:cov
+        run: npm run test
         if: ${{ !cancelled() }}
 
   web-lint:
@@ -197,14 +206,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './web/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -238,14 +249,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './web/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -259,8 +272,50 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Run unit tests & coverage
-        run: npm run test:cov
+        run: npm run test
         if: ${{ !cancelled() }}
+
+  i18n-tests:
+    name: Test i18n
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_i18n == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: './web/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Install dependencies
+        run: npm --prefix=web ci
+
+      - name: Format
+        run: npm --prefix=web run format:i18n
+
+      - name: Find file changes
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
+        id: verify-changed-files
+        with:
+          files: |
+            i18n/**
+
+      - name: Verify files have not changed
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        env:
+          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
+        run: |
+          echo "ERROR: i18n files not up to date!"
+          echo "Changed files: ${CHANGED_FILES}"
+          exit 1
 
   e2e-tests-lint:
     name: End-to-End Lint
@@ -275,14 +330,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './e2e/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -318,14 +375,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run npm install
         run: npm ci
@@ -346,19 +405,21 @@ jobs:
         working-directory: ./e2e
     strategy:
       matrix:
-        runner: [mich, ubuntu-24.04-arm]
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
           submodules: 'recursive'
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './e2e/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -394,19 +455,21 @@ jobs:
         working-directory: ./e2e
     strategy:
       matrix:
-        runner: [mich, ubuntu-24.04-arm]
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
           submodules: 'recursive'
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './e2e/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -418,7 +481,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium --only-shell
         if: ${{ !cancelled() }}
 
       - name: Docker build
@@ -436,13 +499,9 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - name: Any jobs failed?
-        if: ${{ contains(needs.*.result, 'failure') }}
-        run: exit 1
-      - name: All jobs passed or skipped
-        if: ${{ !(contains(needs.*.result, 'failure')) }}
-        # zizmor: ignore[template-injection]
-        run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
+      - uses: immich-app/devtools/actions/success-check@68f10eb389bb02a3cf9d1156111964c549eb421b # 0.0.4
+        with:
+          needs: ${{ toJSON(needs) }}
 
   mobile-unit-tests:
     name: Unit Test Mobile
@@ -452,15 +511,20 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2
+        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2.21.0
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
+
+      - name: Generate translation file
+        run: make translation
+        working-directory: ./mobile
+
       - name: Run tests
         working-directory: ./mobile
         run: flutter test -j 1
@@ -476,13 +540,13 @@ jobs:
       run:
         working-directory: ./machine-learning
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - name: Install uv
-        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         # TODO: add caching when supported (https://github.com/actions/setup-python/pull/818)
         # with:
         #   python-version: 3.11
@@ -516,14 +580,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './.github/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run npm install
         run: npm ci
@@ -538,12 +604,12 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@master
+        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
         with:
           ignore_paths: >-
             **/open-api/**
@@ -557,14 +623,16 @@ jobs:
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install server dependencies
         run: npm --prefix=server ci
@@ -576,7 +644,7 @@ jobs:
         run: make open-api
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
         id: verify-changed-files
         with:
           files: |
@@ -593,14 +661,14 @@ jobs:
           echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
-  generated-typeorm-migrations-up-to-date:
-    name: TypeORM Checks
+  sql-schema-up-to-date:
+    name: SQL Schema Checks
     runs-on: ubuntu-latest
     permissions:
       contents: read
     services:
       postgres:
-        image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
+        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3@sha256:1f5583fe3397210a0fbc7f11b0cec18bacc4a99e3e8ea0548e9bd6bcf26ec37a
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -618,14 +686,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install server dependencies
         run: npm ci
@@ -641,10 +711,10 @@ jobs:
 
       - name: Generate new migrations
         continue-on-error: true
-        run: npm run migrations:generate TestMigration
+        run: npm run migrations:generate src/TestMigration
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
         id: verify-changed-files
         with:
           files: |
@@ -665,7 +735,7 @@ jobs:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
         id: verify-changed-sql-files
         with:
           files: |
@@ -678,6 +748,7 @@ jobs:
         run: |
           echo "ERROR: Generated SQL files not up to date!"
           echo "Changed files: ${CHANGED_FILES}"
+          git diff
           exit 1
 
   # mobile-integration-tests:

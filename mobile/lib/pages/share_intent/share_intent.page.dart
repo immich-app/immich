@@ -7,6 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 
 @RoutePage()
@@ -20,6 +21,11 @@ class ShareIntentPage extends HookConsumerWidget {
     final currentEndpoint = getServerUrl() ?? '--';
     final candidates = ref.watch(shareIntentUploadProvider);
     final isUploaded = useState(false);
+    useOnAppLifecycleStateChange((previous, current) {
+      if (current == AppLifecycleState.resumed) {
+        isUploaded.value = false;
+      }
+    });
 
     void removeAttachment(ShareIntentAttachment attachment) {
       ref.read(shareIntentUploadProvider.notifier).removeAttachment(attachment);
@@ -65,6 +71,14 @@ class ShareIntentPage extends HookConsumerWidget {
               ),
             ),
           ],
+        ),
+        leading: IconButton(
+          onPressed: () {
+            context.navigateTo(
+              const TabControllerRoute(),
+            );
+          },
+          icon: const Icon(Icons.arrow_back),
         ),
       ),
       body: ListView.builder(

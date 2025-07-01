@@ -118,8 +118,14 @@ const AssetSchema = CollectionSchema(
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
-    r'width': PropertySchema(
+    r'visibility': PropertySchema(
       id: 20,
+      name: r'visibility',
+      type: IsarType.byte,
+      enumMap: _AssetvisibilityEnumValueMap,
+    ),
+    r'width': PropertySchema(
+      id: 21,
       name: r'width',
       type: IsarType.int,
     )
@@ -256,7 +262,8 @@ void _assetSerialize(
   writer.writeString(offsets[17], object.thumbhash);
   writer.writeByte(offsets[18], object.type.index);
   writer.writeDateTime(offsets[19], object.updatedAt);
-  writer.writeInt(offsets[20], object.width);
+  writer.writeByte(offsets[20], object.visibility.index);
+  writer.writeInt(offsets[21], object.width);
 }
 
 Asset _assetDeserialize(
@@ -288,7 +295,10 @@ Asset _assetDeserialize(
     type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[18])] ??
         AssetType.other,
     updatedAt: reader.readDateTime(offsets[19]),
-    width: reader.readIntOrNull(offsets[20]),
+    visibility:
+        _AssetvisibilityValueEnumMap[reader.readByteOrNull(offsets[20])] ??
+            AssetVisibilityEnum.timeline,
+    width: reader.readIntOrNull(offsets[21]),
   );
   return object;
 }
@@ -342,6 +352,9 @@ P _assetDeserializeProp<P>(
     case 19:
       return (reader.readDateTime(offset)) as P;
     case 20:
+      return (_AssetvisibilityValueEnumMap[reader.readByteOrNull(offset)] ??
+          AssetVisibilityEnum.timeline) as P;
+    case 21:
       return (reader.readIntOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -359,6 +372,18 @@ const _AssettypeValueEnumMap = {
   1: AssetType.image,
   2: AssetType.video,
   3: AssetType.audio,
+};
+const _AssetvisibilityEnumValueMap = {
+  'timeline': 0,
+  'hidden': 1,
+  'archive': 2,
+  'locked': 3,
+};
+const _AssetvisibilityValueEnumMap = {
+  0: AssetVisibilityEnum.timeline,
+  1: AssetVisibilityEnum.hidden,
+  2: AssetVisibilityEnum.archive,
+  3: AssetVisibilityEnum.locked,
 };
 
 Id _assetGetId(Asset object) {
@@ -2477,6 +2502,59 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> visibilityEqualTo(
+      AssetVisibilityEnum value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'visibility',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> visibilityGreaterThan(
+    AssetVisibilityEnum value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'visibility',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> visibilityLessThan(
+    AssetVisibilityEnum value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'visibility',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> visibilityBetween(
+    AssetVisibilityEnum lower,
+    AssetVisibilityEnum upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'visibility',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterFilterCondition> widthIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -2791,6 +2869,18 @@ extension AssetQuerySortBy on QueryBuilder<Asset, Asset, QSortBy> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByVisibility() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'visibility', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> sortByVisibilityDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'visibility', Sort.desc);
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterSortBy> sortByWidth() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'width', Sort.asc);
@@ -3057,6 +3147,18 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByVisibility() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'visibility', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Asset, Asset, QAfterSortBy> thenByVisibilityDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'visibility', Sort.desc);
+    });
+  }
+
   QueryBuilder<Asset, Asset, QAfterSortBy> thenByWidth() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'width', Sort.asc);
@@ -3201,6 +3303,12 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
+  QueryBuilder<Asset, Asset, QDistinct> distinctByVisibility() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'visibility');
+    });
+  }
+
   QueryBuilder<Asset, Asset, QDistinct> distinctByWidth() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'width');
@@ -3332,6 +3440,13 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
   QueryBuilder<Asset, DateTime, QQueryOperations> updatedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'updatedAt');
+    });
+  }
+
+  QueryBuilder<Asset, AssetVisibilityEnum, QQueryOperations>
+      visibilityProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'visibility');
     });
   }
 

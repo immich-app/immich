@@ -4,8 +4,8 @@
 
   export interface AssetControlContext {
     // Wrap assets in a function, because context isn't reactive.
-    getAssets: () => AssetResponseDto[]; // All assets includes partners' assets
-    getOwnedAssets: () => AssetResponseDto[]; // Only assets owned by the user
+    getAssets: () => TimelineAsset[]; // All assets includes partners' assets
+    getOwnedAssets: () => TimelineAsset[]; // Only assets owned by the user
     clearSelect: () => void;
   }
 
@@ -14,19 +14,20 @@
 </script>
 
 <script lang="ts">
-  import type { AssetResponseDto } from '@immich/sdk';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { mdiClose } from '@mdi/js';
-  import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import type { Snippet } from 'svelte';
+  import ControlAppBar from '../shared-components/control-app-bar.svelte';
 
   interface Props {
-    assets: AssetResponseDto[];
+    assets: TimelineAsset[];
     clearSelect: () => void;
     ownerId?: string | undefined;
     children?: Snippet;
+    forceDark?: boolean;
   }
 
-  let { assets, clearSelect, ownerId = undefined, children }: Props = $props();
+  let { assets, clearSelect, ownerId = undefined, children, forceDark }: Props = $props();
 
   setContext({
     getAssets: () => assets,
@@ -35,9 +36,11 @@
   });
 </script>
 
-<ControlAppBar onClose={clearSelect} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
+<ControlAppBar onClose={clearSelect} {forceDark} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
   {#snippet leading()}
-    <div class="font-medium text-immich-primary dark:text-immich-dark-primary">
+    <div
+      class="font-medium {forceDark ? 'text-immich-dark-primary' : 'text-immich-primary dark:text-immich-dark-primary'}"
+    >
       <p class="block sm:hidden">{assets.length}</p>
       <p class="hidden sm:block">{$t('selected_count', { values: { count: assets.length } })}</p>
     </div>

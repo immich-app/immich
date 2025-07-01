@@ -98,6 +98,7 @@ from
 where
   "assets"."id" in ($1)
   and "assets"."ownerId" = $2
+  and "assets"."visibility" != $3
 
 -- AccessRepository.asset.checkPartnerAccess
 select
@@ -197,6 +198,15 @@ from
 where
   "partners"."sharedById" in ($1)
   and "partners"."sharedWithId" = $2
+
+-- AccessRepository.session.checkOwnerAccess
+select
+  "sessions"."id"
+from
+  "sessions"
+where
+  "sessions"."id" in ($1)
+  and "sessions"."userId" = $2
 
 -- AccessRepository.stack.checkOwnerAccess
 select

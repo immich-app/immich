@@ -45,11 +45,6 @@ const projects: CommunityProjectProps[] = [
     url: 'https://blog.fokuspunk.de/lrc-immich-plugin/',
   },
   {
-    title: 'Immich Duplicate Finder',
-    description: 'Webapp that uses machine learning to identify near-duplicate images.',
-    url: 'https://github.com/vale46n1/immich_duplicate_finder',
-  },
-  {
     title: 'Immich-Tiktok-Remover',
     description: 'Script to search for and remove TikTok videos from your Immich library.',
     url: 'https://github.com/mxc2/immich-tiktok-remover',

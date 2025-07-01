@@ -45,7 +45,7 @@
       {@const isCollapsed = isAlbumGroupCollapsed($albumViewSettings, albumGroup.id)}
       {@const iconRotation = isCollapsed ? 'rotate-0' : 'rotate-90'}
       <tbody
-        class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
+        class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg mt-4"
       >
         <tr
           class="flex w-full place-items-center p-2 md:ps-5 md:pe-5 md:pt-3 md:pb-3"
@@ -56,7 +56,7 @@
             <Icon
               path={mdiChevronRight}
               size="20"
-              class="inline-block -mt-2 transition-all duration-[250ms] {iconRotation}"
+              class="inline-block -mt-2 transition-all duration-250 {iconRotation}"
             />
             <span class="font-bold text-2xl">{albumGroup.name}</span>
             <span class="ms-1.5">

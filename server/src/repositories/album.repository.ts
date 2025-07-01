@@ -3,9 +3,11 @@ import { ExpressionBuilder, Insertable, Kysely, NotNull, sql, Updateable } from 
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns, Exif } from 'src/database';
-import { Albums, DB } from 'src/db';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserCreateDto } from 'src/dtos/album.dto';
+import { DB } from 'src/schema';
+import { AlbumTable } from 'src/schema/tables/album.table';
+import { withDefaultVisibility } from 'src/utils/database';
 
 export interface AlbumAssetCount {
   albumId: string;
@@ -58,6 +60,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
         .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
         .whereRef('albums_assets_assets.albumsId', '=', 'albums.id')
         .where('assets.deletedAt', 'is', null)
+        .$call(withDefaultVisibility)
         .orderBy('assets.fileCreatedAt', 'desc')
         .as('asset'),
     )
@@ -121,6 +124,7 @@ export class AlbumRepository {
     return (
       this.db
         .selectFrom('assets')
+        .$call(withDefaultVisibility)
         .innerJoin('albums_assets_assets as album_assets', 'album_assets.assetsId', 'assets.id')
         .select('album_assets.albumsId as albumId')
         .select((eb) => eb.fn.min(sql<Date>`("assets"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('startDate'))
@@ -220,8 +224,10 @@ export class AlbumRepository {
     await this.db.deleteFrom('albums').where('ownerId', '=', userId).execute();
   }
 
-  async removeAsset(assetId: string): Promise<void> {
-    await this.db.deleteFrom('albums_assets_assets').where('albums_assets_assets.assetsId', '=', assetId).execute();
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @Chunked()
+  async removeAssetsFromAll(assetIds: string[]): Promise<void> {
+    await this.db.deleteFrom('albums_assets_assets').where('albums_assets_assets.assetsId', 'in', assetIds).execute();
   }
 
   @Chunked({ paramIndex: 1 })
@@ -264,7 +270,7 @@ export class AlbumRepository {
     await this.addAssets(this.db, albumId, assetIds);
   }
 
-  create(album: Insertable<Albums>, assetIds: string[], albumUsers: AlbumUserCreateDto[]) {
+  create(album: Insertable<AlbumTable>, assetIds: string[], albumUsers: AlbumUserCreateDto[]) {
     return this.db.transaction().execute(async (tx) => {
       const newAlbum = await tx.insertInto('albums').values(album).returning('albums.id').executeTakeFirst();
 
@@ -297,7 +303,7 @@ export class AlbumRepository {
     });
   }
 
-  update(id: string, album: Updateable<Albums>) {
+  update(id: string, album: Updateable<AlbumTable>) {
     return this.db
       .updateTable('albums')
       .set(album)

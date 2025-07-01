@@ -23,6 +23,19 @@ export const immich_uuid_v7 = registerFunction({
   synchronize: false,
 });
 
+export const album_user_after_insert = registerFunction({
+  name: 'album_user_after_insert',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      UPDATE albums SET "updatedAt" = clock_timestamp(), "updateId" = immich_uuid_v7(clock_timestamp())
+      WHERE "id" IN (SELECT DISTINCT "albumsId" FROM inserted_rows);
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
 export const updated_at = registerFunction({
   name: 'updated_at',
   returnType: 'TRIGGER',
@@ -108,6 +121,97 @@ export const assets_delete_audit = registerFunction({
   body: `
     BEGIN
       INSERT INTO assets_audit ("assetId", "ownerId")
+      SELECT "id", "ownerId"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
+export const albums_delete_audit = registerFunction({
+  name: 'albums_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO albums_audit ("albumId", "userId")
+      SELECT "id", "ownerId"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
+export const album_assets_delete_audit = registerFunction({
+  name: 'album_assets_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO album_assets_audit ("albumId", "assetId")
+      SELECT "albumsId", "assetsId" FROM OLD
+      WHERE "albumsId" IN (SELECT "id" FROM albums WHERE "id" IN (SELECT "albumsId" FROM OLD));
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
+export const album_users_delete_audit = registerFunction({
+  name: 'album_users_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO albums_audit ("albumId", "userId")
+      SELECT "albumsId", "usersId"
+      FROM OLD;
+
+      IF pg_trigger_depth() = 1 THEN
+        INSERT INTO album_users_audit ("albumId", "userId")
+        SELECT "albumsId", "usersId"
+        FROM OLD;
+      END IF;
+
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
+export const memories_delete_audit = registerFunction({
+  name: 'memories_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO memories_audit ("memoryId", "userId")
+      SELECT "id", "ownerId"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
+export const memory_assets_delete_audit = registerFunction({
+  name: 'memory_assets_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO memory_assets_audit ("memoryId", "assetId")
+      SELECT "memoriesId", "assetsId" FROM OLD
+      WHERE "memoriesId" IN (SELECT "id" FROM memories WHERE "id" IN (SELECT "memoriesId" FROM OLD));
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
+export const stacks_delete_audit = registerFunction({
+  name: 'stacks_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO stacks_audit ("stackId", "userId")
       SELECT "id", "ownerId"
       FROM OLD;
       RETURN NULL;

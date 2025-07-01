@@ -1,11 +1,16 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/activity_statistics.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
+import 'package:immich_mobile/providers/websocket.provider.dart';
+import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
 import 'package:immich_mobile/widgets/asset_viewer/motion_photo_button.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 
@@ -39,9 +44,14 @@ class TopControlAppBar extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isInLockedView = ref.watch(inLockedViewProvider);
     const double iconSize = 22.0;
     final a = ref.watch(assetWatcher(asset)).value ?? asset;
     final album = ref.watch(currentAlbumProvider);
+    final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
+    final websocketConnected =
+        ref.watch(websocketProvider.select((c) => c.isConnected));
+
     final comments = album != null &&
             album.remoteId != null &&
             asset.remoteId != null
@@ -167,6 +177,22 @@ class TopControlAppBar extends HookConsumerWidget {
       );
     }
 
+    Widget buildCastButton() {
+      return IconButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => const CastDialog(),
+          );
+        },
+        icon: Icon(
+          isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
+          size: 20.0,
+          color: isCasting ? context.primaryColor : Colors.grey[200],
+        ),
+      );
+    }
+
     bool isInHomePage = ref.read(tabProvider.notifier).state == TabEnum.home;
     bool? isInTrash = ref.read(currentAssetProvider)?.isTrashed;
 
@@ -178,15 +204,24 @@ class TopControlAppBar extends HookConsumerWidget {
       shape: const Border(),
       actions: [
         if (asset.isRemote && isOwner) buildFavoriteButton(a),
-        if (isOwner && !isInHomePage && !(isInTrash ?? false))
+        if (isOwner &&
+            !isInHomePage &&
+            !(isInTrash ?? false) &&
+            !isInLockedView)
           buildLocateButton(),
         if (asset.livePhotoVideoId != null) const MotionPhotoButton(),
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),
         if (asset.isRemote && !asset.isLocal && isOwner) buildDownloadButton(),
-        if (asset.isRemote && (isOwner || isPartner) && !asset.isTrashed)
+        if (asset.isRemote &&
+            (isOwner || isPartner) &&
+            !asset.isTrashed &&
+            !isInLockedView)
           buildAddToAlbumButton(),
+        if (isCasting || (asset.isRemote && websocketConnected))
+          buildCastButton(),
         if (asset.isTrashed) buildRestoreButton(),
-        if (album != null && album.shared) buildActivitiesButton(),
+        if (album != null && album.shared && !isInLockedView)
+          buildActivitiesButton(),
         buildMoreInfoButton(),
       ],
     );

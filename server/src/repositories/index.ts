@@ -11,6 +11,7 @@ import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { DownloadRepository } from 'src/repositories/download.repository';
+import { DuplicateRepository } from 'src/repositories/duplicate.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
@@ -33,6 +34,7 @@ import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
@@ -56,6 +58,7 @@ export const repositories = [
   CryptoRepository,
   DatabaseRepository,
   DownloadRepository,
+  DuplicateRepository,
   EmailRepository,
   EventRepository,
   JobRepository,
@@ -79,6 +82,7 @@ export const repositories = [
   StackRepository,
   StorageRepository,
   SyncRepository,
+  SyncCheckpointRepository,
   SystemMetadataRepository,
   TagRepository,
   TelemetryRepository,

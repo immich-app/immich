@@ -3,6 +3,7 @@
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AssetResponseDto, getAllAlbums } from '@immich/sdk';
   import { mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -22,8 +23,8 @@
 
 <div
   class="max-w-60 rounded-xl border-4 transition-colors font-semibold text-xs {isSelected
-    ? 'bg-immich-primary dark:bg-immich-dark-primary border-immich-primary dark:border-immich-dark-primary'
-    : 'bg-gray-200 dark:bg-gray-800 border-gray-200 dark:border-gray-800'}"
+    ? 'bg-primary border-primary'
+    : 'bg-subtle border-subtle'}"
 >
   <div class="relative w-full">
     <button
@@ -36,7 +37,7 @@
       <!-- THUMBNAIL-->
       <img
         src={getAssetThumbnailUrl(asset.id)}
-        alt={$getAltText(asset)}
+        alt={$getAltText(toTimelineAsset(asset))}
         title={assetData}
         class="h-60 object-cover rounded-t-xl w-full"
         draggable="false"

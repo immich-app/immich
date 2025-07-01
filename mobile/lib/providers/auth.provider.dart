@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
@@ -11,6 +12,8 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
+import 'package:immich_mobile/services/secure_storage.service.dart';
+import 'package:immich_mobile/services/widget.service.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -20,6 +23,8 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
     ref.watch(authServiceProvider),
     ref.watch(apiServiceProvider),
     ref.watch(userServiceProvider),
+    ref.watch(secureStorageServiceProvider),
+    ref.watch(widgetServiceProvider),
   );
 });
 
@@ -27,13 +32,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
   final ApiService _apiService;
   final UserService _userService;
+  final SecureStorageService _secureStorageService;
+  final WidgetService _widgetService;
   final _log = Logger("AuthenticationNotifier");
 
   static const Duration _timeoutDuration = Duration(seconds: 7);
 
-  AuthNotifier(this._authService, this._apiService, this._userService)
-      : super(
-          AuthState(
+  AuthNotifier(
+    this._authService,
+    this._apiService,
+    this._userService,
+    this._secureStorageService,
+    this._widgetService,
+  ) : super(
+          const AuthState(
             deviceId: "",
             userId: "",
             userEmail: "",
@@ -67,6 +79,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     try {
+      await _secureStorageService.delete(kSecuredPinCode);
+      await _widgetService.clearCredentials();
+
       await _authService.logout();
     } finally {
       await _cleanUp();
@@ -74,7 +89,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _cleanUp() async {
-    state = AuthState(
+    state = const AuthState(
       deviceId: "",
       userId: "",
       userEmail: "",
@@ -102,6 +117,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String accessToken,
   }) async {
     await _apiService.setAccessToken(accessToken);
+
+    await _widgetService.writeCredentials(
+      Store.get(StoreKey.serverEndpoint),
+      accessToken,
+    );
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
     String deviceId =
@@ -187,5 +207,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<String?> setOpenApiServiceEndpoint() {
     return _authService.setOpenApiServiceEndpoint();
+  }
+
+  Future<bool> unlockPinCode(String pinCode) {
+    return _authService.unlockPinCode(pinCode);
+  }
+
+  Future<void> lockPinCode() {
+    return _authService.lockPinCode();
+  }
+
+  Future<void> setupPinCode(String pinCode) {
+    return _authService.setupPinCode(pinCode);
   }
 }

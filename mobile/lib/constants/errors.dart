@@ -4,6 +4,8 @@ sealed class ImmichErrors {
 }
 
 class NoResponseDtoError extends ImmichErrors implements Exception {
+  const NoResponseDtoError();
+
   @override
   String toString() => "Response Dto is null";
 }

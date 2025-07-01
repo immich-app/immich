@@ -1,1 +1,17 @@
-{}
+{
+  "active": "Martxan",
+  "add": "Gehitu",
+  "add_a_description": "Azalpena gehitu",
+  "add_a_name": "Izena gehitu",
+  "add_a_title": "Izenburua gehitu",
+  "add_more_users": "Erabiltzaile gehiago gehitu",
+  "add_photos": "Argazkiak gehitu",
+  "add_to_album": "Albumera gehitu",
+  "add_to_album_bottom_sheet_already_exists": "Dagoeneko {album} albumenean",
+  "add_to_shared_album": "Gehitu partekatutako albumera",
+  "add_url": "URL-a gehitu",
+  "added_to_favorites": "Faboritoetara gehituta",
+  "admin": {
+    "image_quality": "Kalitatea"
+  }
+}

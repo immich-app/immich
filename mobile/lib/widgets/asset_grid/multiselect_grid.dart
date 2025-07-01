@@ -7,14 +7,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/asset_selection_state.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/album.service.dart';
@@ -42,6 +46,7 @@ class MultiselectGrid extends HookConsumerWidget {
     this.editEnabled = false,
     this.unarchive = false,
     this.unfavorite = false,
+    this.downloadEnabled = true,
     this.emptyIndicator,
   });
 
@@ -55,6 +60,7 @@ class MultiselectGrid extends HookConsumerWidget {
   final bool archiveEnabled;
   final bool unarchive;
   final bool deleteEnabled;
+  final bool downloadEnabled;
   final bool favoriteEnabled;
   final bool unfavorite;
   final bool editEnabled;
@@ -237,6 +243,45 @@ class MultiselectGrid extends HookConsumerWidget {
       }
     }
 
+    void onDownload() async {
+      processing.value = true;
+      try {
+        final toDownload = selection.value.toList();
+
+        final results = await ref
+            .read(downloadStateProvider.notifier)
+            .downloadAllAsset(toDownload);
+
+        final totalCount = toDownload.length;
+        final successCount = results.where((e) => e).length;
+        final failedCount = totalCount - successCount;
+
+        final msg = failedCount > 0
+            ? 'assets_downloaded_failed'.t(
+                context: context,
+                args: {
+                  'count': successCount,
+                  'error': failedCount,
+                },
+              )
+            : 'assets_downloaded_successfully'.t(
+                context: context,
+                args: {
+                  'count': successCount,
+                },
+              );
+
+        ImmichToast.show(
+          context: context,
+          msg: msg,
+          gravity: ToastGravity.BOTTOM,
+        );
+      } finally {
+        processing.value = false;
+        selectionEnabledHook.value = false;
+      }
+    }
+
     void onDeleteRemote([bool shouldDeletePermanently = false]) async {
       processing.value = true;
       try {
@@ -395,6 +440,32 @@ class MultiselectGrid extends HookConsumerWidget {
       }
     }
 
+    void onToggleLockedVisibility() async {
+      processing.value = true;
+      try {
+        final remoteAssets = ownedRemoteSelection(
+          localErrorMessage: 'home_page_locked_error_local'.tr(),
+          ownerErrorMessage: 'home_page_locked_error_partner'.tr(),
+        );
+        if (remoteAssets.isNotEmpty) {
+          final isInLockedView = ref.read(inLockedViewProvider);
+          final visibility = isInLockedView
+              ? AssetVisibilityEnum.timeline
+              : AssetVisibilityEnum.locked;
+
+          await handleSetAssetsVisibility(
+            ref,
+            context,
+            visibility,
+            remoteAssets.toList(),
+          );
+        }
+      } finally {
+        processing.value = false;
+        selectionEnabledHook.value = false;
+      }
+    }
+
     Future<T> Function() wrapLongRunningFun<T>(
       Future<T> Function() fun, {
       bool showOverlay = true,
@@ -446,6 +517,7 @@ class MultiselectGrid extends HookConsumerWidget {
               onArchive: archiveEnabled ? onArchiveAsset : null,
               onDelete: deleteEnabled ? onDelete : null,
               onDeleteServer: deleteEnabled ? onDeleteRemote : null,
+              onDownload: downloadEnabled ? onDownload : null,
 
               /// local file deletion is allowed irrespective of [deleteEnabled] since it has
               /// nothing to do with the state of the asset in the Immich server
@@ -460,6 +532,7 @@ class MultiselectGrid extends HookConsumerWidget {
               onEditLocation: editEnabled ? onEditLocation : null,
               unfavorite: unfavorite,
               unarchive: unarchive,
+              onToggleLocked: onToggleLockedVisibility,
               onRemoveFromAlbum: onRemoveFromAlbum != null
                   ? wrapLongRunningFun(
                       () => onRemoveFromAlbum!(selection.value),

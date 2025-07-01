@@ -139,6 +139,39 @@ class UsersApi {
     }
   }
 
+  /// Performs an HTTP 'DELETE /users/me/onboarding' operation and returns the [Response].
+  Future<Response> deleteUserOnboardingWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/users/me/onboarding';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<void> deleteUserOnboarding() async {
+    final response = await deleteUserOnboardingWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'GET /users/me/preferences' operation and returns the [Response].
   Future<Response> getMyPreferencesWithHttpInfo() async {
     // ignore: prefer_const_declarations
@@ -358,6 +391,47 @@ class UsersApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /users/me/onboarding' operation and returns the [Response].
+  Future<Response> getUserOnboardingWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/users/me/onboarding';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<OnboardingResponseDto?> getUserOnboarding() async {
+    final response = await getUserOnboardingWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'OnboardingResponseDto',) as OnboardingResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'GET /users' operation and returns the [Response].
   Future<Response> searchUsersWithHttpInfo() async {
     // ignore: prefer_const_declarations
@@ -444,6 +518,53 @@ class UsersApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LicenseResponseDto',) as LicenseResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'PUT /users/me/onboarding' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [OnboardingDto] onboardingDto (required):
+  Future<Response> setUserOnboardingWithHttpInfo(OnboardingDto onboardingDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/users/me/onboarding';
+
+    // ignore: prefer_final_locals
+    Object? postBody = onboardingDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [OnboardingDto] onboardingDto (required):
+  Future<OnboardingResponseDto?> setUserOnboarding(OnboardingDto onboardingDto,) async {
+    final response = await setUserOnboardingWithHttpInfo(onboardingDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'OnboardingResponseDto',) as OnboardingResponseDto;
     
     }
     return null;

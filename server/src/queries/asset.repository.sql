@@ -130,7 +130,6 @@ select
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"
-  left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
 where
   "assets"."id" = any ($1::uuid[])
 
@@ -186,16 +185,6 @@ set
 where
   "id" = any ($2::uuid[])
 
--- AssetRepository.updateDuplicates
-update "assets"
-set
-  "duplicateId" = $1
-where
-  (
-    "duplicateId" = any ($2::uuid[])
-    or "id" = any ($3::uuid[])
-  )
-
 -- AssetRepository.getByChecksum
 select
   "assets".*
@@ -235,18 +224,15 @@ limit
 with
   "assets" as (
     select
-      date_trunc($1, "localDateTime" at time zone 'UTC') at time zone 'UTC' as "timeBucket"
+      date_trunc('MONTH', "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' as "timeBucket"
     from
       "assets"
     where
       "assets"."deletedAt" is null
-      and (
-        "assets"."visibility" = $2
-        or "assets"."visibility" = $3
-      )
+      and "assets"."visibility" in ('archive', 'timeline')
   )
 select
-  "timeBucket",
+  ("timeBucket" AT TIME ZONE 'UTC')::date::text as "timeBucket",
   count(*) as "count"
 from
   "assets"
@@ -256,96 +242,102 @@ order by
   "timeBucket" desc
 
 -- AssetRepository.getTimeBucket
-select
-  "assets".*,
-  to_json("exif") as "exifInfo",
-  to_json("stacked_assets") as "stack"
-from
-  "assets"
-  left join "exif" on "assets"."id" = "exif"."assetId"
-  left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
-  left join lateral (
-    select
-      "asset_stack".*,
-      count("stacked") as "assetCount"
-    from
-      "assets" as "stacked"
-    where
-      "stacked"."stackId" = "asset_stack"."id"
-      and "stacked"."deletedAt" is null
-      and "stacked"."visibility" != $1
-    group by
-      "asset_stack"."id"
-  ) as "stacked_assets" on "asset_stack"."id" is not null
-where
-  (
-    "asset_stack"."primaryAssetId" = "assets"."id"
-    or "assets"."stackId" is null
-  )
-  and "assets"."deletedAt" is null
-  and (
-    "assets"."visibility" = $2
-    or "assets"."visibility" = $3
-  )
-  and date_trunc($4, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $5
-order by
-  "assets"."localDateTime" desc
-
--- AssetRepository.getDuplicates
 with
-  "duplicates" as (
+  "cte" as (
     select
-      "assets"."duplicateId",
-      jsonb_agg("asset") as "assets"
+      "assets"."duration",
+      "assets"."id",
+      "assets"."visibility",
+      "assets"."isFavorite",
+      assets.type = 'IMAGE' as "isImage",
+      assets."deletedAt" is not null as "isTrashed",
+      "assets"."livePhotoVideoId",
+      extract(
+        epoch
+        from
+          (
+            assets."localDateTime" - assets."fileCreatedAt" at time zone 'UTC'
+          )
+      )::real / 3600 as "localOffsetHours",
+      "assets"."ownerId",
+      "assets"."status",
+      assets."fileCreatedAt" at time zone 'utc' as "fileCreatedAt",
+      encode("assets"."thumbhash", 'base64') as "thumbhash",
+      "exif"."city",
+      "exif"."country",
+      "exif"."projectionType",
+      coalesce(
+        case
+          when exif."exifImageHeight" = 0
+          or exif."exifImageWidth" = 0 then 1
+          when "exif"."orientation" in ('5', '6', '7', '8', '-90', '90') then round(
+            exif."exifImageHeight"::numeric / exif."exifImageWidth"::numeric,
+            3
+          )
+          else round(
+            exif."exifImageWidth"::numeric / exif."exifImageHeight"::numeric,
+            3
+          )
+        end,
+        1
+      ) as "ratio",
+      "stack"
     from
       "assets"
+      inner join "exif" on "assets"."id" = "exif"."assetId"
       left join lateral (
         select
-          "assets".*,
-          "exif" as "exifInfo"
+          array[stacked."stackId"::text, count('stacked')::text] as "stack"
         from
-          "exif"
+          "assets" as "stacked"
         where
-          "exif"."assetId" = "assets"."id"
-      ) as "asset" on true
+          "stacked"."stackId" = "assets"."stackId"
+          and "stacked"."deletedAt" is null
+          and "stacked"."visibility" = $1
+        group by
+          "stacked"."stackId"
+      ) as "stacked_assets" on true
     where
-      "assets"."ownerId" = $1::uuid
-      and "assets"."duplicateId" is not null
-      and "assets"."deletedAt" is null
-      and "assets"."visibility" != $2
-      and "assets"."stackId" is null
-    group by
-      "assets"."duplicateId"
+      "assets"."deletedAt" is null
+      and "assets"."visibility" in ('archive', 'timeline')
+      and date_trunc('MONTH', "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' = $2
+      and not exists (
+        select
+        from
+          "asset_stack"
+        where
+          "asset_stack"."id" = "assets"."stackId"
+          and "asset_stack"."primaryAssetId" != "assets"."id"
+      )
+    order by
+      "assets"."fileCreatedAt" desc
   ),
-  "unique" as (
+  "agg" as (
     select
-      "duplicateId"
+      coalesce(array_agg("city"), '{}') as "city",
+      coalesce(array_agg("country"), '{}') as "country",
+      coalesce(array_agg("duration"), '{}') as "duration",
+      coalesce(array_agg("id"), '{}') as "id",
+      coalesce(array_agg("visibility"), '{}') as "visibility",
+      coalesce(array_agg("isFavorite"), '{}') as "isFavorite",
+      coalesce(array_agg("isImage"), '{}') as "isImage",
+      coalesce(array_agg("isTrashed"), '{}') as "isTrashed",
+      coalesce(array_agg("livePhotoVideoId"), '{}') as "livePhotoVideoId",
+      coalesce(array_agg("fileCreatedAt"), '{}') as "fileCreatedAt",
+      coalesce(array_agg("localOffsetHours"), '{}') as "localOffsetHours",
+      coalesce(array_agg("ownerId"), '{}') as "ownerId",
+      coalesce(array_agg("projectionType"), '{}') as "projectionType",
+      coalesce(array_agg("ratio"), '{}') as "ratio",
+      coalesce(array_agg("status"), '{}') as "status",
+      coalesce(array_agg("thumbhash"), '{}') as "thumbhash",
+      coalesce(json_agg("stack"), '[]') as "stack"
     from
-      "duplicates"
-    where
-      jsonb_array_length("assets") = $3
-  ),
-  "removed_unique" as (
-    update "assets"
-    set
-      "duplicateId" = $4
-    from
-      "unique"
-    where
-      "assets"."duplicateId" = "unique"."duplicateId"
+      "cte"
   )
 select
-  *
+  to_json(agg)::text as "assets"
 from
-  "duplicates"
-where
-  not exists (
-    select
-    from
-      "unique"
-    where
-      "unique"."duplicateId" = "duplicates"."duplicateId"
-  )
+  "agg"
 
 -- AssetRepository.getAssetIdByCity
 with
@@ -432,3 +424,34 @@ where
   and "assets"."updatedAt" > $3
 limit
   $4
+
+-- AssetRepository.detectOfflineExternalAssets
+update "assets"
+set
+  "isOffline" = $1,
+  "deletedAt" = $2
+where
+  "isOffline" = $3
+  and "isExternal" = $4
+  and "libraryId" = $5::uuid
+  and (
+    not "originalPath" like $6
+    or "originalPath" like $7
+  )
+
+-- AssetRepository.filterNewExternalAssetPaths
+select
+  "path"
+from
+  unnest(array[$1]::text[]) as "path"
+where
+  not exists (
+    select
+      "originalPath"
+    from
+      "assets"
+    where
+      "assets"."originalPath" = "path"
+      and "libraryId" = $2::uuid
+      and "isExternal" = $3
+  )
