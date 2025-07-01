@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -66,6 +67,24 @@ class ActionNotifier extends Notifier<void> {
     };
   }
 
+  Future<ActionResult> shareLink(
+    ActionSource source,
+    BuildContext context,
+  ) async {
+    final ids = _getIdsForSource<RemoteAsset>(source);
+    try {
+      await _service.shareLink(ids, context);
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to create shared link for assets', error, stack);
+      return ActionResult(
+        count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
+
   Future<ActionResult> favorite(ActionSource source) async {
     final ids = _getIdsForSource<RemoteAsset>(source);
     try {
@@ -127,7 +146,7 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> moveToLockFolder(ActionSource source) async {
-    final ids = _getIdsForSource<LocalAsset>(source);
+    final ids = _getIdsForSource<RemoteAsset>(source);
     try {
       await _service.moveToLockFolder(ids);
       return ActionResult(count: ids.length, success: true);
@@ -142,7 +161,7 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> removeFromLockFolder(ActionSource source) async {
-    final ids = _getIdsForSource<LocalAsset>(source);
+    final ids = _getIdsForSource<RemoteAsset>(source);
     try {
       await _service.removeFromLockFolder(ids);
       return ActionResult(count: ids.length, success: true);

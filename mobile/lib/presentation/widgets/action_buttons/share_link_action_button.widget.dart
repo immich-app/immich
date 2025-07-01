@@ -1,44 +1,42 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class ShareLinkActionButton extends ConsumerWidget {
   final ActionSource source;
 
   const ShareLinkActionButton({super.key, required this.source});
 
-  onAction(BuildContext context, WidgetRef ref) {
-    switch (source) {
-      case ActionSource.timeline:
-        timelineAction(context, ref);
-      case ActionSource.viewer:
-        viewerAction(ref);
+  _onTap(BuildContext context, WidgetRef ref) async {
+    if (!context.mounted) {
+      return;
     }
-  }
 
-  void timelineAction(BuildContext context, WidgetRef ref) {
-    final ids = ref
-        .read(multiSelectProvider.select((value) => value.selectedAssets))
-        .whereType<RemoteAsset>()
-        .toList()
-        .map((asset) => asset.id)
-        .toList();
+    final result =
+        await ref.read(actionProvider.notifier).shareLink(source, context);
+    ref.read(multiSelectProvider.notifier).reset();
 
-    context.pushRoute(
-      SharedLinkEditRoute(
-        assetsList: ids,
-      ),
+    final successMessage = 'share_link_action_prompt'.t(
+      context: context,
+      args: {'count': result.count.toString()},
     );
-  }
 
-  void viewerAction(WidgetRef _) {
-    UnimplementedError("Viewer action for favorite is not implemented yet.");
+    if (context.mounted) {
+      ImmichToast.show(
+        context: context,
+        msg: result.success
+            ? successMessage
+            : 'scaffold_body_error_occurred'.t(context: context),
+        gravity: ToastGravity.BOTTOM,
+        toastType: result.success ? ToastType.success : ToastType.error,
+      );
+    }
   }
 
   @override
@@ -46,7 +44,7 @@ class ShareLinkActionButton extends ConsumerWidget {
     return BaseActionButton(
       iconData: Icons.link_rounded,
       label: "share_link".t(context: context),
-      onPressed: () => onAction(context, ref),
+      onPressed: () => _onTap(context, ref),
     );
   }
 }
