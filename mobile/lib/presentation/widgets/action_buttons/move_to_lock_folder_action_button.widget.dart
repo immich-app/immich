@@ -41,12 +41,6 @@ class MoveToLockFolderActionButton extends ConsumerWidget {
     }
   }
 
-  void viewerAction(WidgetRef _) {
-    UnimplementedError(
-      "Viewer action for move to locked folder is not implemented yet.",
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(

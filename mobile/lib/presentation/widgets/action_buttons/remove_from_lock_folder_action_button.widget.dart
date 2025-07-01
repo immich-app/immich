@@ -41,12 +41,6 @@ class RemoveFromLockFolderActionButton extends ConsumerWidget {
     }
   }
 
-  void viewerAction(WidgetRef _) {
-    UnimplementedError(
-      "Viewer action for remove from locked folder is not implemented yet.",
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
