@@ -799,7 +799,7 @@
   "edit_key": "Edit key",
   "edit_link": "Edit link",
   "edit_location": "Edit location",
-  "edit_location_action_prompt": "{count} edited location",
+  "edit_location_action_prompt": "{count} location edited",
   "edit_location_dialog_title": "Location",
   "edit_name": "Edit name",
   "edit_people": "Edit people",
