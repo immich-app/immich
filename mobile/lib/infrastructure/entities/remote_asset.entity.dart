@@ -37,9 +37,10 @@ class RemoteAssetEntity extends Table
 }
 
 extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
-  Asset toDto() => Asset(
+  RemoteAsset toDto() => RemoteAsset(
         id: id,
         name: name,
+        ownerId: ownerId,
         checksum: checksum,
         type: type,
         createdAt: createdAt,

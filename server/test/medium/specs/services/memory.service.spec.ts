@@ -1,6 +1,5 @@
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
-import { DB } from 'src/db';
 import { AssetFileType, MemoryType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -10,6 +9,7 @@ import { MemoryRepository } from 'src/repositories/memory.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { UserRepository } from 'src/repositories/user.repository';
+import { DB } from 'src/schema';
 import { MemoryService } from 'src/services/memory.service';
 import { newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';

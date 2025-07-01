@@ -1,8 +1,8 @@
 import { Kysely } from 'kysely';
-import { DB } from 'src/db';
 import { AlbumUserRole, SyncEntityType, SyncRequestType } from 'src/enum';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
+import { DB } from 'src/schema';
 import { SyncTestContext } from 'test/medium.factory';
 import { getKyselyDB, wait } from 'test/utils';
 

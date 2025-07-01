@@ -7,9 +7,11 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
+  Generated,
   Index,
   PrimaryGeneratedColumn,
   Table,
+  Timestamp,
   UpdateDateColumn,
 } from 'src/sql-tools';
 
@@ -27,13 +29,13 @@ import {
 })
 export class ActivityTable {
   @PrimaryGeneratedColumn()
-  id!: string;
+  id!: Generated<string>;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Generated<Timestamp>;
 
   @ForeignKeyColumn(() => AlbumTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   albumId!: string;
@@ -48,8 +50,8 @@ export class ActivityTable {
   comment!: string | null;
 
   @Column({ type: 'boolean', default: false })
-  isLiked!: boolean;
+  isLiked!: Generated<boolean>;
 
   @UpdateIdColumn({ indexName: 'IDX_activity_update_id' })
-  updateId!: string;
+  updateId!: Generated<string>;
 }

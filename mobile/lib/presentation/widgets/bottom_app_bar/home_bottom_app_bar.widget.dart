@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
@@ -33,9 +34,9 @@ class HomeBottomAppBar extends ConsumerWidget {
       actions: [
         const ShareActionButton(),
         if (multiselect.hasRemote) ...[
-          const ShareLinkActionButton(),
-          const ArchiveActionButton(),
-          const FavoriteActionButton(),
+          const ShareLinkActionButton(source: ActionSource.timeline),
+          const ArchiveActionButton(source: ActionSource.timeline),
+          const FavoriteActionButton(source: ActionSource.timeline),
           const DownloadActionButton(),
           isTrashEnable
               ? const TrashActionButton()

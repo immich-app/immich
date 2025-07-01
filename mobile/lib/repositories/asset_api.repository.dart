@@ -56,6 +56,15 @@ class AssetApiRepository extends ApiRepository {
     );
   }
 
+  Future<void> updateFavorite(
+    List<String> ids,
+    bool isFavorite,
+  ) async {
+    return _api.updateAssets(
+      AssetBulkUpdateDto(ids: ids, isFavorite: isFavorite),
+    );
+  }
+
   _mapVisibility(AssetVisibilityEnum visibility) => switch (visibility) {
         AssetVisibilityEnum.timeline => AssetVisibility.timeline,
         AssetVisibilityEnum.hidden => AssetVisibility.hidden,

@@ -1,10 +1,10 @@
 import { Kysely } from 'kysely';
-import { DB } from 'src/db';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { DB } from 'src/schema';
 import { PersonService } from 'src/services/person.service';
 import { newMediumService } from 'test/medium.factory';
 import { factory } from 'test/small.factory';

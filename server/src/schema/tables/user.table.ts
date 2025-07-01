@@ -7,20 +7,17 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
+  Generated,
   Index,
   PrimaryGeneratedColumn,
   Table,
+  Timestamp,
   UpdateDateColumn,
 } from 'src/sql-tools';
-
-type Timestamp = ColumnType<Date, Date | string, Date | string>;
-type Generated<T> =
-  T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S, I | undefined, U> : ColumnType<T, T | undefined, T>;
 
 @Table('users')
 @UpdatedAtTrigger('users_updated_at')
 @AfterDeleteTrigger({
-  name: 'users_delete_audit',
   scope: 'statement',
   function: users_delete_audit,
   referencingOldTableAs: 'old',

@@ -15,6 +15,7 @@ import { repositories } from 'src/repositories';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { SyncRepository } from 'src/repositories/sync.repository';
 import { AuthService } from 'src/services/auth.service';
 import { getKyselyConfig } from 'src/utils/database';
 
@@ -111,7 +112,7 @@ class SqlGenerator {
     data.push(...(await this.runTargets(instance, `${Repository.name}`)));
 
     // nested repositories
-    if (Repository.name === AccessRepository.name) {
+    if (Repository.name === AccessRepository.name || Repository.name === SyncRepository.name) {
       for (const key of Object.keys(instance)) {
         const subInstance = (instance as any)[key];
         data.push(...(await this.runTargets(subInstance, `${Repository.name}.${key}`)));
