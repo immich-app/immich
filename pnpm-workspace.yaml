@@ -51,6 +51,7 @@ overrides:
   '@img/sharp-win32-ia32': '-'
   '@img/sharp-win32-x64': '-'
 
+
 packageExtensions:
   nestjs-kysely:
     dependencies:
@@ -68,6 +69,9 @@ packageExtensions:
     dependencies:
       node-addon-api: '*'
       node-gyp: '*'
+  '@immich/ui':
+    dependencies:
+      tailwindcss: ^4.1.11
   tailwind-variants:
     dependencies:
       tailwindcss: ^4.1.11
