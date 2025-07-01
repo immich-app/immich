@@ -25,7 +25,11 @@ class ActionService {
   final DriftRemoteAssetRepository _remoteAssetRepository;
   final DriftRemoteExifRepository _remoteExifRepository;
 
-  const ActionService(this._assetApiRepository, this._remoteAssetRepository, this._remoteExifRepository);
+  const ActionService(
+    this._assetApiRepository,
+    this._remoteAssetRepository,
+    this._remoteExifRepository,
+  );
 
   Future<void> shareLink(List<String> remoteIds, BuildContext context) async {
     context.pushRoute(
@@ -89,7 +93,10 @@ class ActionService {
     );
   }
 
-  Future<void> editLocation(List<String> remoteIds, BuildContext context) async {
+  Future<void> editLocation(
+    List<String> remoteIds,
+    BuildContext context,
+  ) async {
     LatLng? initialLatLng;
     if (remoteIds.length == 1) {
       final exif = await _remoteExifRepository.get(remoteIds[0]);

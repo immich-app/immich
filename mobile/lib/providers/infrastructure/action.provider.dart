@@ -6,7 +6,6 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
 import 'package:logging/logging.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final actionProvider = NotifierProvider<ActionNotifier, void>(
@@ -174,8 +173,11 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> editLocation(ActionSource source, BuildContext context) async {
-    final ids = _getIdsForSource<LocalAsset>(source);
+  Future<ActionResult> editLocation(
+    ActionSource source,
+    BuildContext context,
+  ) async {
+    final ids = _getIdsForSource<RemoteAsset>(source);
     try {
       await _service.editLocation(ids, context);
       return ActionResult(count: ids.length, success: true);
