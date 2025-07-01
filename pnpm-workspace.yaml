@@ -43,7 +43,6 @@ overrides:
   '@img/sharp-libvips-linux-ppc64': '-'
   '@img/sharp-libvips-linux-s390x': '-'
   '@img/sharp-libvips-linuxmusl-arm64': '-'
-  '@img/sharp-linux-arm64': '-'
   '@img/sharp-linux-s390x': '-'
   '@img/sharp-linuxmusl-arm64': '-'
   '@img/sharp-wasm32': '-'

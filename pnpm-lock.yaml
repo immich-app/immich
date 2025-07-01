@@ -16,7 +16,6 @@ overrides:
   '@img/sharp-libvips-linux-ppc64': '-'
   '@img/sharp-libvips-linux-s390x': '-'
   '@img/sharp-libvips-linuxmusl-arm64': '-'
-  '@img/sharp-linux-arm64': '-'
   '@img/sharp-linux-s390x': '-'
   '@img/sharp-linuxmusl-arm64': '-'
   '@img/sharp-wasm32': '-'
@@ -2678,6 +2677,12 @@ packages:
   '@img/sharp-libvips-linuxmusl-x64@1.1.0':
     resolution: {integrity: sha512-wK7SBdwrAiycjXdkPnGCPLjYb9lD4l6Ze2gSdAGVZrEL05AOUJESWU2lhlC+Ffn5/G+VKuSm6zzbQSzFX/P65A==}
     cpu: [x64]
+    os: [linux]
+
+  '@img/sharp-linux-arm64@0.34.2':
+    resolution: {integrity: sha512-D8n8wgWmPDakc83LORcfJepdOSN6MvWNzzz2ux0MnIbOqdieRZwVYY32zxVx+IFUT8er5KPcyU3XXsn+GzG/0Q==}
+    engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
+    cpu: [arm64]
     os: [linux]
 
   '@img/sharp-linux-arm@0.34.2':
@@ -14841,6 +14846,11 @@ snapshots:
   '@img/sharp-libvips-linuxmusl-x64@1.1.0':
     optional: true
 
+  '@img/sharp-linux-arm64@0.34.2':
+    optionalDependencies:
+      '@img/sharp-libvips-linux-arm64': 1.1.0
+    optional: true
+
   '@img/sharp-linux-arm@0.34.2':
     optional: true
 
@@ -24405,6 +24415,7 @@ snapshots:
       '@img/sharp-libvips-linux-x64': 1.1.0
       '@img/sharp-libvips-linuxmusl-x64': 1.1.0
       '@img/sharp-linux-arm': 0.34.2
+      '@img/sharp-linux-arm64': 0.34.2
       '@img/sharp-linux-x64': 0.34.2
       '@img/sharp-linuxmusl-x64': 0.34.2
     transitivePeerDependencies:
