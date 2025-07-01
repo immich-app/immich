@@ -67,7 +67,10 @@ class ActionNotifier extends Notifier<void> {
     };
   }
 
-  Future<ActionResult> shareLink(ActionSource source, BuildContext context) async {
+  Future<ActionResult> shareLink(
+    ActionSource source,
+    BuildContext context,
+  ) async {
     final ids = _getIdsForSource<RemoteAsset>(source);
     try {
       await _service.shareLink(ids, context);
