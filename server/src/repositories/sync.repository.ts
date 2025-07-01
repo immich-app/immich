@@ -41,6 +41,7 @@ export class SyncRepository {
   partner: PartnerSync;
   partnerAsset: PartnerAssetsSync;
   partnerAssetExif: PartnerAssetExifsSync;
+  partnerStack: PartnerStackSync;
   stack: StackSync;
   user: UserSync;
 
@@ -57,6 +58,7 @@ export class SyncRepository {
     this.partner = new PartnerSync(this.db);
     this.partnerAsset = new PartnerAssetsSync(this.db);
     this.partnerAssetExif = new PartnerAssetExifsSync(this.db);
+    this.partnerStack = new PartnerStackSync(this.db);
     this.stack = new StackSync(this.db);
     this.user = new UserSync(this.db);
   }
@@ -552,13 +554,54 @@ class StackSync extends BaseSync {
   getUpserts(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('asset_stack')
-      .select(['id', 'createdAt', 'updatedAt', 'primaryAssetId', 'ownerId', 'updateId'])
+      .select(columns.syncStack)
+      .select('updateId')
       .where('ownerId', '=', userId)
       .$call((qb) => this.upsertTableFilters(qb, ack))
       .stream();
   }
 }
 
+class PartnerStackSync extends BaseSync {
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getDeletes(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('stacks_audit')
+      .select(['id', 'stackId'])
+      .where('userId', 'in', (eb) =>
+        eb.selectFrom('partners').select(['sharedById']).where('sharedWithId', '=', userId),
+      )
+      .$call((qb) => this.auditTableFilters(qb, ack))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
+  getBackfill(partnerId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
+    return this.db
+      .selectFrom('asset_stack')
+      .select(columns.syncStack)
+      .select('updateId')
+      .where('ownerId', '=', partnerId)
+      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .where('updateId', '<=', beforeUpdateId)
+      .$if(!!afterUpdateId, (eb) => eb.where('updateId', '>=', afterUpdateId!))
+      .orderBy('updateId', 'asc')
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('asset_stack')
+      .select(columns.syncStack)
+      .select('updateId')
+      .where('ownerId', 'in', (eb) =>
+        eb.selectFrom('partners').select(['sharedById']).where('sharedWithId', '=', userId),
+      )
+      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .stream();
+  }
+}
 class UserSync extends BaseSync {
   @GenerateSql({ params: [], stream: true })
   getDeletes(ack?: SyncAck) {

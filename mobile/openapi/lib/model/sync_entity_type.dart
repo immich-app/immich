@@ -35,6 +35,9 @@ class SyncEntityType {
   static const partnerAssetDeleteV1 = SyncEntityType._(r'PartnerAssetDeleteV1');
   static const partnerAssetExifV1 = SyncEntityType._(r'PartnerAssetExifV1');
   static const partnerAssetExifBackfillV1 = SyncEntityType._(r'PartnerAssetExifBackfillV1');
+  static const partnerStackBackfillV1 = SyncEntityType._(r'PartnerStackBackfillV1');
+  static const partnerStackDeleteV1 = SyncEntityType._(r'PartnerStackDeleteV1');
+  static const partnerStackV1 = SyncEntityType._(r'PartnerStackV1');
   static const albumV1 = SyncEntityType._(r'AlbumV1');
   static const albumDeleteV1 = SyncEntityType._(r'AlbumDeleteV1');
   static const albumUserV1 = SyncEntityType._(r'AlbumUserV1');
@@ -69,6 +72,9 @@ class SyncEntityType {
     partnerAssetDeleteV1,
     partnerAssetExifV1,
     partnerAssetExifBackfillV1,
+    partnerStackBackfillV1,
+    partnerStackDeleteV1,
+    partnerStackV1,
     albumV1,
     albumDeleteV1,
     albumUserV1,
@@ -138,6 +144,9 @@ class SyncEntityTypeTypeTransformer {
         case r'PartnerAssetDeleteV1': return SyncEntityType.partnerAssetDeleteV1;
         case r'PartnerAssetExifV1': return SyncEntityType.partnerAssetExifV1;
         case r'PartnerAssetExifBackfillV1': return SyncEntityType.partnerAssetExifBackfillV1;
+        case r'PartnerStackBackfillV1': return SyncEntityType.partnerStackBackfillV1;
+        case r'PartnerStackDeleteV1': return SyncEntityType.partnerStackDeleteV1;
+        case r'PartnerStackV1': return SyncEntityType.partnerStackV1;
         case r'AlbumV1': return SyncEntityType.albumV1;
         case r'AlbumDeleteV1': return SyncEntityType.albumDeleteV1;
         case r'AlbumUserV1': return SyncEntityType.albumUserV1;

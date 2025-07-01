@@ -267,6 +267,9 @@ export type SyncItem = {
   [SyncEntityType.MemoryToAssetDeleteV1]: SyncMemoryAssetDeleteV1;
   [SyncEntityType.StackV1]: SyncStackV1;
   [SyncEntityType.StackDeleteV1]: SyncStackDeleteV1;
+  [SyncEntityType.PartnerStackBackfillV1]: SyncStackV1;
+  [SyncEntityType.PartnerStackDeleteV1]: SyncStackDeleteV1;
+  [SyncEntityType.PartnerStackV1]: SyncStackV1;
   [SyncEntityType.SyncAckV1]: SyncAckV1;
 };
 

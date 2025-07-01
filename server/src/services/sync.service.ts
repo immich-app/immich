@@ -59,6 +59,7 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.AssetsV1,
   SyncRequestType.StacksV1,
   SyncRequestType.PartnerAssetsV1,
+  SyncRequestType.PartnerStacksV1,
   SyncRequestType.AlbumAssetsV1,
   SyncRequestType.AlbumsV1,
   SyncRequestType.AlbumUsersV1,
@@ -139,6 +140,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.MemoriesV1]: () => this.syncMemoriesV1(response, checkpointMap, auth),
       [SyncRequestType.MemoryToAssetsV1]: () => this.syncMemoryAssetsV1(response, checkpointMap, auth),
       [SyncRequestType.StacksV1]: () => this.syncStackV1(response, checkpointMap, auth),
+      [SyncRequestType.PartnerStacksV1]: () => this.syncPartnerStackV1(response, checkpointMap, auth, sessionId),
     };
 
     for (const type of SYNC_TYPES_ORDER.filter((type) => dto.types.includes(type))) {
@@ -521,6 +523,54 @@ export class SyncService extends BaseService {
 
     const upsertType = SyncEntityType.StackV1;
     const upserts = this.syncRepository.stack.getUpserts(auth.user.id, checkpointMap[upsertType]);
+    for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
+
+  private async syncPartnerStackV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto, sessionId: string) {
+    const deleteType = SyncEntityType.PartnerStackDeleteV1;
+    const deletes = this.syncRepository.partnerStack.getDeletes(auth.user.id, checkpointMap[deleteType]);
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const backfillType = SyncEntityType.PartnerStackBackfillV1;
+    const backfillCheckpoint = checkpointMap[backfillType];
+    const partners = await this.syncRepository.partner.getCreatedAfter(auth.user.id, backfillCheckpoint?.updateId);
+    const upsertType = SyncEntityType.PartnerStackV1;
+    const upsertCheckpoint = checkpointMap[upsertType];
+    if (upsertCheckpoint) {
+      const endId = upsertCheckpoint.updateId;
+
+      for (const partner of partners) {
+        const createId = partner.createId;
+        if (isEntityBackfillComplete(createId, backfillCheckpoint)) {
+          continue;
+        }
+
+        const startId = getStartId(createId, backfillCheckpoint);
+        const backfill = this.syncRepository.partnerStack.getBackfill(partner.sharedById, startId, endId);
+
+        for await (const { updateId, ...data } of backfill) {
+          send(response, {
+            type: backfillType,
+            ids: [createId, updateId],
+            data,
+          });
+        }
+
+        sendEntityBackfillCompleteAck(response, backfillType, createId);
+      }
+    } else if (partners.length > 0) {
+      await this.upsertBackfillCheckpoint({
+        type: backfillType,
+        sessionId,
+        createId: partners.at(-1)!.createId,
+      });
+    }
+
+    const upserts = this.syncRepository.partnerStack.getUpserts(auth.user.id, checkpointMap[upsertType]);
     for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });
     }
