@@ -1,3 +1,4 @@
+import 'package:drift/native.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -8,6 +9,7 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
@@ -80,12 +82,12 @@ void main() {
     setUpAll(() async {
       WidgetsFlutterBinding.ensureInitialized();
       final db = await TestUtils.initIsar();
-
+      final driftDb = Drift(NativeDatabase.memory());
       db.writeTxnSync(() => db.clearSync());
       await StoreService.init(storeRepository: IsarStoreRepository(db));
       await Store.put(StoreKey.currentUser, owner);
       await LogService.init(
-        logRepository: IsarLogRepository(db),
+        logRepository: LogRepository(driftDb),
         storeRepository: IsarStoreRepository(db),
       );
     });
