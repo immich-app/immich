@@ -83,44 +83,6 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     }
   }
 
-  void sortAlbums(RemoteAlbumSortMode sortMode, {bool isReverse = false}) {
-    final sortedAlbums = _remoteAlbumService.sortAlbums(
-      state.albums,
-      sortMode,
-      isReverse: isReverse,
-    );
-    final sortedFilteredAlbums = _remoteAlbumService
-        .sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
-    state = state.copyWith(
-      albums: sortedAlbums,
-      filteredAlbums: sortedFilteredAlbums,
-    );
-  }
-
-  void sortByName({bool isReverse = false}) {
-    sortAlbums(RemoteAlbumSortMode.title, isReverse: isReverse);
-  }
-
-  void sortByAssetCount({bool isReverse = false}) {
-    sortAlbums(RemoteAlbumSortMode.assetCount, isReverse: isReverse);
-  }
-
-  void sortByLastModified({bool isReverse = false}) {
-    sortAlbums(RemoteAlbumSortMode.lastModified, isReverse: isReverse);
-  }
-
-  void sortByCreatedDate({bool isReverse = false}) {
-    sortAlbums(RemoteAlbumSortMode.created, isReverse: isReverse);
-  }
-
-  void sortByMostRecent({bool isReverse = false}) {
-    sortAlbums(RemoteAlbumSortMode.mostRecent, isReverse: isReverse);
-  }
-
-  void sortByOldest({bool isReverse = false}) {
-    sortAlbums(RemoteAlbumSortMode.mostOldest, isReverse: isReverse);
-  }
-
   Future<void> refresh() async {
     await getAll();
   }

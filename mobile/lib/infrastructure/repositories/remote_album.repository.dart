@@ -43,7 +43,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         .map(
           (row) => row.readTable(_db.remoteAlbumEntity).toDto(
                 assetCount: row.read(assetCount) ?? 0,
-                ownerName: row.readTableOrNull(_db.userEntity)?.name,
+                ownerName: row.readTable(_db.userEntity).name,
               ),
         )
         .get();
@@ -51,7 +51,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
 }
 
 extension on RemoteAlbumEntityData {
-  Album toDto({int assetCount = 0, String? ownerName}) {
+  Album toDto({int assetCount = 0, required String ownerName}) {
     return Album(
       id: id,
       name: name,
@@ -63,7 +63,7 @@ extension on RemoteAlbumEntityData {
       isActivityEnabled: isActivityEnabled,
       order: order,
       assetCount: assetCount,
-      ownerName: ownerName ?? '',
+      ownerName: ownerName,
     );
   }
 }
