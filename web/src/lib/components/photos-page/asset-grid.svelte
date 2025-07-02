@@ -544,7 +544,7 @@
         updateStackedAssetInTimeline(timelineManager, {
           stack: action.stack,
           toDeleteIds: action.stack.assets
-            .filter((asset) => asset.id !== action.stack?.primaryAssetId)
+            .filter((asset) => asset.id !== action.stack.primaryAssetId)
             .map((asset) => asset.id),
         });
         break;
