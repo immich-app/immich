@@ -125,7 +125,7 @@ jobs:
     with:
       image: immich-web
       context: .
-      dockerfile: web/Dockerfile
+      dockerfile: Dockerfile.pu
       dockerhub-push: ${{ github.event_name == 'release' }}
 
   success-check-server:
