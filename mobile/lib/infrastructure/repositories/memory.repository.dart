@@ -26,7 +26,7 @@ extension on MemoryEntityData {
       deletedAt: deletedAt,
       ownerId: ownerId,
       type: type,
-      data: MemoryData.fromJson(convertToValidJson(data)),
+      data: MemoryData.fromJson(data),
       isSaved: isSaved,
       memoryAt: memoryAt,
       seenAt: seenAt,
@@ -34,12 +34,4 @@ extension on MemoryEntityData {
       hideAt: hideAt,
     );
   }
-}
-
-String convertToValidJson(String dartString) {
-  // Simple regex to add quotes around keys
-  return dartString.replaceAllMapped(
-    RegExp(r'(\w+):'),
-    (match) => '"${match.group(1)}":',
-  );
 }

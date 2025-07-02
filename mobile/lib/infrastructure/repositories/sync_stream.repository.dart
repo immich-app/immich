@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -25,7 +27,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
   Future<void> deleteUsersV1(Iterable<SyncUserDeleteV1> data) async {
     try {
       await _db.userEntity
-          .deleteWhere((row) => row.id.isIn(data.map((error) => error.userId)));
+          .deleteWhere((row) => row.id.isIn(data.map((e) => e.userId)));
     } catch (error, stack) {
       _logger.severe('Error: SyncUserDeleteV1', error, stack);
       rethrow;
@@ -196,7 +198,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
   Future<void> deleteAlbumsV1(Iterable<SyncAlbumDeleteV1> data) async {
     try {
       await _db.remoteAlbumEntity.deleteWhere(
-        (row) => row.id.isIn(data.map((error) => error.albumId)),
+        (row) => row.id.isIn(data.map((e) => e.albumId)),
       );
     } catch (error, stackTrace) {
       _logger.severe('Error: deleteAlbumsV1', error, stackTrace);
@@ -341,7 +343,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             deletedAt: Value(memory.deletedAt),
             ownerId: Value(memory.ownerId),
             type: Value(memory.type.toMemoryType()),
-            data: Value(memory.data.toString()),
+            data: Value(jsonEncode(memory.data)),
             isSaved: Value(memory.isSaved),
             memoryAt: Value(memory.memoryAt),
             seenAt: Value.absentIfNull(memory.seenAt),
@@ -365,7 +367,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
   Future<void> deleteMemoriesV1(Iterable<SyncMemoryDeleteV1> data) async {
     try {
       await _db.memoryEntity.deleteWhere(
-        (row) => row.id.isIn(data.map((error) => error.memoryId)),
+        (row) => row.id.isIn(data.map((e) => e.memoryId)),
       );
     } catch (error, stackTrace) {
       _logger.severe('Error: deleteMemoriesV1', error, stackTrace);
