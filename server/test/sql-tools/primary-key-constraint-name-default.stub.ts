@@ -1,4 +1,4 @@
-import { DatabaseConstraintType, DatabaseSchema, PrimaryColumn, Table } from 'src/sql-tools';
+import { ConstraintType, DatabaseSchema, PrimaryColumn, Table } from 'src/sql-tools';
 
 @Table()
 export class Table1 {
@@ -8,7 +8,7 @@ export class Table1 {
 
 export const description = 'should add a primary key constraint to the table with a default name';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [],
@@ -32,7 +32,7 @@ export const schema: DatabaseSchema = {
       triggers: [],
       constraints: [
         {
-          type: DatabaseConstraintType.PRIMARY_KEY,
+          type: ConstraintType.PRIMARY_KEY,
           name: 'PK_b249cc64cf63b8a22557cdc8537',
           tableName: 'table1',
           columnNames: ['id'],

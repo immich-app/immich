@@ -9,7 +9,7 @@ export class Table1 {
 
 export const description = 'should create an index with a where clause';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [],

@@ -15,7 +15,7 @@ export class Table1 {
 
 export const description = 'should accept an enum type';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [
