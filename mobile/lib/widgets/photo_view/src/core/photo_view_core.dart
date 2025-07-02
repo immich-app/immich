@@ -466,6 +466,9 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     return widget.hasCustomChild
         ? widget.customChild!
         : Image(
+            key: widget.heroAttributes?.tag != null
+                ? ObjectKey(widget.heroAttributes!.tag)
+                : null,
             image: widget.imageProvider!,
             semanticLabel: widget.semanticLabel,
             gaplessPlayback: widget.gaplessPlayback ?? false,

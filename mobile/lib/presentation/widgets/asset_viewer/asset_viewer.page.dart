@@ -60,7 +60,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   PersistentBottomSheetController? sheetCloseNotifier;
   // PhotoViewGallery takes care of disposing it's controllers
   PhotoViewControllerBase? viewController;
-  PhotoViewScaleStateController? scaleStateController;
+  late PhotoViewScaleStateController scaleStateController;
 
   late Platform platform;
   late PhotoViewControllerValue initialPhotoViewState;
@@ -86,6 +86,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     platform = widget.platform ?? const LocalPlatform();
     totalAssets = ref.read(timelineServiceProvider).totalAssets;
     bottomSheetController = DraggableScrollableController();
+    scaleStateController = PhotoViewScaleStateController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _onAssetChanged(widget.initialIndex);
     });
@@ -95,6 +96,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void dispose() {
     pageController.dispose();
     bottomSheetController.dispose();
+    scaleStateController.dispose();
     _cancelTimers();
     super.dispose();
   }
@@ -172,14 +174,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  void _onPageChanged(
-    int index,
-    PhotoViewControllerBase? controller,
-    PhotoViewScaleStateController? scaleController,
-  ) {
+  void _onPageChanged(int index, PhotoViewControllerBase? controller) {
     _onAssetChanged(index);
     viewController = controller;
-    scaleStateController = scaleController;
 
     // If the bottom sheet is showing, we need to adjust scale the asset to
     // emulate the zoom effect
@@ -196,6 +193,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   ) {
     dragDownPosition = details.localPosition;
     initialPhotoViewState = value;
+    if (scaleStateController.scaleState == PhotoViewScaleState.covering ||
+        scaleStateController.scaleState == PhotoViewScaleState.zoomedIn) {
+      blockGestures = true;
+    }
   }
 
   void _onDragEnd(BuildContext ctx, _, __) {
@@ -429,6 +430,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       initialScale: PhotoViewComputedScale.contained * 0.999,
       minScale: PhotoViewComputedScale.contained * 0.999,
       disableScaleGestures: showingBottomSheet,
+      scaleStateController: scaleStateController,
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,

@@ -20,12 +20,6 @@ typedef PhotoViewControllerCallbackBuilder = void Function(
   PhotoViewControllerCallback photoViewMethod,
 );
 
-typedef PhotoViewScaleControllerCallback = PhotoViewScaleStateController
-    Function();
-typedef PhotoViewScaleControllerCallbackBuilder = void Function(
-  PhotoViewScaleControllerCallback photoViewMethod,
-);
-
 /// A [StatefulWidget] that contains all the photo view rendering elements.
 ///
 /// Sample code to use within an image:
@@ -251,7 +245,6 @@ class PhotoView extends StatefulWidget {
     this.heroAttributes,
     this.onPageBuild,
     this.controllerCallbackBuilder,
-    this.scaleControllerCallbackBuilder,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.semanticLabel,
@@ -295,7 +288,6 @@ class PhotoView extends StatefulWidget {
     this.heroAttributes,
     this.onPageBuild,
     this.controllerCallbackBuilder,
-    this.scaleControllerCallbackBuilder,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.controller,
@@ -368,9 +360,6 @@ class PhotoView extends StatefulWidget {
 
   // Called from the parent during page change to get the new controller
   final PhotoViewControllerCallbackBuilder? controllerCallbackBuilder;
-
-  // Called from the parent during page change to get the new scale controller
-  final PhotoViewScaleControllerCallbackBuilder? scaleControllerCallbackBuilder;
 
   /// A [Function] to be called whenever the scaleState changes, this happens when the user double taps the content ou start to pinch-in.
   final ValueChanged<PhotoViewScaleState>? scaleStateChangedCallback;
@@ -506,7 +495,6 @@ class _PhotoViewState extends State<PhotoView>
     _scaleStateController.outputScaleStateStream.listen(scaleStateListener);
     // Pass a ref to the method back to the gallery so it can fetch the controller on page changes
     widget.controllerCallbackBuilder?.call(_controllerGetter);
-    widget.scaleControllerCallbackBuilder?.call(_scaleStateControllerGetter);
   }
 
   @override
@@ -552,9 +540,6 @@ class _PhotoViewState extends State<PhotoView>
   }
 
   PhotoViewControllerBase _controllerGetter() => _controller;
-
-  PhotoViewScaleStateController _scaleStateControllerGetter() =>
-      _scaleStateController;
 
   @override
   Widget build(BuildContext context) {
