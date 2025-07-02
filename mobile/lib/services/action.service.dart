@@ -88,6 +88,16 @@ class ActionService {
     );
   }
 
+  Future<void> trash(List<String> remoteIds) async {
+    await _assetApiRepository.delete(remoteIds, false);
+    await _remoteAssetRepository.trash(remoteIds);
+  }
+
+  Future<void> delete(List<String> remoteIds) async {
+    await _assetApiRepository.delete(remoteIds, true);
+    await _remoteAssetRepository.delete(remoteIds);
+  }
+
   Future<bool> editLocation(
     List<String> remoteIds,
     BuildContext context,
