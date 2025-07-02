@@ -6,11 +6,11 @@ part of 'store.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$storeRepositoryHash() => r'99d24875d30c5e86b1c6caa352a0026167114e62';
+String _$storeRepositoryHash() => r'659cb134466e4b0d5f04e2fc93e426350d99545f';
 
 /// See also [storeRepository].
 @ProviderFor(storeRepository)
-final storeRepositoryProvider = Provider<IStoreRepository>.internal(
+final storeRepositoryProvider = Provider<IsarStoreRepository>.internal(
   storeRepository,
   name: r'storeRepositoryProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -22,7 +22,7 @@ final storeRepositoryProvider = Provider<IStoreRepository>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef StoreRepositoryRef = ProviderRef<IStoreRepository>;
+typedef StoreRepositoryRef = ProviderRef<IsarStoreRepository>;
 String _$storeServiceHash() => r'250e10497c42df360e9e1f9a618d0b19c1b5b0a0';
 
 /// See also [storeService].

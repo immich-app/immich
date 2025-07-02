@@ -1,4 +1,4 @@
-part 'asset.model.dart';
+part 'remote_asset.model.dart';
 part 'local_asset.model.dart';
 
 enum AssetType {
@@ -7,6 +7,12 @@ enum AssetType {
   image,
   video,
   audio,
+}
+
+enum AssetState {
+  local,
+  remote,
+  merged,
 }
 
 sealed class BaseAsset {
@@ -31,6 +37,20 @@ sealed class BaseAsset {
     this.durationInSeconds,
     this.isFavorite = false,
   });
+
+  bool get isImage => type == AssetType.image;
+  bool get isVideo => type == AssetType.video;
+
+  double? get aspectRatio {
+    if (width != null && height != null && height! > 0) {
+      return width! / height!;
+    }
+    return null;
+  }
+
+  // Overridden in subclasses
+  AssetState get storage;
+  String get heroTag;
 
   @override
   String toString() {

@@ -1,5 +1,5 @@
---- native_class.mustache	2024-09-19 11:41:07.855683995 -0400
-+++ native_class_temp.mustache	2024-09-19 11:41:57.113249395 -0400
+--- native_class.mustache	2025-07-01 08:29:23.968133163 +0800
++++ native_class_temp.mustache	2025-07-01 08:29:44.225850583 +0800
 @@ -91,14 +91,14 @@
      {{/isDateTime}}
      {{#isNullable}}
@@ -44,7 +44,7 @@
              : {{/isNullable}}{{{datatypeWithEnum}}}.parse('${json[r'{{{baseName}}}']}'),
                {{/isNumber}}
 +              {{#isDouble}}
-+        {{{name}}}: (mapValueOfType<num>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}).toDouble(),
++        {{{name}}}: (mapValueOfType<num>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}){{#isNullable}}?{{/isNullable}}.toDouble(),
 +              {{/isDouble}}
 +              {{^isDouble}}
                {{^isNumber}}

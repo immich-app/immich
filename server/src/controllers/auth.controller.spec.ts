@@ -2,6 +2,7 @@ import { AuthController } from 'src/controllers/auth.controller';
 import { LoginResponseDto } from 'src/dtos/auth.dto';
 import { AuthService } from 'src/services/auth.service';
 import request from 'supertest';
+import { mediumFactory } from 'test/medium.factory';
 import { errorDto } from 'test/medium/responses';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
 
@@ -131,6 +132,50 @@ describe(AuthController.name, () => {
 
       expect(status).toEqual(201);
       expect(service.login).toHaveBeenCalledWith(expect.objectContaining({ email: 'admin@local' }), expect.anything());
+    });
+
+    it('should auth cookies on a secure connection', async () => {
+      const loginResponse = mediumFactory.loginResponse();
+      service.login.mockResolvedValue(loginResponse);
+      const { status, body, headers } = await request(ctx.getHttpServer())
+        .post('/auth/login')
+        .send({ name: 'admin', email: 'admin@local', password: 'password' });
+
+      expect(status).toEqual(201);
+      expect(body).toEqual(loginResponse);
+
+      const cookies = headers['set-cookie'];
+      expect(cookies).toHaveLength(3);
+      expect(cookies[0].split(';').map((item) => item.trim())).toEqual([
+        `immich_access_token=${loginResponse.accessToken}`,
+        'Max-Age=34560000',
+        'Path=/',
+        expect.stringContaining('Expires='),
+        'HttpOnly',
+        'SameSite=Lax',
+      ]);
+      expect(cookies[1].split(';').map((item) => item.trim())).toEqual([
+        'immich_auth_type=password',
+        'Max-Age=34560000',
+        'Path=/',
+        expect.stringContaining('Expires='),
+        'HttpOnly',
+        'SameSite=Lax',
+      ]);
+      expect(cookies[2].split(';').map((item) => item.trim())).toEqual([
+        'immich_is_authenticated=true',
+        'Max-Age=34560000',
+        'Path=/',
+        expect.stringContaining('Expires='),
+        'SameSite=Lax',
+      ]);
+    });
+  });
+
+  describe('POST /auth/logout', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).post('/auth/logout');
+      expect(ctx.authenticate).toHaveBeenCalled();
     });
   });
 

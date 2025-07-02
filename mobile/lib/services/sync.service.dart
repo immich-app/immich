@@ -3,23 +3,16 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
-import 'package:immich_mobile/domain/interfaces/user.interface.dart';
-import 'package:immich_mobile/domain/interfaces/user_api.interface.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
-import 'package:immich_mobile/interfaces/album.interface.dart';
-import 'package:immich_mobile/interfaces/album_api.interface.dart';
-import 'package:immich_mobile/interfaces/album_media.interface.dart';
-import 'package:immich_mobile/interfaces/asset.interface.dart';
-import 'package:immich_mobile/interfaces/etag.interface.dart';
-import 'package:immich_mobile/interfaces/local_files_manager.interface.dart';
-import 'package:immich_mobile/interfaces/partner.interface.dart';
-import 'package:immich_mobile/interfaces/partner_api.interface.dart';
+import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -63,21 +56,21 @@ final syncServiceProvider = Provider(
 class SyncService {
   final HashService _hashService;
   final EntityService _entityService;
-  final IAlbumMediaRepository _albumMediaRepository;
-  final IAlbumApiRepository _albumApiRepository;
-  final IAlbumRepository _albumRepository;
-  final IAssetRepository _assetRepository;
-  final IExifInfoRepository _exifInfoRepository;
-  final IUserRepository _userRepository;
+  final AlbumMediaRepository _albumMediaRepository;
+  final AlbumApiRepository _albumApiRepository;
+  final AlbumRepository _albumRepository;
+  final AssetRepository _assetRepository;
+  final IsarExifRepository _exifInfoRepository;
+  final IsarUserRepository _isarUserRepository;
   final UserService _userService;
-  final IPartnerRepository _partnerRepository;
-  final IETagRepository _eTagRepository;
-  final IPartnerApiRepository _partnerApiRepository;
-  final IUserApiRepository _userApiRepository;
+  final PartnerRepository _partnerRepository;
+  final ETagRepository _eTagRepository;
+  final PartnerApiRepository _partnerApiRepository;
+  final UserApiRepository _userApiRepository;
   final AsyncMutex _lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
   final AppSettingsService _appSettingsService;
-  final ILocalFilesManager _localFilesManager;
+  final LocalFilesManagerRepository _localFilesManager;
 
   SyncService(
     this._hashService,
@@ -88,7 +81,7 @@ class SyncService {
     this._assetRepository,
     this._exifInfoRepository,
     this._partnerRepository,
-    this._userRepository,
+    this._isarUserRepository,
     this._userService,
     this._eTagRepository,
     this._appSettingsService,
@@ -165,7 +158,7 @@ class SyncService {
   /// Returns `true`if there were any changes
   Future<bool> _syncUsersFromServer(List<UserDto> users) async {
     users.sortBy((u) => u.id);
-    final dbUsers = await _userRepository.getAll(sortBy: SortUserBy.id);
+    final dbUsers = await _isarUserRepository.getAll(sortBy: SortUserBy.id);
     final List<String> toDelete = [];
     final List<UserDto> toUpsert = [];
     final changes = diffSortedListsSync(
@@ -186,9 +179,9 @@ class SyncService {
       onlySecond: (UserDto b) => toDelete.add(b.id),
     );
     if (changes) {
-      await _userRepository.transaction(() async {
-        await _userRepository.delete(toDelete);
-        await _userRepository.updateAll(toUpsert);
+      await _isarUserRepository.transaction(() async {
+        await _isarUserRepository.delete(toDelete);
+        await _isarUserRepository.updateAll(toUpsert);
       });
     }
     return changes;
@@ -448,7 +441,7 @@ class SyncService {
     final (existingInDb, updated) = await _linkWithExistingFromDb(toAdd);
     await upsertAssetsWithExif(updated);
     final assetsToLink = existingInDb + updated;
-    final usersToLink = await _userRepository.getByUserIds(userIdsToAdd);
+    final usersToLink = await _isarUserRepository.getByUserIds(userIdsToAdd);
 
     album.name = dto.name;
     album.description = dto.description;

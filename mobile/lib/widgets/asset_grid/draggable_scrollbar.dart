@@ -210,7 +210,7 @@ class DraggableScrollbar extends StatefulWidget {
       BoxConstraints? labelConstraints,
     }) {
       final scrollThumb = ClipPath(
-        clipper: ArrowClipper(),
+        clipper: const ArrowClipper(),
         child: Container(
           height: height,
           width: 20.0,
@@ -570,6 +570,7 @@ class ArrowCustomPainter extends CustomPainter {
 
 ///This cut 2 lines in arrow shape
 class ArrowClipper extends CustomClipper<Path> {
+  const ArrowClipper();
   @override
   Path getClip(Size size) {
     Path path = Path();

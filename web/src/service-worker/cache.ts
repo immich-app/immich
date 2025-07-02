@@ -8,6 +8,15 @@ export const APP_RESOURCES = [
   ...files, // everything in `static`
 ];
 
+let cache: Cache | undefined;
+export async function getCache() {
+  if (cache) {
+    return cache;
+  }
+  cache = await caches.open(CACHE);
+  return cache;
+}
+
 export const isURL = (request: URL | RequestInfo): request is URL => (request as URL).href !== undefined;
 export const isRequest = (request: RequestInfo): request is Request => (request as Request).url !== undefined;
 
@@ -19,83 +28,72 @@ export async function deleteOldCaches() {
   }
 }
 
-export async function addFilesToCache() {
-  const cache = await caches.open(CACHE);
-  await cache.addAll(APP_RESOURCES);
-}
-
-const pendingLoads = new Map<string, AbortController>();
+const pendingRequests = new Map<string, AbortController>();
+const canceledRequests = new Set<string>();
 
 export async function cancelLoad(urlString: string) {
-  const pending = pendingLoads.get(urlString);
+  const pending = pendingRequests.get(urlString);
   if (pending) {
+    canceledRequests.add(urlString);
     pending.abort();
-    pendingLoads.delete(urlString);
+    pendingRequests.delete(urlString);
   }
 }
 
-export async function getCachedOrFetch(request: URL | Request | string, cancelable: boolean = false) {
-  const cached = await checkCache(request);
-  if (cached.response) {
-    return cached.response;
+export async function getCachedOrFetch(request: URL | Request | string) {
+  const response = await checkCache(request);
+  if (response) {
+    return response;
   }
 
-  try {
-    if (!cancelable) {
-      const response = await fetch(request);
-      checkResponse(response);
-      return response;
-    }
-
-    return await fetchWithCancellation(request, cached.cache);
-  } catch {
-    return new Response(undefined, {
-      status: 499,
-      statusText: 'Request canceled: Instructions unclear, accidentally interrupted myself',
-    });
-  }
-}
-
-async function fetchWithCancellation(request: URL | Request | string, cache: Cache) {
-  const cacheKey = getCacheKey(request);
+  const urlString = getCacheKey(request);
   const cancelToken = new AbortController();
 
   try {
-    pendingLoads.set(cacheKey, cancelToken);
+    pendingRequests.set(urlString, cancelToken);
     const response = await fetch(request, {
       signal: cancelToken.signal,
     });
 
     checkResponse(response);
-    setCached(response, cache, cacheKey);
+    await setCached(response, urlString);
     return response;
+  } catch (error) {
+    if (canceledRequests.has(urlString)) {
+      canceledRequests.delete(urlString);
+      return new Response(undefined, {
+        status: 499,
+        statusText: 'Request canceled: Instructions unclear, accidentally interrupted myself',
+      });
+    }
+    throw error;
   } finally {
-    pendingLoads.delete(cacheKey);
+    pendingRequests.delete(urlString);
   }
 }
 
-async function checkCache(url: URL | Request | string) {
+export async function checkCache(url: URL | Request | string) {
   if (!useCache) {
     return;
   }
-  const cache = await caches.open(CACHE);
-  const response = await cache.match(url);
-  return { cache, response };
+  const cache = await getCache();
+  return await cache.match(url);
 }
 
-async function setCached(response: Response, cache: Cache, cacheKey: URL | Request | string) {
-  if (response.status === 200) {
+export async function setCached(response: Response, cacheKey: URL | Request | string) {
+  if (cache && response.status === 200) {
+    const cache = await getCache();
     cache.put(cacheKey, response.clone());
   }
 }
 
 function checkResponse(response: Response) {
   if (!(response instanceof Response)) {
-    throw new TypeError('invalid response from fetch');
+    throw new TypeError('Fetch did not return a valid Response object');
   }
 }
 
-function getCacheKey(request: URL | Request | string) {
+export function getCacheKey(request: URL | Request | string) {
   if (isURL(request)) {
     return request.toString();
   } else if (isRequest(request)) {

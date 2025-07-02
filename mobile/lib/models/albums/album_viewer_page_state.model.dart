@@ -5,7 +5,7 @@ class AlbumViewerPageState {
   final String editTitleText;
   final String editDescriptionText;
 
-  AlbumViewerPageState({
+  const AlbumViewerPageState({
     required this.isEditAlbum,
     required this.editTitleText,
     required this.editDescriptionText,

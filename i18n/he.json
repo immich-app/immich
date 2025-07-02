@@ -243,7 +243,6 @@
     "storage_template_migration_info": "תבנית האחסון תמיר את כל ההרחבות לאותיות קטנות. שינויים בתבנית יחולו רק על תמונות חדשות. כדי להחיל באופן רטרואקטיבי את התבנית על תמונות שהועלו בעבר, הפעל את <link>{job}</link>.",
     "storage_template_migration_job": "משימת העברת תבנית אחסון",
     "storage_template_more_details": "לפרטים נוספים אודות תכונה זו, עיין ב<template-link>תבנית האחסון</template-link> וב<implications-link>השלכותיה</implications-link>",
-    "storage_template_onboarding_description": "כאשר מופעלת, תכונה זו תארגן אוטומטית קבצים בהתבסס על תבנית שהמשתמש הגדיר. עקב בעיות יציבות התכונה כבויה כברירת מחדל. למידע נוסף, נא לראות את ה<link>תיעוד</link>.",
     "storage_template_path_length": "מגבלת אורך נתיב משוערת: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "תבנית אחסון",
     "storage_template_settings_description": "ניהול מבנה התיקיות ואת שם הקובץ של התמונה שהועלתה",

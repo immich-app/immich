@@ -4,10 +4,10 @@ import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNeste
 import { Selectable } from 'kysely';
 import { DateTime } from 'luxon';
 import { AssetFace, Person } from 'src/database';
-import { AssetFaces } from 'src/db';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SourceType } from 'src/enum';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { asDateString } from 'src/utils/date';
 import {
   IsDateStringFormat,
@@ -232,7 +232,7 @@ export function mapPerson(person: Person): PersonResponseDto {
   };
 }
 
-export function mapFacesWithoutPerson(face: Selectable<AssetFaces>): AssetFaceWithoutPersonResponseDto {
+export function mapFacesWithoutPerson(face: Selectable<AssetFaceTable>): AssetFaceWithoutPersonResponseDto {
   return {
     id: face.id,
     imageHeight: face.imageHeight,

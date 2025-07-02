@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Kysely, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { AssetStack, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { DB } from 'src/schema';
+import { StackTable } from 'src/schema/tables/stack.table';
 import { asUuid, withDefaultVisibility } from 'src/utils/database';
 
 export interface StackSearch {
@@ -54,12 +55,12 @@ export class StackRepository {
       .execute();
   }
 
-  async create(entity: { ownerId: string; assetIds: string[] }) {
+  async create(entity: Omit<Insertable<StackTable>, 'primaryAssetId'>, assetIds: string[]) {
     return this.db.transaction().execute(async (tx) => {
       const stacks = await tx
         .selectFrom('asset_stack')
         .where('asset_stack.ownerId', '=', entity.ownerId)
-        .where('asset_stack.primaryAssetId', 'in', entity.assetIds)
+        .where('asset_stack.primaryAssetId', 'in', assetIds)
         .select('asset_stack.id')
         .select((eb) =>
           jsonArrayFrom(
@@ -72,13 +73,13 @@ export class StackRepository {
         )
         .execute();
 
-      const assetIds = new Set<string>(entity.assetIds);
+      const uniqueIds = new Set<string>(assetIds);
 
       // children
       for (const stack of stacks) {
         if (stack.assets && stack.assets.length > 0) {
           for (const asset of stack.assets) {
-            assetIds.add(asset.id);
+            uniqueIds.add(asset.id);
           }
         }
       }
@@ -96,10 +97,7 @@ export class StackRepository {
 
       const newRecord = await tx
         .insertInto('asset_stack')
-        .values({
-          ownerId: entity.ownerId,
-          primaryAssetId: entity.assetIds[0],
-        })
+        .values({ ...entity, primaryAssetId: assetIds[0] })
         .returning('id')
         .executeTakeFirstOrThrow();
 
@@ -109,7 +107,7 @@ export class StackRepository {
           stackId: newRecord.id,
           updatedAt: new Date(),
         })
-        .where('id', 'in', [...assetIds])
+        .where('id', 'in', [...uniqueIds])
         .execute();
 
       return tx
@@ -130,7 +128,7 @@ export class StackRepository {
     await this.db.deleteFrom('asset_stack').where('id', 'in', ids).execute();
   }
 
-  update(id: string, entity: Updateable<AssetStack>) {
+  update(id: string, entity: Updateable<StackTable>) {
     return this.db
       .updateTable('asset_stack')
       .set(entity)

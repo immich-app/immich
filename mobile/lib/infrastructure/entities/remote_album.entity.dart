@@ -11,7 +11,7 @@ class RemoteAlbumEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get name => text()();
 
-  TextColumn get description => text()();
+  TextColumn get description => text().withDefault(const Constant(''))();
 
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
@@ -27,7 +27,7 @@ class RemoteAlbumEntity extends Table with DriftDefaultsMixin {
   BoolColumn get isActivityEnabled =>
       boolean().withDefault(const Constant(true))();
 
-  IntColumn get order => intEnum<AssetOrder>()();
+  IntColumn get order => intEnum<AlbumAssetOrder>()();
 
   @override
   Set<Column> get primaryKey => {id};

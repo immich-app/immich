@@ -3,19 +3,20 @@ import { Insertable, Kysely, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { ApiKeys, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { DB } from 'src/schema';
+import { ApiKeyTable } from 'src/schema/tables/api-key.table';
 import { asUuid } from 'src/utils/database';
 
 @Injectable()
 export class ApiKeyRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  create(dto: Insertable<ApiKeys>) {
+  create(dto: Insertable<ApiKeyTable>) {
     return this.db.insertInto('api_keys').values(dto).returning(columns.apiKey).executeTakeFirstOrThrow();
   }
 
-  async update(userId: string, id: string, dto: Updateable<ApiKeys>) {
+  async update(userId: string, id: string, dto: Updateable<ApiKeyTable>) {
     return this.db
       .updateTable('api_keys')
       .set(dto)

@@ -40,7 +40,8 @@ export function currentUrlReplaceAssetId(assetId: string) {
   const params = new URLSearchParams($page.url.search);
   // always remove the assetGridScrollTargetParams
   params.delete('at');
-  const searchparams = params.size > 0 ? '?' + params.toString() : '';
+  const paramsString = params.toString();
+  const searchparams = paramsString == '' ? '' : '?' + params.toString();
   // this contains special casing for the /photos/:assetId photos route, which hangs directly
   // off / instead of a subpath, unlike every other asset-containing route.
   return isPhotosRoute($page.route.id)

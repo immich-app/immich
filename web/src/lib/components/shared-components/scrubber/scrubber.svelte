@@ -310,6 +310,7 @@
 
     void onScrub?.(segmentDate!, scrollPercent, monthGroupPercentY);
   };
+  /* eslint-disable tscompat/tscompat */
   const getTouch = (event: TouchEvent) => {
     if (event.touches.length === 1) {
       return event.touches[0];
@@ -354,19 +355,20 @@
       isHover = false;
     }
   };
+  /* eslint-enable tscompat/tscompat */
   onMount(() => {
-    document.addEventListener('touchmove', onTouchMove, true);
+    document.addEventListener('touchmove', onTouchMove, { capture: true, passive: true });
     return () => {
-      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchmove', onTouchMove, true);
     };
   });
 
   onMount(() => {
-    document.addEventListener('touchstart', onTouchStart, true);
-    document.addEventListener('touchend', onTouchEnd, true);
+    document.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
+    document.addEventListener('touchend', onTouchEnd, { capture: true, passive: true });
     return () => {
-      document.addEventListener('touchstart', onTouchStart, true);
-      document.addEventListener('touchend', onTouchEnd, true);
+      document.removeEventListener('touchstart', onTouchStart, true);
+      document.removeEventListener('touchend', onTouchEnd, true);
     };
   });
 

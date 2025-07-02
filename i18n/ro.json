@@ -237,7 +237,6 @@
     "storage_template_migration_info": "Șablonul de stocare va converti extensiile in litere mici. Modificările șablonului se vor aplica doar materialelor noi. Pentru a aplica retroactiv șablonul la materialele încărcate anterior, rulați <link>{job}</link>.",
     "storage_template_migration_job": "Sarcină Migrare Șablon Stocare",
     "storage_template_more_details": "Pentru mai multe detalii despre aceasta caracteristică, accesați <template-link>Șablon stocare</template-link> si <implications-link>implicațiile</implications-link>",
-    "storage_template_onboarding_description": "Atunci când este activată, această caracteristică va organiza automat fișierele pe baza unui șablon definit de utilizator. Din cauza unor probleme de stabilitate, această caracteristică este dezactivată implicit. Pentru mai multe informații, te rog să consulți <link>documentația</link>.",
     "storage_template_path_length": "Limita de lungime pentru calea aproximativă: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Șablon Stocare",
     "storage_template_settings_description": "Gestionează structura folderelor și numele fișierelor pentru elementele încărcate",

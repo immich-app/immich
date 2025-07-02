@@ -47,25 +47,33 @@ class SearchField extends StatelessWidget {
           color: context.themeData.colorScheme.onSurfaceSecondary,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(25),
+          ),
           borderSide: BorderSide(
             color: context.colorScheme.surfaceDim,
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(25),
+          ),
           borderSide: BorderSide(
             color: context.colorScheme.surfaceContainer,
           ),
         ),
         disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(25),
+          ),
           borderSide: BorderSide(
             color: context.colorScheme.surfaceDim,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(25),
+          ),
           borderSide: BorderSide(
             color: context.colorScheme.primary.withAlpha(100),
           ),

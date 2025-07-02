@@ -9,7 +9,7 @@ This is a community contribution and not officially supported by the Immich team
 
 Community support can be found in the dedicated channel on the [Discord Server](https://discord.immich.app/).
 
-**Please report app issues to the corresponding [Github Repository](https://github.com/truenas/charts/tree/master/community/immich).**
+**Please report app issues to the corresponding [Github Repository](https://github.com/truenas/apps/tree/master/trains/community/immich).**
 :::
 
 Immich can easily be installed on TrueNAS Community Edition via the **Community** train application.

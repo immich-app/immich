@@ -51,6 +51,7 @@
     const entries: FileSystemEntry[] = [];
     const files: File[] = [];
     for (const item of dataTransfer.items) {
+      // eslint-disable-next-line tscompat/tscompat
       const entry = item.webkitGetAsEntry();
       if (entry) {
         entries.push(entry);
@@ -67,6 +68,7 @@
     return handleFiles([...files, ...directoryFiles]);
   };
 
+  // eslint-disable-next-line tscompat/tscompat
   const browserSupportsDirectoryUpload = () => typeof DataTransferItem.prototype.webkitGetAsEntry === 'function';
 
   const getAllFilesFromTransferEntries = async (transferEntries: FileSystemEntry[]): Promise<File[]> => {

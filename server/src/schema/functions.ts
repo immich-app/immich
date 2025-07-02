@@ -142,6 +142,20 @@ export const albums_delete_audit = registerFunction({
   synchronize: false,
 });
 
+export const album_assets_delete_audit = registerFunction({
+  name: 'album_assets_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO album_assets_audit ("albumId", "assetId")
+      SELECT "albumsId", "assetsId" FROM OLD
+      WHERE "albumsId" IN (SELECT "id" FROM albums WHERE "id" IN (SELECT "albumsId" FROM OLD));
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
 export const album_users_delete_audit = registerFunction({
   name: 'album_users_delete_audit',
   returnType: 'TRIGGER',
@@ -158,6 +172,48 @@ export const album_users_delete_audit = registerFunction({
         FROM OLD;
       END IF;
 
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
+export const memories_delete_audit = registerFunction({
+  name: 'memories_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO memories_audit ("memoryId", "userId")
+      SELECT "id", "ownerId"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
+export const memory_assets_delete_audit = registerFunction({
+  name: 'memory_assets_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO memory_assets_audit ("memoryId", "assetId")
+      SELECT "memoriesId", "assetsId" FROM OLD
+      WHERE "memoriesId" IN (SELECT "id" FROM memories WHERE "id" IN (SELECT "memoriesId" FROM OLD));
+      RETURN NULL;
+    END`,
+  synchronize: false,
+});
+
+export const stacks_delete_audit = registerFunction({
+  name: 'stacks_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO stacks_audit ("stackId", "userId")
+      SELECT "id", "ownerId"
+      FROM OLD;
       RETURN NULL;
     END`,
   synchronize: false,

@@ -3,9 +3,9 @@ import { Kysely } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Asset, columns } from 'src/database';
-import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
+import { DB } from 'src/schema';
 import { StorageAsset } from 'src/types';
 import {
   anyUuid,
@@ -273,8 +273,7 @@ export class AssetJobRepository {
           .leftJoin('asset_job_status', 'asset_job_status.assetId', 'assets.id')
           .where((eb) =>
             eb.or([eb('asset_job_status.metadataExtractedAt', 'is', null), eb('asset_job_status.assetId', 'is', null)]),
-          )
-          .where('assets.visibility', '!=', AssetVisibility.HIDDEN),
+          ),
       )
       .where('assets.deletedAt', 'is', null)
       .stream();

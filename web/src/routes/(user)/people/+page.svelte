@@ -203,8 +203,12 @@
         personUpdateDto: { isFavorite: !detail.isFavorite },
       });
 
-      const index = people.findIndex((person) => person.id === detail.id);
-      people[index] = updatedPerson;
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
 
       notificationController.show({
         message: updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'),

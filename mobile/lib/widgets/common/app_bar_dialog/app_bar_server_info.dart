@@ -1,10 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
@@ -173,7 +173,8 @@ class AppBarServerInfo extends HookConsumerWidget {
                         verticalOffset: 0,
                         decoration: BoxDecoration(
                           color: context.primaryColor.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(10)),
                         ),
                         textStyle: TextStyle(
                           color:
