@@ -154,6 +154,14 @@ final _remoteStats = [
     name: 'Remote Albums',
     load: (db) => db.managers.remoteAlbumEntity.count(),
   ),
+  _Stat(
+    name: 'Memories',
+    load: (db) => db.managers.memoryEntity.count(),
+  ),
+  _Stat(
+    name: 'Memories Assets',
+    load: (db) => db.managers.memoryAssetEntity.count(),
+  ),
 ];
 
 @RoutePage()

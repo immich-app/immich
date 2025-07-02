@@ -146,6 +146,14 @@ class SyncStreamService {
       // to acknowledge that the client has processed all the backfill events
       case SyncEntityType.syncAckV1:
         return;
+      case SyncEntityType.memoryV1:
+        return _syncStreamRepository.updateMemoriesV1(data.cast());
+      case SyncEntityType.memoryDeleteV1:
+        return _syncStreamRepository.deleteMemoriesV1(data.cast());
+      case SyncEntityType.memoryToAssetV1:
+        return _syncStreamRepository.updateMemoryAssetsV1(data.cast());
+      case SyncEntityType.memoryToAssetDeleteV1:
+        return _syncStreamRepository.deleteMemoryAssetsV1(data.cast());
       default:
         _logger.warning("Unknown sync data type: $type");
     }
