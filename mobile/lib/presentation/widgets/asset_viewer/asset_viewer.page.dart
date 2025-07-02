@@ -76,10 +76,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   Offset dragDownPosition = Offset.zero;
   int totalAssets = 0;
   int backgroundOpacity = 255;
-  
+
   // Cache for asset providers to avoid rebuilding them
   final Map<String, ImageProvider> _assetProviderCache = {};
-  
+
   // Delayed operations that should be cancelled on disposal
   final List<Timer> _delayedOperations = [];
 
@@ -99,19 +99,19 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void dispose() {
     pageController.dispose();
     bottomSheetController.dispose();
-    
+
     // Cancel any pending delayed operations
     for (final timer in _delayedOperations) {
       timer.cancel();
     }
     _delayedOperations.clear();
-    
+
     // Clear cached providers to free memory
     _assetProviderCache.clear();
-    
+
     // Clear global image provider cache to free memory
     clearImageProviderCache();
-    
+
     super.dispose();
   }
 
@@ -135,11 +135,21 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
 
     final asset = ref.read(timelineServiceProvider).getAsset(index);
-    await precacheImage(
-      getFullImageProvider(asset, size: Size(context.width, context.height)),
-      context,
-      onError: (_, __) {},
-    );
+    final screenSize = Size(context.width, context.height);
+
+    // Precache both thumbnail and full image for smooth transitions
+    await Future.wait([
+      precacheImage(
+        getThumbnailImageProvider(asset: asset, size: screenSize),
+        context,
+        onError: (_, __) {},
+      ),
+      precacheImage(
+        getFullImageProvider(asset, size: screenSize),
+        context,
+        onError: (_, __) {},
+      ),
+    ]);
   }
 
   void _onAssetChanged(int index) {
@@ -156,7 +166,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final timer = Timer(Durations.medium4, () {
       // Check if widget is still mounted before proceeding
       if (!mounted) return;
-      
+
       for (final offset in [-1, 1]) {
         unawaited(_precacheImage(index + offset));
       }
@@ -227,7 +237,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       hasDraggedDown = null;
       backgroundOpacity = 255;
     });
-    
+
     // Animate view controller after state update
     viewController?.animateMultiple(
       position: initialPhotoViewState.position,
@@ -384,16 +394,18 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       updatedScale = initialPhotoViewState.scale! * (1.0 - scaleReduction);
     }
 
-    final newBackgroundOpacity = (255 * (1.0 - (scaleReduction / dragRatio))).round();
+    final newBackgroundOpacity =
+        (255 * (1.0 - (scaleReduction / dragRatio))).round();
 
     // Batch state updates to reduce rebuilds
-    if (shouldPopOnDrag != newShouldPopOnDrag || backgroundOpacity != newBackgroundOpacity) {
+    if (shouldPopOnDrag != newShouldPopOnDrag ||
+        backgroundOpacity != newBackgroundOpacity) {
       setState(() {
         shouldPopOnDrag = newShouldPopOnDrag;
         backgroundOpacity = newBackgroundOpacity;
       });
     }
-    
+
     // Update view controller directly without triggering setState
     viewController?.updateMultiple(
       position: initialPhotoViewState.position + delta,
@@ -401,61 +413,62 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     );
   }
 
-  Widget _placeholderBuilder(BuildContext ctx, _, int index) {
+  Widget _placeholderBuilder(
+    BuildContext ctx,
+    ImageChunkEvent? progress,
+    int index,
+  ) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
-    return PhotoView(
-      imageProvider: getThumbnailImageProvider(asset: asset),
-      index: index,
-      loadingBuilder: (_, __, ___) => Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: backgroundColor,
-        child: Thumbnail(
-          asset: asset,
-          fit: BoxFit.contain,
-        ),
+
+    // Create a simple, fast-loading placeholder that fills the screen like the actual image
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: backgroundColor,
+      child: Thumbnail(
+        asset: asset,
+        fit: BoxFit.contain,
+        size: Size(
+          ctx.width,
+          ctx.height,
+        ), // Use full screen size for seamless transition
       ),
-      backgroundDecoration: BoxDecoration(color: backgroundColor),
-      heroAttributes: PhotoViewHeroAttributes(tag: asset.heroTag),
-      tightMode: true,
-      initialScale: PhotoViewComputedScale.contained * 0.99,
-      minScale: PhotoViewComputedScale.contained * 0.99,
-      disableGestures: true,
-      disableScaleGestures: true,
     );
   }
 
   PhotoViewGalleryPageOptions _assetBuilder(BuildContext ctx, int index) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
-    
-    // Create a cache key for this asset
-    final cacheKey = '${asset.runtimeType}_${asset is LocalAsset ? asset.id : (asset as RemoteAsset).id}';
-    
+
+    // Create a more specific cache key that includes size for better cache management
+    final size = Size(ctx.width, ctx.height);
+    final cacheKey = _createCacheKey(asset, size);
+
     // Get or create cached provider
-    final imageProvider = _assetProviderCache[cacheKey] ??= getFullImageProvider(asset);
-    
+    final imageProvider = _assetProviderCache[cacheKey] ??=
+        getFullImageProvider(asset, size: size);
+
     return PhotoViewGalleryPageOptions(
       imageProvider: imageProvider,
       heroAttributes: PhotoViewHeroAttributes(tag: asset.heroTag),
       filterQuality: FilterQuality.high,
       tightMode: true,
-      initialScale: PhotoViewComputedScale.contained * 0.99,
-      minScale: PhotoViewComputedScale.contained * 0.99,
-      // errorBuilder: (_, __, ___) => Container(
-      //   width: ctx.width,
-      //   height: ctx.height,
-      //   color: backgroundColor,
-      //   child: FullImage(
-      //     asset,
-      //     fit: BoxFit.contain,
-      //     size: Size(ctx.width, ctx.height),
-      //   ),
-      // ),
+      initialScale: PhotoViewComputedScale.contained * 0.999,
+      minScale: PhotoViewComputedScale.contained * 0.999,
       disableScaleGestures: showingBottomSheet,
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
     );
+  }
+
+  /// Creates a cache key for asset providers
+  String _createCacheKey(BaseAsset asset, Size size) {
+    if (asset is LocalAsset) {
+      return 'local_${asset.id}_${asset.updatedAt}_${size.width}x${size.height}';
+    } else if (asset is RemoteAsset) {
+      return 'remote_${asset.id}_${size.width}x${size.height}';
+    }
+    return '${asset.runtimeType}_${asset.name}_${size.width}x${size.height}';
   }
 
   @override

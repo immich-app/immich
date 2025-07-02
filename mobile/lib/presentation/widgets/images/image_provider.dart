@@ -10,11 +10,11 @@ final Map<String, ImageProvider> _imageProviderCache = {};
 
 ImageProvider getFullImageProvider(
   BaseAsset asset, {
-  Size size = const Size(600, 800),
+  Size size = const Size(1080, 1920),
 }) {
   // Create cache key based on asset properties and size
   final cacheKey = _createCacheKey(asset, size);
-  
+
   // Return cached provider if available
   if (_imageProviderCache.containsKey(cacheKey)) {
     return _imageProviderCache[cacheKey]!;
@@ -23,7 +23,6 @@ ImageProvider getFullImageProvider(
   // Create new provider and cache it
   final ImageProvider provider;
   if (_shouldUseLocalAsset(asset)) {
-    print("use local assets for ${asset.name}");
     provider = LocalFullImageProvider(asset: asset as LocalAsset, size: size);
   } else {
     final String assetId;
