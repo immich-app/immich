@@ -39,8 +39,6 @@ class RemoteAsset extends BaseAsset {
   @override
   String get heroTag => '${localId ?? checksum}_$id';
 
-  bool get hasLocal => localId != null;
-
   @override
   String toString() {
     return '''Asset {

@@ -89,14 +89,13 @@ class _BaseDraggableScrollableSheetState
                     const SizedBox(height: 14),
                     if (widget.actions.isNotEmpty)
                       SizedBox(
-                        height: 80,
+                        height: 115,
                         child: ListView(
                           shrinkWrap: true,
                           scrollDirection: Axis.horizontal,
                           children: widget.actions,
                         ),
                       ),
-                    if (widget.actions.isNotEmpty) const SizedBox(height: 14),
                     if (widget.actions.isNotEmpty)
                       const Divider(indent: 20, endIndent: 20),
                     if (widget.actions.isNotEmpty) const SizedBox(height: 14),

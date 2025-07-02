@@ -24,6 +24,7 @@ class MapThumbnail extends HookConsumerWidget {
   final double width;
   final ThemeMode? themeMode;
   final bool showAttribution;
+  final MapCreatedCallback? onCreated;
 
   const MapThumbnail({
     super.key,
@@ -36,6 +37,7 @@ class MapThumbnail extends HookConsumerWidget {
     this.showMarkerPin = false,
     this.themeMode,
     this.showAttribution = true,
+    this.onCreated,
   });
 
   @override
@@ -54,6 +56,7 @@ class MapThumbnail extends HookConsumerWidget {
               position.value = await mapController.toScreenLocation(centre),
         );
       }
+      onCreated?.call(mapController);
     }
 
     Future<void> onStyleLoaded() async {
