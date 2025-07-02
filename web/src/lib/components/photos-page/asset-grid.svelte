@@ -520,11 +520,8 @@
       }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
         timelineManager.addAssets([toTimelineAsset(action.asset)]);
-      }
-      case AssetAction.SET_STACK_PRIMARY_ASSET: {
         if (action.stack) {
-          //Have to unstack then restack assets in timeline in order for the currently removed new primary asset to be made visible.
-          //Same applies to REMOVE_ASSET_FROM_STACK, in order to update the stack count in the timeline.
+          //Have to unstack then restack assets in timeline in order to update the stack count in the timeline.
           updateUnstackedAssetInTimeline(
             timelineManager,
             action.stack.assets.map((asset) => toTimelineAsset(asset)),
@@ -536,6 +533,20 @@
               .map((asset) => asset.id),
           });
         }
+        break;
+      }
+      case AssetAction.SET_STACK_PRIMARY_ASSET: {
+        //Have to unstack then restack assets in timeline in order for the currently removed new primary asset to be made visible.
+        updateUnstackedAssetInTimeline(
+          timelineManager,
+          action.stack.assets.map((asset) => toTimelineAsset(asset)),
+        );
+        updateStackedAssetInTimeline(timelineManager, {
+          stack: action.stack,
+          toDeleteIds: action.stack.assets
+            .filter((asset) => asset.id !== action.stack?.primaryAssetId)
+            .map((asset) => asset.id),
+        });
         break;
       }
     }

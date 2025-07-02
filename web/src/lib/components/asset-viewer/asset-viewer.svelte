@@ -329,8 +329,10 @@
         break;
       }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
-        asset = action.stack?.assets[0]!;
         stack = action.stack;
+        if (stack) {
+          asset = stack.assets[0];
+        }
         break;
       }
       case AssetAction.SET_STACK_PRIMARY_ASSET: {

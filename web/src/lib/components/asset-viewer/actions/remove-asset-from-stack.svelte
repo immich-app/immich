@@ -20,7 +20,11 @@
     const assets = stack.assets.filter((a) => a.id !== asset.id);
     const result = await stackAssets(assets, false, false);
     if (result) {
-      onAction({ type: AssetAction.REMOVE_ASSET_FROM_STACK, stack: result.stack ? result.stack : null, asset });
+      let stack = null;
+      if (result.stack) {
+        stack = result.stack;
+      }
+      onAction({ type: AssetAction.REMOVE_ASSET_FROM_STACK, stack, asset });
     }
   };
 </script>
