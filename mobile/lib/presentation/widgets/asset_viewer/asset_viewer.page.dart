@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.dart';
-import 'package:immich_mobile/presentation/widgets/images/full_image.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
@@ -76,6 +76,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   Offset dragDownPosition = Offset.zero;
   int totalAssets = 0;
   int backgroundOpacity = 255;
+  
+  // Cache for asset providers to avoid rebuilding them
+  final Map<String, ImageProvider> _assetProviderCache = {};
+  
+  // Delayed operations that should be cancelled on disposal
+  final List<Timer> _delayedOperations = [];
 
   @override
   void initState() {
@@ -93,6 +99,19 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void dispose() {
     pageController.dispose();
     bottomSheetController.dispose();
+    
+    // Cancel any pending delayed operations
+    for (final timer in _delayedOperations) {
+      timer.cancel();
+    }
+    _delayedOperations.clear();
+    
+    // Clear cached providers to free memory
+    _assetProviderCache.clear();
+    
+    // Clear global image provider cache to free memory
+    clearImageProviderCache();
+    
     super.dispose();
   }
 
@@ -127,14 +146,23 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
     ref.read(currentAssetNotifier.notifier).setAsset(asset);
 
+    // Clear old cache entries periodically to prevent memory buildup
+    if (_assetProviderCache.length > 10) {
+      _assetProviderCache.clear();
+    }
+
     // This will trigger the pre-caching of adjacent assets ensuring
     // that they are ready when the user navigates to them.
-    Future.delayed(Durations.medium4, () {
+    final timer = Timer(Durations.medium4, () {
+      // Check if widget is still mounted before proceeding
+      if (!mounted) return;
+      
       for (final offset in [-1, 1]) {
         unawaited(_precacheImage(index + offset));
       }
       unawaited(ref.read(timelineServiceProvider).preCacheAssets(index));
     });
+    _delayedOperations.add(timer);
   }
 
   void _onPageBuild(PhotoViewControllerBase controller) {
@@ -176,6 +204,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     dragInProgress = false;
 
     if (shouldPopOnDrag) {
+      // Dismiss immediately without state updates to avoid rebuilds
       ctx.maybePop();
       return;
     }
@@ -192,16 +221,19 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
+    // Batch state reset to minimize rebuilds
     setState(() {
       shouldPopOnDrag = false;
       hasDraggedDown = null;
-      viewController?.animateMultiple(
-        position: initialPhotoViewState.position,
-        scale: initialPhotoViewState.scale,
-        rotation: initialPhotoViewState.rotation,
-      );
       backgroundOpacity = 255;
     });
+    
+    // Animate view controller after state update
+    viewController?.animateMultiple(
+      position: initialPhotoViewState.position,
+      scale: initialPhotoViewState.scale,
+      rotation: initialPhotoViewState.rotation,
+    );
   }
 
   void _onDragUpdate(BuildContext ctx, DragUpdateDetails details, _) {
@@ -343,7 +375,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     const double popThreshold = 75;
 
     final distance = delta.distance;
-    shouldPopOnDrag = delta.dy > 0 && distance > popThreshold;
+    final newShouldPopOnDrag = delta.dy > 0 && distance > popThreshold;
 
     final maxScaleDistance = ctx.height * 0.5;
     final scaleReduction = (distance / maxScaleDistance).clamp(0.0, dragRatio);
@@ -352,13 +384,21 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       updatedScale = initialPhotoViewState.scale! * (1.0 - scaleReduction);
     }
 
-    setState(() {
-      backgroundOpacity = (255 * (1.0 - (scaleReduction / dragRatio))).round();
-      viewController?.updateMultiple(
-        position: initialPhotoViewState.position + delta,
-        scale: updatedScale,
-      );
-    });
+    final newBackgroundOpacity = (255 * (1.0 - (scaleReduction / dragRatio))).round();
+
+    // Batch state updates to reduce rebuilds
+    if (shouldPopOnDrag != newShouldPopOnDrag || backgroundOpacity != newBackgroundOpacity) {
+      setState(() {
+        shouldPopOnDrag = newShouldPopOnDrag;
+        backgroundOpacity = newBackgroundOpacity;
+      });
+    }
+    
+    // Update view controller directly without triggering setState
+    viewController?.updateMultiple(
+      position: initialPhotoViewState.position + delta,
+      scale: updatedScale,
+    );
   }
 
   Widget _placeholderBuilder(BuildContext ctx, _, int index) {
@@ -387,23 +427,30 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   PhotoViewGalleryPageOptions _assetBuilder(BuildContext ctx, int index) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
+    
+    // Create a cache key for this asset
+    final cacheKey = '${asset.runtimeType}_${asset is LocalAsset ? asset.id : (asset as RemoteAsset).id}';
+    
+    // Get or create cached provider
+    final imageProvider = _assetProviderCache[cacheKey] ??= getFullImageProvider(asset);
+    
     return PhotoViewGalleryPageOptions(
-      imageProvider: getFullImageProvider(asset),
+      imageProvider: imageProvider,
       heroAttributes: PhotoViewHeroAttributes(tag: asset.heroTag),
       filterQuality: FilterQuality.high,
       tightMode: true,
       initialScale: PhotoViewComputedScale.contained * 0.99,
       minScale: PhotoViewComputedScale.contained * 0.99,
-      errorBuilder: (_, __, ___) => Container(
-        width: ctx.width,
-        height: ctx.height,
-        color: backgroundColor,
-        child: FullImage(
-          asset,
-          fit: BoxFit.contain,
-          size: Size(ctx.width, ctx.height),
-        ),
-      ),
+      // errorBuilder: (_, __, ___) => Container(
+      //   width: ctx.width,
+      //   height: ctx.height,
+      //   color: backgroundColor,
+      //   child: FullImage(
+      //     asset,
+      //     fit: BoxFit.contain,
+      //     size: Size(ctx.width, ctx.height),
+      //   ),
+      // ),
       disableScaleGestures: showingBottomSheet,
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
