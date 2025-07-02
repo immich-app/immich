@@ -2,13 +2,16 @@ import { ArrayMinSize } from 'class-validator';
 import { Stack } from 'src/database';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { ValidateUUID } from 'src/validation';
+import { ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class StackCreateDto {
   /** first asset becomes the primary */
   @ValidateUUID({ each: true })
   @ArrayMinSize(2)
   assetIds!: string[];
+  
+  @ValidateBoolean({ optional: true })
+  merge: boolean = true;
 }
 
 export class StackSearchDto {

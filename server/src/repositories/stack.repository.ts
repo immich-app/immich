@@ -54,7 +54,7 @@ export class StackRepository {
       .execute();
   }
 
-  async create(entity: { ownerId: string; assetIds: string[] }) {
+  async create(entity: { ownerId: string; assetIds: string[]; merge: boolean }) {
     return this.db.transaction().execute(async (tx) => {
       const stacks = await tx
         .selectFrom('asset_stack')
@@ -75,10 +75,12 @@ export class StackRepository {
       const assetIds = new Set<string>(entity.assetIds);
 
       // children
-      for (const stack of stacks) {
-        if (stack.assets && stack.assets.length > 0) {
-          for (const asset of stack.assets) {
-            assetIds.add(asset.id);
+      if (entity.merge) {
+        for (const stack of stacks) {
+          if (stack.assets && stack.assets.length > 0) {
+            for (const asset of stack.assets) {
+              assetIds.add(asset.id);
+            }
           }
         }
       }

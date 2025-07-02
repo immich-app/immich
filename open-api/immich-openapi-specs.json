@@ -13227,10 +13227,15 @@
             },
             "minItems": 2,
             "type": "array"
+          },
+          "merge": {
+            "default": true,
+            "type": "boolean"
           }
         },
         "required": [
-          "assetIds"
+          "assetIds",
+          "merge"
         ],
         "type": "object"
       },
