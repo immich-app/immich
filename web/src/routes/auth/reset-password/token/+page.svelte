@@ -6,6 +6,7 @@
   import { Alert, Button, Field, HelperText, PasswordInput, Stack, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { PUBLIC_API_URL } from '$env/static/public';
 
   interface Props {
     data: PageData;
@@ -33,7 +34,7 @@
     errorReset = false;
     try {
       const response = await fetch(
-        import.meta.env.VITE_API_URL + '/api/auth/password-reset',
+        PUBLIC_API_URL + '/api/auth/password-reset',
         {
           method: 'PUT',
           headers: {

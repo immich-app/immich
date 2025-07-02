@@ -50,6 +50,15 @@ jobs:
         id: should_force
         run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
 
+      - name: Set API url
+        id: set_api_url
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ startsWith(github.ref, 'refs/tags/') }}" ]]; then
+            echo "PUBLIC_API_URL=https://api.tech.pixelunion.eu" >> web/.env
+          else
+            echo "PUBLIC_API_URL=https://api.nonprd.tech.pixelunion.eu" >> web/.env
+          fi
+
   retag_server:
     name: Re-Tag Server
     needs: pre-job
@@ -96,9 +105,9 @@ jobs:
       context: .
       dockerfile: server/Dockerfile
       dockerhub-push: ${{ github.event_name == 'release' }}
-      build-args: |
+      build-args: |-
         DEVICE=cpu
-
+        PUBLIC_API_URL=${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && 'https://api.tech.pixelunion.eu' || 'https://api.nonprd.tech.pixelunion.eu' }}
   success-check-server:
     name: Docker Build & Push Server Success
     needs: [server, retag_server]

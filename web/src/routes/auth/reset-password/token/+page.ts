@@ -1,3 +1,4 @@
+import { PUBLIC_API_URL } from '$env/static/public';
 import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
 
@@ -10,7 +11,7 @@ export const load = (async ({ url, fetch }) => {
   if (token && timestamp) {
     try {
       const res = await fetch(
-        import.meta.env.VITE_API_URL + '/api/auth/password-reset/validate-token',
+        PUBLIC_API_URL + '/api/auth/password-reset/validate-token',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
