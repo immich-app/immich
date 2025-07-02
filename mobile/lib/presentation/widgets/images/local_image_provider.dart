@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -207,9 +208,10 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
       }
     }
 
-    // Size-aware decoding: Use smaller target size for HEIC if the requested size is small
-    if (isHEIC && (key.size.width < 1920 && key.size.height < 1920)) {
-      // For smaller target sizes, use thumbnail instead of full resolution
+    // Size-aware decoding: Use smaller target size for HEIC only on non-iOS platforms
+    // iOS handles HEIC efficiently, so use full resolution there
+    if (isHEIC && !Platform.isIOS && (key.size.width < 1920 && key.size.height < 1920)) {
+      // For smaller target sizes on non-iOS platforms, use thumbnail instead of full resolution
       try {
         final targetSize = Size(
           (key.size.width * 1.5).clamp(1024, 2048),
