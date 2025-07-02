@@ -153,7 +153,9 @@ class ImageDownloadWorker(
 
     val filters = SearchFilters(AssetType.IMAGE, size=1)
     val albumId = widgetConfig[kSelectedAlbum]
+    val showSubtitle = widgetConfig[kShowAlbumName]
     val albumName = widgetConfig[kSelectedAlbumName]
+    val subtitle: String? = if (showSubtitle == true) albumName else ""
 
     if (albumId != null) {
       filters.albumIds = listOf(albumId)
@@ -162,7 +164,7 @@ class ImageDownloadWorker(
     val random = api.fetchSearchResults(filters).first()
     val image = api.fetchImage(random)
 
-    return Pair(image, albumName)
+    return Pair(image, subtitle)
   }
 
   private suspend fun fetchMemory(

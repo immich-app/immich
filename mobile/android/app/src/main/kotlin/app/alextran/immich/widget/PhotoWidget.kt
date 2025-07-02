@@ -3,15 +3,17 @@ package app.alextran.immich.widget
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.*
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.glance.appwidget.*
 import androidx.glance.*
-import androidx.glance.layout.Box
-import androidx.glance.layout.ContentScale
-import androidx.glance.layout.fillMaxSize
+import androidx.glance.action.clickable
+import androidx.glance.layout.*
 import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.text.Text
+import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
 import app.alextran.immich.R
 import java.io.File
 
@@ -48,8 +50,28 @@ class PhotoWidget : GlanceAppWidget() {
               contentScale = ContentScale.Crop,
               modifier = GlanceModifier.fillMaxSize()
             )
-            if (subtitle != null)
-              Text(subtitle)
+
+            if (!subtitle.isNullOrBlank()) {
+              Column(
+                verticalAlignment = Alignment.Bottom,
+                horizontalAlignment = Alignment.Start,
+                modifier = GlanceModifier
+                  .fillMaxSize()
+                  .padding(12.dp)
+              ) {
+                Text(
+                  text = subtitle,
+                  style = TextStyle(
+                    color = ColorProvider(Color.White),
+                    fontSize = 16.sp
+                  ),
+                  modifier = GlanceModifier
+                    .background(ColorProvider(Color(0x99000000))) // 60% black
+                    .padding(8.dp)
+                    .cornerRadius(8.dp)
+                )
+              }
+            }
           } else {
             Image(
               provider = ImageProvider(R.drawable.splash),

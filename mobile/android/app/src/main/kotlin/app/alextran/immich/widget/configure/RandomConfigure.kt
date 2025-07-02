@@ -27,6 +27,7 @@ import app.alextran.immich.widget.ImmichAPI
 import app.alextran.immich.widget.WidgetState
 import app.alextran.immich.widget.WidgetType
 import app.alextran.immich.widget.kSelectedAlbum
+import app.alextran.immich.widget.kSelectedAlbumName
 import app.alextran.immich.widget.kShowAlbumName
 import kotlinx.coroutines.launch
 
@@ -100,6 +101,7 @@ fun RandomConfiguration(context: Context, appWidgetId: Int, glanceId: GlanceId, 
   suspend fun saveConfiguration() {
     updateAppWidgetState(context, glanceId) { prefs ->
       prefs[kSelectedAlbum] = selectedAlbum?.id ?: ""
+      prefs[kSelectedAlbumName] = selectedAlbum?.label ?: ""
       prefs[kShowAlbumName] = showAlbumName
     }
 
