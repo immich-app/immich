@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { DatabaseLock, JobName, JobStatus, QueueName, StorageFolder, SystemMetadataKey } from 'src/enum';
@@ -87,8 +87,9 @@ export class StorageService extends BaseService {
     try {
       await this.storageRepository.readFile(internalPath);
     } catch (error) {
-      this.logger.error(`Failed to read ${internalPath}: ${error}`);
-      throw new ImmichStartupError(`Failed to read "${externalPath} - ${docsMessage}"`);
+      const fullyQualifiedPath = resolve(process.cwd(), internalPath);
+      this.logger.error(`Failed to read ${fullyQualifiedPath} (${internalPath}): ${error}`);
+      throw new ImmichStartupError(`Failed to read: "${externalPath} (${fullyQualifiedPath}) - ${docsMessage}"`);
     }
   }
 
