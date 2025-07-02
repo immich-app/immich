@@ -14,26 +14,32 @@ class StackCreateDto {
   /// Returns a new [StackCreateDto] instance.
   StackCreateDto({
     this.assetIds = const [],
+    this.merge = true,
   });
 
   /// first asset becomes the primary
   List<String> assetIds;
 
+  bool merge;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is StackCreateDto &&
-    _deepEquality.equals(other.assetIds, assetIds);
+    _deepEquality.equals(other.assetIds, assetIds) &&
+    other.merge == merge;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (assetIds.hashCode);
+    (assetIds.hashCode) +
+    (merge.hashCode);
 
   @override
-  String toString() => 'StackCreateDto[assetIds=$assetIds]';
+  String toString() => 'StackCreateDto[assetIds=$assetIds, merge=$merge]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetIds'] = this.assetIds;
+      json[r'merge'] = this.merge;
     return json;
   }
 
@@ -49,6 +55,7 @@ class StackCreateDto {
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
+        merge: mapValueOfType<bool>(json, r'merge')!,
       );
     }
     return null;
@@ -97,6 +104,7 @@ class StackCreateDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'assetIds',
+    'merge',
   };
 }
 
