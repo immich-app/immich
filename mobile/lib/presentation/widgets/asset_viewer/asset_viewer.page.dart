@@ -191,8 +191,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   ) {
     dragDownPosition = details.localPosition;
     initialPhotoViewState = value;
-    if (scaleStateController.scaleState == PhotoViewScaleState.covering ||
-        scaleStateController.scaleState == PhotoViewScaleState.zoomedIn) {
+    final isZoomed =
+        scaleStateController.scaleState == PhotoViewScaleState.zoomedIn ||
+            scaleStateController.scaleState == PhotoViewScaleState.covering;
+    if (!showingBottomSheet && isZoomed) {
       blockGestures = true;
     }
   }
