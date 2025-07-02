@@ -108,6 +108,26 @@ jobs:
       build-args: |-
         DEVICE=cpu
         PUBLIC_API_URL=${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && 'https://api.tech.pixelunion.eu' || 'https://api.nonprd.tech.pixelunion.eu' }}
+
+
+  web:
+    name: Build and Push web
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@094bfb927b8cd75b343abaac27b3241be0fccfe9 # multi-runner-build-workflow-0.1.0
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    with:
+      image: immich-web
+      context: .
+      dockerfile: web/Dockerfile
+      dockerhub-push: ${{ github.event_name == 'release' }}
+
   success-check-server:
     name: Docker Build & Push Server Success
     needs: [server, retag_server]
