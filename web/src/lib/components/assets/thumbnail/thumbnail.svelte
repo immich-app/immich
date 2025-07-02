@@ -1,10 +1,11 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
-  import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
+  import { AssetSortBy, locale, playVideoThumbnailOnHover, searchViewSettings } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
+  import { getByteUnitString } from '$lib/utils/byte-units';
   import { AssetMediaSize, AssetVisibility } from '@immich/sdk';
   import {
     mdiArchiveArrowDownOutline,
@@ -83,6 +84,20 @@
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
+
+  const { sortBy } = $searchViewSettings;
+  const getAssetInfo = (asset: TimelineAsset) => {
+    switch (sortBy) {
+      case AssetSortBy.FileSize: {
+        return getByteUnitString(asset.fileSizeInByte, $locale);
+      }
+
+      case AssetSortBy.DateCreated: {
+        const { month, day, year } = asset.fileCreatedAt;
+        return `${month}-${day}-${year}`;
+      }
+    }
+  };
 
   const onIconClickedHandler = (e?: MouseEvent) => {
     e?.stopPropagation();
@@ -358,6 +373,15 @@
         in:fade={{ duration: 100 }}
         out:fade={{ duration: 100 }}
       ></div>
+    {/if}
+
+    <!-- Show asset info -->
+    {#if asset.fileSizeInByte}
+      <div class="absolute w-full bottom-0 p-0.5">
+        <span class="bg-gray-900 rounded opacity-70 text-sm">
+          {getAssetInfo(asset)}
+        </span>
+      </div>
     {/if}
 
     <!-- Select asset button  -->
