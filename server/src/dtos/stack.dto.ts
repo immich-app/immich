@@ -9,9 +9,9 @@ export class StackCreateDto {
   @ValidateUUID({ each: true })
   @ArrayMinSize(2)
   assetIds!: string[];
-  
+
   @ValidateBoolean({ optional: true })
-  merge: boolean = true;
+  merge?: boolean = true;
 }
 
 export class StackSearchDto {
