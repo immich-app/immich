@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
@@ -77,9 +76,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   int totalAssets = 0;
   int backgroundOpacity = 255;
 
-  // Cache for asset providers to avoid rebuilding them
-  final Map<String, ImageProvider> _assetProviderCache = {};
-
   // Delayed operations that should be cancelled on disposal
   final List<Timer> _delayedOperations = [];
 
@@ -99,19 +95,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void dispose() {
     pageController.dispose();
     bottomSheetController.dispose();
-
-    // Cancel any pending delayed operations
-    for (final timer in _delayedOperations) {
-      timer.cancel();
-    }
-    _delayedOperations.clear();
-
-    // Clear cached providers to free memory
-    _assetProviderCache.clear();
-
-    // Clear global image provider cache to free memory
-    clearImageProviderCache();
-
+    _cancelTimers();
     super.dispose();
   }
 
@@ -120,6 +104,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return Colors.white;
     }
     return Colors.black.withAlpha(backgroundOpacity);
+  }
+
+  void _cancelTimers() {
+    for (final timer in _delayedOperations) {
+      timer.cancel();
+    }
+    _delayedOperations.clear();
   }
 
   // This is used to calculate the scale of the asset when the bottom sheet is showing.
@@ -138,29 +129,26 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final screenSize = Size(context.width, context.height);
 
     // Precache both thumbnail and full image for smooth transitions
-    await Future.wait([
-      precacheImage(
-        getThumbnailImageProvider(asset: asset, size: screenSize),
-        context,
-        onError: (_, __) {},
-      ),
-      precacheImage(
-        getFullImageProvider(asset, size: screenSize),
-        context,
-        onError: (_, __) {},
-      ),
-    ]);
+    unawaited(
+      Future.wait([
+        precacheImage(
+          getThumbnailImageProvider(asset: asset, size: screenSize),
+          context,
+          onError: (_, __) {},
+        ),
+        precacheImage(
+          getFullImageProvider(asset, size: screenSize),
+          context,
+          onError: (_, __) {},
+        ),
+      ]),
+    );
   }
 
   void _onAssetChanged(int index) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
     ref.read(currentAssetNotifier.notifier).setAsset(asset);
-
-    // Clear old cache entries periodically to prevent memory buildup
-    if (_assetProviderCache.length > 10) {
-      _assetProviderCache.clear();
-    }
-
+    _cancelTimers();
     // This will trigger the pre-caching of adjacent assets ensuring
     // that they are ready when the user navigates to them.
     final timer = Timer(Durations.medium4, () {
@@ -231,19 +219,16 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
-    // Batch state reset to minimize rebuilds
     setState(() {
       shouldPopOnDrag = false;
       hasDraggedDown = null;
       backgroundOpacity = 255;
+      viewController?.animateMultiple(
+        position: initialPhotoViewState.position,
+        scale: initialPhotoViewState.scale,
+        rotation: initialPhotoViewState.rotation,
+      );
     });
-
-    // Animate view controller after state update
-    viewController?.animateMultiple(
-      position: initialPhotoViewState.position,
-      scale: initialPhotoViewState.scale,
-      rotation: initialPhotoViewState.rotation,
-    );
   }
 
   void _onDragUpdate(BuildContext ctx, DragUpdateDetails details, _) {
@@ -397,7 +382,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final newBackgroundOpacity =
         (255 * (1.0 - (scaleReduction / dragRatio))).round();
 
-    // Batch state updates to reduce rebuilds
+    viewController?.updateMultiple(
+      position: initialPhotoViewState.position + delta,
+      scale: updatedScale,
+    );
     if (shouldPopOnDrag != newShouldPopOnDrag ||
         backgroundOpacity != newBackgroundOpacity) {
       setState(() {
@@ -405,12 +393,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         backgroundOpacity = newBackgroundOpacity;
       });
     }
-
-    // Update view controller directly without triggering setState
-    viewController?.updateMultiple(
-      position: initialPhotoViewState.position + delta,
-      scale: updatedScale,
-    );
   }
 
   Widget _placeholderBuilder(
@@ -419,8 +401,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     int index,
   ) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
-
-    // Create a simple, fast-loading placeholder that fills the screen like the actual image
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -431,21 +411,15 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         size: Size(
           ctx.width,
           ctx.height,
-        ), // Use full screen size for seamless transition
+        ),
       ),
     );
   }
 
   PhotoViewGalleryPageOptions _assetBuilder(BuildContext ctx, int index) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
-
-    // Create a more specific cache key that includes size for better cache management
     final size = Size(ctx.width, ctx.height);
-    final cacheKey = _createCacheKey(asset, size);
-
-    // Get or create cached provider
-    final imageProvider = _assetProviderCache[cacheKey] ??=
-        getFullImageProvider(asset, size: size);
+    final imageProvider = getFullImageProvider(asset, size: size);
 
     return PhotoViewGalleryPageOptions(
       imageProvider: imageProvider,
@@ -458,17 +432,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
+      errorBuilder: (_, __, ___) => Container(
+        width: ctx.width,
+        height: ctx.height,
+        color: backgroundColor,
+        child: Thumbnail(
+          asset: asset,
+          fit: BoxFit.contain,
+          size: size,
+        ),
+      ),
     );
-  }
-
-  /// Creates a cache key for asset providers
-  String _createCacheKey(BaseAsset asset, Size size) {
-    if (asset is LocalAsset) {
-      return 'local_${asset.id}_${asset.updatedAt}_${size.width}x${size.height}';
-    } else if (asset is RemoteAsset) {
-      return 'remote_${asset.id}_${size.width}x${size.height}';
-    }
-    return '${asset.runtimeType}_${asset.name}_${size.width}x${size.height}';
   }
 
   @override
