@@ -5,8 +5,8 @@ import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.util.Log
 
-class RandomReceiver : HomeWidgetGlanceWidgetReceiver<RandomWidget>() {
-  override val glanceAppWidget = RandomWidget()
+class RandomReceiver : HomeWidgetGlanceWidgetReceiver<PhotoWidget>() {
+  override val glanceAppWidget = PhotoWidget()
 
   override fun onUpdate(
     context: Context,

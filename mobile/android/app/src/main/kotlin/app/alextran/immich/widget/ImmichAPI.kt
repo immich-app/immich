@@ -14,6 +14,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 
@@ -71,8 +73,8 @@ class ImmichAPI(cfg: ServerConfig) {
     gson.fromJson(response, type)
   }
 
-  suspend fun fetchMemory(date: Date): List<MemoryResult> = withContext(Dispatchers.IO) {
-    val iso8601 = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US).format(date)
+  suspend fun fetchMemory(date: LocalDate): List<MemoryResult> = withContext(Dispatchers.IO) {
+    val iso8601 = date.format(DateTimeFormatter.ISO_LOCAL_DATE)
     val url = buildRequestURL("/memories", listOf("for" to iso8601))
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "GET"

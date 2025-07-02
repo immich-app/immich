@@ -40,12 +40,7 @@ data class Album(
 // MARK: Widget Specific
 
 enum class WidgetType {
-  RANDOM;
-
-  val widgetClass: Class<out GlanceAppWidget>
-    get() = when (this) {
-      RANDOM -> RandomWidget::class.java
-    }
+  RANDOM, MEMORIES;
 }
 
 enum class WidgetState {
@@ -60,6 +55,7 @@ val kSubtitleText = stringPreferencesKey("subtitle")
 val kNow = longPreferencesKey("now")
 val kWidgetState = stringPreferencesKey("state")
 val kSelectedAlbum = stringPreferencesKey("albumID")
+val kSelectedAlbumName = stringPreferencesKey("albumName")
 val kShowAlbumName = booleanPreferencesKey("showAlbumName")
 
 const val kWorkerWidgetType = "widgetType"

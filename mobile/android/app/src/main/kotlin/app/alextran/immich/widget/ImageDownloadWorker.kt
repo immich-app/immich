@@ -16,6 +16,7 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
+import java.time.LocalDate
 
 class ImageDownloadWorker(
   private val context: Context,
@@ -84,8 +85,8 @@ class ImageDownloadWorker(
       val widgetType = WidgetType.valueOf(inputData.getString(kWorkerWidgetType) ?: "")
       val widgetId = inputData.getInt(kWorkerWidgetID, -1)
       val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(widgetId)
-      val currentState = getAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId)
-      val currentImgUUID = currentState[kImageUUID]
+      val widgetConfig = getAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId)
+      val currentImgUUID = widgetConfig[kImageUUID]
 
       val serverConfig = ImmichAPI.getServerConfig(context)
 
@@ -93,15 +94,16 @@ class ImageDownloadWorker(
       if (serverConfig == null) {
         if (!currentImgUUID.isNullOrEmpty()) {
           deleteImage(currentImgUUID)
-          updateWidget(widgetType, glanceId, "", WidgetState.LOG_IN)
+          updateWidget(glanceId, "", "", WidgetState.LOG_IN)
         }
 
         return Result.success()
       }
 
       // fetch new image
-      val newBitmap = when (widgetType) {
-        WidgetType.RANDOM -> fetchRandom(serverConfig, currentState)
+      val (newBitmap, subtitle) = when (widgetType) {
+        WidgetType.RANDOM -> fetchRandom(serverConfig, widgetConfig)
+        WidgetType.MEMORIES -> fetchMemory(serverConfig)
       }
 
       // clear current image if it exists
@@ -110,10 +112,11 @@ class ImageDownloadWorker(
       }
 
       // save a new image
-      val imgUUID = saveImage(newBitmap)
+      val imgUUID = UUID.randomUUID().toString()
+      saveImage(newBitmap, imgUUID)
 
       // trigger the update routine with new image uuid
-      updateWidget(widgetType, glanceId, imgUUID)
+      updateWidget(glanceId, imgUUID, subtitle)
 
       Result.success()
     } catch (e: Exception) {
@@ -126,32 +129,65 @@ class ImageDownloadWorker(
     }
   }
 
-  private suspend fun updateWidget(type: WidgetType, glanceId: GlanceId, imageUUID: String, widgetState: WidgetState = WidgetState.SUCCESS) {
+  private suspend fun updateWidget(
+    glanceId: GlanceId,
+    imageUUID: String,
+    subtitle: String?,
+    widgetState: WidgetState = WidgetState.SUCCESS
+  ) {
     updateAppWidgetState(context, glanceId) { prefs ->
       prefs[kNow] = System.currentTimeMillis()
       prefs[kImageUUID] = imageUUID
       prefs[kWidgetState] = widgetState.toString()
+      prefs[kSubtitleText] = subtitle ?: ""
     }
 
-    when (type) {
-      WidgetType.RANDOM -> RandomWidget().update(context,glanceId)
-    }
+    PhotoWidget().update(context,glanceId)
   }
 
-  private suspend fun fetchRandom(serverConfig: ServerConfig, widgetData: Preferences): Bitmap {
+  private suspend fun fetchRandom(
+    serverConfig: ServerConfig,
+    widgetConfig: Preferences
+  ): Pair<Bitmap, String?> {
     val api = ImmichAPI(serverConfig)
 
     val filters = SearchFilters(AssetType.IMAGE, size=1)
-    val albumId = widgetData[kSelectedAlbum]
+    val albumId = widgetConfig[kSelectedAlbum]
+    val albumName = widgetConfig[kSelectedAlbumName]
 
     if (albumId != null) {
       filters.albumIds = listOf(albumId)
     }
 
-    val random = api.fetchSearchResults(filters)
-    val image = api.fetchImage(random[0])
+    val random = api.fetchSearchResults(filters).first()
+    val image = api.fetchImage(random)
 
-    return image
+    return Pair(image, albumName)
+  }
+
+  private suspend fun fetchMemory(
+    serverConfig: ServerConfig
+  ): Pair<Bitmap, String?> {
+    val api = ImmichAPI(serverConfig)
+
+    val today = LocalDate.now()
+    val memories = api.fetchMemory(today)
+    val asset: SearchResult
+    var subtitle: String? = null
+
+    if (memories.isNotEmpty()) {
+      // pick a random asset from a random memory
+      val memory = memories.random()
+      asset = memory.assets.random()
+
+      subtitle = "${today.year-memory.data.year} years ago"
+    } else {
+      val filters = SearchFilters(AssetType.IMAGE, size=1)
+      asset = api.fetchSearchResults(filters).first()
+    }
+
+    val image = api.fetchImage(asset)
+    return Pair(image, subtitle)
   }
 
   private suspend fun deleteImage(uuid: String) = withContext(Dispatchers.IO) {
@@ -159,13 +195,10 @@ class ImageDownloadWorker(
     file.delete()
   }
 
-  private suspend fun saveImage(bitmap: Bitmap): String = withContext(Dispatchers.IO) {
-    val uuid = UUID.randomUUID().toString()
+  private suspend fun saveImage(bitmap: Bitmap, uuid: String) = withContext(Dispatchers.IO) {
     val file = File(context.cacheDir, imageFilename(uuid))
     FileOutputStream(file).use { out ->
       bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
     }
-
-    uuid
   }
 }
