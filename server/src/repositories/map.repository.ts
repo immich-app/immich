@@ -6,12 +6,14 @@ import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
 import { citiesFile } from 'src/constants';
-import { DB, GeodataPlaces, NaturalearthCountries } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetVisibility, SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { DB } from 'src/schema';
+import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
+import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
 
 export interface MapMarkerSearchOptions {
   isArchived?: boolean;
@@ -38,8 +40,8 @@ export interface MapMarker extends ReverseGeocodeResult {
 }
 
 interface MapDB extends DB {
-  geodata_places_tmp: GeodataPlaces;
-  naturalearth_countries_tmp: NaturalearthCountries;
+  geodata_places_tmp: GeodataPlacesTable;
+  naturalearth_countries_tmp: NaturalEarthCountriesTable;
 }
 
 @Injectable()
@@ -193,11 +195,11 @@ export class MapRepository {
       return;
     }
 
-    const entities: Insertable<NaturalearthCountries>[] = [];
+    const entities: Insertable<NaturalEarthCountriesTable>[] = [];
     for (const feature of geoJSONData.features) {
       for (const entry of feature.geometry.coordinates) {
         const coordinates: number[][][] = feature.geometry.type === 'MultiPolygon' ? entry[0] : entry;
-        const featureRecord: Insertable<NaturalearthCountries> = {
+        const featureRecord: Insertable<NaturalEarthCountriesTable> = {
           admin: feature.properties.ADMIN,
           admin_a3: feature.properties.ADM0_A3,
           type: feature.properties.TYPE,
@@ -230,6 +232,7 @@ export class MapRepository {
       this.loadAdmin(resourcePaths.geodata.admin2),
     ]);
 
+    await this.db.schema.dropTable('geodata_places_tmp').ifExists().execute();
     await this.db.transaction().execute(async (manager) => {
       await sql`CREATE TABLE geodata_places_tmp
                 (
@@ -238,7 +241,12 @@ export class MapRepository {
       await manager.schema.dropTable('geodata_places').execute();
       await manager.schema.alterTable('geodata_places_tmp').renameTo('geodata_places').execute();
     });
-
+    await this.db.schema
+      .createIndex('IDX_geodata_gist_earthcoord')
+      .on('geodata_places')
+      .using('gist')
+      .expression(sql`ll_to_earth_public(latitude, longitude)`)
+      .execute();
     await this.loadCities500(admin1, admin2);
     await this.createGeodataIndices();
   }
@@ -323,12 +331,6 @@ export class MapRepository {
   private createGeodataIndices() {
     return Promise.all([
       sql`ALTER TABLE geodata_places ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`.execute(this.db),
-      sql`
-        CREATE INDEX IDX_geodata_gist_earthcoord
-                ON geodata_places
-                USING gist (ll_to_earth_public(latitude, longitude))
-                WITH (fillfactor = 100)
-      `.execute(this.db),
       this.db.schema
         .createIndex(`idx_geodata_places_alternate_names`)
         .on('geodata_places')

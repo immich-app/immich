@@ -42,11 +42,18 @@ class SyncApiRepository {
       SyncStreamDto(
         types: [
           SyncRequestType.usersV1,
-          SyncRequestType.partnersV1,
           SyncRequestType.assetsV1,
-          SyncRequestType.partnerAssetsV1,
           SyncRequestType.assetExifsV1,
+          SyncRequestType.partnersV1,
+          SyncRequestType.partnerAssetsV1,
           SyncRequestType.partnerAssetExifsV1,
+          SyncRequestType.albumsV1,
+          SyncRequestType.albumUsersV1,
+          SyncRequestType.albumAssetsV1,
+          SyncRequestType.albumAssetExifsV1,
+          SyncRequestType.albumToAssetsV1,
+          SyncRequestType.memoriesV1,
+          SyncRequestType.memoryToAssetsV1,
         ],
       ).toJson(),
     );
@@ -135,6 +142,29 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.assetDeleteV1: SyncAssetDeleteV1.fromJson,
   SyncEntityType.assetExifV1: SyncAssetExifV1.fromJson,
   SyncEntityType.partnerAssetV1: SyncAssetV1.fromJson,
+  SyncEntityType.partnerAssetBackfillV1: SyncAssetV1.fromJson,
   SyncEntityType.partnerAssetDeleteV1: SyncAssetDeleteV1.fromJson,
   SyncEntityType.partnerAssetExifV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.partnerAssetExifBackfillV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.albumV1: SyncAlbumV1.fromJson,
+  SyncEntityType.albumDeleteV1: SyncAlbumDeleteV1.fromJson,
+  SyncEntityType.albumUserV1: SyncAlbumUserV1.fromJson,
+  SyncEntityType.albumUserBackfillV1: SyncAlbumUserV1.fromJson,
+  SyncEntityType.albumUserDeleteV1: SyncAlbumUserDeleteV1.fromJson,
+  SyncEntityType.albumAssetV1: SyncAssetV1.fromJson,
+  SyncEntityType.albumAssetBackfillV1: SyncAssetV1.fromJson,
+  SyncEntityType.albumAssetExifV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.albumAssetExifBackfillV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.albumToAssetV1: SyncAlbumToAssetV1.fromJson,
+  SyncEntityType.albumToAssetBackfillV1: SyncAlbumToAssetV1.fromJson,
+  SyncEntityType.albumToAssetDeleteV1: SyncAlbumToAssetDeleteV1.fromJson,
+  SyncEntityType.syncAckV1: _SyncAckV1.fromJson,
+  SyncEntityType.memoryV1: SyncMemoryV1.fromJson,
+  SyncEntityType.memoryDeleteV1: SyncMemoryDeleteV1.fromJson,
+  SyncEntityType.memoryToAssetV1: SyncMemoryAssetV1.fromJson,
+  SyncEntityType.memoryToAssetDeleteV1: SyncMemoryAssetDeleteV1.fromJson,
 };
+
+class _SyncAckV1 {
+  static _SyncAckV1? fromJson(dynamic _) => _SyncAckV1();
+}

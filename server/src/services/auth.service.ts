@@ -91,11 +91,7 @@ export class AuthService extends BaseService {
 
   async changePassword(auth: AuthDto, dto: ChangePasswordDto): Promise<UserAdminResponseDto> {
     const { password, newPassword } = dto;
-    const user = await this.userRepository.getByEmail(auth.user.email, { withPassword: true });
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
+    const user = await this.userRepository.getForChangePassword(auth.user.id);
     const valid = this.validateSecret(password, user.password);
     if (!valid) {
       throw new BadRequestException('Wrong password');

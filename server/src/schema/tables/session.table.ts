@@ -4,8 +4,10 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
+  Generated,
   PrimaryGeneratedColumn,
   Table,
+  Timestamp,
   UpdateDateColumn,
 } from 'src/sql-tools';
 
@@ -13,20 +15,20 @@ import {
 @UpdatedAtTrigger('sessions_updated_at')
 export class SessionTable {
   @PrimaryGeneratedColumn()
-  id!: string;
+  id!: Generated<string>;
 
   // TODO convert to byte[]
   @Column()
   token!: string;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Generated<Timestamp>;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  expiresAt!: Date | null;
+  expiresAt!: Timestamp | null;
 
   @ForeignKeyColumn(() => UserTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   userId!: string;
@@ -35,14 +37,14 @@ export class SessionTable {
   parentId!: string | null;
 
   @Column({ default: '' })
-  deviceType!: string;
+  deviceType!: Generated<string>;
 
   @Column({ default: '' })
-  deviceOS!: string;
+  deviceOS!: Generated<string>;
 
   @UpdateIdColumn({ indexName: 'IDX_sessions_update_id' })
-  updateId!: string;
+  updateId!: Generated<string>;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  pinExpiresAt!: Date | null;
+  pinExpiresAt!: Timestamp | null;
 }

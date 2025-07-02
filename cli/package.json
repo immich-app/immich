@@ -5,7 +5,7 @@
   "type": "module",
   "exports": "./dist/index.js",
   "bin": {
-    "immich": "dist/index.js"
+    "immich": "./bin/immich"
   },
   "license": "GNU Affero General Public License version 3",
   "keywords": [
@@ -21,7 +21,7 @@
     "@types/lodash-es": "^4.17.12",
     "@types/micromatch": "^4.0.9",
     "@types/mock-fs": "^4.13.1",
-    "@types/node": "^22.15.32",
+    "@types/node": "^22.15.33",
     "@vitest/coverage-v8": "^3.0.0",
     "byte-size": "^9.0.0",
     "cli-progress": "^3.12.0",
@@ -69,6 +69,6 @@
     "micromatch": "^4.0.8"
   },
   "volta": {
-    "node": "22.16.0"
+    "node": "22.17.0"
   }
 }

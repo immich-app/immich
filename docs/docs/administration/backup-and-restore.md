@@ -57,7 +57,7 @@ Then please follow the steps in the following section for restoring the database
   <TabItem value="Linux system" label="Linux system" default>
 
 ```bash title='Backup'
-docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | gzip > "/path/to/backup/dump.sql.gz"
+docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=<DB_USERNAME> | gzip > "/path/to/backup/dump.sql.gz"
 ```
 
 ```bash title='Restore'
@@ -79,7 +79,7 @@ docker compose up -d            # Start remainder of Immich apps
   <TabItem value="Windows system (PowerShell)" label="Windows system (PowerShell)">
 
 ```powershell title='Backup'
-[System.IO.File]::WriteAllLines("C:\absolute\path\to\backup\dump.sql", (docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres))
+[System.IO.File]::WriteAllLines("C:\absolute\path\to\backup\dump.sql", (docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=<DB_USERNAME>))
 ```
 
 ```powershell title='Restore'
@@ -150,12 +150,10 @@ for more info read the [release notes](https://github.com/immich-app/immich/rele
   - Preview images (small thumbnails and large previews) for each asset and thumbnails for recognized faces.
   - Stored in `UPLOAD_LOCATION/thumbs/<userID>`.
 - **Encoded Assets:**
-
   - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
   - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.
 
 - **Postgres**
-
   - The Immich database containing all the information to allow the system to function properly.  
     **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
   - Stored in `DB_DATA_LOCATION`.
@@ -201,7 +199,6 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
   - Temporarily located in `UPLOAD_LOCATION/upload/<userID>`.
   - Transferred to `UPLOAD_LOCATION/library/<userID>` upon successful upload.
 - **Postgres**
-
   - The Immich database containing all the information to allow the system to function properly.  
     **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
   - Stored in `DB_DATA_LOCATION`.

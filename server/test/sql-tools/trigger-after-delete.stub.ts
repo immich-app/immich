@@ -14,7 +14,7 @@ const test_fn = registerFunction({
 })
 export class Table1 {}
 
-export const description = 'should create a trigger ';
+export const description = 'should create a trigger';
 export const schema: DatabaseSchema = {
   name: 'postgres',
   schemaName: 'public',

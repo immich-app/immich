@@ -63,6 +63,9 @@ final _features = [
       final db = ref.read(driftProvider);
       await db.remoteAssetEntity.deleteAll();
       await db.remoteExifEntity.deleteAll();
+      await db.remoteAlbumEntity.deleteAll();
+      await db.remoteAlbumUserEntity.deleteAll();
+      await db.remoteAlbumAssetEntity.deleteAll();
     },
   ),
   _Feature(

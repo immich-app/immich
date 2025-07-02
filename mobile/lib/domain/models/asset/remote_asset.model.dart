@@ -8,16 +8,18 @@ enum AssetVisibility {
 }
 
 // Model for an asset stored in the server
-class Asset extends BaseAsset {
+class RemoteAsset extends BaseAsset {
   final String id;
   final String? localId;
   final String? thumbHash;
   final AssetVisibility visibility;
+  final String ownerId;
 
-  const Asset({
+  const RemoteAsset({
     required this.id,
     this.localId,
     required super.name,
+    required this.ownerId,
     required super.checksum,
     required super.type,
     required super.createdAt,
@@ -35,18 +37,24 @@ class Asset extends BaseAsset {
       localId == null ? AssetState.remote : AssetState.merged;
 
   @override
+  String get heroTag => '${localId ?? checksum}_$id';
+
+  bool get hasLocal => localId != null;
+
+  @override
   String toString() {
     return '''Asset {
-   id: $id,
-   name: $name,
-   type: $type,
-   createdAt: $createdAt,
-   updatedAt: $updatedAt,
-   width: ${width ?? "<NA>"},
-   height: ${height ?? "<NA>"},
-   durationInSeconds: ${durationInSeconds ?? "<NA>"},
-   localId: ${localId ?? "<NA>"},
-   isFavorite: $isFavorite,
+    id: $id,
+    name: $name,
+    ownerId: $ownerId,
+    type: $type,
+    createdAt: $createdAt,
+    updatedAt: $updatedAt,
+    width: ${width ?? "<NA>"},
+    height: ${height ?? "<NA>"},
+    durationInSeconds: ${durationInSeconds ?? "<NA>"},
+    localId: ${localId ?? "<NA>"},
+    isFavorite: $isFavorite,
     thumbHash: ${thumbHash ?? "<NA>"},
     visibility: $visibility,
  }''';
@@ -54,10 +62,11 @@ class Asset extends BaseAsset {
 
   @override
   bool operator ==(Object other) {
-    if (other is! Asset) return false;
+    if (other is! RemoteAsset) return false;
     if (identical(this, other)) return true;
     return super == other &&
         id == other.id &&
+        ownerId == other.ownerId &&
         localId == other.localId &&
         thumbHash == other.thumbHash &&
         visibility == other.visibility;
@@ -67,6 +76,7 @@ class Asset extends BaseAsset {
   int get hashCode =>
       super.hashCode ^
       id.hashCode ^
+      ownerId.hashCode ^
       localId.hashCode ^
       thumbHash.hashCode ^
       visibility.hashCode;

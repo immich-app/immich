@@ -40,7 +40,10 @@ class _Summary extends StatelessWidget {
         } else if (snapshot.hasError) {
           subtitle = const Icon(Icons.error_rounded);
         } else {
-          subtitle = Text('${snapshot.data ?? 0}');
+          subtitle = Text(
+            '${snapshot.data ?? 0}',
+            style: ctx.textTheme.bodyLarge,
+          );
         }
         return ListTile(
           leading: leading,
@@ -147,6 +150,18 @@ final _remoteStats = [
     name: 'Exif Entities',
     load: (db) => db.managers.remoteExifEntity.count(),
   ),
+  _Stat(
+    name: 'Remote Albums',
+    load: (db) => db.managers.remoteAlbumEntity.count(),
+  ),
+  _Stat(
+    name: 'Memories',
+    load: (db) => db.managers.memoryEntity.count(),
+  ),
+  _Stat(
+    name: 'Memories Assets',
+    load: (db) => db.managers.memoryAssetEntity.count(),
+  ),
 ];
 
 @RoutePage()
@@ -160,6 +175,7 @@ class RemoteMediaSummaryPage extends StatelessWidget {
       body: Consumer(
         builder: (ctx, ref, __) {
           final db = ref.watch(driftProvider);
+          final albumsFuture = ref.watch(remoteAlbumRepository).getAll();
 
           return CustomScrollView(
             slivers: [
@@ -170,6 +186,49 @@ class RemoteMediaSummaryPage extends StatelessWidget {
                   return _Summary(name: stat.name, countFuture: countFuture);
                 },
                 itemCount: _remoteStats.length,
+              ),
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Divider(),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 15),
+                      child: Text(
+                        "Album summary",
+                        style: ctx.textTheme.titleMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              FutureBuilder(
+                future: albumsFuture,
+                builder: (_, snap) {
+                  final albums = snap.data ?? [];
+                  if (albums.isEmpty) {
+                    return const SliverToBoxAdapter(child: SizedBox.shrink());
+                  }
+
+                  albums.sortBy((a) => a.name);
+                  return SliverList.builder(
+                    itemBuilder: (_, index) {
+                      final album = albums[index];
+                      final countFuture = db.managers.remoteAlbumAssetEntity
+                          .filter((f) => f.albumId.id.equals(album.id))
+                          .count();
+                      return _Summary(
+                        leading: const Icon(Icons.photo_album_rounded),
+                        name: album.name,
+                        countFuture: countFuture,
+                        onTap: () => context.router.push(
+                          RemoteTimelineRoute(albumId: album.id),
+                        ),
+                      );
+                    },
+                    itemCount: albums.length,
+                  );
+                },
               ),
             ],
           );

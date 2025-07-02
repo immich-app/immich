@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.provider.MediaStore
 import android.util.Log
+import androidx.core.database.getStringOrNull
 import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest
@@ -152,7 +153,8 @@ open class NativeSyncApiImplBase(context: Context) {
           continue
         }
 
-        val name = cursor.getString(bucketNameColumn)
+        // MediaStore might return null for bucket name (commonly for the Root Directory), so default to "Internal Storage"
+        val name = cursor.getStringOrNull(bucketNameColumn) ?: "Internal Storage"
         val updatedAt = cursor.getLong(dateModified)
         albums.add(PlatformAlbum(id, name, updatedAt, false, 0))
         albumsCount[id] = 1

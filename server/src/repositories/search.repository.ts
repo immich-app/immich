@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { Kysely, OrderByDirection, Selectable, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
-import { DB, Exif } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
+import { DB } from 'src/schema';
+import { ExifTable } from 'src/schema/tables/exif.table';
 import { anyUuid, searchAssetBuilder } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
@@ -385,7 +386,7 @@ export class SearchRepository {
       .select((eb) =>
         eb
           .fn('to_jsonb', [eb.table('exif')])
-          .$castTo<Selectable<Exif>>()
+          .$castTo<Selectable<ExifTable>>()
           .as('exifInfo'),
       )
       .orderBy('exif.city')
