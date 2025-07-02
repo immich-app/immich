@@ -5,7 +5,6 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
@@ -21,7 +20,6 @@ class MoveToLockFolderActionButton extends ConsumerWidget {
 
     final result =
         await ref.read(actionProvider.notifier).moveToLockFolder(source);
-    await ref.read(timelineServiceProvider).reloadBucket();
     ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'move_to_lock_folder_action_prompt'.t(
