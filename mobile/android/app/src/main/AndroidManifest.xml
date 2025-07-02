@@ -152,7 +152,7 @@
       </intent-filter>
       <meta-data
         android:name="android.appwidget.provider"
-        android:resource="@xml/widget" />
+        android:resource="@xml/random_widget" />
     </receiver>
 
 <!--    <receiver-->
@@ -165,6 +165,16 @@
 <!--        android:name="android.appwidget.provider"-->
 <!--        android:resource="@xml/widget" />-->
 <!--    </receiver>-->
+
+    <activity android:name=".widget.configure.RandomConfigure"
+      android:exported="true"
+      android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+      >
+
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+      </intent-filter>
+    </activity>
   </application>
 
 

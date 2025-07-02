@@ -16,7 +16,7 @@ class RandomReceiver : HomeWidgetGlanceWidgetReceiver<RandomWidget>() {
     super.onUpdate(context, appWidgetManager, appWidgetIds)
 
     appWidgetIds.forEach { widgetID ->
-      ImageDownloadWorker.enqueue(context, widgetID, WidgetType.RANDOM)
+      ImageDownloadWorker.enqueuePeriodic(context, widgetID, WidgetType.RANDOM)
     }
   }
 }

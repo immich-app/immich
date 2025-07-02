@@ -17,15 +17,15 @@ class RandomWidget : GlanceAppWidget() {
 
       provideContent {
         val prefs = currentState<MutablePreferences>()
-        val imageUUID = prefs[stringPreferencesKey("uuid")]
+        val imageUUID = prefs[kImageUUID]
 
-        val subtitle: String? = prefs[stringPreferencesKey("subtitle")]
+        val subtitle: String? = prefs[kSubtitleText]
         var bitmap: Bitmap? = null
         var loggedIn = true
 
         if (imageUUID != null) {
           // fetch a random photo from server
-          val file = File(context.cacheDir, "widget_image_$imageUUID.jpg")
+          val file = File(context.cacheDir, imageFilename(id))
 
           if (file.exists()) {
             bitmap = loadScaledBitmap(file, 500, 500)

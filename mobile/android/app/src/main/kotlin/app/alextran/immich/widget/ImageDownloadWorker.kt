@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.*
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
@@ -15,7 +14,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
 
@@ -28,23 +26,27 @@ class ImageDownloadWorker(
 
     private val uniqueWorkName = ImageDownloadWorker::class.java.simpleName
 
-    fun enqueue(context: Context, appWidgetId: Int, widgetType: WidgetType) {
+    private fun buildConstraints(): Constraints {
+      return Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.CONNECTED)
+        .build()
+    }
+
+    private fun buildInputData(appWidgetId: Int, widgetType: WidgetType): Data {
+      return Data.Builder()
+        .putString(kWorkerWidgetType, widgetType.toString())
+        .putInt(kWorkerWidgetID, appWidgetId)
+        .build()
+    }
+
+    fun enqueuePeriodic(context: Context, appWidgetId: Int, widgetType: WidgetType) {
       val manager = WorkManager.getInstance(context)
 
       val workRequest = PeriodicWorkRequestBuilder<ImageDownloadWorker>(
         20, TimeUnit.MINUTES
       )
-        .setConstraints(
-          Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-        )
-        .setInputData(
-          Data.Builder()
-            .putString("widgetType", widgetType.toString())
-            .putInt("widgetId", appWidgetId)
-            .build()
-        )
+        .setConstraints(buildConstraints())
+        .setInputData(buildInputData(appWidgetId, widgetType))
         .addTag(appWidgetId.toString())
         .build()
 
@@ -55,21 +57,35 @@ class ImageDownloadWorker(
       )
     }
 
+    fun singleShot(context: Context, appWidgetId: Int, widgetType: WidgetType) {
+      val manager = WorkManager.getInstance(context)
+
+      val workRequest = OneTimeWorkRequestBuilder<ImageDownloadWorker>()
+        .setConstraints(buildConstraints())
+        .setInputData(buildInputData(appWidgetId, widgetType))
+        .addTag(appWidgetId.toString())
+        .build()
+
+      manager.enqueueUniqueWork(
+        "$uniqueWorkName-$appWidgetId",
+        ExistingWorkPolicy.REPLACE,
+        workRequest
+      )
+    }
+
     fun cancel(context: Context, glanceId: GlanceId) {
       val appWidgetId = GlanceAppWidgetManager(context).getAppWidgetId(glanceId)
       WorkManager.getInstance(context).cancelAllWorkByTag(appWidgetId.toString())
     }
   }
 
-
-
   override suspend fun doWork(): Result {
     return try {
-      val widgetType = WidgetType.valueOf(inputData.getString("config") ?: "")
-      val widgetId = inputData.getInt("widgetId", -1)
+      val widgetType = WidgetType.valueOf(inputData.getString(kWorkerWidgetType) ?: "")
+      val widgetId = inputData.getInt(kWorkerWidgetID, -1)
       val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(widgetId)
       val currentState = getAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId)
-      val currentImgUUID = currentState[stringPreferencesKey("uuid")]
+      val currentImgUUID = currentState[kImageUUID]
 
       val serverConfig = ImmichAPI.getServerConfig(context)
 
@@ -112,9 +128,9 @@ class ImageDownloadWorker(
 
   private suspend fun updateWidget(type: WidgetType, glanceId: GlanceId, imageUUID: String, widgetState: WidgetState = WidgetState.SUCCESS) {
     updateAppWidgetState(context, glanceId) { prefs ->
-      prefs[longPreferencesKey("now")] = System.currentTimeMillis()
-      prefs[stringPreferencesKey("uuid")] = imageUUID
-      prefs[stringPreferencesKey("state")] = widgetState.toString()
+      prefs[kNow] = System.currentTimeMillis()
+      prefs[kImageUUID] = imageUUID
+      prefs[kWidgetState] = widgetState.toString()
     }
 
     when (type) {
@@ -126,7 +142,7 @@ class ImageDownloadWorker(
     val api = ImmichAPI(serverConfig)
 
     val filters = SearchFilters(AssetType.IMAGE, size=1)
-    val albumId = widgetData[stringPreferencesKey("albumID")]
+    val albumId = widgetData[kSelectedAlbum]
 
     if (albumId != null) {
       filters.albumIds = listOf(albumId)
@@ -139,13 +155,13 @@ class ImageDownloadWorker(
   }
 
   private suspend fun deleteImage(uuid: String) = withContext(Dispatchers.IO) {
-    val file = File(context.cacheDir, "widget_image_$uuid.jpg")
+    val file = File(context.cacheDir, imageFilename(uuid))
     file.delete()
   }
 
   private suspend fun saveImage(bitmap: Bitmap): String = withContext(Dispatchers.IO) {
     val uuid = UUID.randomUUID().toString()
-    val file = File(context.cacheDir, "widget_image_$uuid.jpg")
+    val file = File(context.cacheDir, imageFilename(uuid))
     FileOutputStream(file).use { out ->
       bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
     }

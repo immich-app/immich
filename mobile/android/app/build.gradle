@@ -128,10 +128,14 @@ dependencies {
 
   //Glance Widget
   implementation "androidx.glance:glance-appwidget:$compose_version"
-  implementation("com.google.code.gson:gson:$gson_version")
+  implementation "com.google.code.gson:gson:$gson_version"
 
-  implementation("io.coil-kt.coil3:coil-compose:$coil_version")
-  implementation("io.coil-kt.coil3:coil-network-okhttp:$coil_version")
+  // Glance Configure
+  implementation "androidx.activity:activity-compose:1.8.2"
+  implementation "androidx.compose.ui:ui:$compose_version"
+  implementation "androidx.compose.ui:ui-tooling:$compose_version"
+  implementation "androidx.compose.material3:material3:1.2.1"
+  implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.2"
 }
 
 // This is uncommented in F-Droid build script
