@@ -23,8 +23,8 @@ import 'package:immich_mobile/widgets/photo_view/src/utils/photo_view_hero_attri
 /// A type definition for a [Function] that receives a index after a page change in [PhotoViewGallery]
 typedef PhotoViewGalleryPageChangedCallback = void Function(
   int index,
-  PhotoViewControllerBase controller,
-  PhotoViewScaleStateController scaleStateController,
+  PhotoViewControllerBase? controller,
+  PhotoViewScaleStateController? scaleStateController,
 );
 
 /// A type definition for a [Function] that defines a page in [PhotoViewGallery.build]
@@ -222,8 +222,8 @@ class PhotoViewGallery extends StatefulWidget {
 class _PhotoViewGalleryState extends State<PhotoViewGallery> {
   late final PageController _controller =
       widget.pageController ?? PageController();
-  late PhotoViewControllerCallback _getController;
-  late PhotoViewScaleControllerCallback _scaleStateController;
+  PhotoViewControllerCallback? _getController;
+  PhotoViewScaleControllerCallback? _scaleStateController;
 
   void scaleStateChangedCallback(PhotoViewScaleState scaleState) {
     if (widget.scaleStateChangedCallback != null) {
@@ -253,7 +253,8 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
   }
 
   void _onPageChange(int page) {
-    widget.onPageChanged?.call(page, _getController(), _scaleStateController());
+    widget.onPageChanged
+        ?.call(page, _getController?.call(), _scaleStateController?.call());
   }
 
   @override

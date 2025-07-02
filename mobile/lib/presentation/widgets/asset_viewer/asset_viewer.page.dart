@@ -186,8 +186,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onPageChanged(
     int index,
-    PhotoViewControllerBase controller,
-    PhotoViewScaleStateController scaleController,
+    PhotoViewControllerBase? controller,
+    PhotoViewScaleStateController? scaleController,
   ) {
     _onAssetChanged(index);
     viewController = controller;
@@ -196,8 +196,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // If the bottom sheet is showing, we need to adjust scale the asset to
     // emulate the zoom effect
     if (showingBottomSheet) {
-      initialScale = controller.scale;
-      controller.scale = _getScaleForBottomSheet;
+      initialScale = controller?.scale;
+      controller?.scale = _getScaleForBottomSheet;
     }
   }
 
