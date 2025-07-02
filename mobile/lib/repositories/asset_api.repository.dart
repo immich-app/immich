@@ -48,6 +48,10 @@ class AssetApiRepository extends ApiRepository {
     return result;
   }
 
+  Future<void> delete(List<String> ids, bool force) async {
+    return _api.deleteAssets(AssetBulkDeleteDto(ids: ids, force: force));
+  }
+
   Future<void> updateVisibility(
     List<String> ids,
     AssetVisibilityEnum visibility,

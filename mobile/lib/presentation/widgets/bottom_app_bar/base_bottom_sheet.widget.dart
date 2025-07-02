@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 
 class BaseBottomSheet extends ConsumerStatefulWidget {
@@ -74,10 +75,7 @@ class _BaseDraggableScrollableSheetState
           clipBehavior: Clip.antiAlias,
           elevation: 6.0,
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(6),
-              topRight: Radius.circular(6),
-            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
           ),
           margin: const EdgeInsets.symmetric(horizontal: 0),
           child: CustomScrollView(
@@ -86,17 +84,22 @@ class _BaseDraggableScrollableSheetState
               SliverToBoxAdapter(
                 child: Column(
                   children: [
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 10),
                     const _DragHandle(),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 120,
-                      child: ListView(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        children: widget.actions,
+                    const SizedBox(height: 14),
+                    if (widget.actions.isNotEmpty)
+                      SizedBox(
+                        height: 80,
+                        child: ListView(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          children: widget.actions,
+                        ),
                       ),
-                    ),
+                    if (widget.actions.isNotEmpty) const SizedBox(height: 14),
+                    if (widget.actions.isNotEmpty)
+                      const Divider(indent: 20, endIndent: 20),
+                    if (widget.actions.isNotEmpty) const SizedBox(height: 14),
                   ],
                 ),
               ),
@@ -118,7 +121,7 @@ class _DragHandle extends StatelessWidget {
       height: 6,
       width: 32,
       decoration: BoxDecoration(
-        color: context.themeData.dividerColor,
+        color: context.themeData.dividerColor.lighten(amount: 0.6),
         borderRadius: const BorderRadius.all(Radius.circular(20)),
       ),
     );

@@ -2,10 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
@@ -15,20 +13,17 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 final actionServiceProvider = Provider<ActionService>(
   (ref) => ActionService(
     ref.watch(assetApiRepositoryProvider),
-    ref.watch(remoteAssetRepository),
-    ref.watch(remoteExifRepository),
+    ref.watch(remoteAssetRepositoryProvider),
   ),
 );
 
 class ActionService {
   final AssetApiRepository _assetApiRepository;
-  final DriftRemoteAssetRepository _remoteAssetRepository;
-  final DriftRemoteExifRepository _remoteExifRepository;
+  final RemoteAssetRepository _remoteAssetRepository;
 
   const ActionService(
     this._assetApiRepository,
     this._remoteAssetRepository,
-    this._remoteExifRepository,
   );
 
   Future<void> shareLink(List<String> remoteIds, BuildContext context) async {
@@ -93,13 +88,23 @@ class ActionService {
     );
   }
 
+  Future<void> trash(List<String> remoteIds) async {
+    await _assetApiRepository.delete(remoteIds, false);
+    await _remoteAssetRepository.trash(remoteIds);
+  }
+
+  Future<void> delete(List<String> remoteIds) async {
+    await _assetApiRepository.delete(remoteIds, true);
+    await _remoteAssetRepository.delete(remoteIds);
+  }
+
   Future<bool> editLocation(
     List<String> remoteIds,
     BuildContext context,
   ) async {
     LatLng? initialLatLng;
     if (remoteIds.length == 1) {
-      final exif = await _remoteExifRepository.get(remoteIds[0]);
+      final exif = await _remoteAssetRepository.getExif(remoteIds[0]);
 
       if (exif?.latitude != null && exif?.longitude != null) {
         initialLatLng = LatLng(exif!.latitude!, exif.longitude!);

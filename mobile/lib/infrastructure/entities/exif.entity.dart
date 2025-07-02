@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart' hide Query;
 import 'package:immich_mobile/domain/models/exif.model.dart' as domain;
+import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
@@ -132,6 +133,8 @@ class RemoteExifEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get model => text().nullable()();
 
+  TextColumn get lens => text().nullable()();
+
   TextColumn get orientation => text().nullable()();
 
   TextColumn get timeZone => text().nullable()();
@@ -142,4 +145,28 @@ class RemoteExifEntity extends Table with DriftDefaultsMixin {
 
   @override
   Set<Column> get primaryKey => {assetId};
+}
+
+extension RemoteExifEntityDataDomainEx on RemoteExifEntityData {
+  domain.ExifInfo toDto() => domain.ExifInfo(
+        fileSize: fileSize,
+        dateTimeOriginal: dateTimeOriginal,
+        timeZone: timeZone,
+        make: make,
+        model: model,
+        iso: iso,
+        city: city,
+        state: state,
+        country: country,
+        description: description,
+        orientation: orientation,
+        latitude: latitude,
+        longitude: longitude,
+        f: fNumber?.toDouble(),
+        mm: focalLength?.toDouble(),
+        lens: lens,
+        width: width?.toDouble(),
+        height: height?.toDouble(),
+        isFlipped: ExifDtoConverter.isOrientationFlipped(orientation),
+      );
 }

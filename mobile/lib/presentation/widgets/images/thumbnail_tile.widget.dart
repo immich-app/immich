@@ -59,10 +59,13 @@ class ThumbnailTile extends ConsumerWidget {
             child: Stack(
               children: [
                 Positioned.fill(
-                  child: Thumbnail(
-                    asset: asset,
-                    fit: fit,
-                    size: size,
+                  child: Hero(
+                    tag: asset.heroTag,
+                    child: Thumbnail(
+                      asset: asset,
+                      fit: fit,
+                      size: size,
+                    ),
                   ),
                 ),
                 if (asset.isVideo)
