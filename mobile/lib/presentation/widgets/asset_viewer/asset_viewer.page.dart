@@ -60,7 +60,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   PersistentBottomSheetController? sheetCloseNotifier;
   // PhotoViewGallery takes care of disposing it's controllers
   PhotoViewControllerBase? viewController;
-  late PhotoViewScaleStateController scaleStateController;
 
   late Platform platform;
   late PhotoViewControllerValue initialPhotoViewState;
@@ -86,7 +85,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     platform = widget.platform ?? const LocalPlatform();
     totalAssets = ref.read(timelineServiceProvider).totalAssets;
     bottomSheetController = DraggableScrollableController();
-    scaleStateController = PhotoViewScaleStateController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _onAssetChanged(widget.initialIndex);
     });
@@ -96,7 +94,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void dispose() {
     pageController.dispose();
     bottomSheetController.dispose();
-    scaleStateController.dispose();
     _cancelTimers();
     super.dispose();
   }
@@ -190,6 +187,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _,
     DragStartDetails details,
     PhotoViewControllerValue value,
+    PhotoViewScaleStateController scaleStateController,
   ) {
     dragDownPosition = details.localPosition;
     initialPhotoViewState = value;
@@ -430,7 +428,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       initialScale: PhotoViewComputedScale.contained * 0.999,
       minScale: PhotoViewComputedScale.contained * 0.999,
       disableScaleGestures: showingBottomSheet,
-      scaleStateController: scaleStateController,
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,

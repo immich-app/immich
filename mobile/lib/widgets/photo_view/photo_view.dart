@@ -661,6 +661,7 @@ typedef PhotoViewImageDragStartCallback = Function(
   BuildContext context,
   DragStartDetails details,
   PhotoViewControllerValue controllerValue,
+  PhotoViewScaleStateController scaleStateController,
 );
 
 /// A type definition for a callback when the user drags

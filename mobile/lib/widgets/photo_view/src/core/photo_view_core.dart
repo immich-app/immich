@@ -417,6 +417,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
                       context,
                       details,
                       widget.controller.value,
+                      widget.scaleStateController,
                     )
                 : null,
             onDragEnd: widget.onDragEnd != null
