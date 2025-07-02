@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/presentation/widgets/images/local_thumb_provider.dart';
-import 'package:immich_mobile/presentation/widgets/images/remote_thumb_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumb_hash_provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/widgets/common/fade_in_placeholder_image.dart';
@@ -25,49 +24,12 @@ class Thumbnail extends StatelessWidget {
   final Size size;
   final BoxFit fit;
 
-  static ImageProvider imageProvider({
-    BaseAsset? asset,
-    String? remoteId,
-    Size size = const Size.square(256),
-  }) {
-    assert(
-      asset != null || remoteId != null,
-      'Either asset or remoteId must be provided',
-    );
-
-    if (remoteId != null) {
-      return RemoteThumbProvider(
-        assetId: remoteId,
-        height: size.height,
-        width: size.width,
-      );
-    }
-
-    if (asset is LocalAsset) {
-      return LocalThumbProvider(
-        asset: asset,
-        height: size.height,
-        width: size.width,
-      );
-    }
-
-    if (asset is RemoteAsset) {
-      return RemoteThumbProvider(
-        assetId: asset.id,
-        height: size.height,
-        width: size.width,
-      );
-    }
-
-    throw ArgumentError("Unsupported asset type: ${asset.runtimeType}");
-  }
-
   @override
   Widget build(BuildContext context) {
     final thumbHash =
         asset is RemoteAsset ? (asset as RemoteAsset).thumbHash : null;
     final provider =
-        imageProvider(asset: asset, remoteId: remoteId, size: size);
+        getThumbnailImageProvider(asset: asset, remoteId: remoteId, size: size);
 
     return OctoImage.fromSet(
       image: provider,

@@ -161,8 +161,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             fNumber: Value(exif.fNumber),
             fileSize: Value(exif.fileSizeInByte),
             focalLength: Value(exif.focalLength),
-            latitude: Value(exif.latitude),
-            longitude: Value(exif.longitude),
+            latitude: Value(exif.latitude?.toDouble()),
+            longitude: Value(exif.longitude?.toDouble()),
             iso: Value(exif.iso),
             make: Value(exif.make),
             model: Value(exif.model),
@@ -170,6 +170,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             timeZone: Value(exif.timeZone),
             rating: Value(exif.rating),
             projectionType: Value(exif.projectionType),
+            lens: Value(exif.lensModel),
           );
 
           batch.insert(

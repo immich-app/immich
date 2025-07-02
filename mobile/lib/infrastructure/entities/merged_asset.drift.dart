@@ -51,7 +51,7 @@ class MergedAssetDrift extends i1.ModularAccessor {
     final expandedvar2 = $expandVar($arrayStartIndex, var2.length);
     $arrayStartIndex += var2.length;
     return customSelect(
-        'SELECT COUNT(*) AS asset_count, CASE WHEN ?1 = 0 THEN STRFTIME(\'%Y-%m-%d\', created_at) WHEN ?1 = 1 THEN STRFTIME(\'%Y-%m\', created_at) END AS bucket_date FROM (SELECT rae.name, rae.created_at FROM remote_asset_entity AS rae LEFT JOIN local_asset_entity AS lae ON rae.checksum = lae.checksum WHERE rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id IN ($expandedvar2) UNION ALL SELECT lae.name, lae.created_at FROM local_asset_entity AS lae LEFT JOIN remote_asset_entity AS rae ON rae.checksum = lae.checksum WHERE rae.id IS NULL) GROUP BY bucket_date ORDER BY bucket_date DESC',
+        'SELECT COUNT(*) AS asset_count, CASE WHEN ?1 = 0 THEN STRFTIME(\'%Y-%m-%d\', created_at, \'localtime\') WHEN ?1 = 1 THEN STRFTIME(\'%Y-%m\', created_at, \'localtime\') END AS bucket_date FROM (SELECT rae.name, rae.created_at FROM remote_asset_entity AS rae LEFT JOIN local_asset_entity AS lae ON rae.checksum = lae.checksum WHERE rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id IN ($expandedvar2) UNION ALL SELECT lae.name, lae.created_at FROM local_asset_entity AS lae LEFT JOIN remote_asset_entity AS rae ON rae.checksum = lae.checksum WHERE rae.id IS NULL) GROUP BY bucket_date ORDER BY bucket_date DESC',
         variables: [
           i0.Variable<int>(groupBy),
           for (var $ in var2) i0.Variable<String>($)

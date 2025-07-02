@@ -52,8 +52,8 @@ mergedBucket(:group_by AS INTEGER):
 SELECT
 	COUNT(*) as asset_count,
 	 CASE
-        WHEN :group_by = 0 THEN STRFTIME('%Y-%m-%d', created_at) -- day
-        WHEN :group_by = 1 THEN STRFTIME('%Y-%m', created_at) -- month
+        WHEN :group_by = 0 THEN STRFTIME('%Y-%m-%d', created_at, 'localtime') -- day
+        WHEN :group_by = 1 THEN STRFTIME('%Y-%m', created_at, 'localtime') -- month
     END AS bucket_date
 FROM
 (
