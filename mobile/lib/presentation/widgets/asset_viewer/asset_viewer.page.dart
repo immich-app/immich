@@ -150,6 +150,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onAssetChanged(int index) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
     ref.read(currentAssetNotifier.notifier).setAsset(asset);
+    unawaited(ref.read(timelineServiceProvider).preCacheAssets(index));
     _cancelTimers();
     // This will trigger the pre-caching of adjacent assets ensuring
     // that they are ready when the user navigates to them.
@@ -160,7 +161,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       for (final offset in [-1, 1]) {
         unawaited(_precacheImage(index + offset));
       }
-      unawaited(ref.read(timelineServiceProvider).preCacheAssets(index));
     });
     _delayedOperations.add(timer);
   }

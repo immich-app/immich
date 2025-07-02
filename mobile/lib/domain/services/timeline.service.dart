@@ -132,7 +132,7 @@ class TimelineService {
 
   // Pre-cache assets around the given index for asset viewer
   Future<void> preCacheAssets(int index) =>
-      _mutex.run(() => _loadAssets(index, 1));
+      _mutex.run(() => _loadAssets(index, 5));
 
   BaseAsset getAsset(int index) {
     if (!hasRange(index, 1)) {
