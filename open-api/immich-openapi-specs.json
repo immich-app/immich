@@ -13234,8 +13234,7 @@
           }
         },
         "required": [
-          "assetIds",
-          "merge"
+          "assetIds"
         ],
         "type": "object"
       },

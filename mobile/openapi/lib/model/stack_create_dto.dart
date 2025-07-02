@@ -55,7 +55,7 @@ class StackCreateDto {
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        merge: mapValueOfType<bool>(json, r'merge')!,
+        merge: mapValueOfType<bool>(json, r'merge') ?? true,
       );
     }
     return null;
@@ -104,7 +104,6 @@ class StackCreateDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'assetIds',
-    'merge',
   };
 }
 
