@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/setting.model.dart';
+import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
@@ -117,11 +119,9 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
     LocalFullImageProvider key,
     ImageDecoderCallback decode,
   ) {
-    final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
-      codec: _codec(key, decode, chunkEvents),
+      codec: _codec(key, decode),
       scale: 1.0,
-      chunkEvents: chunkEvents.stream,
       informationCollector: () sync* {
         yield ErrorDescription(asset.name);
       },
@@ -132,21 +132,18 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   Stream<Codec> _codec(
     LocalFullImageProvider key,
     ImageDecoderCallback decode,
-    StreamController<ImageChunkEvent> chunkEvents,
   ) async* {
     try {
       switch (key.asset.type) {
         case AssetType.image:
-          yield* _decodeImageAdvanced(key, decode, chunkEvents);
+          yield* _decodeProgressive(key, decode);
           break;
         case AssetType.video:
-          final thumbBytes = await _assetMediaRepository
-              .getThumbnail(key.asset.id, size: key.size);
-          if (thumbBytes == null) {
+          final codec = await _getThumbnailCodec(key, decode);
+          if (codec == null) {
             throw StateError("Failed to load preview for ${key.asset.name}");
           }
-          final buffer = await ImmutableBuffer.fromUint8List(thumbBytes);
-          yield await decode(buffer);
+          yield codec;
           break;
         case AssetType.other:
         case AssetType.audio:
@@ -158,97 +155,73 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
       throw const ImageLoadingException(
         'Could not load image from local storage',
       );
-    } finally {
-      chunkEvents.close();
     }
   }
 
-  /// Additional optimizations that can be enabled based on requirements
-  Stream<Codec> _decodeImageAdvanced(
+  Future<Codec?> _getThumbnailCodec(
     LocalFullImageProvider key,
     ImageDecoderCallback decode,
-    StreamController<ImageChunkEvent> chunkEvents,
+  ) async {
+    final thumbBytes =
+        await _assetMediaRepository.getThumbnail(key.asset.id, size: key.size);
+    if (thumbBytes == null) {
+      return null;
+    }
+    final buffer = await ImmutableBuffer.fromUint8List(thumbBytes);
+    return decode(buffer);
+  }
+
+  Stream<Codec> _decodeProgressive(
+    LocalFullImageProvider key,
+    ImageDecoderCallback decode,
   ) async* {
     final file = await _storageRepository.getFileForAsset(key.asset);
     if (file == null) {
       throw StateError("Opening file for asset ${key.asset.name} failed");
     }
 
-    final filePath = file.path;
-    final fileExtension = filePath.toLowerCase();
-    final isHEIC =
-        fileExtension.endsWith('.heic') || fileExtension.endsWith('.heif');
     final fileSize = await file.length();
+    final devicePixelRatio =
+        PlatformDispatcher.instance.views.first.devicePixelRatio;
+    final isLargeFile = fileSize > 20 * 1024 * 1024; // 20MB
+    final isHEIC = file.path.toLowerCase().contains(RegExp(r'\.(heic|heif)$'));
+    final isProgressive = isLargeFile || (isHEIC && !Platform.isIOS);
 
-    // For very large images, use progressive loading
-    if (fileSize > 20 * 1024 * 1024) {
-      // 20MB+
-      Logger('LocalFullImageProvider').info(
-        'Large file detected (${fileSize ~/ (1024 * 1024)}MB), using progressive loading',
-      );
-
-      // Step 1: Load a medium resolution version first
+    if (isProgressive) {
       try {
-        final mediumThumb = await _assetMediaRepository
-            .getThumbnail(key.asset.id, size: const Size(2048, 2048));
+        final progressiveMultiplier = devicePixelRatio >= 3.0 ? 1.3 : 1.2;
+        final size = Size(
+          (key.size.width * progressiveMultiplier).clamp(256, 1024),
+          (key.size.height * progressiveMultiplier).clamp(256, 1024),
+        );
+        final mediumThumb =
+            await _assetMediaRepository.getThumbnail(key.asset.id, size: size);
         if (mediumThumb != null) {
           final mediumBuffer = await ImmutableBuffer.fromUint8List(mediumThumb);
           yield await decode(mediumBuffer);
-
-          chunkEvents.add(
-            ImageChunkEvent(
-              cumulativeBytesLoaded: fileSize ~/ 3,
-              expectedTotalBytes: fileSize,
-            ),
-          );
         }
-      } catch (e) {
-        Logger('LocalFullImageProvider')
-            .warning('Medium resolution preview failed: $e');
-      }
+      } catch (_) {}
     }
 
-    // Size-aware decoding: Use smaller target size for HEIC only on non-iOS platforms
-    // iOS handles HEIC efficiently, so use full resolution there
-    if (isHEIC && !Platform.isIOS && (key.size.width < 1920 && key.size.height < 1920)) {
-      // For smaller target sizes on non-iOS platforms, use thumbnail instead of full resolution
-      try {
-        final targetSize = Size(
-          (key.size.width * 1.5).clamp(1024, 2048),
-          (key.size.height * 1.5).clamp(1024, 2048),
-        );
-
-        final optimizedBytes = await _assetMediaRepository
-            .getThumbnail(key.asset.id, size: targetSize);
-
-        if (optimizedBytes != null) {
-          final buffer = await ImmutableBuffer.fromUint8List(optimizedBytes);
-          yield await decode(buffer);
-          return;
-        }
-      } catch (e) {
-        Logger('LocalFullImageProvider')
-            .info('Size-optimized decoding failed, using full resolution');
+    // Load original only when the file is smaller or if the user wants to load original images
+    // Or load a slightly larger image for progressive loading
+    if (isProgressive && !(AppSetting.get(Setting.loadOriginal))) {
+      final progressiveMultiplier = devicePixelRatio >= 3.0 ? 2.0 : 1.6;
+      final size = Size(
+        (key.size.width * progressiveMultiplier).clamp(512, 2048),
+        (key.size.height * progressiveMultiplier).clamp(512, 2048),
+      );
+      final highThumb =
+          await _assetMediaRepository.getThumbnail(key.asset.id, size: size);
+      if (highThumb != null) {
+        final highBuffer = await ImmutableBuffer.fromUint8List(highThumb);
+        yield await decode(highBuffer);
       }
+      return;
     }
 
-    // Final: Load full resolution
-    chunkEvents.add(
-      ImageChunkEvent(
-        cumulativeBytesLoaded: (fileSize * 0.8).round(),
-        expectedTotalBytes: fileSize,
-      ),
-    );
-
-    final buffer = await ImmutableBuffer.fromFilePath(filePath);
+    final buffer = await ImmutableBuffer.fromFilePath(file.path);
     yield await decode(buffer);
-
-    chunkEvents.add(
-      ImageChunkEvent(
-        cumulativeBytesLoaded: fileSize,
-        expectedTotalBytes: fileSize,
-      ),
-    );
   }
 
   @override
