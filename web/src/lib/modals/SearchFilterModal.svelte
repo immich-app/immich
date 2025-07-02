@@ -8,6 +8,7 @@
     query: string;
     queryType: 'smart' | 'metadata' | 'description';
     personIds: SvelteSet<string>;
+    personSearchBehavior: 'and' | 'or' | 'only';
     tagIds: SvelteSet<string>;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
@@ -68,6 +69,7 @@
     query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
+    personSearchBehavior: 'personSearchBehavior' in searchQuery ? searchQuery.personSearchBehavior : 'and',
     tagIds: new SvelteSet('tagIds' in searchQuery ? searchQuery.tagIds : []),
     location: {
       country: withNullAsUndefined(searchQuery.country),
@@ -101,6 +103,7 @@
       query: '',
       queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
+      personSearchBehavior: 'and',
       tagIds: new SvelteSet(),
       location: {},
       camera: {},
@@ -140,6 +143,7 @@
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
+      personSearchBehavior: filter.personIds.size > 1 ? filter.personSearchBehavior : undefined,
       tagIds: filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
       rating: filter.rating,
@@ -170,7 +174,7 @@
     <form id={formId} autocomplete="off" {onsubmit} {onreset}>
       <div class="flex flex-col gap-4 pb-10" tabindex="-1">
         <!-- PEOPLE -->
-        <SearchPeopleSection bind:selectedPeople={filter.personIds} />
+        <SearchPeopleSection bind:selectedPeople={filter.personIds} bind:personSearchBehavior={filter.personSearchBehavior} />
 
         <!-- TEXT -->
         <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />

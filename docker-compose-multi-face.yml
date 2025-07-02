@@ -1,0 +1,211 @@
+#
+# Docker Compose file for Immich with Multi-Face Search Feature
+#
+# This compose file builds and deploys Immich with the new multi-face search functionality
+# that allows users to search with "All People", "Any People", or "Only Them" behaviors.
+#
+
+name: immich-multi-face
+
+services:
+  immich-server:
+    container_name: immich_server_multi_face
+    image: immich-server:multi-face
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+      target: production
+    volumes:
+      - ${UPLOAD_LOCATION:-./upload}/photos:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      # Database Configuration
+      DB_HOSTNAME: database
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME:-immich}
+      
+      # Redis Configuration
+      REDIS_HOSTNAME: redis
+      REDIS_PORT: 6379
+      
+      # Machine Learning
+      MACHINE_LEARNING_ENABLED: ${MACHINE_LEARNING_ENABLED:-true}
+      MACHINE_LEARNING_URL: http://immich-machine-learning:3003
+      
+      # Multi-Face Search Feature
+      IMMICH_FEATURE_MULTI_FACE_SEARCH: true
+      
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-log}
+      
+      # Server Configuration
+      IMMICH_PORT: 2283
+      IMMICH_WORKERS_INCLUDE: api
+      
+    ports:
+      - "2283:2283"
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:2283/api/server-info/ping || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  immich-microservices:
+    container_name: immich_microservices_multi_face
+    image: immich-server:multi-face
+    command: ["/bin/sh", "./start-microservices.sh"]
+    volumes:
+      - ${UPLOAD_LOCATION:-./upload}/photos:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      # Database Configuration  
+      DB_HOSTNAME: database
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME:-immich}
+      
+      # Redis Configuration
+      REDIS_HOSTNAME: redis
+      REDIS_PORT: 6379
+      
+      # Machine Learning
+      MACHINE_LEARNING_ENABLED: ${MACHINE_LEARNING_ENABLED:-true}
+      MACHINE_LEARNING_URL: http://immich-machine-learning:3003
+      
+      # Multi-Face Search Feature
+      IMMICH_FEATURE_MULTI_FACE_SEARCH: true
+      
+      # Workers Configuration
+      IMMICH_WORKERS_INCLUDE: microservices
+      
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-log}
+      
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep '[n]ode' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  immich-machine-learning:
+    container_name: immich_machine_learning_multi_face
+    image: immich-machine-learning:multi-face
+    build:
+      context: machine-learning
+      dockerfile: Dockerfile
+      args:
+        - DEVICE=${ML_DEVICE:-cpu}
+    volumes:
+      - model-cache:/cache
+    environment:
+      # Machine Learning Configuration
+      MACHINE_LEARNING_CACHE_FOLDER: /cache
+      MACHINE_LEARNING_REQUEST_THREADS: ${ML_REQUEST_THREADS:-1}
+      MACHINE_LEARNING_MODEL_TTL: ${ML_MODEL_TTL:-300}
+      
+      # Face Detection Settings
+      MACHINE_LEARNING_FACE_DETECTION: ${ML_FACE_DETECTION:-true}
+      MACHINE_LEARNING_FACIAL_RECOGNITION: ${ML_FACIAL_RECOGNITION:-true}
+      
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      
+    ports:
+      - "3003:3003"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3003/ping || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    container_name: immich_redis_multi_face
+    image: docker.io/valkey/valkey:8-bookworm@sha256:fec42f399876eb6faf9e008570597741c87ff7662a54185593e74b09ce83d177
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  database:
+    container_name: immich_postgres_multi_face
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:5f6a838e4e44c8e0e019d0ebfe3ee8952b69afc2809b2c25f7b0119641978e91
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_DB: ${DB_DATABASE_NAME:-immich}
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+    volumes:
+      - ${UPLOAD_LOCATION:-./upload}/postgres:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    restart: unless-stopped
+    shm_size: 128mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # Optional: Metrics and Monitoring
+  immich-prometheus:
+    container_name: immich_prometheus_multi_face
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    profiles: ["monitoring"]
+
+  # Optional: Grafana Dashboard
+  immich-grafana:
+    container_name: immich_grafana_multi_face
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    restart: unless-stopped
+    profiles: ["monitoring"]
+
+volumes:
+  model-cache:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+networks:
+  default:
+    driver: bridge 

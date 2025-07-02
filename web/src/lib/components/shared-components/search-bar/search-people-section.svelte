@@ -1,21 +1,23 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
-  import { mdiArrowRight, mdiClose } from '@mdi/js';
+  import { Button, IconButton } from '@immich/ui';
+  import { mdiArrowRight, mdiClose, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
     selectedPeople: SvelteSet<string>;
+    personSearchBehavior?: 'and' | 'or' | 'only';
   }
 
-  let { selectedPeople = $bindable() }: Props = $props();
+  let { selectedPeople = $bindable(), personSearchBehavior = $bindable('and') }: Props = $props();
 
   let peoplePromise = getPeople();
   let showAllPeople = $state(false);
@@ -64,9 +66,85 @@
 
     <div id="people-selection" class="max-h-60 -mb-4 overflow-y-auto immich-scrollbar">
       <div class="flex items-center w-full justify-between gap-6">
-        <p class="immich-form-label py-3">{$t('people').toUpperCase()}</p>
+        <div class="flex items-center gap-3">
+          <p class="immich-form-label py-3">{$t('people').toUpperCase()}</p>
+          <IconButton
+            color="primary"
+            variant="ghost"
+            shape="round"
+            icon={mdiPlus}
+            size="tiny"
+            title={$t('add_people')}
+            onclick={() => (showAllPeople = true)}
+          />
+        </div>
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
+
+      {#if selectedPeople.size > 1}
+        <div class="flex items-center justify-center gap-4 my-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+          <p class="text-sm font-medium dark:text-white">{$t('search_behavior')}:</p>
+          <div class="flex bg-white dark:bg-gray-600 rounded-md p-1">
+            <button
+              type="button"
+              class="px-3 py-1 text-sm rounded transition-colors {personSearchBehavior === 'and'
+                ? 'bg-immich-primary text-white'
+                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500'}"
+              onclick={() => (personSearchBehavior = 'and')}
+            >
+              {$t('all_people')}
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1 text-sm rounded transition-colors {personSearchBehavior === 'or'
+                ? 'bg-immich-primary text-white'
+                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500'}"
+              onclick={() => (personSearchBehavior = 'or')}
+            >
+              {$t('any_people')}
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1 text-sm rounded transition-colors {personSearchBehavior === 'only'
+                ? 'bg-immich-primary text-white'
+                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500'}"
+              onclick={() => (personSearchBehavior = 'only')}
+            >
+              {$t('only_people')}
+            </button>
+          </div>
+        </div>
+      {/if}
+
+      <!-- Selected People Display -->
+      {#if selectedPeople.size > 0}
+        <div class="mb-4">
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{$t('selected_people')} ({selectedPeople.size}):</p>
+          <div class="flex flex-wrap gap-2">
+            {#each people.filter((p) => selectedPeople.has(p.id)) as person (person.id)}
+              <div class="flex items-center gap-2 bg-immich-primary/20 rounded-full px-3 py-1">
+                <ImageThumbnail
+                  circle
+                  shadow
+                  url={getPeopleThumbnailUrl(person)}
+                  altText={person.name}
+                  widthStyle="24px"
+                  heightStyle="24px"
+                />
+                <span class="text-sm font-medium">{person.name}</span>
+                <button
+                  type="button"
+                  class="text-gray-500 hover:text-red-500 transition-colors"
+                  onclick={() => togglePersonSelection(person.id)}
+                  title={$t('remove_person')}
+                >
+                  <Icon path={mdiClose} size="16" />
+                </button>
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
 
       <SingleGridRow
         class="grid grid-auto-fill-20 gap-1 mt-2 overflow-y-auto immich-scrollbar"

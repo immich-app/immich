@@ -4,6 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
+import { PersonSearchBehavior } from 'src/dtos/search.dto';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
@@ -86,6 +87,7 @@ export interface SearchEmbeddingOptions {
 
 export interface SearchPeopleOptions {
   personIds?: string[];
+  personSearchBehavior?: PersonSearchBehavior;
 }
 
 export interface SearchTagOptions {

@@ -1,21 +1,22 @@
 import {
-  DeduplicateJoinsPlugin,
-  Expression,
-  ExpressionBuilder,
-  ExpressionWrapper,
-  Kysely,
-  KyselyConfig,
-  Nullable,
-  Selectable,
-  SelectQueryBuilder,
-  Simplify,
-  sql,
+    DeduplicateJoinsPlugin,
+    Expression,
+    ExpressionBuilder,
+    ExpressionWrapper,
+    Kysely,
+    KyselyConfig,
+    Nullable,
+    Selectable,
+    SelectQueryBuilder,
+    Simplify,
+    sql,
 } from 'kysely';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { parse } from 'pg-connection-string';
 import postgres, { Notice } from 'postgres';
 import { columns, Exif, Person } from 'src/database';
+import { PersonSearchBehavior } from 'src/dtos/search.dto';
 import { AssetFileType, AssetVisibility, DatabaseExtension, DatabaseSslMode } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
@@ -212,19 +213,63 @@ export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>, withDele
   ).as('faces');
 }
 
-export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds: string[]) {
-  return qb.innerJoin(
-    (eb) =>
-      eb
-        .selectFrom('asset_faces')
-        .select('assetId')
-        .where('personId', '=', anyUuid(personIds!))
-        .where('deletedAt', 'is', null)
-        .groupBy('assetId')
-        .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
-        .as('has_people'),
-    (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
-  );
+export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds: string[], behavior: PersonSearchBehavior = PersonSearchBehavior.AND) {
+  if (behavior === PersonSearchBehavior.AND) {
+    // AND behavior: assets must contain ALL specified people
+    return qb.innerJoin(
+      (eb) =>
+        eb
+          .selectFrom('asset_faces')
+          .select('assetId')
+          .where('personId', '=', anyUuid(personIds!))
+          .where('deletedAt', 'is', null)
+          .groupBy('assetId')
+          .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
+          .as('has_people'),
+      (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
+    );
+  } else if (behavior === PersonSearchBehavior.OR) {
+    // OR behavior: assets must contain ANY of the specified people
+    return qb.innerJoin(
+      (eb) =>
+        eb
+          .selectFrom('asset_faces')
+          .select('assetId')
+          .where('personId', '=', anyUuid(personIds!))
+          .where('deletedAt', 'is', null)
+          .groupBy('assetId')
+          .as('has_any_people'),
+      (join) => join.onRef('has_any_people.assetId', '=', 'assets.id'),
+    );
+  } else if (behavior === PersonSearchBehavior.ONLY) {
+    // ONLY behavior: assets must contain ONLY the specified people and no others
+    return qb.innerJoin(
+      (eb) =>
+        eb
+          .selectFrom('asset_faces')
+          .select('assetId')
+          .where('deletedAt', 'is', null)
+          .groupBy('assetId')
+          .having((eb) => 
+            eb.and([
+              // Must contain all specified people
+              eb.fn.count(
+                eb.case()
+                  .when('personId', '=', anyUuid(personIds!))
+                  .then('personId')
+                  .end()
+              ).distinct().$castTo<number>(), '=', personIds.length,
+              // Must not contain any other people
+              eb.fn.count('personId').distinct(), '=', personIds.length
+            ])
+          )
+          .as('has_only_people'),
+      (join) => join.onRef('has_only_people.assetId', '=', 'assets.id'),
+    );
+  }
+  
+  // Fallback to AND behavior if invalid behavior is provided
+  return hasPeople(qb, personIds, PersonSearchBehavior.AND);
 }
 
 export function inAlbums<O>(qb: SelectQueryBuilder<DB, 'assets', O>, albumIds: string[]) {
@@ -307,7 +352,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .where('assets.visibility', '=', visibility)
     .$if(!!options.albumIds && options.albumIds.length > 0, (qb) => inAlbums(qb, options.albumIds!))
     .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
-    .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
+    .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!, options.personSearchBehavior ?? PersonSearchBehavior.AND))
     .$if(!!options.createdBefore, (qb) => qb.where('assets.createdAt', '<=', options.createdBefore!))
     .$if(!!options.createdAfter, (qb) => qb.where('assets.createdAt', '>=', options.createdAfter!))
     .$if(!!options.updatedBefore, (qb) => qb.where('assets.updatedAt', '<=', options.updatedBefore!))

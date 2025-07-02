@@ -8,6 +8,12 @@ import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
 import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
+export enum PersonSearchBehavior {
+  AND = 'and',
+  OR = 'or',
+  ONLY = 'only'
+}
+
 class BaseSearchDto {
   @ValidateUUID({ optional: true, nullable: true })
   libraryId?: string | null;
@@ -91,6 +97,11 @@ class BaseSearchDto {
 
   @ValidateUUID({ each: true, optional: true })
   personIds?: string[];
+
+  @IsEnum(PersonSearchBehavior)
+  @Optional()
+  @ApiProperty({ enumName: 'PersonSearchBehavior', enum: PersonSearchBehavior })
+  personSearchBehavior?: PersonSearchBehavior;
 
   @ValidateUUID({ each: true, optional: true })
   tagIds?: string[];
