@@ -4,7 +4,7 @@
   import { AssetAction } from '$lib/constants';
   import { stackAssets } from '$lib/utils/asset-utils';
   import type { AssetResponseDto, StackResponseDto } from '@immich/sdk';
-  import { mdiImageCheckOutline } from '@mdi/js';
+  import { mdiImageMinusOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
 
@@ -29,4 +29,4 @@
   };
 </script>
 
-<MenuOption icon={mdiImageCheckOutline} onClick={handleRemoveFromStack} text={$t('viewer_remove_from_stack')} />
+<MenuOption icon={mdiImageMinusOutline} onClick={handleRemoveFromStack} text={$t('viewer_remove_from_stack')} />
