@@ -173,6 +173,36 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> trash(ActionSource source) async {
+    final ids = _getOwnedRemoteForSource(source);
+    try {
+      await _service.trash(ids);
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to trash assets', error, stack);
+      return ActionResult(
+        count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
+
+  Future<ActionResult> delete(ActionSource source) async {
+    final ids = _getOwnedRemoteForSource(source);
+    try {
+      await _service.delete(ids);
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to delete assets', error, stack);
+      return ActionResult(
+        count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
+
   Future<ActionResult?> editLocation(
     ActionSource source,
     BuildContext context,
