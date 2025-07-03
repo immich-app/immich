@@ -53,7 +53,7 @@ class ImmichAPI(cfg: ServerConfig) {
     return URL(urlString.toString())
   }
 
-  suspend fun fetchSearchResults(filters: SearchFilters): List<SearchResult> = withContext(Dispatchers.IO) {
+  suspend fun fetchSearchResults(filters: SearchFilters): List<Asset> = withContext(Dispatchers.IO) {
     val url = buildRequestURL("/search/random")
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "POST"
@@ -69,7 +69,7 @@ class ImmichAPI(cfg: ServerConfig) {
     }
 
     val response = connection.inputStream.bufferedReader().readText()
-    val type = object : TypeToken<List<SearchResult>>() {}.type
+    val type = object : TypeToken<List<Asset>>() {}.type
     gson.fromJson(response, type)
   }
 
@@ -85,7 +85,7 @@ class ImmichAPI(cfg: ServerConfig) {
     gson.fromJson(response, type)
   }
 
-  suspend fun fetchImage(asset: SearchResult): Bitmap = withContext(Dispatchers.IO) {
+  suspend fun fetchImage(asset: Asset): Bitmap = withContext(Dispatchers.IO) {
     val url = buildRequestURL("/assets/${asset.id}/thumbnail", listOf("size" to "preview"))
     val connection = url.openConnection()
     val data = connection.getInputStream().readBytes()

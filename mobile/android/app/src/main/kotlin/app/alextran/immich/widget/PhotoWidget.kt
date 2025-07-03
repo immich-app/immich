@@ -1,9 +1,11 @@
 package app.alextran.immich.widget
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.*
+import androidx.core.net.toUri
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.glance.appwidget.*
 import androidx.glance.*
@@ -25,7 +27,8 @@ class PhotoWidget : GlanceAppWidget() {
         val prefs = currentState<MutablePreferences>()
 
         val imageUUID = prefs[kImageUUID]
-        val subtitle: String? = prefs[kSubtitleText]
+        val subtitle = prefs[kSubtitleText]
+        val deeplinkURL = prefs[kDeeplinkURL]?.toUri()
         var bitmap: Bitmap? = null
 
         if (imageUUID != null) {
@@ -42,6 +45,11 @@ class PhotoWidget : GlanceAppWidget() {
           modifier = GlanceModifier
             .fillMaxSize()
             .background(Color.White)
+            .clickable {
+              val intent = Intent(Intent.ACTION_VIEW, deeplinkURL ?: "immich://".toUri())
+              intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+              context.startActivity(intent)
+            }
         ) {
           if (bitmap != null) {
             Image(

@@ -94,14 +94,20 @@ class ImageDownloadWorker(
       if (serverConfig == null) {
         if (!currentImgUUID.isNullOrEmpty()) {
           deleteImage(currentImgUUID)
-          updateWidget(glanceId, "", "", WidgetState.LOG_IN)
+          updateWidget(
+            glanceId,
+            "",
+            "",
+            "immich://",
+            WidgetState.LOG_IN
+          )
         }
 
         return Result.success()
       }
 
       // fetch new image
-      val (newBitmap, subtitle) = when (widgetType) {
+      val entry = when (widgetType) {
         WidgetType.RANDOM -> fetchRandom(serverConfig, widgetConfig)
         WidgetType.MEMORIES -> fetchMemory(serverConfig)
       }
@@ -113,10 +119,10 @@ class ImageDownloadWorker(
 
       // save a new image
       val imgUUID = UUID.randomUUID().toString()
-      saveImage(newBitmap, imgUUID)
+      saveImage(entry.image, imgUUID)
 
       // trigger the update routine with new image uuid
-      updateWidget(glanceId, imgUUID, subtitle)
+      updateWidget(glanceId, imgUUID, entry.subtitle, entry.deeplink)
 
       Result.success()
     } catch (e: Exception) {
@@ -133,6 +139,7 @@ class ImageDownloadWorker(
     glanceId: GlanceId,
     imageUUID: String,
     subtitle: String?,
+    deeplink: String?,
     widgetState: WidgetState = WidgetState.SUCCESS
   ) {
     updateAppWidgetState(context, glanceId) { prefs ->
@@ -140,6 +147,7 @@ class ImageDownloadWorker(
       prefs[kImageUUID] = imageUUID
       prefs[kWidgetState] = widgetState.toString()
       prefs[kSubtitleText] = subtitle ?: ""
+      prefs[kDeeplinkURL] = deeplink ?: ""
     }
 
     PhotoWidget().update(context,glanceId)
@@ -148,7 +156,7 @@ class ImageDownloadWorker(
   private suspend fun fetchRandom(
     serverConfig: ServerConfig,
     widgetConfig: Preferences
-  ): Pair<Bitmap, String?> {
+  ): WidgetEntry {
     val api = ImmichAPI(serverConfig)
 
     val filters = SearchFilters(AssetType.IMAGE, size=1)
@@ -164,17 +172,21 @@ class ImageDownloadWorker(
     val random = api.fetchSearchResults(filters).first()
     val image = api.fetchImage(random)
 
-    return Pair(image, subtitle)
+    return WidgetEntry(
+      image,
+      subtitle,
+      assetDeeplink(random)
+    )
   }
 
   private suspend fun fetchMemory(
     serverConfig: ServerConfig
-  ): Pair<Bitmap, String?> {
+  ): WidgetEntry {
     val api = ImmichAPI(serverConfig)
 
     val today = LocalDate.now()
     val memories = api.fetchMemory(today)
-    val asset: SearchResult
+    val asset: Asset
     var subtitle: String? = null
 
     if (memories.isNotEmpty()) {
@@ -182,14 +194,18 @@ class ImageDownloadWorker(
       val memory = memories.random()
       asset = memory.assets.random()
 
-      subtitle = "${today.year-memory.data.year} years ago"
+      subtitle = "${today.year - memory.data.year} years ago"
     } else {
       val filters = SearchFilters(AssetType.IMAGE, size=1)
       asset = api.fetchSearchResults(filters).first()
     }
 
     val image = api.fetchImage(asset)
-    return Pair(image, subtitle)
+    return WidgetEntry(
+      image,
+      subtitle,
+      assetDeeplink(asset)
+    )
   }
 
   private suspend fun deleteImage(uuid: String) = withContext(Dispatchers.IO) {
