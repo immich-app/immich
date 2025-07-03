@@ -1,4 +1,4 @@
-import { DatabaseConstraintType, DatabaseSchema, ForeignKeyColumn, PrimaryColumn, Table } from 'src/sql-tools';
+import { ConstraintType, DatabaseSchema, ForeignKeyColumn, PrimaryColumn, Table } from 'src/sql-tools';
 
 @Table()
 export class Table1 {
@@ -14,7 +14,7 @@ export class Table2 {
 
 export const description = 'should create a foreign key constraint with a unique constraint';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [],
@@ -38,7 +38,7 @@ export const schema: DatabaseSchema = {
       triggers: [],
       constraints: [
         {
-          type: DatabaseConstraintType.PRIMARY_KEY,
+          type: ConstraintType.PRIMARY_KEY,
           name: 'PK_b249cc64cf63b8a22557cdc8537',
           tableName: 'table1',
           columnNames: ['id'],
@@ -72,7 +72,7 @@ export const schema: DatabaseSchema = {
       triggers: [],
       constraints: [
         {
-          type: DatabaseConstraintType.FOREIGN_KEY,
+          type: ConstraintType.FOREIGN_KEY,
           name: 'FK_3fcca5cc563abf256fc346e3ff4',
           tableName: 'table2',
           columnNames: ['parentId'],
@@ -81,7 +81,7 @@ export const schema: DatabaseSchema = {
           synchronize: true,
         },
         {
-          type: DatabaseConstraintType.UNIQUE,
+          type: ConstraintType.UNIQUE,
           name: 'REL_3fcca5cc563abf256fc346e3ff',
           tableName: 'table2',
           columnNames: ['parentId'],
