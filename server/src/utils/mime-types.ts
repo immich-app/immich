@@ -62,6 +62,7 @@ const image: Record<string, string[]> = {
   '.svg': ['image/svg'],
   '.tif': ['image/tiff'],
   '.tiff': ['image/tiff'],
+  '': ['image/jpeg'],
 };
 
 const extensionOverrides: Record<string, string> = {
