@@ -271,7 +271,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
 
     final PhotoView photoView = isCustomChild
         ? PhotoView.customChild(
-            key: ObjectKey(index),
+            key: pageOption.key ?? ObjectKey(index),
             childSize: pageOption.childSize,
             backgroundDecoration: widget.backgroundDecoration,
             wantKeepAlive: widget.wantKeepAlive,
@@ -304,7 +304,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             child: pageOption.child,
           )
         : PhotoView(
-            key: ObjectKey(index),
+            key: pageOption.key ?? ObjectKey(index),
             index: index,
             imageProvider: pageOption.imageProvider,
             loadingBuilder: widget.loadingBuilder,
@@ -363,7 +363,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
 ///
 class PhotoViewGalleryPageOptions {
   PhotoViewGalleryPageOptions({
-    Key? key,
+    this.key,
     required this.imageProvider,
     this.heroAttributes,
     this.semanticLabel,
@@ -392,6 +392,7 @@ class PhotoViewGalleryPageOptions {
         assert(imageProvider != null);
 
   const PhotoViewGalleryPageOptions.customChild({
+    this.key,
     required this.child,
     this.childSize,
     this.semanticLabel,
@@ -417,6 +418,8 @@ class PhotoViewGalleryPageOptions {
     this.disableGestures,
   })  : errorBuilder = null,
         imageProvider = null;
+
+  final Key? key;
 
   /// Mirror to [PhotoView.imageProvider]
   final ImageProvider? imageProvider;

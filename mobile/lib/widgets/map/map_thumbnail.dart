@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
 import 'package:immich_mobile/widgets/map/map_theme_override.dart';
 import 'package:immich_mobile/widgets/map/positioned_asset_marker_icon.dart';
@@ -44,10 +45,12 @@ class MapThumbnail extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final offsettedCentre = LatLng(centre.latitude + 0.002, centre.longitude);
     final controller = useRef<MapLibreMapController?>(null);
+    final styleLoaded = useState(false);
     final position = useValueNotifier<Point<num>?>(null);
 
     Future<void> onMapCreated(MapLibreMapController mapController) async {
       controller.value = mapController;
+      styleLoaded.value = false;
       if (assetMarkerRemoteId != null) {
         // The iOS impl returns wrong toScreenLocation without the delay
         Future.delayed(
@@ -63,11 +66,19 @@ class MapThumbnail extends HookConsumerWidget {
       if (showMarkerPin && controller.value != null) {
         await controller.value?.addMarkerAtLatLng(centre);
       }
+      styleLoaded.value = true;
     }
 
     return MapThemeOverride(
       themeMode: themeMode,
-      mapBuilder: (style) => SizedBox(
+      mapBuilder: (style) => AnimatedContainer(
+        duration: Durations.medium2,
+        curve: Curves.easeOut,
+        foregroundDecoration: BoxDecoration(
+          color: context.colorScheme.inverseSurface
+              .withAlpha(styleLoaded.value ? 0 : 200),
+          borderRadius: const BorderRadius.all(Radius.circular(15)),
+        ),
         height: height,
         width: width,
         child: ClipRRect(

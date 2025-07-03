@@ -416,7 +416,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
                 ? (details) => widget.onDragStart!(
                       context,
                       details,
-                      widget.controller.value,
+                      widget.controller,
                       widget.scaleStateController,
                     )
                 : null,

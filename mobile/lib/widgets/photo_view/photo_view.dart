@@ -660,7 +660,7 @@ typedef PhotoViewImageTapDownCallback = Function(
 typedef PhotoViewImageDragStartCallback = Function(
   BuildContext context,
   DragStartDetails details,
-  PhotoViewControllerValue controllerValue,
+  PhotoViewControllerBase controllerValue,
   PhotoViewScaleStateController scaleStateController,
 );
 

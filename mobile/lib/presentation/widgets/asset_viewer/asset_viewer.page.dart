@@ -4,9 +4,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
@@ -60,6 +61,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   PersistentBottomSheetController? sheetCloseNotifier;
   // PhotoViewGallery takes care of disposing it's controllers
   PhotoViewControllerBase? viewController;
+  StreamSubscription? _reloadSubscription;
 
   late Platform platform;
   late PhotoViewControllerValue initialPhotoViewState;
@@ -88,6 +90,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _onAssetChanged(widget.initialIndex);
     });
+    _reloadSubscription =
+        EventStream.I.listen<ImTimelineReloadEvent>(_onTimelineReload);
   }
 
   @override
@@ -95,7 +99,21 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     pageController.dispose();
     bottomSheetController.dispose();
     _cancelTimers();
+    _reloadSubscription?.cancel();
     super.dispose();
+  }
+
+  void _onTimelineReload(_) {
+    setState(() {
+      totalAssets = ref.read(timelineServiceProvider).totalAssets;
+      if (totalAssets == 0) {
+        context.maybePop();
+        return;
+      }
+
+      _onAssetChanged(pageController.page!.round());
+      sheetCloseNotifier?.close();
+    });
   }
 
   Color get backgroundColor {
@@ -186,11 +204,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onDragStart(
     _,
     DragStartDetails details,
-    PhotoViewControllerValue value,
+    PhotoViewControllerBase controller,
     PhotoViewScaleStateController scaleStateController,
   ) {
+    viewController = controller;
     dragDownPosition = details.localPosition;
-    initialPhotoViewState = value;
+    initialPhotoViewState = controller.value;
     final isZoomed =
         scaleStateController.scaleState == PhotoViewScaleState.zoomedIn ||
             scaleStateController.scaleState == PhotoViewScaleState.covering;
@@ -277,7 +296,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _openBottomSheet(BuildContext ctx) {
     setState(() {
       initialScale = viewController?.scale;
-      viewController?.animateMultiple(scale: _getScaleForBottomSheet);
+      viewController?.updateMultiple(scale: _getScaleForBottomSheet);
       showingBottomSheet = true;
       previousExtent = _kBottomSheetMinimumExtent;
       sheetCloseNotifier = showBottomSheet(
@@ -308,10 +327,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     setState(() {
       showingBottomSheet = false;
       sheetCloseNotifier = null;
-      viewController?.animateMultiple(
-        position: Offset.zero,
-        scale: initialScale,
-      );
+      viewController?.animateMultiple(position: Offset.zero);
+      viewController?.updateMultiple(scale: initialScale);
       shouldPopOnDrag = false;
       hasDraggedDown = null;
     });
@@ -420,10 +437,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   PhotoViewGalleryPageOptions _assetBuilder(BuildContext ctx, int index) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
     final size = Size(ctx.width, ctx.height);
-    final imageProvider = getFullImageProvider(asset, size: size);
 
     return PhotoViewGalleryPageOptions(
-      imageProvider: imageProvider,
+      key: ValueKey(asset.heroTag),
+      imageProvider: getFullImageProvider(asset, size: size),
       heroAttributes: PhotoViewHeroAttributes(tag: asset.heroTag),
       filterQuality: FilterQuality.high,
       tightMode: true,
@@ -446,27 +463,34 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     );
   }
 
+  void _onPop<T>(bool didPop, T? result) {
+    ref.read(currentAssetNotifier.notifier).dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     // Currently it is not possible to scroll the asset when the bottom sheet is open all the way.
     // Issue: https://github.com/flutter/flutter/issues/109037
     // TODO: Add a custom scrum builder once the fix lands on stable
-    return Scaffold(
-      backgroundColor: Colors.black.withAlpha(backgroundOpacity),
-      body: PhotoViewGallery.builder(
-        gaplessPlayback: true,
-        loadingBuilder: _placeholderBuilder,
-        pageController: pageController,
-        scrollPhysics: platform.isIOS
-            ? const FastScrollPhysics() // Use bouncing physics for iOS
-            : const FastClampingScrollPhysics() // Use heavy physics for Android
-        ,
-        itemCount: totalAssets,
-        onPageChanged: _onPageChanged,
-        onPageBuild: _onPageBuild,
-        builder: _assetBuilder,
-        backgroundDecoration: BoxDecoration(color: backgroundColor),
-        enablePanAlways: true,
+    return PopScope(
+      onPopInvokedWithResult: _onPop,
+      child: Scaffold(
+        backgroundColor: Colors.black.withAlpha(backgroundOpacity),
+        body: PhotoViewGallery.builder(
+          gaplessPlayback: true,
+          loadingBuilder: _placeholderBuilder,
+          pageController: pageController,
+          scrollPhysics: platform.isIOS
+              ? const FastScrollPhysics() // Use bouncing physics for iOS
+              : const FastClampingScrollPhysics() // Use heavy physics for Android
+          ,
+          itemCount: totalAssets,
+          onPageChanged: _onPageChanged,
+          onPageBuild: _onPageBuild,
+          builder: _assetBuilder,
+          backgroundDecoration: BoxDecoration(color: backgroundColor),
+          enablePanAlways: true,
+        ),
       ),
     );
   }
