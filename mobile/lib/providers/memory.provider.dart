@@ -10,7 +10,3 @@ final memoryFutureProvider =
 
   return await service.getMemoryLane();
 });
-
-final driftMemoryProvider = Provider<DriftMemoryRepository>(
-  (ref) => DriftMemoryRepository(ref.watch(driftProvider)),
-);
