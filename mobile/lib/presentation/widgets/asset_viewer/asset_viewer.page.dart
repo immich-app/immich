@@ -111,6 +111,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         return;
       }
 
+      final index = pageController.page?.round() ?? 0;
+      final newAsset = ref.read(timelineServiceProvider).getAsset(index);
+      final currentAsset = ref.read(currentAssetNotifier);
+      // Do not reload / close the bottom sheet if the asset has not changed
+      if (newAsset.heroTag == currentAsset.heroTag) {
+        return;
+      }
+
       _onAssetChanged(pageController.page!.round());
       sheetCloseNotifier?.close();
     });
