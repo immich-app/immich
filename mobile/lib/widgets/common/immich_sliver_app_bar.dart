@@ -9,6 +9,7 @@ import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
+import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -67,7 +68,18 @@ class ImmichSliverAppBar extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
         IconButton(
-          onPressed: () => ref.read(backgroundSyncProvider).syncRemote(),
+          // onPressed: () => ref.read(backgroundSyncProvider).syncRemote(),
+          onPressed: () {
+            // final user = ref.read(currentUserProvider);
+            // if (user == null) return;
+            // ref.read(driftMemoryProvider).getAll(user.id).then((memories) {
+            //   for (final memory in memories) {
+            //     print(
+            //       "memory: ${memory.data} - assets count. ${memory.assets.length}",
+            //     );
+            //   }
+            // });
+          },
           icon: const Icon(
             Icons.sync,
           ),

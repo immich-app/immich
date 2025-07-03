@@ -1,19 +1,60 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 class DriftMemoryRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftMemoryRepository(this._db) : super(_db);
 
-  Future<List<Memory>> getAll(String userId) {
-    final query = _db.memoryEntity.select()
-      ..where((e) => e.ownerId.equals(userId));
+  Future<List<Memory>> getAll(String ownerId) async {
+    final now = DateTime.now();
 
-    return query.map((memory) {
-      return memory.toDto();
-    }).get();
+    final query = _db.select(_db.memoryEntity).join([
+      leftOuterJoin(
+        _db.memoryAssetEntity,
+        _db.memoryAssetEntity.memoryId.equalsExp(_db.memoryEntity.id),
+      ),
+      leftOuterJoin(
+        _db.remoteAssetEntity,
+        _db.remoteAssetEntity.id.equalsExp(_db.memoryAssetEntity.assetId) &
+            _db.remoteAssetEntity.deletedAt.isNull(),
+      ),
+    ])
+      ..where(_db.memoryEntity.ownerId.equals(ownerId))
+      ..where(_db.memoryEntity.deletedAt.isNull())
+      ..where(
+        _db.memoryEntity.showAt.isNull() |
+            _db.memoryEntity.showAt.isSmallerOrEqualValue(now),
+      )
+      ..where(
+        _db.memoryEntity.hideAt.isNull() |
+            _db.memoryEntity.hideAt.isBiggerOrEqualValue(now),
+      )
+      ..orderBy([
+        OrderingTerm.desc(_db.memoryEntity.memoryAt),
+        OrderingTerm.asc(_db.remoteAssetEntity.createdAt),
+      ]);
+
+    final rows = await query.get();
+
+    final Map<String, Memory> memoriesMap = {};
+
+    for (final row in rows) {
+      final memory = row.readTable(_db.memoryEntity);
+      final asset = row.readTable(_db.remoteAssetEntity);
+
+      final existingMemory = memoriesMap[memory.id];
+      if (existingMemory != null) {
+        existingMemory.assets.add(asset.toDto());
+      } else {
+        final assets = [asset.toDto()];
+        memoriesMap[memory.id] = memory.toDto().copyWith(assets: assets);
+      }
+    }
+
+    return memoriesMap.values.toList();
   }
 }
 
@@ -32,6 +73,7 @@ extension on MemoryEntityData {
       seenAt: seenAt,
       showAt: showAt,
       hideAt: hideAt,
+      assets: [],
     );
   }
 }

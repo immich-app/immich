@@ -1,6 +1,10 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
+
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+
 enum MemoryTypeEnum {
   // do not change this order!
   onThisDay,
@@ -68,6 +72,7 @@ class Memory {
   final DateTime? seenAt;
   final DateTime? showAt;
   final DateTime? hideAt;
+  final List<RemoteAsset> assets;
 
   const Memory({
     required this.id,
@@ -82,6 +87,7 @@ class Memory {
     this.seenAt,
     this.showAt,
     this.hideAt,
+    required this.assets,
   });
 
   Memory copyWith({
@@ -97,6 +103,7 @@ class Memory {
     DateTime? seenAt,
     DateTime? showAt,
     DateTime? hideAt,
+    List<RemoteAsset>? assets,
   }) {
     return Memory(
       id: id ?? this.id,
@@ -111,64 +118,19 @@ class Memory {
       seenAt: seenAt ?? this.seenAt,
       showAt: showAt ?? this.showAt,
       hideAt: hideAt ?? this.hideAt,
+      assets: assets ?? this.assets,
     );
   }
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'id': id,
-      'createdAt': createdAt.millisecondsSinceEpoch,
-      'updatedAt': updatedAt.millisecondsSinceEpoch,
-      'deletedAt': deletedAt?.millisecondsSinceEpoch,
-      'ownerId': ownerId,
-      'type': type.index,
-      'data': data.toMap(),
-      'isSaved': isSaved,
-      'memoryAt': memoryAt.millisecondsSinceEpoch,
-      'seenAt': seenAt?.millisecondsSinceEpoch,
-      'showAt': showAt?.millisecondsSinceEpoch,
-      'hideAt': hideAt?.millisecondsSinceEpoch,
-    };
-  }
-
-  factory Memory.fromMap(Map<String, dynamic> map) {
-    return Memory(
-      id: map['id'] as String,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int),
-      deletedAt: map['deletedAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['deletedAt'] as int)
-          : null,
-      ownerId: map['ownerId'] as String,
-      type: MemoryTypeEnum.values[map['type'] as int],
-      data: MemoryData.fromMap(map['data'] as Map<String, dynamic>),
-      isSaved: map['isSaved'] as bool,
-      memoryAt: DateTime.fromMillisecondsSinceEpoch(map['memoryAt'] as int),
-      seenAt: map['seenAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['seenAt'] as int)
-          : null,
-      showAt: map['showAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['showAt'] as int)
-          : null,
-      hideAt: map['hideAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['hideAt'] as int)
-          : null,
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory Memory.fromJson(String source) =>
-      Memory.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
-    return 'Memory(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, ownerId: $ownerId, type: $type, data: $data, isSaved: $isSaved, memoryAt: $memoryAt, seenAt: $seenAt, showAt: $showAt, hideAt: $hideAt)';
+    return 'Memory(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, ownerId: $ownerId, type: $type, data: $data, isSaved: $isSaved, memoryAt: $memoryAt, seenAt: $seenAt, showAt: $showAt, hideAt: $hideAt, assets: $assets)';
   }
 
   @override
   bool operator ==(covariant Memory other) {
     if (identical(this, other)) return true;
+    final listEquals = const DeepCollectionEquality().equals;
 
     return other.id == id &&
         other.createdAt == createdAt &&
@@ -181,7 +143,8 @@ class Memory {
         other.memoryAt == memoryAt &&
         other.seenAt == seenAt &&
         other.showAt == showAt &&
-        other.hideAt == hideAt;
+        other.hideAt == hideAt &&
+        listEquals(other.assets, assets);
   }
 
   @override
@@ -197,6 +160,7 @@ class Memory {
         memoryAt.hashCode ^
         seenAt.hashCode ^
         showAt.hashCode ^
-        hideAt.hashCode;
+        hideAt.hashCode ^
+        assets.hashCode;
   }
 }
