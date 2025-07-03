@@ -1,3 +1,5 @@
+import { loopWhile } from 'deasync';
+import { fileTypeFromFile } from 'file-type';
 import { extname } from 'node:path';
 import { AssetType } from 'src/enum';
 
@@ -101,9 +103,43 @@ const sidecar: Record<string, string[]> = {
 
 const types = { ...image, ...video, ...sidecar };
 
-const isType = (filename: string, r: Record<string, string[]>) => extname(filename).toLowerCase() in r;
+const fileTypeFromFileSync = (filename: string) => {
+  let loopDone = false;
+  const ftype = { ext: '', mime: 'application/octet-stream' };
+  fileTypeFromFile(filename)
+    .then((res) => {
+      if (res?.ext) {
+        ftype.ext = res?.ext;
+      }
+      if (res?.mime) {
+        ftype.mime = res?.mime;
+      }
+      loopDone = true;
+    })
+    .catch(() => (loopDone = true));
+  loopWhile(() => !loopDone);
+  return ftype;
+};
 
-const lookup = (filename: string) => types[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream';
+const isType = (filename: string, r: Record<string, string[]>) => {
+  let ext = extname(filename).toLowerCase();
+  // if no extname, read from file
+  if (!ext) {
+    const ftype = fileTypeFromFileSync(filename);
+    ext = ftype.ext || '';
+  }
+  return ext in r;
+};
+
+const lookup = (filename: string) => {
+  const ext = extname(filename).toLowerCase();
+  if (ext && types[ext]) {
+    return types[ext][0];
+  }
+  // read mime from file
+  const ftype = fileTypeFromFileSync(filename);
+  return ftype.mime || 'application/octet-stream';
+};
 const toExtension = (mimeType: string) => {
   return (
     extensionOverrides[mimeType] || Object.entries(types).find(([, mimeTypes]) => mimeTypes.includes(mimeType))?.[0]
