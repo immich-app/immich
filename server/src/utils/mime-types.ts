@@ -1,7 +1,9 @@
-import { loopWhile } from 'deasync';
-import { fileTypeFromFile } from 'file-type';
+// import { createRequire } from 'node:module';
 import { extname } from 'node:path';
 import { AssetType } from 'src/enum';
+// const require = createRequire(import.meta.url);
+// const { loopWhile } = require('deasync');
+// const { fileTypeFromFile } = require('file-type');
 
 const raw: Record<string, string[]> = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],
@@ -104,20 +106,20 @@ const sidecar: Record<string, string[]> = {
 const types = { ...image, ...video, ...sidecar };
 
 const fileTypeFromFileSync = (filename: string) => {
-  let loopDone = false;
+  // let loopDone = false;
   const ftype = { ext: '', mime: 'application/octet-stream' };
-  fileTypeFromFile(filename)
-    .then((res) => {
-      if (res?.ext) {
-        ftype.ext = res?.ext;
-      }
-      if (res?.mime) {
-        ftype.mime = res?.mime;
-      }
-      loopDone = true;
-    })
-    .catch(() => (loopDone = true));
-  loopWhile(() => !loopDone);
+  // fileTypeFromFile(filename)
+  //   .then((res) => {
+  //     if (res?.ext) {
+  //       ftype.ext = res?.ext;
+  //     }
+  //     if (res?.mime) {
+  //       ftype.mime = res?.mime;
+  //     }
+  //     loopDone = true;
+  //   })
+  //   .catch(() => (loopDone = true));
+  // loopWhile(() => !loopDone);
   return ftype;
 };
 
