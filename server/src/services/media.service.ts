@@ -267,6 +267,7 @@ export class MediaService extends BaseService {
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.PREVIEW, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
     this.storageCore.ensureFolders(previewPath);
+    this.storageCore.ensureFolders(thumbnailPath);
 
     // Handle embedded preview extraction for RAW files
     const extractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
@@ -414,6 +415,7 @@ export class MediaService extends BaseService {
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.PREVIEW, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
     this.storageCore.ensureFolders(previewPath);
+    this.storageCore.ensureFolders(thumbnailPath);
 
     const { format, audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
     const mainVideoStream = this.getMainStream(videoStreams);
