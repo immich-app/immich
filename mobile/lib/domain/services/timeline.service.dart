@@ -82,7 +82,7 @@ class TimelineService {
 
   Future<void> _reloadBucket() => _mutex.run(() async {
         _buffer = await _assetSource(_bufferOffset, _buffer.length);
-        EventStream.I.emit(const ImTimelineReloadEvent());
+        EventStream.shared.emit(const TimelineReloadEvent());
       });
 
   Future<List<BaseAsset>> loadAssets(int index, int count) =>

@@ -60,7 +60,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   void initState() {
     super.initState();
     _reloadSubscription =
-        EventStream.I.listen<ImTimelineReloadEvent>((_) => setState(() {}));
+        EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
   }
 
   @override

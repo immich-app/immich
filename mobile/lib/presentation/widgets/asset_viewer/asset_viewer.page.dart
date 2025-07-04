@@ -91,7 +91,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       _onAssetChanged(widget.initialIndex);
     });
     _reloadSubscription =
-        EventStream.I.listen<ImTimelineReloadEvent>(_onTimelineReload);
+        EventStream.shared.listen<TimelineReloadEvent>(_onTimelineReload);
   }
 
   @override
