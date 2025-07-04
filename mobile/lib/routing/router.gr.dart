@@ -622,7 +622,7 @@ class DriftAlbumsRoute extends PageRouteInfo<void> {
 /// [DriftMemoryPage]
 class DriftMemoryRoute extends PageRouteInfo<DriftMemoryRouteArgs> {
   DriftMemoryRoute({
-    required List<drift_memory_model.Memory> memories,
+    required List<DriftMemory> memories,
     required int memoryIndex,
     Key? key,
     List<PageRouteInfo>? children,
@@ -658,7 +658,7 @@ class DriftMemoryRouteArgs {
     this.key,
   });
 
-  final List<drift_memory_model.Memory> memories;
+  final List<DriftMemory> memories;
 
   final int memoryIndex;
 

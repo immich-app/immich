@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
+import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -84,8 +85,6 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/local_auth.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
-import 'package:immich_mobile/domain/models/memory.model.dart'
-    as drift_memory_model;
 
 import 'package:maplibre_gl/maplibre_gl.dart';
 

@@ -19,7 +19,7 @@ import 'package:immich_mobile/widgets/memories/memory_progress_indicator.dart';
 /// Expects [currentAssetNotifier] to be set before navigating to this page
 @RoutePage()
 class DriftMemoryPage extends HookConsumerWidget {
-  final List<Memory> memories;
+  final List<DriftMemory> memories;
   final int memoryIndex;
 
   const DriftMemoryPage({

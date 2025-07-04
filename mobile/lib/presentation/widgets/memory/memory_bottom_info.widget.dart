@@ -8,7 +8,7 @@ import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_to_date_notifier.provider.dart';
 
 class DriftMemoryBottomInfo extends StatelessWidget {
-  final Memory memory;
+  final DriftMemory memory;
   final String title;
   const DriftMemoryBottomInfo({
     super.key,

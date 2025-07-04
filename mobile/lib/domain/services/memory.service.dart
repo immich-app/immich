@@ -9,7 +9,7 @@ class DriftMemoryService {
 
   DriftMemoryService(this._repository);
 
-  Future<List<Memory>> getMemoryLane(String ownerId) {
+  Future<List<DriftMemory>> getMemoryLane(String ownerId) {
     return _repository.getAll(ownerId);
   }
 }

@@ -57,7 +57,7 @@ class MemoryData {
 }
 
 // Model for a memory stored in the server
-class Memory {
+class DriftMemory {
   final String id;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -74,7 +74,7 @@ class Memory {
   final DateTime? hideAt;
   final List<RemoteAsset> assets;
 
-  const Memory({
+  const DriftMemory({
     required this.id,
     required this.createdAt,
     required this.updatedAt,
@@ -90,7 +90,7 @@ class Memory {
     required this.assets,
   });
 
-  Memory copyWith({
+  DriftMemory copyWith({
     String? id,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -105,7 +105,7 @@ class Memory {
     DateTime? hideAt,
     List<RemoteAsset>? assets,
   }) {
-    return Memory(
+    return DriftMemory(
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -128,7 +128,7 @@ class Memory {
   }
 
   @override
-  bool operator ==(covariant Memory other) {
+  bool operator ==(covariant DriftMemory other) {
     if (identical(this, other)) return true;
     final listEquals = const DeepCollectionEquality().equals;
 

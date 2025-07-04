@@ -10,7 +10,7 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asse
 import 'package:immich_mobile/routing/router.dart';
 
 class DriftMemoryLane extends ConsumerWidget {
-  final List<Memory> memories;
+  final List<DriftMemory> memories;
 
   const DriftMemoryLane({super.key, required this.memories});
 
@@ -60,7 +60,7 @@ class DriftMemoryCard extends ConsumerWidget {
     required this.memory,
   });
 
-  final Memory memory;
+  final DriftMemory memory;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

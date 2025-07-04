@@ -8,7 +8,7 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftMemoryRepository(this._db) : super(_db);
 
-  Future<List<Memory>> getAll(String ownerId) async {
+  Future<List<DriftMemory>> getAll(String ownerId) async {
     final now = DateTime.now();
     final localUtc = DateTime.utc(now.year, now.month, now.day, 0, 0, 0);
 
@@ -38,7 +38,7 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
 
     final rows = await query.get();
 
-    final Map<String, Memory> memoriesMap = {};
+    final Map<String, DriftMemory> memoriesMap = {};
 
     for (final row in rows) {
       final memory = row.readTable(_db.memoryEntity);
@@ -58,8 +58,8 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
 }
 
 extension on MemoryEntityData {
-  Memory toDto() {
-    return Memory(
+  DriftMemory toDto() {
+    return DriftMemory(
       id: id,
       createdAt: createdAt,
       updatedAt: updatedAt,
