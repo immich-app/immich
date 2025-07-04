@@ -394,6 +394,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         duration: Durations.short4,
         reverseDuration: Durations.short2,
       ),
+      constraints: const BoxConstraints(maxWidth: double.infinity),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
       ),
