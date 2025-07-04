@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 
@@ -68,7 +69,7 @@ class TimelineService {
     _bucketSubscription = _bucketSource().listen((buckets) {
       _totalAssets =
           buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
-      unawaited(reloadBucket());
+      unawaited(_reloadBucket());
     });
   }
 
@@ -79,8 +80,9 @@ class TimelineService {
 
   Stream<List<Bucket>> Function() get watchBuckets => _bucketSource;
 
-  Future<void> reloadBucket() => _mutex.run(() async {
+  Future<void> _reloadBucket() => _mutex.run(() async {
         _buffer = await _assetSource(_bufferOffset, _buffer.length);
+        EventStream.shared.emit(const TimelineReloadEvent());
       });
 
   Future<List<BaseAsset>> loadAssets(int index, int count) =>

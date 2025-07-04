@@ -1,30 +1,78 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_app_bar/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 
 const _kSeparator = '  •  ';
 
-class AssetDetailBottomSheet extends BaseBottomSheet {
+class AssetDetailBottomSheet extends ConsumerWidget {
+  final DraggableScrollableController? controller;
+  final double initialChildSize;
+
   const AssetDetailBottomSheet({
-    super.controller,
-    super.initialChildSize,
+    this.controller,
+    this.initialChildSize = 0.35,
     super.key,
-  }) : super(
-          actions: const [],
-          slivers: const [_AssetDetailBottomSheet()],
-          minChildSize: 0.1,
-          maxChildSize: 1.0,
-          expand: false,
-          shouldCloseOnMinExtent: false,
-          resizeOnScroll: false,
-        );
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asset = ref.watch(currentAssetNotifier);
+    final isTrashEnable = ref.watch(
+      serverInfoProvider.select((state) => state.serverFeatures.trash),
+    );
+
+    final actions = <Widget>[
+      const ShareActionButton(),
+      if (asset.hasRemote) ...[
+        const ShareLinkActionButton(source: ActionSource.viewer),
+        const ArchiveActionButton(source: ActionSource.viewer),
+        const FavoriteActionButton(source: ActionSource.viewer),
+        if (!asset.hasLocal) const DownloadActionButton(),
+        isTrashEnable
+            ? const TrashActionButton(source: ActionSource.viewer)
+            : const DeletePermanentActionButton(source: ActionSource.viewer),
+        const MoveToLockFolderActionButton(
+          source: ActionSource.viewer,
+        ),
+      ],
+      if (asset.storage == AssetState.local) ...[
+        const DeleteLocalActionButton(),
+        const UploadActionButton(),
+      ],
+    ];
+
+    return BaseBottomSheet(
+      actions: actions,
+      slivers: const [_AssetDetailBottomSheet()],
+      controller: controller,
+      initialChildSize: initialChildSize,
+      minChildSize: 0.1,
+      maxChildSize: 1.0,
+      expand: false,
+      shouldCloseOnMinExtent: false,
+      resizeOnScroll: false,
+    );
+  }
 }
 
 class _AssetDetailBottomSheet extends ConsumerWidget {
@@ -96,16 +144,16 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         // Asset Date and Time
         _SheetTile(
           title: _getDateTime(context, asset),
-          titleStyle: context.textTheme.bodyLarge
-              ?.copyWith(fontWeight: FontWeight.w600),
+          titleStyle: context.textTheme.bodyLarge?.copyWith(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+          ),
         ),
+        const SheetLocationDetails(),
         // Details header
         _SheetTile(
           title: 'exif_bottom_sheet_details'.t(context: context),
-          titleStyle: context.textTheme.labelLarge?.copyWith(
-            color: context.textTheme.labelLarge?.color,
-            fontWeight: FontWeight.w600,
-          ),
+          titleStyle: context.textTheme.labelLarge,
         ),
         // File info
         _SheetTile(
