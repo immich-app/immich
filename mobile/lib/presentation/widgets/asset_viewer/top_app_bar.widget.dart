@@ -53,7 +53,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         opacity: opacity / 255,
         duration: Durations.short2,
         child: AppBar(
-          backgroundColor: isShowingSheet ? Colors.transparent : Colors.black,
+          backgroundColor:
+              isShowingSheet ? Colors.transparent : Colors.black.withAlpha(125),
           leading: const _AppBarBackButton(),
           iconTheme: const IconThemeData(size: 22, color: Colors.white),
           actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),

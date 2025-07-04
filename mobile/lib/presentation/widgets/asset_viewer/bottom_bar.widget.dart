@@ -64,8 +64,9 @@ class ViewerBottomBar extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    child: SizedBox(
-                      height: 100,
+                    child: Container(
+                      height: 80,
+                      color: Colors.black.withAlpha(125),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: actions,
