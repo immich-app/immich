@@ -69,7 +69,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       controller: controller,
       initialChildSize: initialChildSize,
       minChildSize: 0.1,
-      maxChildSize: 1.0,
+      maxChildSize: 0.88,
       expand: false,
       shouldCloseOnMinExtent: false,
       resizeOnScroll: false,
