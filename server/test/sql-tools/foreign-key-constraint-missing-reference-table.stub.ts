@@ -14,7 +14,7 @@ export class Table1 {
 
 export const description = 'should warn against missing reference table';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [],

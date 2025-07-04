@@ -1,4 +1,4 @@
-import { Column, DatabaseConstraintType, DatabaseSchema, ForeignKeyConstraint, Table } from 'src/sql-tools';
+import { Column, ConstraintType, DatabaseSchema, ForeignKeyConstraint, Table } from 'src/sql-tools';
 
 @Table()
 export class Table1 {
@@ -19,7 +19,7 @@ export class Table2 {
 
 export const description = 'should create a foreign key constraint to the target table without a primary key';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [],
@@ -69,7 +69,7 @@ export const schema: DatabaseSchema = {
       triggers: [],
       constraints: [
         {
-          type: DatabaseConstraintType.FOREIGN_KEY,
+          type: ConstraintType.FOREIGN_KEY,
           name: 'FK_7d9c784c98d12365d198d52e4e6',
           tableName: 'table2',
           columnNames: ['bar'],

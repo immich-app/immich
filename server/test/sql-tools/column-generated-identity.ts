@@ -1,4 +1,4 @@
-import { DatabaseConstraintType, DatabaseSchema, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
+import { ConstraintType, DatabaseSchema, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
 
 @Table()
 export class Table1 {
@@ -8,7 +8,7 @@ export class Table1 {
 
 export const description = 'should register a table with a generated identity column';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [],
@@ -33,7 +33,7 @@ export const schema: DatabaseSchema = {
       triggers: [],
       constraints: [
         {
-          type: DatabaseConstraintType.PRIMARY_KEY,
+          type: ConstraintType.PRIMARY_KEY,
           name: 'PK_50c4f9905061b1e506d38a2a380',
           tableName: 'table1',
           columnNames: ['column1'],

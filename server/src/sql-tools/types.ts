@@ -1,4 +1,38 @@
 import { Kysely, ColumnType as KyselyColumnType } from 'kysely';
+import { RegisterItem } from 'src/sql-tools/register-item';
+import { SchemaBuilder } from 'src/sql-tools/schema-builder';
+
+export type SchemaFromCodeOptions = {
+  /** automatically create indexes on foreign key columns */
+  createForeignKeyIndexes?: boolean;
+  databaseName?: string;
+  schemaName?: string;
+  reset?: boolean;
+};
+
+export type SchemaFromDatabaseOptions = {
+  schemaName?: string;
+};
+
+export type SchemaDiffToSqlOptions = {
+  comments?: boolean;
+};
+
+export type SchemaDiffOptions = {
+  tables?: IgnoreOptions;
+  functions?: IgnoreOptions;
+  enums?: IgnoreOptions;
+  extension?: IgnoreOptions;
+  parameters?: IgnoreOptions;
+};
+
+export type IgnoreOptions = {
+  ignoreExtra?: boolean;
+  ignoreMissing?: boolean;
+};
+
+export type Processor = (builder: SchemaBuilder, items: RegisterItem[], options: SchemaFromCodeOptions) => void;
+export type DatabaseReader = (schema: DatabaseSchema, db: DatabaseClient) => Promise<void>;
 
 export type PostgresDB = {
   pg_am: {
@@ -237,14 +271,14 @@ type PostgresYesOrNo = 'YES' | 'NO';
 
 export type DatabaseClient = Kysely<PostgresDB>;
 
-export enum DatabaseConstraintType {
+export enum ConstraintType {
   PRIMARY_KEY = 'primary-key',
   FOREIGN_KEY = 'foreign-key',
   UNIQUE = 'unique',
   CHECK = 'check',
 }
 
-export enum DatabaseActionType {
+export enum ActionType {
   NO_ACTION = 'NO ACTION',
   RESTRICT = 'RESTRICT',
   CASCADE = 'CASCADE',
@@ -278,7 +312,7 @@ export type ColumnType =
   | 'serial';
 
 export type DatabaseSchema = {
-  name: string;
+  databaseName: string;
   schemaName: string;
   functions: DatabaseFunction[];
   enums: DatabaseEnum[];
@@ -286,19 +320,6 @@ export type DatabaseSchema = {
   extensions: DatabaseExtension[];
   parameters: DatabaseParameter[];
   warnings: string[];
-};
-
-export type SchemaDiffOptions = {
-  tables?: DiffOptions;
-  functions?: DiffOptions;
-  enums?: DiffOptions;
-  extension?: DiffOptions;
-  parameters?: DiffOptions;
-};
-
-export type DiffOptions = {
-  ignoreExtra?: boolean;
-  ignoreMissing?: boolean;
 };
 
 export type DatabaseParameter = {
@@ -381,26 +402,26 @@ type ColumBasedConstraint = {
 };
 
 export type DatabasePrimaryKeyConstraint = ColumBasedConstraint & {
-  type: DatabaseConstraintType.PRIMARY_KEY;
+  type: ConstraintType.PRIMARY_KEY;
   synchronize: boolean;
 };
 
 export type DatabaseUniqueConstraint = ColumBasedConstraint & {
-  type: DatabaseConstraintType.UNIQUE;
+  type: ConstraintType.UNIQUE;
   synchronize: boolean;
 };
 
 export type DatabaseForeignKeyConstraint = ColumBasedConstraint & {
-  type: DatabaseConstraintType.FOREIGN_KEY;
+  type: ConstraintType.FOREIGN_KEY;
   referenceTableName: string;
   referenceColumnNames: string[];
-  onUpdate?: DatabaseActionType;
-  onDelete?: DatabaseActionType;
+  onUpdate?: ActionType;
+  onDelete?: ActionType;
   synchronize: boolean;
 };
 
 export type DatabaseCheckConstraint = {
-  type: DatabaseConstraintType.CHECK;
+  type: ConstraintType.CHECK;
   name: string;
   tableName: string;
   expression: string;
@@ -435,34 +456,26 @@ export type DatabaseIndex = {
   synchronize: boolean;
 };
 
-export type LoadSchemaOptions = {
-  schemaName?: string;
-};
-
-export type SchemaDiffToSqlOptions = {
-  comments?: boolean;
-};
-
 export type SchemaDiff = { reason: string } & (
-  | { type: 'extension.create'; extension: DatabaseExtension }
-  | { type: 'extension.drop'; extensionName: string }
-  | { type: 'function.create'; function: DatabaseFunction }
-  | { type: 'function.drop'; functionName: string }
-  | { type: 'table.create'; table: DatabaseTable }
-  | { type: 'table.drop'; tableName: string }
-  | { type: 'column.add'; column: DatabaseColumn }
-  | { type: 'column.alter'; tableName: string; columnName: string; changes: ColumnChanges }
-  | { type: 'column.drop'; tableName: string; columnName: string }
-  | { type: 'constraint.add'; constraint: DatabaseConstraint }
-  | { type: 'constraint.drop'; tableName: string; constraintName: string }
-  | { type: 'index.create'; index: DatabaseIndex }
-  | { type: 'index.drop'; indexName: string }
-  | { type: 'trigger.create'; trigger: DatabaseTrigger }
-  | { type: 'trigger.drop'; tableName: string; triggerName: string }
-  | { type: 'parameter.set'; parameter: DatabaseParameter }
-  | { type: 'parameter.reset'; databaseName: string; parameterName: string }
-  | { type: 'enum.create'; enum: DatabaseEnum }
-  | { type: 'enum.drop'; enumName: string }
+  | { type: 'ExtensionCreate'; extension: DatabaseExtension }
+  | { type: 'ExtensionDrop'; extensionName: string }
+  | { type: 'FunctionCreate'; function: DatabaseFunction }
+  | { type: 'FunctionDrop'; functionName: string }
+  | { type: 'TableCreate'; table: DatabaseTable }
+  | { type: 'TableDrop'; tableName: string }
+  | { type: 'ColumnAdd'; column: DatabaseColumn }
+  | { type: 'ColumnAlter'; tableName: string; columnName: string; changes: ColumnChanges }
+  | { type: 'ColumnDrop'; tableName: string; columnName: string }
+  | { type: 'ConstraintAdd'; constraint: DatabaseConstraint }
+  | { type: 'ConstraintDrop'; tableName: string; constraintName: string }
+  | { type: 'IndexCreate'; index: DatabaseIndex }
+  | { type: 'IndexDrop'; indexName: string }
+  | { type: 'TriggerCreate'; trigger: DatabaseTrigger }
+  | { type: 'TriggerDrop'; tableName: string; triggerName: string }
+  | { type: 'ParameterSet'; parameter: DatabaseParameter }
+  | { type: 'ParameterReset'; databaseName: string; parameterName: string }
+  | { type: 'EnumCreate'; enum: DatabaseEnum }
+  | { type: 'EnumDrop'; enumName: string }
 );
 
 export type CompareFunction<T> = (source: T, target: T) => SchemaDiff[];

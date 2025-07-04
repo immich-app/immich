@@ -6,6 +6,7 @@ enum Setting<T> {
   showStorageIndicator<bool>(StoreKey.storageIndicator, true),
   loadOriginal<bool>(StoreKey.loadOriginal, false),
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, false),
+  advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, false),
   ;
 
   const Setting(this.storeKey, this.defaultValue);

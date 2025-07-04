@@ -9,6 +9,7 @@ import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
@@ -38,75 +39,81 @@ class ImmichSliverAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
+    final isMultiSelectEnabled =
+        ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
-    return SliverAppBar(
-      floating: floating,
-      pinned: pinned,
-      snap: snap,
-      expandedHeight: expandedHeight,
-      backgroundColor: context.colorScheme.surfaceContainer,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(5),
-        ),
-      ),
-      automaticallyImplyLeading: false,
-      centerTitle: false,
-      title: title ?? const _ImmichLogoWithText(),
-      actions: [
-        if (actions != null)
-          ...actions!.map(
-            (action) => Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: action,
-            ),
-          ),
-        IconButton(
-          icon: const Icon(Icons.swipe_left_alt_rounded),
-          onPressed: () => context.pop(),
-        ),
-        IconButton(
-          // onPressed: () => ref.read(backgroundSyncProvider).syncRemote(),
-          onPressed: () {
-            // final user = ref.read(currentUserProvider);
-            // if (user == null) return;
-            // ref.read(driftMemoryProvider).getAll(user.id).then((memories) {
-            //   for (final memory in memories) {
-            //     print(
-            //       "memory: ${memory.data} - assets count. ${memory.assets.length}",
-            //     );
-            //   }
-            // });
-          },
-          icon: const Icon(
-            Icons.sync,
+    return SliverAnimatedOpacity(
+      duration: Durations.medium1,
+      opacity: isMultiSelectEnabled ? 0 : 1,
+      sliver: SliverAppBar(
+        floating: floating,
+        pinned: pinned,
+        snap: snap,
+        expandedHeight: expandedHeight,
+        backgroundColor: context.colorScheme.surfaceContainer,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(5),
           ),
         ),
-        if (isCasting)
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: IconButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => const CastDialog(),
-                );
-              },
-              icon: Icon(
-                isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        title: title ?? const _ImmichLogoWithText(),
+        actions: [
+          if (actions != null)
+            ...actions!.map(
+              (action) => Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: action,
               ),
             ),
+          IconButton(
+            icon: const Icon(Icons.swipe_left_alt_rounded),
+            onPressed: () => context.pop(),
           ),
-        if (showUploadButton)
+          IconButton(
+            // onPressed: () => ref.read(backgroundSyncProvider).syncRemote(),
+            onPressed: () {
+              // final user = ref.read(currentUserProvider);
+              // if (user == null) return;
+              // ref.read(driftMemoryProvider).getAll(user.id).then((memories) {
+              //   for (final memory in memories) {
+              //     print(
+              //       "memory: ${memory.data} - assets count. ${memory.assets.length}",
+              //     );
+              //   }
+              // });
+            },
+            icon: const Icon(
+              Icons.sync,
+            ),
+          ),
+          if (isCasting)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: IconButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const CastDialog(),
+                  );
+                },
+                icon: Icon(
+                  isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
+                ),
+              ),
+            ),
+          if (showUploadButton)
+            const Padding(
+              padding: EdgeInsets.only(right: 20),
+              child: _BackupIndicator(),
+            ),
           const Padding(
             padding: EdgeInsets.only(right: 20),
-            child: _BackupIndicator(),
+            child: _ProfileIndicator(),
           ),
-        const Padding(
-          padding: EdgeInsets.only(right: 20),
-          child: _ProfileIndicator(),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

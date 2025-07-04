@@ -8,7 +8,7 @@ export class Table1 {
 
 export const description = 'should register a table with an updated at date column';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [],

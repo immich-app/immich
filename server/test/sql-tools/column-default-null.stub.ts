@@ -8,7 +8,7 @@ export class Table1 {
 
 export const description = 'should register a nullable column from a default of null';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [],
