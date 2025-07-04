@@ -52,22 +52,24 @@ class ViewerBottomBar extends ConsumerWidget {
           duration: Durations.short4,
           child: isSheetOpen
               ? const SizedBox.shrink()
-              : Theme(
-                  data: context.themeData.copyWith(
-                    iconTheme:
-                        const IconThemeData(size: 22, color: Colors.white),
-                    textTheme: context.themeData.textTheme.copyWith(
-                      labelLarge:
-                          context.themeData.textTheme.labelLarge?.copyWith(
-                        color: Colors.white,
+              : SafeArea(
+                  child: Theme(
+                    data: context.themeData.copyWith(
+                      iconTheme:
+                          const IconThemeData(size: 22, color: Colors.white),
+                      textTheme: context.themeData.textTheme.copyWith(
+                        labelLarge:
+                            context.themeData.textTheme.labelLarge?.copyWith(
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ),
-                  child: SizedBox(
-                    height: 100,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: actions,
+                    child: SizedBox(
+                      height: 100,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: actions,
+                      ),
                     ),
                   ),
                 ),
