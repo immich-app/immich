@@ -108,10 +108,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       ref.read(assetViewerProvider.select((s) => s.showingBottomSheet));
 
   Color get backgroundColor {
-    if (showingBottomSheet && !context.isDarkTheme) {
-      return Colors.white;
-    }
-
     final opacity =
         ref.read(assetViewerProvider.select((s) => s.backgroundOpacity));
     return Colors.black.withAlpha(opacity);
