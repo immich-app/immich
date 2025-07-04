@@ -10,6 +10,7 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
 
   Future<List<Memory>> getAll(String ownerId) async {
     final now = DateTime.now();
+    final localUtc = DateTime.utc(now.year, now.month, now.day, 0, 0, 0);
 
     final query = _db.select(_db.memoryEntity).join([
       leftOuterJoin(
@@ -25,12 +26,10 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
       ..where(_db.memoryEntity.ownerId.equals(ownerId))
       ..where(_db.memoryEntity.deletedAt.isNull())
       ..where(
-        _db.memoryEntity.showAt.isNull() |
-            _db.memoryEntity.showAt.isSmallerOrEqualValue(now),
+        _db.memoryEntity.showAt.isSmallerOrEqualValue(localUtc),
       )
       ..where(
-        _db.memoryEntity.hideAt.isNull() |
-            _db.memoryEntity.hideAt.isBiggerOrEqualValue(now),
+        _db.memoryEntity.hideAt.isBiggerOrEqualValue(localUtc),
       )
       ..orderBy([
         OrderingTerm.desc(_db.memoryEntity.memoryAt),
