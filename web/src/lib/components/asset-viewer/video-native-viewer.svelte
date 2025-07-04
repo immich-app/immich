@@ -3,6 +3,7 @@
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
+  import { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
@@ -16,9 +17,8 @@
   import { fade } from 'svelte/transition';
 
   interface Props {
-    assetId: string;
+    assetManager: AssetManager;
     loopVideo: boolean;
-    cacheKey: string | null;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
@@ -27,9 +27,8 @@
   }
 
   let {
-    assetId,
+    assetManager = $bindable(),
     loopVideo,
-    cacheKey,
     onPreviousAsset = () => {},
     onNextAsset = () => {},
     onVideoEnded = () => {},

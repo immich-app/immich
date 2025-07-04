@@ -3,12 +3,13 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import type { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
 
   interface Props {
-    assetId: string;
+    assetManager: AssetManager;
   }
 
-  const { assetId }: Props = $props();
+  const { assetManager = $bindable() }: Props = $props();
 
   const modules = Promise.all([
     import('./photo-sphere-viewer-adapter.svelte').then((module) => module.default),

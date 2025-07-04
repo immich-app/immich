@@ -3,7 +3,6 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { modalManager } from '$lib/managers/modal-manager.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -20,6 +19,7 @@
     type AssetFaceResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiAccountOff, mdiArrowLeftThin, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -28,7 +28,6 @@
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     assetId: string;
@@ -184,7 +183,8 @@
 
       peopleWithFaces = peopleWithFaces.filter((f) => f.id !== face.id);
 
-      await assetViewingStore.setAssetId(assetId);
+      // TODO: manual tag face
+      // await assetViewingStore.setAssetId(assetId);
     } catch (error) {
       handleError(error, $t('error_delete_face'));
     }

@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { ProjectionType } from '$lib/constants';
   import VideoNativeViewer from '$lib/components/asset-viewer/video-native-viewer.svelte';
   import VideoPanoramaViewer from '$lib/components/asset-viewer/video-panorama-viewer.svelte';
+  import { ProjectionType } from '$lib/constants';
+  import type { AssetManager } from '$lib/managers/asset-manager/asset-manager.svelte';
 
   interface Props {
-    assetId: string;
+    assetManager: AssetManager;
     projectionType: string | null | undefined;
-    cacheKey: string | null;
     loopVideo: boolean;
     onClose?: () => void;
     onPreviousAsset?: () => void;
@@ -15,10 +15,10 @@
     onVideoStarted?: () => void;
   }
 
+  // TODO: do not preload assets.
   let {
-    assetId,
+    assetManager = $bindable(),
     projectionType,
-    cacheKey,
     loopVideo,
     onPreviousAsset,
     onClose,
@@ -29,12 +29,11 @@
 </script>
 
 {#if projectionType === ProjectionType.EQUIRECTANGULAR}
-  <VideoPanoramaViewer {assetId} />
+  <VideoPanoramaViewer {assetManager} />
 {:else}
   <VideoNativeViewer
     {loopVideo}
-    {cacheKey}
-    {assetId}
+    {assetManager}
     {onPreviousAsset}
     {onNextAsset}
     {onVideoEnded}
