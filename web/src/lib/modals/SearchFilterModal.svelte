@@ -86,6 +86,7 @@
       isArchive: searchQuery.visibility === AssetVisibility.Archive,
       isFavorite: searchQuery.isFavorite ?? false,
       isNotInAlbum: 'isNotInAlbum' in searchQuery ? (searchQuery.isNotInAlbum ?? false) : false,
+      isUntagged: 'isUntagged' in searchQuery ? (searchQuery.isUntagged ?? false) : false,
     },
     mediaType:
       searchQuery.type === AssetTypeEnum.Image
@@ -109,6 +110,7 @@
         isArchive: false,
         isFavorite: false,
         isNotInAlbum: false,
+        isUntagged: false,
       },
       mediaType: MediaType.All,
       rating: undefined,
@@ -139,6 +141,7 @@
       visibility: filter.display.isArchive ? AssetVisibility.Archive : undefined,
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
+      isUntagged: filter.display.isUntagged || undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
       tagIds: filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
