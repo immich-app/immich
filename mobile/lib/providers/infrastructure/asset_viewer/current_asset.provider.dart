@@ -3,9 +3,13 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 
 final currentAssetNotifier =
-    NotifierProvider<CurrentAssetNotifier, BaseAsset>(CurrentAssetNotifier.new);
+    AutoDisposeNotifierProvider<CurrentAssetNotifier, BaseAsset>(
+  CurrentAssetNotifier.new,
+);
 
-class CurrentAssetNotifier extends Notifier<BaseAsset> {
+class CurrentAssetNotifier extends AutoDisposeNotifier<BaseAsset> {
+  KeepAliveLink? _keepAliveLink;
+
   @override
   BaseAsset build() {
     throw UnimplementedError(
@@ -14,11 +18,17 @@ class CurrentAssetNotifier extends Notifier<BaseAsset> {
   }
 
   void setAsset(BaseAsset asset) {
+    _keepAliveLink?.close();
     state = asset;
+    _keepAliveLink = ref.keepAlive();
+  }
+
+  void dispose() {
+    _keepAliveLink?.close();
   }
 }
 
-final currentAssetExifProvider = FutureProvider(
+final currentAssetExifProvider = FutureProvider.autoDispose(
   (ref) {
     final currentAsset = ref.watch(currentAssetNotifier);
     return ref.watch(assetServiceProvider).getExif(currentAsset);
