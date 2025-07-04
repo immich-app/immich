@@ -89,13 +89,10 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(bottom: 15),
+            padding: const EdgeInsets.only(bottom: 16),
             child: Text(
               "exif_bottom_sheet_location".t(context: context),
-              style: context.textTheme.labelMedium?.copyWith(
-                color: context.textTheme.labelMedium?.color,
-                fontWeight: FontWeight.w600,
-              ),
+              style: context.textTheme.labelLarge,
             ),
           ),
           ExifMap(
@@ -109,13 +106,15 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
               padding: const EdgeInsets.only(bottom: 4.0),
               child: Text(
                 locationName,
-                style: context.textTheme.labelLarge,
+                style: context.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           Text(
             coordinates,
-            style: context.textTheme.labelMedium?.copyWith(
-              color: context.textTheme.labelMedium?.color?.withAlpha(150),
+            style: context.textTheme.labelLarge?.copyWith(
+              color: context.textTheme.labelLarge?.color?.withAlpha(150),
             ),
           ),
         ],

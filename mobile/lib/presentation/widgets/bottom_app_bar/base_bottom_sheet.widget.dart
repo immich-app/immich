@@ -96,9 +96,10 @@ class _BaseDraggableScrollableSheetState
                           children: widget.actions,
                         ),
                       ),
-                    if (widget.actions.isNotEmpty)
-                      const Divider(indent: 20, endIndent: 20),
-                    if (widget.actions.isNotEmpty) const SizedBox(height: 14),
+                    if (widget.actions.isNotEmpty) ...[
+                      const Divider(indent: 16, endIndent: 16),
+                      const SizedBox(height: 16),
+                    ],
                   ],
                 ),
               ),

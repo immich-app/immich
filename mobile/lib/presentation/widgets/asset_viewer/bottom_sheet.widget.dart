@@ -144,17 +144,16 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         // Asset Date and Time
         _SheetTile(
           title: _getDateTime(context, asset),
-          titleStyle: context.textTheme.bodyLarge
-              ?.copyWith(fontWeight: FontWeight.w600),
+          titleStyle: context.textTheme.bodyLarge?.copyWith(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+          ),
         ),
         const SheetLocationDetails(),
         // Details header
         _SheetTile(
           title: 'exif_bottom_sheet_details'.t(context: context),
-          titleStyle: context.textTheme.labelLarge?.copyWith(
-            color: context.textTheme.labelLarge?.color,
-            fontWeight: FontWeight.w600,
-          ),
+          titleStyle: context.textTheme.labelLarge,
         ),
         // File info
         _SheetTile(
