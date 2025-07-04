@@ -16,7 +16,7 @@ class SheetLocationDetails extends ConsumerStatefulWidget {
 }
 
 class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
-  late BaseAsset asset;
+  BaseAsset? asset;
   ExifInfo? exifInfo;
   MapLibreMapController? _mapController;
 

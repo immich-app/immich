@@ -28,5 +28,8 @@ extension LocalAssetEntityDataDomainEx on LocalAssetEntityData {
         updatedAt: updatedAt,
         durationInSeconds: durationInSeconds,
         isFavorite: isFavorite,
+        height: height,
+        width: width,
+        remoteId: null,
       );
 }

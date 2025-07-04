@@ -56,7 +56,10 @@ class ActionNotifier extends Notifier<void> {
     final Set<BaseAsset> assets = switch (source) {
       ActionSource.timeline =>
         ref.read(multiSelectProvider.select((s) => s.selectedAssets)),
-      ActionSource.viewer => {ref.read(currentAssetNotifier)},
+      ActionSource.viewer => switch (ref.read(currentAssetNotifier)) {
+          BaseAsset asset => {asset},
+          null => {},
+        },
     };
 
     return switch (T) {

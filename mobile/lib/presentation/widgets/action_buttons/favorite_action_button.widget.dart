@@ -10,8 +10,13 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class FavoriteActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool menuItem;
 
-  const FavoriteActionButton({super.key, required this.source});
+  const FavoriteActionButton({
+    super.key,
+    required this.source,
+    this.menuItem = false,
+  });
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -19,6 +24,11 @@ class FavoriteActionButton extends ConsumerWidget {
     }
 
     final result = await ref.read(actionProvider.notifier).favorite(source);
+
+    if (source == ActionSource.viewer) {
+      return;
+    }
+
     ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'favorite_action_prompt'.t(
@@ -43,6 +53,7 @@ class FavoriteActionButton extends ConsumerWidget {
     return BaseActionButton(
       iconData: Icons.favorite_border_rounded,
       label: "favorite".t(context: context),
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
     );
   }

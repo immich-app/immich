@@ -8,6 +8,10 @@ class TimelineReloadEvent extends Event {
   const TimelineReloadEvent();
 }
 
+class ViewerOpenBottomSheetEvent extends Event {
+  const ViewerOpenBottomSheetEvent();
+}
+
 class EventStream {
   EventStream._();
 
