@@ -10,8 +10,13 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class UnFavoriteActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool menuItem;
 
-  const UnFavoriteActionButton({super.key, required this.source});
+  const UnFavoriteActionButton({
+    super.key,
+    required this.source,
+    this.menuItem = false,
+  });
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -19,6 +24,11 @@ class UnFavoriteActionButton extends ConsumerWidget {
     }
 
     final result = await ref.read(actionProvider.notifier).unFavorite(source);
+
+    if (source == ActionSource.viewer) {
+      return;
+    }
+
     ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'unfavorite_action_prompt'.t(
@@ -44,6 +54,7 @@ class UnFavoriteActionButton extends ConsumerWidget {
       iconData: Icons.favorite_rounded,
       label: "unfavorite".t(context: context),
       onPressed: () => _onTap(context, ref),
+      menuItem: menuItem,
     );
   }
 }

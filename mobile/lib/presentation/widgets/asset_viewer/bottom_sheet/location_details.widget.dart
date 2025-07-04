@@ -16,7 +16,7 @@ class SheetLocationDetails extends ConsumerStatefulWidget {
 }
 
 class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
-  late BaseAsset asset;
+  BaseAsset? asset;
   ExifInfo? exifInfo;
   MapLibreMapController? _mapController;
 
@@ -84,7 +84,10 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
         "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo!.longitude!.toStringAsFixed(4)}";
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.symmetric(
+        vertical: 16.0,
+        horizontal: context.isMobile ? 16.0 : 56.0,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
