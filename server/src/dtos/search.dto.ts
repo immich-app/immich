@@ -87,6 +87,9 @@ class BaseSearchDto {
   lensModel?: string | null;
 
   @ValidateBoolean({ optional: true })
+  isUntagged?: boolean;
+
+  @ValidateBoolean({ optional: true })
   isNotInAlbum?: boolean;
 
   @ValidateUUID({ each: true, optional: true })

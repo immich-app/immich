@@ -876,6 +876,7 @@ export type MetadataSearchDto = {
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
+    isUntagged?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
@@ -948,6 +949,7 @@ export type RandomSearchDto = {
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
+    isUntagged?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
@@ -982,6 +984,7 @@ export type SmartSearchDto = {
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
+    isUntagged?: boolean;
     language?: string;
     lensModel?: string | null;
     libraryId?: string | null;
@@ -1018,6 +1021,7 @@ export type StatisticsSearchDto = {
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
+    isUntagged?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;

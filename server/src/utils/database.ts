@@ -382,6 +382,9 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(options.isMotion !== undefined, (qb) =>
       qb.where('assets.livePhotoVideoId', options.isMotion ? 'is not' : 'is', null),
     )
+    .$if(!!options.isUntagged && (!options.tagIds || options.tagIds.length === 0), (qb) =>
+      qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('assetsId', '=', 'assets.id')))),
+    )
     .$if(!!options.isNotInAlbum && (!options.albumIds || options.albumIds.length === 0), (qb) =>
       qb.where((eb) =>
         eb.not(eb.exists((eb) => eb.selectFrom('albums_assets_assets').whereRef('assetsId', '=', 'assets.id'))),

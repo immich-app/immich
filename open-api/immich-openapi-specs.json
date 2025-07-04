@@ -11140,6 +11140,9 @@
           "isOffline": {
             "type": "boolean"
           },
+          "isUntagged": {
+            "type": "boolean"
+          },
           "lensModel": {
             "nullable": true,
             "type": "string"
@@ -12048,6 +12051,9 @@
             "type": "boolean"
           },
           "isOffline": {
+            "type": "boolean"
+          },
+          "isUntagged": {
             "type": "boolean"
           },
           "lensModel": {
@@ -13105,6 +13111,9 @@
           "isOffline": {
             "type": "boolean"
           },
+          "isUntagged": {
+            "type": "boolean"
+          },
           "language": {
             "type": "string"
           },
@@ -13309,6 +13318,9 @@
             "type": "boolean"
           },
           "isOffline": {
+            "type": "boolean"
+          },
+          "isUntagged": {
             "type": "boolean"
           },
           "lensModel": {
