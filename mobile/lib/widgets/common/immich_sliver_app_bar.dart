@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -72,18 +73,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
             onPressed: () => context.pop(),
           ),
           IconButton(
-            // onPressed: () => ref.read(backgroundSyncProvider).syncRemote(),
-            onPressed: () {
-              // final user = ref.read(currentUserProvider);
-              // if (user == null) return;
-              // ref.read(driftMemoryProvider).getAll(user.id).then((memories) {
-              //   for (final memory in memories) {
-              //     print(
-              //       "memory: ${memory.data} - assets count. ${memory.assets.length}",
-              //     );
-              //   }
-              // });
-            },
+            onPressed: () => ref.read(backgroundSyncProvider).syncRemote(),
             icon: const Icon(
               Icons.sync,
             ),

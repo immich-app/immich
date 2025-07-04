@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
@@ -20,7 +21,10 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
       leftOuterJoin(
         _db.remoteAssetEntity,
         _db.remoteAssetEntity.id.equalsExp(_db.memoryAssetEntity.assetId) &
-            _db.remoteAssetEntity.deletedAt.isNull(),
+            _db.remoteAssetEntity.deletedAt.isNull() &
+            _db.remoteAssetEntity.visibility.isIn(
+              [AssetVisibility.timeline.index],
+            ),
       ),
     ])
       ..where(_db.memoryEntity.ownerId.equals(ownerId))

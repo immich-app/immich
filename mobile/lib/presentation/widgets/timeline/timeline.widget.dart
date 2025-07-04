@@ -110,9 +110,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                       pinned: false,
                       snap: false,
                     ),
-                    if (widget.topSliverWidget != null) ...[
-                      widget.topSliverWidget!,
-                    ],
+                    if (widget.topSliverWidget != null) widget.topSliverWidget!,
                     _SliverSegmentedList(
                       segments: segments,
                       delegate: SliverChildBuilderDelegate(
