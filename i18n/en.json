@@ -1884,6 +1884,7 @@
   "unselect_all_in": "Unselect all in {group}",
   "unstack": "Un-stack",
   "unstacked_assets_count": "Un-stacked {count, plural, one {# asset} other {# assets}}",
+  "untagged": "Untagged",
   "up_next": "Up next",
   "updated_at": "Updated",
   "updated_password": "Updated password",
