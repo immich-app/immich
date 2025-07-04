@@ -98,6 +98,7 @@ COPY web ./
 COPY i18n ../i18n
 RUN npm run build
 
+
 # prod build
 FROM ghcr.io/immich-app/base-server-prod:202505061115@sha256:9971d3a089787f0bd01f4682141d3665bcf5efb3e101a88e394ffd25bee4eedb
 
@@ -137,4 +138,5 @@ VOLUME /usr/src/app/upload
 EXPOSE 2283
 ENTRYPOINT ["tini", "--", "/bin/bash"]
 CMD ["start.sh"]
+
 HEALTHCHECK CMD immich-healthcheck
