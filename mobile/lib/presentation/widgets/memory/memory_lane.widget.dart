@@ -1,9 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 class DriftMemoryLane extends ConsumerWidget {
   final List<Memory> memories;
@@ -27,20 +31,21 @@ class DriftMemoryLane extends ConsumerWidget {
         onTap: (index) {
           ref.read(hapticFeedbackProvider.notifier).heavyImpact();
 
-          // if (memories[memoryIndex].assets.isNotEmpty) {
-          //   final asset = memories[memoryIndex].assets[0];
-          //   ref.read(currentAssetProvider.notifier).set(asset);
-          //   if (asset.isVideo || asset.isMotionPhoto) {
-          //     ref.read(videoPlaybackValueProvider.notifier).reset();
-          //   }
-          // }
-          //
-          // context.pushRoute(
-          //   MemoryRoute(
-          //     memories: memories,
-          //     memoryIndex: memoryIndex,
-          //   ),
-          // );
+          if (memories[index].assets.isNotEmpty) {
+            final asset = memories[index].assets[0];
+            ref.read(currentAssetNotifier.notifier).setAsset(asset);
+
+            if (asset.isVideo) {
+              ref.read(videoPlaybackValueProvider.notifier).reset();
+            }
+          }
+
+          context.pushRoute(
+            DriftMemoryRoute(
+              memories: memories,
+              memoryIndex: index,
+            ),
+          );
         },
         children:
             memories.map((memory) => DriftMemoryCard(memory: memory)).toList(),
