@@ -11140,9 +11140,6 @@
           "isOffline": {
             "type": "boolean"
           },
-          "isUntagged": {
-            "type": "boolean"
-          },
           "lensModel": {
             "nullable": true,
             "type": "string"
@@ -11206,6 +11203,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -12053,9 +12051,6 @@
           "isOffline": {
             "type": "boolean"
           },
-          "isUntagged": {
-            "type": "boolean"
-          },
           "lensModel": {
             "nullable": true,
             "type": "string"
@@ -12098,6 +12093,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -13111,9 +13107,6 @@
           "isOffline": {
             "type": "boolean"
           },
-          "isUntagged": {
-            "type": "boolean"
-          },
           "language": {
             "type": "string"
           },
@@ -13166,6 +13159,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -13320,9 +13314,6 @@
           "isOffline": {
             "type": "boolean"
           },
-          "isUntagged": {
-            "type": "boolean"
-          },
           "lensModel": {
             "nullable": true,
             "type": "string"
@@ -13360,6 +13351,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {

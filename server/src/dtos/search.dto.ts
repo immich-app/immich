@@ -87,16 +87,13 @@ class BaseSearchDto {
   lensModel?: string | null;
 
   @ValidateBoolean({ optional: true })
-  isUntagged?: boolean;
-
-  @ValidateBoolean({ optional: true })
   isNotInAlbum?: boolean;
 
   @ValidateUUID({ each: true, optional: true })
   personIds?: string[];
 
   @ValidateUUID({ each: true, optional: true })
-  tagIds?: string[];
+  tagIds?: string[] | null;
 
   @ValidateUUID({ each: true, optional: true })
   albumIds?: string[];

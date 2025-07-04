@@ -876,7 +876,6 @@ export type MetadataSearchDto = {
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
-    isUntagged?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
@@ -890,7 +889,7 @@ export type MetadataSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     thumbnailPath?: string;
@@ -949,7 +948,6 @@ export type RandomSearchDto = {
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
-    isUntagged?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
@@ -958,7 +956,7 @@ export type RandomSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -984,7 +982,6 @@ export type SmartSearchDto = {
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
-    isUntagged?: boolean;
     language?: string;
     lensModel?: string | null;
     libraryId?: string | null;
@@ -996,7 +993,7 @@ export type SmartSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -1021,7 +1018,6 @@ export type StatisticsSearchDto = {
     isMotion?: boolean;
     isNotInAlbum?: boolean;
     isOffline?: boolean;
-    isUntagged?: boolean;
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
@@ -1029,7 +1025,7 @@ export type StatisticsSearchDto = {
     personIds?: string[];
     rating?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;

@@ -32,7 +32,6 @@ export interface SearchStatusOptions {
   isMotion?: boolean;
   isOffline?: boolean;
   isNotInAlbum?: boolean;
-  isUntagged?: boolean;
   type?: AssetType;
   status?: AssetStatus;
   withArchived?: boolean;
@@ -90,7 +89,7 @@ export interface SearchPeopleOptions {
 }
 
 export interface SearchTagOptions {
-  tagIds?: string[];
+  tagIds?: string[] | null;
 }
 
 export interface SearchAlbumOptions {

@@ -29,7 +29,6 @@ class MetadataSearchDto {
     this.isMotion,
     this.isNotInAlbum,
     this.isOffline,
-    this.isUntagged,
     this.lensModel,
     this.libraryId,
     this.make,
@@ -169,14 +168,6 @@ class MetadataSearchDto {
   ///
   bool? isOffline;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isUntagged;
-
   String? lensModel;
 
   String? libraryId;
@@ -250,7 +241,7 @@ class MetadataSearchDto {
 
   String? state;
 
-  List<String> tagIds;
+  List<String>? tagIds;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -374,7 +365,6 @@ class MetadataSearchDto {
     other.isMotion == isMotion &&
     other.isNotInAlbum == isNotInAlbum &&
     other.isOffline == isOffline &&
-    other.isUntagged == isUntagged &&
     other.lensModel == lensModel &&
     other.libraryId == libraryId &&
     other.make == make &&
@@ -422,7 +412,6 @@ class MetadataSearchDto {
     (isMotion == null ? 0 : isMotion!.hashCode) +
     (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
     (isOffline == null ? 0 : isOffline!.hashCode) +
-    (isUntagged == null ? 0 : isUntagged!.hashCode) +
     (lensModel == null ? 0 : lensModel!.hashCode) +
     (libraryId == null ? 0 : libraryId!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
@@ -436,7 +425,7 @@ class MetadataSearchDto {
     (rating == null ? 0 : rating!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
-    (tagIds.hashCode) +
+    (tagIds == null ? 0 : tagIds!.hashCode) +
     (takenAfter == null ? 0 : takenAfter!.hashCode) +
     (takenBefore == null ? 0 : takenBefore!.hashCode) +
     (thumbnailPath == null ? 0 : thumbnailPath!.hashCode) +
@@ -452,7 +441,7 @@ class MetadataSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isUntagged=$isUntagged, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -532,11 +521,6 @@ class MetadataSearchDto {
     } else {
     //  json[r'isOffline'] = null;
     }
-    if (this.isUntagged != null) {
-      json[r'isUntagged'] = this.isUntagged;
-    } else {
-    //  json[r'isUntagged'] = null;
-    }
     if (this.lensModel != null) {
       json[r'lensModel'] = this.lensModel;
     } else {
@@ -594,7 +578,11 @@ class MetadataSearchDto {
     } else {
     //  json[r'state'] = null;
     }
+    if (this.tagIds != null) {
       json[r'tagIds'] = this.tagIds;
+    } else {
+    //  json[r'tagIds'] = null;
+    }
     if (this.takenAfter != null) {
       json[r'takenAfter'] = this.takenAfter!.toUtc().toIso8601String();
     } else {
@@ -690,7 +678,6 @@ class MetadataSearchDto {
         isMotion: mapValueOfType<bool>(json, r'isMotion'),
         isNotInAlbum: mapValueOfType<bool>(json, r'isNotInAlbum'),
         isOffline: mapValueOfType<bool>(json, r'isOffline'),
-        isUntagged: mapValueOfType<bool>(json, r'isUntagged'),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         make: mapValueOfType<String>(json, r'make'),

@@ -25,7 +25,6 @@ class StatisticsSearchDto {
     this.isMotion,
     this.isNotInAlbum,
     this.isOffline,
-    this.isUntagged,
     this.lensModel,
     this.libraryId,
     this.make,
@@ -122,14 +121,6 @@ class StatisticsSearchDto {
   ///
   bool? isOffline;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? isUntagged;
-
   String? lensModel;
 
   String? libraryId;
@@ -158,7 +149,7 @@ class StatisticsSearchDto {
 
   String? state;
 
-  List<String> tagIds;
+  List<String>? tagIds;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -238,7 +229,6 @@ class StatisticsSearchDto {
     other.isMotion == isMotion &&
     other.isNotInAlbum == isNotInAlbum &&
     other.isOffline == isOffline &&
-    other.isUntagged == isUntagged &&
     other.lensModel == lensModel &&
     other.libraryId == libraryId &&
     other.make == make &&
@@ -271,7 +261,6 @@ class StatisticsSearchDto {
     (isMotion == null ? 0 : isMotion!.hashCode) +
     (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
     (isOffline == null ? 0 : isOffline!.hashCode) +
-    (isUntagged == null ? 0 : isUntagged!.hashCode) +
     (lensModel == null ? 0 : lensModel!.hashCode) +
     (libraryId == null ? 0 : libraryId!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
@@ -279,7 +268,7 @@ class StatisticsSearchDto {
     (personIds.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
-    (tagIds.hashCode) +
+    (tagIds == null ? 0 : tagIds!.hashCode) +
     (takenAfter == null ? 0 : takenAfter!.hashCode) +
     (takenBefore == null ? 0 : takenBefore!.hashCode) +
     (trashedAfter == null ? 0 : trashedAfter!.hashCode) +
@@ -290,7 +279,7 @@ class StatisticsSearchDto {
     (visibility == null ? 0 : visibility!.hashCode);
 
   @override
-  String toString() => 'StatisticsSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isUntagged=$isUntagged, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility]';
+  String toString() => 'StatisticsSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -350,11 +339,6 @@ class StatisticsSearchDto {
     } else {
     //  json[r'isOffline'] = null;
     }
-    if (this.isUntagged != null) {
-      json[r'isUntagged'] = this.isUntagged;
-    } else {
-    //  json[r'isUntagged'] = null;
-    }
     if (this.lensModel != null) {
       json[r'lensModel'] = this.lensModel;
     } else {
@@ -386,7 +370,11 @@ class StatisticsSearchDto {
     } else {
     //  json[r'state'] = null;
     }
+    if (this.tagIds != null) {
       json[r'tagIds'] = this.tagIds;
+    } else {
+    //  json[r'tagIds'] = null;
+    }
     if (this.takenAfter != null) {
       json[r'takenAfter'] = this.takenAfter!.toUtc().toIso8601String();
     } else {
@@ -453,7 +441,6 @@ class StatisticsSearchDto {
         isMotion: mapValueOfType<bool>(json, r'isMotion'),
         isNotInAlbum: mapValueOfType<bool>(json, r'isNotInAlbum'),
         isOffline: mapValueOfType<bool>(json, r'isOffline'),
-        isUntagged: mapValueOfType<bool>(json, r'isUntagged'),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         make: mapValueOfType<String>(json, r'make'),
