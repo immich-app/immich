@@ -619,6 +619,58 @@ class DriftAlbumsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftMemoryPage]
+class DriftMemoryRoute extends PageRouteInfo<DriftMemoryRouteArgs> {
+  DriftMemoryRoute({
+    required List<DriftMemory> memories,
+    required int memoryIndex,
+    Key? key,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftMemoryRoute.name,
+          args: DriftMemoryRouteArgs(
+            memories: memories,
+            memoryIndex: memoryIndex,
+            key: key,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftMemoryRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftMemoryRouteArgs>();
+      return DriftMemoryPage(
+        memories: args.memories,
+        memoryIndex: args.memoryIndex,
+        key: args.key,
+      );
+    },
+  );
+}
+
+class DriftMemoryRouteArgs {
+  const DriftMemoryRouteArgs({
+    required this.memories,
+    required this.memoryIndex,
+    this.key,
+  });
+
+  final List<DriftMemory> memories;
+
+  final int memoryIndex;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'DriftMemoryRouteArgs{memories: $memories, memoryIndex: $memoryIndex, key: $key}';
+  }
+}
+
+/// generated route for
 /// [EditImagePage]
 class EditImageRoute extends PageRouteInfo<EditImageRouteArgs> {
   EditImageRoute({

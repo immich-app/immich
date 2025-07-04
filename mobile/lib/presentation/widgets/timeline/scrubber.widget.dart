@@ -26,6 +26,8 @@ class Scrubber extends ConsumerStatefulWidget {
 
   final double bottomPadding;
 
+  final double? monthSegmentSnappingOffset;
+
   Scrubber({
     super.key,
     Key? scrollThumbKey,
@@ -33,6 +35,7 @@ class Scrubber extends ConsumerStatefulWidget {
     required this.timelineHeight,
     this.topPadding = 0,
     this.bottomPadding = 0,
+    this.monthSegmentSnappingOffset,
     required this.child,
   }) : assert(child.scrollDirection == Axis.vertical);
 
@@ -296,7 +299,10 @@ class ScrubberState extends ConsumerState<Scrubber>
     final viewportHeight = _scrollController.position.viewportDimension;
 
     final targetScrollOffset = layoutSegment.startOffset;
-    final centeredOffset = targetScrollOffset - (viewportHeight / 4) + 100;
+    final centeredOffset = targetScrollOffset -
+        (viewportHeight / 4) +
+        100 +
+        (widget.monthSegmentSnappingOffset ?? 0.0);
 
     _scrollController.jumpTo(centeredOffset.clamp(0.0, maxScrollExtent));
   }
