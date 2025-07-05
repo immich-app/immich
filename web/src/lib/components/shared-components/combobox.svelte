@@ -33,7 +33,7 @@
 
   interface Props {
     label: string;
-    disabled: boolean;
+    disabled?: boolean;
     hideLabel?: boolean;
     options?: ComboBoxOption[];
     selectedOption?: ComboBoxOption | undefined;
