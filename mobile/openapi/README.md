@@ -146,6 +146,7 @@ Class | Method | HTTP request | Description
 *MemoriesApi* | [**createMemory**](doc//MemoriesApi.md#creatememory) | **POST** /memories | 
 *MemoriesApi* | [**deleteMemory**](doc//MemoriesApi.md#deletememory) | **DELETE** /memories/{id} | 
 *MemoriesApi* | [**getMemory**](doc//MemoriesApi.md#getmemory) | **GET** /memories/{id} | 
+*MemoriesApi* | [**getRandomMemories**](doc//MemoriesApi.md#getrandommemories) | **GET** /memories/random | 
 *MemoriesApi* | [**memoriesStatistics**](doc//MemoriesApi.md#memoriesstatistics) | **GET** /memories/statistics | 
 *MemoriesApi* | [**removeMemoryAssets**](doc//MemoriesApi.md#removememoryassets) | **DELETE** /memories/{id}/assets | 
 *MemoriesApi* | [**searchMemories**](doc//MemoriesApi.md#searchmemories) | **GET** /memories | 

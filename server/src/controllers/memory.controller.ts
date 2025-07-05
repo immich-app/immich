@@ -8,6 +8,7 @@ import {
   MemorySearchDto,
   MemoryStatisticsResponseDto,
   MemoryUpdateDto,
+  RandomMemoriesSearchDto,
 } from 'src/dtos/memory.dto';
 import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
@@ -23,6 +24,12 @@ export class MemoryController {
   @Authenticated({ permission: Permission.MemoryRead })
   searchMemories(@Auth() auth: AuthDto, @Query() dto: MemorySearchDto): Promise<MemoryResponseDto[]> {
     return this.service.search(auth, dto);
+  }
+
+  @Get('random')
+  @Authenticated({ permission: Permission.MemoryRead })
+  getRandomMemories(@Auth() auth: AuthDto, @Query() dto: RandomMemoriesSearchDto): Promise<MemoryResponseDto[]> {
+    return this.service.getRandom(auth, dto);
   }
 
   @Post()

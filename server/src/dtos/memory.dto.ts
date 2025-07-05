@@ -29,6 +29,13 @@ export class MemorySearchDto {
   isSaved?: boolean;
 }
 
+export class RandomMemoriesSearchDto extends MemorySearchDto {
+  @IsInt()
+  @IsPositive()
+  @ApiProperty({ type: 'integer', description: 'Number of random memories to return' })
+  size?: number;
+}
+
 class OnThisDayDto {
   @IsInt()
   @IsPositive()

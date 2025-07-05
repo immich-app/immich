@@ -2549,6 +2549,26 @@ export function createMemory({ memoryCreateDto }: {
         body: memoryCreateDto
     })));
 }
+export function getRandomMemories({ $for, isSaved, isTrashed, size, $type }: {
+    $for?: string;
+    isSaved?: boolean;
+    isTrashed?: boolean;
+    size?: number;
+    $type?: MemoryType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryResponseDto[];
+    }>(`/memories/random${QS.query(QS.explode({
+        "for": $for,
+        isSaved,
+        isTrashed,
+        size,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
+}
 export function memoriesStatistics({ $for, isSaved, isTrashed, $type }: {
     $for?: string;
     isSaved?: boolean;
