@@ -241,7 +241,7 @@ class MetadataSearchDto {
 
   String? state;
 
-  List<String> tagIds;
+  List<String>? tagIds;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -425,7 +425,7 @@ class MetadataSearchDto {
     (rating == null ? 0 : rating!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
-    (tagIds.hashCode) +
+    (tagIds == null ? 0 : tagIds!.hashCode) +
     (takenAfter == null ? 0 : takenAfter!.hashCode) +
     (takenBefore == null ? 0 : takenBefore!.hashCode) +
     (thumbnailPath == null ? 0 : thumbnailPath!.hashCode) +
@@ -578,7 +578,11 @@ class MetadataSearchDto {
     } else {
     //  json[r'state'] = null;
     }
+    if (this.tagIds != null) {
       json[r'tagIds'] = this.tagIds;
+    } else {
+    //  json[r'tagIds'] = null;
+    }
     if (this.takenAfter != null) {
       json[r'takenAfter'] = this.takenAfter!.toUtc().toIso8601String();
     } else {

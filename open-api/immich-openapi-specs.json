@@ -11203,6 +11203,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -12092,6 +12093,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -13157,6 +13159,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -13348,6 +13351,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {

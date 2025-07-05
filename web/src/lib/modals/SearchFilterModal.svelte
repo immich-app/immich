@@ -8,7 +8,7 @@
     query: string;
     queryType: 'smart' | 'metadata' | 'description';
     personIds: SvelteSet<string>;
-    tagIds: SvelteSet<string>;
+    tagIds: SvelteSet<string> | null;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
     date: SearchDateFilter;
@@ -68,7 +68,12 @@
     query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
-    tagIds: new SvelteSet('tagIds' in searchQuery ? searchQuery.tagIds : []),
+    tagIds:
+      'tagIds' in searchQuery
+        ? searchQuery.tagIds === null
+          ? null
+          : new SvelteSet(searchQuery.tagIds)
+        : new SvelteSet(),
     location: {
       country: withNullAsUndefined(searchQuery.country),
       state: withNullAsUndefined(searchQuery.state),
@@ -140,7 +145,7 @@
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
-      tagIds: filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
+      tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
       rating: filter.rating,
     };
