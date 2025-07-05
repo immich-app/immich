@@ -80,30 +80,33 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
-      - name: Run npm install
-        run: npm ci
+      - name: Run package manager install
+        run: pnpm install
 
       - name: Run linter
-        run: npm run lint
+        run: pnpm lint
         if: ${{ !cancelled() }}
 
       - name: Run formatter
-        run: npm run format
+        run: pnpm format
         if: ${{ !cancelled() }}
 
       - name: Run tsc
-        run: npm run check
+        run: pnpm check
         if: ${{ !cancelled() }}
 
       - name: Run small tests & coverage
-        run: npm test
+        run: pnpm test
         if: ${{ !cancelled() }}
 
   cli-unit-tests:
@@ -123,34 +126,37 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version-file: './cli/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          node-version-file: './server/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Setup typescript-sdk
-        run: npm ci && npm run build
+        run: pnpm install && pnpm run build
         working-directory: ./open-api/typescript-sdk
 
       - name: Install deps
-        run: npm ci
+        run: pnpm install
 
       - name: Run linter
-        run: npm run lint
+        run: pnpm lint
         if: ${{ !cancelled() }}
 
       - name: Run formatter
-        run: npm run format
+        run: pnpm format
         if: ${{ !cancelled() }}
 
       - name: Run tsc
-        run: npm run check
+        run: pnpm check
         if: ${{ !cancelled() }}
 
       - name: Run unit tests & coverage
-        run: npm run test
+        run: pnpm test
         if: ${{ !cancelled() }}
 
   cli-unit-tests-win:
@@ -170,27 +176,30 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version-file: './cli/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          node-version-file: './server/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Setup typescript-sdk
-        run: npm ci && npm run build
+        run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
 
       - name: Install deps
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       # Skip linter & formatter in Windows test.
       - name: Run tsc
-        run: npm run check
+        run: pnpm check
         if: ${{ !cancelled() }}
 
       - name: Run unit tests & coverage
-        run: npm run test
+        run: pnpm test
         if: ${{ !cancelled() }}
 
   web-lint:
@@ -210,30 +219,33 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version-file: './web/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          node-version-file: './server/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run setup typescript-sdk
-        run: npm ci && npm run build
+        run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
 
       - name: Run npm install
-        run: npm ci
+        run: pnpm rebuild && pnpm install --frozen-lockfile
 
       - name: Run linter
-        run: npm run lint:p
+        run: pnpm lint:p
         if: ${{ !cancelled() }}
 
       - name: Run formatter
-        run: npm run format
+        run: pnpm format
         if: ${{ !cancelled() }}
 
       - name: Run svelte checks
-        run: npm run check:svelte
+        run: pnpm check:svelte
         if: ${{ !cancelled() }}
 
   web-unit-tests:
@@ -253,26 +265,29 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version-file: './web/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          node-version-file: './server/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run setup typescript-sdk
-        run: npm ci && npm run build
+        run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
 
       - name: Run npm install
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run tsc
-        run: npm run check:typescript
+        run: pnpm check:typescript
         if: ${{ !cancelled() }}
 
       - name: Run unit tests & coverage
-        run: npm run test
+        run: pnpm test
         if: ${{ !cancelled() }}
 
   i18n-tests:
@@ -288,18 +303,21 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version-file: './web/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          node-version-file: './server/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Install dependencies
-        run: npm --prefix=web ci
+        run: pnpm --filter=immich-web install --frozen-lockfile
 
       - name: Format
-        run: npm --prefix=web run format:i18n
+        run: pnpm --filter=immich-web format:i18n
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
@@ -334,32 +352,35 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version-file: './e2e/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          node-version-file: './server/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run setup typescript-sdk
-        run: npm ci && npm run build
+        run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
         if: ${{ !cancelled() }}
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
         if: ${{ !cancelled() }}
 
       - name: Run linter
-        run: npm run lint
+        run: pnpm lint
         if: ${{ !cancelled() }}
 
       - name: Run formatter
-        run: npm run format
+        run: pnpm format
         if: ${{ !cancelled() }}
 
       - name: Run tsc
-        run: npm run check
+        run: pnpm check
         if: ${{ !cancelled() }}
 
   server-medium-tests:
@@ -379,18 +400,21 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run npm install
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run medium tests
-        run: npm run test:medium
+        run: pnpm test:medium
         if: ${{ !cancelled() }}
 
   e2e-tests-server-cli:
@@ -414,25 +438,33 @@ jobs:
           persist-credentials: false
           submodules: 'recursive'
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version-file: './e2e/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          node-version-file: './server/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run setup typescript-sdk
-        run: npm ci && npm run build
+        run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
         if: ${{ !cancelled() }}
 
+      - name: Run setup web
+        run: pnpm install --frozen-lockfile && pnpm exec svelte-kit sync
+        working-directory: ./web
+        if: ${{ !cancelled() }}
+
       - name: Run setup cli
-        run: npm ci && npm run build
+        run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./cli
         if: ${{ !cancelled() }}
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
         if: ${{ !cancelled() }}
 
       - name: Docker build
@@ -440,7 +472,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Run e2e tests (api & cli)
-        run: npm run test
+        run: pnpm test
         if: ${{ !cancelled() }}
 
   e2e-tests-web:
@@ -464,20 +496,23 @@ jobs:
           persist-credentials: false
           submodules: 'recursive'
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version-file: './e2e/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          node-version-file: './server/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run setup typescript-sdk
-        run: npm ci && npm run build
+        run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
         if: ${{ !cancelled() }}
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
         if: ${{ !cancelled() }}
 
       - name: Install Playwright Browsers
@@ -584,18 +619,21 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version-file: './.github/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          node-version-file: './server/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Run npm install
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run formatter
-        run: npm run format
+        run: pnpm format
         if: ${{ !cancelled() }}
 
   shellcheck:
@@ -627,18 +665,21 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Install server dependencies
-        run: npm --prefix=server ci
+        run: pnpm --filter immich install --frozen-lockfile
 
       - name: Build the app
-        run: npm --prefix=server run build
+        run: pnpm --filter immich build
 
       - name: Run API generation
         run: make open-api
@@ -690,28 +731,31 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Install server dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build the app
-        run: npm run build
+        run: pnpm build
 
       - name: Run existing migrations
-        run: npm run migrations:run
+        run: pnpm migrations:run
 
       - name: Test npm run schema:reset command works
-        run: npm run schema:reset
+        run: pnpm schema:reset
 
       - name: Generate new migrations
         continue-on-error: true
-        run: npm run migrations:generate src/TestMigration
+        run: pnpm migrations:generate src/TestMigration
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
@@ -730,7 +774,7 @@ jobs:
           exit 1
 
       - name: Run SQL generation
-        run: npm run sync:sql
+        run: pnpm sync:sql
         env:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
 

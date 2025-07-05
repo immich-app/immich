@@ -1,0 +1,10 @@
+{
+  "name": "immich-monorepo",
+  "version": "0.0.1",
+  "description": "monorepo for immich and friends",
+  "private": true,
+  "packageManager": "pnpm@10.12.4",
+  "engines": {
+    "pnpm": ">=10.0.0"
+  }
+}
