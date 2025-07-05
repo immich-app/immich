@@ -151,7 +151,6 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
 
   void setForceEnable() {
     state = state.copyWith(forceEnable: true);
-    print("setForceEnable enabled: $state");
   }
 
   void unSetForceEnable() {
