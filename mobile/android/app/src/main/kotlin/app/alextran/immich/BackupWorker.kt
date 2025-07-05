@@ -4,7 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -240,7 +240,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
 
     if (isIgnoringBatteryOptimizations && !isDetail) {
       fgFuture = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-        setForegroundAsync(ForegroundInfo(id, notification, FOREGROUND_SERVICE_TYPE_SHORT_SERVICE))
+        setForegroundAsync(ForegroundInfo(id, notification, FOREGROUND_SERVICE_TYPE_DATA_SYNC))
       } else {
         setForegroundAsync(ForegroundInfo(id, notification))
       }
