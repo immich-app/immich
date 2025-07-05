@@ -54,11 +54,11 @@ class TimelineFactory {
             _timelineRepository.watchRemoteBucket(albumId, groupBy: groupBy),
       );
 
-  TimelineService archive() => TimelineService(
+  TimelineService archive(String userId) => TimelineService(
         assetSource: (offset, count) => _timelineRepository
-            .getArchiveBucketAssets(offset: offset, count: count),
+            .getArchiveBucketAssets(userId, offset: offset, count: count),
         bucketSource: () =>
-            _timelineRepository.watchArchiveBucket(groupBy: groupBy),
+            _timelineRepository.watchArchiveBucket(userId, groupBy: groupBy),
       );
 }
 

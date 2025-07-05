@@ -214,14 +214,16 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         .get();
   }
 
-  Stream<List<Bucket>> watchArchiveBucket({
+  Stream<List<Bucket>> watchArchiveBucket(
+    String userId, {
     GroupAssetsBy groupBy = GroupAssetsBy.day,
   }) {
     if (groupBy == GroupAssetsBy.none) {
       return _db.remoteAssetEntity
           .count(
             where: (row) =>
-                row.visibility.equals(AssetVisibility.archive.index),
+                row.visibility.equals(AssetVisibility.archive.index) &
+                row.ownerId.equals(userId),
           )
           .map(_generateBuckets)
           .watchSingle();
@@ -232,8 +234,18 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
     final query = _db.remoteAssetEntity.selectOnly()
       ..addColumns([assetCountExp, dateExp])
+      ..join([
+        leftOuterJoin(
+          _db.localAssetEntity,
+          _db.remoteAssetEntity.checksum
+              .equalsExp(_db.localAssetEntity.checksum),
+          useColumns: false,
+        ),
+      ])
       ..where(
-        _db.remoteAssetEntity.visibility.equals(AssetVisibility.archive.index),
+        _db.remoteAssetEntity.ownerId.equals(userId) &
+            _db.remoteAssetEntity.visibility
+                .equals(AssetVisibility.archive.index),
       )
       ..groupBy([dateExp])
       ..orderBy([OrderingTerm.desc(dateExp)]);
@@ -245,16 +257,34 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     }).watch();
   }
 
-  Future<List<BaseAsset>> getArchiveBucketAssets({
+  Future<List<BaseAsset>> getArchiveBucketAssets(
+    String userId, {
     required int offset,
     required int count,
   }) {
-    return _db.managers.remoteAssetEntity
-        .filter((row) => row.visibility.equals(AssetVisibility.archive))
-        .orderBy((row) => row.createdAt.desc())
-        .limit(count, offset: offset)
-        .map((row) => row.toDto())
-        .get();
+    final query = _db.remoteAssetEntity
+        .select()
+        .addColumns([_db.localAssetEntity.id]).join([
+      leftOuterJoin(
+        _db.localAssetEntity,
+        _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
+        useColumns: false,
+      ),
+    ])
+      ..where(
+        _db.remoteAssetEntity.ownerId.equals(userId) &
+            _db.remoteAssetEntity.visibility
+                .equals(AssetVisibility.archive.index),
+      )
+      ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+      ..limit(count, offset: offset);
+
+    return query.map((row) {
+      final asset = row.readTable(_db.remoteAssetEntity).toDto();
+      return asset.copyWith(
+        localId: row.read(_db.localAssetEntity.id),
+      );
+    }).get();
   }
 }
 
