@@ -8,21 +8,21 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'album.provider.dart';
 
 class RemoteAlbumState {
-  final List<Album> albums;
-  final List<Album> filteredAlbums;
+  final List<RemoteAlbum> albums;
+  final List<RemoteAlbum> filteredAlbums;
   final bool isLoading;
   final String? error;
 
   const RemoteAlbumState({
     required this.albums,
-    List<Album>? filteredAlbums,
+    List<RemoteAlbum>? filteredAlbums,
     this.isLoading = false,
     this.error,
   }) : filteredAlbums = filteredAlbums ?? albums;
 
   RemoteAlbumState copyWith({
-    List<Album>? albums,
-    List<Album>? filteredAlbums,
+    List<RemoteAlbum>? albums,
+    List<RemoteAlbum>? filteredAlbums,
     bool? isLoading,
     String? error,
   }) {
@@ -66,7 +66,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     return const RemoteAlbumState(albums: [], filteredAlbums: []);
   }
 
-  Future<List<Album>> getAll() async {
+  Future<List<RemoteAlbum>> getAll() async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -117,5 +117,32 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     final sortedAlbums = _remoteAlbumService
         .sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
     state = state.copyWith(filteredAlbums: sortedAlbums);
+  }
+
+  Future<RemoteAlbum?> createAlbum({
+    required String title,
+    String? description,
+    List<String> assetIds = const [],
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final album = await _remoteAlbumService.createAlbum(
+        title: title,
+        description: description,
+        assetIds: assetIds,
+      );
+
+      state = state.copyWith(
+        albums: [...state.albums, album],
+        filteredAlbums: [...state.filteredAlbums, album],
+      );
+
+      state = state.copyWith(isLoading: false);
+      return album;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
+    }
   }
 }

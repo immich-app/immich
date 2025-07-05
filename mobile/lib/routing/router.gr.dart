@@ -619,6 +619,45 @@ class DriftAlbumsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftCreateAlbumPage]
+class DriftCreateAlbumRoute extends PageRouteInfo<DriftCreateAlbumRouteArgs> {
+  DriftCreateAlbumRoute({
+    Key? key,
+    List<RemoteAsset>? assets,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftCreateAlbumRoute.name,
+          args: DriftCreateAlbumRouteArgs(key: key, assets: assets),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftCreateAlbumRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftCreateAlbumRouteArgs>(
+        orElse: () => const DriftCreateAlbumRouteArgs(),
+      );
+      return DriftCreateAlbumPage(key: args.key, assets: args.assets);
+    },
+  );
+}
+
+class DriftCreateAlbumRouteArgs {
+  const DriftCreateAlbumRouteArgs({this.key, this.assets});
+
+  final Key? key;
+
+  final List<RemoteAsset>? assets;
+
+  @override
+  String toString() {
+    return 'DriftCreateAlbumRouteArgs{key: $key, assets: $assets}';
+  }
+}
+
+/// generated route for
 /// [DriftMemoryPage]
 class DriftMemoryRoute extends PageRouteInfo<DriftMemoryRouteArgs> {
   DriftMemoryRoute({

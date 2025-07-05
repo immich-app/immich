@@ -1,5 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart'
+    show AlbumAssetOrder, RemoteAlbum;
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
@@ -48,6 +50,25 @@ class AlbumApiRepository extends ApiRepository {
       ),
     );
     return _toAlbum(responseDto);
+  }
+
+  // TODO: Change name after removing old method
+  Future<RemoteAlbum> createDriftAlbum(
+    String name, {
+    required Iterable<String> assetIds,
+    String? description,
+  }) async {
+    final responseDto = await checkNull(
+      _api.createAlbum(
+        CreateAlbumDto(
+          albumName: name,
+          description: description,
+          assetIds: assetIds.toList(),
+        ),
+      ),
+    );
+
+    return _toRemoteAlbum(responseDto);
   }
 
   Future<Album> update(
@@ -169,5 +190,23 @@ class AlbumApiRepository extends ApiRepository {
     album.assets.addAll(assets);
 
     return album;
+  }
+
+  static RemoteAlbum _toRemoteAlbum(AlbumResponseDto dto) {
+    return RemoteAlbum(
+      id: dto.id,
+      name: dto.albumName,
+      ownerId: dto.owner.id,
+      description: dto.description,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+      thumbnailAssetId: dto.albumThumbnailAssetId,
+      isActivityEnabled: dto.isActivityEnabled,
+      order: dto.order == AssetOrder.asc
+          ? AlbumAssetOrder.asc
+          : AlbumAssetOrder.desc,
+      assetCount: dto.assetCount,
+      ownerName: dto.owner.name,
+    );
   }
 }

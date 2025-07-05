@@ -97,7 +97,20 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
       onRefresh: onRefresh,
       child: CustomScrollView(
         slivers: [
-          const ImmichSliverAppBar(),
+          ImmichSliverAppBar(
+            actions: [
+              IconButton(
+                icon: const Icon(
+                  Icons.add_rounded,
+                  size: 28,
+                ),
+                onPressed: () => context.pushRoute(
+                  DriftCreateAlbumRoute(),
+                ),
+              ),
+            ],
+            showUploadButton: false,
+          ),
           _SearchBar(
             searchController: searchController,
             searchFocusNode: searchFocusNode,
@@ -475,7 +488,7 @@ class _AlbumList extends StatelessWidget {
 
   final bool isLoading;
   final String? error;
-  final List<Album> albums;
+  final List<RemoteAlbum> albums;
   final String? userId;
 
   @override
@@ -599,7 +612,7 @@ class _AlbumGrid extends StatelessWidget {
     required this.error,
   });
 
-  final List<Album> albums;
+  final List<RemoteAlbum> albums;
   final String? userId;
   final bool isLoading;
   final String? error;
@@ -674,7 +687,7 @@ class _GridAlbumCard extends StatelessWidget {
     required this.userId,
   });
 
-  final Album album;
+  final RemoteAlbum album;
   final String? userId;
 
   @override
