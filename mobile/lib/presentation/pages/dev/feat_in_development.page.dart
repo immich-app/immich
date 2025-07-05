@@ -96,6 +96,11 @@ final _features = [
     icon: Icons.timeline_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
   ),
+  _Feature(
+    name: 'Archive',
+    icon: Icons.archive_outlined,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftArchiveRoute()),
+  ),
 ];
 
 @RoutePage()
