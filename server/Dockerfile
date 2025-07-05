@@ -1,6 +1,8 @@
 # dev build
 FROM ghcr.io/immich-app/base-server-dev:commit-a050847fdf07f1e492919810121419f65ec9eb45 AS dev
 
+# This next line is temporary, until the docker images are tagged properly. Currently, the dev tag is the same as the prod tag.
+RUN apt-get update && apt-get install --no-install-recommends -yqq tini make
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
 RUN npm ci && \
