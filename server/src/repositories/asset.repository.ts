@@ -169,6 +169,20 @@ export class AssetRepository {
     await this.db.updateTable('exif').set(options).where('assetId', 'in', ids).execute();
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER] })
+  @Chunked()
+  async updateDateTimeOriginal(
+    ids: string[],
+    delta: number,
+  ): Promise<{ assetId: string; dateTimeOriginal: Date | null }[]> {
+    return await this.db
+      .updateTable('exif')
+      .set({ dateTimeOriginal: sql`"dateTimeOriginal" + ${delta + ' minute'}::interval` })
+      .where('assetId', 'in', ids)
+      .returning(['assetId', 'dateTimeOriginal'])
+      .execute();
+  }
+
   async upsertJobStatus(...jobStatus: Insertable<AssetJobStatusTable>[]): Promise<void> {
     if (jobStatus.length === 0) {
       return;
