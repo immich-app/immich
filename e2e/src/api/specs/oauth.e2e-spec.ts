@@ -227,6 +227,21 @@ describe(`/oauth`, () => {
       expect(user.storageLabel).toBe('user-username');
     });
 
+    it('should set the admin status from a role claim', async () => {
+      const callbackParams = await loginWithOAuth(OAuthUser.WITH_ROLE);
+      const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        accessToken: expect.any(String),
+        userId: expect.any(String),
+        userEmail: 'oauth-with-role@immich.app',
+        isAdmin: true,
+      });
+
+      const user = await getMyUser({ headers: asBearerAuth(body.accessToken) });
+      expect(user.isAdmin).toBe(true);
+    });
+
     it('should work with RS256 signed tokens', async () => {
       await setupOAuth(admin.accessToken, {
         enabled: true,

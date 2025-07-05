@@ -395,6 +395,9 @@ class SystemConfigOAuthDto {
 
   @IsString()
   storageQuotaClaim!: string;
+
+  @IsString()
+  roleClaim!: string;
 }
 
 class SystemConfigPasswordLoginDto {
