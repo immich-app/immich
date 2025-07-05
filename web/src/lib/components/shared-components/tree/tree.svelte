@@ -19,6 +19,7 @@
 
   const onclick = (event: MouseEvent) => {
     event.preventDefault();
+    node.children.sort((a, b) => a.value.localeCompare(b.value));
     isOpen = !isOpen;
   };
 </script>
