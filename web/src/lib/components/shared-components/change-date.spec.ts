@@ -3,13 +3,19 @@ import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { DateTime } from 'luxon';
 import ChangeDate from './change-date.svelte';
+import userEvent from '@testing-library/user-event';
 
 describe('ChangeDate component', () => {
   const initialDate = DateTime.fromISO('2024-01-01');
   const initialTimeZone = 'Europe/Berlin';
+  const currentInterval = {
+    start: DateTime.fromISO('2000-02-01T14:00:00+01:00'),
+    end: DateTime.fromISO('2001-02-01T14:00:00+01:00'),
+  };
   const onCancel = vi.fn();
   const onConfirm = vi.fn();
 
+  const getRelativeInputToggle = () => screen.getByTestId('edit-by-offset-switch');
   const getDateInput = () => screen.getByLabelText('date_and_time') as HTMLInputElement;
   const getTimeZoneInput = () => screen.getByLabelText('timezone') as HTMLInputElement;
   const getCancelButton = () => screen.getByText('cancel');
@@ -37,7 +43,7 @@ describe('ChangeDate component', () => {
 
     await fireEvent.click(getConfirmButton());
 
-    expect(onConfirm).toHaveBeenCalledWith('2024-01-01T00:00:00.000+01:00', 0);
+    expect(onConfirm).toHaveBeenCalledWith({ mode: 'absolute', date: '2024-01-01T00:00:00.000+01:00' });
   });
 
   test('calls onCancel on cancel', async () => {
@@ -66,7 +72,54 @@ describe('ChangeDate component', () => {
 
       await fireEvent.click(getConfirmButton());
 
-      expect(onConfirm).toHaveBeenCalledWith('2024-07-01T00:00:00.000+02:00', 0);
+      expect(onConfirm).toHaveBeenCalledWith({ mode: 'absolute', date: '2024-07-01T00:00:00.000+02:00' });
+    });
+  });
+
+  test('calls onConfirm with correct offset in relative mode', async () => {
+    render(ChangeDate, {
+      props: { initialDate, initialTimeZone, currentInterval, onCancel, onConfirm },
+    });
+
+    await fireEvent.click(getRelativeInputToggle());
+
+    const dayInput = screen.getByPlaceholderText('days');
+    const hoursInput = screen.getByPlaceholderText('hours');
+    const minutesInput = screen.getByPlaceholderText('minutes');
+
+    const days = 5;
+    const hours = 4;
+    const minutes = 3;
+
+    await fireEvent.input(dayInput, { target: { value: days } });
+    await fireEvent.input(hoursInput, { target: { value: hours } });
+    await fireEvent.input(minutesInput, { target: { value: minutes } });
+
+    await fireEvent.click(getConfirmButton());
+
+    expect(onConfirm).toHaveBeenCalledWith({
+      mode: 'relative',
+      duration: days * 60 * 24 + hours * 60 + minutes,
+      timeZone: undefined,
+    });
+  });
+
+  test('calls onConfirm with correct timeZone in relative mode', async () => {
+    const user = userEvent.setup();
+    render(ChangeDate, {
+      props: { initialDate, initialTimeZone, currentInterval, onCancel, onConfirm },
+    });
+
+    await user.click(getRelativeInputToggle());
+    await user.type(getTimeZoneInput(), initialTimeZone);
+    await user.keyboard('{ArrowDown}');
+    await user.keyboard('{Enter}');
+
+    await user.click(getConfirmButton());
+    expect(onConfirm).toHaveBeenCalledWith({
+      mode: 'relative',
+      duration: 0,
+      timeZone: 'UTC+01:00',
     });
   });
 });

@@ -43,17 +43,10 @@
 </script>
 
 <div class={`flex gap-2 ${className}`} {...rest}>
-  <button type="button" class="w-8 text-xl font-bold" onclick={toggleSign} title="Toggle sign">
+  <button type="button" class="w-8 text-xl font-bold leading-none" onclick={toggleSign} title="Toggle sign">
     {sign >= 0 ? '+' : '-'}
   </button>
-  <input type="number" min="0" placeholder={$t('days')} class="immich-form-input w-1/3" bind:value={days} />
-  <input type="number" min="0" max="23" placeholder={$t('hours')} class="immich-form-input w-1/3" bind:value={hours} />
-  <input
-    type="number"
-    min="0"
-    max="59"
-    placeholder={$t('minutes')}
-    class="immich-form-input w-1/3"
-    bind:value={minutes}
-  />
+  <input type="number" min="0" placeholder={$t('days')} class="w-1/3" bind:value={days} />
+  <input type="number" min="0" max="23" placeholder={$t('hours')} class="w-1/3" bind:value={hours} />
+  <input type="number" min="0" max="59" placeholder={$t('minutes')} class="w-1/3" bind:value={minutes} />
 </div>

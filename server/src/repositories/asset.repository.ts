@@ -169,17 +169,18 @@ export class AssetRepository {
     await this.db.updateTable('exif').set(options).where('assetId', 'in', ids).execute();
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER] })
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER, DummyValue.STRING] })
   @Chunked()
   async updateDateTimeOriginal(
     ids: string[],
-    delta: number,
-  ): Promise<{ assetId: string; dateTimeOriginal: Date | null }[]> {
+    delta?: number,
+    timeZone?: string,
+  ): Promise<{ assetId: string; dateTimeOriginal: Date | null; timeZone: string | null }[]> {
     return await this.db
       .updateTable('exif')
-      .set({ dateTimeOriginal: sql`"dateTimeOriginal" + ${delta + ' minute'}::interval` })
+      .set({ dateTimeOriginal: sql`"dateTimeOriginal" + ${(delta ?? 0) + ' minute'}::interval`, timeZone })
       .where('assetId', 'in', ids)
-      .returning(['assetId', 'dateTimeOriginal'])
+      .returning(['assetId', 'dateTimeOriginal', 'timeZone'])
       .execute();
   }
 

@@ -22,6 +22,7 @@ class AssetBulkUpdateDto {
     this.latitude,
     this.longitude,
     this.rating,
+    this.timeZone,
     this.visibility,
   });
 
@@ -93,6 +94,14 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
+  String? timeZone;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   AssetVisibility? visibility;
 
   @override
@@ -106,6 +115,7 @@ class AssetBulkUpdateDto {
     other.latitude == latitude &&
     other.longitude == longitude &&
     other.rating == rating &&
+    other.timeZone == timeZone &&
     other.visibility == visibility;
 
   @override
@@ -120,10 +130,11 @@ class AssetBulkUpdateDto {
     (latitude == null ? 0 : latitude!.hashCode) +
     (longitude == null ? 0 : longitude!.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
+    (timeZone == null ? 0 : timeZone!.hashCode) +
     (visibility == null ? 0 : visibility!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, dateTimeRelative=$dateTimeRelative, description=$description, duplicateId=$duplicateId, ids=$ids, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, rating=$rating, visibility=$visibility]';
+  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, dateTimeRelative=$dateTimeRelative, description=$description, duplicateId=$duplicateId, ids=$ids, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, rating=$rating, timeZone=$timeZone, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -168,6 +179,11 @@ class AssetBulkUpdateDto {
     } else {
     //  json[r'rating'] = null;
     }
+    if (this.timeZone != null) {
+      json[r'timeZone'] = this.timeZone;
+    } else {
+    //  json[r'timeZone'] = null;
+    }
     if (this.visibility != null) {
       json[r'visibility'] = this.visibility;
     } else {
@@ -196,6 +212,7 @@ class AssetBulkUpdateDto {
         latitude: num.parse('${json[r'latitude']}'),
         longitude: num.parse('${json[r'longitude']}'),
         rating: num.parse('${json[r'rating']}'),
+        timeZone: mapValueOfType<String>(json, r'timeZone'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),
       );
     }

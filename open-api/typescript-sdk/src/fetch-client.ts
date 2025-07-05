@@ -464,6 +464,7 @@ export type AssetBulkUpdateDto = {
     latitude?: number;
     longitude?: number;
     rating?: number;
+    timeZone?: string;
     visibility?: AssetVisibility;
 };
 export type AssetBulkUploadCheckItem = {

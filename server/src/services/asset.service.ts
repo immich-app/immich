@@ -113,7 +113,7 @@ export class AssetService extends BaseService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, description, dateTimeOriginal, dateTimeRelative, latitude, longitude, ...options } = dto;
+    const { ids, description, dateTimeOriginal, dateTimeRelative, timeZone, latitude, longitude, ...options } = dto;
     await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids });
 
     const staticValuesChanged =
@@ -124,17 +124,33 @@ export class AssetService extends BaseService {
     }
 
     const dateTimes =
-      dateTimeRelative !== undefined && dateTimeRelative !== 0
-        ? await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative)
+      (dateTimeRelative !== undefined && dateTimeRelative !== 0) || timeZone !== undefined
+        ? await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone)
         : null;
 
-    if (staticValuesChanged || dateTimes !== null) {
-      const entries: JobItem[] = (dateTimes ?? ids).map((entry: any) => ({
+    let dateTimesWithTimezone: { assetId: string; dateTimeOriginal: string | null }[] | null = null;
+
+    if (dateTimes !== null) {
+      dateTimesWithTimezone = [];
+      for (const dt of dateTimes) {
+        let dateTime = DateTime.fromISO(dt.dateTimeOriginal?.toISOString()!);
+        if (dt.timeZone) {
+          dateTime = dateTime.setZone(dt.timeZone);
+        }
+        dateTimesWithTimezone.push({
+          assetId: dt.assetId,
+          dateTimeOriginal: dateTime.toISO(),
+        });
+      }
+    }
+
+    if (staticValuesChanged || dateTimesWithTimezone) {
+      const entries: JobItem[] = (dateTimesWithTimezone ?? ids).map((entry: any) => ({
         name: JobName.SIDECAR_WRITE,
         data: {
           id: entry.assetId ?? entry,
           description,
-          dateTimeOriginal: entry.dateTimeOriginal?.toISOString() ?? dateTimeOriginal,
+          dateTimeOriginal: entry.dateTimeOriginal ?? dateTimeOriginal,
           latitude,
           longitude,
         },

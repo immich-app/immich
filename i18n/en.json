@@ -793,6 +793,7 @@
   "edit_date": "Edit date",
   "edit_date_and_time": "Edit date and time",
   "edit_date_and_time_by_offset": "Change date by offset",
+  "edit_date_and_time_by_offset_interval": "New date range: {from} - {to}",
   "edit_description": "Edit description",
   "edit_description_prompt": "Please select a new description:",
   "edit_exclusion_pattern": "Edit exclusion pattern",

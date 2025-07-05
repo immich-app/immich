@@ -9,6 +9,7 @@ import {
   IsNotEmpty,
   IsPositive,
   IsString,
+  IsTimeZone,
   Max,
   Min,
   ValidateIf,
@@ -35,7 +36,6 @@ export class UpdateAssetBase {
   @ValidateAssetVisibility({ optional: true })
   visibility?: AssetVisibility;
 
-  @IsNotSiblingOf(['dateTimeRelative'])
   @Optional()
   @IsDateString()
   dateTimeOriginal?: string;
@@ -72,6 +72,11 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
   @Optional()
   @IsInt()
   dateTimeRelative?: number;
+
+  @IsNotSiblingOf(['dateTimeOriginal'])
+  @IsTimeZone()
+  @Optional()
+  timeZone?: string;
 }
 
 export class UpdateAssetDto extends UpdateAssetBase {

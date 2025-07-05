@@ -9108,6 +9108,9 @@
             "minimum": -1,
             "type": "number"
           },
+          "timeZone": {
+            "type": "string"
+          },
           "visibility": {
             "allOf": [
               {
