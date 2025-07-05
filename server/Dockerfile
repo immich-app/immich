@@ -3,28 +3,31 @@ FROM ghcr.io/immich-app/base-server-dev:commit-a050847fdf07f1e492919810121419f65
 
 # This next line is temporary, until the docker images are tagged properly. Currently, the dev tag is the same as the prod tag.
 RUN apt-get update && apt-get install --no-install-recommends -yqq tini make
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
+  CI=1
+
 WORKDIR /usr/src/app
 COPY ./server/package* ./server/
-WORKDIR /usr/src/app/server
+COPY Makefile ./package* ./pnpm* ./
+
 RUN echo "umask 000" >> /etc/profile && \
   echo "umask 000" >> /etc/bash.bashrc && \
-  umask 000 && \
   chmod o+wx /usr/src/app && \
   chmod o+wx /usr/src/app/server && \
-  npm ci && \
-  # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
-  # they're marked as optional dependencies, so we need to copy them manually after pruning
-  rm -rf node_modules/@img/sharp-libvips* && \
-  rm -rf node_modules/@img/sharp-linuxmusl-x64
+  umask 000 && mkdir -p /buildcache/pnpm-store && \
+  corepack enable pnpm && \
+  pnpm config set store-dir /buildcache/pnpm-store && \
+  SHARP_IGNORE_GLOBAL_LIBVIPS=true make setup-server-dev
+
 ENV PATH="${PATH}:/usr/src/app/bin" \
   IMMICH_ENV=development \
   NVIDIA_DRIVER_CAPABILITIES=all \
   NVIDIA_VISIBLE_DEVICES=all
+
 ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 FROM dev AS dev-container-server
 
-RUN rm -rf /usr/src/app
 RUN apt-get update && \
   apt-get install sudo inetutils-ping openjdk-11-jre-headless \
   vim nano \
@@ -37,7 +40,7 @@ COPY --chmod=777 ../.devcontainer/server/*.sh /immich-devcontainer/
 
 COPY .. /tmp/create-dep-cache/
 WORKDIR /tmp/create-dep-cache
-RUN make ci-all && rm -rf /tmp/create-dep-cache
+RUN make setup-server-dev setup-web-dev && rm -rf /tmp/create-dep-cache
 
 FROM dev-container-server AS dev-container-mobile
 
@@ -76,27 +79,33 @@ COPY --chmod=777 ../.devcontainer/mobile/container-mobile-post-create.sh /immich
 
 RUN dart --disable-analytics
 
-FROM dev AS prod
+# server production build
+FROM dev AS server-prod
 
-COPY server .
-RUN npm run build
-RUN npm prune --omit=dev --omit=optional
-COPY --from=dev /usr/src/app/server/node_modules/@img ./node_modules/@img
-COPY --from=dev /usr/src/app/server/node_modules/exiftool-vendored.pl ./node_modules/exiftool-vendored.pl
+WORKDIR /usr/src/app
+RUN pnpm --filter immich install --frozen-lockfile && \
+  pnpm --filter immich build && \
+  pnpm --filter immich --prod --no-optional deploy /output/server-pruned
 
-# web build
-FROM node:22.16.0-alpine3.20@sha256:2289fb1fba0f4633b08ec47b94a89c7e20b829fc5679f9b7b298eaa2f1ed8b7e AS web
+# web production build
+FROM dev AS web-prod
 
 WORKDIR /usr/src/app
 COPY ./web ./web/
 COPY ./i18n ./i18n/
 COPY ./open-api/typescript-sdk ./open-api/typescript-sdk/
+RUN pnpm install --filter @immich/sdk --filter immich-web --frozen-lockfile && \
+  pnpm --filter @immich/sdk build && \
+  pnpm --filter immich-web build
 
-WORKDIR /usr/src/app/open-api/typescript-sdk
-RUN npm ci && npm run build
+FROM dev AS cli-prod
 
-WORKDIR /usr/src/app/web
-RUN npm ci && npm run build
+COPY ./cli ./cli/
+COPY ./open-api/typescript-sdk ./open-api/typescript-sdk/
+RUN pnpm install --filter @immich/sdk --filter @immich/cli --frozen-lockfile && \
+  pnpm --filter @immich/sdk build && \
+  pnpm --filter @immich/cli build && \
+  pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 
 # prod build
 FROM ghcr.io/immich-app/base-server-prod:commit-a050847fdf07f1e492919810121419f65ec9eb45
@@ -105,17 +114,19 @@ WORKDIR /usr/src/app
 ENV NODE_ENV=production \
   NVIDIA_DRIVER_CAPABILITIES=all \
   NVIDIA_VISIBLE_DEVICES=all
-COPY --from=prod /usr/src/app/server/node_modules ./node_modules
-COPY --from=prod /usr/src/app/server/dist ./dist
-COPY --from=prod /usr/src/app/server/bin ./bin
-COPY --from=web /usr/src/app/web/build /build/www
-COPY ./server/resources resources
-COPY ./server/package.json server/package-lock.json ./
-COPY ./server/start*.sh ./
-COPY "docker/scripts/get-cpus.sh" ./
-RUN npm install -g @immich/cli && npm cache clean --force
+
+COPY --from=server-prod /output/server-pruned/dist ./dist
+COPY --from=server-prod /output/server-pruned/bin ./bin
+COPY --from=server-prod /output/server-pruned/package.json ./
+COPY --from=server-prod /output/server-pruned/node_modules/ ./node_modules
+COPY --from=web-prod /usr/src/app/web/build /build/www
+COPY --from=cli-prod /output/cli-pruned ./cli
+RUN ln -S ./cli/bin/immich /usr/src/app/bin/immich
+COPY server/resources ./resources/
+COPY server/start*.sh docker/scripts/get-cpus.sh ./
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
+
 ENV PATH="${PATH}:/usr/src/app/bin"
 
 ARG BUILD_ID

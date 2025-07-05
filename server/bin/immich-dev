@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-cd /usr/src/app/server || exit 1
-npm install
-node ./node_modules/.bin/nest start --debug "0.0.0.0:9230" --watch -- "$@"
+cd /usr/src/app || exit
+FROZEN=1 make setup-server-dev
+pnpm --filter immich exec nest start --debug "0.0.0.0:9230" --watch -- "$@"
