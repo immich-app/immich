@@ -1,0 +1,11 @@
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:initialLayout="@layout/glance_default_loading_layout"
+  android:minWidth="110dp"
+  android:minHeight="110dp"
+  android:resizeMode="horizontal|vertical"
+  android:updatePeriodMillis="1200000"
+  android:configure="app.alextran.immich.widget.configure.RandomConfigure"
+  android:widgetFeatures="reconfigurable|configuration_optional"
+  tools:targetApi="28"
+  />
