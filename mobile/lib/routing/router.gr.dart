@@ -671,6 +671,22 @@ class DriftMemoryRouteArgs {
 }
 
 /// generated route for
+/// [DriftTrashPage]
+class DriftTrashRoute extends PageRouteInfo<void> {
+  const DriftTrashRoute({List<PageRouteInfo>? children})
+      : super(DriftTrashRoute.name, initialChildren: children);
+
+  static const String name = 'DriftTrashRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftTrashPage();
+    },
+  );
+}
+
+/// generated route for
 /// [EditImagePage]
 class EditImageRoute extends PageRouteInfo<EditImageRouteArgs> {
   EditImageRoute({
