@@ -12,6 +12,7 @@ class RemoteAsset extends BaseAsset {
   final String id;
   final String? localId;
   final String? thumbHash;
+  final DateTime? localDateTime;
   final AssetVisibility visibility;
   final String ownerId;
 
@@ -29,6 +30,7 @@ class RemoteAsset extends BaseAsset {
     super.durationInSeconds,
     super.isFavorite = false,
     this.thumbHash,
+    this.localDateTime,
     this.visibility = AssetVisibility.timeline,
   });
 
@@ -54,6 +56,7 @@ class RemoteAsset extends BaseAsset {
     localId: ${localId ?? "<NA>"},
     isFavorite: $isFavorite,
     thumbHash: ${thumbHash ?? "<NA>"},
+    localDateTime: ${localDateTime ?? "<NA>"},
     visibility: $visibility,
  }''';
   }
@@ -67,6 +70,7 @@ class RemoteAsset extends BaseAsset {
         ownerId == other.ownerId &&
         localId == other.localId &&
         thumbHash == other.thumbHash &&
+        localDateTime == other.localDateTime &&
         visibility == other.visibility;
   }
 
@@ -77,6 +81,7 @@ class RemoteAsset extends BaseAsset {
       ownerId.hashCode ^
       localId.hashCode ^
       thumbHash.hashCode ^
+      localDateTime.hashCode ^
       visibility.hashCode;
 
   RemoteAsset copyWith({
