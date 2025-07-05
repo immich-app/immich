@@ -619,6 +619,22 @@ class DriftAlbumsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftArchivePage]
+class DriftArchiveRoute extends PageRouteInfo<void> {
+  const DriftArchiveRoute({List<PageRouteInfo>? children})
+      : super(DriftArchiveRoute.name, initialChildren: children);
+
+  static const String name = 'DriftArchiveRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftArchivePage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftMemoryPage]
 class DriftMemoryRoute extends PageRouteInfo<DriftMemoryRouteArgs> {
   DriftMemoryRoute({
