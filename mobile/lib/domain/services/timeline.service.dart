@@ -59,7 +59,7 @@ class TimelineFactory {
             .getArchiveBucketAssets(offset: offset, count: count),
         bucketSource: () =>
             _timelineRepository.watchArchiveBucket(groupBy: groupBy),
-  );
+      );
 }
 
 class TimelineService {

@@ -14,9 +14,8 @@ class DriftArchivePage extends StatelessWidget {
       overrides: [
         timelineServiceProvider.overrideWith(
           (ref) {
-            final timelineService = ref
-                .watch(timelineFactoryProvider)
-                .archive();
+            final timelineService =
+                ref.watch(timelineFactoryProvider).archive();
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },

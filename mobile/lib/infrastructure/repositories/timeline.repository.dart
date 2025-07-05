@@ -219,7 +219,10 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }) {
     if (groupBy == GroupAssetsBy.none) {
       return _db.remoteAssetEntity
-          .count(where: (row) => row.visibility.equals(AssetVisibility.archive.index))
+          .count(
+            where: (row) =>
+                row.visibility.equals(AssetVisibility.archive.index),
+          )
           .map(_generateBuckets)
           .watchSingle();
     }
@@ -229,7 +232,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
     final query = _db.remoteAssetEntity.selectOnly()
       ..addColumns([assetCountExp, dateExp])
-      ..where(_db.remoteAssetEntity.visibility.equals(AssetVisibility.archive.index))
+      ..where(
+        _db.remoteAssetEntity.visibility.equals(AssetVisibility.archive.index),
+      )
       ..groupBy([dateExp])
       ..orderBy([OrderingTerm.desc(dateExp)]);
 
