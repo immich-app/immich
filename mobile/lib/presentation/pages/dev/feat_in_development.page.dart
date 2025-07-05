@@ -15,6 +15,18 @@ import 'package:immich_mobile/routing/router.dart';
 
 final _features = [
   _Feature(
+    name: 'Dev Logger',
+    icon: Icons.developer_mode_rounded,
+    onTap: (ctx, __) => ctx.pushRoute(
+      DriftAssetSelectionTimelineRoute(
+        selectedIds: [
+          '0f4535cc-4123-4cd4-856e-f5dfce35ca82',
+          'eea861c5-4641-4901-8151-83cd27ccb45a'
+        ],
+      ),
+    ),
+  ),
+  _Feature(
     name: 'Sync Local',
     icon: Icons.photo_album_rounded,
     onTap: (_, ref) => ref.read(backgroundSyncProvider).syncLocal(),

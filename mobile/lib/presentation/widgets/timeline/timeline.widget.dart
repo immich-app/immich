@@ -20,10 +20,19 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 
 class Timeline extends StatelessWidget {
-  const Timeline({super.key, this.topSliverWidget, this.topSliverWidgetHeight});
+  const Timeline({
+    super.key,
+    this.topSliverWidget,
+    this.topSliverWidgetHeight,
+    this.lockSelectionIds = const [],
+    this.selectionMode = false,
+  });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
+
+  final bool selectionMode;
+  final List<String> lockSelectionIds;
 
   @override
   Widget build(BuildContext context) {
@@ -38,12 +47,14 @@ class Timeline extends StatelessWidget {
                 columnCount: ref.watch(
                   settingsProvider.select((s) => s.get(Setting.tilesPerRow)),
                 ),
+                lockSelectionIds: lockSelectionIds,
               ),
             ),
           ],
           child: _SliverTimeline(
             topSliverWidget: topSliverWidget,
             topSliverWidgetHeight: topSliverWidgetHeight,
+            selectionMode: selectionMode,
           ),
         ),
       ),
@@ -52,10 +63,15 @@ class Timeline extends StatelessWidget {
 }
 
 class _SliverTimeline extends ConsumerStatefulWidget {
-  const _SliverTimeline({this.topSliverWidget, this.topSliverWidgetHeight});
+  const _SliverTimeline({
+    this.topSliverWidget,
+    this.topSliverWidgetHeight,
+    this.selectionMode = false,
+  });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
+  final bool selectionMode;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
@@ -105,11 +121,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   primary: true,
                   cacheExtent: maxHeight * 2,
                   slivers: [
-                    const ImmichSliverAppBar(
-                      floating: true,
-                      pinned: false,
-                      snap: false,
-                    ),
+                    if (!widget.selectionMode)
+                      const ImmichSliverAppBar(
+                        floating: true,
+                        pinned: false,
+                        snap: false,
+                      ),
                     if (widget.topSliverWidget != null) widget.topSliverWidget!,
                     _SliverSegmentedList(
                       segments: segments,

@@ -619,6 +619,55 @@ class DriftAlbumsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftAssetSelectionTimelinePage]
+class DriftAssetSelectionTimelineRoute
+    extends PageRouteInfo<DriftAssetSelectionTimelineRouteArgs> {
+  DriftAssetSelectionTimelineRoute({
+    Key? key,
+    List<String> selectedIds = const [],
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftAssetSelectionTimelineRoute.name,
+          args: DriftAssetSelectionTimelineRouteArgs(
+            key: key,
+            selectedIds: selectedIds,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftAssetSelectionTimelineRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftAssetSelectionTimelineRouteArgs>(
+        orElse: () => const DriftAssetSelectionTimelineRouteArgs(),
+      );
+      return DriftAssetSelectionTimelinePage(
+        key: args.key,
+        lockSelectionIds: args.selectedIds,
+      );
+    },
+  );
+}
+
+class DriftAssetSelectionTimelineRouteArgs {
+  const DriftAssetSelectionTimelineRouteArgs({
+    this.key,
+    this.selectedIds = const [],
+  });
+
+  final Key? key;
+
+  final List<String> selectedIds;
+
+  @override
+  String toString() {
+    return 'DriftAssetSelectionTimelineRouteArgs{key: $key, selectedIds: $selectedIds}';
+  }
+}
+
+/// generated route for
 /// [DriftMemoryPage]
 class DriftMemoryRoute extends PageRouteInfo<DriftMemoryRouteArgs> {
   DriftMemoryRoute({
