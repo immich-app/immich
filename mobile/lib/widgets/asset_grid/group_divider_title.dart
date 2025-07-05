@@ -6,6 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 
@@ -28,6 +29,7 @@ class GroupDividerTitle extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appSettingService = ref.watch(appSettingsServiceProvider);
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final groupBy = useState(GroupAssetsBy.day);
 
     useEffect(
@@ -69,22 +71,23 @@ class GroupDividerTitle extends HookConsumerWidget {
                   ),
           ),
           const Spacer(),
-          GestureDetector(
-            onTap: handleTitleIconClick,
-            child: multiselectEnabled && selected
-                ? Icon(
-                    Icons.check_circle_rounded,
-                    color: context.primaryColor,
-                    semanticLabel:
-                        "unselect_all_in".tr(namedArgs: {"group": text}),
-                  )
-                : Icon(
-                    Icons.check_circle_outline_rounded,
-                    color: context.colorScheme.onSurfaceSecondary,
-                    semanticLabel:
-                        "select_all_in".tr(namedArgs: {"group": text}),
-                  ),
-          ),
+          if (!isReadonlyModeEnabled)
+            GestureDetector(
+              onTap: handleTitleIconClick,
+              child: multiselectEnabled && selected
+                  ? Icon(
+                      Icons.check_circle_rounded,
+                      color: context.primaryColor,
+                      semanticLabel:
+                          "unselect_all_in".tr(namedArgs: {"group": text}),
+                    )
+                  : Icon(
+                      Icons.check_circle_outline_rounded,
+                      color: context.colorScheme.onSurfaceSecondary,
+                      semanticLabel:
+                          "select_all_in".tr(namedArgs: {"group": text}),
+                    ),
+            ),
         ],
       ),
     );

@@ -90,6 +90,11 @@ enum AppSettingsEnum<T> {
     null,
     true,
   ),
+  readonlyModeEnabled<bool>(
+    StoreKey.readonlyModeEnabled,
+    "readonlyModeEnabled",
+    false,
+  ),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

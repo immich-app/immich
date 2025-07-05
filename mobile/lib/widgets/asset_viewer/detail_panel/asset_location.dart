@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/exif_map.dart';
 
@@ -19,6 +20,7 @@ class AssetLocation extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assetWithExif = ref.watch(assetDetailProvider(asset));
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final ExifInfo? exifInfo = (assetWithExif.value ?? asset).exifInfo;
     final hasCoordinates = exifInfo?.hasCoordinates ?? false;
 
@@ -28,7 +30,7 @@ class AssetLocation extends HookConsumerWidget {
 
     // Guard no lat/lng
     if (!hasCoordinates) {
-      return asset.isRemote
+      return asset.isRemote && !isReadonlyModeEnabled
           ? ListTile(
               minLeadingWidth: 0,
               contentPadding: const EdgeInsets.all(0),
@@ -78,7 +80,7 @@ class AssetLocation extends HookConsumerWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ).tr(),
-              if (asset.isRemote)
+              if (asset.isRemote && !isReadonlyModeEnabled)
                 IconButton(
                   onPressed: editLocation,
                   icon: const Icon(Icons.edit_outlined),
