@@ -96,6 +96,11 @@ final _features = [
     icon: Icons.timeline_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
   ),
+  _Feature(
+    name: 'Locked Folder',
+    icon: Icons.lock_outline_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftLockedFolderRoute()),
+  ),
 ];
 
 @RoutePage()
