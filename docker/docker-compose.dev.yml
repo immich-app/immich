@@ -35,6 +35,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
+    user: ${S_UID:-0}:${S_GID:-0}
     environment:
       IMMICH_REPOSITORY: immich-app/immich
       IMMICH_REPOSITORY_URL: https://github.com/immich-app/immich
@@ -66,8 +67,8 @@ services:
   immich-web:
     container_name: immich_web
     image: immich-web-dev:latest
-    # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
-    # user: 0:0
+    # user: 0:0 needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
+    user: ${W_UID:-1000}:${W_GID:-1000}
     build:
       context: ../
       dockerfile: web/Dockerfile

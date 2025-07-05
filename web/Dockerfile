@@ -9,7 +9,10 @@ COPY --chown=node:node ./open-api ./open-api/
 COPY --chown=node:node Makefile ./
 
 WORKDIR /usr/src/app/web
-RUN npm ci
+RUN umask 000 && \
+  find /usr/src/app -type d -exec chmod o+rwx {} \; && \
+  find /usr/src/app -type f -exec chmod o+rw {} \; && \
+  npm ci
 
 ENV CHOKIDAR_USEPOLLING=true
 EXPOSE 24678
