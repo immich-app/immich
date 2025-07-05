@@ -12,6 +12,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:logging/logging.dart';
@@ -69,8 +70,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (error, stackTrace) {
-      _logger.severe('Error: SyncPartnerDeleteV1', error, stackTrace);
+    } catch (error, stack) {
+      _logger.severe('Error: SyncPartnerDeleteV1', error, stack);
       rethrow;
     }
   }
@@ -92,8 +93,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (error, stackTrace) {
-      _logger.severe('Error: SyncPartnerV1', error, stackTrace);
+    } catch (error, stack) {
+      _logger.severe('Error: SyncPartnerV1', error, stack);
       rethrow;
     }
   }
@@ -104,10 +105,10 @@ class SyncStreamRepository extends DriftDatabaseRepository {
   }) async {
     try {
       await _db.remoteAssetEntity.deleteWhere(
-        (row) => row.id.isIn(data.map((error) => error.assetId)),
+        (row) => row.id.isIn(data.map((e) => e.assetId)),
       );
-    } catch (error, stackTrace) {
-      _logger.severe('Error: deleteAssetsV1 - $debugLabel', error, stackTrace);
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAssetsV1 - $debugLabel', error, stack);
       rethrow;
     }
   }
@@ -142,8 +143,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (error, stackTrace) {
-      _logger.severe('Error: updateAssetsV1 - $debugLabel', error, stackTrace);
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetsV1 - $debugLabel', error, stack);
       rethrow;
     }
   }
@@ -186,11 +187,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (error, stackTrace) {
+    } catch (error, stack) {
       _logger.severe(
         'Error: updateAssetsExifV1 - $debugLabel',
         error,
-        stackTrace,
+        stack,
       );
       rethrow;
     }
@@ -201,8 +202,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       await _db.remoteAlbumEntity.deleteWhere(
         (row) => row.id.isIn(data.map((e) => e.albumId)),
       );
-    } catch (error, stackTrace) {
-      _logger.severe('Error: deleteAlbumsV1', error, stackTrace);
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAlbumsV1', error, stack);
       rethrow;
     }
   }
@@ -229,8 +230,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (error, stackTrace) {
-      _logger.severe('Error: updateAlbumsV1', error, stackTrace);
+    } catch (error, stack) {
+      _logger.severe('Error: updateAlbumsV1', error, stack);
       rethrow;
     }
   }
@@ -248,8 +249,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (error, stackTrace) {
-      _logger.severe('Error: deleteAlbumUsersV1', error, stackTrace);
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAlbumUsersV1', error, stack);
       rethrow;
     }
   }
@@ -275,11 +276,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (error, stackTrace) {
+    } catch (error, stack) {
       _logger.severe(
         'Error: updateAlbumUsersV1 - $debugLabel',
         error,
-        stackTrace,
+        stack,
       );
       rethrow;
     }
@@ -300,8 +301,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (error, stackTrace) {
-      _logger.severe('Error: deleteAlbumToAssetsV1', error, stackTrace);
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAlbumToAssetsV1', error, stack);
       rethrow;
     }
   }
@@ -325,11 +326,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (error, stackTrace) {
+    } catch (error, stack) {
       _logger.severe(
         'Error: updateAlbumToAssetsV1 - $debugLabel',
         error,
-        stackTrace,
+        stack,
       );
       rethrow;
     }
@@ -359,8 +360,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (error, stackTrace) {
-      _logger.severe('Error: updateMemoriesV1', error, stackTrace);
+    } catch (error, stack) {
+      _logger.severe('Error: updateMemoriesV1', error, stack);
       rethrow;
     }
   }
@@ -370,8 +371,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       await _db.memoryEntity.deleteWhere(
         (row) => row.id.isIn(data.map((e) => e.memoryId)),
       );
-    } catch (error, stackTrace) {
-      _logger.severe('Error: deleteMemoriesV1', error, stackTrace);
+    } catch (error, stack) {
+      _logger.severe('Error: deleteMemoriesV1', error, stack);
       rethrow;
     }
   }
@@ -392,8 +393,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (error, stackTrace) {
-      _logger.severe('Error: updateMemoryAssetsV1', error, stackTrace);
+    } catch (error, stack) {
+      _logger.severe('Error: updateMemoryAssetsV1', error, stack);
       rethrow;
     }
   }
@@ -413,8 +414,49 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (error, stackTrace) {
-      _logger.severe('Error: deleteMemoryAssetsV1', error, stackTrace);
+    } catch (error, stack) {
+      _logger.severe('Error: deleteMemoryAssetsV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateStacksV1(
+    Iterable<SyncStackV1> data, {
+    String debugLabel = 'user',
+  }) async {
+    try {
+      await _db.batch((batch) {
+        for (final stack in data) {
+          final companion = StackEntityCompanion(
+            createdAt: Value(stack.createdAt),
+            updatedAt: Value(stack.updatedAt),
+            ownerId: Value(stack.ownerId),
+            primaryAssetId: Value(stack.primaryAssetId),
+          );
+
+          batch.insert(
+            _db.stackEntity,
+            companion.copyWith(id: Value(stack.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateStacksV1 - $debugLabel', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteStacksV1(
+    Iterable<SyncStackDeleteV1> data, {
+    String debugLabel = 'user',
+  }) async {
+    try {
+      await _db.stackEntity.deleteWhere(
+        (row) => row.id.isIn(data.map((e) => e.stackId)),
+      );
+    } catch (error, stack) {
+      _logger.severe('Error: deleteStacksV1 - $debugLabel', error, stack);
       rethrow;
     }
   }
@@ -467,7 +509,7 @@ extension on String {
   Duration? toDuration() {
     try {
       final parts = split(':')
-          .map((error) => double.parse(error).toInt())
+          .map((e) => double.parse(e).toInt())
           .toList(growable: false);
 
       return Duration(hours: parts[0], minutes: parts[1], seconds: parts[2]);

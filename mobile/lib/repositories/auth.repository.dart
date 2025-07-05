@@ -40,6 +40,9 @@ class AuthRepository extends DatabaseRepository {
         _drift.remoteAlbumEntity.deleteAll(),
         _drift.remoteAlbumAssetEntity.deleteAll(),
         _drift.remoteAlbumUserEntity.deleteAll(),
+        _drift.memoryEntity.deleteAll(),
+        _drift.memoryAssetEntity.deleteAll(),
+        _drift.stackEntity.deleteAll(),
       ]);
     });
   }

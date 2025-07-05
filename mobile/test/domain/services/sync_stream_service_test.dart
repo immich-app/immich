@@ -89,6 +89,18 @@ void main() {
         .thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteMemoryAssetsV1(any()))
         .thenAnswer(successHandler);
+    when(
+      () => mockSyncStreamRepo.updateStacksV1(
+        any(),
+        debugLabel: any(named: 'debugLabel'),
+      ),
+    ).thenAnswer(successHandler);
+    when(
+      () => mockSyncStreamRepo.deleteStacksV1(
+        any(),
+        debugLabel: any(named: 'debugLabel'),
+      ),
+    ).thenAnswer(successHandler);
 
     sut = SyncStreamService(
       syncApiRepository: mockSyncApiRepo,
