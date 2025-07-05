@@ -43,6 +43,23 @@ export class MemoryRepository implements IBulkAsset {
       .where('ownerId', '=', ownerId);
   }
 
+  searchBuilderMemoryAssets(ownerId: string, dto: MemorySearchDto) {
+    return this.searchBuilder(ownerId, dto)
+      .select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('assets')
+            .selectAll('assets')
+            .innerJoin('memories_assets_assets', 'assets.id', 'memories_assets_assets.assetsId')
+            .whereRef('memories_assets_assets.memoriesId', '=', 'memories.id')
+            .orderBy('assets.fileCreatedAt', 'asc')
+            .where('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
+            .where('assets.deletedAt', 'is', null),
+        ).as('assets'),
+      )
+      .selectAll('memories');
+  }
+
   @GenerateSql(
     { params: [DummyValue.UUID, {}] },
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
@@ -58,21 +75,19 @@ export class MemoryRepository implements IBulkAsset {
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
   )
   search(ownerId: string, dto: MemorySearchDto) {
-    return this.searchBuilder(ownerId, dto)
-      .select((eb) =>
-        jsonArrayFrom(
-          eb
-            .selectFrom('assets')
-            .selectAll('assets')
-            .innerJoin('memories_assets_assets', 'assets.id', 'memories_assets_assets.assetsId')
-            .whereRef('memories_assets_assets.memoriesId', '=', 'memories.id')
-            .orderBy('assets.fileCreatedAt', 'asc')
-            .where('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
-            .where('assets.deletedAt', 'is', null),
-        ).as('assets'),
-      )
-      .selectAll('memories')
+    return this.searchBuilderMemoryAssets(ownerId, dto)
       .orderBy('memoryAt', 'desc')
+      .execute();
+  }
+
+  @GenerateSql(
+    { params: [DummyValue.UUID, {}] },
+    { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
+  )
+  getRandom(ownerId: string, dto: MemorySearchDto, size = 20) {
+    return this.searchBuilderMemoryAssets(ownerId, dto)
+      .orderBy(sql`RANDOM()`)
+      .limit(size)
       .execute();
   }
 

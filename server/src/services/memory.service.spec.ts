@@ -282,4 +282,24 @@ describe(MemoryService.name, () => {
       expect(mocks.memory.removeAssetIds).toHaveBeenCalledWith(memory.id, [asset.id]);
     });
   });
+
+  describe('getRandom', () => {
+    it('should get random memories', async () => {
+      const [userId] = newUuids();
+      const asset = factory.asset();
+      const memory1 = factory.memory({ ownerId: userId, assets: [asset] });
+      const memory2 = factory.memory({ ownerId: userId });
+
+      mocks.memory.getRandom.mockResolvedValue([memory1, memory2]);
+
+      await expect(sut.getRandom(factory.auth({ user: { id: userId } }), { size: 2 })).resolves.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: memory1.id, assets: [expect.objectContaining({ id: asset.id })] }),
+          expect.objectContaining({ id: memory2.id, assets: [] }),
+        ]),
+      );
+
+      expect(mocks.memory.getRandom).toHaveBeenCalledWith(userId, { size: 2 }, 2);
+    });
+  });
 });

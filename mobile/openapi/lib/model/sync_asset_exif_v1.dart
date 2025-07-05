@@ -56,21 +56,21 @@ class SyncAssetExifV1 {
 
   String? exposureTime;
 
-  double? fNumber;
+  int? fNumber;
 
   int? fileSizeInByte;
 
-  double? focalLength;
+  int? focalLength;
 
-  double? fps;
+  int? fps;
 
   int? iso;
 
-  double? latitude;
+  int? latitude;
 
   String? lensModel;
 
-  double? longitude;
+  int? longitude;
 
   String? make;
 
@@ -293,14 +293,14 @@ class SyncAssetExifV1 {
         exifImageHeight: mapValueOfType<int>(json, r'exifImageHeight'),
         exifImageWidth: mapValueOfType<int>(json, r'exifImageWidth'),
         exposureTime: mapValueOfType<String>(json, r'exposureTime'),
-        fNumber: (mapValueOfType<num>(json, r'fNumber'))?.toDouble(),
+        fNumber: mapValueOfType<int>(json, r'fNumber'),
         fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
-        focalLength: (mapValueOfType<num>(json, r'focalLength'))?.toDouble(),
-        fps: (mapValueOfType<num>(json, r'fps'))?.toDouble(),
+        focalLength: mapValueOfType<int>(json, r'focalLength'),
+        fps: mapValueOfType<int>(json, r'fps'),
         iso: mapValueOfType<int>(json, r'iso'),
-        latitude: (mapValueOfType<num>(json, r'latitude'))?.toDouble(),
+        latitude: mapValueOfType<int>(json, r'latitude'),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
-        longitude: (mapValueOfType<num>(json, r'longitude'))?.toDouble(),
+        longitude: mapValueOfType<int>(json, r'longitude'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
         modifyDate: mapDateTime(json, r'modifyDate', r''),

@@ -122,8 +122,6 @@ Class | Method | HTTP request | Description
 *DeprecatedApi* | [**getRandom**](doc//DeprecatedApi.md#getrandom) | **GET** /assets/random | 
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
-*DuplicatesApi* | [**deleteDuplicate**](doc//DuplicatesApi.md#deleteduplicate) | **DELETE** /duplicates/{id} | 
-*DuplicatesApi* | [**deleteDuplicates**](doc//DuplicatesApi.md#deleteduplicates) | **DELETE** /duplicates | 
 *DuplicatesApi* | [**getAssetDuplicates**](doc//DuplicatesApi.md#getassetduplicates) | **GET** /duplicates | 
 *FacesApi* | [**createFace**](doc//FacesApi.md#createface) | **POST** /faces | 
 *FacesApi* | [**deleteFace**](doc//FacesApi.md#deleteface) | **DELETE** /faces/{id} | 
@@ -169,8 +167,6 @@ Class | Method | HTTP request | Description
 *PartnersApi* | [**removePartner**](doc//PartnersApi.md#removepartner) | **DELETE** /partners/{id} | 
 *PartnersApi* | [**updatePartner**](doc//PartnersApi.md#updatepartner) | **PUT** /partners/{id} | 
 *PeopleApi* | [**createPerson**](doc//PeopleApi.md#createperson) | **POST** /people | 
-*PeopleApi* | [**deletePeople**](doc//PeopleApi.md#deletepeople) | **DELETE** /people | 
-*PeopleApi* | [**deletePerson**](doc//PeopleApi.md#deleteperson) | **DELETE** /people/{id} | 
 *PeopleApi* | [**getAllPeople**](doc//PeopleApi.md#getallpeople) | **GET** /people | 
 *PeopleApi* | [**getPerson**](doc//PeopleApi.md#getperson) | **GET** /people/{id} | 
 *PeopleApi* | [**getPersonStatistics**](doc//PeopleApi.md#getpersonstatistics) | **GET** /people/{id}/statistics | 
@@ -466,8 +462,6 @@ Class | Method | HTTP request | Description
  - [SyncAckDto](doc//SyncAckDto.md)
  - [SyncAckSetDto](doc//SyncAckSetDto.md)
  - [SyncAlbumDeleteV1](doc//SyncAlbumDeleteV1.md)
- - [SyncAlbumToAssetDeleteV1](doc//SyncAlbumToAssetDeleteV1.md)
- - [SyncAlbumToAssetV1](doc//SyncAlbumToAssetV1.md)
  - [SyncAlbumUserDeleteV1](doc//SyncAlbumUserDeleteV1.md)
  - [SyncAlbumUserV1](doc//SyncAlbumUserV1.md)
  - [SyncAlbumV1](doc//SyncAlbumV1.md)
@@ -475,15 +469,9 @@ Class | Method | HTTP request | Description
  - [SyncAssetExifV1](doc//SyncAssetExifV1.md)
  - [SyncAssetV1](doc//SyncAssetV1.md)
  - [SyncEntityType](doc//SyncEntityType.md)
- - [SyncMemoryAssetDeleteV1](doc//SyncMemoryAssetDeleteV1.md)
- - [SyncMemoryAssetV1](doc//SyncMemoryAssetV1.md)
- - [SyncMemoryDeleteV1](doc//SyncMemoryDeleteV1.md)
- - [SyncMemoryV1](doc//SyncMemoryV1.md)
  - [SyncPartnerDeleteV1](doc//SyncPartnerDeleteV1.md)
  - [SyncPartnerV1](doc//SyncPartnerV1.md)
  - [SyncRequestType](doc//SyncRequestType.md)
- - [SyncStackDeleteV1](doc//SyncStackDeleteV1.md)
- - [SyncStackV1](doc//SyncStackV1.md)
  - [SyncStreamDto](doc//SyncStreamDto.md)
  - [SyncUserDeleteV1](doc//SyncUserDeleteV1.md)
  - [SyncUserV1](doc//SyncUserV1.md)
