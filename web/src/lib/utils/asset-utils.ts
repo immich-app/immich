@@ -360,7 +360,11 @@ export type StackResponse = {
   toDeleteIds: string[];
 };
 
-export const stackAssets = async (assets: { id: string }[], showNotification = true): Promise<StackResponse> => {
+export const stackAssets = async (
+  assets: { id: string }[],
+  showNotification = true,
+  merge = true,
+): Promise<StackResponse> => {
   if (assets.length < 2) {
     return { stack: undefined, toDeleteIds: [] };
   }
@@ -368,7 +372,7 @@ export const stackAssets = async (assets: { id: string }[], showNotification = t
   const $t = get(t);
 
   try {
-    const stack = await createStack({ stackCreateDto: { assetIds: assets.map(({ id }) => id) } });
+    const stack = await createStack({ stackCreateDto: { assetIds: assets.map(({ id }) => id), merge } });
     if (showNotification) {
       notificationController.show({
         message: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
