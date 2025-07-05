@@ -18,12 +18,22 @@ import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
+import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
 class Timeline extends StatelessWidget {
-  const Timeline({super.key, this.topSliverWidget, this.topSliverWidgetHeight});
+  const Timeline({
+    super.key,
+    this.topSliverWidget,
+    this.topSliverWidgetHeight,
+    this.lockSelectionIds = const [],
+    this.selectionMode = false,
+  });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
+
+  final bool selectionMode;
+  final List<String> lockSelectionIds;
 
   @override
   Widget build(BuildContext context) {
@@ -38,12 +48,14 @@ class Timeline extends StatelessWidget {
                 columnCount: ref.watch(
                   settingsProvider.select((s) => s.get(Setting.tilesPerRow)),
                 ),
+                lockSelectionIds: lockSelectionIds,
               ),
             ),
           ],
           child: _SliverTimeline(
             topSliverWidget: topSliverWidget,
             topSliverWidgetHeight: topSliverWidgetHeight,
+            selectionMode: selectionMode,
           ),
         ),
       ),
@@ -52,10 +64,15 @@ class Timeline extends StatelessWidget {
 }
 
 class _SliverTimeline extends ConsumerStatefulWidget {
-  const _SliverTimeline({this.topSliverWidget, this.topSliverWidgetHeight});
+  const _SliverTimeline({
+    this.topSliverWidget,
+    this.topSliverWidgetHeight,
+    this.selectionMode = false,
+  });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
+  final bool selectionMode;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
@@ -70,6 +87,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     super.initState();
     _reloadSubscription =
         EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.selectionMode) {
+        ref.read(multiSelectProvider.notifier).setForceEnable();
+      }
+    });
   }
 
   @override
@@ -84,6 +107,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     final asyncSegments = ref.watch(timelineSegmentProvider);
     final maxHeight =
         ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
+
     return asyncSegments.widgetWhen(
       onData: (segments) {
         final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
@@ -105,11 +129,14 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   primary: true,
                   cacheExtent: maxHeight * 2,
                   slivers: [
-                    const ImmichSliverAppBar(
-                      floating: true,
-                      pinned: false,
-                      snap: false,
-                    ),
+                    if (widget.selectionMode)
+                      const SelectionSliverAppBar()
+                    else
+                      const ImmichSliverAppBar(
+                        floating: true,
+                        pinned: false,
+                        snap: false,
+                      ),
                     if (widget.topSliverWidget != null) widget.topSliverWidget!,
                     _SliverSegmentedList(
                       segments: segments,
@@ -136,6 +163,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               ),
               Consumer(
                 builder: (_, consumerRef, child) {
+                  if (widget.selectionMode) {
+                    return const SizedBox.shrink();
+                  }
+
                   final isMultiSelectEnabled = consumerRef.watch(
                     multiSelectProvider.select(
                       (s) => s.isEnabled,
@@ -155,6 +186,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               ),
               Consumer(
                 builder: (_, consumerRef, child) {
+                  if (widget.selectionMode) {
+                    return const SizedBox.shrink();
+                  }
+
                   final isMultiSelectEnabled = consumerRef.watch(
                     multiSelectProvider.select(
                       (s) => s.isEnabled,

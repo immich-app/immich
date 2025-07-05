@@ -189,13 +189,34 @@ class _AssetTileWidget extends ConsumerWidget {
     ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
   }
 
+  bool _getLockSelectionStatus(WidgetRef ref) {
+    final selectedIds = ref.watch(
+      timelineArgsProvider.select((args) => args.lockSelectionIds),
+    );
+
+    if (selectedIds.isEmpty) {
+      return false;
+    }
+
+    final remoteAsset = asset as RemoteAsset;
+    return selectedIds.contains(remoteAsset.id);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final lockSelection = _getLockSelectionStatus(ref);
+
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () => _handleOnTap(context, ref, assetIndex, asset),
-        onLongPress: () => _handleOnLongPress(ref, asset),
-        child: ThumbnailTile(asset),
+        onTap: () => lockSelection
+            ? null
+            : _handleOnTap(context, ref, assetIndex, asset),
+        onLongPress: () =>
+            lockSelection ? null : _handleOnLongPress(ref, asset),
+        child: ThumbnailTile(
+          asset,
+          lockSelection: lockSelection,
+        ),
       ),
     );
   }
