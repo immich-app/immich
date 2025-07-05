@@ -8,7 +8,7 @@
     query: string;
     queryType: 'smart' | 'metadata' | 'description';
     personIds: SvelteSet<string>;
-    tagIds: SvelteSet<string>;
+    tagIds: SvelteSet<string> | null;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
     date: SearchDateFilter;
@@ -68,7 +68,12 @@
     query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
-    tagIds: new SvelteSet('tagIds' in searchQuery ? searchQuery.tagIds : []),
+    tagIds:
+      'tagIds' in searchQuery
+        ? searchQuery.tagIds === null
+          ? null
+          : new SvelteSet(searchQuery.tagIds)
+        : new SvelteSet(),
     location: {
       country: withNullAsUndefined(searchQuery.country),
       state: withNullAsUndefined(searchQuery.state),
@@ -86,7 +91,6 @@
       isArchive: searchQuery.visibility === AssetVisibility.Archive,
       isFavorite: searchQuery.isFavorite ?? false,
       isNotInAlbum: 'isNotInAlbum' in searchQuery ? (searchQuery.isNotInAlbum ?? false) : false,
-      isUntagged: 'isUntagged' in searchQuery ? (searchQuery.isUntagged ?? false) : false,
     },
     mediaType:
       searchQuery.type === AssetTypeEnum.Image
@@ -110,7 +114,6 @@
         isArchive: false,
         isFavorite: false,
         isNotInAlbum: false,
-        isUntagged: false,
       },
       mediaType: MediaType.All,
       rating: undefined,
@@ -141,9 +144,8 @@
       visibility: filter.display.isArchive ? AssetVisibility.Archive : undefined,
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
-      isUntagged: filter.display.isUntagged || undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
-      tagIds: filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
+      tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
       rating: filter.rating,
     };

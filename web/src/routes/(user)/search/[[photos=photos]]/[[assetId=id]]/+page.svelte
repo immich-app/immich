@@ -201,7 +201,6 @@
       visibility: $t('in_archive'),
       isFavorite: $t('favorite'),
       isNotInAlbum: $t('not_in_any_album'),
-      isUntagged: $t('untagged'),
       type: $t('media_type'),
       query: $t('context'),
       city: $t('city'),
@@ -234,7 +233,10 @@
     return personNames.join(', ');
   }
 
-  async function getTagNames(tagIds: string[]) {
+  async function getTagNames(tagIds: string[] | null) {
+    if (tagIds === null) {
+      return $t('untagged');
+    }
     const tagNames = await Promise.all(
       tagIds.map(async (tagId) => {
         const tag = await getTagById({ id: tagId });
@@ -344,7 +346,7 @@
               {#await getPersonName(value) then personName}
                 {personName}
               {/await}
-            {:else if searchKey === 'tagIds' && Array.isArray(value)}
+            {:else if searchKey === 'tagIds' && (Array.isArray(value) || value === null)}
               {#await getTagNames(value) then tagNames}
                 {tagNames}
               {/await}
