@@ -5,6 +5,7 @@ import 'package:drift/drift.dart' hide Column;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
@@ -17,14 +18,19 @@ final _features = [
   _Feature(
     name: 'Selection Mode Timeline',
     icon: Icons.developer_mode_rounded,
-    onTap: (ctx, ref) => ctx.pushRoute(
-      DriftAssetSelectionTimelineRoute(
-        selectedIds: [
-          // '0f4535cc-4123-4cd4-856e-f5dfce35ca82',
-          // 'eea861c5-4641-4901-8151-83cd27ccb45a',
-        ],
-      ),
-    ),
+    onTap: (ctx, ref) async {
+      final selectedAssets = await ctx.pushRoute<Set<BaseAsset>>(
+        DriftAssetSelectionTimelineRoute(
+          selectedIds: [],
+        ),
+      );
+
+      DLog.log(
+        "Selected ${selectedAssets?.length ?? 0} assets",
+      );
+
+      return Future.value();
+    },
   ),
   _Feature(
     name: 'Sync Local',

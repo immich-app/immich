@@ -63,7 +63,7 @@ class TimelineFactory {
             .getRemoteBucketAssets(timelineUsers, offset: offset, count: count),
         bucketSource: () => _timelineRepository.watchRemoteBucket(
           timelineUsers,
-          groupBy: groupBy,
+          groupBy: GroupAssetsBy.month,
         ),
       );
 }
