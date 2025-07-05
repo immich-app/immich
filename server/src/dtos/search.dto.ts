@@ -92,7 +92,7 @@ class BaseSearchDto {
   @ValidateUUID({ each: true, optional: true })
   personIds?: string[];
 
-  @ValidateUUID({ each: true, optional: true })
+  @ValidateUUID({ each: true, optional: true, nullable: true })
   tagIds?: string[] | null;
 
   @ValidateUUID({ each: true, optional: true })
