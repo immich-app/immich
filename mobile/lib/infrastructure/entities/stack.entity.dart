@@ -15,8 +15,7 @@ class StackEntity extends Table with DriftDefaultsMixin {
   TextColumn get ownerId =>
       text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
-  TextColumn get primaryAssetId =>
-      text().references(RemoteAssetEntity, #id)();
+  TextColumn get primaryAssetId => text().references(RemoteAssetEntity, #id)();
 
   @override
   Set<Column> get primaryKey => {id};
