@@ -15,13 +15,13 @@ import 'package:immich_mobile/routing/router.dart';
 
 final _features = [
   _Feature(
-    name: 'Dev Logger',
+    name: 'Selection Mode Timeline',
     icon: Icons.developer_mode_rounded,
-    onTap: (ctx, __) => ctx.pushRoute(
+    onTap: (ctx, ref) => ctx.pushRoute(
       DriftAssetSelectionTimelineRoute(
         selectedIds: [
-          '0f4535cc-4123-4cd4-856e-f5dfce35ca82',
-          'eea861c5-4641-4901-8151-83cd27ccb45a'
+          // '0f4535cc-4123-4cd4-856e-f5dfce35ca82',
+          // 'eea861c5-4641-4901-8151-83cd27ccb45a',
         ],
       ),
     ),

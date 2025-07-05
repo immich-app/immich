@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -12,10 +13,14 @@ final multiSelectProvider =
 
 class MultiSelectState {
   final Set<BaseAsset> selectedAssets;
+  final bool forceEnable;
 
-  const MultiSelectState({required this.selectedAssets});
+  const MultiSelectState({
+    required this.selectedAssets,
+    required this.forceEnable,
+  });
 
-  bool get isEnabled => selectedAssets.isNotEmpty;
+  bool get isEnabled => selectedAssets.isNotEmpty || forceEnable;
   bool get hasRemote => selectedAssets.any(
         (asset) =>
             asset.storage == AssetState.remote ||
@@ -25,25 +30,31 @@ class MultiSelectState {
         (asset) => asset.storage == AssetState.local,
       );
 
-  MultiSelectState copyWith({Set<BaseAsset>? selectedAssets}) {
+  MultiSelectState copyWith({
+    Set<BaseAsset>? selectedAssets,
+    bool? forceEnable,
+  }) {
     return MultiSelectState(
       selectedAssets: selectedAssets ?? this.selectedAssets,
+      forceEnable: forceEnable ?? this.forceEnable,
     );
   }
 
   @override
-  String toString() => 'MultiSelectState(selectedAssets: $selectedAssets)';
+  String toString() =>
+      'MultiSelectState(selectedAssets: $selectedAssets, forceEnable: $forceEnable)';
 
   @override
   bool operator ==(covariant MultiSelectState other) {
     if (identical(this, other)) return true;
-    final listEquals = const DeepCollectionEquality().equals;
+    final setEquals = const DeepCollectionEquality().equals;
 
-    return listEquals(other.selectedAssets, selectedAssets);
+    return setEquals(other.selectedAssets, selectedAssets) &&
+        other.forceEnable == forceEnable;
   }
 
   @override
-  int get hashCode => selectedAssets.hashCode;
+  int get hashCode => selectedAssets.hashCode ^ forceEnable.hashCode;
 }
 
 class MultiSelectNotifier extends Notifier<MultiSelectState> {
@@ -51,7 +62,10 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
 
   @override
   MultiSelectState build() {
-    return const MultiSelectState(selectedAssets: {});
+    return const MultiSelectState(
+      selectedAssets: {},
+      forceEnable: false,
+    );
   }
 
   void selectAsset(BaseAsset asset) {
@@ -83,7 +97,10 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   }
 
   void reset() {
-    state = const MultiSelectState(selectedAssets: {});
+    state = const MultiSelectState(
+      selectedAssets: {},
+      forceEnable: false,
+    );
   }
 
   /// Bucket bulk operations
@@ -130,6 +147,15 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     }
 
     state = state.copyWith(selectedAssets: selectedAssets);
+  }
+
+  void setForceEnable() {
+    state = state.copyWith(forceEnable: true);
+    print("setForceEnable enabled: $state");
+  }
+
+  void unSetForceEnable() {
+    state = state.copyWith(forceEnable: false);
   }
 }
 

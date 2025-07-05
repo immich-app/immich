@@ -100,6 +100,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     final asyncSegments = ref.watch(timelineSegmentProvider);
     final maxHeight =
         ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
+    final forceSelectionMode = ref.watch(
+      multiSelectProvider.select((s) => s.forceEnable),
+    );
+
     return asyncSegments.widgetWhen(
       onData: (segments) {
         final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
@@ -121,7 +125,22 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   primary: true,
                   cacheExtent: maxHeight * 2,
                   slivers: [
-                    if (!widget.selectionMode)
+                    if (forceSelectionMode)
+                      SliverAppBar(
+                        floating: false,
+                        pinned: true,
+                        snap: false,
+                        backgroundColor: context.colorScheme.surfaceContainer,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(5),
+                          ),
+                        ),
+                        automaticallyImplyLeading: true,
+                        centerTitle: true,
+                        title: const Text('Multi-Select Mode'),
+                      )
+                    else
                       const ImmichSliverAppBar(
                         floating: true,
                         pinned: false,
