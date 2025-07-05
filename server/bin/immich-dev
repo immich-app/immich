@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-node /usr/src/app/node_modules/.bin/nest start --debug "0.0.0.0:9230" --watch -- "$@"
+cd /usr/src/app/server || exit 1
+npm install
+node ./node_modules/.bin/nest start --debug "0.0.0.0:9230" --watch -- "$@"
