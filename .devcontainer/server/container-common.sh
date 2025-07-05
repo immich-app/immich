@@ -74,7 +74,7 @@ install_dependencies() {
     (
         cd "${IMMICH_WORKSPACE}" || exit 1
         export CI=1 FROZEN=1 OFFLINE=1
-        run_cmd make setup-dev
+        run_cmd make setup-web-dev setup-server-dev
     )
     log ""
 }
