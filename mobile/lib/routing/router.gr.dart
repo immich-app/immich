@@ -624,13 +624,13 @@ class DriftAssetSelectionTimelineRoute
     extends PageRouteInfo<DriftAssetSelectionTimelineRouteArgs> {
   DriftAssetSelectionTimelineRoute({
     Key? key,
-    List<String> selectedIds = const [],
+    List<String> lockSelectionIds = const [],
     List<PageRouteInfo>? children,
   }) : super(
           DriftAssetSelectionTimelineRoute.name,
           args: DriftAssetSelectionTimelineRouteArgs(
             key: key,
-            selectedIds: selectedIds,
+            lockSelectionIds: lockSelectionIds,
           ),
           initialChildren: children,
         );
@@ -645,7 +645,7 @@ class DriftAssetSelectionTimelineRoute
       );
       return DriftAssetSelectionTimelinePage(
         key: args.key,
-        lockSelectionIds: args.selectedIds,
+        lockSelectionIds: args.lockSelectionIds,
       );
     },
   );
@@ -654,16 +654,16 @@ class DriftAssetSelectionTimelineRoute
 class DriftAssetSelectionTimelineRouteArgs {
   const DriftAssetSelectionTimelineRouteArgs({
     this.key,
-    this.selectedIds = const [],
+    this.lockSelectionIds = const [],
   });
 
   final Key? key;
 
-  final List<String> selectedIds;
+  final List<String> lockSelectionIds;
 
   @override
   String toString() {
-    return 'DriftAssetSelectionTimelineRouteArgs{key: $key, selectedIds: $selectedIds}';
+    return 'DriftAssetSelectionTimelineRouteArgs{key: $key, lockSelectionIds: $lockSelectionIds}';
   }
 }
 

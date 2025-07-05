@@ -21,7 +21,7 @@ final _features = [
     onTap: (ctx, ref) async {
       final selectedAssets = await ctx.pushRoute<Set<BaseAsset>>(
         DriftAssetSelectionTimelineRoute(
-          selectedIds: [],
+          lockSelectionIds: [],
         ),
       );
 
