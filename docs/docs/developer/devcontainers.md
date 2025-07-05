@@ -200,7 +200,7 @@ When the Dev Container starts, it automatically:
 
 1. **Runs post-create script** (`container-server-post-create.sh`):
    - Adjusts file permissions for the `node` user
-   - Installs dependencies: `npm install` in all packages
+   - Installs dependencies: `pnpm install` in all packages
    - Builds TypeScript SDK: `npm run build` in `open-api/typescript-sdk`
 
 2. **Starts development servers** via VS Code tasks:

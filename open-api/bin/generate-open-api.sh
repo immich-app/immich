@@ -34,7 +34,7 @@ function typescript {
 
 # requires server to be built
 (
-  cd .. 
+  cd ..
   pnpm --filter immich install
   pnpm --filter immich build
   pnpm --filter immich sync:open-api
