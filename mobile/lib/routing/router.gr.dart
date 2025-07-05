@@ -619,6 +619,22 @@ class DriftAlbumsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftLockedFolderPage]
+class DriftLockedFolderRoute extends PageRouteInfo<void> {
+  const DriftLockedFolderRoute({List<PageRouteInfo>? children})
+      : super(DriftLockedFolderRoute.name, initialChildren: children);
+
+  static const String name = 'DriftLockedFolderRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftLockedFolderPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftMemoryPage]
 class DriftMemoryRoute extends PageRouteInfo<DriftMemoryRouteArgs> {
   DriftMemoryRoute({
