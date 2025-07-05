@@ -3,32 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 @RoutePage()
-class DriftAssetSelectionTimelinePage extends ConsumerStatefulWidget {
+class DriftAssetSelectionTimelinePage extends StatelessWidget {
   final List<String> lockSelectionIds;
 
   const DriftAssetSelectionTimelinePage({
     super.key,
     this.lockSelectionIds = const [],
   });
-
-  @override
-  ConsumerState<DriftAssetSelectionTimelinePage> createState() =>
-      _DriftAssetSelectionTimelinePageState();
-}
-
-class _DriftAssetSelectionTimelinePageState
-    extends ConsumerState<DriftAssetSelectionTimelinePage> {
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(multiSelectProvider.notifier).setForceEnable();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +29,8 @@ class _DriftAssetSelectionTimelinePageState
         ),
       ],
       child: Timeline(
-        lockSelectionIds: widget.lockSelectionIds,
+        lockSelectionIds: lockSelectionIds,
+        selectionMode: true,
       ),
     );
   }

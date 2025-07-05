@@ -86,6 +86,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     super.initState();
     _reloadSubscription =
         EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.selectionMode) {
+        ref.read(multiSelectProvider.notifier).setForceEnable();
+      }
+    });
   }
 
   @override
