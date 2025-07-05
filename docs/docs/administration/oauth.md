@@ -62,6 +62,7 @@ Once you have a new OAuth client application configured, Immich can be configure
 | Scope                                                | string  | openid email profile | Full list of scopes to send with the request (space delimited)                      |
 | Signing Algorithm                                    | string  | RS256                | The algorithm used to sign the id token (examples: RS256, HS256)                    |
 | Storage Label Claim                                  | string  | preferred_username   | Claim mapping for the user's storage label**¹**                                     |
+| Role Claim                                           | string  | immich_role          | Claim mapping for the user's role. (should return "user" or "admin")**¹**           |
 | Storage Quota Claim                                  | string  | immich_quota         | Claim mapping for the user's storage**¹**                                           |
 | Default Storage Quota (GiB)                          | number  | 0                    | Default quota for user without storage quota claim (Enter 0 for unlimited quota)    |
 | Button Text                                          | string  | Login with OAuth     | Text for the OAuth button on the web                                                |

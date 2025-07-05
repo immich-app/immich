@@ -101,6 +101,7 @@ export interface SystemConfig {
     timeout: number;
     storageLabelClaim: string;
     storageQuotaClaim: string;
+    roleClaim: string;
   };
   passwordLogin: {
     enabled: boolean;
@@ -263,6 +264,7 @@ export const defaults = Object.freeze<SystemConfig>({
     profileSigningAlgorithm: 'none',
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
+    roleClaim: 'immich_role',
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.CLIENT_SECRET_POST,
     timeout: 30_000,
   },

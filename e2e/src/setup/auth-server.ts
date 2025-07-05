@@ -12,6 +12,7 @@ export enum OAuthUser {
   NO_NAME = 'no-name',
   WITH_QUOTA = 'with-quota',
   WITH_USERNAME = 'with-username',
+  WITH_ROLE = 'with-role',
 }
 
 const claims = [
@@ -33,6 +34,12 @@ const claims = [
     email_verified: true,
     preferred_username: 'user-quota',
     immich_quota: 25,
+  },
+  {
+    sub: OAuthUser.WITH_ROLE,
+    email: 'oauth-with-role@immich.app',
+    email_verified: true,
+    immich_role: 'admin',
   },
 ];
 
@@ -64,7 +71,15 @@ const setup = async () => {
     claims: {
       openid: ['sub'],
       email: ['email', 'email_verified'],
-      profile: ['name', 'given_name', 'family_name', 'preferred_username', 'immich_quota', 'immich_username'],
+      profile: [
+        'name',
+        'given_name',
+        'family_name',
+        'preferred_username',
+        'immich_quota',
+        'immich_username',
+        'immich_role',
+      ],
     },
     features: {
       jwtUserinfo: {
