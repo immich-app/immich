@@ -167,9 +167,9 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.memoryToAssetDeleteV1: SyncMemoryAssetDeleteV1.fromJson,
   SyncEntityType.stackV1: SyncStackV1.fromJson,
   SyncEntityType.stackDeleteV1: SyncStackDeleteV1.fromJson,
-  SyncEntityType.partnerStackV1: SyncPartnerV1.fromJson,
-  SyncEntityType.partnerStackBackfillV1: SyncPartnerV1.fromJson,
-  SyncEntityType.partnerStackDeleteV1: SyncPartnerDeleteV1.fromJson,
+  SyncEntityType.partnerStackV1: SyncStackV1.fromJson,
+  SyncEntityType.partnerStackBackfillV1: SyncStackV1.fromJson,
+  SyncEntityType.partnerStackDeleteV1: SyncStackDeleteV1.fromJson,
 };
 
 class _SyncAckV1 {
