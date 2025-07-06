@@ -1,21 +1,24 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 
 /// This is a simple debug widget which should be removed later on when we are
 /// more confident about background sync
 class IosDebugInfoTile extends HookConsumerWidget {
-  final IOSBackgroundSettings settings;
   const IosDebugInfoTile({
     super.key,
-    required this.settings,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(iOSBackgroundSettingsProvider);
+    if (settings == null) {
+      return const SizedBox.shrink();
+    }
     final fetch = settings.timeOfLastFetch;
     final processing = settings.timeOfLastProcessing;
     final processes = settings.numberOfBackgroundTasksQueued;
@@ -48,18 +51,18 @@ class IosDebugInfoTile extends HookConsumerWidget {
     }
 
     return ListTile(
+      contentPadding: EdgeInsets.zero,
       title: Text(
         title,
-        style: TextStyle(
+        style: context.textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.bold,
-          fontSize: 14,
           color: context.primaryColor,
         ),
       ),
       subtitle: Text(
         subtitle,
-        style: const TextStyle(
-          fontSize: 14,
+        style: context.textTheme.bodyMedium?.copyWith(
+          color: context.colorScheme.onSurfaceSecondary,
         ),
       ),
       leading: Icon(
