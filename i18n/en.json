@@ -605,7 +605,7 @@
   "change_password_form_new_password": "New Password",
   "change_password_form_password_mismatch": "Passwords do not match",
   "change_password_form_reenter_new_password": "Re-enter New Password",
-  "change_pin_code": "Change PIN code",
+  "change_pin_code": "Change PIN code. Contact the server admin if you forgot your old PIN.",
   "change_your_password": "Change your password",
   "changed_visibility_successfully": "Changed visibility successfully",
   "check_corrupt_asset_backup": "Check for corrupt asset backups",
