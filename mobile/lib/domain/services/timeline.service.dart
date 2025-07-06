@@ -54,11 +54,13 @@ class TimelineFactory {
             _timelineRepository.watchRemoteBucket(albumId, groupBy: groupBy),
       );
 
-  TimelineService lockedFolder() => TimelineService(
+  TimelineService lockedFolder(String userId) => TimelineService(
         assetSource: (offset, count) => _timelineRepository
-            .getLockedFolderBucketAssets(offset: offset, count: count),
-        bucketSource: () =>
-            _timelineRepository.watchLockedFolderBucket(groupBy: groupBy),
+            .getLockedFolderBucketAssets(userId, offset: offset, count: count),
+        bucketSource: () => _timelineRepository.watchLockedFolderBucket(
+          userId,
+          groupBy: groupBy,
+        ),
       );
 }
 
