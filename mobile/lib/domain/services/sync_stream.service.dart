@@ -154,6 +154,25 @@ class SyncStreamService {
         return _syncStreamRepository.updateMemoryAssetsV1(data.cast());
       case SyncEntityType.memoryToAssetDeleteV1:
         return _syncStreamRepository.deleteMemoryAssetsV1(data.cast());
+      case SyncEntityType.stackV1:
+        return _syncStreamRepository.updateStacksV1(data.cast());
+      case SyncEntityType.stackDeleteV1:
+        return _syncStreamRepository.deleteStacksV1(data.cast());
+      case SyncEntityType.partnerStackV1:
+        return _syncStreamRepository.updateStacksV1(
+          data.cast(),
+          debugLabel: 'partner',
+        );
+      case SyncEntityType.partnerStackBackfillV1:
+        return _syncStreamRepository.updateStacksV1(
+          data.cast(),
+          debugLabel: 'partner backfill',
+        );
+      case SyncEntityType.partnerStackDeleteV1:
+        return _syncStreamRepository.deleteStacksV1(
+          data.cast(),
+          debugLabel: 'partner',
+        );
       default:
         _logger.warning("Unknown sync data type: $type");
     }
