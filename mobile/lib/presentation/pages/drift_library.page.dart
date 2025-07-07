@@ -55,7 +55,7 @@ class _ActionButtonGrid extends ConsumerWidget {
               children: [
                 _ActionButton(
                   icon: Icons.favorite_outline_rounded,
-                  onTap: () => context.pushRoute(const DriftTrashRoute()),
+                  onTap: () => context.pushRoute(const DriftFavoriteRoute()),
                   label: 'favorites'.t(context: context),
                 ),
                 const SizedBox(width: 8),
@@ -400,6 +400,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
           ),
           child: ListView(
             shrinkWrap: true,
+            padding: const EdgeInsets.all(0),
             physics: const NeverScrollableScrollPhysics(),
             children: [
               ListTile(
@@ -467,6 +468,7 @@ class _PartnerList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      padding: const EdgeInsets.all(0),
       physics: const NeverScrollableScrollPhysics(),
       itemCount: partners.length,
       shrinkWrap: true,
