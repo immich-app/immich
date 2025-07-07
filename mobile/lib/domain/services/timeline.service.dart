@@ -54,6 +54,13 @@ class TimelineFactory {
             _timelineRepository.watchRemoteBucket(albumId, groupBy: groupBy),
       );
 
+  TimelineService favorite(String userId) => TimelineService(
+        assetSource: (offset, count) => _timelineRepository
+            .getFavoriteBucketAssets(userId, offset: offset, count: count),
+        bucketSource: () =>
+            _timelineRepository.watchFavoriteBucket(userId, groupBy: groupBy),
+      );
+
   TimelineService trash(String userId) => TimelineService(
         assetSource: (offset, count) => _timelineRepository
             .getTrashBucketAssets(userId, offset: offset, count: count),
@@ -75,6 +82,13 @@ class TimelineFactory {
           userId,
           groupBy: groupBy,
         ),
+      );
+
+  TimelineService video(String userId) => TimelineService(
+        assetSource: (offset, count) => _timelineRepository
+            .getVideoBucketAssets(userId, offset: offset, count: count),
+        bucketSource: () =>
+            _timelineRepository.watchVideoBucket(userId, groupBy: groupBy),
       );
 }
 

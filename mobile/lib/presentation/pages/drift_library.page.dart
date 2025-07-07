@@ -55,8 +55,7 @@ class _ActionButtonGrid extends ConsumerWidget {
               children: [
                 _ActionButton(
                   icon: Icons.favorite_outline_rounded,
-                  // TODO: Migrate to DriftTrashRoute after merging #19783
-                  onTap: () => context.pushRoute(const TrashRoute()),
+                  onTap: () => context.pushRoute(const DriftTrashRoute()),
                   label: 'favorites'.t(context: context),
                 ),
                 const SizedBox(width: 8),
