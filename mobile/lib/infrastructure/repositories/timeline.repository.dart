@@ -213,6 +213,68 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         .map((row) => row.readTable(_db.remoteAssetEntity).toDto())
         .get();
   }
+
+  Stream<List<Bucket>> watchVideoBucket(
+    String userId, {
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+  }) {
+    if (groupBy == GroupAssetsBy.none) {
+      return _db.remoteAssetEntity
+          .count(
+            where: (row) =>
+                row.type.equalsValue(AssetType.video) & row.ownerId.equals(userId),
+          )
+          .map(_generateBuckets)
+          .watchSingle();
+    }
+
+    final assetCountExp = _db.remoteAssetEntity.id.count();
+    final dateExp = _db.remoteAssetEntity.createdAt.dateFmt(groupBy);
+
+    final query = _db.remoteAssetEntity.selectOnly()
+      ..addColumns([assetCountExp, dateExp])
+      ..where(
+        _db.remoteAssetEntity.ownerId.equals(userId) &
+            _db.remoteAssetEntity.type.equalsValue(AssetType.video),
+      )
+      ..groupBy([dateExp])
+      ..orderBy([OrderingTerm.desc(dateExp)]);
+
+    return query.map((row) {
+      final timeline = row.read(dateExp)!.dateFmt(groupBy);
+      final assetCount = row.read(assetCountExp)!;
+      return TimeBucket(date: timeline, assetCount: assetCount);
+    }).watch();
+  }
+
+  Future<List<BaseAsset>> getVideoBucketAssets(
+    String userId, {
+    required int offset,
+    required int count,
+  }) {
+    final query = _db.remoteAssetEntity
+        .select()
+        .addColumns([_db.localAssetEntity.id]).join([
+      leftOuterJoin(
+        _db.localAssetEntity,
+        _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
+        useColumns: false,
+      ),
+    ])
+      ..where(
+        _db.remoteAssetEntity.ownerId.equals(userId) &
+            _db.remoteAssetEntity.type.equalsValue(AssetType.video),
+      )
+      ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+      ..limit(count, offset: offset);
+
+    return query.map((row) {
+      final asset = row.readTable(_db.remoteAssetEntity).toDto();
+      return asset.copyWith(
+        localId: row.read(_db.localAssetEntity.id),
+      );
+    }).get();
+  }
 }
 
 extension on Expression<DateTime> {

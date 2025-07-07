@@ -53,6 +53,13 @@ class TimelineFactory {
         bucketSource: () =>
             _timelineRepository.watchRemoteBucket(albumId, groupBy: groupBy),
       );
+
+  TimelineService video(String userId) => TimelineService(
+        assetSource: (offset, count) => _timelineRepository
+            .getVideoBucketAssets(userId, offset: offset, count: count),
+        bucketSource: () =>
+            _timelineRepository.watchVideoBucket(userId, groupBy: groupBy),
+      );
 }
 
 class TimelineService {
