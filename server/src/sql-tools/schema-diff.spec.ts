@@ -21,6 +21,7 @@ const fromColumn = (column: Partial<Omit<DatabaseColumn, 'tableName'>>): Databas
     enums: [],
     extensions: [],
     parameters: [],
+    overrides: [],
     tables: [
       {
         name: tableName,
@@ -55,6 +56,7 @@ const fromConstraint = (constraint?: DatabaseConstraint): DatabaseSchema => {
     enums: [],
     extensions: [],
     parameters: [],
+    overrides: [],
     tables: [
       {
         name: tableName,
@@ -88,6 +90,7 @@ const fromIndex = (index?: DatabaseIndex): DatabaseSchema => {
     enums: [],
     extensions: [],
     parameters: [],
+    overrides: [],
     tables: [
       {
         name: tableName,
@@ -161,6 +164,7 @@ const newSchema = (schema: {
     enums: [],
     extensions: [],
     parameters: [],
+    overrides: [],
     tables,
     warnings: [],
   };

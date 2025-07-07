@@ -1,7 +1,15 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { schemaFromCode } from 'src/sql-tools/schema-from-code';
+import { SchemaFromCodeOptions } from 'src/sql-tools/types';
 import { describe, expect, it } from 'vitest';
+
+const importModule = async (filePath: string) => {
+  const module = await import(filePath);
+  const options: SchemaFromCodeOptions = module.options;
+
+  return { module, options };
+};
 
 describe(schemaFromCode.name, () => {
   it('should work', () => {
@@ -12,6 +20,7 @@ describe(schemaFromCode.name, () => {
       enums: [],
       extensions: [],
       parameters: [],
+      overrides: [],
       tables: [],
       warnings: [],
     });
@@ -22,9 +31,10 @@ describe(schemaFromCode.name, () => {
     for (const file of errorStubs) {
       const filePath = join(file.parentPath, file.name);
       it(filePath, async () => {
-        const module = await import(filePath);
+        const { module, options } = await importModule(filePath);
+
         expect(module.message).toBeDefined();
-        expect(() => schemaFromCode({ reset: true })).toThrowError(module.message);
+        expect(() => schemaFromCode({ ...options, reset: true })).toThrowError(module.message);
       });
     }
 
@@ -36,10 +46,11 @@ describe(schemaFromCode.name, () => {
 
       const filePath = join(file.parentPath, file.name);
       it(filePath, async () => {
-        const module = await import(filePath);
+        const { module, options } = await importModule(filePath);
+
         expect(module.description).toBeDefined();
         expect(module.schema).toBeDefined();
-        expect(schemaFromCode({ reset: true }), module.description).toEqual(module.schema);
+        expect(schemaFromCode({ ...options, reset: true }), module.description).toEqual(module.schema);
       });
     }
   });
