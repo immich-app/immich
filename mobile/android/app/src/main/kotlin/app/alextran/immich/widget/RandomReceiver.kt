@@ -1,11 +1,16 @@
 package app.alextran.immich.widget
 
-import HomeWidgetGlanceWidgetReceiver
 import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
-import android.util.Log
+import android.content.Intent
+import es.antonborri.home_widget.HomeWidgetPlugin
+import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class RandomReceiver : HomeWidgetGlanceWidgetReceiver<PhotoWidget>() {
+class RandomReceiver : GlanceAppWidgetReceiver() {
   override val glanceAppWidget = PhotoWidget()
 
   override fun onUpdate(
@@ -18,6 +23,24 @@ class RandomReceiver : HomeWidgetGlanceWidgetReceiver<PhotoWidget>() {
     appWidgetIds.forEach { widgetID ->
       ImageDownloadWorker.enqueuePeriodic(context, widgetID, WidgetType.RANDOM)
     }
+  }
+
+  override fun onReceive(context: Context, intent: Intent) {
+    val fromMainApp = intent.getBooleanExtra(HomeWidgetPlugin.TRIGGERED_FROM_HOME_WIDGET, false)
+
+    // Launch coroutine to setup a single shot if the app requested the update
+    if (fromMainApp) {
+      CoroutineScope(Dispatchers.Default).launch {
+        val provider = ComponentName(context, RandomReceiver::class.java)
+        val glanceIds = AppWidgetManager.getInstance(context).getAppWidgetIds(provider)
+
+        glanceIds.forEach { widgetID ->
+          ImageDownloadWorker.singleShot(context, widgetID, WidgetType.MEMORIES)
+        }
+      }
+    }
+
+    super.onReceive(context, intent)
   }
 }
 

@@ -9,7 +9,6 @@ import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun LightDarkTheme(
-  useDarkTheme: Boolean = isSystemInDarkTheme(), // ← This line is key
   content: @Composable () -> Unit
 ) {
   val context = LocalContext.current

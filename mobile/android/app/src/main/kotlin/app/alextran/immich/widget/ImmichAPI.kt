@@ -1,7 +1,6 @@
 package app.alextran.immich.widget
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.google.gson.Gson
@@ -13,11 +12,8 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
-import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.*
-
 
 class ImmichAPI(cfg: ServerConfig) {
 

@@ -4,4 +4,6 @@
   android:minHeight="110dp"
   android:resizeMode="horizontal|vertical"
   android:updatePeriodMillis="1200000"
+  android:description="@string/memory_widget_description"
+  android:previewImage="@drawable/memory_preview"
   />

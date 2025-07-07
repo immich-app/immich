@@ -8,4 +8,6 @@
   android:configure="app.alextran.immich.widget.configure.RandomConfigure"
   android:widgetFeatures="reconfigurable|configuration_optional"
   tools:targetApi="28"
+  android:description="@string/random_widget_description"
+  android:previewImage="@drawable/random_preview"
   />

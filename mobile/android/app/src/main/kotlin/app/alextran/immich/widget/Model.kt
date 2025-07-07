@@ -68,6 +68,7 @@ val kDeeplinkURL = stringPreferencesKey("deeplink")
 
 const val kWorkerWidgetType = "widgetType"
 const val kWorkerWidgetID = "widgetId"
+const val kTriggeredFromApp = "triggeredFromApp"
 
 fun imageFilename(id: String): String {
   return "widget_image_$id.jpg"

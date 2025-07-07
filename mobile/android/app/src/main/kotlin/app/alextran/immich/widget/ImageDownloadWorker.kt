@@ -194,7 +194,8 @@ class ImageDownloadWorker(
       val memory = memories.random()
       asset = memory.assets.random()
 
-      subtitle = "${today.year - memory.data.year} years ago"
+      val yearDiff = today.year - memory.data.year
+      subtitle = "$yearDiff ${if (yearDiff == 1) "year" else "years"} ago"
     } else {
       val filters = SearchFilters(AssetType.IMAGE, size=1)
       asset = api.fetchSearchResults(filters).first()

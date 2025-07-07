@@ -146,7 +146,8 @@
     <!-- Widgets -->
     <receiver
       android:name=".widget.RandomReceiver"
-      android:exported="true">
+      android:exported="true"
+      android:label="@string/random_widget_title">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
       </intent-filter>
@@ -157,7 +158,8 @@
 
     <receiver
       android:name=".widget.MemoryReceiver"
-      android:exported="true">
+      android:exported="true"
+      android:label="@string/memory_widget_title">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
       </intent-filter>
