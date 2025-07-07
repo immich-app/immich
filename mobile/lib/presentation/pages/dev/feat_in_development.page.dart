@@ -99,6 +99,11 @@ final _features = [
     icon: Icons.timeline_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
   ),
+  _Feature(
+    name: 'Favorite',
+    icon: Icons.favorite_outline_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftFavoriteRoute()),
+  ),
 ];
 
 @RoutePage()
