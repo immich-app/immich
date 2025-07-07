@@ -162,6 +162,10 @@ final _remoteStats = [
     name: 'Memories Assets',
     load: (db) => db.managers.memoryAssetEntity.count(),
   ),
+  _Stat(
+    name: 'Stacks',
+    load: (db) => db.managers.stackEntity.count(),
+  ),
 ];
 
 @RoutePage()
