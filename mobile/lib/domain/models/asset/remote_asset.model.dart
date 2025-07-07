@@ -30,6 +30,7 @@ class RemoteAsset extends BaseAsset {
     super.isFavorite = false,
     this.thumbHash,
     this.visibility = AssetVisibility.timeline,
+    super.livePhotoVideoId,
   });
 
   @override
