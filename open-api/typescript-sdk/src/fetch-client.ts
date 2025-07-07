@@ -1398,6 +1398,7 @@ export type SystemConfigOAuthDto = {
     mobileOverrideEnabled: boolean;
     mobileRedirectUri: string;
     profileSigningAlgorithm: string;
+    roleClaim: string;
     scope: string;
     signingAlgorithm: string;
     storageLabelClaim: string;

@@ -16,7 +16,7 @@ For the full list, refer to the [Immich source code](https://github.com/immich-a
 | `HEIC`      | `.heic`                       | :white_check_mark: |                 |
 | `HEIF`      | `.heif`                       | :white_check_mark: |                 |
 | `JPEG 2000` | `.jp2`                        | :white_check_mark: |                 |
-| `JPEG`      | `.webp` `.jpg` `.jpe` `.insp` | :white_check_mark: |                 |
+| `JPEG`      | `.jpeg` `.jpg` `.jpe` `.insp` | :white_check_mark: |                 |
 | `JPEG XL`   | `.jxl`                        | :white_check_mark: |                 |
 | `PNG`       | `.png`                        | :white_check_mark: |                 |
 | `PSD`       | `.psd`                        | :white_check_mark: | Adobe Photoshop |

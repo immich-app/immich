@@ -66,6 +66,9 @@ final _features = [
       await db.remoteAlbumEntity.deleteAll();
       await db.remoteAlbumUserEntity.deleteAll();
       await db.remoteAlbumAssetEntity.deleteAll();
+      await db.memoryEntity.deleteAll();
+      await db.memoryAssetEntity.deleteAll();
+      await db.stackEntity.deleteAll();
     },
   ),
   _Feature(
