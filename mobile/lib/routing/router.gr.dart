@@ -619,22 +619,6 @@ class DriftAlbumsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [DriftFavoritePage]
-class DriftFavoriteRoute extends PageRouteInfo<void> {
-  const DriftFavoriteRoute({List<PageRouteInfo>? children})
-      : super(DriftFavoriteRoute.name, initialChildren: children);
-
-  static const String name = 'DriftFavoriteRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const DriftFavoritePage();
-    },
-  );
-}
-
-/// generated route for
 /// [DriftArchivePage]
 class DriftArchiveRoute extends PageRouteInfo<void> {
   const DriftArchiveRoute({List<PageRouteInfo>? children})
@@ -646,6 +630,22 @@ class DriftArchiveRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const DriftArchivePage();
+    },
+  );
+}
+
+/// generated route for
+/// [DriftFavoritePage]
+class DriftFavoriteRoute extends PageRouteInfo<void> {
+  const DriftFavoriteRoute({List<PageRouteInfo>? children})
+      : super(DriftFavoriteRoute.name, initialChildren: children);
+
+  static const String name = 'DriftFavoriteRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftFavoritePage();
     },
   );
 }
