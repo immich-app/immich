@@ -13,14 +13,16 @@ final multiSelectProvider =
 
 class MultiSelectState {
   final Set<BaseAsset> selectedAssets;
+  final Set<BaseAsset> lockedSelectionAssets;
   final bool forceEnable;
 
   const MultiSelectState({
     required this.selectedAssets,
-    required this.forceEnable,
+    required this.lockedSelectionAssets,
+    this.forceEnable = false,
   });
 
-  bool get isEnabled => selectedAssets.isNotEmpty || forceEnable;
+  bool get isEnabled => selectedAssets.isNotEmpty;
   bool get hasRemote => selectedAssets.any(
         (asset) =>
             asset.storage == AssetState.remote ||
@@ -32,17 +34,20 @@ class MultiSelectState {
 
   MultiSelectState copyWith({
     Set<BaseAsset>? selectedAssets,
+    Set<BaseAsset>? lockedSelectionAssets,
     bool? forceEnable,
   }) {
     return MultiSelectState(
       selectedAssets: selectedAssets ?? this.selectedAssets,
+      lockedSelectionAssets:
+          lockedSelectionAssets ?? this.lockedSelectionAssets,
       forceEnable: forceEnable ?? this.forceEnable,
     );
   }
 
   @override
   String toString() =>
-      'MultiSelectState(selectedAssets: $selectedAssets, forceEnable: $forceEnable)';
+      'MultiSelectState(selectedAssets: $selectedAssets, lockedSelectionAssets: $lockedSelectionAssets, forceEnable: $forceEnable)';
 
   @override
   bool operator ==(covariant MultiSelectState other) {
@@ -50,22 +55,31 @@ class MultiSelectState {
     final setEquals = const DeepCollectionEquality().equals;
 
     return setEquals(other.selectedAssets, selectedAssets) &&
+        setEquals(other.lockedSelectionAssets, lockedSelectionAssets) &&
         other.forceEnable == forceEnable;
   }
 
   @override
-  int get hashCode => selectedAssets.hashCode ^ forceEnable.hashCode;
+  int get hashCode =>
+      selectedAssets.hashCode ^
+      lockedSelectionAssets.hashCode ^
+      forceEnable.hashCode;
 }
 
 class MultiSelectNotifier extends Notifier<MultiSelectState> {
+  MultiSelectNotifier([this._defaultState]);
+  final MultiSelectState? _defaultState;
+
   TimelineService get _timelineService => ref.read(timelineServiceProvider);
 
   @override
   MultiSelectState build() {
-    return const MultiSelectState(
-      selectedAssets: {},
-      forceEnable: false,
-    );
+    return _defaultState ??
+        const MultiSelectState(
+          selectedAssets: {},
+          lockedSelectionAssets: {},
+          forceEnable: false,
+        );
   }
 
   void selectAsset(BaseAsset asset) {
@@ -99,6 +113,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   void reset() {
     state = const MultiSelectState(
       selectedAssets: {},
+      lockedSelectionAssets: {},
       forceEnable: false,
     );
   }
@@ -149,12 +164,10 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     state = state.copyWith(selectedAssets: selectedAssets);
   }
 
-  void setForceEnable() {
-    state = state.copyWith(forceEnable: true);
-  }
-
-  void unSetForceEnable() {
-    state = state.copyWith(forceEnable: false);
+  void setLockedSelectionAssets(Set<BaseAsset> assets) {
+    state = state.copyWith(
+      lockedSelectionAssets: assets,
+    );
   }
 }
 

@@ -10,8 +10,10 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 final _features = [
@@ -19,9 +21,17 @@ final _features = [
     name: 'Selection Mode Timeline',
     icon: Icons.developer_mode_rounded,
     onTap: (ctx, ref) async {
+      final user = ref.watch(currentUserProvider);
+      if (user == null) {
+        return Future.value();
+      }
+
+      final assets =
+          await ref.read(remoteAssetRepositoryProvider).getSome(user.id);
+
       final selectedAssets = await ctx.pushRoute<Set<BaseAsset>>(
         DriftAssetSelectionTimelineRoute(
-          lockSelectionIds: [],
+          lockedSelectionAssets: assets.toSet(),
         ),
       );
 

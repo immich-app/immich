@@ -4,26 +4,37 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
-class SelectionSliverAppBar extends ConsumerWidget {
+class SelectionSliverAppBar extends ConsumerStatefulWidget {
   const SelectionSliverAppBar({
     super.key,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SelectionSliverAppBar> createState() =>
+      _SelectionSliverAppBarState();
+}
+
+class _SelectionSliverAppBarState extends ConsumerState<SelectionSliverAppBar> {
+  @override
+  Widget build(BuildContext context) {
     final selection = ref.watch(
       multiSelectProvider.select((s) => s.selectedAssets),
     );
 
-    final toExclude = ref.read(timelineArgsProvider).lockSelectionIds;
+    final toExclude = ref.watch(
+      multiSelectProvider.select((s) => s.lockedSelectionAssets),
+    );
 
     final filteredAssets = selection.where((asset) {
-      final remoteAsset = asset as RemoteAsset;
-      return !toExclude.contains(remoteAsset.id);
+      return !toExclude.contains(asset);
     }).toSet();
+
+    onDone(Set<BaseAsset> selected) {
+      ref.read(multiSelectProvider.notifier).reset();
+      context.maybePop<Set<BaseAsset>>(selected);
+    }
 
     return SliverAppBar(
       floating: true,
@@ -33,7 +44,14 @@ class SelectionSliverAppBar extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(5)),
       ),
-      automaticallyImplyLeading: true,
+      automaticallyImplyLeading: false,
+      leading: IconButton(
+        icon: const Icon(Icons.close_rounded),
+        onPressed: () {
+          ref.read(multiSelectProvider.notifier).reset();
+          context.pop<Set<BaseAsset>>(null);
+        },
+      ),
       centerTitle: true,
       title: Text(
         "Select {count}".t(
@@ -45,9 +63,7 @@ class SelectionSliverAppBar extends ConsumerWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () {
-            context.maybePop<Set<BaseAsset>>(filteredAssets);
-          },
+          onPressed: () => onDone(filteredAssets),
           child: Text(
             'done'.t(context: context),
             style: context.textTheme.titleSmall?.copyWith(

@@ -25,15 +25,10 @@ class Timeline extends StatelessWidget {
     super.key,
     this.topSliverWidget,
     this.topSliverWidgetHeight,
-    this.lockSelectionIds = const [],
-    this.selectionMode = false,
   });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
-
-  final bool selectionMode;
-  final List<String> lockSelectionIds;
 
   @override
   Widget build(BuildContext context) {
@@ -48,14 +43,12 @@ class Timeline extends StatelessWidget {
                 columnCount: ref.watch(
                   settingsProvider.select((s) => s.get(Setting.tilesPerRow)),
                 ),
-                lockSelectionIds: lockSelectionIds,
               ),
             ),
           ],
           child: _SliverTimeline(
             topSliverWidget: topSliverWidget,
             topSliverWidgetHeight: topSliverWidgetHeight,
-            selectionMode: selectionMode,
           ),
         ),
       ),
@@ -67,12 +60,10 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   const _SliverTimeline({
     this.topSliverWidget,
     this.topSliverWidgetHeight,
-    this.selectionMode = false,
   });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
-  final bool selectionMode;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
@@ -87,12 +78,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     super.initState();
     _reloadSubscription =
         EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.selectionMode) {
-        ref.read(multiSelectProvider.notifier).setForceEnable();
-      }
-    });
   }
 
   @override
@@ -107,6 +92,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     final asyncSegments = ref.watch(timelineSegmentProvider);
     final maxHeight =
         ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
+    final isSelectionMode = ref.watch(
+      multiSelectProvider.select((s) => s.forceEnable),
+    );
 
     return asyncSegments.widgetWhen(
       onData: (segments) {
@@ -129,7 +117,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   primary: true,
                   cacheExtent: maxHeight * 2,
                   slivers: [
-                    if (widget.selectionMode)
+                    if (isSelectionMode)
                       const SelectionSliverAppBar()
                     else
                       const ImmichSliverAppBar(
@@ -161,48 +149,42 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   ],
                 ),
               ),
-              Consumer(
-                builder: (_, consumerRef, child) {
-                  if (widget.selectionMode) {
+              if (!isSelectionMode) ...[
+                Consumer(
+                  builder: (_, consumerRef, child) {
+                    final isMultiSelectEnabled = consumerRef.watch(
+                      multiSelectProvider.select(
+                        (s) => s.isEnabled,
+                      ),
+                    );
+
+                    if (isMultiSelectEnabled) {
+                      return child!;
+                    }
                     return const SizedBox.shrink();
-                  }
-
-                  final isMultiSelectEnabled = consumerRef.watch(
-                    multiSelectProvider.select(
-                      (s) => s.isEnabled,
-                    ),
-                  );
-
-                  if (isMultiSelectEnabled) {
-                    return child!;
-                  }
-                  return const SizedBox.shrink();
-                },
-                child: const Positioned(
-                  top: 60,
-                  left: 25,
-                  child: _MultiSelectStatusButton(),
+                  },
+                  child: const Positioned(
+                    top: 60,
+                    left: 25,
+                    child: _MultiSelectStatusButton(),
+                  ),
                 ),
-              ),
-              Consumer(
-                builder: (_, consumerRef, child) {
-                  if (widget.selectionMode) {
+                Consumer(
+                  builder: (_, consumerRef, child) {
+                    final isMultiSelectEnabled = consumerRef.watch(
+                      multiSelectProvider.select(
+                        (s) => s.isEnabled,
+                      ),
+                    );
+
+                    if (isMultiSelectEnabled) {
+                      return child!;
+                    }
                     return const SizedBox.shrink();
-                  }
-
-                  final isMultiSelectEnabled = consumerRef.watch(
-                    multiSelectProvider.select(
-                      (s) => s.isEnabled,
-                    ),
-                  );
-
-                  if (isMultiSelectEnabled) {
-                    return child!;
-                  }
-                  return const SizedBox.shrink();
-                },
-                child: const HomeBottomAppBar(),
-              ),
+                  },
+                  child: const HomeBottomAppBar(),
+                ),
+              ],
             ],
           ),
         );

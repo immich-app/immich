@@ -1,22 +1,32 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 @RoutePage()
-class DriftAssetSelectionTimelinePage extends StatelessWidget {
-  final List<String> lockSelectionIds;
-
+class DriftAssetSelectionTimelinePage extends ConsumerWidget {
+  final Set<BaseAsset> lockedSelectionAssets;
   const DriftAssetSelectionTimelinePage({
     super.key,
-    this.lockSelectionIds = const [],
+    this.lockedSelectionAssets = const {},
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ProviderScope(
       overrides: [
+        multiSelectProvider.overrideWith(
+          () => MultiSelectNotifier(
+            MultiSelectState(
+              selectedAssets: {},
+              lockedSelectionAssets: lockedSelectionAssets,
+              forceEnable: true,
+            ),
+          ),
+        ),
         timelineServiceProvider.overrideWith(
           (ref) {
             final timelineUsers =
@@ -28,10 +38,7 @@ class DriftAssetSelectionTimelinePage extends StatelessWidget {
           },
         ),
       ],
-      child: Timeline(
-        lockSelectionIds: lockSelectionIds,
-        selectionMode: true,
-      ),
+      child: const Timeline(),
     );
   }
 }

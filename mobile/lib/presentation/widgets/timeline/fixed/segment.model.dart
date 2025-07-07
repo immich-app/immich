@@ -166,22 +166,22 @@ class _AssetTileWidget extends ConsumerWidget {
     BaseAsset asset,
   ) {
     final multiSelectState = ref.read(multiSelectProvider);
-    if (!multiSelectState.isEnabled) {
+
+    if (multiSelectState.forceEnable || multiSelectState.isEnabled) {
+      ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
+    } else {
       ctx.pushRoute(
         AssetViewerRoute(
           initialIndex: assetIndex,
           timelineService: ref.read(timelineServiceProvider),
         ),
       );
-      return;
     }
-
-    ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
   }
 
   void _handleOnLongPress(WidgetRef ref, BaseAsset asset) {
     final multiSelectState = ref.read(multiSelectProvider);
-    if (multiSelectState.isEnabled) {
+    if (multiSelectState.isEnabled || multiSelectState.forceEnable) {
       return;
     }
 
@@ -190,16 +190,17 @@ class _AssetTileWidget extends ConsumerWidget {
   }
 
   bool _getLockSelectionStatus(WidgetRef ref) {
-    final selectedIds = ref.watch(
-      timelineArgsProvider.select((args) => args.lockSelectionIds),
+    final lockSelectionAssets = ref.read(
+      multiSelectProvider.select(
+        (state) => state.lockedSelectionAssets,
+      ),
     );
 
-    if (selectedIds.isEmpty) {
+    if (lockSelectionAssets.isEmpty) {
       return false;
     }
 
-    final remoteAsset = asset as RemoteAsset;
-    return selectedIds.contains(remoteAsset.id);
+    return lockSelectionAssets.contains(asset);
   }
 
   @override

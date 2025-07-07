@@ -635,34 +635,18 @@ class DriftArchiveRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [DriftLockedFolderPage]
-class DriftLockedFolderRoute extends PageRouteInfo<void> {
-  const DriftLockedFolderRoute({List<PageRouteInfo>? children})
-      : super(DriftLockedFolderRoute.name, initialChildren: children);
-
-  static const String name = 'DriftLockedFolderRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const DriftLockedFolderPage();
-    },
-  );
-}
-
-/// generated route for
 /// [DriftAssetSelectionTimelinePage]
 class DriftAssetSelectionTimelineRoute
     extends PageRouteInfo<DriftAssetSelectionTimelineRouteArgs> {
   DriftAssetSelectionTimelineRoute({
     Key? key,
-    List<String> lockSelectionIds = const [],
+    Set<BaseAsset> lockedSelectionAssets = const {},
     List<PageRouteInfo>? children,
   }) : super(
           DriftAssetSelectionTimelineRoute.name,
           args: DriftAssetSelectionTimelineRouteArgs(
             key: key,
-            lockSelectionIds: lockSelectionIds,
+            lockedSelectionAssets: lockedSelectionAssets,
           ),
           initialChildren: children,
         );
@@ -677,7 +661,7 @@ class DriftAssetSelectionTimelineRoute
       );
       return DriftAssetSelectionTimelinePage(
         key: args.key,
-        lockSelectionIds: args.lockSelectionIds,
+        lockedSelectionAssets: args.lockedSelectionAssets,
       );
     },
   );
@@ -686,17 +670,33 @@ class DriftAssetSelectionTimelineRoute
 class DriftAssetSelectionTimelineRouteArgs {
   const DriftAssetSelectionTimelineRouteArgs({
     this.key,
-    this.lockSelectionIds = const [],
+    this.lockedSelectionAssets = const {},
   });
 
   final Key? key;
 
-  final List<String> lockSelectionIds;
+  final Set<BaseAsset> lockedSelectionAssets;
 
   @override
   String toString() {
-    return 'DriftAssetSelectionTimelineRouteArgs{key: $key, lockSelectionIds: $lockSelectionIds}';
+    return 'DriftAssetSelectionTimelineRouteArgs{key: $key, lockedSelectionAssets: $lockedSelectionAssets}';
   }
+}
+
+/// generated route for
+/// [DriftLockedFolderPage]
+class DriftLockedFolderRoute extends PageRouteInfo<void> {
+  const DriftLockedFolderRoute({List<PageRouteInfo>? children})
+      : super(DriftLockedFolderRoute.name, initialChildren: children);
+
+  static const String name = 'DriftLockedFolderRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftLockedFolderPage();
+    },
+  );
 }
 
 /// generated route for

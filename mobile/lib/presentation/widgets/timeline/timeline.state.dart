@@ -14,14 +14,12 @@ class TimelineArgs {
   final double maxHeight;
   final double spacing;
   final int columnCount;
-  final List<String> lockSelectionIds;
 
   const TimelineArgs({
     required this.maxWidth,
     required this.maxHeight,
     this.spacing = kTimelineSpacing,
     this.columnCount = kTimelineColumnCount,
-    this.lockSelectionIds = const [],
   });
 
   @override
@@ -29,8 +27,7 @@ class TimelineArgs {
     return spacing == other.spacing &&
         maxWidth == other.maxWidth &&
         maxHeight == other.maxHeight &&
-        columnCount == other.columnCount &&
-        lockSelectionIds == other.lockSelectionIds;
+        columnCount == other.columnCount;
   }
 
   @override
@@ -38,8 +35,7 @@ class TimelineArgs {
       maxWidth.hashCode ^
       maxHeight.hashCode ^
       spacing.hashCode ^
-      columnCount.hashCode ^
-      lockSelectionIds.hashCode;
+      columnCount.hashCode;
 }
 
 class TimelineState {
