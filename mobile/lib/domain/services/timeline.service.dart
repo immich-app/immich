@@ -53,6 +53,43 @@ class TimelineFactory {
         bucketSource: () =>
             _timelineRepository.watchRemoteBucket(albumId, groupBy: groupBy),
       );
+
+  TimelineService favorite(String userId) => TimelineService(
+        assetSource: (offset, count) => _timelineRepository
+            .getFavoriteBucketAssets(userId, offset: offset, count: count),
+        bucketSource: () =>
+            _timelineRepository.watchFavoriteBucket(userId, groupBy: groupBy),
+      );
+
+  TimelineService trash(String userId) => TimelineService(
+        assetSource: (offset, count) => _timelineRepository
+            .getTrashBucketAssets(userId, offset: offset, count: count),
+        bucketSource: () =>
+            _timelineRepository.watchTrashBucket(userId, groupBy: groupBy),
+      );
+
+  TimelineService archive(String userId) => TimelineService(
+        assetSource: (offset, count) => _timelineRepository
+            .getArchiveBucketAssets(userId, offset: offset, count: count),
+        bucketSource: () =>
+            _timelineRepository.watchArchiveBucket(userId, groupBy: groupBy),
+      );
+
+  TimelineService lockedFolder(String userId) => TimelineService(
+        assetSource: (offset, count) => _timelineRepository
+            .getLockedFolderBucketAssets(userId, offset: offset, count: count),
+        bucketSource: () => _timelineRepository.watchLockedFolderBucket(
+          userId,
+          groupBy: groupBy,
+        ),
+      );
+
+  TimelineService video(String userId) => TimelineService(
+        assetSource: (offset, count) => _timelineRepository
+            .getVideoBucketAssets(userId, offset: offset, count: count),
+        bucketSource: () =>
+            _timelineRepository.watchVideoBucket(userId, groupBy: groupBy),
+      );
 }
 
 class TimelineService {

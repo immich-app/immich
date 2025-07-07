@@ -66,6 +66,9 @@ final _features = [
       await db.remoteAlbumEntity.deleteAll();
       await db.remoteAlbumUserEntity.deleteAll();
       await db.remoteAlbumAssetEntity.deleteAll();
+      await db.memoryEntity.deleteAll();
+      await db.memoryAssetEntity.deleteAll();
+      await db.stackEntity.deleteAll();
     },
   ),
   _Feature(
@@ -95,6 +98,11 @@ final _features = [
     name: 'Main Timeline',
     icon: Icons.timeline_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
+  ),
+  _Feature(
+    name: 'Video',
+    icon: Icons.video_collection_outlined,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftVideoRoute()),
   ),
 ];
 
