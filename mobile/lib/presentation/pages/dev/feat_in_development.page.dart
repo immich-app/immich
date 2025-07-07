@@ -104,6 +104,21 @@ final _features = [
     icon: Icons.favorite_outline_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const DriftFavoriteRoute()),
   ),
+  _Feature(
+    name: 'Trash',
+    icon: Icons.delete_outline_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftTrashRoute()),
+  ),
+  _Feature(
+    name: 'Archive',
+    icon: Icons.archive_outlined,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftArchiveRoute()),
+  ),
+  _Feature(
+    name: 'Locked Folder',
+    icon: Icons.lock_outline_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftLockedFolderRoute()),
+  ),
 ];
 
 @RoutePage()
