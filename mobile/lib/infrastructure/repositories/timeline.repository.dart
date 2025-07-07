@@ -222,7 +222,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       return _db.remoteAssetEntity
           .count(
             where: (row) =>
-                row.type.equalsValue(AssetType.video) & row.ownerId.equals(userId),
+                row.type.equalsValue(AssetType.video) &
+                row.visibility.equalsValue(AssetVisibility.timeline) &
+                row.ownerId.equals(userId),
           )
           .map(_generateBuckets)
           .watchSingle();
@@ -235,7 +237,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ..addColumns([assetCountExp, dateExp])
       ..where(
         _db.remoteAssetEntity.ownerId.equals(userId) &
-            _db.remoteAssetEntity.type.equalsValue(AssetType.video),
+            _db.remoteAssetEntity.type.equalsValue(AssetType.video) &
+            _db.remoteAssetEntity.visibility
+                .equalsValue(AssetVisibility.timeline),
       )
       ..groupBy([dateExp])
       ..orderBy([OrderingTerm.desc(dateExp)]);
@@ -263,7 +267,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     ])
       ..where(
         _db.remoteAssetEntity.ownerId.equals(userId) &
-            _db.remoteAssetEntity.type.equalsValue(AssetType.video),
+            _db.remoteAssetEntity.type.equalsValue(AssetType.video) &
+            _db.remoteAssetEntity.visibility
+                .equalsValue(AssetVisibility.timeline),
       )
       ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
       ..limit(count, offset: offset);
