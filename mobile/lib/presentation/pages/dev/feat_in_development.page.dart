@@ -109,6 +109,11 @@ final _features = [
     icon: Icons.archive_outlined,
     onTap: (ctx, _) => ctx.pushRoute(const DriftArchiveRoute()),
   ),
+  _Feature(
+    name: 'Locked Folder',
+    icon: Icons.lock_outline_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftLockedFolderRoute()),
+  ),
 ];
 
 @RoutePage()
