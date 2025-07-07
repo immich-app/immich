@@ -26,7 +26,7 @@ class ThumbnailTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final assetContainerColor = context.isDarkTheme
         ? context.primaryColor.darken(amount: 0.4)
-        : context.primaryColor.lighten(amount: 0.65);
+        : context.primaryColor.lighten(amount: 0.75);
 
     final isSelected = ref.watch(
       multiSelectProvider.select(
@@ -34,33 +34,27 @@ class ThumbnailTile extends ConsumerWidget {
       ),
     );
 
-    BoxDecoration getBorderStyle() {
-      if (lockSelection) {
-        return BoxDecoration(
-          color: context.colorScheme.surfaceContainerHighest,
-          border: Border.all(
+    final borderStyle = lockSelection
+        ? BoxDecoration(
             color: context.colorScheme.surfaceContainerHighest,
-            width: 8,
-          ),
-          borderRadius: const BorderRadius.all(Radius.circular(15.0)),
-        );
-      } else if (isSelected) {
-        return BoxDecoration(
-          color: assetContainerColor,
-          border: Border.all(color: assetContainerColor, width: 8),
-          borderRadius: const BorderRadius.all(Radius.circular(15.0)),
-        );
-      } else {
-        return const BoxDecoration();
-      }
-    }
+            border: Border.all(
+              color: context.colorScheme.surfaceContainerHighest,
+              width: 6,
+            ),
+          )
+        : isSelected
+            ? BoxDecoration(
+                color: assetContainerColor,
+                border: Border.all(color: assetContainerColor, width: 6),
+              )
+            : const BoxDecoration();
 
     return Stack(
       children: [
         AnimatedContainer(
           duration: Durations.short4,
           curve: Curves.decelerate,
-          decoration: getBorderStyle(),
+          decoration: borderStyle,
           child: ClipRRect(
             borderRadius: isSelected || lockSelection
                 ? const BorderRadius.all(Radius.circular(15.0))
@@ -143,7 +137,18 @@ class _SelectionIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isSelected || isLocked) {
+    if (isLocked) {
+      return Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color,
+        ),
+        child: const Icon(
+          Icons.check_circle_rounded,
+          color: Colors.grey,
+        ),
+      );
+    } else if (isSelected) {
       return Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
