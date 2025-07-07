@@ -119,6 +119,11 @@ final _features = [
     icon: Icons.lock_outline_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const DriftLockedFolderRoute()),
   ),
+  _Feature(
+    name: 'Video',
+    icon: Icons.video_collection_outlined,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftVideoRoute()),
+  ),
 ];
 
 @RoutePage()

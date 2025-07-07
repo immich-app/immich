@@ -735,6 +735,22 @@ class DriftTrashRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftVideoPage]
+class DriftVideoRoute extends PageRouteInfo<void> {
+  const DriftVideoRoute({List<PageRouteInfo>? children})
+      : super(DriftVideoRoute.name, initialChildren: children);
+
+  static const String name = 'DriftVideoRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftVideoPage();
+    },
+  );
+}
+
+/// generated route for
 /// [EditImagePage]
 class EditImageRoute extends PageRouteInfo<EditImageRouteArgs> {
   EditImageRoute({
