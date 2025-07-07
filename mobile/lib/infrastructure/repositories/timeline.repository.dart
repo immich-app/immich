@@ -252,28 +252,14 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     required int offset,
     required int count,
   }) {
-    final query = _db.remoteAssetEntity
-        .select()
-        .addColumns([_db.localAssetEntity.id]).join([
-      leftOuterJoin(
-        _db.localAssetEntity,
-        _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
-        useColumns: false,
-      ),
-    ])
+    final query = _db.remoteAssetEntity.select()
       ..where(
-        _db.remoteAssetEntity.ownerId.equals(userId) &
-            _db.remoteAssetEntity.deletedAt.isNotNull(),
+        (row) => row.deletedAt.isNotNull() & row.ownerId.equals(userId),
       )
-      ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
       ..limit(count, offset: offset);
 
-    return query.map((row) {
-      final asset = row.readTable(_db.remoteAssetEntity).toDto();
-      return asset.copyWith(
-        localId: row.read(_db.localAssetEntity.id),
-      );
-    }).get();
+    return query.map((row) => row.toDto()).get();
   }
 
   Stream<List<Bucket>> watchArchiveBucket(
