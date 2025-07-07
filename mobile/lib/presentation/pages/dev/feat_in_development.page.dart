@@ -100,6 +100,11 @@ final _features = [
     onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
   ),
   _Feature(
+    name: 'Favorite',
+    icon: Icons.favorite_outline_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftFavoriteRoute()),
+  ),
+  _Feature(
     name: 'Trash',
     icon: Icons.delete_outline_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const DriftTrashRoute()),
