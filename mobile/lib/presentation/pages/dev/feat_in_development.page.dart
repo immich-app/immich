@@ -128,19 +128,9 @@ final _features = [
     onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
   ),
   _Feature(
-    name: 'Trash',
-    icon: Icons.delete_outline_rounded,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftTrashRoute()),
-  ),
-  _Feature(
-    name: 'Archive',
-    icon: Icons.archive_outlined,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftArchiveRoute()),
-  ),
-  _Feature(
-    name: 'Locked Folder',
-    icon: Icons.lock_outline_rounded,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftLockedFolderRoute()),
+    name: 'Video',
+    icon: Icons.video_collection_outlined,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftVideoRoute()),
   ),
 ];
 

@@ -67,6 +67,8 @@ import 'package:immich_mobile/pages/search/person_result.page.dart';
 import 'package:immich_mobile/pages/search/recently_taken.page.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
+import 'package:immich_mobile/presentation/pages/dev/drift_favorite.page.dart';
+import 'package:immich_mobile/presentation/pages/dev/drift_video.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/drift_trash.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/drift_archive.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/drift_locked_folder.page.dart';
@@ -76,6 +78,7 @@ import 'package:immich_mobile/presentation/pages/dev/main_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/media_stat.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/remote_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_album.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_library.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_asset_selection_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_memory.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
@@ -179,7 +182,7 @@ class AppRouter extends RootStackRouter {
           maintainState: false,
         ),
         AutoRoute(
-          page: LibraryRoute.page,
+          page: DriftLibraryRoute.page,
           guards: [_authGuard, _duplicateGuard],
         ),
         AutoRoute(
@@ -398,6 +401,10 @@ class AppRouter extends RootStackRouter {
       guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(
+      page: DriftFavoriteRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
       page: DriftTrashRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
@@ -407,6 +414,14 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(
       page: DriftLockedFolderRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: DriftVideoRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: DriftLibraryRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(
