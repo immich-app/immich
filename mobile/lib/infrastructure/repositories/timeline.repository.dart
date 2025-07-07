@@ -213,6 +213,58 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         .map((row) => row.readTable(_db.remoteAssetEntity).toDto())
         .get();
   }
+
+  Stream<List<Bucket>> watchArchiveBucket(
+    String userId, {
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+  }) {
+    if (groupBy == GroupAssetsBy.none) {
+      return _db.remoteAssetEntity
+          .count(
+            where: (row) =>
+                row.visibility.equalsValue(AssetVisibility.archive) &
+                row.ownerId.equals(userId),
+          )
+          .map(_generateBuckets)
+          .watchSingle();
+    }
+
+    final assetCountExp = _db.remoteAssetEntity.id.count();
+    final dateExp = _db.remoteAssetEntity.createdAt.dateFmt(groupBy);
+
+    final query = _db.remoteAssetEntity.selectOnly()
+      ..addColumns([assetCountExp, dateExp])
+      ..where(
+        _db.remoteAssetEntity.ownerId.equals(userId) &
+            _db.remoteAssetEntity.visibility
+                .equalsValue(AssetVisibility.archive),
+      )
+      ..groupBy([dateExp])
+      ..orderBy([OrderingTerm.desc(dateExp)]);
+
+    return query.map((row) {
+      final timeline = row.read(dateExp)!.dateFmt(groupBy);
+      final assetCount = row.read(assetCountExp)!;
+      return TimeBucket(date: timeline, assetCount: assetCount);
+    }).watch();
+  }
+
+  Future<List<BaseAsset>> getArchiveBucketAssets(
+    String userId, {
+    required int offset,
+    required int count,
+  }) {
+    final query = _db.remoteAssetEntity.select()
+      ..where(
+        (row) =>
+            row.ownerId.equals(userId) &
+            row.visibility.equalsValue(AssetVisibility.archive),
+      )
+      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+      ..limit(count, offset: offset);
+
+    return query.map((row) => row.toDto()).get();
+  }
 }
 
 extension on Expression<DateTime> {
