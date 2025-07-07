@@ -100,26 +100,6 @@ final _features = [
     onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
   ),
   _Feature(
-    name: 'Favorite',
-    icon: Icons.favorite_outline_rounded,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftFavoriteRoute()),
-  ),
-  _Feature(
-    name: 'Trash',
-    icon: Icons.delete_outline_rounded,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftTrashRoute()),
-  ),
-  _Feature(
-    name: 'Archive',
-    icon: Icons.archive_outlined,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftArchiveRoute()),
-  ),
-  _Feature(
-    name: 'Locked Folder',
-    icon: Icons.lock_outline_rounded,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftLockedFolderRoute()),
-  ),
-  _Feature(
     name: 'Video',
     icon: Icons.video_collection_outlined,
     onTap: (ctx, _) => ctx.pushRoute(const DriftVideoRoute()),
