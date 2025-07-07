@@ -702,6 +702,7 @@ class DriftMemoryRouteArgs {
   }
 }
 
+/// generated route for
 /// [DriftTrashPage]
 class DriftTrashRoute extends PageRouteInfo<void> {
   const DriftTrashRoute({List<PageRouteInfo>? children})
