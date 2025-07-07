@@ -222,7 +222,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       return _db.remoteAssetEntity
           .count(
             where: (row) =>
-                row.visibility.equals(AssetVisibility.locked.index) &
+                row.visibility.equalsValue(AssetVisibility.locked) &
                 row.ownerId.equals(userId),
           )
           .map(_generateBuckets)
@@ -234,18 +234,10 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
     final query = _db.remoteAssetEntity.selectOnly()
       ..addColumns([assetCountExp, dateExp])
-      ..join([
-        leftOuterJoin(
-          _db.localAssetEntity,
-          _db.remoteAssetEntity.checksum
-              .equalsExp(_db.localAssetEntity.checksum),
-          useColumns: false,
-        ),
-      ])
       ..where(
         _db.remoteAssetEntity.ownerId.equals(userId) &
             _db.remoteAssetEntity.visibility
-                .equals(AssetVisibility.locked.index),
+                .equalsValue(AssetVisibility.locked),
       )
       ..groupBy([dateExp])
       ..orderBy([OrderingTerm.desc(dateExp)]);
@@ -274,7 +266,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ..where(
         _db.remoteAssetEntity.ownerId.equals(userId) &
             _db.remoteAssetEntity.visibility
-                .equals(AssetVisibility.locked.index),
+                .equalsValue(AssetVisibility.locked),
       )
       ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
       ..limit(count, offset: offset);
