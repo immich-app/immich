@@ -196,6 +196,8 @@
     "oauth_mobile_redirect_uri": "Mobile redirect URI",
     "oauth_mobile_redirect_uri_override": "Mobile redirect URI override",
     "oauth_mobile_redirect_uri_override_description": "Enable when OAuth provider does not allow a mobile URI, like ''{callback}''",
+    "oauth_role_claim": "Role Claim",
+    "oauth_role_claim_description": "Automatically grant admin access based on the presence of this claim. The claim may have either 'user' or 'admin'.",
     "oauth_settings": "OAuth",
     "oauth_settings_description": "Manage OAuth login settings",
     "oauth_settings_more_details": "For more details about this feature, refer to the <link>docs</link>.",

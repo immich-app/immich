@@ -14654,6 +14654,9 @@
           "profileSigningAlgorithm": {
             "type": "string"
           },
+          "roleClaim": {
+            "type": "string"
+          },
           "scope": {
             "type": "string"
           },
@@ -14690,6 +14693,7 @@
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "profileSigningAlgorithm",
+          "roleClaim",
           "scope",
           "signingAlgorithm",
           "storageLabelClaim",
