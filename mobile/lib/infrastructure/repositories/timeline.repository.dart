@@ -233,14 +233,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
     final query = _db.remoteAssetEntity.selectOnly()
       ..addColumns([assetCountExp, dateExp])
-      ..join([
-        leftOuterJoin(
-          _db.localAssetEntity,
-          _db.remoteAssetEntity.checksum
-              .equalsExp(_db.localAssetEntity.checksum),
-          useColumns: false,
-        ),
-      ])
       ..where(
         _db.remoteAssetEntity.ownerId.equals(userId) &
             _db.remoteAssetEntity.deletedAt.isNotNull(),
