@@ -19,7 +19,9 @@ class DriftPartnerDetailPage extends StatelessWidget {
           (ref) {
             final user = ref.watch(currentUserProvider);
             if (user == null) {
-              throw Exception('User must be logged in to access partner detail');
+              throw Exception(
+                'User must be logged in to access partner detail',
+              );
             }
 
             final timelineService =

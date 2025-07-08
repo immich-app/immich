@@ -493,7 +493,8 @@ class _PartnerList extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ).t(context: context, args: {'user': partner.name}),
-          onTap: () => context.pushRoute(DriftPartnerDetailRoute(partnerId: partner.id)),
+          onTap: () =>
+              context.pushRoute(DriftPartnerDetailRoute(partnerId: partner.id)),
         );
       },
     );
