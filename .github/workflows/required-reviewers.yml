@@ -1,0 +1,59 @@
+name: Required Reviewers Check
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  check-member-review:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      contents: read
+
+    steps:
+      - name: Check for organization member review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+
+            console.log(`Checking reviews for PR #${prNumber}`);
+
+            try {
+              // Get all reviews for the pull request
+              const { data: reviews } = await github.rest.pulls.listReviews({
+                owner,
+                repo,
+                pull_number: prNumber
+              });
+
+              console.log(`Found ${reviews.length} reviews`);
+
+              // Check if any review is from an organization member
+              let hasMemberReview = false;
+
+              for (const review of reviews) {
+                console.log(`Review by ${review.user.login}: state=${review.state}, author_association=${review.author_association}`);
+
+                // Check if the reviewer is an organization member
+                if (review.author_association === 'MEMBER' && review.state === 'APPROVED') {
+                  console.log(`✅ Found approved review from organization member: ${review.user.login}`);
+                  hasMemberReview = true;
+                  break;
+                }
+              }
+
+              if (!hasMemberReview) {
+                console.log('❌ No approved review from organization member found');
+                core.setFailed('This pull request requires an approved review from an organization member');
+              } else {
+                console.log('✅ Required organization member review found');
+              }
+
+            } catch (error) {
+              console.error('Error checking reviews:', error);
+              core.setFailed(`Failed to check reviews: ${error.message}`);
+            }
+
