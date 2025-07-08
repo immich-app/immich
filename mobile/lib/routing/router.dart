@@ -91,6 +91,7 @@ import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/backup_permission_guard.dart';
 import 'package:immich_mobile/routing/custom_transition_builders.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
+import 'package:immich_mobile/routing/gallery_guard.dart';
 import 'package:immich_mobile/routing/locked_guard.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/local_auth.service.dart';
@@ -116,6 +117,7 @@ class AppRouter extends RootStackRouter {
   late final DuplicateGuard _duplicateGuard;
   late final BackupPermissionGuard _backupPermissionGuard;
   late final LockedGuard _lockedGuard;
+  late final GalleryGuard _galleryGuard;
 
   AppRouter(
     ApiService apiService,
@@ -128,6 +130,7 @@ class AppRouter extends RootStackRouter {
     _lockedGuard =
         LockedGuard(apiService, secureStorageService, localAuthService);
     _backupPermissionGuard = BackupPermissionGuard(galleryPermissionNotifier);
+    _galleryGuard = const GalleryGuard();
   }
 
   @override
@@ -197,7 +200,7 @@ class AppRouter extends RootStackRouter {
     ),
     CustomRoute(
       page: GalleryViewerRoute.page,
-      guards: [_authGuard, _duplicateGuard],
+      guards: [_authGuard, _galleryGuard],
       transitionsBuilder: CustomTransitionsBuilders.zoomedPage,
     ),
     AutoRoute(
