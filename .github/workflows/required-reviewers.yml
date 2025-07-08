@@ -2,7 +2,6 @@ name: Required Reviewers Check
 
 on:
   pull_request_review:
-    types: [submitted]
 
 jobs:
   check-member-review:
