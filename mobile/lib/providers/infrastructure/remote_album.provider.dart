@@ -8,21 +8,21 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'album.provider.dart';
 
 class RemoteAlbumState {
-  final List<Album> albums;
-  final List<Album> filteredAlbums;
+  final List<RemoteAlbum> albums;
+  final List<RemoteAlbum> filteredAlbums;
   final bool isLoading;
   final String? error;
 
   const RemoteAlbumState({
     required this.albums,
-    List<Album>? filteredAlbums,
+    List<RemoteAlbum>? filteredAlbums,
     this.isLoading = false,
     this.error,
   }) : filteredAlbums = filteredAlbums ?? albums;
 
   RemoteAlbumState copyWith({
-    List<Album>? albums,
-    List<Album>? filteredAlbums,
+    List<RemoteAlbum>? albums,
+    List<RemoteAlbum>? filteredAlbums,
     bool? isLoading,
     String? error,
   }) {
@@ -66,7 +66,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     return const RemoteAlbumState(albums: [], filteredAlbums: []);
   }
 
-  Future<List<Album>> getAll() async {
+  Future<List<RemoteAlbum>> getAll() async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {

@@ -12,9 +12,11 @@ class MesmerizingSliverAppBar extends ConsumerWidget {
   const MesmerizingSliverAppBar({
     super.key,
     required this.title,
+    this.icon = Icons.camera,
   });
 
   final String title;
+  final IconData icon;
 
   double _calculateScrollProgress(FlexibleSpaceBarSettings? settings) {
     if (settings?.maxExtent == null || settings?.minExtent == null) {
@@ -70,6 +72,7 @@ class MesmerizingSliverAppBar extends ConsumerWidget {
                 assetCount: assetCount,
                 scrollProgress: scrollProgress,
                 title: title,
+                icon: icon,
               ),
             );
           },
@@ -83,11 +86,13 @@ class _ExpandedBackground extends ConsumerWidget {
   final int assetCount;
   final double scrollProgress;
   final String title;
+  final IconData icon;
 
   const _ExpandedBackground({
     required this.assetCount,
     required this.scrollProgress,
     required this.title,
+    required this.icon,
   });
 
   @override
@@ -101,7 +106,10 @@ class _ExpandedBackground extends ConsumerWidget {
           offset: Offset(0, scrollProgress * 50),
           child: Transform.scale(
             scale: 1.4 - (scrollProgress * 0.2),
-            child: _RandomAssetBackground(timelineService: timelineService),
+            child: _RandomAssetBackground(
+              timelineService: timelineService,
+              icon: icon,
+            ),
           ),
         ),
         Container(
@@ -175,8 +183,12 @@ class _ExpandedBackground extends ConsumerWidget {
 
 class _RandomAssetBackground extends StatefulWidget {
   final TimelineService timelineService;
+  final IconData icon;
 
-  const _RandomAssetBackground({required this.timelineService});
+  const _RandomAssetBackground({
+    required this.timelineService,
+    required this.icon,
+  });
 
   @override
   State<_RandomAssetBackground> createState() => _RandomAssetBackgroundState();
@@ -191,6 +203,18 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
   late Animation<double> _fadeAnimation;
   BaseAsset? _currentAsset;
   BaseAsset? _nextAsset;
+
+  final LinearGradient gradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Colors.pink.shade300.withValues(alpha: 0.9),
+      Colors.purple.shade400.withValues(alpha: 0.8),
+      Colors.indigo.shade400.withValues(alpha: 0.9),
+      Colors.blue.shade500.withValues(alpha: 0.8),
+    ],
+    stops: const [0.0, 0.3, 0.7, 1.0],
+  );
 
   @override
   void initState() {
@@ -237,7 +261,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
     );
 
     Future.delayed(
-      const Duration(milliseconds: 100),
+      Durations.medium1,
       () => _loadRandomAsset(),
     );
   }
@@ -275,6 +299,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
         : 0;
 
     final assets = widget.timelineService.getAssets(randomIndex, 1);
+
     if (assets.isEmpty) {
       return;
     }
@@ -330,119 +355,14 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
   @override
   Widget build(BuildContext context) {
     if (widget.timelineService.totalAssets == 0) {
-      return Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: context.isDarkTheme
-                ? [
-                    Colors.deepPurple.withValues(alpha: 0.8),
-                    Colors.indigo.withValues(alpha: 0.9),
-                    Colors.purple.withValues(alpha: 0.8),
-                    Colors.pink.withValues(alpha: 0.7),
-                  ]
-                : [
-                    Colors.pink.shade300.withValues(alpha: 0.9),
-                    Colors.purple.shade400.withValues(alpha: 0.8),
-                    Colors.indigo.shade400.withValues(alpha: 0.9),
-                    Colors.blue.shade500.withValues(alpha: 0.8),
-                  ],
-            stops: const [0.0, 0.3, 0.7, 1.0],
-          ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: 40,
-              right: 30,
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: context.isDarkTheme
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : Colors.white.withValues(alpha: 0.2),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 100,
-              left: 50,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: context.isDarkTheme
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : Colors.white.withValues(alpha: 0.15),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 120,
-              left: 20,
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: context.isDarkTheme
-                      ? Colors.white.withValues(alpha: 0.06)
-                      : Colors.white.withValues(alpha: 0.12),
-                ),
-              ),
-            ),
-            // Heart icon for empty favorites
-            Center(
-              child: Icon(
-                Icons.favorite_outline,
-                size: 100,
-                color: context.isDarkTheme
-                    ? Colors.white.withValues(alpha: 0.15)
-                    : Colors.white.withValues(alpha: 0.25),
-              ),
-            ),
-          ],
-        ),
+      return _EmptyPageExtendedBackground(
+        gradient: gradient,
+        icon: widget.icon,
       );
     }
 
     if (_currentAsset == null) {
-      return AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: context.isDarkTheme
-                ? [
-                    Colors.deepPurple.withValues(alpha: 0.4),
-                    Colors.indigo.withValues(alpha: 0.5),
-                    Colors.purple.withValues(alpha: 0.4),
-                  ]
-                : [
-                    Colors.blue.shade200.withValues(alpha: 0.6),
-                    Colors.purple.shade300.withValues(alpha: 0.5),
-                    Colors.indigo.shade300.withValues(alpha: 0.6),
-                  ],
-          ),
-        ),
-        child: const Center(
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Colors.white70,
-              ),
-            ),
-          ),
-        ),
-      );
+      return const SizedBox.shrink();
     }
 
     return AnimatedBuilder(
@@ -451,7 +371,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
       builder: (context, child) {
         return Transform.translate(
           offset: Offset(
-            _panAnimation.value.dx * 100, // Convert to pixel offset
+            _panAnimation.value.dx * 100,
             _panAnimation.value.dy * 100,
           ),
           child: Transform.scale(
@@ -469,47 +389,14 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
                     if (wasSynchronouslyLoaded || frame != null) {
                       return child;
                     }
-                    // Show a subtle loading state while the full image loads
+
                     return Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: context.isDarkTheme
-                              ? [
-                                  Colors.deepPurple.withValues(alpha: 0.3),
-                                  Colors.indigo.withValues(alpha: 0.4),
-                                  Colors.purple.withValues(alpha: 0.3),
-                                ]
-                              : [
-                                  Colors.blue.shade200.withValues(alpha: 0.5),
-                                  Colors.purple.shade300.withValues(alpha: 0.4),
-                                  Colors.indigo.shade300.withValues(alpha: 0.5),
-                                ],
-                        ),
-                      ),
+                      decoration: BoxDecoration(gradient: gradient),
                     );
                   },
                   errorBuilder: (context, error, stackTrace) {
-                    // Fallback to a gradient if image fails to load
                     return Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: context.isDarkTheme
-                              ? [
-                                  Colors.deepPurple.withValues(alpha: 0.6),
-                                  Colors.indigo.withValues(alpha: 0.7),
-                                  Colors.purple.withValues(alpha: 0.6),
-                                ]
-                              : [
-                                  Colors.blue.shade300.withValues(alpha: 0.7),
-                                  Colors.purple.shade400.withValues(alpha: 0.6),
-                                  Colors.indigo.shade400.withValues(alpha: 0.7),
-                                ],
-                        ),
-                      ),
+                      decoration: BoxDecoration(gradient: gradient),
                     );
                   },
                 ),
@@ -518,6 +405,78 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
           ),
         );
       },
+    );
+  }
+}
+
+class _EmptyPageExtendedBackground extends StatelessWidget {
+  const _EmptyPageExtendedBackground({
+    required this.gradient,
+    required this.icon,
+  });
+
+  final LinearGradient gradient;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(gradient: gradient),
+      child: Stack(
+        children: [
+          Positioned(
+            top: 40,
+            right: 30,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: context.isDarkTheme
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.white.withValues(alpha: 0.2),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 100,
+            left: 50,
+            child: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: context.isDarkTheme
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.white.withValues(alpha: 0.15),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 120,
+            left: 20,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: context.isDarkTheme
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : Colors.white.withValues(alpha: 0.12),
+              ),
+            ),
+          ),
+          Center(
+            child: Icon(
+              icon,
+              size: 100,
+              color: context.isDarkTheme
+                  ? Colors.white.withValues(alpha: 0.15)
+                  : Colors.white.withValues(alpha: 0.25),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

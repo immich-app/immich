@@ -8,26 +8,26 @@ class RemoteAlbumService {
 
   const RemoteAlbumService(this._repository);
 
-  Future<List<Album>> getAll() {
+  Future<List<RemoteAlbum>> getAll() {
     return _repository.getAll();
   }
 
-  List<Album> sortAlbums(
-    List<Album> albums,
+  List<RemoteAlbum> sortAlbums(
+    List<RemoteAlbum> albums,
     RemoteAlbumSortMode sortMode, {
     bool isReverse = false,
   }) {
     return sortMode.sortFn(albums, isReverse);
   }
 
-  List<Album> searchAlbums(
-    List<Album> albums,
+  List<RemoteAlbum> searchAlbums(
+    List<RemoteAlbum> albums,
     String query,
     String? userId, [
     QuickFilterMode filterMode = QuickFilterMode.all,
   ]) {
     final lowerQuery = query.toLowerCase();
-    List<Album> filtered = albums;
+    List<RemoteAlbum> filtered = albums;
 
     // Apply text search filter
     if (query.isNotEmpty) {

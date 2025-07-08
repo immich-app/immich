@@ -32,6 +32,7 @@ class DriftFavoritePage extends StatelessWidget {
       child: Timeline(
         appBar: MesmerizingSliverAppBar(
           title: 'favorites'.t(context: context),
+          icon: Icons.favorite_outline,
         ),
       ),
     );
