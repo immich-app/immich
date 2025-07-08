@@ -354,22 +354,24 @@ class ScrubberState extends ConsumerState<Scrubber>
               isDragging: _isDragging,
             ),
           ),
-          PositionedDirectional(
-            top: _thumbTopOffset + widget.topPadding,
-            end: 0,
-            child: RepaintBoundary(
-              child: GestureDetector(
-                onVerticalDragStart: _onDragStart,
-                onVerticalDragUpdate: _onDragUpdate,
-                onVerticalDragEnd: _onDragEnd,
-                child: _Scrubber(
-                  thumbAnimation: _thumbAnimation,
-                  labelAnimation: _labelAnimation,
-                  label: label,
+          if (_scrollController.hasClients &&
+              _scrollController.position.maxScrollExtent > 0)
+            PositionedDirectional(
+              top: _thumbTopOffset + widget.topPadding,
+              end: 0,
+              child: RepaintBoundary(
+                child: GestureDetector(
+                  onVerticalDragStart: _onDragStart,
+                  onVerticalDragUpdate: _onDragUpdate,
+                  onVerticalDragEnd: _onDragEnd,
+                  child: _Scrubber(
+                    thumbAnimation: _thumbAnimation,
+                    labelAnimation: _labelAnimation,
+                    label: label,
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
