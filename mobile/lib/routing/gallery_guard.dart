@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:immich_mobile/routing/router.dart';
 
-/// Guards against duplicate navigation to this route
+/// Handles duplicate navigation to this route (primarily for deep linking)
 class GalleryGuard extends AutoRouteGuard {
   const GalleryGuard();
   @override
