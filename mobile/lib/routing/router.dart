@@ -68,6 +68,7 @@ import 'package:immich_mobile/pages/search/recently_taken.page.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/drift_favorite.page.dart';
+import 'package:immich_mobile/presentation/pages/dev/drift_search.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/drift_video.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/drift_trash.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/drift_archive.page.dart';
@@ -177,7 +178,7 @@ class AppRouter extends RootStackRouter {
           guards: [_authGuard, _duplicateGuard],
         ),
         AutoRoute(
-          page: SearchRoute.page,
+          page: DriftSearchRoute.page,
           guards: [_authGuard, _duplicateGuard],
           maintainState: false,
         ),
@@ -428,7 +429,10 @@ class AppRouter extends RootStackRouter {
       page: DriftAssetSelectionTimelineRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
-
+    AutoRoute(
+      page: DriftSearchRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
     // required to handle all deeplinks in deep_link.service.dart
     // auto_route_library#1722
     RedirectRoute(path: '*', redirectTo: '/'),

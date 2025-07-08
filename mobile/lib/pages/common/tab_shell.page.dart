@@ -116,7 +116,7 @@ class TabShellPage extends ConsumerWidget {
     return AutoTabsRouter(
       routes: [
         const MainTimelineRoute(),
-        SearchRoute(),
+        const DriftSearchRoute(),
         const DriftAlbumsRoute(),
         const DriftLibraryRoute(),
       ],

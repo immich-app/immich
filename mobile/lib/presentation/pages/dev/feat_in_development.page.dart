@@ -127,11 +127,6 @@ final _features = [
     icon: Icons.timeline_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
   ),
-  _Feature(
-    name: 'Video',
-    icon: Icons.video_collection_outlined,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftVideoRoute()),
-  ),
 ];
 
 @RoutePage()
