@@ -35,7 +35,7 @@ class RandomReceiver : GlanceAppWidgetReceiver() {
         val glanceIds = AppWidgetManager.getInstance(context).getAppWidgetIds(provider)
 
         glanceIds.forEach { widgetID ->
-          ImageDownloadWorker.singleShot(context, widgetID, WidgetType.MEMORIES)
+          ImageDownloadWorker.singleShot(context, widgetID, WidgetType.RANDOM)
         }
       }
     }
