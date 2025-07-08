@@ -1,6 +1,7 @@
 import { Kysely } from 'kysely';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { Sql } from 'postgres';
+import { ReaderContext } from 'src/sql-tools/contexts/reader-context';
 import { readers } from 'src/sql-tools/readers';
 import { DatabaseSchema, PostgresDB, SchemaFromDatabaseOptions } from 'src/sql-tools/types';
 
@@ -11,23 +12,16 @@ export const schemaFromDatabase = async (
   postgres: Sql,
   options: SchemaFromDatabaseOptions = {},
 ): Promise<DatabaseSchema> => {
-  const schema: DatabaseSchema = {
-    databaseName: 'immich',
-    schemaName: options.schemaName || 'public',
-    parameters: [],
-    functions: [],
-    enums: [],
-    extensions: [],
-    tables: [],
-    warnings: [],
-  };
-
   const db = new Kysely<PostgresDB>({ dialect: new PostgresJSDialect({ postgres }) });
-  for (const reader of readers) {
-    await reader(schema, db);
+  const ctx = new ReaderContext(options);
+
+  try {
+    for (const reader of readers) {
+      await reader(ctx, db);
+    }
+
+    return ctx.build();
+  } finally {
+    await db.destroy();
   }
-
-  await db.destroy();
-
-  return schema;
 };

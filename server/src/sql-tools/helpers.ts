@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { ColumnValue } from 'src/sql-tools/decorators/column.decorator';
-import { Comparer, DatabaseColumn, IgnoreOptions, SchemaDiff } from 'src/sql-tools/types';
+import { Comparer, DatabaseColumn, DatabaseOverride, IgnoreOptions, SchemaDiff } from 'src/sql-tools/types';
 
 export const asMetadataKey = (name: string) => `sql-tools:${name}`;
 
@@ -56,6 +56,17 @@ export const haveEqualColumns = (sourceColumns?: string[], targetColumns?: strin
   return setIsEqual(new Set(sourceColumns ?? []), new Set(targetColumns ?? []));
 };
 
+export const haveEqualOverrides = <T extends { override?: DatabaseOverride }>(source: T, target: T) => {
+  if (!source.override || !target.override) {
+    return false;
+  }
+
+  const sourceValue = source.override.value;
+  const targetValue = target.override.value;
+
+  return sourceValue.name === targetValue.name && sourceValue.sql === targetValue.sql;
+};
+
 export const compare = <T extends { name: string; synchronize: boolean }>(
   sources: T[],
   targets: T[],
@@ -72,7 +83,7 @@ export const compare = <T extends { name: string; synchronize: boolean }>(
     const source = sourceMap[key];
     const target = targetMap[key];
 
-    if (isIgnored(source, target, options)) {
+    if (isIgnored(source, target, options ?? true)) {
       continue;
     }
 
@@ -85,6 +96,14 @@ export const compare = <T extends { name: string; synchronize: boolean }>(
     } else if (!source && target) {
       items.push(...comparer.onExtra(target));
     } else {
+      if (
+        haveEqualOverrides(
+          source as unknown as { override?: DatabaseOverride },
+          target as unknown as { override?: DatabaseOverride },
+        )
+      ) {
+        continue;
+      }
       items.push(...comparer.onCompare(source, target));
     }
   }
@@ -97,6 +116,9 @@ const isIgnored = (
   target: { synchronize?: boolean } | undefined,
   options: IgnoreOptions,
 ) => {
+  if (typeof options === 'boolean') {
+    return !options;
+  }
   return (options.ignoreExtra && !source) || (options.ignoreMissing && !target);
 };
 
@@ -165,3 +187,18 @@ export const asColumnComment = (tableName: string, columnName: string, comment: 
 export const asColumnList = (columns: string[]) => columns.map((column) => `"${column}"`).join(', ');
 
 export const asForeignKeyConstraintName = (table: string, columns: string[]) => asKey('FK_', table, [...columns]);
+
+export const asJsonString = (value: unknown): string => {
+  return `'${escape(JSON.stringify(value))}'::jsonb`;
+};
+
+const escape = (value: string) => {
+  return value
+    .replaceAll("'", "''")
+    .replaceAll(/[\\]/g, '\\\\')
+    .replaceAll(/[\b]/g, String.raw`\b`)
+    .replaceAll(/[\f]/g, String.raw`\f`)
+    .replaceAll(/[\n]/g, String.raw`\n`)
+    .replaceAll(/[\r]/g, String.raw`\r`)
+    .replaceAll(/[\t]/g, String.raw`\t`);
+};

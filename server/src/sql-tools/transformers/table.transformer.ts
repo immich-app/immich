@@ -1,9 +1,9 @@
 import { asColumnComment, getColumnModifiers, getColumnType } from 'src/sql-tools/helpers';
 import { asColumnAlter } from 'src/sql-tools/transformers/column.transformer';
 import { SqlTransformer } from 'src/sql-tools/transformers/types';
-import { DatabaseTable, SchemaDiff } from 'src/sql-tools/types';
+import { DatabaseTable } from 'src/sql-tools/types';
 
-export const transformTables: SqlTransformer = (item: SchemaDiff) => {
+export const transformTables: SqlTransformer = (ctx, item) => {
   switch (item.type) {
     case 'TableCreate': {
       return asTableCreate(item.table);

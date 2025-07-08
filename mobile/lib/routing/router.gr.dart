@@ -800,6 +800,22 @@ class DriftMemoryRouteArgs {
 }
 
 /// generated route for
+/// [DriftRecentlyTakenPage]
+class DriftRecentlyTakenRoute extends PageRouteInfo<void> {
+  const DriftRecentlyTakenRoute({List<PageRouteInfo>? children})
+      : super(DriftRecentlyTakenRoute.name, initialChildren: children);
+
+  static const String name = 'DriftRecentlyTakenRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftRecentlyTakenPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftTrashPage]
 class DriftTrashRoute extends PageRouteInfo<void> {
   const DriftTrashRoute({List<PageRouteInfo>? children})

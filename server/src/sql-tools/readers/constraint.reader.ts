@@ -1,7 +1,7 @@
 import { sql } from 'kysely';
-import { ActionType, ConstraintType, DatabaseReader } from 'src/sql-tools/types';
+import { ActionType, ConstraintType, Reader } from 'src/sql-tools/types';
 
-export const readConstraints: DatabaseReader = async (schema, db) => {
+export const readConstraints: Reader = async (ctx, db) => {
   const constraints = await db
     .selectFrom('pg_constraint')
     .innerJoin('pg_namespace', 'pg_namespace.oid', 'pg_constraint.connamespace') // namespace
@@ -40,11 +40,11 @@ export const readConstraints: DatabaseReader = async (schema, db) => {
         .as('reference_column_names'),
       eb.fn<string>('pg_get_constraintdef', ['pg_constraint.oid']).as('expression'),
     ])
-    .where('pg_namespace.nspname', '=', schema.schemaName)
+    .where('pg_namespace.nspname', '=', ctx.schemaName)
     .execute();
 
   for (const constraint of constraints) {
-    const table = schema.tables.find((table) => table.name === constraint.table_name);
+    const table = ctx.getTableByName(constraint.table_name);
     if (!table) {
       continue;
     }
@@ -55,7 +55,7 @@ export const readConstraints: DatabaseReader = async (schema, db) => {
       // primary key constraint
       case 'p': {
         if (!constraint.column_names) {
-          schema.warnings.push(`Skipping CONSTRAINT "${constraintName}", no columns found`);
+          ctx.warnings.push(`Skipping CONSTRAINT "${constraintName}", no columns found`);
           continue;
         }
         table.constraints.push({
@@ -71,7 +71,7 @@ export const readConstraints: DatabaseReader = async (schema, db) => {
       // foreign key constraint
       case 'f': {
         if (!constraint.column_names || !constraint.reference_table_name || !constraint.reference_column_names) {
-          schema.warnings.push(
+          ctx.warnings.push(
             `Skipping CONSTRAINT "${constraintName}", missing either columns, referenced table, or referenced columns,`,
           );
           continue;

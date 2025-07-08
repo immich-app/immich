@@ -58,11 +58,11 @@ class TimelineFactory {
         ),
       );
 
-  TimelineService remoteAssets(List<String> timelineUsers) => TimelineService(
+  TimelineService remoteAssets(String ownerId) => TimelineService(
         assetSource: (offset, count) => _timelineRepository
-            .getRemoteBucketAssets(timelineUsers, offset: offset, count: count),
+            .getRemoteBucketAssets(ownerId, offset: offset, count: count),
         bucketSource: () => _timelineRepository.watchRemoteBucket(
-          timelineUsers,
+          ownerId,
           groupBy: GroupAssetsBy.month,
         ),
       );

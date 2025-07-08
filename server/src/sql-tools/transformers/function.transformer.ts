@@ -1,7 +1,7 @@
 import { SqlTransformer } from 'src/sql-tools/transformers/types';
-import { DatabaseFunction, SchemaDiff } from 'src/sql-tools/types';
+import { DatabaseFunction } from 'src/sql-tools/types';
 
-export const transformFunctions: SqlTransformer = (item: SchemaDiff) => {
+export const transformFunctions: SqlTransformer = (ctx, item) => {
   switch (item.type) {
     case 'FunctionCreate': {
       return asFunctionCreate(item.function);
@@ -17,7 +17,7 @@ export const transformFunctions: SqlTransformer = (item: SchemaDiff) => {
   }
 };
 
-const asFunctionCreate = (func: DatabaseFunction): string => {
+export const asFunctionCreate = (func: DatabaseFunction): string => {
   return func.expression;
 };
 

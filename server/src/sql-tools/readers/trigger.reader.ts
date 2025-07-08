@@ -1,6 +1,6 @@
-import { DatabaseReader, TriggerAction, TriggerScope, TriggerTiming } from 'src/sql-tools/types';
+import { Reader, TriggerAction, TriggerScope, TriggerTiming } from 'src/sql-tools/types';
 
-export const readTriggers: DatabaseReader = async (schema, db) => {
+export const readTriggers: Reader = async (ctx, db) => {
   const triggers = await db
     .selectFrom('pg_trigger as t')
     .innerJoin('pg_proc as p', 't.tgfoid', 'p.oid')
@@ -21,12 +21,12 @@ export const readTriggers: DatabaseReader = async (schema, db) => {
       'c.relname as table_name',
     ])
     .where('t.tgisinternal', '=', false) // Exclude internal system triggers
-    .where('n.nspname', '=', schema.schemaName)
+    .where('n.nspname', '=', ctx.schemaName)
     .execute();
 
   // add triggers to tables
   for (const trigger of triggers) {
-    const table = schema.tables.find((table) => table.name === trigger.table_name);
+    const table = ctx.getTableByName(trigger.table_name);
     if (!table) {
       continue;
     }

@@ -1,11 +1,14 @@
+import { BaseContext } from 'src/sql-tools/contexts/base-context';
 import { transformColumns } from 'src/sql-tools/transformers/column.transformer';
 import { describe, expect, it } from 'vitest';
+
+const ctx = new BaseContext({});
 
 describe(transformColumns.name, () => {
   describe('ColumnAdd', () => {
     it('should work', () => {
       expect(
-        transformColumns({
+        transformColumns(ctx, {
           type: 'ColumnAdd',
           column: {
             name: 'column1',
@@ -22,7 +25,7 @@ describe(transformColumns.name, () => {
 
     it('should add a nullable column', () => {
       expect(
-        transformColumns({
+        transformColumns(ctx, {
           type: 'ColumnAdd',
           column: {
             name: 'column1',
@@ -39,7 +42,7 @@ describe(transformColumns.name, () => {
 
     it('should add a column with an enum type', () => {
       expect(
-        transformColumns({
+        transformColumns(ctx, {
           type: 'ColumnAdd',
           column: {
             name: 'column1',
@@ -57,7 +60,7 @@ describe(transformColumns.name, () => {
 
     it('should add a column that is an array type', () => {
       expect(
-        transformColumns({
+        transformColumns(ctx, {
           type: 'ColumnAdd',
           column: {
             name: 'column1',
@@ -76,7 +79,7 @@ describe(transformColumns.name, () => {
   describe('ColumnAlter', () => {
     it('should make a column nullable', () => {
       expect(
-        transformColumns({
+        transformColumns(ctx, {
           type: 'ColumnAlter',
           tableName: 'table1',
           columnName: 'column1',
@@ -88,7 +91,7 @@ describe(transformColumns.name, () => {
 
     it('should make a column non-nullable', () => {
       expect(
-        transformColumns({
+        transformColumns(ctx, {
           type: 'ColumnAlter',
           tableName: 'table1',
           columnName: 'column1',
@@ -100,7 +103,7 @@ describe(transformColumns.name, () => {
 
     it('should update the default value', () => {
       expect(
-        transformColumns({
+        transformColumns(ctx, {
           type: 'ColumnAlter',
           tableName: 'table1',
           columnName: 'column1',
@@ -114,7 +117,7 @@ describe(transformColumns.name, () => {
   describe('ColumnDrop', () => {
     it('should work', () => {
       expect(
-        transformColumns({
+        transformColumns(ctx, {
           type: 'ColumnDrop',
           tableName: 'table1',
           columnName: 'column1',
