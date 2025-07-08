@@ -15,13 +15,7 @@ class LocalAlbumsSliverAppBar extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(5)),
       ),
-      automaticallyImplyLeading: false,
-      leading: IconButton(
-        icon: const Icon(Icons.close_rounded),
-        onPressed: () {
-          context.pop();
-        },
-      ),
+      automaticallyImplyLeading: true,
       centerTitle: true,
       title: Text(
         "on_this_device".t(context: context),

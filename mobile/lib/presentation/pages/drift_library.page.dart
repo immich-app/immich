@@ -5,14 +5,14 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/local_album_thumbnail.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/user_avatar.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
@@ -305,8 +305,7 @@ class _LocalAlbumsCollectionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO: Migrate to the drift after local album page
-    final albums = ref.watch(localAlbumsProvider);
+    final albums = ref.watch(localAlbumProvider);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -340,12 +339,29 @@ class _LocalAlbumsCollectionCard extends ConsumerWidget {
                     crossAxisSpacing: 8,
                     mainAxisSpacing: 8,
                     physics: const NeverScrollableScrollPhysics(),
-                    children: albums.take(4).map((album) {
-                      return AlbumThumbnailCard(
-                        album: album,
-                        showTitle: false,
-                      );
-                    }).toList(),
+                    children: albums.when(
+                      data: (data) {
+                        return data.take(4).map((album) {
+                          return LocalAlbumThumbnail(
+                            albumId: album.id,
+                          );
+                        }).toList();
+                      },
+                      error: (error, _) {
+                        return [
+                          Center(
+                            child: Text('Error: $error'),
+                          ),
+                        ];
+                      },
+                      loading: () {
+                        return [
+                          const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ];
+                      },
+                    ),
                   ),
                 ),
               ),

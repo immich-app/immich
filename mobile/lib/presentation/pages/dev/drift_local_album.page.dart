@@ -5,6 +5,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
+import 'package:immich_mobile/presentation/widgets/images/local_album_thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/local_album_sliver_app_bar.dart';
@@ -79,15 +80,11 @@ class _AlbumList extends ConsumerWidget {
                   leadingPadding: const EdgeInsets.only(
                     right: 16,
                   ),
-                  leading: const ClipRRect(
-                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                    child: SizedBox(
-                      width: 80,
-                      height: 80,
-                      // TODO: Local album thumbnail
-                      // child: Thumbnail(
-                      //   asset:
-                      // ),
+                  leading: SizedBox(
+                    width: 80,
+                    height: 80,
+                    child: LocalAlbumThumbnail(
+                      albumId: album.id,
                     ),
                   ),
                   title: Text(
