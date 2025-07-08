@@ -251,6 +251,12 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         .get();
   }
 
+  TimelineQuery fromAssets(List<BaseAsset> assets) => (
+        bucketSource: () => Stream.value(_generateBuckets(assets.length)),
+        assetSource: (offset, count) =>
+            Future.value(assets.skip(offset).take(count).toList()),
+      );
+
   TimelineQuery remote(String ownerId, GroupAssetsBy groupBy) =>
       _remoteQueryBuilder(
         filter: (row) =>

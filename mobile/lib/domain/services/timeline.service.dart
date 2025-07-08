@@ -62,6 +62,9 @@ class TimelineFactory {
 
   TimelineService video(String userId) =>
       TimelineService(_timelineRepository.video(userId, groupBy));
+
+  TimelineService fromAssets(List<BaseAsset> assets) =>
+      TimelineService(_timelineRepository.fromAssets(assets));
 }
 
 class TimelineService {

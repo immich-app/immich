@@ -870,6 +870,45 @@ class DriftRecentlyTakenRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftSearchPage]
+class DriftSearchRoute extends PageRouteInfo<DriftSearchRouteArgs> {
+  DriftSearchRoute({
+    Key? key,
+    SearchFilter? preFilter,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftSearchRoute.name,
+          args: DriftSearchRouteArgs(key: key, preFilter: preFilter),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftSearchRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftSearchRouteArgs>(
+        orElse: () => const DriftSearchRouteArgs(),
+      );
+      return DriftSearchPage(key: args.key, preFilter: args.preFilter);
+    },
+  );
+}
+
+class DriftSearchRouteArgs {
+  const DriftSearchRouteArgs({this.key, this.preFilter});
+
+  final Key? key;
+
+  final SearchFilter? preFilter;
+
+  @override
+  String toString() {
+    return 'DriftSearchRouteArgs{key: $key, preFilter: $preFilter}';
+  }
+}
+
+/// generated route for
 /// [DriftTrashPage]
 class DriftTrashRoute extends PageRouteInfo<void> {
   const DriftTrashRoute({List<PageRouteInfo>? children})
