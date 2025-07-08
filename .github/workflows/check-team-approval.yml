@@ -2,11 +2,6 @@ name: Check Team Approval
 
 on:
   workflow_call:
-    inputs:
-      pr_number:
-        required: true
-        type: number
-        description: 'Pull request number to check'
     outputs:
       has_approval:
         description: 'Whether the PR has approval from a team/admin member'
@@ -28,7 +23,7 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
-            const prNumber = ${{ inputs.pr_number }};
+            const prNumber = context.payload.pull_request.number;
 
             console.log(`Checking reviews for PR #${prNumber}`);
 

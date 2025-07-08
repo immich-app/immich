@@ -7,8 +7,6 @@ on:
 jobs:
   check-member-review:
     uses: ./.github/workflows/check-team-approval.yml
-    with:
-      pr_number: ${{ github.event.pull_request.number }}
     permissions:
       pull-requests: read
       contents: read
