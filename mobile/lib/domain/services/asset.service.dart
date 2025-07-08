@@ -46,8 +46,8 @@ class AssetService {
       height = exif?.height ?? asset.height?.toDouble();
     } else if (asset is LocalAsset && _platform.isAndroid) {
       isFlipped = asset.orientation == 90 || asset.orientation == 270;
-      width = asset.height?.toDouble();
-      height = asset.width?.toDouble();
+      width = asset.width?.toDouble();
+      height = asset.height?.toDouble();
     } else {
       isFlipped = false;
     }
