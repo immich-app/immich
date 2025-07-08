@@ -20,10 +20,16 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 
 class Timeline extends StatelessWidget {
-  const Timeline({super.key, this.topSliverWidget, this.topSliverWidgetHeight});
+  const Timeline({
+    super.key,
+    this.topSliverWidget,
+    this.topSliverWidgetHeight,
+    this.appBar,
+  });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
+  final Widget? appBar;
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +50,7 @@ class Timeline extends StatelessWidget {
           child: _SliverTimeline(
             topSliverWidget: topSliverWidget,
             topSliverWidgetHeight: topSliverWidgetHeight,
+            appBar: appBar,
           ),
         ),
       ),
@@ -52,10 +59,15 @@ class Timeline extends StatelessWidget {
 }
 
 class _SliverTimeline extends ConsumerStatefulWidget {
-  const _SliverTimeline({this.topSliverWidget, this.topSliverWidgetHeight});
+  const _SliverTimeline({
+    this.topSliverWidget,
+    this.topSliverWidgetHeight,
+    this.appBar,
+  });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
+  final Widget? appBar;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
@@ -105,11 +117,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   primary: true,
                   cacheExtent: maxHeight * 2,
                   slivers: [
-                    const ImmichSliverAppBar(
-                      floating: true,
-                      pinned: false,
-                      snap: false,
-                    ),
+                    widget.appBar ??
+                        const ImmichSliverAppBar(
+                          floating: true,
+                          pinned: false,
+                          snap: false,
+                        ),
                     if (widget.topSliverWidget != null) widget.topSliverWidget!,
                     _SliverSegmentedList(
                       segments: segments,

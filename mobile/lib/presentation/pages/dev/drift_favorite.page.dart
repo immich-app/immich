@@ -1,9 +1,10 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 
 @RoutePage()
 class DriftFavoritePage extends StatelessWidget {
@@ -27,7 +28,9 @@ class DriftFavoritePage extends StatelessWidget {
           },
         ),
       ],
-      child: const Timeline(),
+      child: const Timeline(
+        appBar: MesmerizingSliverAppBar(),
+      ),
     );
   }
 }

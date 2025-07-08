@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 
 @RoutePage()
 class DriftArchivePage extends StatelessWidget {
@@ -27,7 +28,9 @@ class DriftArchivePage extends StatelessWidget {
           },
         ),
       ],
-      child: const Timeline(),
+      child: const Timeline(
+        appBar: MesmerizingSliverAppBar(),
+      ),
     );
   }
 }
