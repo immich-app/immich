@@ -1,11 +1,8 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/image/immich_local_thumbnail_provider.dart';
 import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/utils/hooks/blurhash_hook.dart';
 import 'package:immich_mobile/utils/thumbnail_utils.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/thumbhash_placeholder.dart';
@@ -42,7 +39,6 @@ class ImmichThumbnail extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    Uint8List? blurhash = useBlurHashRef(asset).value;
     final userId = ref.watch(currentUserProvider)?.id;
 
     if (asset == null) {
@@ -54,14 +50,14 @@ class ImmichThumbnail extends HookConsumerWidget {
       );
     }
 
-    final assetAltText = getAltText(asset!.exifInfo, asset!.fileCreatedAt, asset!.type, []);
+    final assetAltText = getAltText(asset!.exifInfo, asset!.fileCreatedAt, asset!.type, const []);
 
     final thumbnailProviderInstance = ImmichThumbnail.imageProvider(asset: asset, userId: userId);
 
     customErrorBuilder(BuildContext ctx, Object error, StackTrace? stackTrace) {
       thumbnailProviderInstance.evict();
 
-      final originalErrorWidgetBuilder = blurHashErrorBuilder(blurhash, fit: fit);
+      final originalErrorWidgetBuilder = blurHashErrorBuilder(asset?.thumbhash, fit: fit);
       return originalErrorWidgetBuilder(ctx, error, stackTrace);
     }
 
@@ -72,7 +68,8 @@ class ImmichThumbnail extends HookConsumerWidget {
         fadeInDuration: Duration.zero,
         fadeOutDuration: const Duration(milliseconds: 100),
         octoSet: OctoSet(
-          placeholderBuilder: blurHashPlaceholderBuilder(blurhash, fit: fit),
+          placeholderBuilder:
+              blurHashPlaceholderBuilder(asset?.thumbhash, fit: fit),
           errorBuilder: customErrorBuilder,
         ),
         image: thumbnailProviderInstance,

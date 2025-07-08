@@ -4,13 +4,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
-import 'package:immich_mobile/presentation/widgets/timeline/segment_builder.dart';
-import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
@@ -76,6 +75,21 @@ class FixedSegment extends Segment {
       spacing: spacing,
     );
   }
+
+  const FixedSegment.empty()
+      : this(
+          firstIndex: 0,
+          lastIndex: 0,
+          startOffset: 0,
+          endOffset: 0,
+          firstAssetIndex: 0,
+          bucket: const Bucket(assetCount: 0),
+          tileHeight: 1,
+          columnCount: 0,
+          headerExtent: 0,
+          spacing: 0,
+          header: HeaderType.none,
+        );
 }
 
 class _FixedSegmentRow extends ConsumerWidget {
@@ -93,45 +107,44 @@ class _FixedSegmentRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isScrubbing = ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
     final timelineService = ref.read(timelineServiceProvider);
-
-    if (isScrubbing) {
-      return _buildPlaceholder(context);
-    }
 
     if (timelineService.hasRange(assetIndex, assetCount)) {
       return _buildAssetRow(context, timelineService.getAssets(assetIndex, assetCount), timelineService);
     }
 
-    return FutureBuilder<List<BaseAsset>>(
-      future: timelineService.loadAssets(assetIndex, assetCount),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return _buildPlaceholder(context);
-        }
-        return _buildAssetRow(context, snapshot.requireData, timelineService);
+    try {
+      final assets = timelineService.getAssets(assetIndex, assetCount);
+      return FutureBuilder<List<BaseAsset>>(
+        future: null,
+        initialData: assets,
+        builder: (context, snapshot) {
+          return _buildAssetRow(context, snapshot.data, timelineService);
+        },
+      );
+    } catch (e) {
+      return FutureBuilder<List<BaseAsset>>(
+        future: timelineService.loadAssets(assetIndex, assetCount),
+        builder: (context, snapshot) {
+          return _buildAssetRow(context, snapshot.data, timelineService);
       },
     );
+    }
   }
 
-  Widget _buildPlaceholder(BuildContext context) {
-    return SegmentBuilder.buildPlaceholder(context, assetCount, size: Size.square(tileHeight), spacing: spacing);
-  }
-
-  Widget _buildAssetRow(BuildContext context, List<BaseAsset> assets, TimelineService timelineService) {
+  Widget _buildAssetRow(BuildContext context, List<BaseAsset>? assets, TimelineService timelineService) {
     return FixedTimelineRow(
       dimension: tileHeight,
       spacing: spacing,
       textDirection: Directionality.of(context),
       children: [
-        for (int i = 0; i < assets.length; i++)
+        for (int i = 0; i < assetCount; i++)
           TimelineAssetIndexWrapper(
             assetIndex: assetIndex + i,
             segmentIndex: 0, // For simplicity, using 0 for now
             child: _AssetTileWidget(
-              key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
-              asset: assets[i],
+              key: ValueKey(i.hashCode ^ (assetIndex + i).hashCode ^ timelineService.hashCode),
+              asset: assets == null ? null : assets[i],
               assetIndex: assetIndex + i,
             ),
           ),
@@ -141,7 +154,7 @@ class _FixedSegmentRow extends ConsumerWidget {
 }
 
 class _AssetTileWidget extends ConsumerWidget {
-  final BaseAsset asset;
+  final BaseAsset? asset;
   final int assetIndex;
 
   const _AssetTileWidget({super.key, required this.asset, required this.assetIndex});
@@ -190,17 +203,18 @@ class _AssetTileWidget extends ConsumerWidget {
 
     final lockSelection = _getLockSelectionStatus(ref);
     final showStorageIndicator = ref.watch(timelineArgsProvider.select((args) => args.showStorageIndicator));
+    final asset = this.asset;
 
-    return RepaintBoundary(
-      child: GestureDetector(
-        onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset),
-        onLongPress: () => lockSelection ? null : _handleOnLongPress(ref, asset),
+    return GestureDetector(
+      onTap: () => lockSelection || asset == null ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset),
+        onLongPress: () => lockSelection || asset == null
+          ? null
+          : _handleOnLongPress(ref, asset),
         child: ThumbnailTile(
           asset,
           lockSelection: lockSelection,
           showStorageIndicator: showStorageIndicator,
           heroOffset: heroOffset,
-        ),
       ),
     );
   }
