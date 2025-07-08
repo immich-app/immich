@@ -19,11 +19,17 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         useColumns: false,
       ),
       leftOuterJoin(
+        _db.remoteAssetEntity,
+        _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId),
+        useColumns: false,
+      ),
+      leftOuterJoin(
         _db.userEntity,
         _db.userEntity.id.equalsExp(_db.remoteAlbumEntity.ownerId),
       ),
     ]);
     query
+      ..where(_db.remoteAssetEntity.deletedAt.isNull())
       ..addColumns([assetCount])
       ..groupBy([_db.remoteAlbumEntity.id]);
 

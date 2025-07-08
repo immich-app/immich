@@ -132,6 +132,11 @@ final _features = [
     icon: Icons.video_collection_outlined,
     onTap: (ctx, _) => ctx.pushRoute(const DriftVideoRoute()),
   ),
+  _Feature(
+    name: 'Recently Taken',
+    icon: Icons.schedule_outlined,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftRecentlyTakenRoute()),
+  ),
 ];
 
 @RoutePage()
