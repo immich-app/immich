@@ -1,25 +1,25 @@
 import { asForeignKeyConstraintName, asKey } from 'src/sql-tools/helpers';
 import { ActionType, ConstraintType, Processor } from 'src/sql-tools/types';
 
-export const processForeignKeyColumns: Processor = (builder, items) => {
+export const processForeignKeyColumns: Processor = (ctx, items) => {
   for (const {
     item: { object, propertyName, options, target },
   } of items.filter((item) => item.type === 'foreignKeyColumn')) {
-    const { table, column } = builder.getColumnByObjectAndPropertyName(object, propertyName);
+    const { table, column } = ctx.getColumnByObjectAndPropertyName(object, propertyName);
     if (!table) {
-      builder.warnMissingTable('@ForeignKeyColumn', object);
+      ctx.warnMissingTable('@ForeignKeyColumn', object);
       continue;
     }
 
     if (!column) {
       // should be impossible since they are pre-created in `column.processor.ts`
-      builder.warnMissingColumn('@ForeignKeyColumn', object, propertyName);
+      ctx.warnMissingColumn('@ForeignKeyColumn', object, propertyName);
       continue;
     }
 
-    const referenceTable = builder.getTableByObject(target());
+    const referenceTable = ctx.getTableByObject(target());
     if (!referenceTable) {
-      builder.warnMissingTable('@ForeignKeyColumn', object, propertyName);
+      ctx.warnMissingTable('@ForeignKeyColumn', object, propertyName);
       continue;
     }
 

@@ -1,7 +1,7 @@
 import { sql } from 'kysely';
-import { DatabaseReader } from 'src/sql-tools/types';
+import { Reader } from 'src/sql-tools/types';
 
-export const readIndexes: DatabaseReader = async (schema, db) => {
+export const readIndexes: Reader = async (ctx, db) => {
   const indexes = await db
     .selectFrom('pg_index as ix')
     // matching index, which has column information
@@ -34,12 +34,12 @@ export const readIndexes: DatabaseReader = async (schema, db) => {
         .select((eb) => eb.fn<string[]>('json_agg', ['a.attname']).as('column_name'))
         .as('column_names'),
     ])
-    .where('pg_namespace.nspname', '=', schema.schemaName)
+    .where('pg_namespace.nspname', '=', ctx.schemaName)
     .where('ix.indisprimary', '=', sql.lit(false))
     .execute();
 
   for (const index of indexes) {
-    const table = schema.tables.find((table) => table.name === index.table_name);
+    const table = ctx.getTableByName(index.table_name);
     if (!table) {
       continue;
     }

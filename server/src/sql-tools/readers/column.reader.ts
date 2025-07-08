@@ -1,8 +1,8 @@
 import { sql } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
-import { ColumnType, DatabaseColumn, DatabaseReader } from 'src/sql-tools/types';
+import { ColumnType, DatabaseColumn, Reader } from 'src/sql-tools/types';
 
-export const readColumns: DatabaseReader = async (schema, db) => {
+export const readColumns: Reader = async (ctx, db) => {
   const columns = await db
     .selectFrom('information_schema.columns as c')
     .leftJoin('information_schema.element_types as o', (join) =>
@@ -42,13 +42,13 @@ export const readColumns: DatabaseReader = async (schema, db) => {
       // data type for ARRAYs
       'o.data_type as array_type',
     ])
-    .where('table_schema', '=', schema.schemaName)
+    .where('table_schema', '=', ctx.schemaName)
     .execute();
 
   const enumRaw = await db
     .selectFrom('pg_type')
     .innerJoin('pg_namespace', (join) =>
-      join.onRef('pg_namespace.oid', '=', 'pg_type.typnamespace').on('pg_namespace.nspname', '=', schema.schemaName),
+      join.onRef('pg_namespace.oid', '=', 'pg_type.typnamespace').on('pg_namespace.nspname', '=', ctx.schemaName),
     )
     .where('typtype', '=', sql.lit('e'))
     .select((eb) => [
@@ -61,13 +61,13 @@ export const readColumns: DatabaseReader = async (schema, db) => {
 
   const enums = enumRaw.map((item) => ({ name: item.name, values: item.values.map(({ value }) => value) }));
   for (const { name, values } of enums) {
-    schema.enums.push({ name, values, synchronize: true });
+    ctx.enums.push({ name, values, synchronize: true });
   }
 
   const enumMap = Object.fromEntries(enums.map((e) => [e.name, e.values]));
   // add columns to tables
   for (const column of columns) {
-    const table = schema.tables.find((table) => table.name === column.table_name);
+    const table = ctx.getTableByName(column.table_name);
     if (!table) {
       continue;
     }
@@ -93,7 +93,7 @@ export const readColumns: DatabaseReader = async (schema, db) => {
       // array types
       case 'ARRAY': {
         if (!column.array_type) {
-          schema.warnings.push(`Unable to find type for ${columnLabel} (ARRAY)`);
+          ctx.warnings.push(`Unable to find type for ${columnLabel} (ARRAY)`);
           continue;
         }
         item.type = column.array_type as ColumnType;
@@ -103,7 +103,7 @@ export const readColumns: DatabaseReader = async (schema, db) => {
       // enum types
       case 'USER-DEFINED': {
         if (!enumMap[column.udt_name]) {
-          schema.warnings.push(`Unable to find type for ${columnLabel} (ENUM)`);
+          ctx.warnings.push(`Unable to find type for ${columnLabel} (ENUM)`);
           continue;
         }
 

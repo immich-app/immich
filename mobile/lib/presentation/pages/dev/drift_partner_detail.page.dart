@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 
 @RoutePage()
 class DriftPartnerDetailPage extends StatelessWidget {
@@ -17,15 +16,8 @@ class DriftPartnerDetailPage extends StatelessWidget {
       overrides: [
         timelineServiceProvider.overrideWith(
           (ref) {
-            final user = ref.watch(currentUserProvider);
-            if (user == null) {
-              throw Exception(
-                'User must be logged in to access partner detail',
-              );
-            }
-
             final timelineService =
-                ref.watch(timelineFactoryProvider).remoteAssets([partnerId]);
+                ref.watch(timelineFactoryProvider).remoteAssets(partnerId);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },

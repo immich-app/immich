@@ -1,7 +1,7 @@
 import { SqlTransformer } from 'src/sql-tools/transformers/types';
-import { DatabaseTrigger, SchemaDiff } from 'src/sql-tools/types';
+import { DatabaseTrigger } from 'src/sql-tools/types';
 
-export const transformTriggers: SqlTransformer = (item: SchemaDiff) => {
+export const transformTriggers: SqlTransformer = (ctx, item) => {
   switch (item.type) {
     case 'TriggerCreate': {
       return asTriggerCreate(item.trigger);

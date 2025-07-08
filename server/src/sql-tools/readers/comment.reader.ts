@@ -1,6 +1,6 @@
-import { DatabaseReader } from 'src/sql-tools/types';
+import { Reader } from 'src/sql-tools/types';
 
-export const readComments: DatabaseReader = async (schema, db) => {
+export const readComments: Reader = async (ctx, db) => {
   const comments = await db
     .selectFrom('pg_description as d')
     .innerJoin('pg_class as c', 'd.objoid', 'c.oid')
@@ -20,7 +20,7 @@ export const readComments: DatabaseReader = async (schema, db) => {
 
   for (const comment of comments) {
     if (comment.object_type === 'r') {
-      const table = schema.tables.find((table) => table.name === comment.object_name);
+      const table = ctx.getTableByName(comment.object_name);
       if (!table) {
         continue;
       }

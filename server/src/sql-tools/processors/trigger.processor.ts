@@ -2,13 +2,13 @@ import { TriggerOptions } from 'src/sql-tools/decorators/trigger.decorator';
 import { asKey } from 'src/sql-tools/helpers';
 import { Processor } from 'src/sql-tools/types';
 
-export const processTriggers: Processor = (builder, items) => {
+export const processTriggers: Processor = (ctx, items) => {
   for (const {
     item: { object, options },
   } of items.filter((item) => item.type === 'trigger')) {
-    const table = builder.getTableByObject(object);
+    const table = ctx.getTableByObject(object);
     if (!table) {
-      builder.warnMissingTable('@Trigger', object);
+      ctx.warnMissingTable('@Trigger', object);
       continue;
     }
 

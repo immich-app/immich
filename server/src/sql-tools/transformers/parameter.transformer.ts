@@ -1,7 +1,7 @@
 import { SqlTransformer } from 'src/sql-tools/transformers/types';
-import { DatabaseParameter, SchemaDiff } from 'src/sql-tools/types';
+import { DatabaseParameter } from 'src/sql-tools/types';
 
-export const transformParameters: SqlTransformer = (item: SchemaDiff) => {
+export const transformParameters: SqlTransformer = (ctx, item) => {
   switch (item.type) {
     case 'ParameterSet': {
       return asParameterSet(item.parameter);

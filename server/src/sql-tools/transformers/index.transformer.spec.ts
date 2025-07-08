@@ -1,11 +1,14 @@
+import { BaseContext } from 'src/sql-tools/contexts/base-context';
 import { transformIndexes } from 'src/sql-tools/transformers/index.transformer';
 import { describe, expect, it } from 'vitest';
+
+const ctx = new BaseContext({});
 
 describe(transformIndexes.name, () => {
   describe('IndexCreate', () => {
     it('should work', () => {
       expect(
-        transformIndexes({
+        transformIndexes(ctx, {
           type: 'IndexCreate',
           index: {
             name: 'IDX_test',
@@ -21,7 +24,7 @@ describe(transformIndexes.name, () => {
 
     it('should create an unique index', () => {
       expect(
-        transformIndexes({
+        transformIndexes(ctx, {
           type: 'IndexCreate',
           index: {
             name: 'IDX_test',
@@ -37,7 +40,7 @@ describe(transformIndexes.name, () => {
 
     it('should create an index with a custom expression', () => {
       expect(
-        transformIndexes({
+        transformIndexes(ctx, {
           type: 'IndexCreate',
           index: {
             name: 'IDX_test',
@@ -53,7 +56,7 @@ describe(transformIndexes.name, () => {
 
     it('should create an index with a where clause', () => {
       expect(
-        transformIndexes({
+        transformIndexes(ctx, {
           type: 'IndexCreate',
           index: {
             name: 'IDX_test',
@@ -70,7 +73,7 @@ describe(transformIndexes.name, () => {
 
     it('should create an index with a custom expression', () => {
       expect(
-        transformIndexes({
+        transformIndexes(ctx, {
           type: 'IndexCreate',
           index: {
             name: 'IDX_test',
@@ -89,7 +92,7 @@ describe(transformIndexes.name, () => {
   describe('IndexDrop', () => {
     it('should work', () => {
       expect(
-        transformIndexes({
+        transformIndexes(ctx, {
           type: 'IndexDrop',
           indexName: 'IDX_test',
           reason: 'unknown',

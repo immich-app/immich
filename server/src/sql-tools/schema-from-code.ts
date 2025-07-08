@@ -1,26 +1,58 @@
+import { ProcessorContext } from 'src/sql-tools/contexts/processor-context';
 import { processors } from 'src/sql-tools/processors';
 import { getRegisteredItems, resetRegisteredItems } from 'src/sql-tools/register';
-import { SchemaBuilder } from 'src/sql-tools/schema-builder';
-import { SchemaFromCodeOptions } from 'src/sql-tools/types';
+import { ConstraintType, SchemaFromCodeOptions } from 'src/sql-tools/types';
 
 /**
  * Load schema from code (decorators, etc)
  */
 export const schemaFromCode = (options: SchemaFromCodeOptions = {}) => {
   try {
-    const globalOptions = {
-      createForeignKeyIndexes: options.createForeignKeyIndexes ?? true,
-    };
-
-    const builder = new SchemaBuilder(options);
+    const ctx = new ProcessorContext(options);
     const items = getRegisteredItems();
+
     for (const processor of processors) {
-      processor(builder, items, globalOptions);
+      processor(ctx, items);
     }
 
-    const newSchema = builder.build();
+    if (ctx.options.overrides) {
+      ctx.tables.push({
+        name: ctx.overrideTableName,
+        columns: [
+          {
+            primary: true,
+            name: 'name',
+            tableName: ctx.overrideTableName,
+            type: 'character varying',
+            nullable: false,
+            isArray: false,
+            synchronize: true,
+          },
+          {
+            name: 'value',
+            tableName: ctx.overrideTableName,
+            type: 'jsonb',
+            nullable: false,
+            isArray: false,
+            synchronize: true,
+          },
+        ],
+        indexes: [],
+        triggers: [],
+        constraints: [
+          {
+            type: ConstraintType.PRIMARY_KEY,
+            name: `${ctx.overrideTableName}_pkey`,
+            tableName: ctx.overrideTableName,
+            columnNames: ['name'],
+            synchronize: true,
+          },
+        ],
+        synchronize: true,
+      });
+    }
 
-    return newSchema;
+    return ctx.build();
   } finally {
     if (options.reset) {
       resetRegisteredItems();
