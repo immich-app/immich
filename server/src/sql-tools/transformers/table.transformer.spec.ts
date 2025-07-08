@@ -1,11 +1,14 @@
+import { BaseContext } from 'src/sql-tools/contexts/base-context';
 import { transformTables } from 'src/sql-tools/transformers/table.transformer';
 import { describe, expect, it } from 'vitest';
+
+const ctx = new BaseContext({});
 
 describe(transformTables.name, () => {
   describe('TableDrop', () => {
     it('should work', () => {
       expect(
-        transformTables({
+        transformTables(ctx, {
           type: 'TableDrop',
           tableName: 'table1',
           reason: 'unknown',
@@ -17,7 +20,7 @@ describe(transformTables.name, () => {
   describe('TableCreate', () => {
     it('should work', () => {
       expect(
-        transformTables({
+        transformTables(ctx, {
           type: 'TableCreate',
           table: {
             name: 'table1',
@@ -43,7 +46,7 @@ describe(transformTables.name, () => {
 
     it('should handle a non-nullable column', () => {
       expect(
-        transformTables({
+        transformTables(ctx, {
           type: 'TableCreate',
           table: {
             name: 'table1',
@@ -69,7 +72,7 @@ describe(transformTables.name, () => {
 
     it('should handle a default value', () => {
       expect(
-        transformTables({
+        transformTables(ctx, {
           type: 'TableCreate',
           table: {
             name: 'table1',
@@ -96,7 +99,7 @@ describe(transformTables.name, () => {
 
     it('should handle a string with a fixed length', () => {
       expect(
-        transformTables({
+        transformTables(ctx, {
           type: 'TableCreate',
           table: {
             name: 'table1',
@@ -123,7 +126,7 @@ describe(transformTables.name, () => {
 
     it('should handle an array type', () => {
       expect(
-        transformTables({
+        transformTables(ctx, {
           type: 'TableCreate',
           table: {
             name: 'table1',

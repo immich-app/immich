@@ -12,7 +12,7 @@ class ThumbnailTile extends ConsumerWidget {
     this.size = const Size.square(256),
     this.fit = BoxFit.cover,
     this.showStorageIndicator = true,
-    this.canDeselect = true,
+    this.lockSelection = false,
     super.key,
   });
 
@@ -20,15 +20,13 @@ class ThumbnailTile extends ConsumerWidget {
   final Size size;
   final BoxFit fit;
   final bool showStorageIndicator;
-
-  /// If we are allowed to deselect this image
-  final bool canDeselect;
+  final bool lockSelection;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assetContainerColor = context.isDarkTheme
-        ? context.primaryColor.darken(amount: 0.6)
-        : context.primaryColor.lighten(amount: 0.8);
+        ? context.primaryColor.darken(amount: 0.4)
+        : context.primaryColor.lighten(amount: 0.75);
 
     final isSelected = ref.watch(
       multiSelectProvider.select(
@@ -36,24 +34,29 @@ class ThumbnailTile extends ConsumerWidget {
       ),
     );
 
+    final borderStyle = lockSelection
+        ? BoxDecoration(
+            color: context.colorScheme.surfaceContainerHighest,
+            border: Border.all(
+              color: context.colorScheme.surfaceContainerHighest,
+              width: 6,
+            ),
+          )
+        : isSelected
+            ? BoxDecoration(
+                color: assetContainerColor,
+                border: Border.all(color: assetContainerColor, width: 6),
+              )
+            : const BoxDecoration();
+
     return Stack(
       children: [
         AnimatedContainer(
           duration: Durations.short4,
           curve: Curves.decelerate,
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (canDeselect ? assetContainerColor : Colors.grey)
-                : null,
-            border: isSelected
-                ? Border.all(
-                    color: canDeselect ? assetContainerColor : Colors.grey,
-                    width: 8,
-                  )
-                : const Border(),
-          ),
+          decoration: borderStyle,
           child: ClipRRect(
-            borderRadius: isSelected
+            borderRadius: isSelected || lockSelection
                 ? const BorderRadius.all(Radius.circular(15.0))
                 : BorderRadius.zero,
             child: Stack(
@@ -102,14 +105,17 @@ class ThumbnailTile extends ConsumerWidget {
             ),
           ),
         ),
-        if (isSelected)
+        if (isSelected || lockSelection)
           Padding(
             padding: const EdgeInsets.all(3.0),
             child: Align(
               alignment: Alignment.topLeft,
               child: _SelectionIndicator(
                 isSelected: isSelected,
-                color: assetContainerColor,
+                isLocked: lockSelection,
+                color: lockSelection
+                    ? context.colorScheme.surfaceContainerHighest
+                    : assetContainerColor,
               ),
             ),
           ),
@@ -120,15 +126,29 @@ class ThumbnailTile extends ConsumerWidget {
 
 class _SelectionIndicator extends StatelessWidget {
   final bool isSelected;
+  final bool isLocked;
   final Color? color;
+
   const _SelectionIndicator({
     required this.isSelected,
+    required this.isLocked,
     this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (isSelected) {
+    if (isLocked) {
+      return Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color,
+        ),
+        child: const Icon(
+          Icons.check_circle_rounded,
+          color: Colors.grey,
+        ),
+      );
+    } else if (isSelected) {
       return Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,

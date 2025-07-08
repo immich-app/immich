@@ -18,6 +18,7 @@ import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
+import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
 class Timeline extends StatelessWidget {
   const Timeline({
@@ -96,6 +97,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     final asyncSegments = ref.watch(timelineSegmentProvider);
     final maxHeight =
         ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
+    final isSelectionMode = ref.watch(
+      multiSelectProvider.select((s) => s.forceEnable),
+    );
+
     return asyncSegments.widgetWhen(
       onData: (segments) {
         final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
@@ -117,12 +122,15 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   primary: true,
                   cacheExtent: maxHeight * 2,
                   slivers: [
-                    widget.appBar ??
-                        const ImmichSliverAppBar(
-                          floating: true,
-                          pinned: false,
-                          snap: false,
-                        ),
+                    if (isSelectionMode)
+                      const SelectionSliverAppBar()
+                    else
+                      widget.appBar ??
+                          const ImmichSliverAppBar(
+                            floating: true,
+                            pinned: false,
+                            snap: false,
+                          ),
                     if (widget.topSliverWidget != null) widget.topSliverWidget!,
                     _SliverSegmentedList(
                       segments: segments,
@@ -147,40 +155,42 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   ],
                 ),
               ),
-              Consumer(
-                builder: (_, consumerRef, child) {
-                  final isMultiSelectEnabled = consumerRef.watch(
-                    multiSelectProvider.select(
-                      (s) => s.isEnabled,
-                    ),
-                  );
+              if (!isSelectionMode) ...[
+                Consumer(
+                  builder: (_, consumerRef, child) {
+                    final isMultiSelectEnabled = consumerRef.watch(
+                      multiSelectProvider.select(
+                        (s) => s.isEnabled,
+                      ),
+                    );
 
-                  if (isMultiSelectEnabled) {
-                    return child!;
-                  }
-                  return const SizedBox.shrink();
-                },
-                child: const Positioned(
-                  top: 60,
-                  left: 25,
-                  child: _MultiSelectStatusButton(),
+                    if (isMultiSelectEnabled) {
+                      return child!;
+                    }
+                    return const SizedBox.shrink();
+                  },
+                  child: const Positioned(
+                    top: 60,
+                    left: 25,
+                    child: _MultiSelectStatusButton(),
+                  ),
                 ),
-              ),
-              Consumer(
-                builder: (_, consumerRef, child) {
-                  final isMultiSelectEnabled = consumerRef.watch(
-                    multiSelectProvider.select(
-                      (s) => s.isEnabled,
-                    ),
-                  );
+                Consumer(
+                  builder: (_, consumerRef, child) {
+                    final isMultiSelectEnabled = consumerRef.watch(
+                      multiSelectProvider.select(
+                        (s) => s.isEnabled,
+                      ),
+                    );
 
-                  if (isMultiSelectEnabled) {
-                    return child!;
-                  }
-                  return const SizedBox.shrink();
-                },
-                child: const HomeBottomAppBar(),
-              ),
+                    if (isMultiSelectEnabled) {
+                      return child!;
+                    }
+                    return const SizedBox.shrink();
+                  },
+                  child: const HomeBottomAppBar(),
+                ),
+              ],
             ],
           ),
         );

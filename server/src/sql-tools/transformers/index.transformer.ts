@@ -1,8 +1,8 @@
 import { asColumnList } from 'src/sql-tools/helpers';
 import { SqlTransformer } from 'src/sql-tools/transformers/types';
-import { DatabaseIndex, SchemaDiff } from 'src/sql-tools/types';
+import { DatabaseIndex } from 'src/sql-tools/types';
 
-export const transformIndexes: SqlTransformer = (item: SchemaDiff) => {
+export const transformIndexes: SqlTransformer = (ctx, item) => {
   switch (item.type) {
     case 'IndexCreate': {
       return asIndexCreate(item.index);

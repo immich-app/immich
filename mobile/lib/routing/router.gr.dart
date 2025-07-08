@@ -635,6 +635,55 @@ class DriftArchiveRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftAssetSelectionTimelinePage]
+class DriftAssetSelectionTimelineRoute
+    extends PageRouteInfo<DriftAssetSelectionTimelineRouteArgs> {
+  DriftAssetSelectionTimelineRoute({
+    Key? key,
+    Set<BaseAsset> lockedSelectionAssets = const {},
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftAssetSelectionTimelineRoute.name,
+          args: DriftAssetSelectionTimelineRouteArgs(
+            key: key,
+            lockedSelectionAssets: lockedSelectionAssets,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftAssetSelectionTimelineRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftAssetSelectionTimelineRouteArgs>(
+        orElse: () => const DriftAssetSelectionTimelineRouteArgs(),
+      );
+      return DriftAssetSelectionTimelinePage(
+        key: args.key,
+        lockedSelectionAssets: args.lockedSelectionAssets,
+      );
+    },
+  );
+}
+
+class DriftAssetSelectionTimelineRouteArgs {
+  const DriftAssetSelectionTimelineRouteArgs({
+    this.key,
+    this.lockedSelectionAssets = const {},
+  });
+
+  final Key? key;
+
+  final Set<BaseAsset> lockedSelectionAssets;
+
+  @override
+  String toString() {
+    return 'DriftAssetSelectionTimelineRouteArgs{key: $key, lockedSelectionAssets: $lockedSelectionAssets}';
+  }
+}
+
+/// generated route for
 /// [DriftFavoritePage]
 class DriftFavoriteRoute extends PageRouteInfo<void> {
   const DriftFavoriteRoute({List<PageRouteInfo>? children})
@@ -662,6 +711,22 @@ class DriftLibraryRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const DriftLibraryPage();
+    },
+  );
+}
+
+/// generated route for
+/// [DriftLocalAlbumsPage]
+class DriftLocalAlbumsRoute extends PageRouteInfo<void> {
+  const DriftLocalAlbumsRoute({List<PageRouteInfo>? children})
+      : super(DriftLocalAlbumsRoute.name, initialChildren: children);
+
+  static const String name = 'DriftLocalAlbumsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftLocalAlbumsPage();
     },
   );
 }
@@ -732,6 +797,60 @@ class DriftMemoryRouteArgs {
   String toString() {
     return 'DriftMemoryRouteArgs{memories: $memories, memoryIndex: $memoryIndex, key: $key}';
   }
+}
+
+/// generated route for
+/// [DriftPartnerDetailPage]
+class DriftPartnerDetailRoute
+    extends PageRouteInfo<DriftPartnerDetailRouteArgs> {
+  DriftPartnerDetailRoute({
+    Key? key,
+    required String partnerId,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftPartnerDetailRoute.name,
+          args: DriftPartnerDetailRouteArgs(key: key, partnerId: partnerId),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftPartnerDetailRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftPartnerDetailRouteArgs>();
+      return DriftPartnerDetailPage(key: args.key, partnerId: args.partnerId);
+    },
+  );
+}
+
+class DriftPartnerDetailRouteArgs {
+  const DriftPartnerDetailRouteArgs({this.key, required this.partnerId});
+
+  final Key? key;
+
+  final String partnerId;
+
+  @override
+  String toString() {
+    return 'DriftPartnerDetailRouteArgs{key: $key, partnerId: $partnerId}';
+  }
+}
+
+/// generated route for
+/// [DriftRecentlyTakenPage]
+class DriftRecentlyTakenRoute extends PageRouteInfo<void> {
+  const DriftRecentlyTakenRoute({List<PageRouteInfo>? children})
+      : super(DriftRecentlyTakenRoute.name, initialChildren: children);
+
+  static const String name = 'DriftRecentlyTakenRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftRecentlyTakenPage();
+    },
+  );
 }
 
 /// generated route for

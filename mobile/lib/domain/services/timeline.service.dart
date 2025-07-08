@@ -42,16 +42,29 @@ class TimelineFactory {
 
   TimelineService localAlbum({required String albumId}) => TimelineService(
         assetSource: (offset, count) => _timelineRepository
-            .getLocalBucketAssets(albumId, offset: offset, count: count),
-        bucketSource: () =>
-            _timelineRepository.watchLocalBucket(albumId, groupBy: groupBy),
+            .getLocalAlbumBucketAssets(albumId, offset: offset, count: count),
+        bucketSource: () => _timelineRepository.watchLocalAlbumBucket(
+          albumId,
+          groupBy: groupBy,
+        ),
       );
 
   TimelineService remoteAlbum({required String albumId}) => TimelineService(
         assetSource: (offset, count) => _timelineRepository
-            .getRemoteBucketAssets(albumId, offset: offset, count: count),
-        bucketSource: () =>
-            _timelineRepository.watchRemoteBucket(albumId, groupBy: groupBy),
+            .getRemoteAlbumBucketAssets(albumId, offset: offset, count: count),
+        bucketSource: () => _timelineRepository.watchRemoteAlbumBucket(
+          albumId,
+          groupBy: groupBy,
+        ),
+      );
+
+  TimelineService remoteAssets(String ownerId) => TimelineService(
+        assetSource: (offset, count) => _timelineRepository
+            .getRemoteBucketAssets(ownerId, offset: offset, count: count),
+        bucketSource: () => _timelineRepository.watchRemoteBucket(
+          ownerId,
+          groupBy: GroupAssetsBy.month,
+        ),
       );
 
   TimelineService favorite(String userId) => TimelineService(
