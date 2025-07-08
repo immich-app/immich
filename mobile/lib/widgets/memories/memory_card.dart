@@ -5,8 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/pages/common/native_video_viewer.page.dart';
-import 'package:immich_mobile/utils/hooks/blurhash_hook.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
+import 'package:immich_mobile/widgets/common/thumbhash.dart';
 
 class MemoryCard extends StatelessWidget {
   final Asset asset;
@@ -87,31 +87,35 @@ class _BlurredBackdrop extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final blurhash = useBlurHashRef(asset).value;
+    final blurhash = asset.thumbhash;
     if (blurhash != null) {
       // Use a nice cheap blur hash image decoration
-      return Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(image: MemoryImage(blurhash), fit: BoxFit.cover),
-        ),
-        child: Container(color: Colors.black.withValues(alpha: 0.2)),
-      );
-    } else {
-      // Fall back to using a more expensive image filtered
-      // Since the ImmichImage is already precached, we can
-      // safely use that as the image provider
-      return ImageFiltered(
-        imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-        child: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: ImmichImage.imageProvider(asset: asset, height: context.height, width: context.width),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Container(color: Colors.black.withValues(alpha: 0.2)),
-        ),
+      return Stack(
+        children: [
+          const ColoredBox(color: Color.fromRGBO(0, 0, 0, 0.2)),
+          Thumbhash(blurhash: blurhash, fit: BoxFit.cover),
+        ],
       );
     }
+
+    // Fall back to using a more expensive image filtered
+    // Since the ImmichImage is already precached, we can
+    // safely use that as the image provider
+    return ImageFiltered(
+      imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: ImmichImage.imageProvider(
+              asset: asset,
+              height: context.height,
+              width: context.width,
+            ),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: const ColoredBox(color: Color.fromRGBO(0, 0, 0, 0.2)),
+      ),
+    );
   }
 }
