@@ -11,6 +11,7 @@ export const schema: DatabaseSchema = {
   enums: [],
   extensions: [],
   parameters: [],
+  overrides: [],
   tables: [
     {
       name: 'table1',

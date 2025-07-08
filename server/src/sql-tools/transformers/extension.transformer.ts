@@ -1,7 +1,7 @@
 import { SqlTransformer } from 'src/sql-tools/transformers/types';
-import { DatabaseExtension, SchemaDiff } from 'src/sql-tools/types';
+import { DatabaseExtension } from 'src/sql-tools/types';
 
-export const transformExtensions: SqlTransformer = (item: SchemaDiff) => {
+export const transformExtensions: SqlTransformer = (ctx, item) => {
   switch (item.type) {
     case 'ExtensionCreate': {
       return asExtensionCreate(item.extension);

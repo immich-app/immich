@@ -1,8 +1,8 @@
 import { asColumnList } from 'src/sql-tools/helpers';
 import { SqlTransformer } from 'src/sql-tools/transformers/types';
-import { ActionType, ConstraintType, DatabaseConstraint, SchemaDiff } from 'src/sql-tools/types';
+import { ActionType, ConstraintType, DatabaseConstraint } from 'src/sql-tools/types';
 
-export const transformConstraints: SqlTransformer = (item: SchemaDiff) => {
+export const transformConstraints: SqlTransformer = (ctx, item) => {
   switch (item.type) {
     case 'ConstraintAdd': {
       return asConstraintAdd(item.constraint);

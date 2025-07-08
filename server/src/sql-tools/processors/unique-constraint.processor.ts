@@ -1,13 +1,13 @@
 import { asKey } from 'src/sql-tools/helpers';
 import { ConstraintType, Processor } from 'src/sql-tools/types';
 
-export const processUniqueConstraints: Processor = (builder, items) => {
+export const processUniqueConstraints: Processor = (ctx, items) => {
   for (const {
     item: { object, options },
   } of items.filter((item) => item.type === 'uniqueConstraint')) {
-    const table = builder.getTableByObject(object);
+    const table = ctx.getTableByObject(object);
     if (!table) {
-      builder.warnMissingTable('@Unique', object);
+      ctx.warnMissingTable('@Unique', object);
       continue;
     }
 
@@ -28,15 +28,15 @@ export const processUniqueConstraints: Processor = (builder, items) => {
     type,
     item: { object, propertyName, options },
   } of items.filter((item) => item.type === 'column' || item.type === 'foreignKeyColumn')) {
-    const { table, column } = builder.getColumnByObjectAndPropertyName(object, propertyName);
+    const { table, column } = ctx.getColumnByObjectAndPropertyName(object, propertyName);
     if (!table) {
-      builder.warnMissingTable('@Column', object);
+      ctx.warnMissingTable('@Column', object);
       continue;
     }
 
     if (!column) {
       // should be impossible since they are created in `column.processor.ts`
-      builder.warnMissingColumn('@Column', object, propertyName);
+      ctx.warnMissingColumn('@Column', object, propertyName);
       continue;
     }
 

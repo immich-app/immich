@@ -1,7 +1,7 @@
 import { sql } from 'kysely';
-import { DatabaseReader, ParameterScope } from 'src/sql-tools/types';
+import { ParameterScope, Reader } from 'src/sql-tools/types';
 
-export const readParameters: DatabaseReader = async (schema, db) => {
+export const readParameters: Reader = async (ctx, db) => {
   const parameters = await db
     .selectFrom('pg_settings')
     .where('source', 'in', [sql.lit('database'), sql.lit('user')])
@@ -9,10 +9,10 @@ export const readParameters: DatabaseReader = async (schema, db) => {
     .execute();
 
   for (const parameter of parameters) {
-    schema.parameters.push({
+    ctx.parameters.push({
       name: parameter.name,
       value: parameter.value,
-      databaseName: schema.databaseName,
+      databaseName: ctx.databaseName,
       scope: parameter.scope as ParameterScope,
       synchronize: true,
     });

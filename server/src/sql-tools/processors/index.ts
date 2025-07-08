@@ -8,6 +8,7 @@ import { processForeignKeyColumns } from 'src/sql-tools/processors/foreign-key-c
 import { processForeignKeyConstraints } from 'src/sql-tools/processors/foreign-key-constraint.processor';
 import { processFunctions } from 'src/sql-tools/processors/function.processor';
 import { processIndexes } from 'src/sql-tools/processors/index.processor';
+import { processOverrides } from 'src/sql-tools/processors/override.processor';
 import { processPrimaryKeyConstraints } from 'src/sql-tools/processors/primary-key-contraint.processor';
 import { processTables } from 'src/sql-tools/processors/table.processor';
 import { processTriggers } from 'src/sql-tools/processors/trigger.processor';
@@ -29,4 +30,5 @@ export const processors: Processor[] = [
   processPrimaryKeyConstraints,
   processIndexes,
   processTriggers,
+  processOverrides,
 ];

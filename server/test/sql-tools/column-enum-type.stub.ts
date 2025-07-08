@@ -27,6 +27,7 @@ export const schema: DatabaseSchema = {
   ],
   extensions: [],
   parameters: [],
+  overrides: [],
   tables: [
     {
       name: 'table1',
