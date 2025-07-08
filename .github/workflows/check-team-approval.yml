@@ -2,10 +2,6 @@ name: Check Team Approval
 
 on:
   workflow_call:
-    outputs:
-      has_approval:
-        description: 'Whether the PR has approval from a team/admin member'
-        value: ${{ jobs.check-approval.outputs.has_approval }}
 
 jobs:
   check-approval:
@@ -13,8 +9,6 @@ jobs:
     permissions:
       pull-requests: read
       contents: read
-    outputs:
-      has_approval: ${{ steps.check-review.outputs.has_approval }}
 
     steps:
       - name: Check for team/admin review
@@ -74,9 +68,6 @@ jobs:
                   break;
                 }
               }
-
-              // Set output for the workflow
-              core.setOutput('has_approval', hasValidReview.toString());
 
               if (!hasValidReview) {
                 console.log('❌ No approved review from team/admin member found');
