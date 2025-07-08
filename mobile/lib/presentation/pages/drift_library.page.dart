@@ -315,9 +315,7 @@ class _LocalAlbumsCollectionCard extends ConsumerWidget {
         final size = context.width * widthFactor - 20.0;
 
         return GestureDetector(
-          onTap: () => context.pushRoute(
-            const LocalAlbumsRoute(),
-          ),
+          onTap: () => context.pushRoute(const DriftLocalAlbumsRoute()),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
