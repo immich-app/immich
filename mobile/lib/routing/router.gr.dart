@@ -800,6 +800,44 @@ class DriftMemoryRouteArgs {
 }
 
 /// generated route for
+/// [DriftPartnerDetailPage]
+class DriftPartnerDetailRoute
+    extends PageRouteInfo<DriftPartnerDetailRouteArgs> {
+  DriftPartnerDetailRoute({
+    Key? key,
+    required String partnerId,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftPartnerDetailRoute.name,
+          args: DriftPartnerDetailRouteArgs(key: key, partnerId: partnerId),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftPartnerDetailRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftPartnerDetailRouteArgs>();
+      return DriftPartnerDetailPage(key: args.key, partnerId: args.partnerId);
+    },
+  );
+}
+
+class DriftPartnerDetailRouteArgs {
+  const DriftPartnerDetailRouteArgs({this.key, required this.partnerId});
+
+  final Key? key;
+
+  final String partnerId;
+
+  @override
+  String toString() {
+    return 'DriftPartnerDetailRouteArgs{key: $key, partnerId: $partnerId}';
+  }
+}
+
+/// generated route for
 /// [DriftRecentlyTakenPage]
 class DriftRecentlyTakenRoute extends PageRouteInfo<void> {
   const DriftRecentlyTakenRoute({List<PageRouteInfo>? children})
