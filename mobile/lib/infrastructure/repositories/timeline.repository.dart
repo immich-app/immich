@@ -124,6 +124,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         innerJoin(
           _db.localAlbumAssetEntity,
           _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+          useColumns: false,
         ),
       ])
       ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
@@ -147,6 +148,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         innerJoin(
           _db.localAlbumAssetEntity,
           _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+          useColumns: false,
         ),
       ],
     )
@@ -179,6 +181,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
           _db.remoteAlbumAssetEntity,
           _db.remoteAlbumAssetEntity.assetId
               .equalsExp(_db.remoteAssetEntity.id),
+          useColumns: false,
         ),
       ])
       ..where(
@@ -206,6 +209,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
           _db.remoteAlbumAssetEntity,
           _db.remoteAlbumAssetEntity.assetId
               .equalsExp(_db.remoteAssetEntity.id),
+          useColumns: false,
         ),
       ],
     )
@@ -221,7 +225,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 
   Stream<List<Bucket>> watchRemoteBucket(
-    List<String> userIds, {
+    String ownerId, {
     GroupAssetsBy groupBy = GroupAssetsBy.day,
   }) {
     if (groupBy == GroupAssetsBy.none) {
@@ -230,7 +234,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
             where: (row) =>
                 row.deletedAt.isNull() &
                 row.visibility.equalsValue(AssetVisibility.timeline) &
-                row.ownerId.isIn(userIds),
+                row.ownerId.equals(ownerId),
           )
           .map(_generateBuckets)
           .watchSingle();
@@ -245,7 +249,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         _db.remoteAssetEntity.deletedAt.isNull() &
             _db.remoteAssetEntity.visibility
                 .equalsValue(AssetVisibility.timeline) &
-            _db.remoteAssetEntity.ownerId.isIn(userIds),
+            _db.remoteAssetEntity.ownerId.equals(ownerId),
       )
       ..groupBy([dateExp])
       ..orderBy([OrderingTerm.desc(dateExp)]);
@@ -258,7 +262,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 
   Future<List<BaseAsset>> getRemoteBucketAssets(
-    List<String> userIds, {
+    String ownerId, {
     required int offset,
     required int count,
   }) {
@@ -267,7 +271,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         (row) =>
             row.deletedAt.isNull() &
             row.visibility.equalsValue(AssetVisibility.timeline) &
-            row.ownerId.isIn(userIds),
+            row.ownerId.equals(ownerId),
       )
       ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
       ..limit(count, offset: offset);
