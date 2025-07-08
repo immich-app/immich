@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumb_hash_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
@@ -221,12 +222,12 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
     super.initState();
 
     _zoomController = AnimationController(
-      duration: const Duration(seconds: 12),
+      duration: const Duration(seconds: 10),
       vsync: this,
     );
 
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     );
 
@@ -294,18 +295,8 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
       return;
     }
 
-    final randomIndex = (widget.timelineService.totalAssets > 1)
-        ? DateTime.now().millisecond % widget.timelineService.totalAssets
-        : 0;
-
-    final assets = widget.timelineService.getAssets(randomIndex, 1);
-
-    if (assets.isEmpty) {
-      return;
-    }
-
     setState(() {
-      _currentAsset = assets.first;
+      _currentAsset = widget.timelineService.getRandomAsset();
     });
 
     await _fadeController.forward();
@@ -321,29 +312,19 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
 
     try {
       if (widget.timelineService.totalAssets > 1) {
-        final randomIndex =
-            DateTime.now().millisecond % widget.timelineService.totalAssets;
-        final assets = widget.timelineService.getAssets(randomIndex, 1);
-        if (assets.isNotEmpty && mounted) {
-          setState(() {
-            _nextAsset = assets.first;
-          });
+        setState(() {
+          _nextAsset = widget.timelineService.getRandomAsset();
+        });
 
-          await _fadeController.reverse();
+        await _fadeController.reverse();
 
-          if (mounted) {
-            setState(() {
-              _currentAsset = _nextAsset;
-              _nextAsset = null;
-            });
+        setState(() {
+          _currentAsset = _nextAsset;
+          _nextAsset = null;
+        });
 
-            _zoomController.reset();
-            await _fadeController.forward();
-            _startZoomCycle();
-          }
-        }
-      } else {
         _zoomController.reset();
+        await _fadeController.forward();
         _startZoomCycle();
       }
     } catch (e) {
@@ -369,37 +350,29 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
       animation:
           Listenable.merge([_zoomAnimation, _panAnimation, _fadeAnimation]),
       builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(
-            _panAnimation.value.dx * 100,
-            _panAnimation.value.dy * 100,
-          ),
-          child: Transform.scale(
-            scale: _zoomAnimation.value,
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: SizedBox(
-                width: double.infinity,
-                height: double.infinity,
-                child: Image(
-                  image: getFullImageProvider(_currentAsset!),
-                  fit: BoxFit.cover,
-                  frameBuilder:
-                      (context, child, frame, wasSynchronouslyLoaded) {
-                    if (wasSynchronouslyLoaded || frame != null) {
-                      return child;
-                    }
+        return Transform.scale(
+          scale: _zoomAnimation.value,
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: Image(
+                alignment: Alignment.topRight,
+                image: getFullImageProvider(_currentAsset!),
+                fit: BoxFit.cover,
+                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                  if (wasSynchronouslyLoaded || frame != null) {
+                    return child;
+                  }
 
-                    return Container(
-                      decoration: BoxDecoration(gradient: gradient),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      decoration: BoxDecoration(gradient: gradient),
-                    );
-                  },
-                ),
+                  return Container();
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    decoration: BoxDecoration(gradient: gradient),
+                  );
+                },
               ),
             ),
           ),
