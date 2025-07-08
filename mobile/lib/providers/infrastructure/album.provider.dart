@@ -1,10 +1,10 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/services/local_album.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/local_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 
 final localAlbumRepository = Provider<DriftLocalAlbumRepository>(
@@ -13,13 +13,10 @@ final localAlbumRepository = Provider<DriftLocalAlbumRepository>(
 
 final localAlbumServiceProvider = Provider<LocalAlbumService>(
   (ref) => LocalAlbumService(ref.watch(localAlbumRepository)),
-  dependencies: [localAlbumRepository],
 );
 
-final localAlbumProvider =
-    NotifierProvider<LocalAlbumNotifier, LocalAlbumState>(
-  LocalAlbumNotifier.new,
-  dependencies: [localAlbumServiceProvider],
+final localAlbumProvider = FutureProvider<List<LocalAlbum>>(
+  (ref) => LocalAlbumService(ref.watch(localAlbumRepository)).getAll(),
 );
 
 final remoteAlbumRepository = Provider<DriftRemoteAlbumRepository>(

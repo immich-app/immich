@@ -11,148 +11,110 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/local_album_sliver_app_bar.dart';
 
 @RoutePage()
-class DriftLocalAlbumsPage extends ConsumerStatefulWidget {
+class DriftLocalAlbumsPage extends StatelessWidget {
   const DriftLocalAlbumsPage({super.key});
 
   @override
-  ConsumerState<DriftLocalAlbumsPage> createState() =>
-      _DriftLocalAlbumsPageState();
-}
-
-class _DriftLocalAlbumsPageState extends ConsumerState<DriftLocalAlbumsPage> {
-  @override
-  void initState() {
-    super.initState();
-
-    // Load albums when component mounts
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(localAlbumProvider.notifier).getAll();
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final albumState = ref.watch(localAlbumProvider);
-    final albums = albumState.albums;
-    final isLoading = albumState.isLoading;
-    final error = albumState.error;
-
-    return Scaffold(
+    return const Scaffold(
       body: CustomScrollView(
         slivers: [
-          const LocalAlbumsSliverAppBar(),
-          _AlbumList(
-            albums: albums,
-            isLoading: isLoading,
-            error: error,
-          ),
+          LocalAlbumsSliverAppBar(),
+          _AlbumList(),
         ],
       ),
     );
   }
 }
 
-class _AlbumList extends StatelessWidget {
-  const _AlbumList({
-    required this.isLoading,
-    required this.error,
-    required this.albums,
-  });
-
-  final bool isLoading;
-  final String? error;
-  final List<LocalAlbum> albums;
+class _AlbumList extends ConsumerWidget {
+  const _AlbumList();
 
   @override
-  Widget build(BuildContext context) {
-    if (isLoading) {
-      return const SliverToBoxAdapter(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final albums = ref.watch(localAlbumProvider);
+
+    return albums.when(
+      loading: () => const SliverToBoxAdapter(
         child: Center(
           child: Padding(
             padding: EdgeInsets.all(20.0),
             child: CircularProgressIndicator(),
           ),
         ),
-      );
-    }
-
-    if (error != null) {
-      return SliverToBoxAdapter(
+      ),
+      error: (error, stack) => SliverToBoxAdapter(
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Text(
-              'Error loading albums: $error',
+              'Error loading albums: $error, stack: $stack',
               style: TextStyle(
                 color: context.colorScheme.error,
               ),
             ),
           ),
         ),
-      );
-    }
-
-    if (albums.isEmpty) {
-      return const SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: Text('No albums found'),
-          ),
-        ),
-      );
-    }
-
-    return SliverPadding(
-      padding: const EdgeInsets.all(18.0),
-      sliver: SliverList.builder(
-        itemBuilder: (_, index) {
-          final album = albums[index];
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: LargeLeadingTile(
-              leadingPadding: const EdgeInsets.only(
-                right: 16,
+      ),
+      data: (albums) {
+        if (albums.isEmpty) {
+          return const SliverToBoxAdapter(
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Text('No albums found'),
               ),
-              leading: const ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(15)),
-                child: SizedBox(
-                  width: 80,
-                  height: 80,
-                  // TODO: Local album thumbnail
-                  // child: Thumbnail(
-                  //   asset:
-                  // ),
-                ),
-              ),
-              title: Text(
-                album.name,
-                style: context.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: Text(
-                'items_count'.t(
-                  context: context,
-                  args: {'count': album.assetCount},
-                ),
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: context.colorScheme.onSurfaceSecondary,
-                ),
-              ),
-              onTap: () =>
-                  context.pushRoute(LocalTimelineRoute(albumId: album.id)),
             ),
           );
-        },
-        itemCount: albums.length,
-      ),
+        }
+
+        return SliverPadding(
+          padding: const EdgeInsets.all(18.0),
+          sliver: SliverList.builder(
+            itemBuilder: (_, index) {
+              final album = albums[index];
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: LargeLeadingTile(
+                  leadingPadding: const EdgeInsets.only(
+                    right: 16,
+                  ),
+                  leading: const ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                    child: SizedBox(
+                      width: 80,
+                      height: 80,
+                      // TODO: Local album thumbnail
+                      // child: Thumbnail(
+                      //   asset:
+                      // ),
+                    ),
+                  ),
+                  title: Text(
+                    album.name,
+                    style: context.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'items_count'.t(
+                      context: context,
+                      args: {'count': album.assetCount},
+                    ),
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: context.colorScheme.onSurfaceSecondary,
+                    ),
+                  ),
+                  onTap: () =>
+                      context.pushRoute(LocalTimelineRoute(albumId: album.id)),
+                ),
+              );
+            },
+            itemCount: albums.length,
+          ),
+        );
+      },
     );
   }
 }
