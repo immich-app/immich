@@ -22,9 +22,10 @@ class GalleryGuard extends AutoRouteGuard {
           showStack: args.showStack,
         ),
       );
-      resolver.next(true);
-    } else {
-      resolver.next(true);
+      // Prevent further navigation since we replaced the route
+      resolver.next(false);
+      return;
     }
+    resolver.next(true);
   }
 }
