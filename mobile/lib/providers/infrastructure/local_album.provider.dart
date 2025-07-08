@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/services/local_album.service.dart';
@@ -43,10 +42,7 @@ class LocalAlbumState {
   }
 
   @override
-  int get hashCode =>
-      albums.hashCode ^
-      isLoading.hashCode ^
-      error.hashCode;
+  int get hashCode => albums.hashCode ^ isLoading.hashCode ^ error.hashCode;
 }
 
 class LocalAlbumNotifier extends Notifier<LocalAlbumState> {

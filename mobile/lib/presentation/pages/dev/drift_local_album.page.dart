@@ -6,10 +6,8 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
-import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 import 'package:immich_mobile/widgets/common/local_album_sliver_app_bar.dart';
 
 @RoutePage()
@@ -17,7 +15,8 @@ class DriftLocalAlbumsPage extends ConsumerStatefulWidget {
   const DriftLocalAlbumsPage({super.key});
 
   @override
-  ConsumerState<DriftLocalAlbumsPage> createState() => _DriftLocalAlbumsPageState();
+  ConsumerState<DriftLocalAlbumsPage> createState() =>
+      _DriftLocalAlbumsPageState();
 }
 
 class _DriftLocalAlbumsPageState extends ConsumerState<DriftLocalAlbumsPage> {
@@ -105,7 +104,8 @@ class _AlbumList extends StatelessWidget {
             padding: EdgeInsets.all(20.0),
             child: Text('No albums found'),
           ),
-        ),      );
+        ),
+      );
     }
 
     return SliverPadding(
@@ -146,8 +146,8 @@ class _AlbumList extends StatelessWidget {
                   color: context.colorScheme.onSurfaceSecondary,
                 ),
               ),
-              onTap: () => context
-                  .pushRoute(LocalTimelineRoute(albumId: album.id)),
+              onTap: () =>
+                  context.pushRoute(LocalTimelineRoute(albumId: album.id)),
             ),
           );
         },
