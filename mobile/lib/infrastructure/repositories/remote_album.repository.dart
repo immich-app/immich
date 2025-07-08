@@ -9,8 +9,9 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftRemoteAlbumRepository(this._db) : super(_db);
 
-  Future<List<RemoteAlbum>> getAll(
-      {Set<SortRemoteAlbumsBy> sortBy = const {}}) {
+  Future<List<RemoteAlbum>> getAll({
+    Set<SortRemoteAlbumsBy> sortBy = const {},
+  }) {
     final assetCount = _db.remoteAlbumAssetEntity.assetId.count();
 
     final query = _db.remoteAlbumEntity.select().join([
