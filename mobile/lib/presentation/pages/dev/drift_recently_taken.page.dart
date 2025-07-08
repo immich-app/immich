@@ -17,7 +17,9 @@ class DriftRecentlyTakenPage extends StatelessWidget {
           (ref) {
             final user = ref.watch(currentUserProvider);
             if (user == null) {
-              throw Exception('User must be logged in to access recently taken');
+              throw Exception(
+                'User must be logged in to access recently taken',
+              );
             }
 
             final timelineService =
