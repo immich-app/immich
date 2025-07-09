@@ -120,7 +120,7 @@ COPY --from=server-prod /output/server-pruned/package.json ./
 COPY --from=server-prod /output/server-pruned/node_modules/ ./node_modules
 COPY --from=web-prod /usr/src/app/web/build /build/www
 COPY --from=cli-prod /output/cli-pruned ./cli
-RUN ln -S ./cli/bin/immich /usr/src/app/bin/immich
+RUN ln -s ../cli/bin/immich /usr/src/app/bin/immich
 COPY server/resources ./resources/
 COPY server/start*.sh docker/scripts/get-cpus.sh ./
 COPY LICENSE /licenses/LICENSE.txt
