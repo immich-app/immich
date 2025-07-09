@@ -2,13 +2,6 @@ import { createHash } from 'node:crypto';
 import { ColumnValue } from 'src/sql-tools/decorators/column.decorator';
 import { Comparer, DatabaseColumn, DatabaseOverride, IgnoreOptions, SchemaDiff } from 'src/sql-tools/types';
 
-export const asMetadataKey = (name: string) => `sql-tools:${name}`;
-
-export const asSnakeCase = (name: string): string => name.replaceAll(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
-// match TypeORM
-export const asKey = (prefix: string, tableName: string, values: string[]) =>
-  (prefix + sha1(`${tableName}_${values.toSorted().join('_')}`)).slice(0, 30);
-
 export const asOptions = <T extends { name?: string }>(options: string | T): T => {
   if (typeof options === 'string') {
     return { name: options } as T;
@@ -185,8 +178,6 @@ export const asColumnComment = (tableName: string, columnName: string, comment: 
 };
 
 export const asColumnList = (columns: string[]) => columns.map((column) => `"${column}"`).join(', ');
-
-export const asForeignKeyConstraintName = (table: string, columns: string[]) => asKey('FK_', table, [...columns]);
 
 export const asJsonString = (value: unknown): string => {
   return `'${escape(JSON.stringify(value))}'::jsonb`;

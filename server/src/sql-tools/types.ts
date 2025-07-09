@@ -1,12 +1,14 @@
 import { Kysely, ColumnType as KyselyColumnType } from 'kysely';
 import { ProcessorContext } from 'src/sql-tools/contexts/processor-context';
 import { ReaderContext } from 'src/sql-tools/contexts/reader-context';
+import { NamingInterface } from 'src/sql-tools/naming/naming.interface';
 import { RegisterItem } from 'src/sql-tools/register-item';
 
 export type BaseContextOptions = {
   databaseName?: string;
   schemaName?: string;
   overrideTableName?: string;
+  namingStrategy?: 'default' | 'hash' | NamingInterface;
 };
 
 export type SchemaFromCodeOptions = BaseContextOptions & {

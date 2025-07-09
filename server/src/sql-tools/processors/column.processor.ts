@@ -13,7 +13,7 @@ export const processColumns: Processor = (ctx, items) => {
       continue;
     }
 
-    const columnName = options.name ?? String(propertyName);
+    const columnName = options.name ?? ctx.getNameFor({ type: 'column', name: String(propertyName) });
     const existingColumn = table.columns.find((column) => column.name === columnName);
     if (existingColumn) {
       // TODO log warnings if column name is not unique
