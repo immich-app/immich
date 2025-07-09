@@ -11,6 +11,7 @@
   import { delay } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
+  import { mdiMapMarkerMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
   interface Point {
@@ -113,6 +114,7 @@
 <ConfirmModal
   confirmColor="primary"
   title={$t('change_location')}
+  icon={mdiMapMarkerMultipleOutline}
   size="medium"
   onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
 >

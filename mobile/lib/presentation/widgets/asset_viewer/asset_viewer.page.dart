@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -11,8 +12,11 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.sta
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/top_app_bar.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
@@ -78,6 +82,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   Offset dragDownPosition = Offset.zero;
   int totalAssets = 0;
   BuildContext? scaffoldContext;
+  Map<String, GlobalKey> videoPlayerKeys = {};
 
   // Delayed operations that should be cancelled on disposal
   final List<Timer> _delayedOperations = [];
@@ -158,6 +163,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onAssetChanged(int index) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
     ref.read(currentAssetNotifier.notifier).setAsset(asset);
+    if (asset.isVideo) {
+      ref.read(videoPlaybackValueProvider.notifier).reset();
+      ref.read(videoPlayerControlsProvider.notifier).pause();
+    }
+
     unawaited(ref.read(timelineServiceProvider).preCacheAssets(index));
     _cancelTimers();
     // This will trigger the pre-caching of adjacent assets ensuring
@@ -455,11 +465,25 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     );
   }
 
+  void _onScaleStateChanged(PhotoViewScaleState scaleState) {
+    if (scaleState != PhotoViewScaleState.initial) {
+      ref.read(videoPlayerControlsProvider.notifier).pause();
+    }
+  }
+
   PhotoViewGalleryPageOptions _assetBuilder(BuildContext ctx, int index) {
     scaffoldContext ??= ctx;
     final asset = ref.read(timelineServiceProvider).getAsset(index);
-    final size = Size(ctx.width, ctx.height);
 
+    if (asset.isImage) {
+      return _imageBuilder(ctx, asset);
+    }
+
+    return _videoBuilder(ctx, asset);
+  }
+
+  PhotoViewGalleryPageOptions _imageBuilder(BuildContext ctx, BaseAsset asset) {
+    final size = Size(ctx.width, ctx.height);
     return PhotoViewGalleryPageOptions(
       key: ValueKey(asset.heroTag),
       imageProvider: getFullImageProvider(asset, size: size),
@@ -481,6 +505,43 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           asset: asset,
           fit: BoxFit.contain,
           size: size,
+        ),
+      ),
+    );
+  }
+
+  GlobalKey _getVideoPlayerKey(String id) {
+    videoPlayerKeys.putIfAbsent(id, () => GlobalKey());
+    return videoPlayerKeys[id]!;
+  }
+
+  PhotoViewGalleryPageOptions _videoBuilder(BuildContext ctx, BaseAsset asset) {
+    return PhotoViewGalleryPageOptions.customChild(
+      onDragStart: _onDragStart,
+      onDragUpdate: _onDragUpdate,
+      onDragEnd: _onDragEnd,
+      onTapDown: _onTapDown,
+      heroAttributes: PhotoViewHeroAttributes(tag: asset.heroTag),
+      filterQuality: FilterQuality.high,
+      initialScale: PhotoViewComputedScale.contained * 0.99,
+      maxScale: 1.0,
+      minScale: PhotoViewComputedScale.contained * 0.99,
+      basePosition: Alignment.center,
+      child: SizedBox(
+        width: ctx.width,
+        height: ctx.height,
+        child: NativeVideoViewer(
+          key: _getVideoPlayerKey(asset.heroTag),
+          asset: asset,
+          image: Image(
+            key: ValueKey(asset),
+            image:
+                getFullImageProvider(asset, size: Size(ctx.width, ctx.height)),
+            fit: BoxFit.contain,
+            height: ctx.height,
+            width: ctx.width,
+            alignment: Alignment.center,
+          ),
         ),
       ),
     );
@@ -518,6 +579,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           itemCount: totalAssets,
           onPageChanged: _onPageChanged,
           onPageBuild: _onPageBuild,
+          scaleStateChangedCallback: _onScaleStateChanged,
           builder: _assetBuilder,
           backgroundDecoration: BoxDecoration(color: backgroundColor),
           enablePanAlways: true,
