@@ -364,7 +364,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
 
     _panAnimation = Tween<Offset>(
       begin: Offset.zero,
-      end: const Offset(0.15, -0.5),
+      end: const Offset(0.5, -0.5),
     ).animate(
       CurvedAnimation(
         parent: _zoomController,
@@ -488,62 +488,67 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
       builder: (context, child) {
         return Transform.scale(
           scale: _zoomAnimation.value,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Current image
-              if (_currentAsset != null)
-                Opacity(
-                  opacity: _crossFadeAnimation.value,
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: double.infinity,
-                    child: Image(
-                      alignment: Alignment.topRight,
-                      image: getFullImageProvider(_currentAsset!),
-                      fit: BoxFit.cover,
-                      frameBuilder:
-                          (context, child, frame, wasSynchronouslyLoaded) {
-                        if (wasSynchronouslyLoaded || frame != null) {
-                          return child;
-                        }
-                        return Container();
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          decoration: BoxDecoration(gradient: gradient),
-                        );
-                      },
+          filterQuality: FilterQuality.low,
+          child: Transform.translate(
+            offset: _panAnimation.value,
+            filterQuality: FilterQuality.low,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Current image
+                if (_currentAsset != null)
+                  Opacity(
+                    opacity: _crossFadeAnimation.value,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: double.infinity,
+                      child: Image(
+                        alignment: Alignment.topRight,
+                        image: getFullImageProvider(_currentAsset!),
+                        fit: BoxFit.cover,
+                        frameBuilder:
+                            (context, child, frame, wasSynchronouslyLoaded) {
+                          if (wasSynchronouslyLoaded || frame != null) {
+                            return child;
+                          }
+                          return Container();
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            decoration: BoxDecoration(gradient: gradient),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-              // Next image (for cross-fade)
-              if (_nextAsset != null)
-                Opacity(
-                  opacity: 1.0 - _crossFadeAnimation.value,
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: double.infinity,
-                    child: Image(
-                      alignment: Alignment.topRight,
-                      image: getFullImageProvider(_nextAsset!),
-                      fit: BoxFit.cover,
-                      frameBuilder:
-                          (context, child, frame, wasSynchronouslyLoaded) {
-                        if (wasSynchronouslyLoaded || frame != null) {
-                          return child;
-                        }
-                        return Container();
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          decoration: BoxDecoration(gradient: gradient),
-                        );
-                      },
+                // Next image (for cross-fade)
+                if (_nextAsset != null)
+                  Opacity(
+                    opacity: 1.0 - _crossFadeAnimation.value,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: double.infinity,
+                      child: Image(
+                        alignment: Alignment.topRight,
+                        image: getFullImageProvider(_nextAsset!),
+                        fit: BoxFit.cover,
+                        frameBuilder:
+                            (context, child, frame, wasSynchronouslyLoaded) {
+                          if (wasSynchronouslyLoaded || frame != null) {
+                            return child;
+                          }
+                          return Container();
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            decoration: BoxDecoration(gradient: gradient),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         );
       },
