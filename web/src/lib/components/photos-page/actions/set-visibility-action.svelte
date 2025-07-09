@@ -26,6 +26,7 @@
       prompt: unlock ? $t('remove_from_locked_folder_confirmation') : $t('move_to_locked_folder_confirmation'),
       confirmText: $t('move'),
       confirmColor: unlock ? 'danger' : 'primary',
+      icon: unlock ? mdiLockOpenVariantOutline : mdiLockOutline,
     });
 
     if (!isConfirmed) {

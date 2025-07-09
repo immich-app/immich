@@ -124,7 +124,12 @@
     </SettingAccordion>
   {/if}
 
-  <SettingAccordion icon={mdiFormTextboxPassword} key="password" title={$t('password')} subtitle={$t('change_your_password')}>
+  <SettingAccordion
+    icon={mdiFormTextboxPassword}
+    key="password"
+    title={$t('password')}
+    subtitle={$t('change_your_password')}
+  >
     <ChangePasswordSettings />
   </SettingAccordion>
 
