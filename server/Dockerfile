@@ -12,7 +12,7 @@ ENV PATH="${PATH}:/usr/src/app/bin" \
     IMMICH_ENV=development \
     NVIDIA_DRIVER_CAPABILITIES=all \
     NVIDIA_VISIBLE_DEVICES=all
-ENTRYPOINT ["tini", "--", "/bin/sh"]
+ENTRYPOINT ["tini", "--", "/bin/sh", "-c"]
 
 FROM dev AS dev-container-server
 
@@ -110,8 +110,6 @@ COPY --from=prod /usr/src/app/bin ./bin
 COPY --from=web /usr/src/app/build /build/www
 COPY server/resources resources
 COPY server/package.json server/package-lock.json ./
-COPY server/start*.sh ./
-COPY "docker/scripts/get-cpus.sh" ./
 RUN npm install -g @immich/cli && npm cache clean --force
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
@@ -134,7 +132,7 @@ ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE
 
 VOLUME /usr/src/app/upload
 EXPOSE 2283
-ENTRYPOINT ["tini", "--", "/bin/bash"]
+ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
 CMD ["start.sh"]
 
 HEALTHCHECK CMD immich-healthcheck
