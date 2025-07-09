@@ -4,7 +4,12 @@ FROM ghcr.io/immich-app/base-server-dev:202507091427@sha256:733e510024e03bc24506
 WORKDIR /usr/src/app
 COPY ./server/package* ./server/
 WORKDIR /usr/src/app/server
-RUN npm ci && \
+RUN echo "umask 000" >> /etc/profile && \
+  echo "umask 000" >> /etc/bash.bashrc && \
+  umask 000 && \
+  chmod o+wx /usr/src/app && \
+  chmod o+wx /usr/src/app/server && \
+  npm ci && \
   # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
   # they're marked as optional dependencies, so we need to copy them manually after pruning
   rm -rf node_modules/@img/sharp-libvips* && \
@@ -26,17 +31,14 @@ RUN apt-get update && \
 RUN usermod -aG sudo node
 RUN echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 RUN mkdir -p /workspaces/immich
-RUN chown node -R /workspaces
-COPY --chown=node:node --chmod=777 ../.devcontainer/server/*.sh /immich-devcontainer/
+COPY --chmod=777 ../.devcontainer/server/*.sh /immich-devcontainer/
 
-USER node
-COPY --chown=node:node .. /tmp/create-dep-cache/
+COPY .. /tmp/create-dep-cache/
 WORKDIR /tmp/create-dep-cache
 RUN make ci-all && rm -rf /tmp/create-dep-cache
 
-
 FROM dev-container-server AS dev-container-mobile
-USER root
+
 # Enable multiarch for arm64 if necessary
 RUN if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
   dpkg --add-architecture amd64 && \
@@ -62,7 +64,6 @@ RUN mkdir -p ${FLUTTER_HOME} \
   && rm flutter.tar.xz \
   && chown -R node ${FLUTTER_HOME}
 
-USER node
 RUN sudo apt-get update \
   && wget -qO- https://dcm.dev/pgp-key.public | sudo gpg --dearmor -o /usr/share/keyrings/dcm.gpg \
   && echo 'deb [signed-by=/usr/share/keyrings/dcm.gpg arch=amd64] https://dcm.dev/debian stable main' | sudo tee /etc/apt/sources.list.d/dart_stable.list \
