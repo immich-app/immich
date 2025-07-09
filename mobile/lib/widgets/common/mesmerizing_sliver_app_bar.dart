@@ -50,84 +50,82 @@ class _MesmerizingSliverAppBarState
     final isMultiSelectEnabled =
         ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
-    return SliverAnimatedOpacity(
-      duration: Durations.medium1,
-      opacity: isMultiSelectEnabled ? 0 : 1,
-      sliver: SliverAppBar(
-        expandedHeight: 300.0,
-        floating: false,
-        pinned: true,
-        snap: false,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Platform.isIOS
-                ? Icons.arrow_back_ios_new_rounded
-                : Icons.arrow_back,
-            color: Color.lerp(
-              Colors.white,
-              context.primaryColor,
-              _scrollProgress,
-            ),
-            shadows: [
-              _scrollProgress < 0.95
-                  ? Shadow(
-                      offset: const Offset(0, 2),
-                      blurRadius: 5,
-                      color: Colors.black.withValues(alpha: 0.5),
-                    )
-                  : const Shadow(
-                      offset: Offset(0, 2),
-                      blurRadius: 0,
-                      color: Colors.transparent,
-                    ),
-            ],
-          ),
-          onPressed: () {
-            context.pop();
-          },
-        ),
-        flexibleSpace: LayoutBuilder(
-          builder: (context, constraints) {
-            final settings = context
-                .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
-            final scrollProgress = _calculateScrollProgress(settings);
-
-            // Update scroll progress for the leading button
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted && _scrollProgress != scrollProgress) {
-                setState(() {
-                  _scrollProgress = scrollProgress;
-                });
-              }
-            });
-
-            return FlexibleSpaceBar(
-              centerTitle: true,
-              title: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: scrollProgress > 0.95
-                    ? Text(
-                        widget.title,
-                        style: TextStyle(
-                          color: context.primaryColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
+    return isMultiSelectEnabled
+        ? const SliverToBoxAdapter(child: SizedBox())
+        : SliverAppBar(
+            expandedHeight: 300.0,
+            floating: false,
+            pinned: true,
+            snap: false,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                Platform.isIOS
+                    ? Icons.arrow_back_ios_new_rounded
+                    : Icons.arrow_back,
+                color: Color.lerp(
+                  Colors.white,
+                  context.primaryColor,
+                  _scrollProgress,
+                ),
+                shadows: [
+                  _scrollProgress < 0.95
+                      ? Shadow(
+                          offset: const Offset(0, 2),
+                          blurRadius: 5,
+                          color: Colors.black.withValues(alpha: 0.5),
+                        )
+                      : const Shadow(
+                          offset: Offset(0, 2),
+                          blurRadius: 0,
+                          color: Colors.transparent,
                         ),
-                      )
-                    : null,
+                ],
               ),
-              background: _ExpandedBackground(
-                assetCount: assetCount,
-                scrollProgress: scrollProgress,
-                title: widget.title,
-                icon: widget.icon,
-              ),
-            );
-          },
-        ),
-      ),
-    );
+              onPressed: () {
+                context.pop();
+              },
+            ),
+            flexibleSpace: Builder(
+              builder: (context) {
+                final settings = context.dependOnInheritedWidgetOfExactType<
+                    FlexibleSpaceBarSettings>();
+                final scrollProgress = _calculateScrollProgress(settings);
+
+                // Update scroll progress for the leading button
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted && _scrollProgress != scrollProgress) {
+                    setState(() {
+                      _scrollProgress = scrollProgress;
+                    });
+                  }
+                });
+
+                return FlexibleSpaceBar(
+                  centerTitle: true,
+                  title: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: scrollProgress > 0.95
+                        ? Text(
+                            widget.title,
+                            style: TextStyle(
+                              color: context.primaryColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                            ),
+                          )
+                        : null,
+                  ),
+                  background: _ExpandedBackground(
+                    assetCount: assetCount,
+                    scrollProgress: scrollProgress,
+                    title: widget.title,
+                    icon: widget.icon,
+                  ),
+                );
+              },
+            ),
+          );
   }
 }
 

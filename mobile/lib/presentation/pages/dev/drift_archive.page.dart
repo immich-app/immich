@@ -32,7 +32,7 @@ class DriftArchivePage extends StatelessWidget {
       child: Timeline(
         appBar: MesmerizingSliverAppBar(
           title: 'archive'.t(context: context),
-          icon: Icons.archive_outlined, // Icon for the archive page
+          icon: Icons.archive_outlined,
         ),
       ),
     );

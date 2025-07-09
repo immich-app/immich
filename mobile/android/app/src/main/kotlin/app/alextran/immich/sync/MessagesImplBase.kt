@@ -40,7 +40,8 @@ open class NativeSyncApiImplBase(context: Context) {
       MediaStore.MediaColumns.BUCKET_ID,
       MediaStore.MediaColumns.WIDTH,
       MediaStore.MediaColumns.HEIGHT,
-      MediaStore.MediaColumns.DURATION
+      MediaStore.MediaColumns.DURATION,
+      MediaStore.MediaColumns.ORIENTATION,
     )
 
     const val HASH_BUFFER_SIZE = 2 * 1024 * 1024
@@ -74,6 +75,8 @@ open class NativeSyncApiImplBase(context: Context) {
         val widthColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.WIDTH)
         val heightColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.HEIGHT)
         val durationColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.DURATION)
+        val orientationColumn =
+          c.getColumnIndexOrThrow(MediaStore.MediaColumns.ORIENTATION)
 
         while (c.moveToNext()) {
           val id = c.getLong(idColumn).toString()
@@ -101,6 +104,7 @@ open class NativeSyncApiImplBase(context: Context) {
           val duration = if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) 0
           else c.getLong(durationColumn) / 1000
           val bucketId = c.getString(bucketIdColumn)
+          val orientation = c.getInt(orientationColumn)
 
           val asset = PlatformAsset(
             id,
@@ -110,7 +114,8 @@ open class NativeSyncApiImplBase(context: Context) {
             modifiedAt,
             width,
             height,
-            duration
+            duration,
+            orientation.toLong(),
           )
           yield(AssetResult.ValidAsset(asset, bucketId))
         }

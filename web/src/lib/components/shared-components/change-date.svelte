@@ -1,5 +1,6 @@
 <script lang="ts">
   import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
+  import { mdiCalendarEditOutline } from '@mdi/js';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
   import DateInput from '../elements/date-input.svelte';
@@ -178,6 +179,7 @@
 <ConfirmModal
   confirmColor="primary"
   {title}
+  icon={mdiCalendarEditOutline}
   prompt="Please select a new date:"
   disabled={!date.isValid}
   onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}

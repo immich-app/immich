@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/full_image.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/utils/hooks/blurhash_hook.dart';
@@ -67,26 +68,20 @@ class DriftMemoryCard extends StatelessWidget {
               } else {
                 return Hero(
                   tag: 'memory-${asset.id}',
-                  // child: SizedBox(
-                  //   width: context.width,
-                  //   height: context.height,
-                  //   child: NativeVideoViewerPage(
-                  //     key: ValueKey(asset.id),
-                  //     asset: asset,
-                  //     showControls: false,
-                  //     playbackDelayFactor: 2,
-                  //     image: ImmichImage(
-                  //       asset,
-                  //       width: context.width,
-                  //       height: context.height,
-                  //       fit: BoxFit.contain,
-                  //     ),
-                  //   ),
-                  // ),
-                  child: FullImage(
-                    asset,
-                    fit: fit,
-                    size: const Size(double.infinity, double.infinity),
+                  child: SizedBox(
+                    width: context.width,
+                    height: context.height,
+                    child: NativeVideoViewer(
+                      key: ValueKey(asset.id),
+                      asset: asset,
+                      showControls: false,
+                      playbackDelayFactor: 2,
+                      image: FullImage(
+                        asset,
+                        size: Size(context.width, context.height),
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                   ),
                 );
               }

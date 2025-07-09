@@ -18,7 +18,7 @@ class MergedAssetDrift extends i1.ModularAccessor {
     final generatedlimit = $write(limit, startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedlimit.amountOfVariables;
     return customSelect(
-        'SELECT * FROM (SELECT rae.id AS remote_id, lae.id AS local_id, rae.name, rae.type, rae.created_at, rae.updated_at, rae.width, rae.height, rae.duration_in_seconds, rae.is_favorite, rae.thumb_hash, rae.checksum, rae.owner_id FROM remote_asset_entity AS rae LEFT JOIN local_asset_entity AS lae ON rae.checksum = lae.checksum WHERE rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id IN ($expandedvar1) UNION ALL SELECT NULL AS remote_id, lae.id AS local_id, lae.name, lae.type, lae.created_at, lae.updated_at, lae.width, lae.height, lae.duration_in_seconds, lae.is_favorite, NULL AS thumb_hash, lae.checksum, NULL AS owner_id FROM local_asset_entity AS lae LEFT JOIN remote_asset_entity AS rae ON rae.checksum = lae.checksum WHERE rae.id IS NULL) ORDER BY created_at DESC ${generatedlimit.sql}',
+        'SELECT * FROM (SELECT rae.id AS remote_id, lae.id AS local_id, rae.name, rae.type, rae.created_at, rae.updated_at, rae.width, rae.height, rae.duration_in_seconds, rae.is_favorite, rae.thumb_hash, rae.checksum, rae.owner_id, 0 AS orientation FROM remote_asset_entity AS rae LEFT JOIN local_asset_entity AS lae ON rae.checksum = lae.checksum WHERE rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id IN ($expandedvar1) UNION ALL SELECT NULL AS remote_id, lae.id AS local_id, lae.name, lae.type, lae.created_at, lae.updated_at, lae.width, lae.height, lae.duration_in_seconds, lae.is_favorite, NULL AS thumb_hash, lae.checksum, NULL AS owner_id, lae.orientation FROM local_asset_entity AS lae LEFT JOIN remote_asset_entity AS rae ON rae.checksum = lae.checksum WHERE rae.id IS NULL) ORDER BY created_at DESC ${generatedlimit.sql}',
         variables: [
           for (var $ in var1) i0.Variable<String>($),
           ...generatedlimit.introducedVariables
@@ -42,6 +42,7 @@ class MergedAssetDrift extends i1.ModularAccessor {
           thumbHash: row.readNullable<String>('thumb_hash'),
           checksum: row.readNullable<String>('checksum'),
           ownerId: row.readNullable<String>('owner_id'),
+          orientation: row.read<int>('orientation'),
         ));
   }
 
@@ -87,6 +88,7 @@ class MergedAssetResult {
   final String? thumbHash;
   final String? checksum;
   final String? ownerId;
+  final int orientation;
   MergedAssetResult({
     this.remoteId,
     this.localId,
@@ -101,6 +103,7 @@ class MergedAssetResult {
     this.thumbHash,
     this.checksum,
     this.ownerId,
+    required this.orientation,
   });
 }
 
