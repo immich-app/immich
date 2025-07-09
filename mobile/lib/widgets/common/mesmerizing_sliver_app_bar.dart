@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
@@ -45,8 +47,6 @@ class _MesmerizingSliverAppBarState
 
   @override
   Widget build(BuildContext context) {
-    final timelineService = ref.watch(timelineServiceProvider);
-    final assetCount = timelineService.totalAssets;
     final isMultiSelectEnabled =
         ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
@@ -117,7 +117,6 @@ class _MesmerizingSliverAppBarState
                         : null,
                   ),
                   background: _ExpandedBackground(
-                    assetCount: assetCount,
                     scrollProgress: scrollProgress,
                     title: widget.title,
                     icon: widget.icon,
@@ -130,13 +129,11 @@ class _MesmerizingSliverAppBarState
 }
 
 class _ExpandedBackground extends ConsumerStatefulWidget {
-  final int assetCount;
   final double scrollProgress;
   final String title;
   final IconData icon;
 
   const _ExpandedBackground({
-    required this.assetCount,
     required this.scrollProgress,
     required this.title,
     required this.icon,
@@ -244,30 +241,63 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                 ),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  child: Text(
-                    'items_count'.t(
-                      context: context,
-                      args: {"count": widget.assetCount},
-                    ),
-                    style: context.textTheme.labelLarge?.copyWith(
-                      // letterSpacing: 0.2,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      shadows: [
-                        const Shadow(
-                          offset: Offset(0, 1),
-                          blurRadius: 6,
-                          color: Colors.black45,
-                        ),
-                      ],
-                    ),
-                  ),
+                  child: const _ItemCountText(),
                 ),
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ItemCountText extends ConsumerStatefulWidget {
+  const _ItemCountText();
+
+  @override
+  ConsumerState<_ItemCountText> createState() => _ItemCountTextState();
+}
+
+class _ItemCountTextState extends ConsumerState<_ItemCountText> {
+  StreamSubscription? _reloadSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _reloadSubscription =
+        EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _reloadSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final assetCount = ref.watch(
+      timelineServiceProvider.select((s) => s.totalAssets),
+    );
+
+    return Text(
+      'items_count'.t(
+        context: context,
+        args: {"count": assetCount},
+      ),
+      style: context.textTheme.labelLarge?.copyWith(
+        // letterSpacing: 0.2,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+        shadows: [
+          const Shadow(
+            offset: Offset(0, 1),
+            blurRadius: 6,
+            color: Colors.black45,
+          ),
+        ],
+      ),
     );
   }
 }
