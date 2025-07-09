@@ -2,14 +2,14 @@ import { ColumnOptions } from 'src/sql-tools/decorators/column.decorator';
 import { fromColumnValue } from 'src/sql-tools/helpers';
 import { Processor } from 'src/sql-tools/types';
 
-export const processColumns: Processor = (builder, items) => {
+export const processColumns: Processor = (ctx, items) => {
   for (const {
     type,
     item: { object, propertyName, options },
   } of items.filter((item) => item.type === 'column' || item.type === 'foreignKeyColumn')) {
-    const table = builder.getTableByObject(object.constructor);
+    const table = ctx.getTableByObject(object.constructor);
     if (!table) {
-      builder.warnMissingTable(type === 'column' ? '@Column' : '@ForeignKeyColumn', object, propertyName);
+      ctx.warnMissingTable(type === 'column' ? '@Column' : '@ForeignKeyColumn', object, propertyName);
       continue;
     }
 
@@ -31,7 +31,7 @@ export const processColumns: Processor = (builder, items) => {
 
     const isEnum = !!(options as ColumnOptions).enum;
 
-    builder.addColumn(
+    ctx.addColumn(
       table,
       {
         name: columnName,

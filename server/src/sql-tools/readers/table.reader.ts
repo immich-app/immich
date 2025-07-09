@@ -1,16 +1,16 @@
 import { sql } from 'kysely';
-import { DatabaseReader } from 'src/sql-tools/types';
+import { Reader } from 'src/sql-tools/types';
 
-export const readTables: DatabaseReader = async (schema, db) => {
+export const readTables: Reader = async (ctx, db) => {
   const tables = await db
     .selectFrom('information_schema.tables')
-    .where('table_schema', '=', schema.schemaName)
+    .where('table_schema', '=', ctx.schemaName)
     .where('table_type', '=', sql.lit('BASE TABLE'))
     .selectAll()
     .execute();
 
   for (const table of tables) {
-    schema.tables.push({
+    ctx.tables.push({
       name: table.table_name,
       columns: [],
       indexes: [],

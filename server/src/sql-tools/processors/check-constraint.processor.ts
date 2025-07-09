@@ -1,13 +1,13 @@
 import { asKey } from 'src/sql-tools/helpers';
 import { ConstraintType, Processor } from 'src/sql-tools/types';
 
-export const processCheckConstraints: Processor = (builder, items) => {
+export const processCheckConstraints: Processor = (ctx, items) => {
   for (const {
     item: { object, options },
   } of items.filter((item) => item.type === 'checkConstraint')) {
-    const table = builder.getTableByObject(object);
+    const table = ctx.getTableByObject(object);
     if (!table) {
-      builder.warnMissingTable('@Check', object);
+      ctx.warnMissingTable('@Check', object);
       continue;
     }
 

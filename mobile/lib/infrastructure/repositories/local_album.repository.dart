@@ -281,6 +281,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           height: Value(asset.height),
           durationInSeconds: Value(asset.durationInSeconds),
           id: asset.id,
+          orientation: Value(asset.orientation),
           checksum: const Value(null),
         );
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
@@ -360,6 +361,24 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     return _db.batch((batch) {
       batch.deleteWhere(_db.localAssetEntity, (f) => f.id.isIn(ids));
     });
+  }
+
+  Future<LocalAsset?> getThumbnail(String albumId) async {
+    final query = _db.localAlbumAssetEntity.select().join([
+      innerJoin(
+        _db.localAssetEntity,
+        _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+      ),
+    ])
+      ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
+      ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)])
+      ..limit(1);
+
+    final results = await query
+        .map((row) => row.readTable(_db.localAssetEntity).toDto())
+        .get();
+
+    return results.isNotEmpty ? results.first : null;
   }
 }
 

@@ -1,8 +1,8 @@
 import { asKey } from 'src/sql-tools/helpers';
 import { ConstraintType, Processor } from 'src/sql-tools/types';
 
-export const processPrimaryKeyConstraints: Processor = (builder) => {
-  for (const table of builder.tables) {
+export const processPrimaryKeyConstraints: Processor = (ctx) => {
+  for (const table of ctx.tables) {
     const columnNames: string[] = [];
 
     for (const column of table.columns) {
@@ -12,7 +12,7 @@ export const processPrimaryKeyConstraints: Processor = (builder) => {
     }
 
     if (columnNames.length > 0) {
-      const tableMetadata = builder.getTableMetadata(table);
+      const tableMetadata = ctx.getTableMetadata(table);
       table.constraints.push({
         type: ConstraintType.PRIMARY_KEY,
         name: tableMetadata.options.primaryConstraintName || asPrimaryKeyConstraintName(table.name, columnNames),

@@ -118,7 +118,7 @@ class TabShellPage extends ConsumerWidget {
         const MainTimelineRoute(),
         SearchRoute(),
         const DriftAlbumsRoute(),
-        const LibraryRoute(),
+        const DriftLibraryRoute(),
       ],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(

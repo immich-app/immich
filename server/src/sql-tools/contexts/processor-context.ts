@@ -1,43 +1,23 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
+import { BaseContext } from 'src/sql-tools/contexts/base-context';
 import { ColumnOptions, TableOptions } from 'src/sql-tools/decorators';
 import { asKey } from 'src/sql-tools/helpers';
-import {
-  DatabaseColumn,
-  DatabaseEnum,
-  DatabaseExtension,
-  DatabaseFunction,
-  DatabaseParameter,
-  DatabaseSchema,
-  DatabaseTable,
-  SchemaFromCodeOptions,
-} from 'src/sql-tools/types';
+import { DatabaseColumn, DatabaseTable, SchemaFromCodeOptions } from 'src/sql-tools/types';
 
 type TableMetadata = { options: TableOptions; object: Function; methodToColumn: Map<string | symbol, DatabaseColumn> };
 
-export class SchemaBuilder {
-  databaseName: string;
-  schemaName: string;
-  tables: DatabaseTable[] = [];
-  functions: DatabaseFunction[] = [];
-  enums: DatabaseEnum[] = [];
-  extensions: DatabaseExtension[] = [];
-  parameters: DatabaseParameter[] = [];
-  warnings: string[] = [];
+export class ProcessorContext extends BaseContext {
+  constructor(public options: SchemaFromCodeOptions) {
+    options.createForeignKeyIndexes = options.createForeignKeyIndexes ?? true;
+    options.overrides = options.overrides ?? false;
+    super(options);
+  }
 
   classToTable: WeakMap<Function, DatabaseTable> = new WeakMap();
   tableToMetadata: WeakMap<DatabaseTable, TableMetadata> = new WeakMap();
 
-  constructor(options: SchemaFromCodeOptions) {
-    this.databaseName = options.databaseName ?? 'postgres';
-    this.schemaName = options.schemaName ?? 'public';
-  }
-
   getTableByObject(object: Function) {
     return this.classToTable.get(object);
-  }
-
-  getTableByName(name: string) {
-    return this.tables.find((table) => table.name === name);
   }
 
   getTableMetadata(table: DatabaseTable) {
@@ -92,10 +72,6 @@ export class SchemaBuilder {
     return asKey('IDX_', table, items);
   }
 
-  warn(context: string, message: string) {
-    this.warnings.push(`[${context}] ${message}`);
-  }
-
   warnMissingTable(context: string, object: object, propertyName?: symbol | string) {
     const label = object.constructor.name + (propertyName ? '.' + String(propertyName) : '');
     this.warn(context, `Unable to find table (${label})`);
@@ -104,18 +80,5 @@ export class SchemaBuilder {
   warnMissingColumn(context: string, object: object, propertyName?: symbol | string) {
     const label = object.constructor.name + (propertyName ? '.' + String(propertyName) : '');
     this.warn(context, `Unable to find column (${label})`);
-  }
-
-  build(): DatabaseSchema {
-    return {
-      databaseName: this.databaseName,
-      schemaName: this.schemaName,
-      tables: this.tables,
-      functions: this.functions,
-      enums: this.enums,
-      extensions: this.extensions,
-      parameters: this.parameters,
-      warnings: this.warnings,
-    };
   }
 }

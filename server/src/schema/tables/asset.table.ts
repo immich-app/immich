@@ -44,7 +44,6 @@ import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 @Index({
   name: 'idx_local_date_time',
   expression: `(("localDateTime" at time zone 'UTC')::date)`,
-  synchronize: false,
 })
 @Index({
   name: 'idx_local_date_time_month',
@@ -56,7 +55,6 @@ import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
   name: 'idx_originalfilename_trigram',
   using: 'gin',
   expression: 'f_unaccent("originalFileName") gin_trgm_ops',
-  synchronize: false,
 })
 // For all assets, each originalpath must be unique per user and library
 export class AssetTable {

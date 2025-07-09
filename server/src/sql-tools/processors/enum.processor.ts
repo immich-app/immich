@@ -1,8 +1,8 @@
 import { Processor } from 'src/sql-tools/types';
 
-export const processEnums: Processor = (builder, items) => {
+export const processEnums: Processor = (ctx, items) => {
   for (const { item } of items.filter((item) => item.type === 'enum')) {
     // TODO log warnings if enum name is not unique
-    builder.enums.push(item);
+    ctx.enums.push(item);
   }
 };

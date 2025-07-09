@@ -4,6 +4,7 @@ import { transformEnums } from 'src/sql-tools/transformers/enum.transformer';
 import { transformExtensions } from 'src/sql-tools/transformers/extension.transformer';
 import { transformFunctions } from 'src/sql-tools/transformers/function.transformer';
 import { transformIndexes } from 'src/sql-tools/transformers/index.transformer';
+import { transformOverrides } from 'src/sql-tools/transformers/override.transformer';
 import { transformParameters } from 'src/sql-tools/transformers/parameter.transformer';
 import { transformTables } from 'src/sql-tools/transformers/table.transformer';
 import { transformTriggers } from 'src/sql-tools/transformers/trigger.transformer';
@@ -19,4 +20,5 @@ export const transformers: SqlTransformer[] = [
   transformParameters,
   transformTables,
   transformTriggers,
+  transformOverrides,
 ];

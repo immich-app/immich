@@ -1,13 +1,16 @@
+import { BaseContext } from 'src/sql-tools/contexts/base-context';
 import { transformConstraints } from 'src/sql-tools/transformers/constraint.transformer';
 import { ConstraintType } from 'src/sql-tools/types';
 import { describe, expect, it } from 'vitest';
+
+const ctx = new BaseContext({});
 
 describe(transformConstraints.name, () => {
   describe('ConstraintAdd', () => {
     describe('primary keys', () => {
       it('should work', () => {
         expect(
-          transformConstraints({
+          transformConstraints(ctx, {
             type: 'ConstraintAdd',
             constraint: {
               type: ConstraintType.PRIMARY_KEY,
@@ -25,7 +28,7 @@ describe(transformConstraints.name, () => {
     describe('foreign keys', () => {
       it('should work', () => {
         expect(
-          transformConstraints({
+          transformConstraints(ctx, {
             type: 'ConstraintAdd',
             constraint: {
               type: ConstraintType.FOREIGN_KEY,
@@ -47,7 +50,7 @@ describe(transformConstraints.name, () => {
     describe('unique', () => {
       it('should work', () => {
         expect(
-          transformConstraints({
+          transformConstraints(ctx, {
             type: 'ConstraintAdd',
             constraint: {
               type: ConstraintType.UNIQUE,
@@ -65,7 +68,7 @@ describe(transformConstraints.name, () => {
     describe('check', () => {
       it('should work', () => {
         expect(
-          transformConstraints({
+          transformConstraints(ctx, {
             type: 'ConstraintAdd',
             constraint: {
               type: ConstraintType.CHECK,
@@ -84,7 +87,7 @@ describe(transformConstraints.name, () => {
   describe('ConstraintDrop', () => {
     it('should work', () => {
       expect(
-        transformConstraints({
+        transformConstraints(ctx, {
           type: 'ConstraintDrop',
           tableName: 'table1',
           constraintName: 'PK_test',

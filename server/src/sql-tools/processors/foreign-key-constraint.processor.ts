@@ -1,20 +1,20 @@
 import { asForeignKeyConstraintName } from 'src/sql-tools/helpers';
 import { ActionType, ConstraintType, Processor } from 'src/sql-tools/types';
 
-export const processForeignKeyConstraints: Processor = (builder, items, config) => {
+export const processForeignKeyConstraints: Processor = (ctx, items) => {
   for (const {
     item: { object, options },
   } of items.filter((item) => item.type === 'foreignKeyConstraint')) {
-    const table = builder.getTableByObject(object);
+    const table = ctx.getTableByObject(object);
     if (!table) {
-      builder.warnMissingTable('@ForeignKeyConstraint', { name: 'referenceTable' });
+      ctx.warnMissingTable('@ForeignKeyConstraint', { name: 'referenceTable' });
       continue;
     }
 
-    const referenceTable = builder.getTableByObject(options.referenceTable());
+    const referenceTable = ctx.getTableByObject(options.referenceTable());
     if (!referenceTable) {
       const referenceTableName = options.referenceTable()?.name;
-      builder.warn(
+      ctx.warn(
         '@ForeignKeyConstraint.referenceTable',
         `Unable to find table` + (referenceTableName ? ` (${referenceTableName})` : ''),
       );
@@ -25,16 +25,16 @@ export const processForeignKeyConstraints: Processor = (builder, items, config) 
 
     for (const columnName of options.columns) {
       if (!table.columns.some(({ name }) => name === columnName)) {
-        const metadata = builder.getTableMetadata(table);
-        builder.warn('@ForeignKeyConstraint.columns', `Unable to find column (${metadata.object.name}.${columnName})`);
+        const metadata = ctx.getTableMetadata(table);
+        ctx.warn('@ForeignKeyConstraint.columns', `Unable to find column (${metadata.object.name}.${columnName})`);
         missingColumn = true;
       }
     }
 
     for (const columnName of options.referenceColumns || []) {
       if (!referenceTable.columns.some(({ name }) => name === columnName)) {
-        const metadata = builder.getTableMetadata(referenceTable);
-        builder.warn(
+        const metadata = ctx.getTableMetadata(referenceTable);
+        ctx.warn(
           '@ForeignKeyConstraint.referenceColumns',
           `Unable to find column (${metadata.object.name}.${columnName})`,
         );
@@ -67,9 +67,9 @@ export const processForeignKeyConstraints: Processor = (builder, items, config) 
       continue;
     }
 
-    if (options.index || options.indexName || config.createForeignKeyIndexes) {
+    if (options.index || options.indexName || ctx.options.createForeignKeyIndexes) {
       table.indexes.push({
-        name: options.indexName || builder.asIndexName(table.name, options.columns),
+        name: options.indexName || ctx.asIndexName(table.name, options.columns),
         tableName: table.name,
         columnNames: options.columns,
         unique: false,

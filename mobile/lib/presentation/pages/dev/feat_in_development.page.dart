@@ -5,15 +5,43 @@ import 'package:drift/drift.dart' hide Column;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 final _features = [
+  _Feature(
+    name: 'Selection Mode Timeline',
+    icon: Icons.developer_mode_rounded,
+    onTap: (ctx, ref) async {
+      final user = ref.watch(currentUserProvider);
+      if (user == null) {
+        return Future.value();
+      }
+
+      final assets =
+          await ref.read(remoteAssetRepositoryProvider).getSome(user.id);
+
+      final selectedAssets = await ctx.pushRoute<Set<BaseAsset>>(
+        DriftAssetSelectionTimelineRoute(
+          lockedSelectionAssets: assets.toSet(),
+        ),
+      );
+
+      DLog.log(
+        "Selected ${selectedAssets?.length ?? 0} assets",
+      );
+
+      return Future.value();
+    },
+  ),
   _Feature(
     name: 'Sync Local',
     icon: Icons.photo_album_rounded,
@@ -66,6 +94,9 @@ final _features = [
       await db.remoteAlbumEntity.deleteAll();
       await db.remoteAlbumUserEntity.deleteAll();
       await db.remoteAlbumAssetEntity.deleteAll();
+      await db.memoryEntity.deleteAll();
+      await db.memoryAssetEntity.deleteAll();
+      await db.stackEntity.deleteAll();
     },
   ),
   _Feature(
@@ -95,6 +126,16 @@ final _features = [
     name: 'Main Timeline',
     icon: Icons.timeline_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
+  ),
+  _Feature(
+    name: 'Video',
+    icon: Icons.video_collection_outlined,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftVideoRoute()),
+  ),
+  _Feature(
+    name: 'Recently Taken',
+    icon: Icons.schedule_outlined,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftRecentlyTakenRoute()),
   ),
 ];
 

@@ -1,11 +1,14 @@
+import { BaseContext } from 'src/sql-tools/contexts/base-context';
 import { transformTriggers } from 'src/sql-tools/transformers/trigger.transformer';
 import { describe, expect, it } from 'vitest';
+
+const ctx = new BaseContext({});
 
 describe(transformTriggers.name, () => {
   describe('TriggerCreate', () => {
     it('should work', () => {
       expect(
-        transformTriggers({
+        transformTriggers(ctx, {
           type: 'TriggerCreate',
           trigger: {
             name: 'trigger1',
@@ -28,7 +31,7 @@ describe(transformTriggers.name, () => {
 
     it('should work with multiple actions', () => {
       expect(
-        transformTriggers({
+        transformTriggers(ctx, {
           type: 'TriggerCreate',
           trigger: {
             name: 'trigger1',
@@ -51,7 +54,7 @@ describe(transformTriggers.name, () => {
 
     it('should work with old/new reference table aliases', () => {
       expect(
-        transformTriggers({
+        transformTriggers(ctx, {
           type: 'TriggerCreate',
           trigger: {
             name: 'trigger1',
@@ -79,7 +82,7 @@ describe(transformTriggers.name, () => {
   describe('TriggerDrop', () => {
     it('should work', () => {
       expect(
-        transformTriggers({
+        transformTriggers(ctx, {
           type: 'TriggerDrop',
           tableName: 'table1',
           triggerName: 'trigger1',
