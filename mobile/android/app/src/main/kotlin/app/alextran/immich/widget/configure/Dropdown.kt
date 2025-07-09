@@ -1,16 +1,10 @@
 package app.alextran.immich.widget.configure
 
-import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.geometry.*
-import androidx.compose.ui.layout.*
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.*
+
 
 data class DropdownItem (
   val label: String,
@@ -18,55 +12,51 @@ data class DropdownItem (
 )
 
 // Creating a composable to display a drop down menu
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Dropdown(items: List<DropdownItem>,
                  selectedItem: DropdownItem?,
                  onItemSelected: (DropdownItem) -> Unit,
-                 modifier: Modifier = Modifier,
-                 label: String = "",) {
+             ) {
 
   var expanded by remember { mutableStateOf(false) }
-  var textFieldSize by remember { mutableStateOf(Size.Zero) }
+  var selectedOption by remember { mutableStateOf(selectedItem?.label ?: items[0].label) }
 
-  // Toggle icon based on expanded state
-  val icon = if (expanded)
-    Icons.Filled.KeyboardArrowUp
-  else
-    Icons.Filled.KeyboardArrowDown
-
-  Column(modifier) {
-    OutlinedTextField(
-      value = selectedItem?.label ?: "",
-      onValueChange = {},
-      readOnly = true,
-      modifier = Modifier
-        .fillMaxWidth()
-        .onGloballyPositioned { coordinates ->
-          textFieldSize = coordinates.size.toSize()
-        },
-      trailingIcon = {
-        Icon(
-          imageVector = icon,
-          contentDescription = "Dropdown icon",
-          modifier = Modifier.clickable { expanded = !expanded }
-        )
-      }
-    )
-
-    DropdownMenu(
+    ExposedDropdownMenuBox(
       expanded = expanded,
-      onDismissRequest = { expanded = false },
-      modifier = Modifier.width(with(LocalDensity.current) { textFieldSize.width.toDp() })
+      onExpandedChange = { expanded = !expanded }
     ) {
-      items.forEach { item ->
-        DropdownMenuItem(
-          text = { Text(text = item.label) },
-          onClick = {
-            onItemSelected(item)
-            expanded = false
-          }
-        )
+
+      TextField(
+        value = selectedOption,
+        onValueChange = {},
+        readOnly = true,
+        trailingIcon = {
+          ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+        },
+        colors = ExposedDropdownMenuDefaults.textFieldColors(),
+        modifier = Modifier
+          .fillMaxWidth()
+          .menuAnchor()
+      )
+
+      ExposedDropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false }
+      ) {
+        items.forEach { option ->
+          DropdownMenuItem(
+            text = { Text(option.label, color = MaterialTheme.colorScheme.onSurface) },
+            onClick = {
+              selectedOption = option.label
+              onItemSelected(option)
+
+              expanded = false
+            },
+            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+          )
+        }
       }
     }
   }
-}
+
