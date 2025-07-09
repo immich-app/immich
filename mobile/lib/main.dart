@@ -56,7 +56,7 @@ void main() async {
   // Warm-up isolate pool for worker manager
   await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
   await migrateDatabaseIfNeeded(isar, drift);
-  HttpSSLOptions.apply();
+  await HttpSSLOptions.apply();
 
   runApp(
     ProviderScope(

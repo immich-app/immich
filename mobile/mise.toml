@@ -27,6 +27,7 @@ depends = [
   "pigeon:background-worker",
   "pigeon:background-worker-lock",
   "pigeon:connectivity",
+  "pigeon:user_certificates",
 ]
 
 [tasks."codegen:translation"]
@@ -142,6 +143,19 @@ outputs = [
 run = [
   "dart run pigeon --input pigeon/connectivity_api.dart",
   "dart format lib/platform/connectivity_api.g.dart",
+]
+
+[tasks."pigeon:user_certificates"]
+description = "Generate user certificates API pigeon code"
+hide = true
+sources = ["pigeon/user_certificates_api.dart"]
+outputs = [
+  "lib/platform/user_certificates_api.g.dart",
+  "android/app/src/main/kotlin/app/alextran/immich/certificates/UserCertificatesApi.g.kt",
+]
+run = [
+  "dart run pigeon --input pigeon/user_certificates_api.dart",
+  "dart format lib/platform/user_certificates_api.g.dart",
 ]
 
 [tasks."i18n:loader"]

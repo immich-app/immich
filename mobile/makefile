@@ -17,6 +17,9 @@ pigeon:
 	dart format lib/platform/background_worker_lock_api.g.dart
 	dart format lib/platform/connectivity_api.g.dart
 
+	dart run pigeon --input pigeon/user_certificates_api.dart
+	dart format lib/platform/user_certificates_api.g.dart
+
 watch:
 	dart run build_runner watch --delete-conflicting-outputs
 

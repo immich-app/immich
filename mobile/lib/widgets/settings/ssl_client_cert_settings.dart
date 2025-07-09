@@ -82,7 +82,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       return;
     }
     await cert.save();
-    HttpSSLOptions.apply();
+    await HttpSSLOptions.apply();
     setState(() => isCertExist = true);
     showMessage(context, "client_cert_import_success_msg".tr());
   }
@@ -123,7 +123,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
 
   Future<void> removeCert(BuildContext context) async {
     await SSLClientCertStoreVal.delete();
-    HttpSSLOptions.apply();
+    await HttpSSLOptions.apply();
     setState(() => isCertExist = false);
     showMessage(context, "client_cert_remove_msg".tr());
   }

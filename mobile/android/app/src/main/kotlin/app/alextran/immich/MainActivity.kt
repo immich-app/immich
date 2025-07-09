@@ -15,6 +15,8 @@ import app.alextran.immich.images.ThumbnailsImpl
 import app.alextran.immich.sync.NativeSyncApi
 import app.alextran.immich.sync.NativeSyncApiImpl26
 import app.alextran.immich.sync.NativeSyncApiImpl30
+import app.alextran.immich.certificates.UserCertificatesApi
+import app.alextran.immich.certificates.UserCertificatesApiImpl
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 
@@ -39,6 +41,7 @@ class MainActivity : FlutterFragmentActivity() {
       ThumbnailApi.setUp(messenger, ThumbnailsImpl(ctx))
       BackgroundWorkerFgHostApi.setUp(messenger, BackgroundWorkerApiImpl(ctx))
       ConnectivityApi.setUp(messenger, ConnectivityApiImpl(ctx))
+      UserCertificatesApi.setUp(flutterEngine.dartExecutor.binaryMessenger, UserCertificatesApiImpl(this))
 
       flutterEngine.plugins.add(BackgroundServicePlugin())
       flutterEngine.plugins.add(HttpSSLOptionsPlugin())

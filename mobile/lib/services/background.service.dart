@@ -341,7 +341,7 @@ class BackgroundService {
       ],
     );
 
-    HttpSSLOptions.apply();
+    await HttpSSLOptions.apply();
     await ref.read(apiServiceProvider).setAccessToken(Store.get(StoreKey.accessToken));
     await ref.read(authServiceProvider).setOpenApiServiceEndpoint();
     dPrint(() => "[BG UPLOAD] Using endpoint: ${ref.read(apiServiceProvider).apiClient.basePath}");
