@@ -716,6 +716,22 @@ class DriftLibraryRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftLocalAlbumsPage]
+class DriftLocalAlbumsRoute extends PageRouteInfo<void> {
+  const DriftLocalAlbumsRoute({List<PageRouteInfo>? children})
+      : super(DriftLocalAlbumsRoute.name, initialChildren: children);
+
+  static const String name = 'DriftLocalAlbumsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftLocalAlbumsPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftLockedFolderPage]
 class DriftLockedFolderRoute extends PageRouteInfo<void> {
   const DriftLockedFolderRoute({List<PageRouteInfo>? children})
@@ -781,6 +797,60 @@ class DriftMemoryRouteArgs {
   String toString() {
     return 'DriftMemoryRouteArgs{memories: $memories, memoryIndex: $memoryIndex, key: $key}';
   }
+}
+
+/// generated route for
+/// [DriftPartnerDetailPage]
+class DriftPartnerDetailRoute
+    extends PageRouteInfo<DriftPartnerDetailRouteArgs> {
+  DriftPartnerDetailRoute({
+    Key? key,
+    required String partnerId,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftPartnerDetailRoute.name,
+          args: DriftPartnerDetailRouteArgs(key: key, partnerId: partnerId),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftPartnerDetailRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftPartnerDetailRouteArgs>();
+      return DriftPartnerDetailPage(key: args.key, partnerId: args.partnerId);
+    },
+  );
+}
+
+class DriftPartnerDetailRouteArgs {
+  const DriftPartnerDetailRouteArgs({this.key, required this.partnerId});
+
+  final Key? key;
+
+  final String partnerId;
+
+  @override
+  String toString() {
+    return 'DriftPartnerDetailRouteArgs{key: $key, partnerId: $partnerId}';
+  }
+}
+
+/// generated route for
+/// [DriftRecentlyTakenPage]
+class DriftRecentlyTakenRoute extends PageRouteInfo<void> {
+  const DriftRecentlyTakenRoute({List<PageRouteInfo>? children})
+      : super(DriftRecentlyTakenRoute.name, initialChildren: children);
+
+  static const String name = 'DriftRecentlyTakenRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftRecentlyTakenPage();
+    },
+  );
 }
 
 /// generated route for

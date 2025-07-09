@@ -68,6 +68,9 @@ import 'package:immich_mobile/pages/search/recently_taken.page.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/drift_favorite.page.dart';
+import 'package:immich_mobile/presentation/pages/dev/drift_partner_detail.page.dart';
+import 'package:immich_mobile/presentation/pages/dev/drift_local_album.page.dart';
+import 'package:immich_mobile/presentation/pages/dev/drift_recently_taken.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/drift_video.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/drift_trash.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/drift_archive.page.dart';
@@ -88,6 +91,7 @@ import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/backup_permission_guard.dart';
 import 'package:immich_mobile/routing/custom_transition_builders.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
+import 'package:immich_mobile/routing/gallery_guard.dart';
 import 'package:immich_mobile/routing/locked_guard.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/local_auth.service.dart';
@@ -113,6 +117,7 @@ class AppRouter extends RootStackRouter {
   late final DuplicateGuard _duplicateGuard;
   late final BackupPermissionGuard _backupPermissionGuard;
   late final LockedGuard _lockedGuard;
+  late final GalleryGuard _galleryGuard;
 
   AppRouter(
     ApiService apiService,
@@ -125,6 +130,7 @@ class AppRouter extends RootStackRouter {
     _lockedGuard =
         LockedGuard(apiService, secureStorageService, localAuthService);
     _backupPermissionGuard = BackupPermissionGuard(galleryPermissionNotifier);
+    _galleryGuard = const GalleryGuard();
   }
 
   @override
@@ -194,7 +200,7 @@ class AppRouter extends RootStackRouter {
     ),
     CustomRoute(
       page: GalleryViewerRoute.page,
-      guards: [_authGuard, _duplicateGuard],
+      guards: [_authGuard, _galleryGuard],
       transitionsBuilder: CustomTransitionsBuilders.zoomedPage,
     ),
     AutoRoute(
@@ -428,7 +434,18 @@ class AppRouter extends RootStackRouter {
       page: DriftAssetSelectionTimelineRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
-
+    AutoRoute(
+      page: DriftPartnerDetailRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: DriftRecentlyTakenRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: DriftLocalAlbumsRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
     // required to handle all deeplinks in deep_link.service.dart
     // auto_route_library#1722
     RedirectRoute(path: '*', redirectTo: '/'),
