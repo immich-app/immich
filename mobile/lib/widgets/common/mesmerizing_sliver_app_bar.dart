@@ -51,7 +51,12 @@ class _MesmerizingSliverAppBarState
         ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
     return isMultiSelectEnabled
-        ? const SliverToBoxAdapter(child: SizedBox())
+        ? SliverToBoxAdapter(
+            child: switch (_scrollProgress) {
+              < 0.8 => const SizedBox(height: 120),
+              _ => const SizedBox(height: 352),
+            },
+          )
         : SliverAppBar(
             expandedHeight: 300.0,
             floating: false,
