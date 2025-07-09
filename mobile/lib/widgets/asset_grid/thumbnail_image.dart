@@ -67,7 +67,7 @@ class ThumbnailImage extends StatelessWidget {
           ),
           child: Stack(
             children: [
-              ImageIcon(
+              _ImageIcon(
                 heroOffset: heroOffset,
                 asset: asset,
                 assetContainerColor: assetContainerColor,
@@ -75,7 +75,7 @@ class ThumbnailImage extends StatelessWidget {
                 canDeselect: canDeselect,
                 isSelected: isSelected,
               ),
-              if (showStorageIndicator) StorageIcon(storage: asset.storage),
+              if (showStorageIndicator) _StorageIcon(storage: asset.storage),
               if (asset.isFavorite)
                 const Positioned(
                   left: 8,
@@ -86,9 +86,12 @@ class ThumbnailImage extends StatelessWidget {
                     size: 16,
                   ),
                 ),
-              if (asset.isVideo) VideoIcon(duration: asset.duration),
+              if (asset.isVideo) _VideoIcon(duration: asset.duration),
               if (asset.stackCount > 0)
-                StackIcon(isVideo: asset.isVideo, stackCount: asset.stackCount),
+                _StackIcon(
+                  isVideo: asset.isVideo,
+                  stackCount: asset.stackCount,
+                ),
             ],
           ),
         ),
@@ -98,7 +101,7 @@ class ThumbnailImage extends StatelessWidget {
                   padding: EdgeInsets.all(3.0),
                   child: Align(
                     alignment: Alignment.topLeft,
-                    child: SelectedIcon(),
+                    child: _SelectedIcon(),
                   ),
                 )
               : const Icon(
@@ -110,8 +113,8 @@ class ThumbnailImage extends StatelessWidget {
   }
 }
 
-class SelectedIcon extends StatelessWidget {
-  const SelectedIcon({super.key});
+class _SelectedIcon extends StatelessWidget {
+  const _SelectedIcon();
 
   @override
   Widget build(BuildContext context) {
@@ -132,10 +135,10 @@ class SelectedIcon extends StatelessWidget {
   }
 }
 
-class VideoIcon extends StatelessWidget {
+class _VideoIcon extends StatelessWidget {
   final Duration duration;
 
-  const VideoIcon({super.key, required this.duration});
+  const _VideoIcon({required this.duration});
 
   @override
   Widget build(BuildContext context) {
@@ -164,11 +167,11 @@ class VideoIcon extends StatelessWidget {
   }
 }
 
-class StackIcon extends StatelessWidget {
+class _StackIcon extends StatelessWidget {
   final bool isVideo;
   final int stackCount;
 
-  const StackIcon({super.key, required this.isVideo, required this.stackCount});
+  const _StackIcon({required this.isVideo, required this.stackCount});
 
   @override
   Widget build(BuildContext context) {
@@ -201,10 +204,10 @@ class StackIcon extends StatelessWidget {
   }
 }
 
-class StorageIcon extends StatelessWidget {
+class _StorageIcon extends StatelessWidget {
   final AssetState storage;
 
-  const StorageIcon({super.key, required this.storage});
+  const _StorageIcon({required this.storage});
 
   @override
   Widget build(BuildContext context) {
@@ -261,7 +264,7 @@ class StorageIcon extends StatelessWidget {
   }
 }
 
-class ImageIcon extends StatelessWidget {
+class _ImageIcon extends StatelessWidget {
   final int heroOffset;
   final Asset asset;
   final Color assetContainerColor;
@@ -269,8 +272,7 @@ class ImageIcon extends StatelessWidget {
   final bool canDeselect;
   final bool isSelected;
 
-  const ImageIcon({
-    super.key,
+  const _ImageIcon({
     required this.heroOffset,
     required this.asset,
     required this.assetContainerColor,
