@@ -25,6 +25,7 @@ sealed class BaseAsset {
   final int? height;
   final int? durationInSeconds;
   final bool isFavorite;
+  final String? livePhotoVideoId;
 
   const BaseAsset({
     required this.name,
@@ -36,17 +37,11 @@ sealed class BaseAsset {
     this.height,
     this.durationInSeconds,
     this.isFavorite = false,
+    this.livePhotoVideoId,
   });
 
   bool get isImage => type == AssetType.image;
   bool get isVideo => type == AssetType.video;
-
-  double? get aspectRatio {
-    if (width != null && height != null && height! > 0) {
-      return width! / height!;
-    }
-    return null;
-  }
 
   bool get hasRemote =>
       storage == AssetState.remote || storage == AssetState.merged;

@@ -30,6 +30,7 @@ class RemoteAsset extends BaseAsset {
     super.isFavorite = false,
     this.thumbHash,
     this.visibility = AssetVisibility.timeline,
+    super.livePhotoVideoId,
   });
 
   @override
@@ -65,7 +66,6 @@ class RemoteAsset extends BaseAsset {
     return super == other &&
         id == other.id &&
         ownerId == other.ownerId &&
-        localId == other.localId &&
         thumbHash == other.thumbHash &&
         visibility == other.visibility;
   }
