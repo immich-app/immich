@@ -333,6 +333,7 @@
         break;
       }
       case AssetAction.KEEP_THIS_DELETE_OTHERS:
+      case AssetAction.STACK:
       case AssetAction.UNSTACK: {
         closeViewer();
         break;

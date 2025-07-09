@@ -191,7 +191,7 @@
         {/if}
 
         {#if isOwner}
-          <AddToStackAction {asset} {stack} />
+          <AddToStackAction {asset} {stack} {onAction} />
           {#if stack}
             <UnstackAction {stack} {onAction} />
             <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
