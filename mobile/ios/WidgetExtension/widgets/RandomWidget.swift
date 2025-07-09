@@ -45,7 +45,7 @@ struct RandomConfigurationAppIntent: WidgetConfigurationIntent {
 
   @Parameter(title: "Album")
   var album: Album?
-  
+
   @Parameter(title: "Show Album Name", default: false)
   var showAlbumName: Bool
 }
@@ -54,7 +54,7 @@ struct RandomConfigurationAppIntent: WidgetConfigurationIntent {
 
 struct ImmichRandomProvider: AppIntentTimelineProvider {
   func placeholder(in context: Context) -> ImageEntry {
-    ImageEntry(date: Date(), image: nil)
+    ImageEntry(date: Date())
   }
 
   func snapshot(
@@ -63,26 +63,23 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
   ) async
     -> ImageEntry
   {
+    let cacheKey = "random_none_\(context.family.rawValue)"
+    
     guard let api = try? await ImmichAPI() else {
-      return ImageEntry(date: Date(), image: nil, error: .noLogin)
+      return ImageEntry.handleCacheFallback(for: cacheKey, error: .noLogin).entries.first!
     }
 
     guard
       let randomImage = try? await api.fetchSearchResults(
         with: SearchFilters(size: 1)
-      ).first
-    else {
-      return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
-    }
-
-    guard
-      var entry = try? await buildEntry(
+      ).first,
+      var entry = try? await ImageEntry.build(
         api: api,
         asset: randomImage,
         dateOffset: 0
       )
     else {
-      return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
+      return ImageEntry.handleCacheFallback(for: cacheKey).entries.first!
     }
 
     entry.resize()
@@ -99,30 +96,34 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     var entries: [ImageEntry] = []
     let now = Date()
 
-    // If we don't have a server config, return an entry with an error
-    guard let api = try? await ImmichAPI() else {
-      entries.append(ImageEntry(date: now, image: nil, error: .noLogin))
-      return Timeline(entries: entries, policy: .atEnd)
-    }
-
     // nil if album is NONE or nil
     let albumId =
       configuration.album?.id != "NONE" ? configuration.album?.id : nil
-    var albumName: String? = albumId != nil ? configuration.album?.albumName : nil
-    
+    let albumName: String? =
+      albumId != nil ? configuration.album?.albumName : nil
+
+    let cacheKey = "random_\(albumId ?? "none")_\(context.family.rawValue)"
+
+    // If we don't have a server config, return an entry with an error
+    guard let api = try? await ImmichAPI() else {
+      return ImageEntry.handleCacheFallback(for: cacheKey, error: .noLogin)
+    }
+
     if albumId != nil {
       // make sure the album exists on server, otherwise show error
       guard let albums = try? await api.fetchAlbums() else {
-        entries.append(ImageEntry(date: now, image: nil, error: .fetchFailed))
-        return Timeline(entries: entries, policy: .atEnd)
+        return ImageEntry.handleCacheFallback(for: cacheKey)
       }
 
       if !albums.contains(where: { $0.id == albumId }) {
-        entries.append(ImageEntry(date: now, image: nil, error: .albumNotFound))
-        return Timeline(entries: entries, policy: .atEnd)
+        return ImageEntry.handleCacheFallback(
+          for: cacheKey,
+          error: .albumNotFound
+        )
       }
     }
 
+    // build entries
     entries.append(
       contentsOf: (try? await generateRandomEntries(
         api: api,
@@ -134,15 +135,18 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
         ?? []
     )
 
-    // If we fail to fetch images, we still want to add an entry with a nil image and an error
+    // Load or save a cached asset for when network conditions are bad
     if entries.count == 0 {
-      entries.append(ImageEntry(date: now, image: nil, error: .fetchFailed))
+      return ImageEntry.handleCacheFallback(for: cacheKey)
     }
 
     // Resize all images to something that can be stored by iOS
     for i in entries.indices {
       entries[i].resize()
     }
+
+    // cache the last image
+    try? entries.last!.cache(for: cacheKey)
 
     return Timeline(entries: entries, policy: .atEnd)
   }

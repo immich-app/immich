@@ -16,7 +16,8 @@ mergedAsset: SELECT * FROM
 		rae.is_favorite,
 		rae.thumb_hash,
 		rae.checksum,
-		rae.owner_id
+		rae.owner_id,
+		0 as orientation
 	FROM
 		remote_asset_entity rae
 	LEFT JOIN
@@ -37,7 +38,8 @@ mergedAsset: SELECT * FROM
 		lae.is_favorite,
 		NULL as thumb_hash,
 		lae.checksum,
-		NULL as owner_id
+		NULL as owner_id,
+		lae.orientation
 	FROM
 		local_asset_entity lae
 	LEFT JOIN

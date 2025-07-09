@@ -5,6 +5,7 @@ enum Setting<T> {
   groupAssetsBy<int>(StoreKey.groupAssetsBy, 0),
   showStorageIndicator<bool>(StoreKey.storageIndicator, true),
   loadOriginal<bool>(StoreKey.loadOriginal, false),
+  loadOriginalVideo<bool>(StoreKey.loadOriginalVideo, false),
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, false),
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, false),
   ;

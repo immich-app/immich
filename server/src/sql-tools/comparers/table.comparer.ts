@@ -5,15 +5,6 @@ import { compareTriggers } from 'src/sql-tools/comparers/trigger.comparer';
 import { compare } from 'src/sql-tools/helpers';
 import { Comparer, DatabaseTable, Reason, SchemaDiff } from 'src/sql-tools/types';
 
-const newTable = (name: string) => ({
-  name,
-  columns: [],
-  indexes: [],
-  constraints: [],
-  triggers: [],
-  synchronize: true,
-});
-
 export const compareTables: Comparer<DatabaseTable> = {
   onMissing: (source) => [
     {
@@ -21,23 +12,20 @@ export const compareTables: Comparer<DatabaseTable> = {
       table: source,
       reason: Reason.MissingInTarget,
     },
-    // TODO merge constraints into table create record when possible
-    ...compareTable(source, newTable(source.name), { columns: false }),
   ],
   onExtra: (target) => [
-    ...compareTable(newTable(target.name), target, { columns: false }),
     {
       type: 'TableDrop',
       tableName: target.name,
       reason: Reason.MissingInSource,
     },
   ],
-  onCompare: (source, target) => compareTable(source, target, { columns: true }),
+  onCompare: (source, target) => compareTable(source, target),
 };
 
-const compareTable = (source: DatabaseTable, target: DatabaseTable, options: { columns?: boolean }): SchemaDiff[] => {
+const compareTable = (source: DatabaseTable, target: DatabaseTable): SchemaDiff[] => {
   return [
-    ...(options.columns ? compare(source.columns, target.columns, {}, compareColumns) : []),
+    ...compare(source.columns, target.columns, {}, compareColumns),
     ...compare(source.indexes, target.indexes, {}, compareIndexes),
     ...compare(source.constraints, target.constraints, {}, compareConstraints),
     ...compare(source.triggers, target.triggers, {}, compareTriggers),

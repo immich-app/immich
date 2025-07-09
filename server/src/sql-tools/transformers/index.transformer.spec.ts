@@ -19,7 +19,7 @@ describe(transformIndexes.name, () => {
           },
           reason: 'unknown',
         }),
-      ).toEqual('CREATE INDEX "IDX_test" ON "table1" ("column1")');
+      ).toEqual('CREATE INDEX "IDX_test" ON "table1" ("column1");');
     });
 
     it('should create an unique index', () => {
@@ -35,7 +35,7 @@ describe(transformIndexes.name, () => {
           },
           reason: 'unknown',
         }),
-      ).toEqual('CREATE UNIQUE INDEX "IDX_test" ON "table1" ("column1")');
+      ).toEqual('CREATE UNIQUE INDEX "IDX_test" ON "table1" ("column1");');
     });
 
     it('should create an index with a custom expression', () => {
@@ -51,7 +51,7 @@ describe(transformIndexes.name, () => {
           },
           reason: 'unknown',
         }),
-      ).toEqual('CREATE INDEX "IDX_test" ON "table1" ("id" IS NOT NULL)');
+      ).toEqual('CREATE INDEX "IDX_test" ON "table1" ("id" IS NOT NULL);');
     });
 
     it('should create an index with a where clause', () => {
@@ -68,7 +68,7 @@ describe(transformIndexes.name, () => {
           },
           reason: 'unknown',
         }),
-      ).toEqual('CREATE INDEX "IDX_test" ON "table1" ("id") WHERE ("id" IS NOT NULL)');
+      ).toEqual('CREATE INDEX "IDX_test" ON "table1" ("id") WHERE ("id" IS NOT NULL);');
     });
 
     it('should create an index with a custom expression', () => {
@@ -85,7 +85,7 @@ describe(transformIndexes.name, () => {
           },
           reason: 'unknown',
         }),
-      ).toEqual('CREATE INDEX "IDX_test" ON "table1" USING gin ("id" IS NOT NULL)');
+      ).toEqual('CREATE INDEX "IDX_test" ON "table1" USING gin ("id" IS NOT NULL);');
     });
   });
 

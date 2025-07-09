@@ -1,6 +1,7 @@
 <script lang="ts">
   import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { Input } from '@immich/ui';
+  import { mdiText } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -15,6 +16,7 @@
 <ConfirmModal
   confirmColor="primary"
   title={$t('edit_description')}
+  icon={mdiText}
   prompt={$t('edit_description_prompt')}
   onClose={(confirmed) => (confirmed ? onClose(description) : onClose())}
 >

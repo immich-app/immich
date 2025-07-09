@@ -61,7 +61,7 @@ class HashService {
     final toHash = <_AssetToPath>[];
 
     for (final asset in assetsToHash) {
-      final file = await _storageRepository.getFileForAsset(asset);
+      final file = await _storageRepository.getFileForAsset(asset.id);
       if (file == null) {
         continue;
       }

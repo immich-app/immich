@@ -68,7 +68,7 @@ void main() {
           .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset]);
-      when(() => mockStorageRepo.getFileForAsset(asset))
+      when(() => mockStorageRepo.getFileForAsset(asset.id))
           .thenAnswer((_) async => null);
 
       await sut.hashAssets();
@@ -89,7 +89,7 @@ void main() {
           .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset]);
-      when(() => mockStorageRepo.getFileForAsset(asset))
+      when(() => mockStorageRepo.getFileForAsset(asset.id))
           .thenAnswer((_) async => mockFile);
       when(() => mockNativeApi.hashPaths(['image-path'])).thenAnswer(
         (_) async => [hash],
@@ -116,7 +116,7 @@ void main() {
           .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset]);
-      when(() => mockStorageRepo.getFileForAsset(asset))
+      when(() => mockStorageRepo.getFileForAsset(asset.id))
           .thenAnswer((_) async => mockFile);
       when(() => mockNativeApi.hashPaths(['image-path']))
           .thenAnswer((_) async => [null]);
@@ -141,7 +141,7 @@ void main() {
           .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset]);
-      when(() => mockStorageRepo.getFileForAsset(asset))
+      when(() => mockStorageRepo.getFileForAsset(asset.id))
           .thenAnswer((_) async => mockFile);
 
       final invalidHash = Uint8List.fromList([1, 2, 3]);
@@ -180,9 +180,9 @@ void main() {
           .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset1, asset2]);
-      when(() => mockStorageRepo.getFileForAsset(asset1))
+      when(() => mockStorageRepo.getFileForAsset(asset1.id))
           .thenAnswer((_) async => mockFile1);
-      when(() => mockStorageRepo.getFileForAsset(asset2))
+      when(() => mockStorageRepo.getFileForAsset(asset2.id))
           .thenAnswer((_) async => mockFile2);
 
       final hash = Uint8List.fromList(List.generate(20, (i) => i));
@@ -220,9 +220,9 @@ void main() {
           .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset1, asset2]);
-      when(() => mockStorageRepo.getFileForAsset(asset1))
+      when(() => mockStorageRepo.getFileForAsset(asset1.id))
           .thenAnswer((_) async => mockFile1);
-      when(() => mockStorageRepo.getFileForAsset(asset2))
+      when(() => mockStorageRepo.getFileForAsset(asset2.id))
           .thenAnswer((_) async => mockFile2);
 
       final hash = Uint8List.fromList(List.generate(20, (i) => i));
@@ -252,9 +252,9 @@ void main() {
           .thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id))
           .thenAnswer((_) async => [asset1, asset2]);
-      when(() => mockStorageRepo.getFileForAsset(asset1))
+      when(() => mockStorageRepo.getFileForAsset(asset1.id))
           .thenAnswer((_) async => mockFile1);
-      when(() => mockStorageRepo.getFileForAsset(asset2))
+      when(() => mockStorageRepo.getFileForAsset(asset2.id))
           .thenAnswer((_) async => mockFile2);
 
       final validHash = Uint8List.fromList(List.generate(20, (i) => i));

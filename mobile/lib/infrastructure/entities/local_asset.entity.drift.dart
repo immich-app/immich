@@ -20,6 +20,7 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder
   required String id,
   i0.Value<String?> checksum,
   i0.Value<bool> isFavorite,
+  i0.Value<int> orientation,
 });
 typedef $$LocalAssetEntityTableUpdateCompanionBuilder
     = i1.LocalAssetEntityCompanion Function({
@@ -33,6 +34,7 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder
   i0.Value<String> id,
   i0.Value<String?> checksum,
   i0.Value<bool> isFavorite,
+  i0.Value<int> orientation,
 });
 
 class $$LocalAssetEntityTableFilterComposer
@@ -76,6 +78,10 @@ class $$LocalAssetEntityTableFilterComposer
 
   i0.ColumnFilters<bool> get isFavorite => $composableBuilder(
       column: $table.isFavorite, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<int> get orientation => $composableBuilder(
+      column: $table.orientation,
+      builder: (column) => i0.ColumnFilters(column));
 }
 
 class $$LocalAssetEntityTableOrderingComposer
@@ -120,6 +126,10 @@ class $$LocalAssetEntityTableOrderingComposer
   i0.ColumnOrderings<bool> get isFavorite => $composableBuilder(
       column: $table.isFavorite,
       builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<int> get orientation => $composableBuilder(
+      column: $table.orientation,
+      builder: (column) => i0.ColumnOrderings(column));
 }
 
 class $$LocalAssetEntityTableAnnotationComposer
@@ -160,6 +170,9 @@ class $$LocalAssetEntityTableAnnotationComposer
 
   i0.GeneratedColumn<bool> get isFavorite => $composableBuilder(
       column: $table.isFavorite, builder: (column) => column);
+
+  i0.GeneratedColumn<int> get orientation => $composableBuilder(
+      column: $table.orientation, builder: (column) => column);
 }
 
 class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
@@ -201,6 +214,7 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             i0.Value<String> id = const i0.Value.absent(),
             i0.Value<String?> checksum = const i0.Value.absent(),
             i0.Value<bool> isFavorite = const i0.Value.absent(),
+            i0.Value<int> orientation = const i0.Value.absent(),
           }) =>
               i1.LocalAssetEntityCompanion(
             name: name,
@@ -213,6 +227,7 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             id: id,
             checksum: checksum,
             isFavorite: isFavorite,
+            orientation: orientation,
           ),
           createCompanionCallback: ({
             required String name,
@@ -225,6 +240,7 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             required String id,
             i0.Value<String?> checksum = const i0.Value.absent(),
             i0.Value<bool> isFavorite = const i0.Value.absent(),
+            i0.Value<int> orientation = const i0.Value.absent(),
           }) =>
               i1.LocalAssetEntityCompanion.insert(
             name: name,
@@ -237,6 +253,7 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             id: id,
             checksum: checksum,
             isFavorite: isFavorite,
+            orientation: orientation,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -337,6 +354,14 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
       defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
           'CHECK ("is_favorite" IN (0, 1))'),
       defaultValue: const i4.Constant(false));
+  static const i0.VerificationMeta _orientationMeta =
+      const i0.VerificationMeta('orientation');
+  @override
+  late final i0.GeneratedColumn<int> orientation = i0.GeneratedColumn<int>(
+      'orientation', aliasedName, false,
+      type: i0.DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const i4.Constant(0));
   @override
   List<i0.GeneratedColumn> get $columns => [
         name,
@@ -348,7 +373,8 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         durationInSeconds,
         id,
         checksum,
-        isFavorite
+        isFavorite,
+        orientation
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -404,6 +430,12 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
           isFavorite.isAcceptableOrUnknown(
               data['is_favorite']!, _isFavoriteMeta));
     }
+    if (data.containsKey('orientation')) {
+      context.handle(
+          _orientationMeta,
+          orientation.isAcceptableOrUnknown(
+              data['orientation']!, _orientationMeta));
+    }
     return context;
   }
 
@@ -435,6 +467,8 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
           .read(i0.DriftSqlType.string, data['${effectivePrefix}checksum']),
       isFavorite: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.bool, data['${effectivePrefix}is_favorite'])!,
+      orientation: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}orientation'])!,
     );
   }
 
@@ -463,6 +497,7 @@ class LocalAssetEntityData extends i0.DataClass
   final String id;
   final String? checksum;
   final bool isFavorite;
+  final int orientation;
   const LocalAssetEntityData(
       {required this.name,
       required this.type,
@@ -473,7 +508,8 @@ class LocalAssetEntityData extends i0.DataClass
       this.durationInSeconds,
       required this.id,
       this.checksum,
-      required this.isFavorite});
+      required this.isFavorite,
+      required this.orientation});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
@@ -498,6 +534,7 @@ class LocalAssetEntityData extends i0.DataClass
       map['checksum'] = i0.Variable<String>(checksum);
     }
     map['is_favorite'] = i0.Variable<bool>(isFavorite);
+    map['orientation'] = i0.Variable<int>(orientation);
     return map;
   }
 
@@ -516,6 +553,7 @@ class LocalAssetEntityData extends i0.DataClass
       id: serializer.fromJson<String>(json['id']),
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
+      orientation: serializer.fromJson<int>(json['orientation']),
     );
   }
   @override
@@ -533,6 +571,7 @@ class LocalAssetEntityData extends i0.DataClass
       'id': serializer.toJson<String>(id),
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
+      'orientation': serializer.toJson<int>(orientation),
     };
   }
 
@@ -546,7 +585,8 @@ class LocalAssetEntityData extends i0.DataClass
           i0.Value<int?> durationInSeconds = const i0.Value.absent(),
           String? id,
           i0.Value<String?> checksum = const i0.Value.absent(),
-          bool? isFavorite}) =>
+          bool? isFavorite,
+          int? orientation}) =>
       i1.LocalAssetEntityData(
         name: name ?? this.name,
         type: type ?? this.type,
@@ -560,6 +600,7 @@ class LocalAssetEntityData extends i0.DataClass
         id: id ?? this.id,
         checksum: checksum.present ? checksum.value : this.checksum,
         isFavorite: isFavorite ?? this.isFavorite,
+        orientation: orientation ?? this.orientation,
       );
   LocalAssetEntityData copyWithCompanion(i1.LocalAssetEntityCompanion data) {
     return LocalAssetEntityData(
@@ -576,6 +617,8 @@ class LocalAssetEntityData extends i0.DataClass
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
       isFavorite:
           data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
+      orientation:
+          data.orientation.present ? data.orientation.value : this.orientation,
     );
   }
 
@@ -591,14 +634,15 @@ class LocalAssetEntityData extends i0.DataClass
           ..write('durationInSeconds: $durationInSeconds, ')
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
-          ..write('isFavorite: $isFavorite')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('orientation: $orientation')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(name, type, createdAt, updatedAt, width,
-      height, durationInSeconds, id, checksum, isFavorite);
+      height, durationInSeconds, id, checksum, isFavorite, orientation);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -612,7 +656,8 @@ class LocalAssetEntityData extends i0.DataClass
           other.durationInSeconds == this.durationInSeconds &&
           other.id == this.id &&
           other.checksum == this.checksum &&
-          other.isFavorite == this.isFavorite);
+          other.isFavorite == this.isFavorite &&
+          other.orientation == this.orientation);
 }
 
 class LocalAssetEntityCompanion
@@ -627,6 +672,7 @@ class LocalAssetEntityCompanion
   final i0.Value<String> id;
   final i0.Value<String?> checksum;
   final i0.Value<bool> isFavorite;
+  final i0.Value<int> orientation;
   const LocalAssetEntityCompanion({
     this.name = const i0.Value.absent(),
     this.type = const i0.Value.absent(),
@@ -638,6 +684,7 @@ class LocalAssetEntityCompanion
     this.id = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
+    this.orientation = const i0.Value.absent(),
   });
   LocalAssetEntityCompanion.insert({
     required String name,
@@ -650,6 +697,7 @@ class LocalAssetEntityCompanion
     required String id,
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
+    this.orientation = const i0.Value.absent(),
   })  : name = i0.Value(name),
         type = i0.Value(type),
         id = i0.Value(id);
@@ -664,6 +712,7 @@ class LocalAssetEntityCompanion
     i0.Expression<String>? id,
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isFavorite,
+    i0.Expression<int>? orientation,
   }) {
     return i0.RawValuesInsertable({
       if (name != null) 'name': name,
@@ -676,6 +725,7 @@ class LocalAssetEntityCompanion
       if (id != null) 'id': id,
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
+      if (orientation != null) 'orientation': orientation,
     });
   }
 
@@ -689,7 +739,8 @@ class LocalAssetEntityCompanion
       i0.Value<int?>? durationInSeconds,
       i0.Value<String>? id,
       i0.Value<String?>? checksum,
-      i0.Value<bool>? isFavorite}) {
+      i0.Value<bool>? isFavorite,
+      i0.Value<int>? orientation}) {
     return i1.LocalAssetEntityCompanion(
       name: name ?? this.name,
       type: type ?? this.type,
@@ -701,6 +752,7 @@ class LocalAssetEntityCompanion
       id: id ?? this.id,
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
+      orientation: orientation ?? this.orientation,
     );
   }
 
@@ -738,6 +790,9 @@ class LocalAssetEntityCompanion
     if (isFavorite.present) {
       map['is_favorite'] = i0.Variable<bool>(isFavorite.value);
     }
+    if (orientation.present) {
+      map['orientation'] = i0.Variable<int>(orientation.value);
+    }
     return map;
   }
 
@@ -753,7 +808,8 @@ class LocalAssetEntityCompanion
           ..write('durationInSeconds: $durationInSeconds, ')
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
-          ..write('isFavorite: $isFavorite')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('orientation: $orientation')
           ..write(')'))
         .toString();
   }

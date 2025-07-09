@@ -3,6 +3,7 @@ part of 'base_asset.model.dart';
 class LocalAsset extends BaseAsset {
   final String id;
   final String? remoteId;
+  final int orientation;
 
   const LocalAsset({
     required this.id,
@@ -16,6 +17,8 @@ class LocalAsset extends BaseAsset {
     super.height,
     super.durationInSeconds,
     super.isFavorite = false,
+    super.livePhotoVideoId,
+    this.orientation = 0,
   });
 
   @override
@@ -38,6 +41,7 @@ class LocalAsset extends BaseAsset {
    durationInSeconds: ${durationInSeconds ?? "<NA>"},
    remoteId: ${remoteId ?? "<NA>"}
    isFavorite: $isFavorite,
+  orientation: $orientation,
  }''';
   }
 
@@ -45,11 +49,12 @@ class LocalAsset extends BaseAsset {
   bool operator ==(Object other) {
     if (other is! LocalAsset) return false;
     if (identical(this, other)) return true;
-    return super == other && id == other.id && remoteId == other.remoteId;
+    return super == other && id == other.id && orientation == other.orientation;
   }
 
   @override
-  int get hashCode => super.hashCode ^ id.hashCode ^ remoteId.hashCode;
+  int get hashCode =>
+      super.hashCode ^ id.hashCode ^ remoteId.hashCode ^ orientation.hashCode;
 
   LocalAsset copyWith({
     String? id,
@@ -63,6 +68,7 @@ class LocalAsset extends BaseAsset {
     int? height,
     int? durationInSeconds,
     bool? isFavorite,
+    int? orientation,
   }) {
     return LocalAsset(
       id: id ?? this.id,
@@ -76,6 +82,7 @@ class LocalAsset extends BaseAsset {
       height: height ?? this.height,
       durationInSeconds: durationInSeconds ?? this.durationInSeconds,
       isFavorite: isFavorite ?? this.isFavorite,
+      orientation: orientation ?? this.orientation,
     );
   }
 }

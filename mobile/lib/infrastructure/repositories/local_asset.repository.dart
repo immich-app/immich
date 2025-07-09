@@ -11,7 +11,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   Stream<LocalAsset?> watchAsset(String id) {
     final query = _db.localAssetEntity
         .select()
-        .addColumns([_db.localAssetEntity.id]).join([
+        .addColumns([_db.remoteAssetEntity.id]).join([
       leftOuterJoin(
         _db.remoteAssetEntity,
         _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
