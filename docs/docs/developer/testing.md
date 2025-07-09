@@ -5,7 +5,7 @@
 ### Unit tests
 
 Unit are run by calling `npm run test` from the `server/` directory.
-You need to run `npm install` (in `server/`) before _once_.
+You need to run `pnpm install` (in `server/`) before _once_.
 
 ### End to end tests
 

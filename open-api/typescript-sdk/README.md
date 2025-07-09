@@ -5,7 +5,7 @@ A TypeScript SDK for interfacing with the [Immich](https://immich.app/) API.
 ## Install
 
 ```bash
-npm i --save @immich/sdk
+pnpm i --save @immich/sdk
 ```
 
 ## Usage

@@ -56,7 +56,7 @@ If you only want to do web development connected to an existing, remote backend,
 
 1. Build the Immich SDK - `cd open-api/typescript-sdk && npm i && npm run build && cd -`
 2. Enter the web directory - `cd web/`
-3. Install web dependencies - `npm i`
+3. Install web dependencies - `pnpm i`
 4. Start the web development server
 
 ```bash
