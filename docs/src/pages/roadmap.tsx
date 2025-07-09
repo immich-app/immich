@@ -85,7 +85,7 @@ import React from 'react';
 import { Item, Timeline } from '../components/timeline';
 
 const releases = {
-  'v1.135.0': new Date(2025, 6, 18),
+  'v1.135.0': new Date(2025, 5, 18),
   'v1.133.0': new Date(2025, 4, 21),
   'v1.130.0': new Date(2025, 2, 25),
   'v1.127.0': new Date(2025, 1, 26),
@@ -237,7 +237,7 @@ const milestones: Item[] = [
     iconColor: 'gold',
     title: '70,000 Stars',
     description: 'Reached 70K Stars on GitHub!',
-    getDateLabel: withLanguage(new Date(2025, 7, 9)),
+    getDateLabel: withLanguage(new Date(2025, 6, 9)),
   },
   withRelease({
     icon: mdiTableKey,
