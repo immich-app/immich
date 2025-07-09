@@ -41,6 +41,14 @@ sealed class BaseAsset {
   bool get isImage => type == AssetType.image;
   bool get isVideo => type == AssetType.video;
 
+  Duration get duration {
+    final durationInSeconds = this.durationInSeconds;
+    if (durationInSeconds != null) {
+      return Duration(seconds: durationInSeconds);
+    }
+    return const Duration();
+  }
+
   double? get aspectRatio {
     if (width != null && height != null && height! > 0) {
       return width! / height!;
