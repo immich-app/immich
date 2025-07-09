@@ -49,7 +49,7 @@ struct ImmichWidgetView: View {
     ImageEntry(
       date: date,
       image: UIImage(named: "ImmichLogo"),
-      metadata: ImageEntry.Metadata(
+      metadata: EntryMetadata(
         subtitle: "1 year ago"
       )
     )

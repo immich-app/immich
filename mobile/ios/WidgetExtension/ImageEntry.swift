@@ -45,7 +45,7 @@ struct ImageEntry: TimelineEntry {
     return Self(
       date: entryDate,
       image: image,
-      metadata: ImageEntry.Metadata(
+      metadata: EntryMetadata(
         subtitle: subtitle,
         deepLink: asset.deepLink
       )
@@ -56,9 +56,9 @@ struct ImageEntry: TimelineEntry {
     if let containerURL = FileManager.default.containerURL(
       forSecurityApplicationGroupIdentifier: IMMICH_SHARE_GROUP
     ) {
-      let imageURL = containerURL.appendingPathComponent("\(key)_image.txt")
+      let imageURL = containerURL.appendingPathComponent("\(key)_image.png")
       let metadataURL = containerURL.appendingPathComponent(
-        "\(key)_metadata.txt"
+        "\(key)_metadata.json"
       )
 
       // build metadata JSON
@@ -76,23 +76,14 @@ struct ImageEntry: TimelineEntry {
     if let containerURL = FileManager.default.containerURL(
       forSecurityApplicationGroupIdentifier: IMMICH_SHARE_GROUP
     ) {
-      let imageURL = containerURL.appendingPathComponent("\(key)_image.txt")
+      let imageURL = containerURL.appendingPathComponent("\(key)_image.png")
       let metadataURL = containerURL.appendingPathComponent(
-        "\(key)_metadata.txt"
+        "\(key)_metadata.json"
       )
 
       guard let imageData = try? Data(contentsOf: imageURL),
-        let metadataJSON = try? Data(contentsOf: metadataURL)
-      else {
-        // cache miss
-        return nil
-      }
-
-      guard
-        let decodedMetadata = try? JSONDecoder().decode(
-          Metadata.self,
-          from: metadataJSON
-        )
+        let metadataJSON = try? Data(contentsOf: metadataURL),
+        let decodedMetadata = try? JSONDecoder().decode(Metadata.self, from: metadataJSON)
       else {
         return nil
       }
