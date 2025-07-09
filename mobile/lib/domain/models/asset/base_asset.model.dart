@@ -43,6 +43,14 @@ sealed class BaseAsset {
   bool get isImage => type == AssetType.image;
   bool get isVideo => type == AssetType.video;
 
+  Duration get duration {
+    final durationInSeconds = this.durationInSeconds;
+    if (durationInSeconds != null) {
+      return Duration(seconds: durationInSeconds);
+    }
+    return const Duration();
+  }
+
   bool get hasRemote =>
       storage == AssetState.remote || storage == AssetState.merged;
   bool get hasLocal =>
