@@ -28,11 +28,17 @@ function dart {
 
 function typescript {
   npx --yes oazapfts --optimistic --argumentStyle=object --useEnumType immich-openapi-specs.json typescript-sdk/src/fetch-client.ts
-  npm --prefix typescript-sdk ci && npm --prefix typescript-sdk run build
+  pnpm --filter @immich/sdk install --frozen-lockfile
+  pnpm --filter @immich/sdk build
 }
 
 # requires server to be built
-npm run sync:open-api --prefix=../server
+(
+  cd .. 
+  pnpm --filter immich install
+  pnpm --filter immich build
+  pnpm --filter immich sync:open-api
+)
 
 if [[ $1 == 'dart' ]]; then
   dart
