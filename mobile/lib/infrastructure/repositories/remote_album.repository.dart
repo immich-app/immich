@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 enum SortRemoteAlbumsBy { id }
@@ -59,20 +60,41 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         .get();
   }
 
-  Future<void> create(RemoteAlbum album) {
-    final entity = RemoteAlbumEntityCompanion(
-      id: Value(album.id),
-      name: Value(album.name),
-      ownerId: Value(album.ownerId),
-      createdAt: Value(album.createdAt),
-      updatedAt: Value(album.updatedAt),
-      description: Value(album.description),
-      thumbnailAssetId: Value(album.thumbnailAssetId),
-      isActivityEnabled: Value(album.isActivityEnabled),
-      order: Value(album.order),
-    );
+  Future<void> create(
+    RemoteAlbum album,
+    List<String> assetIds,
+  ) async {
+    await _db.transaction(() async {
+      final entity = RemoteAlbumEntityCompanion(
+        id: Value(album.id),
+        name: Value(album.name),
+        ownerId: Value(album.ownerId),
+        createdAt: Value(album.createdAt),
+        updatedAt: Value(album.updatedAt),
+        description: Value(album.description),
+        thumbnailAssetId: Value(album.thumbnailAssetId),
+        isActivityEnabled: Value(album.isActivityEnabled),
+        order: Value(album.order),
+      );
 
-    return _db.into(_db.remoteAlbumEntity).insert(entity);
+      await _db.into(_db.remoteAlbumEntity).insert(entity);
+
+      if (assetIds.isNotEmpty) {
+        final albumAssets = assetIds.map(
+          (assetId) => RemoteAlbumAssetEntityCompanion(
+            albumId: Value(album.id),
+            assetId: Value(assetId),
+          ),
+        );
+
+        await _db.batch((batch) {
+          batch.insertAll(
+            _db.remoteAlbumAssetEntity,
+            albumAssets,
+          );
+        });
+      }
+    });
   }
 }
 

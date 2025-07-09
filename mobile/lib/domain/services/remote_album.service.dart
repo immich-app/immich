@@ -71,7 +71,7 @@ class RemoteAlbumService {
       assetIds: assetIds,
     );
 
-    await _repository.create(album);
+    await _repository.create(album, assetIds);
 
     return album;
   }

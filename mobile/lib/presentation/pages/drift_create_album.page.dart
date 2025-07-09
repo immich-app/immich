@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_title.provider.dart';
 import 'package:immich_mobile/providers/album/album_viewer.provider.dart';
@@ -15,13 +14,10 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
 import 'package:immich_mobile/widgets/album/album_title_text_field.dart';
 import 'package:immich_mobile/widgets/album/album_viewer_editable_description.dart';
-import 'package:immich_mobile/widgets/album/shared_album_thumbnail_image.dart';
 
 @RoutePage()
 class DriftCreateAlbumPage extends HookConsumerWidget {
-  final List<RemoteAsset>? assets;
-
-  const DriftCreateAlbumPage({super.key, this.assets});
+  const DriftCreateAlbumPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,9 +27,7 @@ class DriftCreateAlbumPage extends HookConsumerWidget {
     final albumDescriptionTextFieldFocusNode = useFocusNode();
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
-    final selectedAssets = useState<Set<RemoteAsset>>(
-      assets != null ? Set.from(assets!) : const {},
-    );
+    final selectedAssets = useState<Set<BaseAsset>>({});
 
     void onBackgroundTapped() {
       albumTitleTextFieldFocusNode.unfocus();
@@ -49,19 +43,18 @@ class DriftCreateAlbumPage extends HookConsumerWidget {
       }
     }
 
-    onSelectPhotosButtonPressed() async {
-      // AssetSelectionPageResult? selectedAsset =
-      //     await context.pushRoute<AssetSelectionPageResult?>(
-      //   AlbumAssetSelectionRoute(
-      //     existingAssets: selectedAssets.value,
-      //     canDeselect: true,
-      //   ),
-      // );
-      // if (selectedAsset == null) {
-      //   selectedAssets.value = const {};
-      // } else {
-      //   selectedAssets.value = selectedAsset.selectedAssets;
-      // }
+    onSelectPhotos() async {
+      final assets = await context.pushRoute<Set<BaseAsset>>(
+        DriftAssetSelectionTimelineRoute(
+          lockedSelectionAssets: selectedAssets.value,
+        ),
+      );
+
+      if (assets == null || assets.isEmpty) {
+        return;
+      }
+
+      selectedAssets.value = selectedAssets.value.union(assets);
     }
 
     buildTitleInputField() {
@@ -125,7 +118,7 @@ class DriftCreateAlbumPage extends HookConsumerWidget {
                 ),
                 backgroundColor: context.colorScheme.surfaceContainerHigh,
               ),
-              onPressed: onSelectPhotosButtonPressed,
+              onPressed: onSelectPhotos,
               icon: Icon(
                 Icons.add_rounded,
                 color: context.primaryColor,
@@ -158,7 +151,7 @@ class DriftCreateAlbumPage extends HookConsumerWidget {
             children: [
               AlbumActionFilledButton(
                 iconData: Icons.add_photo_alternate_outlined,
-                onPressed: onSelectPhotosButtonPressed,
+                onPressed: onSelectPhotos,
                 labelText: "add_photos".tr(),
               ),
             ],
@@ -168,29 +161,30 @@ class DriftCreateAlbumPage extends HookConsumerWidget {
     }
 
     buildSelectedImageGrid() {
-      // if (selectedAssets.value.isNotEmpty) {
-      //   return SliverPadding(
-      //     padding: const EdgeInsets.only(top: 16),
-      //     sliver: SliverGrid(
-      //       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-      //         crossAxisCount: 3,
-      //         crossAxisSpacing: 5.0,
-      //         mainAxisSpacing: 5,
-      //       ),
-      //       delegate: SliverChildBuilderDelegate(
-      //         (BuildContext context, int index) {
-      //           return GestureDetector(
-      //             onTap: onBackgroundTapped,
-      //             child: SharedAlbumThumbnailImage(
-      //               asset: selectedAssets.value.elementAt(index),
-      //             ),
-      //           );
-      //         },
-      //         childCount: selectedAssets.value.length,
-      //       ),
-      //     ),
-      //   );
-      // }
+      if (selectedAssets.value.isNotEmpty) {
+        return SliverPadding(
+          padding: const EdgeInsets.only(top: 16),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 5.0,
+              mainAxisSpacing: 5,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (BuildContext context, int index) {
+                final asset = selectedAssets.value.elementAt(index);
+                return GestureDetector(
+                  onTap: onBackgroundTapped,
+                  child: Thumbnail(
+                    asset: asset,
+                  ),
+                );
+              },
+              childCount: selectedAssets.value.length,
+            ),
+          ),
+        );
+      }
 
       return const SliverToBoxAdapter();
     }
@@ -201,19 +195,19 @@ class DriftCreateAlbumPage extends HookConsumerWidget {
       final description =
           ref.read(albumViewerProvider.select((s) => s.editDescriptionText));
 
-      final newAlbum =
-          await ref.watch(remoteAlbumProvider.notifier).createAlbum(
-                title: ref.read(albumTitleProvider),
-                description: description,
-                // selectedAssets.value.map((e) => e.id).toList(),
-              );
+      final album = await ref.watch(remoteAlbumProvider.notifier).createAlbum(
+            title: ref.read(albumTitleProvider),
+            description: description,
+            assetIds: selectedAssets.value.map((asset) {
+              final remoteAsset = asset as RemoteAsset;
+              return remoteAsset.id;
+            }).toList(),
+          );
 
-      if (newAlbum != null) {
-        ref.read(albumProvider.notifier).refreshRemoteAlbums();
-        selectedAssets.value = {};
-        ref.read(albumTitleProvider.notifier).clearAlbumTitle();
-        ref.read(albumViewerProvider.notifier).disableEditAlbum();
-        // context.replaceRoute(AlbumViewerRoute(albumId: newAlbum.id));
+      if (album != null) {
+        context.replaceRoute(
+          RemoteTimelineRoute(albumId: album.id),
+        );
       }
     }
 
