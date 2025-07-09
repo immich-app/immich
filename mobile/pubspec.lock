@@ -749,6 +749,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
+  flutter_user_certificates_android:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: add-trusting
+      resolved-ref: e122aad81ddbd9bf22623f125389498570de2a25
+      url: "https://github.com/jfly/flutter_user_certificates_android.git"
+    source: git
+    version: "0.0.1"
   flutter_web_auth_2:
     dependency: "direct main"
     description:
