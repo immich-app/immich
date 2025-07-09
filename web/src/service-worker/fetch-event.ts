@@ -69,8 +69,11 @@ function isIgnoredFileType(pathname: string): boolean {
 }
 
 function isIgnoredPath(pathname: string): boolean {
-  return /^\/(src|api)(\/.*)?$/.test(pathname) || /^\/(node_modules|@vite|@id)(\/.*)?$/.test(pathname);
+  return (
+    /^\/(src|api)(\/.*)?$/.test(pathname) || /node_modules/.test(pathname) || /^\/@(vite|id)(\/.*)?$/.test(pathname)
+  );
 }
+
 function isAssetRequest(pathname: string): boolean {
   return /^\/api\/assets\/[a-f0-9-]+\/(original|thumbnail)/.test(pathname);
 }

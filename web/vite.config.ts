@@ -4,7 +4,9 @@ import tailwindcss from '@tailwindcss/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { defineConfig } from 'vite';
+
+import { defineConfig as defineViteConfig, mergeConfig } from 'vite';
+import { defineConfig as defineVitestConfig } from 'vitest/config';
 
 const upstream = {
   target: process.env.IMMICH_SERVER_URL || 'http://immich-server:2283/',
@@ -14,7 +16,7 @@ const upstream = {
   ws: true,
 };
 
-export default defineConfig({
+const viteConfig = defineViteConfig({
   build: {
     target: 'es2022',
   },
@@ -50,6 +52,9 @@ export default defineConfig({
   optimizeDeps: {
     entries: ['src/**/*.{svelte,ts,html}'],
   },
+});
+
+const vitestConfig = defineVitestConfig({
   test: {
     include: ['src/**/*.{test,spec}.{js,ts}'],
     globals: true,
@@ -60,3 +65,5 @@ export default defineConfig({
     },
   },
 });
+
+export default mergeConfig(viteConfig, vitestConfig);
