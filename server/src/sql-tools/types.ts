@@ -388,7 +388,7 @@ export type DatabaseConstraint =
   | DatabaseCheckConstraint;
 
 export type DatabaseColumn = {
-  primary?: boolean;
+  primary: boolean;
   name: string;
   tableName: string;
   comment?: string;
@@ -489,11 +489,14 @@ export type SchemaDiff = { reason: string } & (
   | { type: 'TableCreate'; table: DatabaseTable }
   | { type: 'TableDrop'; tableName: string }
   | { type: 'ColumnAdd'; column: DatabaseColumn }
+  | { type: 'ColumnRename'; tableName: string; oldName: string; newName: string }
   | { type: 'ColumnAlter'; tableName: string; columnName: string; changes: ColumnChanges }
   | { type: 'ColumnDrop'; tableName: string; columnName: string }
   | { type: 'ConstraintAdd'; constraint: DatabaseConstraint }
+  | { type: 'ConstraintRename'; tableName: string; oldName: string; newName: string }
   | { type: 'ConstraintDrop'; tableName: string; constraintName: string }
   | { type: 'IndexCreate'; index: DatabaseIndex }
+  | { type: 'IndexRename'; tableName: string; oldName: string; newName: string }
   | { type: 'IndexDrop'; indexName: string }
   | { type: 'TriggerCreate'; trigger: DatabaseTrigger }
   | { type: 'TriggerDrop'; tableName: string; triggerName: string }
@@ -511,11 +514,15 @@ export type Comparer<T> = {
   onMissing: (source: T) => SchemaDiff[];
   onExtra: (target: T) => SchemaDiff[];
   onCompare: CompareFunction<T>;
+  /** if two items have the same key, they are considered identical and can be renamed via `onRename` */
+  getRenameKey?: (item: T) => string;
+  onRename?: (source: T, target: T) => SchemaDiff[];
 };
 
 export enum Reason {
   MissingInSource = 'missing in source',
   MissingInTarget = 'missing in target',
+  Rename = 'name has changed',
 }
 
 export type Timestamp = KyselyColumnType<Date, Date | string, Date | string>;

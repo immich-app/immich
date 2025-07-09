@@ -113,7 +113,7 @@ const compare = async () => {
   const { database } = configRepository.getEnv();
   const db = postgres(asPostgresConnectionConfig(database.config));
 
-  const tables = new Set(['activity']);
+  const tables = new Set<string>();
   const preferred = new DefaultNamingStrategy();
   const fallback = new HashNamingStrategy();
 
