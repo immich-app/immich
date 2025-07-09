@@ -63,38 +63,23 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
   ) async
     -> ImageEntry
   {
+    let cacheKey = "random_none_\(context.family.rawValue)"
+    
     guard let api = try? await ImmichAPI() else {
-      return ImageEntry(
-        date: Date(),
-        image: nil,
-        metadata: EntryMetadata(error: .noLogin)
-      )
+      return ImageEntry.handleCacheFallback(for: cacheKey, error: .noLogin).entries.first!
     }
 
     guard
       let randomImage = try? await api.fetchSearchResults(
         with: SearchFilters(size: 1)
-      ).first
-    else {
-      return ImageEntry(
-        date: Date(),
-        image: nil,
-        metadata: EntryMetadata(error: .fetchFailed)
-      )
-    }
-
-    guard
+      ).first,
       var entry = try? await ImageEntry.build(
         api: api,
         asset: randomImage,
         dateOffset: 0
       )
     else {
-      return ImageEntry(
-        date: Date(),
-        image: nil,
-        metadata: EntryMetadata(error: .fetchFailed)
-      )
+      return ImageEntry.handleCacheFallback(for: cacheKey).entries.first!
     }
 
     entry.resize()

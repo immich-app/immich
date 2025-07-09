@@ -19,27 +19,17 @@ struct ImmichMemoryProvider: TimelineProvider {
     in context: Context,
     completion: @escaping @Sendable (ImageEntry) -> Void
   ) {
+    let cacheKey = "memory_\(context.family.rawValue)"
+
     Task {
       guard let api = try? await ImmichAPI() else {
-        completion(
-          ImageEntry(
-            date: Date(),
-            image: nil,
-            metadata: EntryMetadata(error: .noLogin)
-          )
-        )
+        completion(ImageEntry.handleCacheFallback(for: cacheKey, error: .noLogin).entries.first!)
         return
       }
 
       guard let memories = try? await api.fetchMemory(for: Date.now)
       else {
-        completion(
-          ImageEntry(
-            date: Date(),
-            image: nil,
-            metadata: EntryMetadata(error: .fetchFailed)
-          )
-        )
+        completion(ImageEntry.handleCacheFallback(for: cacheKey).entries.first!)
         return
       }
 
@@ -62,32 +52,14 @@ struct ImmichMemoryProvider: TimelineProvider {
       guard
         let randomImage = try? await api.fetchSearchResults(
           with: SearchFilters(size: 1)
-        ).first
-      else {
-        completion(
-          ImageEntry(
-            date: Date(),
-            image: nil,
-            metadata: EntryMetadata(error: .fetchFailed)
-          )
-        )
-        return
-      }
-
-      guard
+        ).first,
         var imageEntry = try? await ImageEntry.build(
           api: api,
           asset: randomImage,
           dateOffset: 0
         )
       else {
-        completion(
-          ImageEntry(
-            date: Date(),
-            image: nil,
-            metadata: EntryMetadata(error: .fetchFailed)
-          )
-        )
+        completion(ImageEntry.handleCacheFallback(for: cacheKey).entries.first!)
         return
       }
 
