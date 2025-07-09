@@ -337,7 +337,7 @@ class BackgroundService {
 
     final ref = ProviderContainer(overrides: [dbProvider.overrideWithValue(db), isarProvider.overrideWithValue(db)]);
 
-    HttpSSLOptions.apply();
+    await HttpSSLOptions.apply();
     ref.read(apiServiceProvider).setAccessToken(Store.get(StoreKey.accessToken));
     await ref.read(authServiceProvider).setOpenApiServiceEndpoint();
     if (kDebugMode) {

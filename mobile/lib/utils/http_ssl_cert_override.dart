@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -8,18 +9,31 @@ class HttpSSLCertOverride extends HttpOverrides {
   final bool _allowSelfSignedSSLCert;
   final String? _serverHost;
   final SSLClientCertStoreVal? _clientCert;
-  late final SecurityContext? _ctxWithCert;
+  final Map<String, String>? _androidUserPemCertsByName;
+  late final SecurityContext _customCtx;
 
-  HttpSSLCertOverride(this._allowSelfSignedSSLCert, this._serverHost, this._clientCert) {
+  HttpSSLCertOverride(
+    this._allowSelfSignedSSLCert,
+    this._serverHost,
+    this._clientCert,
+    this._androidUserPemCertsByName,
+  ) {
+    _customCtx = SecurityContext(withTrustedRoots: true);
+    _configureSecurityContext(_customCtx);
+  }
+
+  void _configureSecurityContext(SecurityContext ctx) {
     if (_clientCert != null) {
-      _ctxWithCert = SecurityContext(withTrustedRoots: true);
-      if (_ctxWithCert != null) {
-        setClientCert(_ctxWithCert, _clientCert);
-      } else {
-        _log.severe("Failed to create security context with client cert!");
+      setClientCert(ctx, _clientCert);
+    }
+
+    // Extend the default security context to trust Android user certificates.
+    // This is a workaround for <https://github.com/dart-lang/sdk/issues/50435>.
+    if (_androidUserPemCertsByName != null) {
+      for (var entry in _androidUserPemCertsByName.entries) {
+        final pemCert = entry.value;
+        ctx.setTrustedCertificatesBytes(utf8.encode(pemCert));
       }
-    } else {
-      _ctxWithCert = null;
     }
   }
 
@@ -38,11 +52,9 @@ class HttpSSLCertOverride extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     if (context != null) {
-      if (_clientCert != null) {
-        setClientCert(context, _clientCert);
-      }
+      _configureSecurityContext(context);
     } else {
-      context = _ctxWithCert;
+      context = _customCtx;
     }
 
     return super.createHttpClient(context)
