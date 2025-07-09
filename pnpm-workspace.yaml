@@ -1,0 +1,80 @@
+packages:
+  - cli
+  - docs
+  - e2e
+  - open-api/typescript-sdk
+  - server
+  - web
+  - .github
+
+
+ignoredBuiltDependencies:
+  - '@nestjs/core'
+  - '@scarf/scarf'
+  - '@swc/core'
+  - bcrypt
+  - canvas
+  - core-js
+  - core-js-pure
+  - cpu-features
+  - es5-ext
+  - esbuild
+  - msgpackr-extract
+  - postman-code-generators
+  - protobufjs
+  - ssh2
+  - utimes
+
+onlyBuiltDependencies:
+  - sharp
+  - '@tailwindcss/oxide'
+
+overrides:
+  canvas: 2.11.2
+  sharp: ^0.34.2
+  '@img/sharp-darwin-arm64': '-'
+  '@img/sharp-darwin-x64': '-'
+  '@img/sharp-libvips-darwin-arm64': '-'
+  '@img/sharp-libvips-darwin-x64': '-'
+  '@img/sharp-libvips-linux-ppc64': '-'
+  '@img/sharp-libvips-linux-s390x': '-'
+  '@img/sharp-libvips-linuxmusl-arm64': '-'
+  '@img/sharp-linux-s390x': '-'
+  '@img/sharp-linuxmusl-arm64': '-'
+  '@img/sharp-wasm32': '-'
+  '@img/sharp-win32-arm64': '-'
+  '@img/sharp-win32-ia32': '-'
+  '@img/sharp-win32-x64': '-'
+
+packageExtensions:
+  nestjs-kysely:
+    dependencies:
+      tslib: '*'
+  nestjs-otel:
+    dependencies:
+      tslib: '*'
+  '@photo-sphere-viewer/equirectangular-video-adapter':
+    dependencies:
+      three: '*'
+  '@photo-sphere-viewer/video-plugin':
+    dependencies:
+      three: '*'
+  sharp:
+    dependencies:
+      node-addon-api: '*'
+      node-gyp: '*'
+  '@immich/ui':
+    dependencies:
+      tailwindcss: ^4.1.11
+  tailwind-variants:
+    dependencies:
+      tailwindcss: ^4.1.11
+  exiftool-vendored:
+    dependencies:
+      'exiftool-vendored.pl': '*'
+
+dedupePeerDependents: false
+packageImportMethod: hardlink
+preferWorkspacePackages: true
+injectWorkspacePackages: true
+shamefullyHoist: false

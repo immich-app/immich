@@ -1,12 +1,8 @@
 #!/usr/bin/env sh
 
-TYPESCRIPT_SDK=/usr/src/app/open-api/typescript-sdk
-
-cd /usr/src/app/web || exit 1
-npm --prefix "$TYPESCRIPT_SDK" install
-npm --prefix "$TYPESCRIPT_SDK" run build
-
-npm install
+echo "Setup development environemnt for Immich Web"
+cd /usr/src/app || exit
+FROZEN=1 make setup-web-dev
 
 COUNT=0
 UPSTREAM="${IMMICH_SERVER_URL:-http://immich-server:2283/}"
@@ -19,5 +15,4 @@ until wget --spider --quiet "${UPSTREAM}/api/server/config" > /dev/null 2>&1; do
 done
 
 echo "Connected to $UPSTREAM"
-
-node ./node_modules/.bin/vite dev --host 0.0.0.0 --port 3000
+pnpm --filter immich-web exec vite dev --host 0.0.0.0 --port 3000
