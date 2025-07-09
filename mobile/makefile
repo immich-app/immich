@@ -9,6 +9,9 @@ pigeon:
 	dart run pigeon --input pigeon/native_sync_api.dart
 	dart format lib/platform/native_sync_api.g.dart
 
+	dart run pigeon --input pigeon/user_certificates_api.dart
+	dart format lib/platform/user_certificates_api.g.dart
+
 watch:
 	dart run build_runner watch --delete-conflicting-outputs
 

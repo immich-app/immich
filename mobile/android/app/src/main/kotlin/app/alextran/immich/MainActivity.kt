@@ -6,6 +6,8 @@ import androidx.annotation.NonNull
 import app.alextran.immich.sync.NativeSyncApi
 import app.alextran.immich.sync.NativeSyncApiImpl26
 import app.alextran.immich.sync.NativeSyncApiImpl30
+import app.alextran.immich.certificates.UserCertificatesApi
+import app.alextran.immich.certificates.UserCertificatesApiImpl
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 
@@ -23,5 +25,7 @@ class MainActivity : FlutterFragmentActivity() {
         NativeSyncApiImpl30(this)
       }
     NativeSyncApi.setUp(flutterEngine.dartExecutor.binaryMessenger, nativeSyncApiImpl)
+
+    UserCertificatesApi.setUp(flutterEngine.dartExecutor.binaryMessenger, UserCertificatesApiImpl(this))
   }
 }
