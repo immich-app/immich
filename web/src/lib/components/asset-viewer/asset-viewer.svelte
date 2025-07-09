@@ -328,12 +328,12 @@
         await handleGetAllAlbums();
         break;
       }
+      case AssetAction.STACK:
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
         stack = action.stack;
         break;
       }
       case AssetAction.KEEP_THIS_DELETE_OTHERS:
-      case AssetAction.STACK:
       case AssetAction.UNSTACK: {
         closeViewer();
         break;
