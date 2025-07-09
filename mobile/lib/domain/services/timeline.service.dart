@@ -129,11 +129,11 @@ class TimelineService {
         if (totalAssets == 0) {
           _bufferOffset = 0;
           _buffer.clear();
-          // When the buffer is empty or the old bufferOffset is greater than the new total assets,
-          // we need to reset the buffer and load the first batch of assets.
         } else {
           final int offset;
           final int count;
+          // When the buffer is empty or the old bufferOffset is greater than the new total assets,
+          // we need to reset the buffer and load the first batch of assets.
           if (_bufferOffset >= totalAssets || _buffer.isEmpty) {
             offset = 0;
             count = kTimelineAssetLoadBatchSize;
@@ -148,9 +148,9 @@ class TimelineService {
           _bufferOffset = offset;
         }
 
-        EventStream.shared.emit(const TimelineReloadEvent());
         // change the state's total assets count only after the buffer is reloaded
         _totalAssets = totalAssets;
+        EventStream.shared.emit(const TimelineReloadEvent());
       });
     });
   }
