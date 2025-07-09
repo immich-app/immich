@@ -217,26 +217,34 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
         Positioned(
           bottom: 16,
           left: 16,
+          right: 16,
           child: SlideTransition(
             position: _slideAnimation,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  widget.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                    shadows: [
-                      Shadow(
-                        offset: Offset(0, 2),
-                        blurRadius: 12,
-                        color: Colors.black45,
+                SizedBox(
+                  width: double.infinity,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Text(
+                      widget.title,
+                      maxLines: 1,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(0, 2),
+                            blurRadius: 12,
+                            color: Colors.black45,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 AnimatedContainer(
@@ -325,18 +333,6 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
   BaseAsset? _currentAsset;
   BaseAsset? _nextAsset;
   bool _isZoomingIn = true;
-
-  final LinearGradient gradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      Colors.pink.shade300.withValues(alpha: 0.9),
-      Colors.purple.shade400.withValues(alpha: 0.8),
-      Colors.indigo.shade400.withValues(alpha: 0.9),
-      Colors.blue.shade500.withValues(alpha: 0.8),
-    ],
-    stops: const [0.0, 0.3, 0.7, 1.0],
-  );
 
   @override
   void initState() {
@@ -471,13 +467,6 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
   @override
   Widget build(BuildContext context) {
     if (widget.timelineService.totalAssets == 0) {
-      return _EmptyPageExtendedBackground(
-        gradient: gradient,
-        icon: widget.icon,
-      );
-    }
-
-    if (_currentAsset == null) {
       return const SizedBox.shrink();
     }
 
@@ -514,14 +503,20 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
                           return Container();
                         },
                         errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            decoration: BoxDecoration(gradient: gradient),
+                          return SizedBox(
+                            width: double.infinity,
+                            height: double.infinity,
+                            child: Icon(
+                              Icons.error_outline_rounded,
+                              size: 24,
+                              color: Colors.red[300],
+                            ),
                           );
                         },
                       ),
                     ),
                   ),
-                // Next image (for cross-fade)
+
                 if (_nextAsset != null)
                   Opacity(
                     opacity: 1.0 - _crossFadeAnimation.value,
@@ -537,11 +532,17 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
                           if (wasSynchronouslyLoaded || frame != null) {
                             return child;
                           }
-                          return Container();
+                          return const SizedBox.shrink();
                         },
                         errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            decoration: BoxDecoration(gradient: gradient),
+                          return SizedBox(
+                            width: double.infinity,
+                            height: double.infinity,
+                            child: Icon(
+                              Icons.error_outline_rounded,
+                              size: 24,
+                              color: Colors.red[300],
+                            ),
                           );
                         },
                       ),
@@ -552,78 +553,6 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
           ),
         );
       },
-    );
-  }
-}
-
-class _EmptyPageExtendedBackground extends StatelessWidget {
-  const _EmptyPageExtendedBackground({
-    required this.gradient,
-    required this.icon,
-  });
-
-  final LinearGradient gradient;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(gradient: gradient),
-      child: Stack(
-        children: [
-          Positioned(
-            top: 40,
-            right: 30,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: context.isDarkTheme
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.white.withValues(alpha: 0.2),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 100,
-            left: 50,
-            child: Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: context.isDarkTheme
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : Colors.white.withValues(alpha: 0.15),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 120,
-            left: 20,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: context.isDarkTheme
-                    ? Colors.white.withValues(alpha: 0.06)
-                    : Colors.white.withValues(alpha: 0.12),
-              ),
-            ),
-          ),
-          Center(
-            child: Icon(
-              icon,
-              size: 100,
-              color: context.isDarkTheme
-                  ? Colors.white.withValues(alpha: 0.15)
-                  : Colors.white.withValues(alpha: 0.25),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
