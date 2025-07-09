@@ -22,7 +22,9 @@ overrides:
   '@img/sharp-win32-ia32': '-'
   '@img/sharp-win32-x64': '-'
 
-packageExtensionsChecksum: sha256-kKp4WuqP6LFY18K22XKa6g92izKo4AtUDiriD3N5TzE=
+packageExtensionsChecksum: sha256-OKQJWXvw/5wjnkjESlE5+zrJ2KIPjfGGRpkAjonMYro=
+
+pnpmfileChecksum: sha256-2sPyfRY2m0ZGtUQpNBAWkXB76nnsjug96Hffyk+39zM=
 
 importers:
 
@@ -19035,19 +19037,18 @@ snapshots:
   exiftool-vendored.exe@13.0.0:
     optional: true
 
-  exiftool-vendored.pl@13.0.1:
-    optional: true
+  exiftool-vendored.pl@13.0.1: {}
 
   exiftool-vendored@28.8.0:
     dependencies:
       '@photostructure/tz-lookup': 11.2.0
       '@types/luxon': 3.6.2
       batch-cluster: 13.0.0
+      exiftool-vendored.pl: 13.0.1
       he: 1.2.0
       luxon: 3.6.1
     optionalDependencies:
       exiftool-vendored.exe: 13.0.0
-      exiftool-vendored.pl: 13.0.1
 
   expect-type@1.2.1: {}
 

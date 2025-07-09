@@ -69,9 +69,6 @@ packageExtensions:
   tailwind-variants:
     dependencies:
       tailwindcss: ^4.1.11
-  exiftool-vendored:
-    dependencies:
-      'exiftool-vendored.pl': '*'
 
 dedupePeerDependents: false
 packageImportMethod: hardlink
