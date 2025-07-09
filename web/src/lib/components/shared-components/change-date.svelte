@@ -8,7 +8,7 @@
   import { Field, Switch } from '@immich/ui';
   import { getDateTimeOffsetLocaleString } from '$lib/utils/timeline-util.js';
   import { locale } from '$lib/stores/preferences.store';
-  import {get} from "svelte/store";
+  import { get } from 'svelte/store';
 
   interface Props {
     title?: string;
@@ -188,7 +188,7 @@
       const { offsetMinutes } = getModernOffsetForZoneAndDate(selectedAbsoluteOption.value, selectedDate);
 
       // Construct the final ISO string with a fixed-offset zone.
-      const fixedOffsetZone = `UTC${offsetMinutes >= 0 ? '+' : ''}${Duration.fromObject({minutes: offsetMinutes}).toFormat('hh:mm')}`;
+      const fixedOffsetZone = `UTC${offsetMinutes >= 0 ? '+' : ''}${Duration.fromObject({ minutes: offsetMinutes }).toFormat('hh:mm')}`;
 
       // Create a DateTime object in this fixed-offset zone, preserving the local time.
       const finalDateTime = DateTime.fromObject(dtComponents.toObject(), { zone: fixedOffsetZone });
@@ -218,19 +218,20 @@
   // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
   let date = $derived(DateTime.fromISO(selectedDate, { zone: selectedAbsoluteOption?.value, setZone: true }));
 
-  function calcNewDate(timestamp?: DateTime) {
-    if (!timestamp) {
-      return undefined;
-    }
+  export function calcNewDate(timestamp: DateTime, selectedDuration: number, timezone?: string) {
     timestamp = timestamp.plus({ minutes: selectedDuration });
-    if (selectedRelativeOption?.value) {
-      timestamp = timestamp.setZone(selectedRelativeOption?.value);
+    if (timezone) {
+      timestamp = timestamp.setZone(timezone);
     }
     return getDateTimeOffsetLocaleString(timestamp, { locale: get(locale) });
   }
 
-  let intervalFrom = $derived(calcNewDate(currentInterval?.start));
-  let intervalTo = $derived(calcNewDate(currentInterval?.end));
+  let intervalFrom = $derived.by(() =>
+    currentInterval ? calcNewDate(currentInterval.start, selectedDuration, selectedRelativeOption?.value) : undefined,
+  );
+  let intervalTo = $derived.by(() =>
+    currentInterval ? calcNewDate(currentInterval.end, selectedDuration, selectedRelativeOption?.value) : undefined,
+  );
 </script>
 
 <ConfirmModal
@@ -274,7 +275,9 @@
           </div>
         {/if}
         <div class="flex flex-col" style="display: {showRelative && currentInterval ? 'flex' : 'none'}">
-          <span data-testid="interval-preview">{$t('edit_date_and_time_by_offset_interval', { values: { from: intervalFrom, to: intervalTo } })}</span>
+          <span data-testid="interval-preview"
+            >{$t('edit_date_and_time_by_offset_interval', { values: { from: intervalFrom, to: intervalTo } })}</span
+          >
         </div>
       </div>
     </div>

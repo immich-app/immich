@@ -1,9 +1,9 @@
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
 import { fireEvent, render, screen } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
 import { DateTime } from 'luxon';
 import ChangeDate from './change-date.svelte';
-import userEvent from '@testing-library/user-event';
 
 describe('ChangeDate component', () => {
   const initialDate = DateTime.fromISO('2024-01-01');
@@ -119,7 +119,65 @@ describe('ChangeDate component', () => {
     expect(onConfirm).toHaveBeenCalledWith({
       mode: 'relative',
       duration: 0,
-      timeZone: 'UTC+01:00',
+      timeZone: initialTimeZone,
     });
+  });
+
+  test('correctly handles date preview', () => {
+    const testCases = [
+      {
+        timestamp: DateTime.fromISO('2024-01-01T00:00:00.000+01:00', { setZone: true }),
+        duration: 0,
+        timezone: undefined,
+        expectedResult: 'Jan 1, 2024, 12:00 AM GMT+01:00',
+      },
+      {
+        timestamp: DateTime.fromISO('2024-01-01T04:00:00.000+05:00', { setZone: true }),
+        duration: 0,
+        timezone: undefined,
+        expectedResult: 'Jan 1, 2024, 4:00 AM GMT+05:00',
+      },
+      {
+        timestamp: DateTime.fromISO('2024-01-01T00:00:00.000+00:00', { setZone: true }),
+        duration: 0,
+        timezone: 'Europe/Berlin',
+        expectedResult: 'Jan 1, 2024, 1:00 AM GMT+01:00',
+      },
+      {
+        timestamp: DateTime.fromISO('2024-07-01T00:00:00.000+00:00', { setZone: true }),
+        duration: 0,
+        timezone: 'Europe/Berlin',
+        expectedResult: 'Jul 1, 2024, 2:00 AM GMT+02:00',
+      },
+      {
+        timestamp: DateTime.fromISO('2024-01-01T00:00:00.000+01:00', { setZone: true }),
+        duration: 1440,
+        timezone: undefined,
+        expectedResult: 'Jan 2, 2024, 12:00 AM GMT+01:00',
+      },
+      {
+        timestamp: DateTime.fromISO('2024-01-01T00:00:00.000+01:00', { setZone: true }),
+        duration: -1440,
+        timezone: undefined,
+        expectedResult: 'Dec 31, 2023, 12:00 AM GMT+01:00',
+      },
+      {
+        timestamp: DateTime.fromISO('2024-01-01T00:00:00.000-01:00', { setZone: true }),
+        duration: -1440,
+        timezone: 'America/Anchorage',
+        expectedResult: 'Dec 30, 2023, 4:00 PM GMT-09:00',
+      },
+    ];
+
+    const component = render(ChangeDate, {
+      props: { initialDate, initialTimeZone, currentInterval, onCancel, onConfirm },
+    });
+
+    for (const testCase of testCases) {
+      expect(
+        component.component.calcNewDate(testCase.timestamp, testCase.duration, testCase.timezone),
+        JSON.stringify(testCase),
+      ).toBe(testCase.expectedResult);
+    }
   });
 });
