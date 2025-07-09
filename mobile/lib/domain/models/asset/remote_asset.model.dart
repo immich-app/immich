@@ -66,7 +66,6 @@ class RemoteAsset extends BaseAsset {
     return super == other &&
         id == other.id &&
         ownerId == other.ownerId &&
-        localId == other.localId &&
         thumbHash == other.thumbHash &&
         visibility == other.visibility;
   }

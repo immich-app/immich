@@ -49,10 +49,7 @@ class LocalAsset extends BaseAsset {
   bool operator ==(Object other) {
     if (other is! LocalAsset) return false;
     if (identical(this, other)) return true;
-    return super == other &&
-        id == other.id &&
-        remoteId == other.remoteId &&
-        orientation == other.orientation;
+    return super == other && id == other.id && orientation == other.orientation;
   }
 
   @override
