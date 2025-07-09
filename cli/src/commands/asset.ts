@@ -68,10 +68,16 @@ class UploadFile extends File {
 const uploadBatch = async (files: string[], options: UploadOptionsDto, baseOptions: BaseOptions) => {
   const { newFiles, duplicates } = await checkForDuplicates(files, options, baseOptions);
   const newAssets = await uploadFiles(newFiles, options);
+
   if (options.jsonOutput) {
     console.log(JSON.stringify({ newFiles, duplicates, newAssets }, undefined, 4));
   }
-  await updateAlbums([...newAssets, ...duplicates], options);
+
+  // Only update albums if album option is enabled
+  if (options.album) {
+    await updateAlbums([...newAssets, ...duplicates], options);
+  }
+
   await deleteFiles(
     newAssets.map(({ filepath }) => filepath),
     options,
@@ -510,25 +516,70 @@ const deleteFiles = async (files: string[], options: UploadOptionsDto): Promise<
   }
 };
 
+const resolveServerDuplicates = async (albumTuples: AlbumPathTuple[]): Promise<Map<string, string>> => {
+  const dirToAlbumName = new Map<string, string>();
+  const usedNames = new Set<string>();
+
+  // Sort by path depth (deepest first) to handle nesting properly
+  const sortedTuples = [...albumTuples].sort(([a], [b]) => b.split(path.sep).length - a.split(path.sep).length);
+
+  for (const [dir, albumName] of sortedTuples) {
+    let finalName = albumName;
+    let uniqueName = finalName;
+    let counter = 1;
+
+    // Only check against already used names in this batch
+    while (usedNames.has(uniqueName)) {
+      uniqueName = `${finalName} ${counter++}`;
+    }
+
+    usedNames.add(uniqueName);
+    dirToAlbumName.set(dir, uniqueName);
+  }
+
+  return dirToAlbumName;
+};
+
 const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
   if (!options.album && !options.albumName) {
     return;
   }
-  const { dryRun, concurrency } = options;
 
+  const { dryRun = false, jsonOutput = false } = options;
+  const concurrency = options.concurrency ?? 5;
+
+  // Get existing albums from server
   const albums = await getAllAlbums({});
   const existingAlbums = new Map(albums.map((album) => [album.albumName, album.id]));
   const newAlbums: Set<string> = new Set();
+
+  // Generate album names for all directories
+  const albumTuples = generateAlbumNames(assets.map((a) => a.filepath));
+
+  // Resolve any duplicates within this batch
+  const dirToAlbumName = await resolveServerDuplicates(albumTuples);
+
+  // Create mapping from filepath to album name
+  const uploadAlbumNames = new Map<string, string>(); // filepath -> albumName
+
   for (const { filepath } of assets) {
-    const albumName = getAlbumName(filepath, options);
-    if (albumName && !existingAlbums.has(albumName)) {
-      newAlbums.add(albumName);
+    const dir = path.dirname(filepath);
+    const albumName = dirToAlbumName.get(dir);
+    if (albumName) {
+      uploadAlbumNames.set(filepath, albumName);
+      if (!existingAlbums.has(albumName)) {
+        newAlbums.add(albumName);
+      }
     }
   }
 
   if (dryRun) {
-    // TODO print asset counts for new albums
-    console.log(`Would have created ${newAlbums.size} new album${s(newAlbums.size)}`);
+    if (newAlbums.size > 0) {
+      console.log(`Would have created ${newAlbums.size} new album${s(newAlbums.size)}:`);
+      for (const albumName of newAlbums) {
+        console.log(`- ${albumName}`);
+      }
+    }
     console.log(`Would have updated albums of ${assets.length} asset${s(assets.length)}`);
     return;
   }
@@ -553,12 +604,17 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
     progressBar.stop();
   }
 
-  console.log(`Successfully created ${newAlbums.size} new album${s(newAlbums.size)}`);
+  if (newAlbums.size > 0) {
+    console.log(`Created ${newAlbums.size} new album${s(newAlbums.size)}`);
+    for (const albumName of newAlbums) {
+      console.log(`- ${albumName}`);
+    }
+  }
   console.log(`Successfully updated ${assets.length} asset${s(assets.length)}`);
 
   const albumToAssets = new Map<string, string[]>();
   for (const asset of assets) {
-    const albumName = getAlbumName(asset.filepath, options);
+    const albumName = uploadAlbumNames.get(asset.filepath);
     if (!albumName) {
       continue;
     }
@@ -589,15 +645,101 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
   }
 };
 
-// `filepath` valid format:
-// - Windows: `D:\\test\\Filename.txt` or `D:/test/Filename.txt`
-// - Unix: `/test/Filename.txt`
-export const getAlbumName = (filepath: string, options: UploadOptionsDto) => {
+const findUniqueAlbumName = (baseName: string, existingAlbums: Map<string, string>, parentDirs: string[]) => {
+  // First try the base name
+  if (!existingAlbums.has(baseName)) {
+    return baseName;
+  }
+
+  // Try adding parent directories until we find a unique name
+  for (let i = 0; i < parentDirs.length; i++) {
+    const prefix = parentDirs.slice(i).join(' ');
+    const newName = `${prefix} ${baseName}`.trim();
+    if (!existingAlbums.has(newName)) {
+      return newName;
+    }
+  }
+
+  // If all else fails, return as is
+  return baseName;
+};
+
+type AlbumPathTuple = [string, string]; // [directoryPath, albumName]
+
+/**
+ * Generate album names for all directories, resolving duplicates by adding parent directories
+ */
+const generateAlbumNames = (filepaths: string[]): AlbumPathTuple[] => {
+  // First pass: collect all unique directories
+  const directories = new Set<string>();
+  for (const filepath of filepaths) {
+    directories.add(path.dirname(filepath));
+  }
+
+  // Second pass: for each directory, collect all possible album name candidates
+  // with increasing levels of context
+  const dirCandidates = new Map<string, string[]>();
+
+  for (const dir of directories) {
+    const parts = dir.split(path.sep).filter(Boolean);
+    const candidates: string[] = [];
+
+    // Generate candidates with increasing context
+    for (let i = 1; i <= parts.length; i++) {
+      candidates.push(parts.slice(-i).join(' '));
+    }
+
+    dirCandidates.set(dir, candidates);
+  }
+
+  // Third pass: find the minimal unique name for each directory
+  const result: AlbumPathTuple[] = [];
+  const usedNames = new Set<string>();
+
+  // Sort directories by depth (deepest first) to handle nesting properly
+  const sortedDirs = Array.from(directories).sort((a, b) => b.split(path.sep).length - a.split(path.sep).length);
+
+  for (const dir of sortedDirs) {
+    const candidates = dirCandidates.get(dir) || [];
+    let selectedName = candidates[0] || '';
+
+    // Find the shortest unique name
+    for (const candidate of candidates) {
+      selectedName = candidate;
+
+      // Check if this name is already used
+      let isUnique = true;
+      for (const [otherDir, otherCandidates] of dirCandidates) {
+        if (otherDir === dir) continue;
+
+        if (otherCandidates.includes(candidate)) {
+          isUnique = false;
+          break;
+        }
+      }
+
+      if (isUnique) {
+        break;
+      }
+    }
+
+    // Add to used names and result
+    if (selectedName) {
+      usedNames.add(selectedName);
+      result.push([dir, selectedName]);
+    }
+  }
+
+  return result;
+};
+
+export const getAlbumName = (filepath: string, options: UploadOptionsDto, existingAlbums?: Map<string, string>) => {
   if (options.albumName) {
     return options.albumName;
   }
 
+  // For the initial pass, just return the directory name
+  // The actual resolution will happen in updateAlbums
   return path.basename(path.dirname(filepath));
 };
-
 // `
