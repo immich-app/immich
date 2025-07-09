@@ -16,14 +16,17 @@
   let { asset, stack, onAction }: Props = $props();
 
   const handleAddUploadToStack = async () => {
-    const newAssetIds = (await openFileUploadDialog({ multiple: true })).filter((id) => id !== undefined);
+    const newAssetIds = await openFileUploadDialog({ multiple: true });
+
     // Set the primary asset id to the original stacks primary asset if it exists
     const primaryAssetId = stack?.primaryAssetId ?? asset.id;
 
     // If the original asset is already in a stack, the stack needs to be
     // deleted and a new stack needs to be created with the original assets
     // and the new assets because updating the stack is not supported.
-    if (stack) await deleteStack({ id: stack.id });
+    if (stack) {
+      await deleteStack({ id: stack.id });
+    }
 
     // First asset in the list is the primary asset
     // Set ensures that there are no duplicates and preserves order
