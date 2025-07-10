@@ -91,12 +91,7 @@ class _BlurredBackdrop extends HookWidget {
     final blurhash = asset.thumbHash;
     if (blurhash != null) {
       // Use a nice cheap blur hash image decoration
-      return Stack(
-        children: [
-          const ColoredBox(color: Color.fromRGBO(0, 0, 0, 0.2)),
-          Thumbhash(blurhash: blurhash, fit: BoxFit.cover),
-        ],
-      );
+      return Thumbhash(blurhash: blurhash, fit: BoxFit.cover);
     }
 
     // Fall back to using a more expensive image filtered
