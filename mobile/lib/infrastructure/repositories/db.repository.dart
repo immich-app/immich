@@ -55,6 +55,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
   ],
   include: {
     'package:immich_mobile/infrastructure/entities/merged_asset.drift',
+    'package:immich_mobile/infrastructure/entities/asset_triggers.drift',
   },
 )
 class Drift extends $Drift implements IDatabaseRepository {

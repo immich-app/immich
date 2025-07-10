@@ -17,6 +17,8 @@ class RemoteAssetEntity extends Table
 
   TextColumn get id => text()();
 
+  TextColumn get localId => text().nullable()();
+
   TextColumn get checksum => text()();
 
   BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
@@ -51,6 +53,6 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
         width: width,
         thumbHash: thumbHash,
         visibility: visibility,
-        localId: null,
+        localId: localId,
       );
 }

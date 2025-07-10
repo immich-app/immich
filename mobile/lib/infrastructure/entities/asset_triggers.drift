@@ -1,0 +1,58 @@
+import 'remote_asset.entity.dart';
+import 'local_asset.entity.dart';
+
+-- TRIGGERS ON local_asset_entity
+
+-- Find and update the remote_id in local_asset_entity and local_id in remote_asset_entity when checksum is set
+CREATE TRIGGER IF NOT EXISTS tr_local_asset_update_checksum_set_ids
+AFTER UPDATE OF checksum ON local_asset_entity
+FOR EACH ROW
+WHEN NEW.checksum IS NOT NULL
+BEGIN
+    UPDATE local_asset_entity
+    SET remote_id = (SELECT id FROM remote_asset_entity WHERE checksum = NEW.checksum LIMIT 1)
+    WHERE id = NEW.id;
+
+    UPDATE remote_asset_entity
+    SET local_id = (SELECT id FROM local_asset_entity WHERE checksum = NEW.checksum ORDER BY id ASC LIMIT 1)
+    WHERE checksum = NEW.checksum;
+END;
+
+-- When a local asset is updated, relink remote assets that had a checksum match
+CREATE TRIGGER IF NOT EXISTS tr_local_asset_update_old_checksum_set_remote_asset_local_id
+AFTER UPDATE OF checksum ON local_asset_entity
+FOR EACH ROW
+WHEN OLD.checksum IS NOT NULL
+BEGIN
+    UPDATE remote_asset_entity
+    SET local_id = (SELECT id FROM local_asset_entity WHERE checksum = OLD.checksum ORDER BY id ASC LIMIT 1)
+    WHERE checksum = OLD.checksum;
+END;
+
+-- remote_asset_entity.checksum is a 1..* relationship with local_asset_entity.checksum.
+-- When a local asset is deleted, update remote assets that had a checksum match
+-- to ensure their local_id is set to the first matching local asset or NULL
+CREATE TRIGGER IF NOT EXISTS tr_local_asset_delete_update_remote_asset_local_id
+AFTER DELETE ON local_asset_entity
+FOR EACH ROW
+WHEN OLD.checksum IS NOT NULL
+BEGIN
+    UPDATE remote_asset_entity
+    SET local_id = (SELECT id FROM local_asset_entity WHERE checksum = OLD.checksum ORDER BY id ASC LIMIT 1)
+    WHERE checksum = OLD.checksum;
+END;
+
+
+-- TRIGGERS ON remote_asset_entity
+
+-- Find and update local_id in remote_asset_entity when a new remote asset is inserted
+CREATE TRIGGER IF NOT EXISTS tr_remote_asset_insert_set_local_id
+AFTER INSERT ON remote_asset_entity
+FOR EACH ROW
+BEGIN
+    UPDATE remote_asset_entity
+    SET local_id = (SELECT id FROM local_asset_entity WHERE checksum = NEW.checksum ORDER BY id ASC LIMIT 1)
+    WHERE id = NEW.id;
+
+    UPDATE local_asset_entity SET remote_id = NEW.id WHERE checksum = NEW.checksum;
+END;

@@ -7,6 +7,9 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as i2;
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart'
     as i3;
 import 'package:drift/src/runtime/query_builder/query_builder.dart' as i4;
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
+    as i5;
+import 'package:drift/internal/modular.dart' as i6;
 
 typedef $$LocalAssetEntityTableCreateCompanionBuilder
     = i1.LocalAssetEntityCompanion Function({
@@ -18,6 +21,7 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder
   i0.Value<int?> height,
   i0.Value<int?> durationInSeconds,
   required String id,
+  i0.Value<String?> remoteId,
   i0.Value<String?> checksum,
   i0.Value<bool> isFavorite,
 });
@@ -31,9 +35,42 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder
   i0.Value<int?> height,
   i0.Value<int?> durationInSeconds,
   i0.Value<String> id,
+  i0.Value<String?> remoteId,
   i0.Value<String?> checksum,
   i0.Value<bool> isFavorite,
 });
+
+final class $$LocalAssetEntityTableReferences extends i0.BaseReferences<
+    i0.GeneratedDatabase, i1.$LocalAssetEntityTable, i1.LocalAssetEntityData> {
+  $$LocalAssetEntityTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static i5.$RemoteAssetEntityTable _remoteIdTable(i0.GeneratedDatabase db) =>
+      i6.ReadDatabaseContainer(db)
+          .resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity')
+          .createAlias(i0.$_aliasNameGenerator(
+              i6.ReadDatabaseContainer(db)
+                  .resultSet<i1.$LocalAssetEntityTable>('local_asset_entity')
+                  .remoteId,
+              i6.ReadDatabaseContainer(db)
+                  .resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity')
+                  .id));
+
+  i5.$$RemoteAssetEntityTableProcessedTableManager? get remoteId {
+    final $_column = $_itemColumn<String>('remote_id');
+    if ($_column == null) return null;
+    final manager = i5
+        .$$RemoteAssetEntityTableTableManager(
+            $_db,
+            i6.ReadDatabaseContainer($_db)
+                .resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity'))
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_remoteIdTable($_db));
+    if (item == null) return manager;
+    return i0.ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
 
 class $$LocalAssetEntityTableFilterComposer
     extends i0.Composer<i0.GeneratedDatabase, i1.$LocalAssetEntityTable> {
@@ -76,6 +113,28 @@ class $$LocalAssetEntityTableFilterComposer
 
   i0.ColumnFilters<bool> get isFavorite => $composableBuilder(
       column: $table.isFavorite, builder: (column) => i0.ColumnFilters(column));
+
+  i5.$$RemoteAssetEntityTableFilterComposer get remoteId {
+    final i5.$$RemoteAssetEntityTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.remoteId,
+        referencedTable: i6.ReadDatabaseContainer($db)
+            .resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity'),
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            i5.$$RemoteAssetEntityTableFilterComposer(
+              $db: $db,
+              $table: i6.ReadDatabaseContainer($db)
+                  .resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity'),
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 }
 
 class $$LocalAssetEntityTableOrderingComposer
@@ -120,6 +179,30 @@ class $$LocalAssetEntityTableOrderingComposer
   i0.ColumnOrderings<bool> get isFavorite => $composableBuilder(
       column: $table.isFavorite,
       builder: (column) => i0.ColumnOrderings(column));
+
+  i5.$$RemoteAssetEntityTableOrderingComposer get remoteId {
+    final i5.$$RemoteAssetEntityTableOrderingComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.remoteId,
+            referencedTable: i6.ReadDatabaseContainer($db)
+                .resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity'),
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                i5.$$RemoteAssetEntityTableOrderingComposer(
+                  $db: $db,
+                  $table: i6.ReadDatabaseContainer($db)
+                      .resultSet<i5.$RemoteAssetEntityTable>(
+                          'remote_asset_entity'),
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
 }
 
 class $$LocalAssetEntityTableAnnotationComposer
@@ -160,6 +243,30 @@ class $$LocalAssetEntityTableAnnotationComposer
 
   i0.GeneratedColumn<bool> get isFavorite => $composableBuilder(
       column: $table.isFavorite, builder: (column) => column);
+
+  i5.$$RemoteAssetEntityTableAnnotationComposer get remoteId {
+    final i5.$$RemoteAssetEntityTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.remoteId,
+            referencedTable: i6.ReadDatabaseContainer($db)
+                .resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity'),
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                i5.$$RemoteAssetEntityTableAnnotationComposer(
+                  $db: $db,
+                  $table: i6.ReadDatabaseContainer($db)
+                      .resultSet<i5.$RemoteAssetEntityTable>(
+                          'remote_asset_entity'),
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
 }
 
 class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
@@ -171,13 +278,9 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
     i1.$$LocalAssetEntityTableAnnotationComposer,
     $$LocalAssetEntityTableCreateCompanionBuilder,
     $$LocalAssetEntityTableUpdateCompanionBuilder,
-    (
-      i1.LocalAssetEntityData,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$LocalAssetEntityTable,
-          i1.LocalAssetEntityData>
-    ),
+    (i1.LocalAssetEntityData, i1.$$LocalAssetEntityTableReferences),
     i1.LocalAssetEntityData,
-    i0.PrefetchHooks Function()> {
+    i0.PrefetchHooks Function({bool remoteId})> {
   $$LocalAssetEntityTableTableManager(
       i0.GeneratedDatabase db, i1.$LocalAssetEntityTable table)
       : super(i0.TableManagerState(
@@ -199,6 +302,7 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             i0.Value<int?> height = const i0.Value.absent(),
             i0.Value<int?> durationInSeconds = const i0.Value.absent(),
             i0.Value<String> id = const i0.Value.absent(),
+            i0.Value<String?> remoteId = const i0.Value.absent(),
             i0.Value<String?> checksum = const i0.Value.absent(),
             i0.Value<bool> isFavorite = const i0.Value.absent(),
           }) =>
@@ -211,6 +315,7 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             height: height,
             durationInSeconds: durationInSeconds,
             id: id,
+            remoteId: remoteId,
             checksum: checksum,
             isFavorite: isFavorite,
           ),
@@ -223,6 +328,7 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             i0.Value<int?> height = const i0.Value.absent(),
             i0.Value<int?> durationInSeconds = const i0.Value.absent(),
             required String id,
+            i0.Value<String?> remoteId = const i0.Value.absent(),
             i0.Value<String?> checksum = const i0.Value.absent(),
             i0.Value<bool> isFavorite = const i0.Value.absent(),
           }) =>
@@ -235,13 +341,52 @@ class $$LocalAssetEntityTableTableManager extends i0.RootTableManager<
             height: height,
             durationInSeconds: durationInSeconds,
             id: id,
+            remoteId: remoteId,
             checksum: checksum,
             isFavorite: isFavorite,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable(table),
+                    i1.$$LocalAssetEntityTableReferences(db, table, e)
+                  ))
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({remoteId = false}) {
+            return i0.PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends i0.TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (remoteId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.remoteId,
+                    referencedTable:
+                        i1.$$LocalAssetEntityTableReferences._remoteIdTable(db),
+                    referencedColumn: i1.$$LocalAssetEntityTableReferences
+                        ._remoteIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ));
 }
 
@@ -254,13 +399,9 @@ typedef $$LocalAssetEntityTableProcessedTableManager = i0.ProcessedTableManager<
     i1.$$LocalAssetEntityTableAnnotationComposer,
     $$LocalAssetEntityTableCreateCompanionBuilder,
     $$LocalAssetEntityTableUpdateCompanionBuilder,
-    (
-      i1.LocalAssetEntityData,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$LocalAssetEntityTable,
-          i1.LocalAssetEntityData>
-    ),
+    (i1.LocalAssetEntityData, i1.$$LocalAssetEntityTableReferences),
     i1.LocalAssetEntityData,
-    i0.PrefetchHooks Function()>;
+    i0.PrefetchHooks Function({bool remoteId})>;
 i0.Index get idxLocalAssetChecksum => i0.Index('idx_local_asset_checksum',
     'CREATE INDEX idx_local_asset_checksum ON local_asset_entity (checksum)');
 
@@ -321,6 +462,15 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
   late final i0.GeneratedColumn<String> id = i0.GeneratedColumn<String>(
       'id', aliasedName, false,
       type: i0.DriftSqlType.string, requiredDuringInsert: true);
+  static const i0.VerificationMeta _remoteIdMeta =
+      const i0.VerificationMeta('remoteId');
+  @override
+  late final i0.GeneratedColumn<String> remoteId = i0.GeneratedColumn<String>(
+      'remote_id', aliasedName, true,
+      type: i0.DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+          'REFERENCES remote_asset_entity (id) ON DELETE SET NULL'));
   static const i0.VerificationMeta _checksumMeta =
       const i0.VerificationMeta('checksum');
   @override
@@ -347,6 +497,7 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         height,
         durationInSeconds,
         id,
+        remoteId,
         checksum,
         isFavorite
       ];
@@ -394,6 +545,10 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     } else if (isInserting) {
       context.missing(_idMeta);
     }
+    if (data.containsKey('remote_id')) {
+      context.handle(_remoteIdMeta,
+          remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta));
+    }
     if (data.containsKey('checksum')) {
       context.handle(_checksumMeta,
           checksum.isAcceptableOrUnknown(data['checksum']!, _checksumMeta));
@@ -431,6 +586,8 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
           i0.DriftSqlType.int, data['${effectivePrefix}duration_in_seconds']),
       id: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}id'])!,
+      remoteId: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}remote_id']),
       checksum: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}checksum']),
       isFavorite: attachedDatabase.typeMapping
@@ -461,6 +618,7 @@ class LocalAssetEntityData extends i0.DataClass
   final int? height;
   final int? durationInSeconds;
   final String id;
+  final String? remoteId;
   final String? checksum;
   final bool isFavorite;
   const LocalAssetEntityData(
@@ -472,6 +630,7 @@ class LocalAssetEntityData extends i0.DataClass
       this.height,
       this.durationInSeconds,
       required this.id,
+      this.remoteId,
       this.checksum,
       required this.isFavorite});
   @override
@@ -494,6 +653,9 @@ class LocalAssetEntityData extends i0.DataClass
       map['duration_in_seconds'] = i0.Variable<int>(durationInSeconds);
     }
     map['id'] = i0.Variable<String>(id);
+    if (!nullToAbsent || remoteId != null) {
+      map['remote_id'] = i0.Variable<String>(remoteId);
+    }
     if (!nullToAbsent || checksum != null) {
       map['checksum'] = i0.Variable<String>(checksum);
     }
@@ -514,6 +676,7 @@ class LocalAssetEntityData extends i0.DataClass
       height: serializer.fromJson<int?>(json['height']),
       durationInSeconds: serializer.fromJson<int?>(json['durationInSeconds']),
       id: serializer.fromJson<String>(json['id']),
+      remoteId: serializer.fromJson<String?>(json['remoteId']),
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
     );
@@ -531,6 +694,7 @@ class LocalAssetEntityData extends i0.DataClass
       'height': serializer.toJson<int?>(height),
       'durationInSeconds': serializer.toJson<int?>(durationInSeconds),
       'id': serializer.toJson<String>(id),
+      'remoteId': serializer.toJson<String?>(remoteId),
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
     };
@@ -545,6 +709,7 @@ class LocalAssetEntityData extends i0.DataClass
           i0.Value<int?> height = const i0.Value.absent(),
           i0.Value<int?> durationInSeconds = const i0.Value.absent(),
           String? id,
+          i0.Value<String?> remoteId = const i0.Value.absent(),
           i0.Value<String?> checksum = const i0.Value.absent(),
           bool? isFavorite}) =>
       i1.LocalAssetEntityData(
@@ -558,6 +723,7 @@ class LocalAssetEntityData extends i0.DataClass
             ? durationInSeconds.value
             : this.durationInSeconds,
         id: id ?? this.id,
+        remoteId: remoteId.present ? remoteId.value : this.remoteId,
         checksum: checksum.present ? checksum.value : this.checksum,
         isFavorite: isFavorite ?? this.isFavorite,
       );
@@ -573,6 +739,7 @@ class LocalAssetEntityData extends i0.DataClass
           ? data.durationInSeconds.value
           : this.durationInSeconds,
       id: data.id.present ? data.id.value : this.id,
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
       isFavorite:
           data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
@@ -590,6 +757,7 @@ class LocalAssetEntityData extends i0.DataClass
           ..write('height: $height, ')
           ..write('durationInSeconds: $durationInSeconds, ')
           ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite')
           ..write(')'))
@@ -598,7 +766,7 @@ class LocalAssetEntityData extends i0.DataClass
 
   @override
   int get hashCode => Object.hash(name, type, createdAt, updatedAt, width,
-      height, durationInSeconds, id, checksum, isFavorite);
+      height, durationInSeconds, id, remoteId, checksum, isFavorite);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -611,6 +779,7 @@ class LocalAssetEntityData extends i0.DataClass
           other.height == this.height &&
           other.durationInSeconds == this.durationInSeconds &&
           other.id == this.id &&
+          other.remoteId == this.remoteId &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite);
 }
@@ -625,6 +794,7 @@ class LocalAssetEntityCompanion
   final i0.Value<int?> height;
   final i0.Value<int?> durationInSeconds;
   final i0.Value<String> id;
+  final i0.Value<String?> remoteId;
   final i0.Value<String?> checksum;
   final i0.Value<bool> isFavorite;
   const LocalAssetEntityCompanion({
@@ -636,6 +806,7 @@ class LocalAssetEntityCompanion
     this.height = const i0.Value.absent(),
     this.durationInSeconds = const i0.Value.absent(),
     this.id = const i0.Value.absent(),
+    this.remoteId = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
   });
@@ -648,6 +819,7 @@ class LocalAssetEntityCompanion
     this.height = const i0.Value.absent(),
     this.durationInSeconds = const i0.Value.absent(),
     required String id,
+    this.remoteId = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
   })  : name = i0.Value(name),
@@ -662,6 +834,7 @@ class LocalAssetEntityCompanion
     i0.Expression<int>? height,
     i0.Expression<int>? durationInSeconds,
     i0.Expression<String>? id,
+    i0.Expression<String>? remoteId,
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isFavorite,
   }) {
@@ -674,6 +847,7 @@ class LocalAssetEntityCompanion
       if (height != null) 'height': height,
       if (durationInSeconds != null) 'duration_in_seconds': durationInSeconds,
       if (id != null) 'id': id,
+      if (remoteId != null) 'remote_id': remoteId,
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
     });
@@ -688,6 +862,7 @@ class LocalAssetEntityCompanion
       i0.Value<int?>? height,
       i0.Value<int?>? durationInSeconds,
       i0.Value<String>? id,
+      i0.Value<String?>? remoteId,
       i0.Value<String?>? checksum,
       i0.Value<bool>? isFavorite}) {
     return i1.LocalAssetEntityCompanion(
@@ -699,6 +874,7 @@ class LocalAssetEntityCompanion
       height: height ?? this.height,
       durationInSeconds: durationInSeconds ?? this.durationInSeconds,
       id: id ?? this.id,
+      remoteId: remoteId ?? this.remoteId,
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
     );
@@ -732,6 +908,9 @@ class LocalAssetEntityCompanion
     if (id.present) {
       map['id'] = i0.Variable<String>(id.value);
     }
+    if (remoteId.present) {
+      map['remote_id'] = i0.Variable<String>(remoteId.value);
+    }
     if (checksum.present) {
       map['checksum'] = i0.Variable<String>(checksum.value);
     }
@@ -752,6 +931,7 @@ class LocalAssetEntityCompanion
           ..write('height: $height, ')
           ..write('durationInSeconds: $durationInSeconds, ')
           ..write('id: $id, ')
+          ..write('remoteId: $remoteId, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite')
           ..write(')'))

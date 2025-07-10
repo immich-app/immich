@@ -5,7 +5,7 @@ mergedAsset: SELECT * FROM
 (
 	SELECT
 		rae.id as remote_id,
-		lae.id as local_id,
+		rae.local_id as local_id,
 		rae.name,
 		rae."type",
 		rae.created_at,
@@ -19,13 +19,11 @@ mergedAsset: SELECT * FROM
 		rae.owner_id
 	FROM
 		remote_asset_entity rae
-	LEFT JOIN
-		local_asset_entity lae ON rae.checksum  = lae.checksum
 	WHERE
 		rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id in ?
 	UNION ALL
 	SELECT
-		NULL as remote_id,
+		lae.remote_id as remote_id,
 		lae.id as local_id,
 		lae.name,
 		lae."type",
@@ -40,10 +38,8 @@ mergedAsset: SELECT * FROM
 		NULL as owner_id
 	FROM
 		local_asset_entity lae
-	LEFT JOIN
-		remote_asset_entity rae ON rae.checksum = lae.checksum
 	WHERE
-		rae.id IS NULL
+		lae.remote_id IS NULL
 )
 ORDER BY created_at DESC
 LIMIT $limit;
@@ -62,8 +58,6 @@ FROM
 		rae.created_at
 	FROM
 		remote_asset_entity rae
-	LEFT JOIN
-		local_asset_entity lae  ON rae.checksum  = lae.checksum
 	WHERE
 		rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id in ?
 	UNION ALL
@@ -72,10 +66,8 @@ FROM
 		lae.created_at
 	FROM
 		local_asset_entity lae
-	LEFT JOIN
-		remote_asset_entity rae ON rae.checksum = lae.checksum
 	WHERE
-		rae.id IS NULL
+		lae.remote_id IS NULL
 )
 GROUP BY bucket_date
 ORDER BY bucket_date DESC;
