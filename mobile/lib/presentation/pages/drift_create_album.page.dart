@@ -318,6 +318,22 @@ class _AlbumTitleTextField extends StatefulWidget {
 
 class _AlbumTitleTextFieldState extends State<_AlbumTitleTextField> {
   @override
+  void initState() {
+    super.initState();
+    widget.albumTitleTextFieldFocusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void dispose() {
+    widget.albumTitleTextFieldFocusNode.removeListener(_onFocusChange);
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    widget.onFocusChanged(widget.albumTitleTextFieldFocusNode.hasFocus);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextField(
       onChanged: (v) {
@@ -332,8 +348,6 @@ class _AlbumTitleTextFieldState extends State<_AlbumTitleTextField> {
       ),
       controller: widget.albumTitleController,
       onTap: () {
-        widget.onFocusChanged(true);
-
         if (widget.albumTitleController.text == 'Untitled') {
           widget.albumTitleController.clear();
         }
@@ -409,7 +423,6 @@ class _AlbumViewerEditableDescriptionState
   void _onFocusModeChange() {
     if (!widget.descriptionFocusNode.hasFocus &&
         widget.albumDescriptionController.text.isEmpty) {
-      // Clear the controller when focus is lost and text is empty
       widget.albumDescriptionController.clear();
     }
   }
@@ -419,10 +432,6 @@ class _AlbumViewerEditableDescriptionState
     return Material(
       color: Colors.transparent,
       child: TextField(
-        onChanged: (value) {
-          // The controller automatically handles text changes
-          // No need for additional callback since we're using the controller directly
-        },
         focusNode: widget.descriptionFocusNode,
         style: context.textTheme.bodyLarge,
         maxLines: 3,
@@ -452,8 +461,13 @@ class _AlbumViewerEditableDescriptionState
           enabledBorder: const OutlineInputBorder(
             borderSide: BorderSide(color: Colors.transparent),
           ),
-          focusedBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.transparent),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: context.colorScheme.outline.withValues(alpha: 0.3),
+            ),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(16.0),
+            ),
           ),
           focusColor: Colors.grey[300],
           fillColor: context.scaffoldBackgroundColor,
