@@ -584,6 +584,10 @@ class ApiClient {
           return SyncPartnerDeleteV1.fromJson(value);
         case 'SyncPartnerV1':
           return SyncPartnerV1.fromJson(value);
+        case 'SyncPersonDeleteV1':
+          return SyncPersonDeleteV1.fromJson(value);
+        case 'SyncPersonV1':
+          return SyncPersonV1.fromJson(value);
         case 'SyncRequestType':
           return SyncRequestTypeTypeTransformer().decode(value);
         case 'SyncStackDeleteV1':
