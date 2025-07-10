@@ -15,7 +15,8 @@ type AuditTables =
   | 'album_assets_audit'
   | 'memories_audit'
   | 'memory_assets_audit'
-  | 'stacks_audit';
+  | 'stacks_audit'
+  | 'person_audit';
 type UpsertTables =
   | 'users'
   | 'partners'
@@ -25,7 +26,8 @@ type UpsertTables =
   | 'albums_shared_users_users'
   | 'memories'
   | 'memories_assets_assets'
-  | 'asset_stack';
+  | 'asset_stack'
+  | 'person';
 
 @Injectable()
 export class SyncRepository {
@@ -42,6 +44,7 @@ export class SyncRepository {
   partnerAsset: PartnerAssetsSync;
   partnerAssetExif: PartnerAssetExifsSync;
   partnerStack: PartnerStackSync;
+  people: PersonSync;
   stack: StackSync;
   user: UserSync;
 
@@ -59,6 +62,7 @@ export class SyncRepository {
     this.partnerAsset = new PartnerAssetsSync(this.db);
     this.partnerAssetExif = new PartnerAssetExifsSync(this.db);
     this.partnerStack = new PartnerStackSync(this.db);
+    this.people = new PersonSync(this.db);
     this.stack = new StackSync(this.db);
     this.user = new UserSync(this.db);
   }
@@ -351,6 +355,41 @@ class AssetSync extends BaseSync {
       .selectFrom('assets')
       .select(columns.syncAsset)
       .select('assets.updateId')
+      .where('ownerId', '=', userId)
+      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .stream();
+  }
+}
+
+class PersonSync extends BaseSync {
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getDeletes(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('person_audit')
+      .select(['id', 'personId'])
+      .where('ownerId', '=', userId)
+      .$call((qb) => this.auditTableFilters(qb, ack))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('person')
+      .select([
+        'id',
+        'createdAt',
+        'updatedAt',
+        'ownerId',
+        'name',
+        'birthDate',
+        'thumbnailPath',
+        'isHidden',
+        'isFavorite',
+        'color',
+        'updateId',
+        'faceAssetId',
+      ])
       .where('ownerId', '=', userId)
       .$call((qb) => this.upsertTableFilters(qb, ack))
       .stream();
