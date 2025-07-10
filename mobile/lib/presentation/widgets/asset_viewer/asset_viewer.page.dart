@@ -71,6 +71,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   StreamSubscription? reloadSubscription;
 
   late Platform platform;
+  late final int heroOffset;
   late PhotoViewControllerValue initialPhotoViewState;
   bool? hasDraggedDown;
   bool isSnapping = false;
@@ -98,6 +99,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       _onAssetChanged(widget.initialIndex);
     });
     reloadSubscription = EventStream.shared.listen(_onEvent);
+    heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
   }
 
   @override
@@ -487,7 +489,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     return PhotoViewGalleryPageOptions(
       key: ValueKey(asset.heroTag),
       imageProvider: getFullImageProvider(asset, size: size),
-      heroAttributes: PhotoViewHeroAttributes(tag: asset.heroTag),
+      heroAttributes:
+          PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       tightMode: true,
       initialScale: PhotoViewComputedScale.contained * 0.999,
@@ -521,7 +524,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onTapDown: _onTapDown,
-      heroAttributes: PhotoViewHeroAttributes(tag: asset.heroTag),
+      heroAttributes:
+          PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       initialScale: PhotoViewComputedScale.contained * 0.99,
       maxScale: 1.0,
