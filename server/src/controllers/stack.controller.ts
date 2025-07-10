@@ -54,4 +54,11 @@ export class StackController {
   deleteStack(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }
+
+  @Delete(':stackId/assets/:assetId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Authenticated({ permission: Permission.STACK_UPDATE })
+  removeAssetFromStack(@Auth() auth: AuthDto, @Param() { stackId }: UUIDParamDto, @Param() { assetId }: UUIDParamDto): Promise<void> {
+    return this.service.removeAsset(auth, stackId, assetId);
+  }
 }

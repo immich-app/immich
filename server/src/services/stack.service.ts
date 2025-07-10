@@ -58,6 +58,14 @@ export class StackService extends BaseService {
     await this.eventRepository.emit('stacks.delete', { stackIds: dto.ids, userId: auth.user.id });
   }
 
+  async removeAsset(auth: AuthDto, stackId: string, assetId: string) {
+    await this.requireAccess({ auth, permission: Permission.STACK_UPDATE, ids: [stackId] });
+    //Verify the asset is in the stack
+    //Verify the asset is not the stack's primary asset
+    //Verify the stack has more than 2 assets
+    
+  }
+
   private async findOrFail(id: string) {
     const stack = await this.stackRepository.getById(id);
     if (!stack) {
