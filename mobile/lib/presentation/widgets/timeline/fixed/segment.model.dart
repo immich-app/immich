@@ -159,17 +159,18 @@ class _AssetTileWidget extends ConsumerWidget {
     required this.assetIndex,
   });
 
-  void _handleOnTap(
+  Future _handleOnTap(
     BuildContext ctx,
     WidgetRef ref,
     int assetIndex,
     BaseAsset asset,
-  ) {
+  ) async {
     final multiSelectState = ref.read(multiSelectProvider);
 
     if (multiSelectState.forceEnable || multiSelectState.isEnabled) {
       ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
     } else {
+      await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
       ctx.pushRoute(
         AssetViewerRoute(
           initialIndex: assetIndex,
