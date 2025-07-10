@@ -588,6 +588,7 @@ export enum SyncRequestType {
   PartnerStacksV1 = 'PartnerStacksV1',
   StacksV1 = 'StacksV1',
   UsersV1 = 'UsersV1',
+  PeopleV1 = 'PeopleV1',
 }
 
 export enum SyncEntityType {
@@ -634,6 +635,9 @@ export enum SyncEntityType {
 
   StackV1 = 'StackV1',
   StackDeleteV1 = 'StackDeleteV1',
+
+  PersonV1 = 'PersonV1',
+  PersonDeleteV1 = 'PersonDeleteV1',
 
   SyncAckV1 = 'SyncAckV1',
 }

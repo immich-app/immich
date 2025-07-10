@@ -69,6 +69,7 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.PartnerAssetExifsV1,
   SyncRequestType.MemoriesV1,
   SyncRequestType.MemoryToAssetsV1,
+  SyncRequestType.PeopleV1,
 ];
 
 const throwSessionRequired = () => {
@@ -141,6 +142,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.MemoryToAssetsV1]: () => this.syncMemoryAssetsV1(response, checkpointMap, auth),
       [SyncRequestType.StacksV1]: () => this.syncStackV1(response, checkpointMap, auth),
       [SyncRequestType.PartnerStacksV1]: () => this.syncPartnerStackV1(response, checkpointMap, auth, sessionId),
+      [SyncRequestType.PeopleV1]: () => this.syncPeopleV1(response, checkpointMap, auth),
     };
 
     for (const type of SYNC_TYPES_ORDER.filter((type) => dto.types.includes(type))) {
@@ -571,6 +573,20 @@ export class SyncService extends BaseService {
     }
 
     const upserts = this.syncRepository.partnerStack.getUpserts(auth.user.id, checkpointMap[upsertType]);
+    for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
+
+  private async syncPeopleV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto) {
+    const deleteType = SyncEntityType.PersonDeleteV1;
+    const deletes = this.syncRepository.people.getDeletes(auth.user.id, checkpointMap[deleteType]);
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.PersonV1;
+    const upserts = this.syncRepository.people.getUpserts(auth.user.id, checkpointMap[upsertType]);
     for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });
     }
