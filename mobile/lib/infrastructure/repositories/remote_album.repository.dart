@@ -4,14 +4,14 @@ import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
-enum SortRemoteAlbumsBy { id }
+enum SortRemoteAlbumsBy { id, updatedAt }
 
 class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftRemoteAlbumRepository(this._db) : super(_db);
 
   Future<List<RemoteAlbum>> getAll({
-    Set<SortRemoteAlbumsBy> sortBy = const {},
+    Set<SortRemoteAlbumsBy> sortBy = const {SortRemoteAlbumsBy.updatedAt},
   }) {
     final assetCount = _db.remoteAlbumAssetEntity.assetId.count();
 
@@ -44,6 +44,8 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         orderings.add(
           switch (sort) {
             SortRemoteAlbumsBy.id => OrderingTerm.asc(_db.remoteAlbumEntity.id),
+            SortRemoteAlbumsBy.updatedAt =>
+              OrderingTerm.desc(_db.remoteAlbumEntity.updatedAt),
           },
         );
       }
