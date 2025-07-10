@@ -9,17 +9,18 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/stack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/bottom_app_bar/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
-class HomeBottomAppBar extends ConsumerWidget {
-  const HomeBottomAppBar({super.key});
+class RemoteAlbumBottomSheet extends ConsumerWidget {
+  const RemoteAlbumBottomSheet({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -54,6 +55,7 @@ class HomeBottomAppBar extends ConsumerWidget {
           const DeleteLocalActionButton(),
           const UploadActionButton(),
         ],
+        const RemoveFromAlbumActionButton(),
       ],
     );
   }

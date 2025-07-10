@@ -568,7 +568,7 @@ class _AlbumList extends StatelessWidget {
                 ),
               ),
               onTap: () => context.router.push(
-                RemoteTimelineRoute(album: album),
+                RemoteAlbumRoute(album: album),
               ),
               leadingPadding: const EdgeInsets.only(
                 right: 16,
@@ -705,7 +705,7 @@ class _GridAlbumCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => context.router.push(
-        RemoteTimelineRoute(album: album),
+        RemoteAlbumRoute(album: album),
       ),
       child: Card(
         elevation: 0,

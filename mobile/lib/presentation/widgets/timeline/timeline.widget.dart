@@ -10,7 +10,7 @@ import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/bottom_app_bar/home_bottom_app_bar.widget.dart';
+import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
@@ -28,13 +28,14 @@ class Timeline extends StatelessWidget {
     this.topSliverWidgetHeight,
     this.showStorageIndicator = false,
     this.appBar,
+    this.bottomSheet = const GeneralBottomSheet(),
   });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
   final bool showStorageIndicator;
   final Widget? appBar;
-
+  final Widget? bottomSheet;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,6 +57,7 @@ class Timeline extends StatelessWidget {
             topSliverWidget: topSliverWidget,
             topSliverWidgetHeight: topSliverWidgetHeight,
             appBar: appBar,
+            bottomSheet: bottomSheet,
           ),
         ),
       ),
@@ -68,11 +70,13 @@ class _SliverTimeline extends ConsumerStatefulWidget {
     this.topSliverWidget,
     this.topSliverWidgetHeight,
     this.appBar,
+    this.bottomSheet,
   });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
   final Widget? appBar;
+  final Widget? bottomSheet;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
@@ -197,7 +201,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                     }
                     return const SizedBox.shrink();
                   },
-                  child: const HomeBottomAppBar(),
+                  child: widget.bottomSheet,
                 ),
               ],
             ],
