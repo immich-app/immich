@@ -14,10 +14,12 @@ class TimelineArgs {
   final double maxHeight;
   final double spacing;
   final int columnCount;
+  final bool showStorageIndicator;
 
   const TimelineArgs({
     required this.maxWidth,
     required this.maxHeight,
+    required this.showStorageIndicator,
     this.spacing = kTimelineSpacing,
     this.columnCount = kTimelineColumnCount,
   });
@@ -27,7 +29,8 @@ class TimelineArgs {
     return spacing == other.spacing &&
         maxWidth == other.maxWidth &&
         maxHeight == other.maxHeight &&
-        columnCount == other.columnCount;
+        columnCount == other.columnCount &&
+        showStorageIndicator == other.showStorageIndicator;
   }
 
   @override
@@ -35,7 +38,8 @@ class TimelineArgs {
       maxWidth.hashCode ^
       maxHeight.hashCode ^
       spacing.hashCode ^
-      columnCount.hashCode;
+      columnCount.hashCode ^
+      showStorageIndicator.hashCode;
 }
 
 class TimelineState {

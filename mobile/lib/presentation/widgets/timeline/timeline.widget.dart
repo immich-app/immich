@@ -25,10 +25,12 @@ class Timeline extends StatelessWidget {
     super.key,
     this.topSliverWidget,
     this.topSliverWidgetHeight,
+    this.showStorageIndicator = false,
   });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
+  final bool showStorageIndicator;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +45,7 @@ class Timeline extends StatelessWidget {
                 columnCount: ref.watch(
                   settingsProvider.select((s) => s.get(Setting.tilesPerRow)),
                 ),
+                showStorageIndicator: showStorageIndicator,
               ),
             ),
           ],
