@@ -488,7 +488,7 @@ export class SyncService extends BaseService {
 
   private async syncMemoriesV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto) {
     const deleteType = SyncEntityType.MemoryDeleteV1;
-    const deletes = this.syncRepository.memory.getDeletes(auth.user.id, checkpointMap[SyncEntityType.MemoryDeleteV1]);
+    const deletes = this.syncRepository.memory.getDeletes(auth.user.id, checkpointMap[deleteType]);
     for await (const { id, ...data } of deletes) {
       send(response, { type: deleteType, ids: [id], data });
     }
