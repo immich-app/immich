@@ -8,12 +8,13 @@ export class Table1 {
 
 export const description = 'should create a column with an index if a name is provided';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [],
   extensions: [],
   parameters: [],
+  overrides: [],
   tables: [
     {
       name: 'table1',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
@@ -55,7 +56,10 @@ class ActionNotifier extends Notifier<void> {
     final Set<BaseAsset> assets = switch (source) {
       ActionSource.timeline =>
         ref.read(multiSelectProvider.select((s) => s.selectedAssets)),
-      ActionSource.viewer => {},
+      ActionSource.viewer => switch (ref.read(currentAssetNotifier)) {
+          BaseAsset asset => {asset},
+          null => {},
+        },
     };
 
     return switch (T) {

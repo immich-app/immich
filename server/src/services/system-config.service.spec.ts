@@ -124,6 +124,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     timeout: 30_000,
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
+    roleClaim: 'immich_role',
   },
   passwordLogin: {
     enabled: true,

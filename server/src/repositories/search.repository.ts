@@ -89,7 +89,7 @@ export interface SearchPeopleOptions {
 }
 
 export interface SearchTagOptions {
-  tagIds?: string[];
+  tagIds?: string[] | null;
 }
 
 export interface SearchAlbumOptions {

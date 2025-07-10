@@ -11203,6 +11203,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -12092,6 +12093,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -13157,6 +13159,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -13352,6 +13355,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -14658,6 +14662,9 @@
           "profileSigningAlgorithm": {
             "type": "string"
           },
+          "roleClaim": {
+            "type": "string"
+          },
           "scope": {
             "type": "string"
           },
@@ -14694,6 +14701,7 @@
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "profileSigningAlgorithm",
+          "roleClaim",
           "scope",
           "signingAlgorithm",
           "storageLabelClaim",

@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 import WidgetKit
 
-enum WidgetError: Error {
+enum WidgetError: Error, Codable {
   case noLogin
   case fetchFailed
   case unknown
@@ -23,10 +23,10 @@ extension WidgetError: LocalizedError {
 
     case .albumNotFound:
       return "Album not found"
-        
+
     case .invalidURL:
       return "An invalid URL was used"
-        
+
     case .invalidImage:
       return "An invalid image was received"
 
@@ -46,7 +46,7 @@ enum AssetType: String, Codable {
 struct Asset: Codable {
   let id: String
   let type: AssetType
-  
+
   var deepLink: URL? {
     return URL(string: "immich://asset?id=\(id)")
   }
@@ -75,6 +75,8 @@ struct Album: Codable {
   let albumName: String
 }
 
+let IMMICH_SHARE_GROUP = "group.app.immich.share"
+
 // MARK: API
 
 class ImmichAPI {
@@ -86,7 +88,7 @@ class ImmichAPI {
 
   init() async throws {
     // fetch the credentials from the UserDefaults store that dart placed here
-    guard let defaults = UserDefaults(suiteName: "group.app.immich.share"),
+    guard let defaults = UserDefaults(suiteName: IMMICH_SHARE_GROUP),
       let serverURL = defaults.string(forKey: "widget_server_url"),
       let sessionKey = defaults.string(forKey: "widget_auth_token")
     else {
@@ -189,18 +191,25 @@ class ImmichAPI {
     else {
       throw .invalidURL
     }
-    
-    guard let imageSource = CGImageSourceCreateWithURL(fetchURL as CFURL, nil) else {
+
+    guard let imageSource = CGImageSourceCreateWithURL(fetchURL as CFURL, nil)
+    else {
       throw .invalidURL
     }
 
     let decodeOptions: [NSString: Any] = [
-        kCGImageSourceCreateThumbnailFromImageAlways: true,
-        kCGImageSourceThumbnailMaxPixelSize: 400,
-        kCGImageSourceCreateThumbnailWithTransform: true
+      kCGImageSourceCreateThumbnailFromImageAlways: true,
+      kCGImageSourceThumbnailMaxPixelSize: 400,
+      kCGImageSourceCreateThumbnailWithTransform: true,
     ]
-    
-    guard let thumbnail = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, decodeOptions as CFDictionary) else {
+
+    guard
+      let thumbnail = CGImageSourceCreateThumbnailAtIndex(
+        imageSource,
+        0,
+        decodeOptions as CFDictionary
+      )
+    else {
       throw .fetchFailed
     }
 

@@ -10,6 +10,7 @@
     confirmColor?: Color;
     disabled?: boolean;
     size?: 'small' | 'medium';
+    icon?: string;
     onClose: (confirmed: boolean) => void;
     promptSnippet?: Snippet;
   }
@@ -21,6 +22,7 @@
     confirmColor = 'danger',
     disabled = false,
     size = 'small',
+    icon = undefined,
     onClose,
     promptSnippet,
   }: Props = $props();
@@ -30,7 +32,7 @@
   };
 </script>
 
-<Modal {title} onClose={() => onClose(false)} {size}>
+<Modal {title} {icon} onClose={() => onClose(false)} {size}>
   <ModalBody>
     {#if promptSnippet}{@render promptSnippet()}{:else}
       <p>{prompt}</p>

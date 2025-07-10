@@ -19,12 +19,20 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         useColumns: false,
       ),
       leftOuterJoin(
+        _db.remoteAssetEntity,
+        _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId),
+        useColumns: false,
+      ),
+      leftOuterJoin(
         _db.userEntity,
         _db.userEntity.id.equalsExp(_db.remoteAlbumEntity.ownerId),
+        useColumns: false,
       ),
     ]);
     query
+      ..where(_db.remoteAssetEntity.deletedAt.isNull())
       ..addColumns([assetCount])
+      ..addColumns([_db.userEntity.name])
       ..groupBy([_db.remoteAlbumEntity.id]);
 
     if (sortBy.isNotEmpty) {
@@ -43,7 +51,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         .map(
           (row) => row.readTable(_db.remoteAlbumEntity).toDto(
                 assetCount: row.read(assetCount) ?? 0,
-                ownerName: row.readTable(_db.userEntity).name,
+                ownerName: row.read(_db.userEntity.name)!,
               ),
         )
         .get();

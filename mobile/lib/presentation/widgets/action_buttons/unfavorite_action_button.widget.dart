@@ -5,14 +5,18 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class UnFavoriteActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool menuItem;
 
-  const UnFavoriteActionButton({super.key, required this.source});
+  const UnFavoriteActionButton({
+    super.key,
+    required this.source,
+    this.menuItem = false,
+  });
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -20,7 +24,11 @@ class UnFavoriteActionButton extends ConsumerWidget {
     }
 
     final result = await ref.read(actionProvider.notifier).unFavorite(source);
-    await ref.read(timelineServiceProvider).reloadBucket();
+
+    if (source == ActionSource.viewer) {
+      return;
+    }
+
     ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'unfavorite_action_prompt'.t(
@@ -46,6 +54,7 @@ class UnFavoriteActionButton extends ConsumerWidget {
       iconData: Icons.favorite_rounded,
       label: "unfavorite".t(context: context),
       onPressed: () => _onTap(context, ref),
+      menuItem: menuItem,
     );
   }
 }

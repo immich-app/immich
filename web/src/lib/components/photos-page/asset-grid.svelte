@@ -91,7 +91,7 @@
     empty,
   }: Props = $props();
 
-  let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
+  let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget, mutex } = assetViewingStore;
 
   let element: HTMLElement | undefined = $state();
 
@@ -438,6 +438,7 @@
   };
 
   const handlePrevious = async () => {
+    const release = await mutex.acquire();
     const laterAsset = await timelineManager.getLaterAsset($viewingAsset);
 
     if (laterAsset) {
@@ -447,11 +448,14 @@
       await navigate({ targetRoute: 'current', assetId: laterAsset.id });
     }
 
+    release();
     return !!laterAsset;
   };
 
   const handleNext = async () => {
+    const release = await mutex.acquire();
     const earlierAsset = await timelineManager.getEarlierAsset($viewingAsset);
+
     if (earlierAsset) {
       const preloadAsset = await timelineManager.getEarlierAsset(earlierAsset);
       const asset = await getAssetInfo({ id: earlierAsset.id, key: authManager.key });
@@ -459,6 +463,7 @@
       await navigate({ targetRoute: 'current', assetId: earlierAsset.id });
     }
 
+    release();
     return !!earlierAsset;
   };
 

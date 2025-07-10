@@ -30,6 +30,7 @@ class RemoteAsset extends BaseAsset {
     super.isFavorite = false,
     this.thumbHash,
     this.visibility = AssetVisibility.timeline,
+    super.livePhotoVideoId,
   });
 
   @override
@@ -38,8 +39,6 @@ class RemoteAsset extends BaseAsset {
 
   @override
   String get heroTag => '${localId ?? checksum}_$id';
-
-  bool get hasLocal => localId != null;
 
   @override
   String toString() {
@@ -67,7 +66,6 @@ class RemoteAsset extends BaseAsset {
     return super == other &&
         id == other.id &&
         ownerId == other.ownerId &&
-        localId == other.localId &&
         thumbHash == other.thumbHash &&
         visibility == other.visibility;
   }
@@ -80,4 +78,38 @@ class RemoteAsset extends BaseAsset {
       localId.hashCode ^
       thumbHash.hashCode ^
       visibility.hashCode;
+
+  RemoteAsset copyWith({
+    String? id,
+    String? localId,
+    String? name,
+    String? ownerId,
+    String? checksum,
+    AssetType? type,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    int? width,
+    int? height,
+    int? durationInSeconds,
+    bool? isFavorite,
+    String? thumbHash,
+    AssetVisibility? visibility,
+  }) {
+    return RemoteAsset(
+      id: id ?? this.id,
+      localId: localId ?? this.localId,
+      name: name ?? this.name,
+      ownerId: ownerId ?? this.ownerId,
+      checksum: checksum ?? this.checksum,
+      type: type ?? this.type,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      durationInSeconds: durationInSeconds ?? this.durationInSeconds,
+      isFavorite: isFavorite ?? this.isFavorite,
+      thumbHash: thumbHash ?? this.thumbHash,
+      visibility: visibility ?? this.visibility,
+    );
+  }
 }

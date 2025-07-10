@@ -359,6 +359,7 @@ extension on Iterable<PlatformAsset> {
         width: e.width,
         height: e.height,
         durationInSeconds: e.durationInSeconds,
+        orientation: e.orientation,
       ),
     ).toList();
   }
