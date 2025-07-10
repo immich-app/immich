@@ -4,8 +4,10 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
+  Generated,
   PrimaryGeneratedColumn,
   Table,
+  Timestamp,
   Unique,
   UpdateDateColumn,
 } from 'src/sql-tools';
@@ -15,7 +17,7 @@ import {
 @Unique({ columns: ['userId', 'value'] })
 export class TagTable {
   @PrimaryGeneratedColumn()
-  id!: string;
+  id!: Generated<string>;
 
   @ForeignKeyColumn(() => UserTable, {
     onUpdate: 'CASCADE',
@@ -29,17 +31,17 @@ export class TagTable {
   value!: string;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Generated<Timestamp>;
 
   @Column({ type: 'character varying', nullable: true, default: null })
   color!: string | null;
 
   @ForeignKeyColumn(() => TagTable, { nullable: true, onDelete: 'CASCADE' })
-  parentId?: string;
+  parentId!: string | null;
 
   @UpdateIdColumn({ indexName: 'IDX_tags_update_id' })
-  updateId!: string;
+  updateId!: Generated<string>;
 }

@@ -4,7 +4,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 
 abstract final class DynamicTheme {
-  DynamicTheme._();
+  const DynamicTheme._();
 
   static ImmichTheme? _theme;
   // Method to fetch dynamic system colors

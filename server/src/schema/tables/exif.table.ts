@@ -1,6 +1,6 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { Column, ForeignKeyColumn, Table, UpdateDateColumn } from 'src/sql-tools';
+import { Column, ForeignKeyColumn, Generated, Int8, Table, Timestamp, UpdateDateColumn } from 'src/sql-tools';
 
 @Table('exif')
 @UpdatedAtTrigger('asset_exif_updated_at')
@@ -21,16 +21,16 @@ export class ExifTable {
   exifImageHeight!: number | null;
 
   @Column({ type: 'bigint', nullable: true })
-  fileSizeInByte!: number | null;
+  fileSizeInByte!: Int8 | null;
 
   @Column({ type: 'character varying', nullable: true })
   orientation!: string | null;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  dateTimeOriginal!: Date | null;
+  dateTimeOriginal!: Timestamp | null;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  modifyDate!: Date | null;
+  modifyDate!: Timestamp | null;
 
   @Column({ type: 'character varying', nullable: true })
   lensModel!: string | null;
@@ -60,10 +60,10 @@ export class ExifTable {
   country!: string | null;
 
   @Column({ type: 'text', default: '' })
-  description!: string; // or caption
+  description!: Generated<string>; // or caption
 
   @Column({ type: 'double precision', nullable: true })
-  fps?: number | null;
+  fps!: number | null;
 
   @Column({ type: 'character varying', nullable: true })
   exposureTime!: string | null;
@@ -93,8 +93,8 @@ export class ExifTable {
   rating!: number | null;
 
   @UpdateDateColumn({ default: () => 'clock_timestamp()' })
-  updatedAt?: Date;
+  updatedAt!: Generated<Date>;
 
   @UpdateIdColumn({ indexName: 'IDX_asset_exif_update_id' })
-  updateId?: string;
+  updateId!: Generated<string>;
 }

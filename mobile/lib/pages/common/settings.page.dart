@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
@@ -11,7 +12,6 @@ import 'package:immich_mobile/widgets/settings/language_settings.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/networking_settings.dart';
 import 'package:immich_mobile/widgets/settings/notification_setting.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/preference_setting.dart';
-import 'package:immich_mobile/routing/router.dart';
 
 enum SettingSection {
   advanced(
@@ -85,12 +85,13 @@ class SettingsPage extends StatelessWidget {
         centerTitle: false,
         title: const Text('settings').tr(),
       ),
-      body: context.isMobile ? _MobileLayout() : _TabletLayout(),
+      body: context.isMobile ? const _MobileLayout() : const _TabletLayout(),
     );
   }
 }
 
 class _MobileLayout extends StatelessWidget {
+  const _MobileLayout();
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -147,6 +148,7 @@ class _MobileLayout extends StatelessWidget {
 }
 
 class _TabletLayout extends HookWidget {
+  const _TabletLayout();
   @override
   Widget build(BuildContext context) {
     final selectedSection =

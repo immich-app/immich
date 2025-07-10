@@ -1,0 +1,12 @@
+name: Org Checks
+
+on:
+  pull_request_review:
+
+jobs:
+  check-approvals:
+    name: Check for Team/Admin Review
+    uses: immich-app/devtools/.github/workflows/required-approval.yml@main
+    permissions:
+      pull-requests: read
+      contents: read

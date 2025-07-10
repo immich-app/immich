@@ -1113,8 +1113,6 @@ describe(LibraryService.name, () => {
       mocks.library.get.mockResolvedValue(library);
       mocks.library.streamAssetIds.mockReturnValue(makeStream([assetStub.image1]));
 
-      mocks.asset.getById.mockResolvedValue(assetStub.image1);
-
       await expect(sut.handleDeleteLibrary({ id: library.id })).resolves.toBe(JobStatus.SUCCESS);
     });
   });

@@ -146,6 +146,7 @@ dart_code_metrics:
   #  - no-empty-block
   #  - no-equal-then-else
   #  - prefer-correct-test-file-name
+    - prefer-const-border-radius
   #  - prefer-match-file-name
   #  - prefer-return-await
   #  - avoid-self-assignment
@@ -290,7 +291,8 @@ dart_code_metrics:
     # Style
   #  - prefer-trailing-comma
   #  - unnecessary-trailing-comma
-  #  - prefer-declaring-const-constructor
+    - prefer-declaring-const-constructor
   #  - prefer-single-widget-per-file
+    - prefer-switch-expression
   #  - prefer-prefixed-global-constants
   #  - prefer-correct-callback-field-name

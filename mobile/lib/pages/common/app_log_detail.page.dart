@@ -60,7 +60,9 @@ class AppLogDetailPage extends HookConsumerWidget {
             Container(
               decoration: BoxDecoration(
                 color: context.colorScheme.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(15.0),
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(15.0),
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -99,7 +101,9 @@ class AppLogDetailPage extends HookConsumerWidget {
             Container(
               decoration: BoxDecoration(
                 color: context.colorScheme.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(15.0),
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(15.0),
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),

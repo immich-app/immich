@@ -85,6 +85,7 @@ import React from 'react';
 import { Item, Timeline } from '../components/timeline';
 
 const releases = {
+  'v1.135.0': new Date(2025, 5, 18),
   'v1.133.0': new Date(2025, 4, 21),
   'v1.130.0': new Date(2025, 2, 25),
   'v1.127.0': new Date(2025, 1, 26),
@@ -198,14 +199,6 @@ const roadmap: Item[] = [
   },
   {
     done: false,
-    icon: mdiTableKey,
-    iconColor: 'gray',
-    title: 'Fine grained access controls',
-    description: 'Granular access controls for users and api keys',
-    getDateLabel: () => 'Planned for 2025',
-  },
-  {
-    done: false,
     icon: mdiImageEdit,
     iconColor: 'rebeccapurple',
     title: 'Basic editor',
@@ -239,12 +232,26 @@ const roadmap: Item[] = [
 ];
 
 const milestones: Item[] = [
+  {
+    icon: mdiStar,
+    iconColor: 'gold',
+    title: '70,000 Stars',
+    description: 'Reached 70K Stars on GitHub!',
+    getDateLabel: withLanguage(new Date(2025, 6, 9)),
+  },
+  withRelease({
+    icon: mdiTableKey,
+    iconColor: 'gray',
+    title: 'Fine grained access controls',
+    description: 'Granular access controls for api keys',
+    release: 'v1.135.0',
+  }),
   withRelease({
     icon: mdiCast,
     iconColor: 'aqua',
-    title: 'Google Cast (web)',
+    title: 'Google Cast (web and mobile)',
     description: 'Cast assets to Google Cast/Chromecast compatible devices',
-    release: 'v1.133.0',
+    release: 'v1.135.0',
   }),
   withRelease({
     icon: mdiLockOutline,

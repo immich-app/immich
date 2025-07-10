@@ -3,9 +3,13 @@ import { Insertable, Kysely, NotNull, Selectable, UpdateResult, Updateable, sql 
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Stack } from 'src/database';
-import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { DB } from 'src/schema';
+import { AssetFileTable } from 'src/schema/tables/asset-files.table';
+import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
+import { AssetTable } from 'src/schema/tables/asset.table';
+import { ExifTable } from 'src/schema/tables/exif.table';
 import {
   anyUuid,
   asUuid,
@@ -40,11 +44,6 @@ interface LivePhotoSearchOptions {
   livePhotoCID: string;
   otherAssetId: string;
   type: AssetType;
-}
-
-export enum TimeBucketSize {
-  DAY = 'DAY',
-  MONTH = 'MONTH',
 }
 
 interface AssetBuilderOptions {
@@ -115,7 +114,7 @@ interface GetByIdsRelations {
 export class AssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  async upsertExif(exif: Insertable<Exif>): Promise<void> {
+  async upsertExif(exif: Insertable<ExifTable>): Promise<void> {
     const value = { ...exif, assetId: asUuid(exif.assetId) };
     await this.db
       .insertInto('exif')
@@ -162,7 +161,7 @@ export class AssetRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID], { model: DummyValue.STRING }] })
   @Chunked()
-  async updateAllExif(ids: string[], options: Updateable<Exif>): Promise<void> {
+  async updateAllExif(ids: string[], options: Updateable<ExifTable>): Promise<void> {
     if (ids.length === 0) {
       return;
     }
@@ -170,7 +169,7 @@ export class AssetRepository {
     await this.db.updateTable('exif').set(options).where('assetId', 'in', ids).execute();
   }
 
-  async upsertJobStatus(...jobStatus: Insertable<AssetJobStatus>[]): Promise<void> {
+  async upsertJobStatus(...jobStatus: Insertable<AssetJobStatusTable>[]): Promise<void> {
     if (jobStatus.length === 0) {
       return;
     }
@@ -196,11 +195,11 @@ export class AssetRepository {
       .execute();
   }
 
-  create(asset: Insertable<Assets>) {
+  create(asset: Insertable<AssetTable>) {
     return this.db.insertInto('assets').values(asset).returningAll().executeTakeFirstOrThrow();
   }
 
-  createAll(assets: Insertable<Assets>[]) {
+  createAll(assets: Insertable<AssetTable>[]) {
     return this.db.insertInto('assets').values(assets).returningAll().execute();
   }
 
@@ -380,18 +379,18 @@ export class AssetRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID], { deviceId: DummyValue.STRING }] })
   @Chunked()
-  async updateAll(ids: string[], options: Updateable<Assets>): Promise<void> {
+  async updateAll(ids: string[], options: Updateable<AssetTable>): Promise<void> {
     if (ids.length === 0) {
       return;
     }
     await this.db.updateTable('assets').set(options).where('id', '=', anyUuid(ids)).execute();
   }
 
-  async updateByLibraryId(libraryId: string, options: Updateable<Assets>): Promise<void> {
+  async updateByLibraryId(libraryId: string, options: Updateable<AssetTable>): Promise<void> {
     await this.db.updateTable('assets').set(options).where('libraryId', '=', asUuid(libraryId)).execute();
   }
 
-  async update(asset: Updateable<Assets> & { id: string }) {
+  async update(asset: Updateable<AssetTable> & { id: string }) {
     const value = omitBy(asset, isUndefined);
     delete value.id;
     if (!isEmpty(value)) {
@@ -490,13 +489,13 @@ export class AssetRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
+  @GenerateSql({ params: [{}] })
   async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     return this.db
       .with('assets', (qb) =>
         qb
           .selectFrom('assets')
-          .select(truncatedDate<Date>(TimeBucketSize.MONTH).as('timeBucket'))
+          .select(truncatedDate<Date>().as('timeBucket'))
           .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
           .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility === undefined, withDefaultVisibility)
@@ -525,7 +524,7 @@ export class AssetRepository {
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
       )
       .selectFrom('assets')
-      .select(sql<string>`"timeBucket"::date::text`.as('timeBucket'))
+      .select(sql<string>`("timeBucket" AT TIME ZONE 'UTC')::date::text`.as('timeBucket'))
       .select((eb) => eb.fn.countAll<number>().as('count'))
       .groupBy('timeBucket')
       .orderBy('timeBucket', options.order ?? 'desc')
@@ -576,7 +575,7 @@ export class AssetRepository {
           .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('assets.visibility', '=', options.visibility!))
-          .where(truncatedDate(TimeBucketSize.MONTH), '=', timeBucket.replace(/^[+-]/, ''))
+          .where(truncatedDate(), '=', timeBucket.replace(/^[+-]/, ''))
           .$if(!!options.albumId, (qb) =>
             qb.where((eb) =>
               eb.exists(
@@ -747,7 +746,7 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFile(file: Pick<Insertable<AssetFiles>, 'assetId' | 'path' | 'type'>): Promise<void> {
+  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>): Promise<void> {
     const value = { ...file, assetId: asUuid(file.assetId) };
     await this.db
       .insertInto('asset_files')
@@ -760,7 +759,7 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFiles(files: Pick<Insertable<AssetFiles>, 'assetId' | 'path' | 'type'>[]): Promise<void> {
+  async upsertFiles(files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>[]): Promise<void> {
     if (files.length === 0) {
       return;
     }
@@ -777,7 +776,7 @@ export class AssetRepository {
       .execute();
   }
 
-  async deleteFiles(files: Pick<Selectable<AssetFiles>, 'id'>[]): Promise<void> {
+  async deleteFiles(files: Pick<Selectable<AssetFileTable>, 'id'>[]): Promise<void> {
     if (files.length === 0) {
       return;
     }

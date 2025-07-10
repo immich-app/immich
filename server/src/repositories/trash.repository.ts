@@ -1,8 +1,8 @@
 import { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetStatus } from 'src/enum';
+import { DB } from 'src/schema';
 
 export class TrashRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}

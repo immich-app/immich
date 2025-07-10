@@ -120,8 +120,10 @@ class CreateAlbumPage extends HookConsumerWidget {
                 alignment: Alignment.centerLeft,
                 padding:
                     const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(10),
+                  ),
                 ),
                 backgroundColor: context.colorScheme.surfaceContainerHigh,
               ),

@@ -4,12 +4,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
-import 'package:immich_mobile/widgets/map/map_settings_sheet.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
+import 'package:immich_mobile/widgets/map/map_settings_sheet.dart';
 
 class MapAppBar extends HookWidget implements PreferredSizeWidget {
   final ValueNotifier<Set<Asset>> selectedAssets;
@@ -24,7 +24,7 @@ class MapAppBar extends HookWidget implements PreferredSizeWidget {
         valueListenable: selectedAssets,
         builder: (ctx, value, child) => value.isNotEmpty
             ? _SelectionRow(selectedAssets: selectedAssets)
-            : _NonSelectionRow(),
+            : const _NonSelectionRow(),
       ),
     );
   }
@@ -34,6 +34,8 @@ class MapAppBar extends HookWidget implements PreferredSizeWidget {
 }
 
 class _NonSelectionRow extends StatelessWidget {
+  const _NonSelectionRow();
+
   @override
   Widget build(BuildContext context) {
     void onSettingsPressed() {

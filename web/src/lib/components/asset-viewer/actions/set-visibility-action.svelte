@@ -25,6 +25,7 @@
       prompt: isLocked ? $t('remove_from_locked_folder_confirmation') : $t('move_to_locked_folder_confirmation'),
       confirmText: $t('move'),
       confirmColor: isLocked ? 'danger' : 'primary',
+      icon: isLocked ? mdiLockOpenVariantOutline : mdiLockOutline,
     });
 
     if (!isConfirmed) {

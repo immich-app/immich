@@ -143,7 +143,9 @@ class PlaceTile extends StatelessWidget {
         ),
       ),
       leading: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(20),
+        ),
         child: CachedNetworkImage(
           width: 80,
           height: 80,

@@ -26,9 +26,9 @@ class MemoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       color: Colors.black,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(25.0),
-        side: const BorderSide(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(25.0)),
+        side: BorderSide(
           color: Colors.black,
           width: 1.0,
         ),

@@ -224,7 +224,7 @@ limit
 with
   "assets" as (
     select
-      date_trunc('MONTH', "localDateTime" at time zone 'UTC') at time zone 'UTC' as "timeBucket"
+      date_trunc('MONTH', "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' as "timeBucket"
     from
       "assets"
     where
@@ -232,7 +232,7 @@ with
       and "assets"."visibility" in ('archive', 'timeline')
   )
 select
-  "timeBucket"::date::text as "timeBucket",
+  ("timeBucket" AT TIME ZONE 'UTC')::date::text as "timeBucket",
   count(*) as "count"
 from
   "assets"
@@ -300,7 +300,7 @@ with
     where
       "assets"."deletedAt" is null
       and "assets"."visibility" in ('archive', 'timeline')
-      and date_trunc('MONTH', "localDateTime" at time zone 'UTC') at time zone 'UTC' = $2
+      and date_trunc('MONTH', "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' = $2
       and not exists (
         select
         from

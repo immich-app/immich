@@ -490,7 +490,7 @@ You can also scan the Postgres database file structure for errors:
 <details>
 <summary>Scan for file structure errors</summary>
 ```bash
-docker exec -it immich_postgres pg_amcheck --username=postgres --heapallindexed --parent-check --rootdescend --progress --all --install-missing
+docker exec -it immich_postgres pg_amcheck --username=<DB_USERNAME> --heapallindexed --parent-check --rootdescend --progress --all --install-missing
 ```
 
 A normal result will end something like this and return with an exit code of `0`:
