@@ -19,48 +19,23 @@ class DriftCreateAlbumPage extends ConsumerStatefulWidget {
 }
 
 class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
-  late TextEditingController albumTitleController;
-  late FocusNode albumTitleTextFieldFocusNode;
-  late FocusNode albumDescriptionTextFieldFocusNode;
+  TextEditingController albumTitleController = TextEditingController();
+  TextEditingController albumDescriptionController = TextEditingController();
+  FocusNode albumTitleTextFieldFocusNode = FocusNode();
+  FocusNode albumDescriptionTextFieldFocusNode = FocusNode();
   bool isAlbumTitleTextFieldFocus = false;
   Set<BaseAsset> selectedAssets = {};
-  String albumDescription = '';
-
-  @override
-  void initState() {
-    super.initState();
-    albumTitleController = TextEditingController();
-    albumTitleTextFieldFocusNode = FocusNode();
-    albumDescriptionTextFieldFocusNode = FocusNode();
-  }
 
   @override
   void dispose() {
     albumTitleController.dispose();
+    albumDescriptionController.dispose();
     albumTitleTextFieldFocusNode.dispose();
     albumDescriptionTextFieldFocusNode.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(context),
-      body: GestureDetector(
-        onTap: onBackgroundTapped,
-        child: CustomScrollView(
-          slivers: [
-            _buildSliverAppBar(),
-            _buildContent(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  bool _canCreateAlbum() {
-    return albumTitleController.text.isNotEmpty;
-  }
+  bool get _canCreateAlbum => albumTitleController.text.isNotEmpty;
 
   String _getEffectiveTitle() {
     return albumTitleController.text.isNotEmpty
@@ -68,44 +43,13 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
         : 'create_album_page_untitled'.t();
   }
 
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      elevation: 0,
-      centerTitle: false,
-      backgroundColor: context.scaffoldBackgroundColor,
-      leading: IconButton(
-        onPressed: () {
-          setState(() {
-            selectedAssets = {};
-          });
-          context.maybePop();
-        },
-        icon: const Icon(Icons.close_rounded),
-      ),
-      title: const Text('create_album').t(context: context),
-      actions: [
-        TextButton(
-          onPressed: _canCreateAlbum() ? createAlbum : null,
-          child: Text(
-            'create'.t(),
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: _canCreateAlbum()
-                  ? context.primaryColor
-                  : context.themeData.disabledColor,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildSliverAppBar() {
     return SliverAppBar(
       backgroundColor: context.scaffoldBackgroundColor,
-      elevation: 5,
+      elevation: 0,
       automaticallyImplyLeading: false,
       pinned: true,
+      snap: false,
       floating: false,
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(125.0),
@@ -184,8 +128,8 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
-          crossAxisSpacing: 3.0,
-          mainAxisSpacing: 3.0,
+          crossAxisSpacing: 1.0,
+          mainAxisSpacing: 1.0,
         ),
         itemCount: selectedAssets.length,
         itemBuilder: (context, index) {
@@ -246,7 +190,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
 
     final album = await ref.watch(remoteAlbumProvider.notifier).createAlbum(
           title: title,
-          description: albumDescription.trim(),
+          description: albumDescriptionController.text.trim(),
           assetIds: selectedAssets.map((asset) {
             final remoteAsset = asset as RemoteAsset;
             return remoteAsset.id;
@@ -286,13 +230,8 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
         left: 10.0,
       ),
       child: _AlbumViewerEditableDescription(
-        albumDescription: albumDescription,
+        albumDescriptionController: albumDescriptionController,
         descriptionFocusNode: albumDescriptionTextFieldFocusNode,
-        onDescriptionChanged: (description) {
-          setState(() {
-            albumDescription = description;
-          });
-        },
       ),
     );
   }
@@ -314,6 +253,45 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
               onPressed: onSelectPhotos,
               labelText: "add_photos".t(),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        centerTitle: false,
+        backgroundColor: context.scaffoldBackgroundColor,
+        leading: IconButton(
+          onPressed: () => context.maybePop(),
+          icon: const Icon(Icons.close_rounded),
+        ),
+        title: const Text('create_album').t(),
+        actions: [
+          TextButton(
+            onPressed: _canCreateAlbum ? createAlbum : null,
+            child: Text(
+              'create'.t(),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: _canCreateAlbum
+                    ? context.primaryColor
+                    : context.themeData.disabledColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: GestureDetector(
+        onTap: onBackgroundTapped,
+        child: CustomScrollView(
+          slivers: [
+            _buildSliverAppBar(),
+            _buildContent(),
           ],
         ),
       ),
@@ -402,14 +380,12 @@ class _AlbumTitleTextFieldState extends State<_AlbumTitleTextField> {
 
 class _AlbumViewerEditableDescription extends StatefulWidget {
   const _AlbumViewerEditableDescription({
-    required this.albumDescription,
+    required this.albumDescriptionController,
     required this.descriptionFocusNode,
-    required this.onDescriptionChanged,
   });
 
-  final String albumDescription;
+  final TextEditingController albumDescriptionController;
   final FocusNode descriptionFocusNode;
-  final ValueChanged<String> onDescriptionChanged;
 
   @override
   State<_AlbumViewerEditableDescription> createState() =>
@@ -418,30 +394,23 @@ class _AlbumViewerEditableDescription extends StatefulWidget {
 
 class _AlbumViewerEditableDescriptionState
     extends State<_AlbumViewerEditableDescription> {
-  late TextEditingController descriptionTextEditController;
-
   @override
   void initState() {
     super.initState();
-    // For create album page, always start with the provided albumDescription
-    descriptionTextEditController = TextEditingController(
-      text: widget.albumDescription,
-    );
     widget.descriptionFocusNode.addListener(_onFocusModeChange);
   }
 
   @override
   void dispose() {
     widget.descriptionFocusNode.removeListener(_onFocusModeChange);
-    descriptionTextEditController.dispose();
     super.dispose();
   }
 
   void _onFocusModeChange() {
     if (!widget.descriptionFocusNode.hasFocus &&
-        descriptionTextEditController.text.isEmpty) {
-      widget.onDescriptionChanged("");
-      descriptionTextEditController.text = "";
+        widget.albumDescriptionController.text.isEmpty) {
+      // Clear the controller when focus is lost and text is empty
+      widget.albumDescriptionController.clear();
     }
   }
 
@@ -451,18 +420,19 @@ class _AlbumViewerEditableDescriptionState
       color: Colors.transparent,
       child: TextField(
         onChanged: (value) {
-          widget.onDescriptionChanged(value);
+          // The controller automatically handles text changes
+          // No need for additional callback since we're using the controller directly
         },
         focusNode: widget.descriptionFocusNode,
         style: context.textTheme.bodyLarge,
         maxLines: 3,
         minLines: 1,
-        controller: descriptionTextEditController,
+        controller: widget.albumDescriptionController,
         onTap: () {
           context.focusScope.requestFocus(widget.descriptionFocusNode);
 
-          if (descriptionTextEditController.text == '') {
-            descriptionTextEditController.clear();
+          if (widget.albumDescriptionController.text == '') {
+            widget.albumDescriptionController.clear();
           }
         },
         decoration: InputDecoration(
@@ -470,8 +440,7 @@ class _AlbumViewerEditableDescriptionState
           suffixIcon: widget.descriptionFocusNode.hasFocus
               ? IconButton(
                   onPressed: () {
-                    descriptionTextEditController.clear();
-                    widget.onDescriptionChanged("");
+                    widget.albumDescriptionController.clear();
                   },
                   icon: Icon(
                     Icons.cancel_rounded,
