@@ -889,7 +889,7 @@ export type MetadataSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     thumbnailPath?: string;
@@ -956,7 +956,7 @@ export type RandomSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -993,7 +993,7 @@ export type SmartSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -1025,7 +1025,7 @@ export type StatisticsSearchDto = {
     personIds?: string[];
     rating?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
