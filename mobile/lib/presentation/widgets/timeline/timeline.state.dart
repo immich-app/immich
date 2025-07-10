@@ -19,9 +19,9 @@ class TimelineArgs {
   const TimelineArgs({
     required this.maxWidth,
     required this.maxHeight,
-    required this.showStorageIndicator,
     this.spacing = kTimelineSpacing,
     this.columnCount = kTimelineColumnCount,
+    this.showStorageIndicator = false,
   });
 
   @override
