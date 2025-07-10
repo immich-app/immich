@@ -1,12 +1,14 @@
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
+import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/utils/remote_album.utils.dart';
 
 class RemoteAlbumService {
   final DriftRemoteAlbumRepository _repository;
+  final DriftAlbumApiRepository _albumApiRepository;
 
-  const RemoteAlbumService(this._repository);
+  const RemoteAlbumService(this._repository, this._albumApiRepository);
 
   Future<List<RemoteAlbum>> getAll() {
     return _repository.getAll();
@@ -56,5 +58,21 @@ class RemoteAlbumService {
     }
 
     return filtered;
+  }
+
+  Future<RemoteAlbum> createAlbum({
+    required String title,
+    required List<String> assetIds,
+    String? description,
+  }) async {
+    final album = await _albumApiRepository.createDriftAlbum(
+      title,
+      description: description,
+      assetIds: assetIds,
+    );
+
+    await _repository.create(album, assetIds);
+
+    return album;
   }
 }

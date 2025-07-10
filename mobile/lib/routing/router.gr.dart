@@ -684,6 +684,22 @@ class DriftAssetSelectionTimelineRouteArgs {
 }
 
 /// generated route for
+/// [DriftCreateAlbumPage]
+class DriftCreateAlbumRoute extends PageRouteInfo<void> {
+  const DriftCreateAlbumRoute({List<PageRouteInfo>? children})
+      : super(DriftCreateAlbumRoute.name, initialChildren: children);
+
+  static const String name = 'DriftCreateAlbumRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftCreateAlbumPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftFavoritePage]
 class DriftFavoriteRoute extends PageRouteInfo<void> {
   const DriftFavoriteRoute({List<PageRouteInfo>? children})

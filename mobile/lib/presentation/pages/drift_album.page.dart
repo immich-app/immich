@@ -97,7 +97,20 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
       onRefresh: onRefresh,
       child: CustomScrollView(
         slivers: [
-          const ImmichSliverAppBar(),
+          ImmichSliverAppBar(
+            actions: [
+              IconButton(
+                icon: const Icon(
+                  Icons.add_rounded,
+                  size: 28,
+                ),
+                onPressed: () => context.pushRoute(
+                  const DriftCreateAlbumRoute(),
+                ),
+              ),
+            ],
+            showUploadButton: false,
+          ),
           _SearchBar(
             searchController: searchController,
             searchFocusNode: searchFocusNode,

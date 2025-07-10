@@ -118,4 +118,31 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
         .sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
     state = state.copyWith(filteredAlbums: sortedAlbums);
   }
+
+  Future<RemoteAlbum?> createAlbum({
+    required String title,
+    String? description,
+    List<String> assetIds = const [],
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final album = await _remoteAlbumService.createAlbum(
+        title: title,
+        description: description,
+        assetIds: assetIds,
+      );
+
+      state = state.copyWith(
+        albums: [...state.albums, album],
+        filteredAlbums: [...state.filteredAlbums, album],
+      );
+
+      state = state.copyWith(isLoading: false);
+      return album;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
+    }
+  }
 }

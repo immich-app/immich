@@ -85,6 +85,7 @@ import 'package:immich_mobile/presentation/pages/dev/remote_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_album.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_library.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_asset_selection_timeline.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_create_album.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_memory.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -448,6 +449,11 @@ class AppRouter extends RootStackRouter {
       page: DriftLocalAlbumsRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
+    AutoRoute(
+      page: DriftCreateAlbumRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+
     // required to handle all deeplinks in deep_link.service.dart
     // auto_route_library#1722
     RedirectRoute(path: '*', redirectTo: '/'),
