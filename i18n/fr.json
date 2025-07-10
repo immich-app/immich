@@ -351,8 +351,7 @@
     "version_check_settings": "Vérification de la version",
     "version_check_settings_description": "Gérer la vérification de nouvelle version d'Immich",
     "video_conversion_job": "Transcodage des vidéos",
-    "video_conversion_job_description": "Transcodage des vidéos pour une compatibilité améliorée avec les navigateurs et les différents appareils",
-    "star_rating_set_1_5_0": "Définir la note à 1, 2, 3, 4, 5 ou 0 étoile(s)"
+    "video_conversion_job_description": "Transcodage des vidéos pour une compatibilité améliorée avec les navigateurs et les différents appareils"
   },
   "admin_email": "Courriel Admin",
   "admin_password": "Mot de passe Admin",
@@ -1774,6 +1773,7 @@
   "stack_selected_photos": "Empiler les photos sélectionnées",
   "stacked_assets_count": "{count, plural, one {# média empilé} other {# médias empilés}}",
   "stacktrace": "Trace de la pile",
+  "star_rating_set_1_5_0": "Définir la note à 1, 2, 3, 4, 5 ou 0 étoile(s)",
   "start": "Commencer",
   "start_date": "Date de début",
   "state": "Région",
