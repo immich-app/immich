@@ -481,6 +481,8 @@ Class | Method | HTTP request | Description
  - [SyncMemoryV1](doc//SyncMemoryV1.md)
  - [SyncPartnerDeleteV1](doc//SyncPartnerDeleteV1.md)
  - [SyncPartnerV1](doc//SyncPartnerV1.md)
+ - [SyncPersonDeleteV1](doc//SyncPersonDeleteV1.md)
+ - [SyncPersonV1](doc//SyncPersonV1.md)
  - [SyncRequestType](doc//SyncRequestType.md)
  - [SyncStackDeleteV1](doc//SyncStackDeleteV1.md)
  - [SyncStackV1](doc//SyncStackV1.md)
