@@ -105,7 +105,7 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
                   size: 28,
                 ),
                 onPressed: () => context.pushRoute(
-                  DriftCreateAlbumRoute(),
+                  const DriftCreateAlbumRoute(),
                 ),
               ),
             ],
