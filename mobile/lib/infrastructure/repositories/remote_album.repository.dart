@@ -79,7 +79,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         order: Value(album.order),
       );
 
-      await _db.into(_db.remoteAlbumEntity).insert(entity);
+      await _db.remoteAlbumEntity.insertOne(entity);
 
       if (assetIds.isNotEmpty) {
         final albumAssets = assetIds.map(

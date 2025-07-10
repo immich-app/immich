@@ -40,7 +40,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
   String _getEffectiveTitle() {
     return albumTitleController.text.isNotEmpty
         ? albumTitleController.text
-        : 'create_album_page_untitled'.t();
+        : 'create_album_page_untitled'.t(context: context);
   }
 
   Widget _buildSliverAppBar() {
@@ -52,34 +52,38 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
       snap: false,
       floating: false,
       bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(125.0),
-        child: Column(
-          children: [
-            buildTitleInputField(),
-            buildDescriptionInputField(),
-            if (selectedAssets.isNotEmpty) buildControlButton(),
-          ],
+        preferredSize: const Size.fromHeight(200.0),
+        child: SizedBox(
+          height: 200,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              buildTitleInputField(),
+              buildDescriptionInputField(),
+              if (selectedAssets.isNotEmpty) buildControlButton(),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildContent() {
-    return SliverList(
-      delegate: SliverChildListDelegate([
-        if (selectedAssets.isEmpty) ...[
+    if (selectedAssets.isEmpty) {
+      return SliverList(
+        delegate: SliverChildListDelegate([
           _buildEmptyState(),
           _buildSelectPhotosButton(),
-        ] else ...[
-          _buildSelectedImageGrid(),
-        ],
-      ]),
-    );
+        ]),
+      );
+    } else {
+      return _buildSelectedImageGrid();
+    }
   }
 
   Widget _buildEmptyState() {
     return Padding(
-      padding: const EdgeInsets.only(top: 200.0, left: 18),
+      padding: const EdgeInsets.only(top: 0, left: 18),
       child: Text(
         'create_shared_album_page_share_add_assets',
         style: context.textTheme.labelLarge,
@@ -121,24 +125,24 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
   }
 
   Widget _buildSelectedImageGrid() {
-    return Padding(
+    return SliverPadding(
       padding: const EdgeInsets.only(top: 16.0),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+      sliver: SliverGrid(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
           crossAxisSpacing: 1.0,
           mainAxisSpacing: 1.0,
         ),
-        itemCount: selectedAssets.length,
-        itemBuilder: (context, index) {
-          final asset = selectedAssets.elementAt(index);
-          return GestureDetector(
-            onTap: onBackgroundTapped,
-            child: Thumbnail(asset: asset),
-          );
-        },
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final asset = selectedAssets.elementAt(index);
+            return GestureDetector(
+              onTap: onBackgroundTapped,
+              child: Thumbnail(asset: asset),
+            );
+          },
+          childCount: selectedAssets.length,
+        ),
       ),
     );
   }
@@ -199,7 +203,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
 
     if (album != null) {
       context.replaceRoute(
-        RemoteTimelineRoute(albumId: album.id),
+        RemoteTimelineRoute(album: album),
       );
     }
   }
@@ -211,9 +215,9 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
         left: 10.0,
       ),
       child: _AlbumTitleTextField(
-        albumTitleTextFieldFocusNode: albumTitleTextFieldFocusNode,
-        albumTitleController: albumTitleController,
-        isAlbumTitleTextFieldFocus: isAlbumTitleTextFieldFocus,
+        focusNode: albumTitleTextFieldFocusNode,
+        textController: albumTitleController,
+        isFocus: isAlbumTitleTextFieldFocus,
         onFocusChanged: (focus) {
           setState(() {
             isAlbumTitleTextFieldFocus = focus;
@@ -228,10 +232,11 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
       padding: const EdgeInsets.only(
         right: 10.0,
         left: 10.0,
+        top: 8,
       ),
       child: _AlbumViewerEditableDescription(
-        albumDescriptionController: albumDescriptionController,
-        descriptionFocusNode: albumDescriptionTextFieldFocusNode,
+        textController: albumDescriptionController,
+        focusNode: albumDescriptionTextFieldFocusNode,
       ),
     );
   }
@@ -240,8 +245,8 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
     return Padding(
       padding: const EdgeInsets.only(
         left: 12.0,
-        top: 16.0,
-        bottom: 16.0,
+        top: 8.0,
+        bottom: 8.0,
       ),
       child: SizedBox(
         height: 42.0,
@@ -301,15 +306,15 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
 
 class _AlbumTitleTextField extends StatefulWidget {
   const _AlbumTitleTextField({
-    required this.albumTitleTextFieldFocusNode,
-    required this.albumTitleController,
-    required this.isAlbumTitleTextFieldFocus,
+    required this.focusNode,
+    required this.textController,
+    required this.isFocus,
     required this.onFocusChanged,
   });
 
-  final FocusNode albumTitleTextFieldFocusNode;
-  final TextEditingController albumTitleController;
-  final bool isAlbumTitleTextFieldFocus;
+  final FocusNode focusNode;
+  final TextEditingController textController;
+  final bool isFocus;
   final ValueChanged<bool> onFocusChanged;
 
   @override
@@ -320,45 +325,44 @@ class _AlbumTitleTextFieldState extends State<_AlbumTitleTextField> {
   @override
   void initState() {
     super.initState();
-    widget.albumTitleTextFieldFocusNode.addListener(_onFocusChange);
+    widget.focusNode.addListener(_onFocusChange);
   }
 
   @override
   void dispose() {
-    widget.albumTitleTextFieldFocusNode.removeListener(_onFocusChange);
+    widget.focusNode.removeListener(_onFocusChange);
     super.dispose();
   }
 
   void _onFocusChange() {
-    widget.onFocusChanged(widget.albumTitleTextFieldFocusNode.hasFocus);
+    widget.onFocusChanged(widget.focusNode.hasFocus);
   }
 
   @override
   Widget build(BuildContext context) {
     return TextField(
-      onChanged: (v) {
-        // No longer need to track empty state separately
-        // The controller itself maintains the text state
-      },
-      focusNode: widget.albumTitleTextFieldFocusNode,
+      focusNode: widget.focusNode,
       style: TextStyle(
         fontSize: 28.0,
         color: context.colorScheme.onSurface,
         fontWeight: FontWeight.bold,
       ),
-      controller: widget.albumTitleController,
+      controller: widget.textController,
       onTap: () {
-        if (widget.albumTitleController.text == 'Untitled') {
-          widget.albumTitleController.clear();
+        if (widget.textController.text ==
+            'create_album_page_untitled'.t(context: context)) {
+          widget.textController.clear();
         }
       },
       decoration: InputDecoration(
-        contentPadding: const EdgeInsets.all(8.0),
-        suffixIcon: widget.albumTitleController.text.isNotEmpty &&
-                widget.isAlbumTitleTextFieldFocus
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 8.0,
+          vertical: 16.0,
+        ),
+        suffixIcon: widget.textController.text.isNotEmpty && widget.isFocus
             ? IconButton(
                 onPressed: () {
-                  widget.albumTitleController.clear();
+                  widget.textController.clear();
                 },
                 icon: Icon(
                   Icons.cancel_rounded,
@@ -370,23 +374,26 @@ class _AlbumTitleTextFieldState extends State<_AlbumTitleTextField> {
         enabledBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: Colors.transparent),
           borderRadius: BorderRadius.all(
-            Radius.circular(10.0),
+            Radius.circular(16.0),
           ),
         ),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.transparent),
-          borderRadius: BorderRadius.all(
-            Radius.circular(10.0),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: context.primaryColor.withValues(alpha: 0.3),
+          ),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(16.0),
           ),
         ),
         hintText: 'add_a_title'.t(),
         hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(
           fontSize: 28.0,
           fontWeight: FontWeight.bold,
+          height: 1.2,
         ),
         focusColor: Colors.grey[300],
         fillColor: context.colorScheme.surfaceContainerHigh,
-        filled: widget.isAlbumTitleTextFieldFocus,
+        filled: true,
       ),
     );
   }
@@ -394,12 +401,12 @@ class _AlbumTitleTextFieldState extends State<_AlbumTitleTextField> {
 
 class _AlbumViewerEditableDescription extends StatefulWidget {
   const _AlbumViewerEditableDescription({
-    required this.albumDescriptionController,
-    required this.descriptionFocusNode,
+    required this.textController,
+    required this.focusNode,
   });
 
-  final TextEditingController albumDescriptionController;
-  final FocusNode descriptionFocusNode;
+  final TextEditingController textController;
+  final FocusNode focusNode;
 
   @override
   State<_AlbumViewerEditableDescription> createState() =>
@@ -411,20 +418,27 @@ class _AlbumViewerEditableDescriptionState
   @override
   void initState() {
     super.initState();
-    widget.descriptionFocusNode.addListener(_onFocusModeChange);
+    widget.focusNode.addListener(_onFocusModeChange);
+    widget.textController.addListener(_onTextChange);
   }
 
   @override
   void dispose() {
-    widget.descriptionFocusNode.removeListener(_onFocusModeChange);
+    widget.focusNode.removeListener(_onFocusModeChange);
+    widget.textController.removeListener(_onTextChange);
     super.dispose();
   }
 
   void _onFocusModeChange() {
-    if (!widget.descriptionFocusNode.hasFocus &&
-        widget.albumDescriptionController.text.isEmpty) {
-      widget.albumDescriptionController.clear();
-    }
+    setState(() {
+      if (!widget.focusNode.hasFocus && widget.textController.text.isEmpty) {
+        widget.textController.clear();
+      }
+    });
+  }
+
+  void _onTextChange() {
+    setState(() {});
   }
 
   @override
@@ -432,36 +446,30 @@ class _AlbumViewerEditableDescriptionState
     return Material(
       color: Colors.transparent,
       child: TextField(
-        focusNode: widget.descriptionFocusNode,
+        focusNode: widget.focusNode,
         style: context.textTheme.bodyLarge,
         maxLines: 3,
         minLines: 1,
-        controller: widget.albumDescriptionController,
-        onTap: () {
-          context.focusScope.requestFocus(widget.descriptionFocusNode);
-
-          if (widget.albumDescriptionController.text == '') {
-            widget.albumDescriptionController.clear();
-          }
-        },
+        controller: widget.textController,
         decoration: InputDecoration(
-          contentPadding: const EdgeInsets.all(8.0),
-          suffixIcon: widget.descriptionFocusNode.hasFocus
-              ? IconButton(
-                  onPressed: () {
-                    widget.albumDescriptionController.clear();
-                  },
-                  icon: Icon(
-                    Icons.cancel_rounded,
-                    color: context.primaryColor,
-                  ),
-                  splashRadius: 10.0,
-                )
-              : null,
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.transparent),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12.0,
+            vertical: 16.0,
           ),
-          focusedBorder: OutlineInputBorder(
+          suffixIcon:
+              widget.focusNode.hasFocus && widget.textController.text.isNotEmpty
+                  ? IconButton(
+                      onPressed: () {
+                        widget.textController.clear();
+                      },
+                      icon: Icon(
+                        Icons.cancel_rounded,
+                        color: context.primaryColor,
+                      ),
+                      splashRadius: 10.0,
+                    )
+                  : null,
+          enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(
               color: context.colorScheme.outline.withValues(alpha: 0.3),
             ),
@@ -469,9 +477,21 @@ class _AlbumViewerEditableDescriptionState
               Radius.circular(16.0),
             ),
           ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: context.primaryColor.withValues(alpha: 0.3),
+            ),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(16.0),
+            ),
+          ),
+          hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(
+            fontSize: 16.0,
+            color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
           focusColor: Colors.grey[300],
           fillColor: context.scaffoldBackgroundColor,
-          filled: widget.descriptionFocusNode.hasFocus,
+          filled: widget.focusNode.hasFocus,
           hintText: 'add_a_description'.t(),
         ),
       ),

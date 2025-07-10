@@ -1,12 +1,12 @@
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
-import 'package:immich_mobile/repositories/album_api.repository.dart';
+import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/utils/remote_album.utils.dart';
 
 class RemoteAlbumService {
   final DriftRemoteAlbumRepository _repository;
-  final AlbumApiRepository _albumApiRepository;
+  final DriftAlbumApiRepository _albumApiRepository;
 
   const RemoteAlbumService(this._repository, this._albumApiRepository);
 
