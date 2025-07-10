@@ -127,10 +127,6 @@ class TabShellPage extends ConsumerWidget {
       ),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
-        final heroedChild = HeroControllerScope(
-          controller: HeroController(),
-          child: child,
-        );
         return PopScope(
           canPop: tabsRouter.activeIndex == 0,
           onPopInvokedWithResult: (didPop, _) =>
@@ -142,10 +138,10 @@ class TabShellPage extends ConsumerWidget {
                     children: [
                       navigationRail(tabsRouter),
                       const VerticalDivider(),
-                      Expanded(child: heroedChild),
+                      Expanded(child: child),
                     ],
                   )
-                : heroedChild,
+                : child,
             bottomNavigationBar: _BottomNavigationBar(
               tabsRouter: tabsRouter,
               destinations: navigationDestinations,

@@ -23,12 +23,12 @@ import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/background.service.dart';
+import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
-import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/utils/download.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/migration.dart';
@@ -250,7 +250,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         ),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
-          navigatorObservers: () => [AppNavigationObserver(ref: ref)],
+          navigatorObservers: () =>
+              [AppNavigationObserver(ref: ref), HeroController()],
         ),
       ),
     );
