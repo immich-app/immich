@@ -4,8 +4,9 @@ import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { DB, Sessions } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { DB } from 'src/schema';
+import { SessionTable } from 'src/schema/tables/session.table';
 import { asUuid } from 'src/utils/database';
 
 export type SessionSearchOptions = { updatedBefore: Date };
@@ -72,11 +73,11 @@ export class SessionRepository {
       .execute();
   }
 
-  create(dto: Insertable<Sessions>) {
+  create(dto: Insertable<SessionTable>) {
     return this.db.insertInto('sessions').values(dto).returningAll().executeTakeFirstOrThrow();
   }
 
-  update(id: string, dto: Updateable<Sessions>) {
+  update(id: string, dto: Updateable<SessionTable>) {
     return this.db
       .updateTable('sessions')
       .set(dto)

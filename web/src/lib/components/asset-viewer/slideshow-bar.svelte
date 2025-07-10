@@ -101,11 +101,37 @@
   };
 
   const onShowSettings = async () => {
+    // eslint-disable-next-line tscompat/tscompat
     if (document.fullscreenElement) {
+      // eslint-disable-next-line tscompat/tscompat
       await document.exitFullscreen();
     }
-    await modalManager.show(SlideshowSettingsModal, {});
+    await modalManager.show(SlideshowSettingsModal);
   };
+
+  onMount(() => {
+    function exitFullscreenHandler() {
+      const doc = document as Document & {
+        webkitIsFullScreen?: boolean;
+      };
+
+      if (
+        // eslint-disable-next-line tscompat/tscompat
+        !document.fullscreenElement &&
+        !doc.webkitIsFullScreen
+      ) {
+        onClose();
+      }
+    }
+
+    document.addEventListener('fullscreenchange', exitFullscreenHandler);
+    document.addEventListener('webkitfullscreenchange', exitFullscreenHandler);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', exitFullscreenHandler);
+      document.removeEventListener('webkitfullscreenchange', exitFullscreenHandler);
+    };
+  });
 </script>
 
 <svelte:document

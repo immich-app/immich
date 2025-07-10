@@ -185,16 +185,6 @@ set
 where
   "id" = any ($2::uuid[])
 
--- AssetRepository.updateDuplicates
-update "assets"
-set
-  "duplicateId" = $1
-where
-  (
-    "duplicateId" = any ($2::uuid[])
-    or "id" = any ($3::uuid[])
-  )
-
 -- AssetRepository.getByChecksum
 select
   "assets".*
@@ -234,7 +224,7 @@ limit
 with
   "assets" as (
     select
-      date_trunc('MONTH', "localDateTime" at time zone 'UTC') at time zone 'UTC' as "timeBucket"
+      date_trunc('MONTH', "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' as "timeBucket"
     from
       "assets"
     where
@@ -242,7 +232,7 @@ with
       and "assets"."visibility" in ('archive', 'timeline')
   )
 select
-  "timeBucket"::date::text as "timeBucket",
+  ("timeBucket" AT TIME ZONE 'UTC')::date::text as "timeBucket",
   count(*) as "count"
 from
   "assets"
@@ -310,7 +300,7 @@ with
     where
       "assets"."deletedAt" is null
       and "assets"."visibility" in ('archive', 'timeline')
-      and date_trunc('MONTH', "localDateTime" at time zone 'UTC') at time zone 'UTC' = $2
+      and date_trunc('MONTH', "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' = $2
       and not exists (
         select
         from
@@ -348,66 +338,6 @@ select
   to_json(agg)::text as "assets"
 from
   "agg"
-
--- AssetRepository.getDuplicates
-with
-  "duplicates" as (
-    select
-      "assets"."duplicateId",
-      json_agg(
-        "asset"
-        order by
-          "assets"."localDateTime" asc
-      ) as "assets"
-    from
-      "assets"
-      left join lateral (
-        select
-          "assets".*,
-          "exif" as "exifInfo"
-        from
-          "exif"
-        where
-          "exif"."assetId" = "assets"."id"
-      ) as "asset" on true
-    where
-      "assets"."visibility" in ('archive', 'timeline')
-      and "assets"."ownerId" = $1::uuid
-      and "assets"."duplicateId" is not null
-      and "assets"."deletedAt" is null
-      and "assets"."stackId" is null
-    group by
-      "assets"."duplicateId"
-  ),
-  "unique" as (
-    select
-      "duplicateId"
-    from
-      "duplicates"
-    where
-      json_array_length("assets") = $2
-  ),
-  "removed_unique" as (
-    update "assets"
-    set
-      "duplicateId" = $3
-    from
-      "unique"
-    where
-      "assets"."duplicateId" = "unique"."duplicateId"
-  )
-select
-  *
-from
-  "duplicates"
-where
-  not exists (
-    select
-    from
-      "unique"
-    where
-      "unique"."duplicateId" = "duplicates"."duplicateId"
-  )
 
 -- AssetRepository.getAssetIdByCity
 with

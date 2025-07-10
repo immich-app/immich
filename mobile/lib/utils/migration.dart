@@ -23,7 +23,7 @@ import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 12;
+const int targetVersion = 13;
 
 Future<void> migrateDatabaseIfNeeded(Isar db) async {
   final int version = Store.get(StoreKey.version, targetVersion);
@@ -56,7 +56,17 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
     await drift.close();
   }
 
+  if (version < 13) {
+    await Store.put(StoreKey.photoManagerCustomFilter, true);
+  }
+
+  if (targetVersion >= 12) {
+    await Store.put(StoreKey.version, targetVersion);
+    return;
+  }
+
   final shouldTruncate = version < 8 || version < targetVersion;
+
   if (shouldTruncate) {
     await _migrateTo(db, targetVersion);
   }
@@ -166,25 +176,33 @@ Future<void> _migrateDeviceAsset(Isar db) async {
 }
 
 Future<void> _migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
-  final isarDeviceAssets =
-      await db.deviceAssetEntitys.where().sortByAssetId().findAll();
-  await drift.batch((batch) {
-    for (final deviceAsset in isarDeviceAssets) {
-      final companion = LocalAssetEntityCompanion(
-        updatedAt: Value(deviceAsset.modifiedTime),
-        id: Value(deviceAsset.assetId),
-        checksum: Value(base64.encode(deviceAsset.hash)),
-      );
-      batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
-        drift.localAssetEntity,
-        companion,
-        onConflict: DoUpdate(
-          (_) => companion,
-          where: (old) => old.updatedAt.equals(deviceAsset.modifiedTime),
-        ),
+  try {
+    final isarDeviceAssets =
+        await db.deviceAssetEntitys.where().sortByAssetId().findAll();
+    await drift.batch((batch) {
+      for (final deviceAsset in isarDeviceAssets) {
+        final companion = LocalAssetEntityCompanion(
+          updatedAt: Value(deviceAsset.modifiedTime),
+          id: Value(deviceAsset.assetId),
+          checksum: Value(base64.encode(deviceAsset.hash)),
+        );
+        batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
+          drift.localAssetEntity,
+          companion,
+          onConflict: DoUpdate(
+            (_) => companion,
+            where: (old) => old.updatedAt.equals(deviceAsset.modifiedTime),
+          ),
+        );
+      }
+    });
+  } catch (error) {
+    if (kDebugMode) {
+      debugPrint(
+        "[MIGRATION] Error while migrating device assets to SQLite: $error",
       );
     }
-  });
+  }
 }
 
 class _DeviceAsset {

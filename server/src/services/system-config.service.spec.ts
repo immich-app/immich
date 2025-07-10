@@ -112,7 +112,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     buttonText: 'Login with OAuth',
     clientId: '',
     clientSecret: '',
-    defaultStorageQuota: 0,
+    defaultStorageQuota: null,
     enabled: false,
     issuerUrl: '',
     mobileOverrideEnabled: false,
@@ -124,6 +124,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     timeout: 30_000,
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
+    roleClaim: 'immich_role',
   },
   passwordLogin: {
     enabled: true,
@@ -345,6 +346,11 @@ describe(SystemConfigService.name, () => {
       { should: 'with a trailing slash', externalDomain: 'https://demo.immich.app/' },
       { should: 'without a trailing slash', externalDomain: 'https://demo.immich.app' },
       { should: 'with a port', externalDomain: 'https://demo.immich.app:42', result: 'https://demo.immich.app:42' },
+      {
+        should: 'with basic auth',
+        externalDomain: 'https://user:password@example.com:123',
+        result: 'https://user:password@example.com:123',
+      },
     ];
 
     for (const { should, externalDomain, result } of externalDomainTests) {

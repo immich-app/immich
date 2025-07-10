@@ -23,7 +23,7 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -82,7 +82,7 @@
     });
   });
 
-  let assetStore = new AssetStore();
+  let timelineManager = new TimelineManager();
 
   const onEscape = () => {
     if ($showAssetViewer) {
@@ -132,7 +132,7 @@
   };
 
   const handleSetVisibility = (assetIds: string[]) => {
-    assetStore.removeAssets(assetIds);
+    timelineManager.removeAssets(assetIds);
     assetInteraction.clearMultiselect();
     onAssetDelete(assetIds);
   };
@@ -247,7 +247,10 @@
     return albumNames.join(', ');
   }
 
-  async function getTagNames(tagIds: string[]) {
+  async function getTagNames(tagIds: string[] | null) {
+    if (tagIds === null) {
+      return $t('untagged');
+    }
     const tagNames = await Promise.all(
       tagIds.map(async (tagId) => {
         const tag = await getTagById({ id: tagId });
@@ -361,7 +364,7 @@
               {#await getAlbumNames(value) then albumNames}
                 {albumNames}
               {/await}
-            {:else if searchKey === 'tagIds' && Array.isArray(value)}
+            {:else if searchKey === 'tagIds' && (Array.isArray(value) || value === null)}
               {#await getTagNames(value) then tagNames}
                 {tagNames}
               {/await}

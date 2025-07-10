@@ -42,7 +42,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           useRootNavigator: false,
           builder: (ctx) => const ImmichAppBarDialog(),
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Badge(
           label: Container(
             decoration: BoxDecoration(
@@ -66,10 +66,13 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   Icons.face_outlined,
                   size: widgetSize,
                 )
-              : UserCircleAvatar(
-                  radius: 17,
-                  size: 31,
-                  user: user,
+              : Semantics(
+                  label: "logged_in_as".tr(namedArgs: {"user": user.name}),
+                  child: UserCircleAvatar(
+                    radius: 17,
+                    size: 31,
+                    user: user,
+                  ),
                 ),
         ),
       );
@@ -117,7 +120,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
       return InkWell(
         onTap: () => context.pushRoute(const BackupControllerRoute()),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Badge(
           label: Container(
             width: widgetSize / 2,

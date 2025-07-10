@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.134.0
+ * 1.135.3
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -109,6 +109,7 @@ export type UserAdminResponseDto = {
 export type UserAdminCreateDto = {
     avatarColor?: (UserAvatarColor) | null;
     email: string;
+    isAdmin?: boolean;
     name: string;
     notify?: boolean;
     password: string;
@@ -122,6 +123,7 @@ export type UserAdminDeleteDto = {
 export type UserAdminUpdateDto = {
     avatarColor?: (UserAvatarColor) | null;
     email?: string;
+    isAdmin?: boolean;
     name?: string;
     password?: string;
     pinCode?: string | null;
@@ -442,6 +444,7 @@ export type AssetMediaCreateDto = {
     duration?: string;
     fileCreatedAt: string;
     fileModifiedAt: string;
+    filename?: string;
     isFavorite?: boolean;
     livePhotoVideoId?: string;
     sidecarData?: Blob;
@@ -508,6 +511,7 @@ export type AssetMediaReplaceDto = {
     duration?: string;
     fileCreatedAt: string;
     fileModifiedAt: string;
+    filename?: string;
 };
 export type SignUpDto = {
     email: string;
@@ -742,6 +746,9 @@ export type MemoryCreateDto = {
     seenAt?: string;
     "type": MemoryType;
 };
+export type MemoryStatisticsResponseDto = {
+    total: number;
+};
 export type MemoryUpdateDto = {
     isSaved?: boolean;
     memoryAt?: string;
@@ -882,7 +889,7 @@ export type MetadataSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     thumbnailPath?: string;
@@ -949,7 +956,7 @@ export type RandomSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -986,7 +993,7 @@ export type SmartSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -1018,7 +1025,7 @@ export type StatisticsSearchDto = {
     personIds?: string[];
     rating?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -1385,12 +1392,13 @@ export type SystemConfigOAuthDto = {
     buttonText: string;
     clientId: string;
     clientSecret: string;
-    defaultStorageQuota: number;
+    defaultStorageQuota: number | null;
     enabled: boolean;
     issuerUrl: string;
     mobileOverrideEnabled: boolean;
     mobileRedirectUri: string;
     profileSigningAlgorithm: string;
+    roleClaim: string;
     scope: string;
     signingAlgorithm: string;
     storageLabelClaim: string;
@@ -2279,12 +2287,29 @@ export function getDownloadInfo({ key, downloadInfoDto }: {
         body: downloadInfoDto
     })));
 }
+export function deleteDuplicates({ bulkIdsDto }: {
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/duplicates", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: bulkIdsDto
+    })));
+}
 export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: DuplicateResponseDto[];
     }>("/duplicates", {
         ...opts
+    }));
+}
+export function deleteDuplicate({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/duplicates/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
     }));
 }
 export function getFaces({ id }: {
@@ -2509,6 +2534,24 @@ export function createMemory({ memoryCreateDto }: {
         body: memoryCreateDto
     })));
 }
+export function memoriesStatistics({ $for, isSaved, isTrashed, $type }: {
+    $for?: string;
+    isSaved?: boolean;
+    isTrashed?: boolean;
+    $type?: MemoryType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MemoryStatisticsResponseDto;
+    }>(`/memories/statistics${QS.query(QS.explode({
+        "for": $for,
+        isSaved,
+        isTrashed,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
+}
 export function deleteMemory({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2727,6 +2770,15 @@ export function updatePartner({ id, updatePartnerDto }: {
         body: updatePartnerDto
     })));
 }
+export function deletePeople({ bulkIdsDto }: {
+    bulkIdsDto: BulkIdsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/people", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: bulkIdsDto
+    })));
+}
 export function getAllPeople({ closestAssetId, closestPersonId, page, size, withHidden }: {
     closestAssetId?: string;
     closestPersonId?: string;
@@ -2770,6 +2822,14 @@ export function updatePeople({ peopleUpdateDto }: {
         method: "PUT",
         body: peopleUpdateDto
     })));
+}
+export function deletePerson({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/people/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
 }
 export function getPerson({ id }: {
     id: string;
@@ -4004,28 +4064,55 @@ export enum Error2 {
 export enum SyncEntityType {
     UserV1 = "UserV1",
     UserDeleteV1 = "UserDeleteV1",
-    PartnerV1 = "PartnerV1",
-    PartnerDeleteV1 = "PartnerDeleteV1",
     AssetV1 = "AssetV1",
     AssetDeleteV1 = "AssetDeleteV1",
     AssetExifV1 = "AssetExifV1",
+    PartnerV1 = "PartnerV1",
+    PartnerDeleteV1 = "PartnerDeleteV1",
     PartnerAssetV1 = "PartnerAssetV1",
+    PartnerAssetBackfillV1 = "PartnerAssetBackfillV1",
     PartnerAssetDeleteV1 = "PartnerAssetDeleteV1",
     PartnerAssetExifV1 = "PartnerAssetExifV1",
+    PartnerAssetExifBackfillV1 = "PartnerAssetExifBackfillV1",
+    PartnerStackBackfillV1 = "PartnerStackBackfillV1",
+    PartnerStackDeleteV1 = "PartnerStackDeleteV1",
+    PartnerStackV1 = "PartnerStackV1",
     AlbumV1 = "AlbumV1",
     AlbumDeleteV1 = "AlbumDeleteV1",
     AlbumUserV1 = "AlbumUserV1",
-    AlbumUserDeleteV1 = "AlbumUserDeleteV1"
+    AlbumUserBackfillV1 = "AlbumUserBackfillV1",
+    AlbumUserDeleteV1 = "AlbumUserDeleteV1",
+    AlbumAssetV1 = "AlbumAssetV1",
+    AlbumAssetBackfillV1 = "AlbumAssetBackfillV1",
+    AlbumAssetExifV1 = "AlbumAssetExifV1",
+    AlbumAssetExifBackfillV1 = "AlbumAssetExifBackfillV1",
+    AlbumToAssetV1 = "AlbumToAssetV1",
+    AlbumToAssetDeleteV1 = "AlbumToAssetDeleteV1",
+    AlbumToAssetBackfillV1 = "AlbumToAssetBackfillV1",
+    MemoryV1 = "MemoryV1",
+    MemoryDeleteV1 = "MemoryDeleteV1",
+    MemoryToAssetV1 = "MemoryToAssetV1",
+    MemoryToAssetDeleteV1 = "MemoryToAssetDeleteV1",
+    StackV1 = "StackV1",
+    StackDeleteV1 = "StackDeleteV1",
+    SyncAckV1 = "SyncAckV1"
 }
 export enum SyncRequestType {
-    UsersV1 = "UsersV1",
-    PartnersV1 = "PartnersV1",
+    AlbumsV1 = "AlbumsV1",
+    AlbumUsersV1 = "AlbumUsersV1",
+    AlbumToAssetsV1 = "AlbumToAssetsV1",
+    AlbumAssetsV1 = "AlbumAssetsV1",
+    AlbumAssetExifsV1 = "AlbumAssetExifsV1",
     AssetsV1 = "AssetsV1",
     AssetExifsV1 = "AssetExifsV1",
+    MemoriesV1 = "MemoriesV1",
+    MemoryToAssetsV1 = "MemoryToAssetsV1",
+    PartnersV1 = "PartnersV1",
     PartnerAssetsV1 = "PartnerAssetsV1",
     PartnerAssetExifsV1 = "PartnerAssetExifsV1",
-    AlbumsV1 = "AlbumsV1",
-    AlbumUsersV1 = "AlbumUsersV1"
+    PartnerStacksV1 = "PartnerStacksV1",
+    StacksV1 = "StacksV1",
+    UsersV1 = "UsersV1"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",

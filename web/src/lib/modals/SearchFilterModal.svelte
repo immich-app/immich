@@ -9,7 +9,7 @@
     queryType: 'smart' | 'metadata' | 'description';
     personIds: SvelteSet<string>;
     albumIds: SvelteSet<string>;
-    tagIds: SvelteSet<string>;
+    tagIds: SvelteSet<string> | null;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
     date: SearchDateFilter;
@@ -36,7 +36,7 @@
   import { parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
   import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiTune } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
@@ -71,7 +71,12 @@
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
     albumIds: new SvelteSet('albumIds' in searchQuery ? searchQuery.albumIds : []),
-    tagIds: new SvelteSet('tagIds' in searchQuery ? searchQuery.tagIds : []),
+    tagIds:
+      'tagIds' in searchQuery
+        ? searchQuery.tagIds === null
+          ? null
+          : new SvelteSet(searchQuery.tagIds)
+        : new SvelteSet(),
     location: {
       country: withNullAsUndefined(searchQuery.country),
       state: withNullAsUndefined(searchQuery.state),
@@ -145,7 +150,7 @@
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
       albumIds: filter.albumIds.size > 0 ? [...filter.albumIds] : undefined,
-      tagIds: filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
+      tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
       rating: filter.rating,
     };
@@ -214,11 +219,11 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full">
+    <HStack fullWidth>
       <Button shape="round" size="large" type="reset" color="secondary" fullWidth form={formId}
         >{$t('clear_all')}</Button
       >
       <Button shape="round" size="large" type="submit" fullWidth form={formId}>{$t('search')}</Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>

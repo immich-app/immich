@@ -116,46 +116,33 @@ describe(AuthService.name, () => {
       const auth = factory.auth({ user });
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      mocks.user.getByEmail.mockResolvedValue({ ...user, password: 'hash-password' });
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
       mocks.user.update.mockResolvedValue(user);
 
       await sut.changePassword(auth, dto);
 
-      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, { withPassword: true });
+      expect(mocks.user.getForChangePassword).toHaveBeenCalledWith(user.id);
       expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
     });
 
-    it('should throw when auth user email is not found', async () => {
-      const auth = { user: { email: 'test@imimch.com' } } as AuthDto;
-      const dto = { password: 'old-password', newPassword: 'new-password' };
-
-      mocks.user.getByEmail.mockResolvedValue(void 0);
-
-      await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(UnauthorizedException);
-    });
-
     it('should throw when password does not match existing password', async () => {
-      const auth = { user: { email: 'test@imimch.com' } as UserAdmin };
+      const user = factory.user();
+      const auth = factory.auth({ user });
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
       mocks.crypto.compareBcrypt.mockReturnValue(false);
 
-      mocks.user.getByEmail.mockResolvedValue({
-        email: 'test@immich.com',
-        password: 'hash-password',
-      } as UserAdmin & { password: string });
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should throw when user does not have a password', async () => {
-      const auth = { user: { email: 'test@imimch.com' } } as AuthDto;
+      const user = factory.user();
+      const auth = factory.auth({ user });
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      mocks.user.getByEmail.mockResolvedValue({
-        email: 'test@immich.com',
-        password: '',
-      } as UserAdmin & { password: string });
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: '' });
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -704,7 +691,7 @@ describe(AuthService.name, () => {
       expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ quotaSizeInBytes: 1_073_741_824 }));
     });
 
-    it('should not set quota for 0 quota', async () => {
+    it('should set quota for 0 quota', async () => {
       const user = factory.userAdmin({ oauthId: 'oauth-id' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
@@ -724,9 +711,10 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.create).toHaveBeenCalledWith({
         email: user.email,
+        isAdmin: false,
         name: ' ',
         oauthId: user.oauthId,
-        quotaSizeInBytes: null,
+        quotaSizeInBytes: 0,
         storageLabel: null,
       });
     });
@@ -752,6 +740,7 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.create).toHaveBeenCalledWith({
         email: user.email,
+        isAdmin: false,
         name: ' ',
         oauthId: user.oauthId,
         quotaSizeInBytes: 5_368_709_120,
@@ -817,6 +806,93 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.update).not.toHaveBeenCalled();
       expect(mocks.oauth.getProfilePicture).not.toHaveBeenCalled();
+    });
+
+    it('should only allow "admin" and "user" for the role claim', async () => {
+      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
+      mocks.oauth.getProfile.mockResolvedValue({ sub: user.oauthId, email: user.email, immich_role: 'foo' });
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getAdmin.mockResolvedValue(factory.userAdmin({ isAdmin: true }));
+      mocks.user.getByOAuthId.mockResolvedValue(void 0);
+      mocks.user.create.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(factory.session());
+
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
+
+      expect(mocks.user.create).toHaveBeenCalledWith({
+        email: user.email,
+        name: ' ',
+        oauthId: user.oauthId,
+        quotaSizeInBytes: null,
+        storageLabel: null,
+        isAdmin: false,
+      });
+    });
+
+    it('should create an admin user if the role claim is set to admin', async () => {
+      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
+      mocks.oauth.getProfile.mockResolvedValue({ sub: user.oauthId, email: user.email, immich_role: 'admin' });
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getByOAuthId.mockResolvedValue(void 0);
+      mocks.user.create.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(factory.session());
+
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
+
+      expect(mocks.user.create).toHaveBeenCalledWith({
+        email: user.email,
+        name: ' ',
+        oauthId: user.oauthId,
+        quotaSizeInBytes: null,
+        storageLabel: null,
+        isAdmin: true,
+      });
+    });
+
+    it('should accept a custom role claim', async () => {
+      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+
+      mocks.systemMetadata.get.mockResolvedValue({
+        oauth: { ...systemConfigStub.oauthWithAutoRegister, roleClaim: 'my_role' },
+      });
+      mocks.oauth.getProfile.mockResolvedValue({ sub: user.oauthId, email: user.email, my_role: 'admin' });
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getByOAuthId.mockResolvedValue(void 0);
+      mocks.user.create.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(factory.session());
+
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toEqual(oauthResponse(user));
+
+      expect(mocks.user.create).toHaveBeenCalledWith({
+        email: user.email,
+        name: ' ',
+        oauthId: user.oauthId,
+        quotaSizeInBytes: null,
+        storageLabel: null,
+        isAdmin: true,
+      });
     });
   });
 

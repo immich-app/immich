@@ -2,12 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { Kysely, OrderByDirection, Selectable, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
-import { DB, Exif } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
-import { anyUuid, asUuid, searchAssetBuilder, withDefaultVisibility } from 'src/utils/database';
+import { DB } from 'src/schema';
+import { ExifTable } from 'src/schema/tables/exif.table';
+import { anyUuid, searchAssetBuilder } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
@@ -88,7 +89,7 @@ export interface SearchPeopleOptions {
 }
 
 export interface SearchTagOptions {
-  tagIds?: string[];
+  tagIds?: string[] | null;
 }
 
 export interface SearchAlbumOptions {
@@ -133,14 +134,6 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   numResults: number;
   maxDistance: number;
   minBirthDate?: Date | null;
-}
-
-export interface AssetDuplicateSearch {
-  assetId: string;
-  embedding: string;
-  maxDistance: number;
-  type: AssetType;
-  userIds: string[];
 }
 
 export interface FaceSearchResult {
@@ -278,46 +271,6 @@ export class SearchRepository {
   @GenerateSql({
     params: [
       {
-        assetId: DummyValue.UUID,
-        embedding: DummyValue.VECTOR,
-        maxDistance: 0.6,
-        type: AssetType.IMAGE,
-        userIds: [DummyValue.UUID],
-      },
-    ],
-  })
-  searchDuplicates({ assetId, embedding, maxDistance, type, userIds }: AssetDuplicateSearch) {
-    return this.db.transaction().execute(async (trx) => {
-      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
-      return await trx
-        .with('cte', (qb) =>
-          qb
-            .selectFrom('assets')
-            .$call(withDefaultVisibility)
-            .select([
-              'assets.id as assetId',
-              'assets.duplicateId',
-              sql<number>`smart_search.embedding <=> ${embedding}`.as('distance'),
-            ])
-            .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
-            .where('assets.ownerId', '=', anyUuid(userIds))
-            .where('assets.deletedAt', 'is', null)
-            .where('assets.type', '=', type)
-            .where('assets.id', '!=', asUuid(assetId))
-            .where('assets.stackId', 'is', null)
-            .orderBy('distance')
-            .limit(64),
-        )
-        .selectFrom('cte')
-        .selectAll()
-        .where('cte.distance', '<=', maxDistance as number)
-        .execute();
-    });
-  }
-
-  @GenerateSql({
-    params: [
-      {
         userIds: [DummyValue.UUID],
         embedding: DummyValue.VECTOR,
         numResults: 10,
@@ -433,7 +386,7 @@ export class SearchRepository {
       .select((eb) =>
         eb
           .fn('to_jsonb', [eb.table('exif')])
-          .$castTo<Selectable<Exif>>()
+          .$castTo<Selectable<ExifTable>>()
           .as('exifInfo'),
       )
       .orderBy('exif.city')

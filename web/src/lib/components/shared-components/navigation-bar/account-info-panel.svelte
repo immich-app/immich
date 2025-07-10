@@ -51,7 +51,7 @@
           shape="round"
           onclick={async () => {
             onClose();
-            await modalManager.show(AvatarEditModal, {});
+            await modalManager.show(AvatarEditModal);
           }}
         />
       </div>

@@ -34,6 +34,7 @@
 
   interface Props {
     label: string;
+    disabled?: boolean;
     hideLabel?: boolean;
     options?: ComboBoxOption[];
     selectedOption?: ComboBoxOption | undefined;
@@ -54,6 +55,7 @@
   let {
     label,
     hideLabel = false,
+    disabled = false,
     options = [],
     selectedOption = $bindable(),
     placeholder = '',
@@ -108,9 +110,9 @@
     }
     observer.observe(input);
     const scrollableAncestor = input?.closest('.overflow-y-auto, .overflow-y-scroll');
-    scrollableAncestor?.addEventListener('scroll', onPositionChange);
-    window.visualViewport?.addEventListener('resize', onPositionChange);
-    window.visualViewport?.addEventListener('scroll', onPositionChange);
+    scrollableAncestor?.addEventListener('scroll', onPositionChange, { passive: true });
+    window.visualViewport?.addEventListener('resize', onPositionChange, { passive: true });
+    window.visualViewport?.addEventListener('scroll', onPositionChange, { passive: true });
 
     return () => {
       observer.disconnect();
@@ -278,6 +280,7 @@
 
     <input
       {placeholder}
+      {disabled}
       aria-activedescendant={selectedIndex || selectedIndex === 0 ? `${listboxId}-${selectedIndex}` : ''}
       aria-autocomplete="list"
       aria-controls={listboxId}

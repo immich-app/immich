@@ -172,11 +172,15 @@ class _DateTimePicker extends HookWidget {
           ListTile(
             tileColor: context.colorScheme.surfaceContainerHighest,
             shape: ShapeBorder.lerp(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+              const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
               ),
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+              const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
               ),
               1,
             ),

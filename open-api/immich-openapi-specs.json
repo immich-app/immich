@@ -2698,6 +2698,39 @@
       }
     },
     "/duplicates": {
+      "delete": {
+        "operationId": "deleteDuplicates",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicates"
+        ]
+      },
       "get": {
         "operationId": "getAssetDuplicates",
         "parameters": [],
@@ -2713,6 +2746,41 @@
                 }
               }
             },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicates"
+        ]
+      }
+    },
+    "/duplicates/{id}": {
+      "delete": {
+        "operationId": "deleteDuplicate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
             "description": ""
           }
         },
@@ -3599,6 +3667,72 @@
         ]
       }
     },
+    "/memories/statistics": {
+      "get": {
+        "operationId": "memoriesStatistics",
+        "parameters": [
+          {
+            "name": "for",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isSaved",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isTrashed",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MemoryType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemoryStatisticsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Memories"
+        ]
+      }
+    },
     "/memories/{id}": {
       "delete": {
         "operationId": "deleteMemory",
@@ -4412,6 +4546,39 @@
       }
     },
     "/people": {
+      "delete": {
+        "operationId": "deletePeople",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkIdsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "People"
+        ]
+      },
       "get": {
         "operationId": "getAllPeople",
         "parameters": [
@@ -4577,6 +4744,39 @@
       }
     },
     "/people/{id}": {
+      "delete": {
+        "operationId": "deletePerson",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "People"
+        ]
+      },
       "get": {
         "operationId": "getPerson",
         "parameters": [
@@ -8369,7 +8569,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.134.0",
+    "version": "1.135.3",
     "contact": {}
   },
   "tags": [],
@@ -9335,6 +9535,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "filename": {
+            "type": "string"
+          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -9384,6 +9587,9 @@
           },
           "fileModifiedAt": {
             "format": "date-time",
+            "type": "string"
+          },
+          "filename": {
             "type": "string"
           }
         },
@@ -10827,6 +11033,17 @@
         ],
         "type": "object"
       },
+      "MemoryStatisticsResponseDto": {
+        "properties": {
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total"
+        ],
+        "type": "object"
+      },
       "MemoryType": {
         "enum": [
           "on_this_day"
@@ -10986,6 +11203,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -11875,6 +12093,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -12940,6 +13159,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -13131,6 +13351,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -13210,12 +13431,17 @@
             "items": {
               "type": "string"
             },
+            "maxItems": 1000,
             "type": "array"
           }
         },
         "required": [
           "acks"
         ],
+        "type": "object"
+      },
+      "SyncAckV1": {
+        "properties": {},
         "type": "object"
       },
       "SyncAlbumDeleteV1": {
@@ -13226,6 +13452,36 @@
         },
         "required": [
           "albumId"
+        ],
+        "type": "object"
+      },
+      "SyncAlbumToAssetDeleteV1": {
+        "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId",
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "SyncAlbumToAssetV1": {
+        "properties": {
+          "albumId": {
+            "type": "string"
+          },
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumId",
+          "assetId"
         ],
         "type": "object"
       },
@@ -13363,36 +13619,41 @@
             "type": "string"
           },
           "fNumber": {
+            "format": "double",
             "nullable": true,
-            "type": "integer"
+            "type": "number"
           },
           "fileSizeInByte": {
             "nullable": true,
             "type": "integer"
           },
           "focalLength": {
+            "format": "double",
             "nullable": true,
-            "type": "integer"
+            "type": "number"
           },
           "fps": {
+            "format": "double",
             "nullable": true,
-            "type": "integer"
+            "type": "number"
           },
           "iso": {
             "nullable": true,
             "type": "integer"
           },
           "latitude": {
+            "format": "double",
             "nullable": true,
-            "type": "integer"
+            "type": "number"
           },
           "lensModel": {
             "nullable": true,
             "type": "string"
           },
           "longitude": {
+            "format": "double",
             "nullable": true,
-            "type": "integer"
+            "type": "number"
           },
           "make": {
             "nullable": true,
@@ -13471,6 +13732,10 @@
             "nullable": true,
             "type": "string"
           },
+          "duration": {
+            "nullable": true,
+            "type": "string"
+          },
           "fileCreatedAt": {
             "format": "date-time",
             "nullable": true,
@@ -13520,6 +13785,7 @@
         "required": [
           "checksum",
           "deletedAt",
+          "duration",
           "fileCreatedAt",
           "fileModifiedAt",
           "id",
@@ -13537,20 +13803,151 @@
         "enum": [
           "UserV1",
           "UserDeleteV1",
-          "PartnerV1",
-          "PartnerDeleteV1",
           "AssetV1",
           "AssetDeleteV1",
           "AssetExifV1",
+          "PartnerV1",
+          "PartnerDeleteV1",
           "PartnerAssetV1",
+          "PartnerAssetBackfillV1",
           "PartnerAssetDeleteV1",
           "PartnerAssetExifV1",
+          "PartnerAssetExifBackfillV1",
+          "PartnerStackBackfillV1",
+          "PartnerStackDeleteV1",
+          "PartnerStackV1",
           "AlbumV1",
           "AlbumDeleteV1",
           "AlbumUserV1",
-          "AlbumUserDeleteV1"
+          "AlbumUserBackfillV1",
+          "AlbumUserDeleteV1",
+          "AlbumAssetV1",
+          "AlbumAssetBackfillV1",
+          "AlbumAssetExifV1",
+          "AlbumAssetExifBackfillV1",
+          "AlbumToAssetV1",
+          "AlbumToAssetDeleteV1",
+          "AlbumToAssetBackfillV1",
+          "MemoryV1",
+          "MemoryDeleteV1",
+          "MemoryToAssetV1",
+          "MemoryToAssetDeleteV1",
+          "StackV1",
+          "StackDeleteV1",
+          "SyncAckV1"
         ],
         "type": "string"
+      },
+      "SyncMemoryAssetDeleteV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "memoryId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "memoryId"
+        ],
+        "type": "object"
+      },
+      "SyncMemoryAssetV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "memoryId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "memoryId"
+        ],
+        "type": "object"
+      },
+      "SyncMemoryDeleteV1": {
+        "properties": {
+          "memoryId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "memoryId"
+        ],
+        "type": "object"
+      },
+      "SyncMemoryV1": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "hideAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isSaved": {
+            "type": "boolean"
+          },
+          "memoryAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "seenAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "showAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemoryType"
+              }
+            ]
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "data",
+          "deletedAt",
+          "hideAt",
+          "id",
+          "isSaved",
+          "memoryAt",
+          "ownerId",
+          "seenAt",
+          "showAt",
+          "type",
+          "updatedAt"
+        ],
+        "type": "object"
       },
       "SyncPartnerDeleteV1": {
         "properties": {
@@ -13588,16 +13985,63 @@
       },
       "SyncRequestType": {
         "enum": [
-          "UsersV1",
-          "PartnersV1",
+          "AlbumsV1",
+          "AlbumUsersV1",
+          "AlbumToAssetsV1",
+          "AlbumAssetsV1",
+          "AlbumAssetExifsV1",
           "AssetsV1",
           "AssetExifsV1",
+          "MemoriesV1",
+          "MemoryToAssetsV1",
+          "PartnersV1",
           "PartnerAssetsV1",
           "PartnerAssetExifsV1",
-          "AlbumsV1",
-          "AlbumUsersV1"
+          "PartnerStacksV1",
+          "StacksV1",
+          "UsersV1"
         ],
         "type": "string"
+      },
+      "SyncStackDeleteV1": {
+        "properties": {
+          "stackId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "stackId"
+        ],
+        "type": "object"
+      },
+      "SyncStackV1": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "primaryAssetId": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "ownerId",
+          "primaryAssetId",
+          "updatedAt"
+        ],
+        "type": "object"
       },
       "SyncStreamDto": {
         "properties": {
@@ -14193,8 +14637,10 @@
             "type": "string"
           },
           "defaultStorageQuota": {
+            "format": "int64",
             "minimum": 0,
-            "type": "number"
+            "nullable": true,
+            "type": "integer"
           },
           "enabled": {
             "type": "boolean"
@@ -14210,6 +14656,9 @@
             "type": "string"
           },
           "profileSigningAlgorithm": {
+            "type": "string"
+          },
+          "roleClaim": {
             "type": "string"
           },
           "scope": {
@@ -14248,6 +14697,7 @@
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "profileSigningAlgorithm",
+          "roleClaim",
           "scope",
           "signingAlgorithm",
           "storageLabelClaim",
@@ -15054,6 +15504,9 @@
             "format": "email",
             "type": "string"
           },
+          "isAdmin": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -15203,6 +15656,9 @@
           "email": {
             "format": "email",
             "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
           },
           "name": {
             "type": "string"

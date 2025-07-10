@@ -17,7 +17,7 @@ class UploadProfileImageState {
   // enum
   final UploadProfileStatus status;
   final String profileImagePath;
-  UploadProfileImageState({
+  const UploadProfileImageState({
     required this.status,
     required this.profileImagePath,
   });
@@ -74,7 +74,7 @@ class UploadProfileImageNotifier
     extends StateNotifier<UploadProfileImageState> {
   UploadProfileImageNotifier(this._userService)
       : super(
-          UploadProfileImageState(
+          const UploadProfileImageState(
             profileImagePath: '',
             status: UploadProfileStatus.idle,
           ),

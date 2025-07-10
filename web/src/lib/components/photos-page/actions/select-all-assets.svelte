@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/managers/timeline-manager/asset-store.svelte';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { cancelMultiselect, selectAllAssets } from '$lib/utils/asset-utils';
   import { Button, IconButton } from '@immich/ui';
@@ -8,15 +8,15 @@
   import { t } from 'svelte-i18n';
 
   interface Props {
-    assetStore: AssetStore;
+    timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
     withText?: boolean;
   }
 
-  let { assetStore, assetInteraction, withText = false }: Props = $props();
+  let { timelineManager, assetInteraction, withText = false }: Props = $props();
 
   const handleSelectAll = async () => {
-    await selectAllAssets(assetStore, assetInteraction);
+    await selectAllAssets(timelineManager, assetInteraction);
   };
 
   const handleCancel = () => {

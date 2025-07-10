@@ -14,7 +14,7 @@ class SearchCuratedContent {
   /// The id to lookup the asset from the server
   final String id;
 
-  SearchCuratedContent({
+  const SearchCuratedContent({
     required this.label,
     required this.id,
     this.subtitle,

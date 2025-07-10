@@ -42,9 +42,11 @@ class FailedBackupStatusPage extends HookConsumerWidget {
               vertical: 4,
             ),
             child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15), // if you need this
-                side: const BorderSide(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(15), // if you need this
+                ),
+                side: BorderSide(
                   color: Colors.black12,
                   width: 1,
                 ),

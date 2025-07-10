@@ -34,12 +34,12 @@
   };
 </script>
 
-<Modal title={$t('select_avatar_color')} size="medium" {onClose}>
+<Modal title={$t('select_avatar_color')} size="small" {onClose}>
   <ModalBody>
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 place-items-center">
       {#each colors as color (color)}
         <button type="button" onclick={() => onSave(color)}>
-          <UserAvatar label={color} user={$user} {color} size="xl" showProfileImage={false} />
+          <UserAvatar label={color} user={{ ...$user, profileImagePath: '', avatarColor: color }} size="xl" />
         </button>
       {/each}
     </div>

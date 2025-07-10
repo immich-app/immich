@@ -1,13 +1,9 @@
 <script lang="ts">
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import { timeToLoadTheMap } from '$lib/constants';
-  import { albumMapViewManager } from '$lib/managers/album-view-map.manager.svelte';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import MapModal from '$lib/modals/MapModal.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { handlePromiseError } from '$lib/utils';
-  import { delay } from '$lib/utils/asset-utils';
-  import { navigate } from '$lib/utils/navigation';
   import { getAlbumInfo, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
-  import { IconButton, LoadingSpinner, Modal, ModalBody } from '@immich/ui';
+  import { IconButton } from '@immich/ui';
   import { mdiMapOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -18,11 +14,8 @@
 
   let { album }: Props = $props();
   let abortController: AbortController;
-  let { isViewing: showAssetViewer, asset: viewingAsset, setAssetId } = assetViewingStore;
-  let viewingAssets: string[] = $state([]);
-  let viewingAssetCursor = 0;
+  let { setAssetId } = assetViewingStore;
 
-  let zoom = $derived(1);
   let mapMarkers: MapMarkerResponseDto[] = $state([]);
 
   onMount(async () => {
@@ -59,47 +52,12 @@
     return markers;
   }
 
-  function openMap() {
-    albumMapViewManager.isInMapView = true;
-  }
+  async function openMap() {
+    const assetIds = await modalManager.show(MapModal, { mapMarkers });
 
-  function closeMap() {
-    if (!$showAssetViewer) {
-      albumMapViewManager.isInMapView = false;
+    if (assetIds) {
+      await setAssetId(assetIds[0]);
     }
-  }
-
-  async function onViewAssets(assetIds: string[]) {
-    viewingAssets = assetIds;
-    viewingAssetCursor = 0;
-    closeMap();
-
-    await setAssetId(assetIds[0]);
-  }
-
-  async function navigateNext() {
-    if (viewingAssetCursor < viewingAssets.length - 1) {
-      await setAssetId(viewingAssets[++viewingAssetCursor]);
-      return true;
-    }
-    return false;
-  }
-
-  async function navigatePrevious() {
-    if (viewingAssetCursor > 0) {
-      await setAssetId(viewingAssets[--viewingAssetCursor]);
-      return true;
-    }
-    return false;
-  }
-
-  async function navigateRandom() {
-    if (viewingAssets.length <= 0) {
-      return undefined;
-    }
-    const index = Math.floor(Math.random() * viewingAssets.length);
-    const asset = await setAssetId(viewingAssets[index]);
-    return asset;
   }
 </script>
 
@@ -111,51 +69,3 @@
   onclick={openMap}
   aria-label={$t('map')}
 />
-
-{#if albumMapViewManager.isInMapView}
-  <Modal title={$t('map')} size="medium" onClose={closeMap}>
-    <ModalBody>
-      <div class="flex flex-col w-full h-full gap-2 border border-gray-300 dark:border-light rounded-2xl">
-        <div class="h-[500px] min-h-[300px] w-full">
-          {#await import('../shared-components/map/map.svelte')}
-            {#await delay(timeToLoadTheMap) then}
-              <!-- show the loading spinner only if loading the map takes too much time -->
-              <div class="flex items-center justify-center h-full w-full">
-                <LoadingSpinner />
-              </div>
-            {/await}
-          {:then { default: Map }}
-            <Map
-              center={undefined}
-              {zoom}
-              clickable={false}
-              bind:mapMarkers
-              onSelect={onViewAssets}
-              showSettings={false}
-              rounded
-            />
-          {/await}
-        </div>
-      </div>
-    </ModalBody>
-  </Modal>
-
-  <Portal target="body">
-    {#if $showAssetViewer}
-      {#await import('../../../lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-        <AssetViewer
-          asset={$viewingAsset}
-          showNavigation={viewingAssets.length > 1}
-          onNext={navigateNext}
-          onPrevious={navigatePrevious}
-          onRandom={navigateRandom}
-          onClose={() => {
-            assetViewingStore.showAssetViewer(false);
-            handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
-          }}
-          isShared={false}
-        />
-      {/await}
-    {/if}
-  </Portal>
-{/if}

@@ -1,18 +1,19 @@
 import { Kysely } from 'kysely';
-import { DB } from 'src/db';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { DB } from 'src/schema';
 import { getKyselyConfig } from 'src/utils/database';
 import { GenericContainer, Wait } from 'testcontainers';
 
 const globalSetup = async () => {
-  const postgresContainer = await new GenericContainer('ghcr.io/immich-app/postgres:14-vectorchord0.4.1')
+  const templateName = 'mich';
+  const postgresContainer = await new GenericContainer('ghcr.io/immich-app/postgres:14-vectorchord0.4.3')
     .withExposedPorts(5432)
     .withEnvironment({
       POSTGRES_PASSWORD: 'postgres',
       POSTGRES_USER: 'postgres',
-      POSTGRES_DB: 'immich',
+      POSTGRES_DB: templateName,
     })
     .withCommand([
       'postgres',
@@ -35,7 +36,7 @@ const globalSetup = async () => {
     .start();
 
   const postgresPort = postgresContainer.getMappedPort(5432);
-  const postgresUrl = `postgres://postgres:postgres@localhost:${postgresPort}/immich`;
+  const postgresUrl = `postgres://postgres:postgres@localhost:${postgresPort}/${templateName}`;
 
   process.env.IMMICH_TEST_POSTGRES_URL = postgresUrl;
 

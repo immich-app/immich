@@ -1,30 +1,22 @@
 import 'dart:io';
 
-import 'package:immich_mobile/domain/interfaces/storage.interface.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-class StorageRepository implements IStorageRepository {
-  final _log = Logger('StorageRepository');
+class StorageRepository {
+  const StorageRepository();
 
-  @override
-  Future<File?> getFileForAsset(LocalAsset asset) async {
+  Future<File?> getFileForAsset(String assetId) async {
+    final log = Logger('StorageRepository');
     File? file;
     try {
-      final entity = await AssetEntity.fromId(asset.id);
+      final entity = await AssetEntity.fromId(assetId);
       file = await entity?.originFile;
       if (file == null) {
-        _log.warning(
-          "Cannot get file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
-        );
+        log.warning("Cannot get file for asset $assetId");
       }
     } catch (error, stackTrace) {
-      _log.warning(
-        "Error getting file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
-        error,
-        stackTrace,
-      );
+      log.warning("Error getting file for asset $assetId", error, stackTrace);
     }
     return file;
   }

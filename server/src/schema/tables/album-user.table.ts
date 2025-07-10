@@ -1,4 +1,4 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AlbumUserRole } from 'src/enum';
 import { album_user_after_insert, album_users_delete_audit } from 'src/schema/functions';
 import { AlbumTable } from 'src/schema/tables/album.table';
@@ -7,9 +7,12 @@ import {
   AfterDeleteTrigger,
   AfterInsertTrigger,
   Column,
+  CreateDateColumn,
   ForeignKeyColumn,
+  Generated,
   Index,
   Table,
+  Timestamp,
   UpdateDateColumn,
 } from 'src/sql-tools';
 
@@ -25,7 +28,6 @@ import {
   function: album_user_after_insert,
 })
 @AfterDeleteTrigger({
-  name: 'album_users_delete_audit',
   scope: 'statement',
   function: album_users_delete_audit,
   referencingOldTableAs: 'old',
@@ -49,11 +51,17 @@ export class AlbumUserTable {
   usersId!: string;
 
   @Column({ type: 'character varying', default: AlbumUserRole.EDITOR })
-  role!: AlbumUserRole;
+  role!: Generated<AlbumUserRole>;
+
+  @CreateIdColumn({ indexName: 'IDX_album_users_create_id' })
+  createId!: Generated<string>;
+
+  @CreateDateColumn()
+  createdAt!: Generated<Timestamp>;
 
   @UpdateIdColumn({ indexName: 'IDX_album_users_update_id' })
-  updateId?: string;
+  updateId!: Generated<string>;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Generated<Timestamp>;
 }

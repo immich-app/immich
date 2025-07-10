@@ -11,6 +11,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/asset_selection_state.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
@@ -24,7 +25,6 @@ import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
-import 'package:immich_mobile/utils/translation.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_grid/control_bottom_app_bar.dart';
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
@@ -257,13 +257,19 @@ class MultiselectGrid extends HookConsumerWidget {
         final failedCount = totalCount - successCount;
 
         final msg = failedCount > 0
-            ? t('assets_downloaded_failed', {
-                'count': successCount,
-                'error': failedCount,
-              })
-            : t('assets_downloaded_successfully', {
-                'count': successCount,
-              });
+            ? 'assets_downloaded_failed'.t(
+                context: context,
+                args: {
+                  'count': successCount,
+                  'error': failedCount,
+                },
+              )
+            : 'assets_downloaded_successfully'.t(
+                context: context,
+                args: {
+                  'count': successCount,
+                },
+              );
 
         ImmichToast.show(
           context: context,

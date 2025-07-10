@@ -71,6 +71,11 @@ export class MemoryCreateDto extends MemoryBaseDto {
   assetIds?: string[];
 }
 
+export class MemoryStatisticsResponseDto {
+  @ApiProperty({ type: 'integer' })
+  total!: number;
+}
+
 export class MemoryResponseDto {
   id!: string;
   createdAt!: Date;

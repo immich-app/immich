@@ -106,6 +106,10 @@ export class UserAdminCreateDto {
   @Optional()
   @IsBoolean()
   notify?: boolean;
+
+  @Optional()
+  @IsBoolean()
+  isAdmin?: boolean;
 }
 
 export class UserAdminUpdateDto {
@@ -145,6 +149,10 @@ export class UserAdminUpdateDto {
   @Min(0)
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes?: number | null;
+
+  @Optional()
+  @IsBoolean()
+  isAdmin?: boolean;
 }
 
 export class UserAdminDeleteDto {
