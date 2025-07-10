@@ -889,7 +889,7 @@ export type MetadataSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     thumbnailPath?: string;
@@ -956,7 +956,7 @@ export type RandomSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -993,7 +993,7 @@ export type SmartSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -1025,7 +1025,7 @@ export type StatisticsSearchDto = {
     personIds?: string[];
     rating?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -4095,6 +4095,8 @@ export enum SyncEntityType {
     MemoryToAssetDeleteV1 = "MemoryToAssetDeleteV1",
     StackV1 = "StackV1",
     StackDeleteV1 = "StackDeleteV1",
+    PersonV1 = "PersonV1",
+    PersonDeleteV1 = "PersonDeleteV1",
     SyncAckV1 = "SyncAckV1"
 }
 export enum SyncRequestType {
@@ -4112,7 +4114,8 @@ export enum SyncRequestType {
     PartnerAssetExifsV1 = "PartnerAssetExifsV1",
     PartnerStacksV1 = "PartnerStacksV1",
     StacksV1 = "StacksV1",
-    UsersV1 = "UsersV1"
+    UsersV1 = "UsersV1",
+    PeopleV1 = "PeopleV1"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",

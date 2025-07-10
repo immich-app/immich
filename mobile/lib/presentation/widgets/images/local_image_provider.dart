@@ -175,7 +175,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
     LocalFullImageProvider key,
     ImageDecoderCallback decode,
   ) async* {
-    final file = await _storageRepository.getFileForAsset(key.asset);
+    final file = await _storageRepository.getFileForAsset(key.asset.id);
     if (file == null) {
       throw StateError("Opening file for asset ${key.asset.name} failed");
     }

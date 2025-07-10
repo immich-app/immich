@@ -203,3 +203,16 @@ export const stacks_delete_audit = registerFunction({
       RETURN NULL;
     END`,
 });
+
+export const person_delete_audit = registerFunction({
+  name: 'person_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO person_audit ("personId", "ownerId")
+      SELECT "id", "ownerId"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+});
