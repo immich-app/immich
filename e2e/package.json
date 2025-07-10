@@ -24,6 +24,7 @@
     "@immich/cli": "file:../cli",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@playwright/test": "^1.44.1",
+    "@socket.io/component-emitter": "^3.1.2",
     "@types/luxon": "^3.4.2",
     "@types/node": "^22.15.33",
     "@types/oidc-provider": "^9.0.0",
