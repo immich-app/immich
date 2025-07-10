@@ -1,9 +1,9 @@
-import { Column, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
+import { Column, Generated, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
 
 @Table({ name: 'naturalearth_countries', primaryConstraintName: 'naturalearth_countries_pkey' })
 export class NaturalEarthCountriesTable {
   @PrimaryGeneratedColumn({ strategy: 'identity' })
-  id!: number;
+  id!: Generated<number>;
 
   @Column({ type: 'character varying', length: 50 })
   admin!: string;

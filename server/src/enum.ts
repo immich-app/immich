@@ -573,38 +573,67 @@ export enum DatabaseLock {
 }
 
 export enum SyncRequestType {
-  UsersV1 = 'UsersV1',
-  PartnersV1 = 'PartnersV1',
-  AssetsV1 = 'AssetsV1',
-  AssetExifsV1 = 'AssetExifsV1',
-  PartnerAssetsV1 = 'PartnerAssetsV1',
-  PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
   AlbumsV1 = 'AlbumsV1',
   AlbumUsersV1 = 'AlbumUsersV1',
+  AlbumToAssetsV1 = 'AlbumToAssetsV1',
+  AlbumAssetsV1 = 'AlbumAssetsV1',
+  AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
+  AssetsV1 = 'AssetsV1',
+  AssetExifsV1 = 'AssetExifsV1',
+  MemoriesV1 = 'MemoriesV1',
+  MemoryToAssetsV1 = 'MemoryToAssetsV1',
+  PartnersV1 = 'PartnersV1',
+  PartnerAssetsV1 = 'PartnerAssetsV1',
+  PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
+  PartnerStacksV1 = 'PartnerStacksV1',
+  StacksV1 = 'StacksV1',
+  UsersV1 = 'UsersV1',
 }
 
 export enum SyncEntityType {
   UserV1 = 'UserV1',
   UserDeleteV1 = 'UserDeleteV1',
 
-  PartnerV1 = 'PartnerV1',
-  PartnerDeleteV1 = 'PartnerDeleteV1',
-
   AssetV1 = 'AssetV1',
   AssetDeleteV1 = 'AssetDeleteV1',
   AssetExifV1 = 'AssetExifV1',
+
+  PartnerV1 = 'PartnerV1',
+  PartnerDeleteV1 = 'PartnerDeleteV1',
 
   PartnerAssetV1 = 'PartnerAssetV1',
   PartnerAssetBackfillV1 = 'PartnerAssetBackfillV1',
   PartnerAssetDeleteV1 = 'PartnerAssetDeleteV1',
   PartnerAssetExifV1 = 'PartnerAssetExifV1',
   PartnerAssetExifBackfillV1 = 'PartnerAssetExifBackfillV1',
+  PartnerStackBackfillV1 = 'PartnerStackBackfillV1',
+  PartnerStackDeleteV1 = 'PartnerStackDeleteV1',
+  PartnerStackV1 = 'PartnerStackV1',
 
   AlbumV1 = 'AlbumV1',
   AlbumDeleteV1 = 'AlbumDeleteV1',
+
   AlbumUserV1 = 'AlbumUserV1',
   AlbumUserBackfillV1 = 'AlbumUserBackfillV1',
   AlbumUserDeleteV1 = 'AlbumUserDeleteV1',
+
+  AlbumAssetV1 = 'AlbumAssetV1',
+  AlbumAssetBackfillV1 = 'AlbumAssetBackfillV1',
+  AlbumAssetExifV1 = 'AlbumAssetExifV1',
+  AlbumAssetExifBackfillV1 = 'AlbumAssetExifBackfillV1',
+
+  AlbumToAssetV1 = 'AlbumToAssetV1',
+  AlbumToAssetDeleteV1 = 'AlbumToAssetDeleteV1',
+  AlbumToAssetBackfillV1 = 'AlbumToAssetBackfillV1',
+
+  MemoryV1 = 'MemoryV1',
+  MemoryDeleteV1 = 'MemoryDeleteV1',
+
+  MemoryToAssetV1 = 'MemoryToAssetV1',
+  MemoryToAssetDeleteV1 = 'MemoryToAssetDeleteV1',
+
+  StackV1 = 'StackV1',
+  StackDeleteV1 = 'StackDeleteV1',
 
   SyncAckV1 = 'SyncAckV1',
 }

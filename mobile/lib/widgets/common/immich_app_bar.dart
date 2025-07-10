@@ -42,7 +42,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           useRootNavigator: false,
           builder: (ctx) => const ImmichAppBarDialog(),
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Badge(
           label: Container(
             decoration: BoxDecoration(
@@ -120,7 +120,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
       return InkWell(
         onTap: () => context.pushRoute(const BackupControllerRoute()),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Badge(
           label: Container(
             width: widgetSize / 2,

@@ -4,9 +4,14 @@
 
 design/
 docker/
+Dockerfile
 !docker/scripts
 docs/
+!docs/package.json
+!docs/package-lock.json
 e2e/
+!e2e/package.json
+!e2e/package-lock.json
 fastlane/
 machine-learning/
 misc/
@@ -15,6 +20,7 @@ mobile/
 cli/coverage/
 cli/dist/
 cli/node_modules/
+cli/Dockerfile
 
 open-api/typescript-sdk/build/
 open-api/typescript-sdk/node_modules/
@@ -25,9 +31,11 @@ server/upload/
 server/src/queries
 server/dist/
 server/www/
+server/Dockerfile
 
 web/node_modules/
 web/coverage/
 web/.svelte-kit
 web/build/
 web/.env
+web/Dockerfile

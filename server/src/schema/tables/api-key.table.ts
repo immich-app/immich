@@ -5,14 +5,19 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
+  Generated,
   PrimaryGeneratedColumn,
   Table,
+  Timestamp,
   UpdateDateColumn,
 } from 'src/sql-tools';
 
 @Table('api_keys')
 @UpdatedAtTrigger('api_keys_updated_at')
-export class APIKeyTable {
+export class ApiKeyTable {
+  @PrimaryGeneratedColumn()
+  id!: Generated<string>;
+
   @Column()
   name!: string;
 
@@ -23,17 +28,14 @@ export class APIKeyTable {
   userId!: string;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
-
-  @PrimaryGeneratedColumn()
-  id!: string;
+  updatedAt!: Generated<Timestamp>;
 
   @Column({ array: true, type: 'character varying' })
   permissions!: Permission[];
 
   @UpdateIdColumn({ indexName: 'IDX_api_keys_update_id' })
-  updateId?: string;
+  updateId!: Generated<string>;
 }

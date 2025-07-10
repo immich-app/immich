@@ -26,6 +26,8 @@ class PhotoViewScaleStateController {
       StreamController<PhotoViewScaleState>.broadcast()
         ..sink.add(PhotoViewScaleState.initial);
 
+  bool _hasZoomedOutManually = false;
+
   /// The output for state/value updates
   Stream<PhotoViewScaleState> get outputScaleStateStream =>
       _outputScaleStateCtrl.stream;
@@ -42,9 +44,19 @@ class PhotoViewScaleStateController {
       return;
     }
 
+    if (newValue == PhotoViewScaleState.zoomedOut) {
+      _hasZoomedOutManually = true;
+    }
+
+    if (newValue == PhotoViewScaleState.initial) {
+      _hasZoomedOutManually = false;
+    }
+
     prevScaleState = _scaleStateNotifier.value;
     _scaleStateNotifier.value = newValue;
   }
+
+  bool get hasZoomedOutManually => _hasZoomedOutManually;
 
   /// Checks if its actual value is different than previousValue
   bool get hasChanged => prevScaleState != scaleState;
@@ -71,6 +83,15 @@ class PhotoViewScaleStateController {
     if (_scaleStateNotifier.value == newValue) {
       return;
     }
+
+    if (newValue == PhotoViewScaleState.zoomedOut) {
+      _hasZoomedOutManually = true;
+    }
+
+    if (newValue == PhotoViewScaleState.initial) {
+      _hasZoomedOutManually = false;
+    }
+
     prevScaleState = _scaleStateNotifier.value;
     _scaleStateNotifier.updateIgnoring(newValue);
   }

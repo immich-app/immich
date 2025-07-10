@@ -2,12 +2,38 @@ import Foundation
 import SwiftUI
 import WidgetKit
 
-enum WidgetError: Error {
+enum WidgetError: Error, Codable {
   case noLogin
   case fetchFailed
   case unknown
   case albumNotFound
   case unableToResize
+  case invalidImage
+  case invalidURL
+}
+
+extension WidgetError: LocalizedError {
+  public var errorDescription: String? {
+    switch self {
+    case .noLogin:
+      return "Login to Immich"
+
+    case .fetchFailed:
+      return "Unable to connect to your Immich instance"
+
+    case .albumNotFound:
+      return "Album not found"
+
+    case .invalidURL:
+      return "An invalid URL was used"
+
+    case .invalidImage:
+      return "An invalid image was received"
+
+    default:
+      return "An unknown error occured"
+    }
+  }
 }
 
 enum AssetType: String, Codable {
@@ -17,9 +43,13 @@ enum AssetType: String, Codable {
   case other = "OTHER"
 }
 
-struct SearchResult: Codable {
+struct Asset: Codable {
   let id: String
   let type: AssetType
+
+  var deepLink: URL? {
+    return URL(string: "immich://asset?id=\(id)")
+  }
 }
 
 struct SearchFilters: Codable {
@@ -30,7 +60,7 @@ struct SearchFilters: Codable {
 
 struct MemoryResult: Codable {
   let id: String
-  var assets: [SearchResult]
+  var assets: [Asset]
   let type: String
 
   struct MemoryData: Codable {
@@ -45,6 +75,8 @@ struct Album: Codable {
   let albumName: String
 }
 
+let IMMICH_SHARE_GROUP = "group.app.immich.share"
+
 // MARK: API
 
 class ImmichAPI {
@@ -56,7 +88,7 @@ class ImmichAPI {
 
   init() async throws {
     // fetch the credentials from the UserDefaults store that dart placed here
-    guard let defaults = UserDefaults(suiteName: "group.app.immich.share"),
+    guard let defaults = UserDefaults(suiteName: IMMICH_SHARE_GROUP),
       let serverURL = defaults.string(forKey: "widget_server_url"),
       let sessionKey = defaults.string(forKey: "widget_auth_token")
     else {
@@ -101,7 +133,7 @@ class ImmichAPI {
   }
 
   func fetchSearchResults(with filters: SearchFilters) async throws
-    -> [SearchResult]
+    -> [Asset]
   {
     // get URL
     guard
@@ -121,7 +153,7 @@ class ImmichAPI {
     let (data, _) = try await URLSession.shared.data(for: request)
 
     // decode data
-    return try JSONDecoder().decode([SearchResult].self, from: data)
+    return try JSONDecoder().decode([Asset].self, from: data)
   }
 
   func fetchMemory(for date: Date) async throws -> [MemoryResult] {
@@ -146,7 +178,7 @@ class ImmichAPI {
     return try JSONDecoder().decode([MemoryResult].self, from: data)
   }
 
-  func fetchImage(asset: SearchResult) async throws -> UIImage {
+  func fetchImage(asset: Asset) async throws(WidgetError) -> UIImage {
     let thumbnailParams = [URLQueryItem(name: "size", value: "preview")]
     let assetEndpoint = "/assets/" + asset.id + "/thumbnail"
 
@@ -157,16 +189,31 @@ class ImmichAPI {
         params: thumbnailParams
       )
     else {
-      throw URLError(.badURL)
+      throw .invalidURL
     }
 
-    let (data, _) = try await URLSession.shared.data(from: fetchURL)
-
-    guard let img = UIImage(data: data) else {
-      throw URLError(.badServerResponse)
+    guard let imageSource = CGImageSourceCreateWithURL(fetchURL as CFURL, nil)
+    else {
+      throw .invalidURL
     }
 
-    return img
+    let decodeOptions: [NSString: Any] = [
+      kCGImageSourceCreateThumbnailFromImageAlways: true,
+      kCGImageSourceThumbnailMaxPixelSize: 400,
+      kCGImageSourceCreateThumbnailWithTransform: true,
+    ]
+
+    guard
+      let thumbnail = CGImageSourceCreateThumbnailAtIndex(
+        imageSource,
+        0,
+        decodeOptions as CFDictionary
+      )
+    else {
+      throw .fetchFailed
+    }
+
+    return UIImage(cgImage: thumbnail)
   }
 
   func fetchAlbums() async throws -> [Album] {

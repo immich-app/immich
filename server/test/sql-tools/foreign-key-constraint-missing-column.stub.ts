@@ -1,11 +1,4 @@
-import {
-  Column,
-  DatabaseConstraintType,
-  DatabaseSchema,
-  ForeignKeyConstraint,
-  PrimaryColumn,
-  Table,
-} from 'src/sql-tools';
+import { Column, ConstraintType, DatabaseSchema, ForeignKeyConstraint, PrimaryColumn, Table } from 'src/sql-tools';
 
 @Table()
 export class Table1 {
@@ -22,12 +15,13 @@ export class Table2 {
 
 export const description = 'should warn against missing column in foreign key constraint';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [],
   extensions: [],
   parameters: [],
+  overrides: [],
   tables: [
     {
       name: 'table1',
@@ -46,7 +40,7 @@ export const schema: DatabaseSchema = {
       triggers: [],
       constraints: [
         {
-          type: DatabaseConstraintType.PRIMARY_KEY,
+          type: ConstraintType.PRIMARY_KEY,
           name: 'PK_b249cc64cf63b8a22557cdc8537',
           tableName: 'table1',
           columnNames: ['id'],

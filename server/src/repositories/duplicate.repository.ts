@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely, NotNull, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB } from 'src/db';
 import { Chunked, DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetType, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
+import { DB } from 'src/schema';
 import { anyUuid, asUuid, withDefaultVisibility } from 'src/utils/database';
 
 interface DuplicateSearch {

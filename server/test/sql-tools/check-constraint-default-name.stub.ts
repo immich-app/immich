@@ -1,4 +1,4 @@
-import { Check, Column, DatabaseConstraintType, DatabaseSchema, Table } from 'src/sql-tools';
+import { Check, Column, ConstraintType, DatabaseSchema, Table } from 'src/sql-tools';
 
 @Table()
 @Check({ expression: '1=1' })
@@ -9,12 +9,13 @@ export class Table1 {
 
 export const description = 'should create a check constraint with a default name';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [],
   extensions: [],
   parameters: [],
+  overrides: [],
   tables: [
     {
       name: 'table1',
@@ -33,7 +34,7 @@ export const schema: DatabaseSchema = {
       triggers: [],
       constraints: [
         {
-          type: DatabaseConstraintType.CHECK,
+          type: ConstraintType.CHECK,
           name: 'CHK_8d2ecfd49b984941f6b2589799',
           tableName: 'table1',
           expression: '1=1',

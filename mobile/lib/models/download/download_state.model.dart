@@ -10,7 +10,7 @@ class DownloadInfo {
   // enum
   final TaskStatus status;
 
-  DownloadInfo({
+  const DownloadInfo({
     required this.fileName,
     required this.progress,
     required this.status,
@@ -71,7 +71,7 @@ class DownloadState {
   final TaskStatus downloadStatus;
   final Map<String, DownloadInfo> taskProgress;
   final bool showProgress;
-  DownloadState({
+  const DownloadState({
     required this.downloadStatus,
     required this.taskProgress,
     required this.showProgress,

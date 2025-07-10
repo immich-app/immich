@@ -2,9 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { ExpressionBuilder, Insertable, Kysely, Selectable, sql, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { AssetFaces, DB, FaceSearch, Person } from 'src/db';
-import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
+import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, AssetVisibility, SourceType } from 'src/enum';
+import { DB } from 'src/schema';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
+import { FaceSearchTable } from 'src/schema/tables/face-search.table';
+import { PersonTable } from 'src/schema/tables/person.table';
 import { removeUndefinedKeys } from 'src/utils/database';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
@@ -57,7 +60,7 @@ export interface GetAllFacesOptions {
 
 export type UnassignFacesOptions = DeleteFacesOptions;
 
-export type SelectFaceOptions = (keyof Selectable<AssetFaces>)[];
+export type SelectFaceOptions = (keyof Selectable<AssetFaceTable>)[];
 
 const withPerson = (eb: ExpressionBuilder<DB, 'asset_faces'>) => {
   return jsonObjectFrom(
@@ -102,6 +105,7 @@ export class PersonRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
+  @Chunked()
   async delete(ids: string[]): Promise<void> {
     if (ids.length === 0) {
       return;
@@ -180,8 +184,9 @@ export class PersonRepository {
       )
       .$if(!options?.closestFaceAssetId, (qb) =>
         qb
-          .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
+          .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
           .orderBy((eb) => eb.fn.count('asset_faces.assetId'), 'desc')
+          .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
           .orderBy('person.createdAt'),
       )
       .$if(!options?.withHidden, (qb) => qb.where('person.isHidden', '=', false))
@@ -376,11 +381,11 @@ export class PersonRepository {
       .executeTakeFirstOrThrow();
   }
 
-  create(person: Insertable<Person>) {
+  create(person: Insertable<PersonTable>) {
     return this.db.insertInto('person').values(person).returningAll().executeTakeFirstOrThrow();
   }
 
-  async createAll(people: Insertable<Person>[]): Promise<string[]> {
+  async createAll(people: Insertable<PersonTable>[]): Promise<string[]> {
     if (people.length === 0) {
       return [];
     }
@@ -391,9 +396,9 @@ export class PersonRepository {
 
   @GenerateSql({ params: [[], [], [{ faceId: DummyValue.UUID, embedding: DummyValue.VECTOR }]] })
   async refreshFaces(
-    facesToAdd: (Insertable<AssetFaces> & { assetId: string })[],
+    facesToAdd: (Insertable<AssetFaceTable> & { assetId: string })[],
     faceIdsToRemove: string[],
-    embeddingsToAdd?: Insertable<FaceSearch>[],
+    embeddingsToAdd?: Insertable<FaceSearchTable>[],
   ): Promise<void> {
     let query = this.db;
     if (facesToAdd.length > 0) {
@@ -413,7 +418,7 @@ export class PersonRepository {
     await query.selectFrom(sql`(select 1)`.as('dummy')).execute();
   }
 
-  async update(person: Updateable<Person> & { id: string }) {
+  async update(person: Updateable<PersonTable> & { id: string }) {
     return this.db
       .updateTable('person')
       .set(person)
@@ -422,7 +427,7 @@ export class PersonRepository {
       .executeTakeFirstOrThrow();
   }
 
-  async updateAll(people: Insertable<Person>[]): Promise<void> {
+  async updateAll(people: Insertable<PersonTable>[]): Promise<void> {
     if (people.length === 0) {
       return;
     }
@@ -494,7 +499,7 @@ export class PersonRepository {
     return result?.latestDate;
   }
 
-  async createAssetFace(face: Insertable<AssetFaces>): Promise<void> {
+  async createAssetFace(face: Insertable<AssetFaceTable>): Promise<void> {
     await this.db.insertInto('asset_faces').values(face).execute();
   }
 
@@ -515,5 +520,14 @@ export class PersonRepository {
     if (reindexVectors) {
       await sql`REINDEX TABLE face_search`.execute(this.db);
     }
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @Chunked()
+  getForPeopleDelete(ids: string[]) {
+    if (ids.length === 0) {
+      return Promise.resolve([]);
+    }
+    return this.db.selectFrom('person').select(['id', 'thumbnailPath']).where('id', 'in', ids).execute();
   }
 }

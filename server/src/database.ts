@@ -1,5 +1,4 @@
 import { Selectable } from 'kysely';
-import { Albums, Exif as DatabaseExif } from 'src/db';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import {
   AlbumUserRole,
@@ -13,7 +12,9 @@ import {
   UserAvatarColor,
   UserStatus,
 } from 'src/enum';
-import { OnThisDayData, UserMetadataItem } from 'src/types';
+import { AlbumTable } from 'src/schema/tables/album.table';
+import { ExifTable } from 'src/schema/tables/exif.table';
+import { UserMetadataItem } from 'src/types';
 
 export type AuthUser = {
   id: string;
@@ -95,7 +96,7 @@ export type Memory = {
   showAt: Date | null;
   hideAt: Date | null;
   type: MemoryType;
-  data: OnThisDayData;
+  data: object;
   ownerId: string;
   isSaved: boolean;
   assets: MapAsset[];
@@ -193,7 +194,7 @@ export type SharedLink = {
   userId: string;
 };
 
-export type Album = Selectable<Albums> & {
+export type Album = Selectable<AlbumTable> & {
   owner: User;
   assets: MapAsset[];
 };
@@ -239,7 +240,7 @@ export type Session = {
   pinExpiresAt: Date | null;
 };
 
-export type Exif = Omit<Selectable<DatabaseExif>, 'updatedAt' | 'updateId'>;
+export type Exif = Omit<Selectable<ExifTable>, 'updatedAt' | 'updateId'>;
 
 export type Person = {
   createdAt: Date;
@@ -340,26 +341,27 @@ export const columns = {
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
   notification: ['id', 'createdAt', 'level', 'type', 'title', 'description', 'data', 'readAt'],
   syncAsset: [
-    'id',
-    'ownerId',
-    'originalFileName',
-    'thumbhash',
-    'checksum',
-    'fileCreatedAt',
-    'fileModifiedAt',
-    'localDateTime',
-    'type',
-    'deletedAt',
-    'isFavorite',
-    'visibility',
-    'updateId',
-    'duration',
+    'assets.id',
+    'assets.ownerId',
+    'assets.originalFileName',
+    'assets.thumbhash',
+    'assets.checksum',
+    'assets.fileCreatedAt',
+    'assets.fileModifiedAt',
+    'assets.localDateTime',
+    'assets.type',
+    'assets.deletedAt',
+    'assets.isFavorite',
+    'assets.visibility',
+    'assets.duration',
   ],
-  syncAlbumUser: [
-    'albums_shared_users_users.albumsId as albumId',
-    'albums_shared_users_users.usersId as userId',
-    'albums_shared_users_users.role',
-    'albums_shared_users_users.updateId',
+  syncAlbumUser: ['album_users.albumsId as albumId', 'album_users.usersId as userId', 'album_users.role'],
+  syncStack: [
+    'asset_stack.id',
+    'asset_stack.createdAt',
+    'asset_stack.updatedAt',
+    'asset_stack.primaryAssetId',
+    'asset_stack.ownerId',
   ],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],
   syncAssetExif: [
@@ -388,7 +390,6 @@ export const columns = {
     'exif.profileDescription',
     'exif.rating',
     'exif.fps',
-    'exif.updateId',
   ],
   exif: [
     'exif.assetId',

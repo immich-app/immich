@@ -1,7 +1,7 @@
 <script lang="ts">
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import type { MapSettings } from '$lib/stores/preferences.store';
-  import { Button, Field, Modal, ModalBody, ModalFooter, Stack, Switch } from '@immich/ui';
+  import { Button, Field, HStack, Modal, ModalBody, ModalFooter, Stack, Switch } from '@immich/ui';
   import { Duration } from 'luxon';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -127,9 +127,9 @@
   </ModalBody>
 
   <ModalFooter>
-    <div class="flex gap-3 w-full">
+    <HStack fullWidth>
       <Button color="secondary" shape="round" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
       <Button type="submit" shape="round" fullWidth form="map-settings-form">{$t('save')}</Button>
-    </div>
+    </HStack>
   </ModalFooter>
 </Modal>

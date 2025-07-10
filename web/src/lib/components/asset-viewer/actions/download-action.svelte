@@ -23,8 +23,9 @@
 
 {#if !menuItem}
   <IconButton
-    color="primary"
+    color="secondary"
     shape="round"
+    variant="ghost"
     icon={mdiFolderDownloadOutline}
     aria-label={$t('download')}
     onclick={onDownloadFile}
