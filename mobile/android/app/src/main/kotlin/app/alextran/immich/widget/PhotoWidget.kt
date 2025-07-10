@@ -3,9 +3,6 @@ package app.alextran.immich.widget
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.*
 import androidx.core.net.toUri

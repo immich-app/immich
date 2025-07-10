@@ -3,7 +3,6 @@ package app.alextran.immich.widget.configure
 import android.os.Build
 import androidx.compose.foundation.*
 import androidx.compose.material3.*
-import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 

@@ -112,7 +112,6 @@ dependencies {
   def glide_version = '4.16.0'
   def serialization_version = '1.8.1'
   def compose_version = '1.1.1'
-  def coil_version = '3.2.0'
   def gson_version = '2.10.1'
 
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
