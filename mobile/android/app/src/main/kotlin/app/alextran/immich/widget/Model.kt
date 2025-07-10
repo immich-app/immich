@@ -20,7 +20,7 @@ data class Asset(
 
 data class SearchFilters(
   var type: AssetType = AssetType.IMAGE,
-  val size: Int,
+  val size: Int = 1,
   var albumIds: List<String> = listOf()
 )
 
@@ -46,6 +46,10 @@ enum class WidgetType {
 
 enum class WidgetState {
   LOADING, SUCCESS, LOG_IN;
+}
+
+enum class WidgetConfigState {
+  LOADING, SUCCESS, LOG_IN, NO_CONNECTION
 }
 
 data class WidgetEntry (

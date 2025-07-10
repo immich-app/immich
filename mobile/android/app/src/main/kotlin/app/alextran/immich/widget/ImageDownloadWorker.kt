@@ -159,17 +159,25 @@ class ImageDownloadWorker(
   ): WidgetEntry {
     val api = ImmichAPI(serverConfig)
 
-    val filters = SearchFilters(AssetType.IMAGE, size=1)
+    val filters = SearchFilters(AssetType.IMAGE)
     val albumId = widgetConfig[kSelectedAlbum]
     val showSubtitle = widgetConfig[kShowAlbumName]
     val albumName = widgetConfig[kSelectedAlbumName]
-    val subtitle: String? = if (showSubtitle == true) albumName else ""
+    var subtitle: String? = if (showSubtitle == true) albumName else ""
 
     if (albumId != null) {
       filters.albumIds = listOf(albumId)
     }
 
-    val random = api.fetchSearchResults(filters).first()
+    var randomSearch = api.fetchSearchResults(filters)
+
+    // handle an empty album, fallback to random
+    if (randomSearch.isEmpty() && albumId != null) {
+      randomSearch = api.fetchSearchResults(SearchFilters(AssetType.IMAGE))
+      subtitle = ""
+    }
+
+    val random = randomSearch.first()
     val image = api.fetchImage(random)
 
     return WidgetEntry(

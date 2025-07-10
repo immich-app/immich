@@ -15,22 +15,24 @@ data class DropdownItem (
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Dropdown(items: List<DropdownItem>,
-                 selectedItem: DropdownItem?,
-                 onItemSelected: (DropdownItem) -> Unit,
-             ) {
+             selectedItem: DropdownItem?,
+             onItemSelected: (DropdownItem) -> Unit,
+             enabled: Boolean = true
+) {
 
   var expanded by remember { mutableStateOf(false) }
   var selectedOption by remember { mutableStateOf(selectedItem?.label ?: items[0].label) }
 
     ExposedDropdownMenuBox(
       expanded = expanded,
-      onExpandedChange = { expanded = !expanded }
+      onExpandedChange = { expanded = !expanded && enabled },
     ) {
 
       TextField(
         value = selectedOption,
         onValueChange = {},
         readOnly = true,
+        enabled = enabled,
         trailingIcon = {
           ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
         },

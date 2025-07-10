@@ -11,25 +11,30 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
+import app.alextran.immich.widget.Album
 import app.alextran.immich.widget.ImageDownloadWorker
 import app.alextran.immich.widget.ImmichAPI
+import app.alextran.immich.widget.WidgetConfigState
 import app.alextran.immich.widget.WidgetState
 import app.alextran.immich.widget.WidgetType
 import app.alextran.immich.widget.kSelectedAlbum
 import app.alextran.immich.widget.kSelectedAlbumName
 import app.alextran.immich.widget.kShowAlbumName
 import kotlinx.coroutines.launch
+import java.io.FileNotFoundException
 
 class RandomConfigure : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,36 +71,47 @@ fun RandomConfiguration(context: Context, appWidgetId: Int, glanceId: GlanceId, 
   var selectedAlbum by remember { mutableStateOf<DropdownItem?>(null) }
   var showAlbumName by remember { mutableStateOf(false) }
   var availableAlbums by remember { mutableStateOf<List<DropdownItem>>(listOf()) }
-  var state by remember { mutableStateOf(WidgetState.LOADING) }
+  var state by remember { mutableStateOf(WidgetConfigState.LOADING) }
 
   val scope = rememberCoroutineScope()
 
   LaunchedEffect(Unit) {
     // get albums from server
     val serverCfg = ImmichAPI.getServerConfig(context)
-    val api: ImmichAPI?
 
     if (serverCfg == null) {
-      state = WidgetState.LOG_IN
+      state = WidgetConfigState.LOG_IN
       return@LaunchedEffect
     }
 
-    api = ImmichAPI(serverCfg)
-    val albumItems = api.fetchAlbums().map {
-      DropdownItem(it.albumName, it.id)
+    val api = ImmichAPI(serverCfg)
+
+    val currentState = getAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId)
+    val currentAlbumId = currentState[kSelectedAlbum] ?: "NONE"
+    val currentAlbumName = currentState[kSelectedAlbumName] ?: "None"
+    var albumItems: List<DropdownItem>
+
+    try {
+      albumItems = api.fetchAlbums().map {
+        DropdownItem(it.albumName, it.id)
+      }
+
+      state = WidgetConfigState.SUCCESS
+    } catch (e: FileNotFoundException) {
+      Log.e("WidgetWorker", "Error fetching albums: ${e.message}")
+
+      state = WidgetConfigState.NO_CONNECTION
+      albumItems = listOf(DropdownItem(currentAlbumName, currentAlbumId))
     }
 
     availableAlbums = listOf(DropdownItem("None", "NONE")) + albumItems
-    state = WidgetState.SUCCESS
 
     // load selected configuration
-    val currentState = getAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId)
-    val currentAlbumId = currentState[kSelectedAlbum]
     val albumEntity = availableAlbums.firstOrNull { it.id == currentAlbumId }
     selectedAlbum = albumEntity ?: availableAlbums.first()
 
     // load showAlbumName
-    showAlbumName = currentState[kShowAlbumName] ?: false
+    showAlbumName = currentState[kShowAlbumName] == true
   }
 
   suspend fun saveConfiguration() {
@@ -133,11 +149,34 @@ fun RandomConfiguration(context: Context, appWidgetId: Int, glanceId: GlanceId, 
     ) {
       Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         when (state) {
-          WidgetState.LOADING -> CircularProgressIndicator(modifier = Modifier.size(48.dp))
-          WidgetState.LOG_IN -> Text("You must log in inside the Immich App to configure this widget.")
-          WidgetState.SUCCESS -> {
+          WidgetConfigState.LOADING -> CircularProgressIndicator(modifier = Modifier.size(48.dp))
+          WidgetConfigState.LOG_IN -> Text("You must log in inside the Immich App to configure this widget.")
+          else -> {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
               Text("View a random image from your library or a specific album.", style = MaterialTheme.typography.bodyMedium)
+
+              // no connection warning
+              if (state == WidgetConfigState.NO_CONNECTION) {
+                Row(
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(12.dp),
+                  verticalAlignment = Alignment.CenterVertically
+                ) {
+                  Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = "Warning",
+                    modifier = Modifier.size(24.dp)
+                  )
+                  Spacer(modifier = Modifier.width(12.dp))
+                  Text(
+                    text = "No connection to the server is available. Please try again later.",
+                    style = MaterialTheme.typography.bodyMedium
+                  )
+                }
+              }
 
               Column(
                 modifier = Modifier
@@ -151,6 +190,7 @@ fun RandomConfiguration(context: Context, appWidgetId: Int, glanceId: GlanceId, 
                   items = availableAlbums,
                   selectedItem = selectedAlbum,
                   onItemSelected = { selectedAlbum = it },
+                  enabled = (state != WidgetConfigState.NO_CONNECTION)
                 )
 
                 Row(
@@ -161,7 +201,8 @@ fun RandomConfiguration(context: Context, appWidgetId: Int, glanceId: GlanceId, 
                   Text(text = "Show Album Name")
                   Switch(
                     checked = showAlbumName,
-                    onCheckedChange = { showAlbumName = it }
+                    onCheckedChange = { showAlbumName = it },
+                    enabled = (state != WidgetConfigState.NO_CONNECTION)
                   )
                 }
               }
