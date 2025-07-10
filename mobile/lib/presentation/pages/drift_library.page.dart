@@ -27,7 +27,12 @@ class DriftLibraryPage extends ConsumerWidget {
     return const Scaffold(
       body: CustomScrollView(
         slivers: [
-          ImmichSliverAppBar(),
+          ImmichSliverAppBar(
+            snap: false,
+            floating: false,
+            pinned: true,
+            showUploadButton: false,
+          ),
           _ActionButtonGrid(),
           _CollectionCards(),
           _QuickAccessButtonList(),
