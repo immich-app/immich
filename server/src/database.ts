@@ -201,6 +201,7 @@ export type Album = Selectable<AlbumTable> & {
 
 export type AuthSession = {
   id: string;
+  isPendingSyncReset: boolean;
   hasElevatedPermission: boolean;
 };
 
@@ -238,6 +239,7 @@ export type Session = {
   deviceOS: string;
   deviceType: string;
   pinExpiresAt: Date | null;
+  isPendingSyncReset: boolean;
 };
 
 export type Exif = Omit<Selectable<ExifTable>, 'updatedAt' | 'updateId'>;
@@ -311,7 +313,7 @@ export const columns = {
     'users.quotaSizeInBytes',
   ],
   authApiKey: ['api_keys.id', 'api_keys.permissions'],
-  authSession: ['sessions.id', 'sessions.updatedAt', 'sessions.pinExpiresAt'],
+  authSession: ['sessions.id', 'sessions.isPendingSyncReset', 'sessions.updatedAt', 'sessions.pinExpiresAt'],
   authSharedLink: [
     'shared_links.id',
     'shared_links.userId',

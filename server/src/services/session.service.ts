@@ -2,7 +2,13 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { SessionCreateDto, SessionCreateResponseDto, SessionResponseDto, mapSession } from 'src/dtos/session.dto';
+import {
+  SessionCreateDto,
+  SessionCreateResponseDto,
+  SessionResponseDto,
+  SessionUpdateDto,
+  mapSession,
+} from 'src/dtos/session.dto';
 import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 
@@ -42,6 +48,20 @@ export class SessionService extends BaseService {
   async getAll(auth: AuthDto): Promise<SessionResponseDto[]> {
     const sessions = await this.sessionRepository.getByUserId(auth.user.id);
     return sessions.map((session) => mapSession(session, auth.session?.id));
+  }
+
+  async update(auth: AuthDto, id: string, dto: SessionUpdateDto): Promise<SessionResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.SESSION_UPDATE, ids: [id] });
+
+    if (Object.values(dto).filter((prop) => prop !== undefined).length === 0) {
+      throw new BadRequestException('No fields to update');
+    }
+
+    const session = await this.sessionRepository.update(id, {
+      isPendingSyncReset: dto.isPendingSyncReset,
+    });
+
+    return mapSession(session);
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {

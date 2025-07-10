@@ -208,6 +208,7 @@ Class | Method | HTTP request | Description
 *SessionsApi* | [**deleteSession**](doc//SessionsApi.md#deletesession) | **DELETE** /sessions/{id} | 
 *SessionsApi* | [**getSessions**](doc//SessionsApi.md#getsessions) | **GET** /sessions | 
 *SessionsApi* | [**lockSession**](doc//SessionsApi.md#locksession) | **POST** /sessions/{id}/lock | 
+*SessionsApi* | [**updateSession**](doc//SessionsApi.md#updatesession) | **PUT** /sessions/{id} | 
 *SharedLinksApi* | [**addSharedLinkAssets**](doc//SharedLinksApi.md#addsharedlinkassets) | **PUT** /shared-links/{id}/assets | 
 *SharedLinksApi* | [**createSharedLink**](doc//SharedLinksApi.md#createsharedlink) | **POST** /shared-links | 
 *SharedLinksApi* | [**getAllSharedLinks**](doc//SharedLinksApi.md#getallsharedlinks) | **GET** /shared-links | 
@@ -449,6 +450,7 @@ Class | Method | HTTP request | Description
  - [SessionCreateResponseDto](doc//SessionCreateResponseDto.md)
  - [SessionResponseDto](doc//SessionResponseDto.md)
  - [SessionUnlockDto](doc//SessionUnlockDto.md)
+ - [SessionUpdateDto](doc//SessionUpdateDto.md)
  - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
  - [SharedLinkEditDto](doc//SharedLinkEditDto.md)
  - [SharedLinkResponseDto](doc//SharedLinkResponseDto.md)
