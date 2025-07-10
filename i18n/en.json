@@ -251,6 +251,7 @@
     "storage_template_settings": "Storage Template",
     "storage_template_settings_description": "Manage the folder structure and file name of the upload asset",
     "storage_template_user_label": "<code>{label}</code> is the user's Storage Label",
+    "star_rating_set_1_5_0": "Set rating to 1, 2, 3, 4, 5 or 0 star(s)",
     "system_settings": "System Settings",
     "tag_cleanup_job": "Tag cleanup",
     "template_email_available_tags": "You can use the following variables in your template: {tags}",
