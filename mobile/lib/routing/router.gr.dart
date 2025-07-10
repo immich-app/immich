@@ -1227,11 +1227,11 @@ class LocalMediaSummaryRoute extends PageRouteInfo<void> {
 class LocalTimelineRoute extends PageRouteInfo<LocalTimelineRouteArgs> {
   LocalTimelineRoute({
     Key? key,
-    required String albumId,
+    required LocalAlbum album,
     List<PageRouteInfo>? children,
   }) : super(
           LocalTimelineRoute.name,
-          args: LocalTimelineRouteArgs(key: key, albumId: albumId),
+          args: LocalTimelineRouteArgs(key: key, album: album),
           initialChildren: children,
         );
 
@@ -1241,21 +1241,21 @@ class LocalTimelineRoute extends PageRouteInfo<LocalTimelineRouteArgs> {
     name,
     builder: (data) {
       final args = data.argsAs<LocalTimelineRouteArgs>();
-      return LocalTimelinePage(key: args.key, albumId: args.albumId);
+      return LocalTimelinePage(key: args.key, album: args.album);
     },
   );
 }
 
 class LocalTimelineRouteArgs {
-  const LocalTimelineRouteArgs({this.key, required this.albumId});
+  const LocalTimelineRouteArgs({this.key, required this.album});
 
   final Key? key;
 
-  final String albumId;
+  final LocalAlbum album;
 
   @override
   String toString() {
-    return 'LocalTimelineRouteArgs{key: $key, albumId: $albumId}';
+    return 'LocalTimelineRouteArgs{key: $key, album: $album}';
   }
 }
 
@@ -1781,11 +1781,11 @@ class RemoteMediaSummaryRoute extends PageRouteInfo<void> {
 class RemoteTimelineRoute extends PageRouteInfo<RemoteTimelineRouteArgs> {
   RemoteTimelineRoute({
     Key? key,
-    required String albumId,
+    required RemoteAlbum album,
     List<PageRouteInfo>? children,
   }) : super(
           RemoteTimelineRoute.name,
-          args: RemoteTimelineRouteArgs(key: key, albumId: albumId),
+          args: RemoteTimelineRouteArgs(key: key, album: album),
           initialChildren: children,
         );
 
@@ -1795,21 +1795,21 @@ class RemoteTimelineRoute extends PageRouteInfo<RemoteTimelineRouteArgs> {
     name,
     builder: (data) {
       final args = data.argsAs<RemoteTimelineRouteArgs>();
-      return RemoteTimelinePage(key: args.key, albumId: args.albumId);
+      return RemoteTimelinePage(key: args.key, album: args.album);
     },
   );
 }
 
 class RemoteTimelineRouteArgs {
-  const RemoteTimelineRouteArgs({this.key, required this.albumId});
+  const RemoteTimelineRouteArgs({this.key, required this.album});
 
   final Key? key;
 
-  final String albumId;
+  final RemoteAlbum album;
 
   @override
   String toString() {
-    return 'RemoteTimelineRouteArgs{key: $key, albumId: $albumId}';
+    return 'RemoteTimelineRouteArgs{key: $key, album: $album}';
   }
 }
 

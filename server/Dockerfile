@@ -1,7 +1,6 @@
 # dev build
 FROM ghcr.io/immich-app/base-server-dev:202507091427@sha256:733e510024e03bc2450608a1f3622f45bf287b70d89a06e60acbccea4bf4fd8c AS dev
 
-RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
 RUN npm ci && \

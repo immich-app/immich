@@ -234,6 +234,26 @@ export class SyncStackDeleteV1 {
 }
 
 @ExtraModel()
+export class SyncPersonV1 {
+  id!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
+  ownerId!: string;
+  name!: string;
+  birthDate!: Date | null;
+  thumbnailPath!: string;
+  isHidden!: boolean;
+  isFavorite!: boolean;
+  color!: string | null;
+  faceAssetId!: string | null;
+}
+
+@ExtraModel()
+export class SyncPersonDeleteV1 {
+  personId!: string;
+}
+
+@ExtraModel()
 export class SyncAckV1 {}
 
 export type SyncItem = {
@@ -270,6 +290,8 @@ export type SyncItem = {
   [SyncEntityType.PartnerStackBackfillV1]: SyncStackV1;
   [SyncEntityType.PartnerStackDeleteV1]: SyncStackDeleteV1;
   [SyncEntityType.PartnerStackV1]: SyncStackV1;
+  [SyncEntityType.PersonV1]: SyncPersonV1;
+  [SyncEntityType.PersonDeleteV1]: SyncPersonDeleteV1;
   [SyncEntityType.SyncAckV1]: SyncAckV1;
 };
 

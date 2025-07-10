@@ -568,7 +568,7 @@ class _AlbumList extends StatelessWidget {
                 ),
               ),
               onTap: () => context.router.push(
-                RemoteTimelineRoute(albumId: album.id),
+                RemoteTimelineRoute(album: album),
               ),
               leadingPadding: const EdgeInsets.only(
                 right: 16,
@@ -586,13 +586,24 @@ class _AlbumList extends StatelessWidget {
                         ),
                       ),
                     )
-                  : const SizedBox(
+                  : SizedBox(
                       width: 80,
                       height: 80,
-                      child: Icon(
-                        Icons.photo_album_rounded,
-                        size: 40,
-                        color: Colors.grey,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.surfaceContainer,
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(16)),
+                          border: Border.all(
+                            color: context.colorScheme.outline.withAlpha(50),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.photo_album_rounded,
+                          size: 24,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
             ),
@@ -694,7 +705,7 @@ class _GridAlbumCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => context.router.push(
-        RemoteTimelineRoute(albumId: album.id),
+        RemoteTimelineRoute(album: album),
       ),
       child: Card(
         elevation: 0,
