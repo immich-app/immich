@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/widgets/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/widgets/common/thumbhash.dart';
 import 'package:octo_image/octo_image.dart';
 
@@ -7,7 +6,7 @@ import 'package:octo_image/octo_image.dart';
 /// placeholder and [OctoError.icon] as error.
 OctoSet blurHashOrPlaceholder(
   String? blurhash, {
-  BoxFit? fit,
+  BoxFit fit = BoxFit.cover,
   Text? errorMessage,
 }) {
   return OctoSet(
@@ -19,19 +18,14 @@ OctoSet blurHashOrPlaceholder(
 
 OctoPlaceholderBuilder blurHashPlaceholderBuilder(
   String? blurhash, {
-  BoxFit? fit,
+  required BoxFit fit,
 }) {
-  return (context) => blurhash == null
-      ? const ThumbnailPlaceholder()
-      : Thumbhash(
-          blurhash: blurhash,
-          fit: fit ?? BoxFit.cover,
-        );
+  return (context) => Thumbhash(blurhash: blurhash, fit: fit);
 }
 
 OctoErrorBuilder blurHashErrorBuilder(
   String? blurhash, {
-  BoxFit? fit,
+  BoxFit fit = BoxFit.cover,
   Text? message,
   IconData? icon,
   Color? iconColor,
