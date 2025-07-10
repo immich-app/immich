@@ -337,7 +337,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final isDraggingDown = currentExtent < previousExtent;
     previousExtent = currentExtent;
     // Closes the bottom sheet if the user is dragging down
-    if (isDraggingDown && delta.extent < 0.5) {
+    if (isDraggingDown && delta.extent < 0.55) {
       if (dragInProgress) {
         blockGestures = true;
       }

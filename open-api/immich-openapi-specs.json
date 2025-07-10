@@ -11203,6 +11203,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -12092,6 +12093,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -13157,6 +13159,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -13348,6 +13351,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "nullable": true,
             "type": "array"
           },
           "takenAfter": {
@@ -13830,6 +13834,8 @@
           "MemoryToAssetDeleteV1",
           "StackV1",
           "StackDeleteV1",
+          "PersonV1",
+          "PersonDeleteV1",
           "SyncAckV1"
         ],
         "type": "string"
@@ -13979,6 +13985,74 @@
         ],
         "type": "object"
       },
+      "SyncPersonDeleteV1": {
+        "properties": {
+          "personId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "personId"
+        ],
+        "type": "object"
+      },
+      "SyncPersonV1": {
+        "properties": {
+          "birthDate": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "color": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "faceAssetId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isHidden": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "thumbnailPath": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "birthDate",
+          "color",
+          "createdAt",
+          "faceAssetId",
+          "id",
+          "isFavorite",
+          "isHidden",
+          "name",
+          "ownerId",
+          "thumbnailPath",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "SyncRequestType": {
         "enum": [
           "AlbumsV1",
@@ -13995,7 +14069,8 @@
           "PartnerAssetExifsV1",
           "PartnerStacksV1",
           "StacksV1",
-          "UsersV1"
+          "UsersV1",
+          "PeopleV1"
         ],
         "type": "string"
       },

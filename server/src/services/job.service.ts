@@ -19,6 +19,7 @@ import {
 import { ArgOf, ArgsOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { ConcurrentQueueName, JobItem } from 'src/types';
+import { hexOrBufferToBase64 } from 'src/utils/bytes';
 
 const asJobItem = (dto: JobCreateDto): JobItem => {
   switch (dto.name) {
@@ -304,6 +305,54 @@ export class JobService extends BaseService {
         await this.jobRepository.queueAll(jobs);
         if (asset.visibility === AssetVisibility.TIMELINE || asset.visibility === AssetVisibility.ARCHIVE) {
           this.eventRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
+          if (asset.exifInfo) {
+            const exif = asset.exifInfo;
+            this.eventRepository.clientSend('AssetUploadReadyV1', asset.ownerId, {
+              // TODO remove `on_upload_success` and then modify the query to select only the required fields)
+              asset: {
+                id: asset.id,
+                ownerId: asset.ownerId,
+                originalFileName: asset.originalFileName,
+                thumbhash: asset.thumbhash ? hexOrBufferToBase64(asset.thumbhash) : null,
+                checksum: hexOrBufferToBase64(asset.checksum),
+                fileCreatedAt: asset.fileCreatedAt,
+                fileModifiedAt: asset.fileModifiedAt,
+                localDateTime: asset.localDateTime,
+                duration: asset.duration,
+                type: asset.type,
+                deletedAt: asset.deletedAt,
+                isFavorite: asset.isFavorite,
+                visibility: asset.visibility,
+              },
+              exif: {
+                assetId: exif.assetId,
+                description: exif.description,
+                exifImageWidth: exif.exifImageWidth,
+                exifImageHeight: exif.exifImageHeight,
+                fileSizeInByte: exif.fileSizeInByte,
+                orientation: exif.orientation,
+                dateTimeOriginal: exif.dateTimeOriginal,
+                modifyDate: exif.modifyDate,
+                timeZone: exif.timeZone,
+                latitude: exif.latitude,
+                longitude: exif.longitude,
+                projectionType: exif.projectionType,
+                city: exif.city,
+                state: exif.state,
+                country: exif.country,
+                make: exif.make,
+                model: exif.model,
+                lensModel: exif.lensModel,
+                fNumber: exif.fNumber,
+                focalLength: exif.focalLength,
+                iso: exif.iso,
+                exposureTime: exif.exposureTime,
+                profileDescription: exif.profileDescription,
+                rating: exif.rating,
+                fps: exif.fps,
+              },
+            });
+          }
         }
 
         break;

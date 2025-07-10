@@ -176,10 +176,13 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     final deepLinkHandler = ref.read(deepLinkServiceProvider);
     final currentRouteName = ref.read(currentRouteNameProvider.notifier).state;
 
+    final isColdStart =
+        currentRouteName == null || currentRouteName == SplashScreenRoute.name;
+
     if (deepLink.uri.scheme == "immich") {
       final proposedRoute = await deepLinkHandler.handleScheme(
         deepLink,
-        currentRouteName == SplashScreenRoute.name,
+        isColdStart,
       );
 
       return proposedRoute;
@@ -188,7 +191,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     if (deepLink.uri.host == "my.immich.app") {
       final proposedRoute = await deepLinkHandler.handleMyImmichApp(
         deepLink,
-        currentRouteName == SplashScreenRoute.name,
+        isColdStart,
       );
 
       return proposedRoute;

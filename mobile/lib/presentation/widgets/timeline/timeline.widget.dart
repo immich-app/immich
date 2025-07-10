@@ -18,6 +18,7 @@ import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
+import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
 class Timeline extends StatelessWidget {
@@ -25,10 +26,14 @@ class Timeline extends StatelessWidget {
     super.key,
     this.topSliverWidget,
     this.topSliverWidgetHeight,
+    this.showStorageIndicator = false,
+    this.appBar,
   });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
+  final bool showStorageIndicator;
+  final Widget? appBar;
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +48,14 @@ class Timeline extends StatelessWidget {
                 columnCount: ref.watch(
                   settingsProvider.select((s) => s.get(Setting.tilesPerRow)),
                 ),
+                showStorageIndicator: showStorageIndicator,
               ),
             ),
           ],
           child: _SliverTimeline(
             topSliverWidget: topSliverWidget,
             topSliverWidgetHeight: topSliverWidgetHeight,
+            appBar: appBar,
           ),
         ),
       ),
@@ -60,10 +67,12 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   const _SliverTimeline({
     this.topSliverWidget,
     this.topSliverWidgetHeight,
+    this.appBar,
   });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
+  final Widget? appBar;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
@@ -100,6 +109,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       onData: (segments) {
         final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
         final statusBarHeight = context.padding.top;
+        final double appBarExpandedHeight =
+            widget.appBar != null && widget.appBar is MesmerizingSliverAppBar
+                ? 200
+                : 0;
         final totalAppBarHeight = statusBarHeight + kToolbarHeight;
         const scrubberBottomPadding = 100.0;
 
@@ -112,7 +125,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                 timelineHeight: maxHeight,
                 topPadding: totalAppBarHeight + 10,
                 bottomPadding: context.padding.bottom + scrubberBottomPadding,
-                monthSegmentSnappingOffset: widget.topSliverWidgetHeight,
+                monthSegmentSnappingOffset:
+                    widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
                 child: CustomScrollView(
                   primary: true,
                   cacheExtent: maxHeight * 2,
@@ -120,11 +134,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                     if (isSelectionMode)
                       const SelectionSliverAppBar()
                     else
-                      const ImmichSliverAppBar(
-                        floating: true,
-                        pinned: false,
-                        snap: false,
-                      ),
+                      widget.appBar ??
+                          const ImmichSliverAppBar(
+                            floating: true,
+                            pinned: false,
+                            snap: false,
+                          ),
                     if (widget.topSliverWidget != null) widget.topSliverWidget!,
                     _SliverSegmentedList(
                       segments: segments,

@@ -206,6 +206,9 @@ class _AssetTileWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lockSelection = _getLockSelectionStatus(ref);
+    final showStorageIndicator = ref.watch(
+      timelineArgsProvider.select((args) => args.showStorageIndicator),
+    );
 
     return RepaintBoundary(
       child: GestureDetector(
@@ -217,6 +220,7 @@ class _AssetTileWidget extends ConsumerWidget {
         child: ThumbnailTile(
           asset,
           lockSelection: lockSelection,
+          showStorageIndicator: showStorageIndicator,
         ),
       ),
     );

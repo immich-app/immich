@@ -210,6 +210,9 @@ class TimelineService {
   Future<void> preCacheAssets(int index) =>
       _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
 
+  BaseAsset getRandomAsset() =>
+      _buffer.elementAt(math.Random().nextInt(_buffer.length));
+
   BaseAsset getAsset(int index) {
     if (!hasRange(index, 1)) {
       throw RangeError(

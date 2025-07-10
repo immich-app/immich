@@ -103,7 +103,7 @@ class _AlbumList extends ConsumerWidget {
                     ),
                   ),
                   onTap: () =>
-                      context.pushRoute(LocalTimelineRoute(albumId: album.id)),
+                      context.pushRoute(LocalTimelineRoute(album: album)),
                 ),
               );
             },
