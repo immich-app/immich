@@ -241,6 +241,7 @@ describe(AuthService.name, () => {
       const sessionWithToken = {
         id: session.id,
         updatedAt: session.updatedAt,
+        isPendingSyncReset: false,
         user: factory.authUser(),
         pinExpiresAt: null,
       };
@@ -255,7 +256,11 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({
         user: sessionWithToken.user,
-        session: { id: session.id, hasElevatedPermission: false },
+        session: {
+          id: session.id,
+          hasElevatedPermission: false,
+          isPendingSyncReset: session.isPendingSyncReset,
+        },
       });
     });
   });
@@ -366,6 +371,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        isPendingSyncReset: false,
         pinExpiresAt: null,
       };
 
@@ -379,7 +385,11 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({
         user: sessionWithToken.user,
-        session: { id: session.id, hasElevatedPermission: false },
+        session: {
+          id: session.id,
+          hasElevatedPermission: false,
+          isPendingSyncReset: session.isPendingSyncReset,
+        },
       });
     });
 
@@ -389,6 +399,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        isPendingSyncReset: false,
         pinExpiresAt: null,
       };
 
@@ -409,6 +420,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        isPendingSyncReset: false,
         pinExpiresAt: null,
       };
 

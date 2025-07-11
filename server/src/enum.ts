@@ -640,6 +640,7 @@ export enum SyncEntityType {
   PersonDeleteV1 = 'PersonDeleteV1',
 
   SyncAckV1 = 'SyncAckV1',
+  SyncResetV1 = 'SyncResetV1',
 }
 
 export enum NotificationLevel {

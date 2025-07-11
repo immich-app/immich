@@ -95,4 +95,14 @@ export class SessionRepository {
   async lockAll(userId: string) {
     await this.db.updateTable('sessions').set({ pinExpiresAt: null }).where('userId', '=', userId).execute();
   }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async resetSyncProgress(sessionId: string) {
+    await this.db.transaction().execute((tx) => {
+      return Promise.all([
+        tx.updateTable('sessions').set({ isPendingSyncReset: false }).where('id', '=', sessionId).execute(),
+        tx.deleteFrom('session_sync_checkpoints').where('sessionId', '=', sessionId).execute(),
+      ]);
+    });
+  }
 }
