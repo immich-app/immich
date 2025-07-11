@@ -4,107 +4,18 @@ import 'dart:ui' as ui;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:thumbhash/thumbhash.dart' as thumbhash;
 
-class ThumbhashImage extends RenderBox {
-  Color _placeholderColor;
-  ui.Image? _image;
-  BoxFit _fit;
-
-  ThumbhashImage({
-    required ui.Image? image,
-    required BoxFit fit,
-    required Color placeholderColor,
-  })  : _image = image,
-        _fit = fit,
-        _placeholderColor = placeholderColor;
-
-  @override
-  void paint(PaintingContext context, Offset offset) {
-    final image = _image;
-    final rect = offset & size;
-    if (image == null) {
-      final paint = Paint();
-      paint.color = _placeholderColor;
-      context.canvas.drawRect(rect, paint);
-      return;
-    }
-
-    paintImage(
-      canvas: context.canvas,
-      rect: rect,
-      image: image,
-      fit: _fit,
-      filterQuality: FilterQuality.low,
-    );
-  }
-
-  @override
-  void performLayout() {
-    size = constraints.biggest;
-  }
-
-  set image(ui.Image? value) {
-    if (_image != value) {
-      _image = value;
-      markNeedsPaint();
-    }
-  }
-
-  set fit(BoxFit value) {
-    if (_fit != value) {
-      _fit = value;
-      markNeedsPaint();
-    }
-  }
-
-  set placeholderColor(Color value) {
-    if (_placeholderColor != value) {
-      _placeholderColor = value;
-      markNeedsPaint();
-    }
-  }
-}
-
-class ThumbhashLeaf extends LeafRenderObjectWidget {
-  final ui.Image? image;
-  final BoxFit fit;
-  final Color placeholderColor;
-
-  const ThumbhashLeaf({
-    super.key,
-    required this.image,
-    required this.fit,
-    required this.placeholderColor,
-  });
-
-  @override
-  RenderObject createRenderObject(BuildContext context) {
-    return ThumbhashImage(
-      image: image,
-      fit: fit,
-      placeholderColor: placeholderColor,
-    );
-  }
-
-  @override
-  void updateRenderObject(BuildContext context, ThumbhashImage renderObject) {
-    renderObject.fit = fit;
-    renderObject.image = image;
-    renderObject.placeholderColor = placeholderColor;
-  }
-}
 
 class Thumbhash extends StatefulWidget {
   final String? blurhash;
   final BoxFit fit;
-  final Color placeholderColor;
 
   const Thumbhash({
-    required this.blurhash,
+    this.blurhash,
     this.fit = BoxFit.cover,
-    this.placeholderColor = const Color.fromRGBO(0, 0, 0, 0.2),
     super.key,
   });
 
@@ -112,18 +23,19 @@ class Thumbhash extends StatefulWidget {
   State<Thumbhash> createState() => _ThumbhashState();
 }
 
+
 class _ThumbhashState extends State<Thumbhash> {
   String? blurhash;
   BoxFit? fit;
   ui.Image? _image;
-  Color? placeholderColor;
+
+  static final _gradientCache = <ColorScheme, Gradient>{};
 
   @override
   void initState() {
     super.initState();
     final blurhash_ = blurhash = widget.blurhash;
     fit = widget.fit;
-    placeholderColor = widget.placeholderColor;
     if (blurhash_ == null) {
       return;
     }
@@ -179,10 +91,20 @@ class _ThumbhashState extends State<Thumbhash> {
 
   @override
   Widget build(BuildContext context) {
-    return ThumbhashLeaf(
+    final colorScheme = context.colorScheme;
+    final gradient = _gradientCache[colorScheme] ??= LinearGradient(
+      colors: [
+        colorScheme.surfaceContainer,
+        colorScheme.surfaceContainer.darken(amount: .1),
+      ],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    );
+
+    return _ThumbhashLeaf(
       image: _image,
       fit: fit!,
-      placeholderColor: placeholderColor!,
+      placeholderGradient: gradient,
     );
   }
 
@@ -190,5 +112,96 @@ class _ThumbhashState extends State<Thumbhash> {
   void dispose() {
     _image?.dispose();
     super.dispose();
+  }
+}
+
+class _ThumbhashLeaf extends LeafRenderObjectWidget {
+  final ui.Image? image;
+  final BoxFit fit;
+  final Gradient placeholderGradient;
+
+  const _ThumbhashLeaf({
+    required this.image,
+    required this.fit,
+    required this.placeholderGradient,
+  });
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return _ThumbhashRenderBox(
+      image: image,
+      fit: fit,
+      placeholderGradient: placeholderGradient,
+    );
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _ThumbhashRenderBox renderObject,
+  ) {
+    renderObject.fit = fit;
+    renderObject.image = image;
+    renderObject.placeholderGradient = placeholderGradient;
+  }
+}
+
+class _ThumbhashRenderBox extends RenderBox {
+  ui.Image? _image;
+  BoxFit _fit;
+  Gradient _placeholderGradient;
+
+  _ThumbhashRenderBox({
+    required ui.Image? image,
+    required BoxFit fit,
+    required Gradient placeholderGradient,
+  })  : _image = image,
+        _fit = fit,
+        _placeholderGradient = placeholderGradient;
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final image = _image;
+    final rect = offset & size;
+    if (image == null) {
+      final paint = Paint();
+      paint.shader = _placeholderGradient.createShader(rect);
+      context.canvas.drawRect(rect, paint);
+      return;
+    }
+
+    paintImage(
+      canvas: context.canvas,
+      rect: rect,
+      image: image,
+      fit: _fit,
+      filterQuality: FilterQuality.low,
+    );
+  }
+
+  @override
+  void performLayout() {
+    size = constraints.biggest;
+  }
+
+  set image(ui.Image? value) {
+    if (_image != value) {
+      _image = value;
+      markNeedsPaint();
+    }
+  }
+
+  set fit(BoxFit value) {
+    if (_fit != value) {
+      _fit = value;
+      markNeedsPaint();
+    }
+  }
+
+  set placeholderGradient(Gradient value) {
+    if (_placeholderGradient != value) {
+      _placeholderGradient = value;
+      markNeedsPaint();
+    }
   }
 }
