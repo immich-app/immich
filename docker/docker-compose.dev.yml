@@ -27,6 +27,10 @@ services:
       target: dev
     restart: unless-stopped
     volumes:
+      - ../Makefile:/usr/src/app/Makefile
+      - ../package.json:/usr/src/app/package.json
+      - ../pnpm-lock.yaml:/usr/src/app/pnpm-lock.yaml
+      - ../pnpm-workspace.yaml:/usr/src/app/pnpm-workspace.yaml
       - ../server:/usr/src/app/server
       - ../open-api:/usr/src/app/open-api
       - ${UPLOAD_LOCATION}/photos:/usr/src/app/server/upload
@@ -79,9 +83,13 @@ services:
       - 3000:3000
       - 24678:24678
     volumes:
+      - ../Makefile:/usr/src/app/Makefile
+      - ../package.json:/usr/src/app/package.json
+      - ../pnpm-lock.yaml:/usr/src/app/pnpm-lock.yaml
+      - ../pnpm-workspace.yaml:/usr/src/app/pnpm-workspace.yaml
       - ../web:/usr/src/app/web
       - ../i18n:/usr/src/app/i18n
-      - ../open-api/:/usr/src/app/open-api/
+      - ../open-api:/usr/src/app/open-api
       # - ../../ui:/usr/ui
       - /usr/src/app/web/node_modules
     ulimits:
