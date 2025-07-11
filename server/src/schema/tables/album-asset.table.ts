@@ -1,5 +1,5 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { album_assets_delete_audit } from 'src/schema/functions';
+import { album_asset_delete_audit } from 'src/schema/functions';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import {
@@ -12,11 +12,11 @@ import {
   UpdateDateColumn,
 } from 'src/sql-tools';
 
-@Table({ name: 'albums_assets_assets', primaryConstraintName: 'PK_c67bc36fa845fb7b18e0e398180' })
-@UpdatedAtTrigger('album_assets_updated_at')
+@Table({ name: 'album_asset' })
+@UpdatedAtTrigger('album_asset_updatedAt')
 @AfterDeleteTrigger({
   scope: 'statement',
-  function: album_assets_delete_audit,
+  function: album_asset_delete_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() <= 1',
 })
@@ -33,6 +33,6 @@ export class AlbumAssetTable {
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
 
-  @UpdateIdColumn({ indexName: 'IDX_album_assets_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }
