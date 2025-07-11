@@ -37,19 +37,29 @@ platform :ios do
 
   desc "iOS Beta Release"
   lane :beta do
-    enable_automatic_code_signing(
+
+    update_code_signing_settings(
       path: "./Runner.xcodeproj",
+      use_automatic_signing: true,
     )
+
     increment_version_number(
       version_number: "1.135.3"
     )
+
     increment_build_number(
       build_number: latest_testflight_build_number + 1,
     )
-    build_app(scheme: "beta",
-              workspace: "Runner.xcworkspace",
-              configuration: "Release-beta",
-              xcargs: "-allowProvisioningUpdates")
+    
+    # Build with mixed signing - manual for main app, auto for extensions
+    build_app(
+      scheme: "beta",
+      workspace: "Runner.xcworkspace",
+      configuration: "Release-beta",
+      export_method: "app-store",
+      xcargs: "-allowProvisioningUpdates -allowProvisioningDeviceRegistration"
+    )
+    
     upload_to_testflight(
       skip_waiting_for_build_processing: true,
       beta_app_feedback_email: "beta@immich.app",
