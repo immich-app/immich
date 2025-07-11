@@ -13902,6 +13902,8 @@
           "StackDeleteV1",
           "PersonV1",
           "PersonDeleteV1",
+          "UserMetadataV1",
+          "UserMetadataDeleteV1",
           "SyncAckV1",
           "SyncResetV1"
         ],
@@ -14137,7 +14139,8 @@
           "PartnerStacksV1",
           "StacksV1",
           "UsersV1",
-          "PeopleV1"
+          "PeopleV1",
+          "UserMetadataV1"
         ],
         "type": "string"
       },
@@ -14210,6 +14213,40 @@
         },
         "required": [
           "userId"
+        ],
+        "type": "object"
+      },
+      "SyncUserMetadataDeleteV1": {
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "userId"
+        ],
+        "type": "object"
+      },
+      "SyncUserMetadataV1": {
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "key",
+          "userId",
+          "value"
         ],
         "type": "object"
       },

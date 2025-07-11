@@ -835,3 +835,30 @@ where
   "updatedAt" < now() - interval '1 millisecond'
 order by
   "updateId" asc
+
+-- SyncRepository.userMetadata.getDeletes
+select
+  "id",
+  "userId",
+  "key"
+from
+  "user_metadata_audit"
+where
+  "userId" = $1
+  and "deletedAt" < now() - interval '1 millisecond'
+order by
+  "id" asc
+
+-- SyncRepository.userMetadata.getUpserts
+select
+  "userId",
+  "key",
+  "value",
+  "updateId"
+from
+  "user_metadata"
+where
+  "userId" = $1
+  and "updatedAt" < now() - interval '1 millisecond'
+order by
+  "updateId" asc

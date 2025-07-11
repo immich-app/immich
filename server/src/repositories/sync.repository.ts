@@ -16,7 +16,8 @@ type AuditTables =
   | 'memories_audit'
   | 'memory_assets_audit'
   | 'stacks_audit'
-  | 'person_audit';
+  | 'person_audit'
+  | 'user_metadata_audit';
 type UpsertTables =
   | 'users'
   | 'partners'
@@ -27,7 +28,8 @@ type UpsertTables =
   | 'memories'
   | 'memories_assets_assets'
   | 'asset_stack'
-  | 'person';
+  | 'person'
+  | 'user_metadata';
 
 @Injectable()
 export class SyncRepository {
@@ -47,6 +49,7 @@ export class SyncRepository {
   people: PersonSync;
   stack: StackSync;
   user: UserSync;
+  userMetadata: UserMetadataSync;
 
   constructor(@InjectKysely() private db: Kysely<DB>) {
     this.album = new AlbumSync(this.db);
@@ -65,32 +68,31 @@ export class SyncRepository {
     this.people = new PersonSync(this.db);
     this.stack = new StackSync(this.db);
     this.user = new UserSync(this.db);
+    this.userMetadata = new UserMetadataSync(this.db);
   }
 }
 
 class BaseSync {
   constructor(protected db: Kysely<DB>) {}
 
-  protected auditTableFilters<T extends keyof Pick<DB, AuditTables>, D>(
-    qb: SelectQueryBuilder<DB, T, D>,
-    ack?: SyncAck,
-  ) {
-    const builder = qb as SelectQueryBuilder<DB, AuditTables, D>;
-    return builder
-      .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
-      .orderBy('id', 'asc') as SelectQueryBuilder<DB, T, D>;
+  protected auditTableFilters(ack?: SyncAck) {
+    return <T extends keyof Pick<DB, AuditTables>, D>(qb: SelectQueryBuilder<DB, T, D>) => {
+      const builder = qb as SelectQueryBuilder<DB, AuditTables, D>;
+      return builder
+        .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+        .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
+        .orderBy('id', 'asc') as SelectQueryBuilder<DB, T, D>;
+    };
   }
 
-  protected upsertTableFilters<T extends keyof Pick<DB, UpsertTables>, D>(
-    qb: SelectQueryBuilder<DB, T, D>,
-    ack?: SyncAck,
-  ) {
-    const builder = qb as SelectQueryBuilder<DB, UpsertTables, D>;
-    return builder
-      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
-      .orderBy('updateId', 'asc') as SelectQueryBuilder<DB, T, D>;
+  protected upsertTableFilters(ack?: SyncAck) {
+    return <T extends keyof Pick<DB, UpsertTables>, D>(qb: SelectQueryBuilder<DB, T, D>) => {
+      const builder = qb as SelectQueryBuilder<DB, UpsertTables, D>;
+      return builder
+        .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+        .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
+        .orderBy('updateId', 'asc') as SelectQueryBuilder<DB, T, D>;
+    };
   }
 }
 
@@ -113,7 +115,7 @@ class AlbumSync extends BaseSync {
       .selectFrom('albums_audit')
       .select(['id', 'albumId'])
       .where('userId', '=', userId)
-      .$call((qb) => this.auditTableFilters(qb, ack))
+      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
@@ -246,7 +248,7 @@ class AlbumToAssetSync extends BaseSync {
             ),
         ),
       )
-      .$call((qb) => this.auditTableFilters(qb, ack))
+      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
@@ -303,7 +305,7 @@ class AlbumUserSync extends BaseSync {
             ),
         ),
       )
-      .$call((qb) => this.auditTableFilters(qb, ack))
+      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
@@ -345,7 +347,7 @@ class AssetSync extends BaseSync {
       .selectFrom('assets_audit')
       .select(['id', 'assetId'])
       .where('ownerId', '=', userId)
-      .$call((qb) => this.auditTableFilters(qb, ack))
+      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
@@ -356,7 +358,7 @@ class AssetSync extends BaseSync {
       .select(columns.syncAsset)
       .select('assets.updateId')
       .where('ownerId', '=', userId)
-      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
@@ -368,7 +370,7 @@ class PersonSync extends BaseSync {
       .selectFrom('person_audit')
       .select(['id', 'personId'])
       .where('ownerId', '=', userId)
-      .$call((qb) => this.auditTableFilters(qb, ack))
+      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
@@ -391,7 +393,7 @@ class PersonSync extends BaseSync {
         'faceAssetId',
       ])
       .where('ownerId', '=', userId)
-      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
@@ -404,7 +406,7 @@ class AssetExifSync extends BaseSync {
       .select(columns.syncAssetExif)
       .select('exif.updateId')
       .where('assetId', 'in', (eb) => eb.selectFrom('assets').select('id').where('ownerId', '=', userId))
-      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
@@ -416,7 +418,7 @@ class MemorySync extends BaseSync {
       .selectFrom('memories_audit')
       .select(['id', 'memoryId'])
       .where('userId', '=', userId)
-      .$call((qb) => this.auditTableFilters(qb, ack))
+      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
@@ -440,7 +442,7 @@ class MemorySync extends BaseSync {
       ])
       .select('updateId')
       .where('ownerId', '=', userId)
-      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
@@ -452,7 +454,7 @@ class MemoryToAssetSync extends BaseSync {
       .selectFrom('memory_assets_audit')
       .select(['id', 'memoryId', 'assetId'])
       .where('memoryId', 'in', (eb) => eb.selectFrom('memories').select('id').where('ownerId', '=', userId))
-      .$call((qb) => this.auditTableFilters(qb, ack))
+      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
@@ -463,7 +465,7 @@ class MemoryToAssetSync extends BaseSync {
       .select(['memoriesId as memoryId', 'assetsId as assetId'])
       .select('updateId')
       .where('memoriesId', 'in', (eb) => eb.selectFrom('memories').select('id').where('ownerId', '=', userId))
-      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
@@ -487,7 +489,7 @@ class PartnerSync extends BaseSync {
       .selectFrom('partners_audit')
       .select(['id', 'sharedById', 'sharedWithId'])
       .where((eb) => eb.or([eb('sharedById', '=', userId), eb('sharedWithId', '=', userId)]))
-      .$call((qb) => this.auditTableFilters(qb, ack))
+      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
@@ -497,7 +499,7 @@ class PartnerSync extends BaseSync {
       .selectFrom('partners')
       .select(['sharedById', 'sharedWithId', 'inTimeline', 'updateId'])
       .where((eb) => eb.or([eb('sharedById', '=', userId), eb('sharedWithId', '=', userId)]))
-      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
@@ -525,7 +527,7 @@ class PartnerAssetsSync extends BaseSync {
       .where('ownerId', 'in', (eb) =>
         eb.selectFrom('partners').select(['sharedById']).where('sharedWithId', '=', userId),
       )
-      .$call((qb) => this.auditTableFilters(qb, ack))
+      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
@@ -538,7 +540,7 @@ class PartnerAssetsSync extends BaseSync {
       .where('ownerId', 'in', (eb) =>
         eb.selectFrom('partners').select(['sharedById']).where('sharedWithId', '=', userId),
       )
-      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
@@ -573,7 +575,7 @@ class PartnerAssetExifsSync extends BaseSync {
             eb.selectFrom('partners').select(['sharedById']).where('sharedWithId', '=', userId),
           ),
       )
-      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
@@ -585,7 +587,7 @@ class StackSync extends BaseSync {
       .selectFrom('stacks_audit')
       .select(['id', 'stackId'])
       .where('userId', '=', userId)
-      .$call((qb) => this.auditTableFilters(qb, ack))
+      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
@@ -596,7 +598,7 @@ class StackSync extends BaseSync {
       .select(columns.syncStack)
       .select('updateId')
       .where('ownerId', '=', userId)
-      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
@@ -610,7 +612,7 @@ class PartnerStackSync extends BaseSync {
       .where('userId', 'in', (eb) =>
         eb.selectFrom('partners').select(['sharedById']).where('sharedWithId', '=', userId),
       )
-      .$call((qb) => this.auditTableFilters(qb, ack))
+      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
@@ -637,18 +639,15 @@ class PartnerStackSync extends BaseSync {
       .where('ownerId', 'in', (eb) =>
         eb.selectFrom('partners').select(['sharedById']).where('sharedWithId', '=', userId),
       )
-      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
+
 class UserSync extends BaseSync {
   @GenerateSql({ params: [], stream: true })
   getDeletes(ack?: SyncAck) {
-    return this.db
-      .selectFrom('users_audit')
-      .select(['id', 'userId'])
-      .$call((qb) => this.auditTableFilters(qb, ack))
-      .stream();
+    return this.db.selectFrom('users_audit').select(['id', 'userId']).$call(this.auditTableFilters(ack)).stream();
   }
 
   @GenerateSql({ params: [], stream: true })
@@ -656,7 +655,29 @@ class UserSync extends BaseSync {
     return this.db
       .selectFrom('users')
       .select(['id', 'name', 'email', 'deletedAt', 'updateId'])
-      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .$call(this.upsertTableFilters(ack))
+      .stream();
+  }
+}
+
+class UserMetadataSync extends BaseSync {
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getDeletes(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('user_metadata_audit')
+      .select(['id', 'userId', 'key'])
+      .where('userId', '=', userId)
+      .$call(this.auditTableFilters(ack))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('user_metadata')
+      .select(['userId', 'key', 'value', 'updateId'])
+      .where('userId', '=', userId)
+      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
