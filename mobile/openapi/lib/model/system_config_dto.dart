@@ -23,6 +23,7 @@ class SystemConfigDto {
     required this.map,
     required this.metadata,
     required this.newVersionCheck,
+    required this.nightlyTasks,
     required this.notifications,
     required this.oauth,
     required this.passwordLogin,
@@ -54,6 +55,8 @@ class SystemConfigDto {
   SystemConfigMetadataDto metadata;
 
   SystemConfigNewVersionCheckDto newVersionCheck;
+
+  SystemConfigNightlyTasksDto nightlyTasks;
 
   SystemConfigNotificationsDto notifications;
 
@@ -87,6 +90,7 @@ class SystemConfigDto {
     other.map == map &&
     other.metadata == metadata &&
     other.newVersionCheck == newVersionCheck &&
+    other.nightlyTasks == nightlyTasks &&
     other.notifications == notifications &&
     other.oauth == oauth &&
     other.passwordLogin == passwordLogin &&
@@ -111,6 +115,7 @@ class SystemConfigDto {
     (map.hashCode) +
     (metadata.hashCode) +
     (newVersionCheck.hashCode) +
+    (nightlyTasks.hashCode) +
     (notifications.hashCode) +
     (oauth.hashCode) +
     (passwordLogin.hashCode) +
@@ -123,7 +128,7 @@ class SystemConfigDto {
     (user.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[backup=$backup, ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user]';
+  String toString() => 'SystemConfigDto[backup=$backup, ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, nightlyTasks=$nightlyTasks, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -137,6 +142,7 @@ class SystemConfigDto {
       json[r'map'] = this.map;
       json[r'metadata'] = this.metadata;
       json[r'newVersionCheck'] = this.newVersionCheck;
+      json[r'nightlyTasks'] = this.nightlyTasks;
       json[r'notifications'] = this.notifications;
       json[r'oauth'] = this.oauth;
       json[r'passwordLogin'] = this.passwordLogin;
@@ -169,6 +175,7 @@ class SystemConfigDto {
         map: SystemConfigMapDto.fromJson(json[r'map'])!,
         metadata: SystemConfigMetadataDto.fromJson(json[r'metadata'])!,
         newVersionCheck: SystemConfigNewVersionCheckDto.fromJson(json[r'newVersionCheck'])!,
+        nightlyTasks: SystemConfigNightlyTasksDto.fromJson(json[r'nightlyTasks'])!,
         notifications: SystemConfigNotificationsDto.fromJson(json[r'notifications'])!,
         oauth: SystemConfigOAuthDto.fromJson(json[r'oauth'])!,
         passwordLogin: SystemConfigPasswordLoginDto.fromJson(json[r'passwordLogin'])!,
@@ -236,6 +243,7 @@ class SystemConfigDto {
     'map',
     'metadata',
     'newVersionCheck',
+    'nightlyTasks',
     'notifications',
     'oauth',
     'passwordLogin',

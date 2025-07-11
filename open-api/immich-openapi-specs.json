@@ -14281,6 +14281,9 @@
           "newVersionCheck": {
             "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
           },
+          "nightlyTasks": {
+            "$ref": "#/components/schemas/SystemConfigNightlyTasksDto"
+          },
           "notifications": {
             "$ref": "#/components/schemas/SystemConfigNotificationsDto"
           },
@@ -14323,6 +14326,7 @@
           "map",
           "metadata",
           "newVersionCheck",
+          "nightlyTasks",
           "notifications",
           "oauth",
           "passwordLogin",
@@ -14750,6 +14754,37 @@
         },
         "required": [
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigNightlyTasksDto": {
+        "properties": {
+          "clusterNewFaces": {
+            "type": "boolean"
+          },
+          "databaseCleanup": {
+            "type": "boolean"
+          },
+          "generateMemories": {
+            "type": "boolean"
+          },
+          "missingThumbnails": {
+            "type": "boolean"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "syncQuotaUsage": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "clusterNewFaces",
+          "databaseCleanup",
+          "generateMemories",
+          "missingThumbnails",
+          "startTime",
+          "syncQuotaUsage"
         ],
         "type": "object"
       },

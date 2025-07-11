@@ -634,6 +634,8 @@ class ApiClient {
           return SystemConfigMetadataDto.fromJson(value);
         case 'SystemConfigNewVersionCheckDto':
           return SystemConfigNewVersionCheckDto.fromJson(value);
+        case 'SystemConfigNightlyTasksDto':
+          return SystemConfigNightlyTasksDto.fromJson(value);
         case 'SystemConfigNotificationsDto':
           return SystemConfigNotificationsDto.fromJson(value);
         case 'SystemConfigOAuthDto':
