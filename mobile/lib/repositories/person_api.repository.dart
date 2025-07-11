@@ -13,19 +13,19 @@ class PersonApiRepository extends ApiRepository {
 
   PersonApiRepository(this._api);
 
-  Future<List<Person>> getAll() async {
+  Future<List<PersonDto>> getAll() async {
     final dto = await checkNull(_api.getAllPeople());
     return dto.people.map(_toPerson).toList();
   }
 
-  Future<Person> update(String id, {String? name}) async {
+  Future<PersonDto> update(String id, {String? name}) async {
     final dto = await checkNull(
       _api.updatePerson(id, PersonUpdateDto(name: name)),
     );
     return _toPerson(dto);
   }
 
-  static Person _toPerson(PersonResponseDto dto) => Person(
+  static PersonDto _toPerson(PersonResponseDto dto) => PersonDto(
         birthDate: dto.birthDate,
         id: dto.id,
         isHidden: dto.isHidden,

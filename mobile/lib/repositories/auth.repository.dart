@@ -43,6 +43,7 @@ class AuthRepository extends DatabaseRepository {
         _drift.memoryEntity.deleteAll(),
         _drift.memoryAssetEntity.deleteAll(),
         _drift.stackEntity.deleteAll(),
+        _drift.personEntity.deleteAll(),
       ]);
     });
   }

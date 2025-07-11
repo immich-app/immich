@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
@@ -458,6 +459,48 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     } catch (error, stack) {
       _logger.severe('Error: deleteStacksV1 - $debugLabel', error, stack);
       rethrow;
+    }
+  }
+
+  Future<void> updatePeopleV1(Iterable<SyncPersonV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final person in data) {
+          final companion = PersonEntityCompanion(
+            createdAt: Value(person.createdAt),
+            updatedAt: Value(person.updatedAt),
+            ownerId: Value(person.ownerId),
+            name: Value(person.name),
+            faceAssetId: Value(person.faceAssetId),
+            thumbnailPath: Value(person.thumbnailPath),
+            isFavorite: Value(person.isFavorite),
+            isHidden: Value(person.isHidden),
+            color: Value(person.color),
+            birthDate: Value(person.birthDate),
+          );
+
+          batch.insert(
+            _db.personEntity,
+            companion.copyWith(id: Value(person.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updatePeopleV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deletePeopleV1(
+    Iterable<SyncPersonDeleteV1> data,
+  ) async {
+    try {
+      await _db.personEntity.deleteWhere(
+        (row) => row.id.isIn(data.map((e) => e.personId)),
+      );
+    } catch (error, stack) {
+      _logger.severe('Error: deletePeopleV1', error, stack);
     }
   }
 }
