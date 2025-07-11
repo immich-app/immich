@@ -230,13 +230,15 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> removeFromAlbum(
-      ActionSource source, String albumId) async {
-    final ids = _getOwnedRemoteForSource(source);
+    ActionSource source,
+    String albumId,
+  ) async {
+    final ids = _getRemoteIdsForSource(source);
     try {
-      await _service.removeFromLockFolder(ids);
-      return ActionResult(count: ids.length, success: true);
+      final removedCount = await _service.removeFromAlbum(ids, albumId);
+      return ActionResult(count: removedCount, success: true);
     } catch (error, stack) {
-      _logger.severe('Failed to remove assets from lock folder', error, stack);
+      _logger.severe('Failed to remove assets from album', error, stack);
       return ActionResult(
         count: ids.length,
         success: false,
