@@ -8,10 +8,10 @@ import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class UnarchiveActionButton extends ConsumerWidget {
+class UnArchiveActionButton extends ConsumerWidget {
   final ActionSource source;
 
-  const UnarchiveActionButton({super.key, required this.source});
+  const UnArchiveActionButton({super.key, required this.source});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
