@@ -4,11 +4,7 @@ RUN apk add --no-cache tini make
 
 USER node
 WORKDIR /usr/src/app
-COPY --chown=node:node ./web ./web/
-COPY --chown=node:node ./open-api ./open-api/
-COPY --chown=node:node Makefile ./
-
-WORKDIR /usr/src/app/web
+COPY --chown=node:node package*.json ./
 RUN npm ci
 
 ENV CHOKIDAR_USEPOLLING=true
