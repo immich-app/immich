@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/websocket.repository.dart';
 import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -12,15 +13,18 @@ class SyncStreamService {
 
   final SyncApiRepository _syncApiRepository;
   final SyncStreamRepository _syncStreamRepository;
+  final WebsocketRepository _websocketRepository;
   final bool Function()? _cancelChecker;
 
   SyncStreamService({
     required SyncApiRepository syncApiRepository,
     required SyncStreamRepository syncStreamRepository,
+    required WebsocketRepository websocketRepository,
     bool Function()? cancelChecker,
   })  : _syncApiRepository = syncApiRepository,
         _syncStreamRepository = syncStreamRepository,
-        _cancelChecker = cancelChecker;
+        _cancelChecker = cancelChecker,
+        _websocketRepository = websocketRepository;
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
@@ -31,7 +35,28 @@ class SyncStreamService {
     return _syncApiRepository.streamChanges(_handleEvents);
   }
 
-  Future<void> handleWsAssetUploadReadyV1(dynamic data) async {
+  Completer<void>? _isolateCompleter;
+
+  Future<void> connectWebsocketIsolate() async {
+    _websocketRepository.assetUploadReadyCallback((data) {
+      _handleAssetUploadReadyV1(data);
+    });
+
+    await _websocketRepository.connect();
+
+    // Maintain the connection. Better solution?
+    _isolateCompleter = Completer<void>();
+    return _isolateCompleter!.future;
+  }
+
+  Future<void> disconnectWebsocketIsolate() async {
+    await _websocketRepository.disconnect();
+    if (_isolateCompleter != null && !_isolateCompleter!.isCompleted) {
+      _isolateCompleter!.complete();
+    }
+  }
+
+  Future<void> _handleAssetUploadReadyV1(dynamic data) async {
     try {
       if (data is! Map<String, dynamic>) {
         return;

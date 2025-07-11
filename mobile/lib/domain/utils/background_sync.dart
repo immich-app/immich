@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
 import 'package:worker_manager/worker_manager.dart';
@@ -8,11 +9,16 @@ class BackgroundSyncManager {
   Cancelable<void>? _syncTask;
   Cancelable<void>? _deviceAlbumSyncTask;
   Cancelable<void>? _hashTask;
-
+  Cancelable<void>? _syncWebsocketTask;
   BackgroundSyncManager();
 
-  Future<void> cancel() {
+  Future<void> cancel() async {
     final futures = <Future>[];
+
+    // Gracefully disconnect websocket first
+    if (_syncWebsocketTask != null) {
+      await disconnectWebsocketIsolate();
+    }
 
     if (_syncTask != null) {
       futures.add(_syncTask!.future);
@@ -20,7 +26,7 @@ class BackgroundSyncManager {
     _syncTask?.cancel();
     _syncTask = null;
 
-    return Future.wait(futures);
+    await Future.wait(futures);
   }
 
   // No need to cancel the task, as it can also be run when the user logs out
@@ -73,17 +79,34 @@ class BackgroundSyncManager {
     });
   }
 
-  Future<void> syncWebsocket(dynamic data) {
-    if (_syncTask != null) {
-      return _syncTask!.future;
+  Future<void> connectWebsocketIsolate() {
+    if (_syncWebsocketTask != null) {
+      return _syncWebsocketTask!.future;
     }
 
-    _syncTask = runInIsolateGentle(
+    _syncWebsocketTask = runInIsolateGentle(
       computation: (ref) =>
-          ref.read(syncStreamServiceProvider).handleWsAssetUploadReadyV1(data),
+          ref.read(syncStreamServiceProvider).connectWebsocketIsolate(),
     );
-    return _syncTask!.whenComplete(() {
-      _syncTask = null;
+
+    return _syncWebsocketTask!.whenComplete(() {
+      _syncWebsocketTask = null;
     });
+  }
+
+  Future<void> disconnectWebsocketIsolate() async {
+    if (_syncWebsocketTask != null) {
+      try {
+        await runInIsolateGentle(
+          computation: (ref) =>
+              ref.read(syncStreamServiceProvider).disconnectWebsocketIsolate(),
+        ).timeout(const Duration(seconds: 5));
+      } catch (e) {
+        debugPrint("Error during graceful websocket disconnect: $e");
+      }
+
+      _syncWebsocketTask?.cancel();
+      _syncWebsocketTask = null;
+    }
   }
 }

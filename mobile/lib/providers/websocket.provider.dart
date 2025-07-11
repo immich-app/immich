@@ -173,7 +173,6 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('on_asset_stack_update', _handleServerUpdates);
         socket.on('on_asset_hidden', _handleOnAssetHidden);
         socket.on('on_new_release', _handleReleaseUpdates);
-        socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
       } catch (e) {
         debugPrint("[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
       }
@@ -291,32 +290,11 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     }
   }
 
-  Future<void> _handlePendingAssetUploadReady() async {
-    final uploadReadyChanges = state.pendingChanges
-        .where((c) => c.action == PendingAction.assetUploadReady)
-        .toList();
-    if (uploadReadyChanges.isNotEmpty) {
-      for (final change in uploadReadyChanges) {
-        try {
-          _ref.read(backgroundSyncProvider).syncWebsocket(change.value);
-        } catch (error) {
-          _log.severe("Error processing AssetUploadReadyV1: $error");
-        }
-      }
-      state = state.copyWith(
-        pendingChanges: state.pendingChanges
-            .whereNot((c) => uploadReadyChanges.contains(c))
-            .toList(),
-      );
-    }
-  }
-
   Future<void> handlePendingChanges() async {
     await _handlePendingUploaded();
     await _handlePendingDeletes();
     await _handlingPendingHidden();
     await _handlePendingTrashes();
-    await _handlePendingAssetUploadReady();
   }
 
   void _handleOnConfigUpdate(dynamic _) {
@@ -370,10 +348,6 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     _ref
         .read(serverInfoProvider.notifier)
         .handleNewRelease(serverVersion, releaseVersion);
-  }
-
-  void _handleSyncAssetUploadReady(dynamic data) {
-    addPendingChange(PendingAction.assetUploadReady, data);
   }
 }
 
