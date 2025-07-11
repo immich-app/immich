@@ -31,6 +31,7 @@
   let shouldChangeExpirationTime = $state(false);
   let enablePassword = $state(false);
 
+  const valid = $derived(!enablePassword || (enablePassword && password.length > 0));
   const expirationOptions: [number, Intl.RelativeTimeFormatUnit][] = [
     [30, 'minutes'],
     [1, 'hour'],
@@ -56,6 +57,13 @@
   $effect(() => {
     if (!showMetadata) {
       allowDownload = false;
+    }
+  });
+
+  enablePassword = true;
+  $effect(() => {
+    if (!enablePassword) {
+      password = '';
     }
   });
 
@@ -184,6 +192,7 @@
             label={$t('password')}
             bind:value={password}
             disabled={!enablePassword}
+            required={enablePassword}
           />
         </div>
 
@@ -227,9 +236,9 @@
 
   <ModalFooter>
     {#if editingLink}
-      <Button fullWidth onclick={handleEditLink}>{$t('confirm')}</Button>
+      <Button fullWidth onclick={handleEditLink} disabled={!valid}>{$t('confirm')}</Button>
     {:else}
-      <Button fullWidth onclick={handleCreateSharedLink}>{$t('create_link')}</Button>
+      <Button fullWidth onclick={handleCreateSharedLink} disabled={!valid}>{$t('create_link')}</Button>
     {/if}
   </ModalFooter>
 </Modal>
