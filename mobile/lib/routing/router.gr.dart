@@ -271,54 +271,6 @@ class AlbumsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [AllMotionPhotosPage]
-class AllMotionPhotosRoute extends PageRouteInfo<void> {
-  const AllMotionPhotosRoute({List<PageRouteInfo>? children})
-      : super(AllMotionPhotosRoute.name, initialChildren: children);
-
-  static const String name = 'AllMotionPhotosRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const AllMotionPhotosPage();
-    },
-  );
-}
-
-/// generated route for
-/// [AllPeoplePage]
-class AllPeopleRoute extends PageRouteInfo<void> {
-  const AllPeopleRoute({List<PageRouteInfo>? children})
-      : super(AllPeopleRoute.name, initialChildren: children);
-
-  static const String name = 'AllPeopleRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const AllPeoplePage();
-    },
-  );
-}
-
-/// generated route for
-/// [AllPlacesPage]
-class AllPlacesRoute extends PageRouteInfo<void> {
-  const AllPlacesRoute({List<PageRouteInfo>? children})
-      : super(AllPlacesRoute.name, initialChildren: children);
-
-  static const String name = 'AllPlacesRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const AllPlacesPage();
-    },
-  );
-}
-
-/// generated route for
 /// [AllVideosPage]
 class AllVideosRoute extends PageRouteInfo<void> {
   const AllVideosRoute({List<PageRouteInfo>? children})
@@ -851,6 +803,22 @@ class DriftPartnerDetailRouteArgs {
   String toString() {
     return 'DriftPartnerDetailRouteArgs{key: $key, partnerId: $partnerId}';
   }
+}
+
+/// generated route for
+/// [DriftPeoplePage]
+class DriftPeopleRoute extends PageRouteInfo<void> {
+  const DriftPeopleRoute({List<PageRouteInfo>? children})
+      : super(DriftPeopleRoute.name, initialChildren: children);
+
+  static const String name = 'DriftPeopleRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftPeoplePage();
+    },
+  );
 }
 
 /// generated route for

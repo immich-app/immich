@@ -9,7 +9,7 @@ class DriftPersonRepository extends DriftDatabaseRepository {
 
   Future<List<Person>> getAll(String userId) {
     final query = _db.personEntity.select()
-      ..where((e) => e.ownerId.equals(userId));
+      ..where((row) => row.ownerId.equals(userId) & row.isHidden.equals(false));
 
     return query.map((person) {
       return person.toDto();

@@ -17,7 +17,7 @@ class DriftVideoPage extends StatelessWidget {
           (ref) {
             final user = ref.watch(currentUserProvider);
             if (user == null) {
-              throw Exception('User must be logged in to video');
+              throw Exception('User must be logged in to access video');
             }
 
             final timelineService =

@@ -8,7 +8,6 @@ import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_album_thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/widgets/common/local_album_sliver_app_bar.dart';
 
 @RoutePage()
 class DriftLocalAlbumsPage extends StatelessWidget {
@@ -19,9 +18,31 @@ class DriftLocalAlbumsPage extends StatelessWidget {
     return const Scaffold(
       body: CustomScrollView(
         slivers: [
-          LocalAlbumsSliverAppBar(),
+          _LocalAlbumsSliverAppBar(),
           _AlbumList(),
         ],
+      ),
+    );
+  }
+}
+
+class _LocalAlbumsSliverAppBar extends StatelessWidget {
+  const _LocalAlbumsSliverAppBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      floating: true,
+      pinned: true,
+      snap: false,
+      backgroundColor: context.colorScheme.surfaceContainer,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(5)),
+      ),
+      automaticallyImplyLeading: true,
+      centerTitle: true,
+      title: Text(
+        "on_this_device".t(context: context),
       ),
     );
   }
