@@ -83,6 +83,18 @@ class AssetApiRepository extends ApiRepository {
     );
   }
 
+  Future<void> updateDateTime(
+    List<String> ids,
+    String dateTime,
+  ) async {
+    return _api.updateAssets(
+      AssetBulkUpdateDto(
+        ids: ids,
+        dateTimeOriginal: dateTime,
+      ),
+    );
+  }
+
   _mapVisibility(AssetVisibilityEnum visibility) => switch (visibility) {
         AssetVisibilityEnum.timeline => AssetVisibility.timeline,
         AssetVisibilityEnum.hidden => AssetVisibility.hidden,

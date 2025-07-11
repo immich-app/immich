@@ -49,6 +49,7 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
         isFavorite: isFavorite,
         height: height,
         width: width,
+        localDateTime: localDateTime,
         thumbHash: thumbHash,
         visibility: visibility,
         localId: null,

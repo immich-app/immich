@@ -228,6 +228,28 @@ class ActionNotifier extends Notifier<void> {
       );
     }
   }
+
+  Future<ActionResult?> editDateTime(
+    ActionSource source,
+    BuildContext context,
+  ) async {
+    final ids = _getOwnedRemoteForSource(source);
+    try {
+      final isEdited = await _service.editDateTime(ids, context);
+      if (!isEdited) {
+        return null;
+      }
+
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to edit date and time for assets', error, stack);
+      return ActionResult(
+        count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
 }
 
 extension on Iterable<RemoteAsset> {
