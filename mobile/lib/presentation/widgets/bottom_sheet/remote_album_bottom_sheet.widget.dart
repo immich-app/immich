@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
@@ -20,7 +21,8 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class RemoteAlbumBottomSheet extends ConsumerWidget {
-  const RemoteAlbumBottomSheet({super.key});
+  final RemoteAlbum album;
+  const RemoteAlbumBottomSheet({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,9 +33,10 @@ class RemoteAlbumBottomSheet extends ConsumerWidget {
 
     return BaseBottomSheet(
       initialChildSize: 0.25,
+      maxChildSize: 0.4,
       shouldCloseOnMinExtent: false,
       actions: [
-        if (multiselect.isEnabled) const ShareActionButton(),
+        const ShareActionButton(),
         if (multiselect.hasRemote) ...[
           const ShareLinkActionButton(source: ActionSource.timeline),
           const ArchiveActionButton(source: ActionSource.timeline),
@@ -55,7 +58,10 @@ class RemoteAlbumBottomSheet extends ConsumerWidget {
           const DeleteLocalActionButton(),
           const UploadActionButton(),
         ],
-        const RemoveFromAlbumActionButton(),
+        RemoveFromAlbumActionButton(
+          source: ActionSource.timeline,
+          albumId: album.id,
+        ),
       ],
     );
   }

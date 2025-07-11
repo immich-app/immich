@@ -32,7 +32,9 @@ class RemoteAlbumPage extends StatelessWidget {
           title: album.name,
           icon: Icons.photo_album_outlined,
         ),
-        bottomSheet: const RemoteAlbumBottomSheet(),
+        bottomSheet: RemoteAlbumBottomSheet(
+          album: album,
+        ),
       ),
     );
   }

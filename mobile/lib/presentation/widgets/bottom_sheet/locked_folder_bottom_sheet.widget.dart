@@ -6,23 +6,21 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/download_actio
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
-import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class LockedFolderBottomSheet extends ConsumerWidget {
   const LockedFolderBottomSheet({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final multiselect = ref.watch(multiSelectProvider);
-
-    return BaseBottomSheet(
+    return const BaseBottomSheet(
       initialChildSize: 0.25,
+      maxChildSize: 0.4,
       shouldCloseOnMinExtent: false,
       actions: [
-        if (multiselect.isEnabled) const ShareActionButton(),
-        const DownloadActionButton(),
-        const DeletePermanentActionButton(source: ActionSource.timeline),
-        const RemoveFromLockFolderActionButton(source: ActionSource.timeline),
+        ShareActionButton(),
+        DownloadActionButton(),
+        DeletePermanentActionButton(source: ActionSource.timeline),
+        RemoveFromLockFolderActionButton(source: ActionSource.timeline),
       ],
     );
   }

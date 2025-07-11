@@ -36,7 +36,9 @@ class DriftPartnerDetailPage extends StatelessWidget {
           icon: Icons.person_outline,
         ),
         topSliverWidget: _InfoBox(
-          onTap: () => {},
+          onTap: () => {
+            // TODO: Create DriftUserProvider/DriftUserService to handle this action
+          },
           inTimeline: partner.inTimeline,
         ),
         topSliverWidgetHeight: 110,
