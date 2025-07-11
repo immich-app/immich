@@ -237,7 +237,7 @@ class SearchFilter {
   String? filename;
   String? description;
   String? language;
-  Set<Person> people;
+  Set<PersonDto> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
   SearchDateFilter date;
@@ -282,7 +282,7 @@ class SearchFilter {
     String? filename,
     String? description,
     String? language,
-    Set<Person>? people,
+    Set<PersonDto>? people,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
     SearchDateFilter? date,

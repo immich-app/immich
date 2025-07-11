@@ -9,7 +9,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'people.provider.g.dart';
 
 @riverpod
-Future<List<Person>> getAllPeople(
+Future<List<PersonDto>> getAllPeople(
   Ref ref,
 ) async {
   final PersonService personService = ref.read(personServiceProvider);

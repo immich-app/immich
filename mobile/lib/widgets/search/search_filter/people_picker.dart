@@ -14,8 +14,8 @@ import 'package:immich_mobile/widgets/common/search_field.dart';
 class PeoplePicker extends HookConsumerWidget {
   const PeoplePicker({super.key, required this.onSelect, this.filter});
 
-  final Function(Set<Person>) onSelect;
-  final Set<Person>? filter;
+  final Function(Set<PersonDto>) onSelect;
+  final Set<PersonDto>? filter;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,7 +24,7 @@ class PeoplePicker extends HookConsumerWidget {
     final searchQuery = useState('');
     final people = ref.watch(getAllPeopleProvider);
     final headers = ApiService.getRequestHeaders();
-    final selectedPeople = useState<Set<Person>>(filter ?? {});
+    final selectedPeople = useState<Set<PersonDto>>(filter ?? {});
 
     return Column(
       children: [
