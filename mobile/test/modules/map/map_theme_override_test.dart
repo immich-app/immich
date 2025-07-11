@@ -24,8 +24,8 @@ void main() {
   late Isar db;
 
   setUpAll(() async {
-    TestUtils.init();
     db = await TestUtils.initIsar();
+    TestUtils.init();
   });
 
   setUp(() async {
