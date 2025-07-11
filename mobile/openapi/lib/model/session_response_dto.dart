@@ -19,6 +19,7 @@ class SessionResponseDto {
     required this.deviceType,
     this.expiresAt,
     required this.id,
+    required this.isPendingSyncReset,
     required this.updatedAt,
   });
 
@@ -40,6 +41,8 @@ class SessionResponseDto {
 
   String id;
 
+  bool isPendingSyncReset;
+
   String updatedAt;
 
   @override
@@ -50,6 +53,7 @@ class SessionResponseDto {
     other.deviceType == deviceType &&
     other.expiresAt == expiresAt &&
     other.id == id &&
+    other.isPendingSyncReset == isPendingSyncReset &&
     other.updatedAt == updatedAt;
 
   @override
@@ -61,10 +65,11 @@ class SessionResponseDto {
     (deviceType.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (id.hashCode) +
+    (isPendingSyncReset.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SessionResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, updatedAt=$updatedAt]';
+  String toString() => 'SessionResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -78,6 +83,7 @@ class SessionResponseDto {
     //  json[r'expiresAt'] = null;
     }
       json[r'id'] = this.id;
+      json[r'isPendingSyncReset'] = this.isPendingSyncReset;
       json[r'updatedAt'] = this.updatedAt;
     return json;
   }
@@ -97,6 +103,7 @@ class SessionResponseDto {
         deviceType: mapValueOfType<String>(json, r'deviceType')!,
         expiresAt: mapValueOfType<String>(json, r'expiresAt'),
         id: mapValueOfType<String>(json, r'id')!,
+        isPendingSyncReset: mapValueOfType<bool>(json, r'isPendingSyncReset')!,
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
       );
     }
@@ -150,6 +157,7 @@ class SessionResponseDto {
     'deviceOS',
     'deviceType',
     'id',
+    'isPendingSyncReset',
     'updatedAt',
   };
 }
