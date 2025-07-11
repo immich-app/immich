@@ -1503,6 +1503,7 @@
   "remove_from_album": "Remove from album",
   "remove_from_favorites": "Remove from favorites",
   "remove_from_lock_folder_action_prompt": "{count} removed from the locked folder",
+  "remove_from_album_action_prompt": "{count} removed from the album",
   "remove_from_locked_folder": "Remove from locked folder",
   "remove_from_locked_folder_confirmation": "Are you sure you want to move these photos and videos out of the locked folder? They will be visible in your library.",
   "remove_from_shared_link": "Remove from shared link",

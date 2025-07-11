@@ -228,6 +228,22 @@ class ActionNotifier extends Notifier<void> {
       );
     }
   }
+
+  Future<ActionResult> removeFromAlbum(
+      ActionSource source, String albumId) async {
+    final ids = _getOwnedRemoteForSource(source);
+    try {
+      await _service.removeFromLockFolder(ids);
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to remove assets from lock folder', error, stack);
+      return ActionResult(
+        count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
 }
 
 extension on Iterable<RemoteAsset> {
