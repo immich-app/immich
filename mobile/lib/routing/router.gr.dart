@@ -854,6 +854,22 @@ class DriftPartnerDetailRouteArgs {
 }
 
 /// generated route for
+/// [DriftPeoplePage]
+class DriftPeopleRoute extends PageRouteInfo<void> {
+  const DriftPeopleRoute({List<PageRouteInfo>? children})
+      : super(DriftPeopleRoute.name, initialChildren: children);
+
+  static const String name = 'DriftPeopleRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftPeoplePage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftRecentlyTakenPage]
 class DriftRecentlyTakenRoute extends PageRouteInfo<void> {
   const DriftRecentlyTakenRoute({List<PageRouteInfo>? children})

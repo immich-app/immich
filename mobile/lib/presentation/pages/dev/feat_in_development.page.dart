@@ -137,6 +137,11 @@ final _features = [
     icon: Icons.schedule_outlined,
     onTap: (ctx, _) => ctx.pushRoute(const DriftRecentlyTakenRoute()),
   ),
+  _Feature(
+    name: 'People',
+    icon: Icons.people_outline_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftPeopleRoute()),
+  ),
 ];
 
 @RoutePage()

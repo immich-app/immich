@@ -549,6 +549,21 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
     return query.map((row) => row.toDto()).get();
   }
+
+  Stream<List<Bucket>> watchPeopleBucket(
+    String userId, {
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+  }) {
+
+  }
+
+  Future<List<BaseAsset>> getPeopleBucketAssets(
+    String userId, {
+    required int offset,
+    required int count,
+  }) {
+    
+  }
 }
 
 extension on Expression<DateTime> {
