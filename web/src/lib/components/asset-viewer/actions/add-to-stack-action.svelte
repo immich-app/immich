@@ -17,8 +17,6 @@
 
   const handleAddUploadToStack = async () => {
     const newAssetIds = await openFileUploadDialog({ multiple: true });
-
-    // Set the primary asset id to the original stacks primary asset if it exists
     const primaryAssetId = stack?.primaryAssetId ?? asset.id;
 
     // If the original asset is already in a stack, the stack needs to be
@@ -28,18 +26,16 @@
       await deleteStack({ id: stack.id });
     }
 
-    // First asset in the list is the primary asset
-    // Set ensures that there are no duplicates and preserves order
-    const assetIds = new Set([
+    // First asset in the list will become the new primary asset.
+    const assetIds = [
       primaryAssetId,
-      asset.id,
-      ...(stack?.assets.map((asset) => asset.id) ?? []),
+      ...(stack?.assets.map((asset) => asset.id).filter((id) => id !== primaryAssetId) ?? []),
       ...newAssetIds,
-    ]);
+    ];
 
     const newStack = await createStack({
       stackCreateDto: {
-        assetIds: [...assetIds],
+        assetIds,
       },
     });
 
