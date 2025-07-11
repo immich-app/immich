@@ -41,6 +41,7 @@
     onReload?: (() => void) | undefined;
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
+    arrowNavigation?: boolean;
   }
 
   let {
@@ -58,6 +59,7 @@
     onReload = undefined,
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
+    arrowNavigation = true,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAssetId } = assetViewingStore;
@@ -300,8 +302,12 @@
         { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets() },
-        { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
-        { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
+        ...(arrowNavigation
+          ? [
+              { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
+              { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
+            ]
+          : []),
       ];
 
       if (assetInteraction.selectionActive) {
