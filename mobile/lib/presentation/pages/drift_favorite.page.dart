@@ -1,16 +1,16 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/bottom_sheet/favorite_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 
 @RoutePage()
-class RemoteTimelinePage extends StatelessWidget {
-  final RemoteAlbum album;
-
-  const RemoteTimelinePage({super.key, required this.album});
+class DriftFavoritePage extends StatelessWidget {
+  const DriftFavoritePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,9 +18,13 @@ class RemoteTimelinePage extends StatelessWidget {
       overrides: [
         timelineServiceProvider.overrideWith(
           (ref) {
-            final timelineService = ref
-                .watch(timelineFactoryProvider)
-                .remoteAlbum(albumId: album.id);
+            final user = ref.watch(currentUserProvider);
+            if (user == null) {
+              throw Exception('User must be logged in to access favorite');
+            }
+
+            final timelineService =
+                ref.watch(timelineFactoryProvider).favorite(user.id);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },
@@ -28,9 +32,10 @@ class RemoteTimelinePage extends StatelessWidget {
       ],
       child: Timeline(
         appBar: MesmerizingSliverAppBar(
-          title: album.name,
-          icon: Icons.photo_album_outlined,
+          title: 'favorites'.t(context: context),
+          icon: Icons.favorite_outline,
         ),
+        bottomSheet: const FavoriteBottomSheet(),
       ),
     );
   }

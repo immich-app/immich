@@ -10,8 +10,10 @@ import {
   MemoryType,
   SyncEntityType,
   SyncRequestType,
+  UserMetadataKey,
 } from 'src/enum';
-import { Optional, ValidateDate, ValidateUUID } from 'src/validation';
+import { UserMetadata } from 'src/types';
+import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class AssetFullSyncDto {
   @ValidateUUID({ optional: true })
@@ -254,7 +256,23 @@ export class SyncPersonDeleteV1 {
 }
 
 @ExtraModel()
+export class SyncUserMetadataV1 {
+  userId!: string;
+  key!: string;
+  value!: UserMetadata[UserMetadataKey];
+}
+
+@ExtraModel()
+export class SyncUserMetadataDeleteV1 {
+  userId!: string;
+  key!: string;
+}
+
+@ExtraModel()
 export class SyncAckV1 {}
+
+@ExtraModel()
+export class SyncResetV1 {}
 
 export type SyncItem = {
   [SyncEntityType.UserV1]: SyncUserV1;
@@ -292,13 +310,19 @@ export type SyncItem = {
   [SyncEntityType.PartnerStackV1]: SyncStackV1;
   [SyncEntityType.PersonV1]: SyncPersonV1;
   [SyncEntityType.PersonDeleteV1]: SyncPersonDeleteV1;
+  [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
+  [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;
   [SyncEntityType.SyncAckV1]: SyncAckV1;
+  [SyncEntityType.SyncResetV1]: SyncResetV1;
 };
 
 export class SyncStreamDto {
   @IsEnum(SyncRequestType, { each: true })
   @ApiProperty({ enumName: 'SyncRequestType', enum: SyncRequestType, isArray: true })
   types!: SyncRequestType[];
+
+  @ValidateBoolean({ optional: true })
+  reset?: boolean;
 }
 
 export class SyncAckDto {

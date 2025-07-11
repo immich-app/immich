@@ -6024,6 +6024,56 @@
         "tags": [
           "Sessions"
         ]
+      },
+      "put": {
+        "operationId": "updateSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sessions"
+        ]
       }
     },
     "/sessions/{id}/lock": {
@@ -12808,6 +12858,9 @@
           "id": {
             "type": "string"
           },
+          "isPendingSyncReset": {
+            "type": "boolean"
+          },
           "token": {
             "type": "string"
           },
@@ -12821,6 +12874,7 @@
           "deviceOS",
           "deviceType",
           "id",
+          "isPendingSyncReset",
           "token",
           "updatedAt"
         ],
@@ -12846,6 +12900,9 @@
           "id": {
             "type": "string"
           },
+          "isPendingSyncReset": {
+            "type": "boolean"
+          },
           "updatedAt": {
             "type": "string"
           }
@@ -12856,6 +12913,7 @@
           "deviceOS",
           "deviceType",
           "id",
+          "isPendingSyncReset",
           "updatedAt"
         ],
         "type": "object"
@@ -12868,6 +12926,14 @@
           "pinCode": {
             "example": "123456",
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SessionUpdateDto": {
+        "properties": {
+          "isPendingSyncReset": {
+            "type": "boolean"
           }
         },
         "type": "object"
@@ -13854,7 +13920,10 @@
           "StackDeleteV1",
           "PersonV1",
           "PersonDeleteV1",
-          "SyncAckV1"
+          "UserMetadataV1",
+          "UserMetadataDeleteV1",
+          "SyncAckV1",
+          "SyncResetV1"
         ],
         "type": "string"
       },
@@ -14088,9 +14157,14 @@
           "PartnerStacksV1",
           "StacksV1",
           "UsersV1",
-          "PeopleV1"
+          "PeopleV1",
+          "UserMetadataV1"
         ],
         "type": "string"
+      },
+      "SyncResetV1": {
+        "properties": {},
+        "type": "object"
       },
       "SyncStackDeleteV1": {
         "properties": {
@@ -14134,6 +14208,9 @@
       },
       "SyncStreamDto": {
         "properties": {
+          "reset": {
+            "type": "boolean"
+          },
           "types": {
             "items": {
               "$ref": "#/components/schemas/SyncRequestType"
@@ -14154,6 +14231,40 @@
         },
         "required": [
           "userId"
+        ],
+        "type": "object"
+      },
+      "SyncUserMetadataDeleteV1": {
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "userId"
+        ],
+        "type": "object"
+      },
+      "SyncUserMetadataV1": {
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "key",
+          "userId",
+          "value"
         ],
         "type": "object"
       },

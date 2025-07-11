@@ -57,6 +57,7 @@ import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { TagClosureTable } from 'src/schema/tables/tag-closure.table';
 import { TagTable } from 'src/schema/tables/tag.table';
 import { UserAuditTable } from 'src/schema/tables/user-audit.table';
+import { UserMetadataAuditTable } from 'src/schema/tables/user-metadata-audit.table';
 import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
@@ -108,6 +109,7 @@ export class ImmichDatabase {
     TagClosureTable,
     UserAuditTable,
     UserMetadataTable,
+    UserMetadataAuditTable,
     UserTable,
     VersionHistoryTable,
   ];
@@ -128,6 +130,7 @@ export class ImmichDatabase {
     memory_assets_delete_audit,
     stacks_delete_audit,
     person_delete_audit,
+    users_delete_audit,
   ];
 
   enum = [assets_status_enum, asset_face_source_type, asset_visibility_enum];
@@ -182,6 +185,7 @@ export interface DB {
   tags: TagTable;
   tags_closure: TagClosureTable;
   user_metadata: UserMetadataTable;
+  user_metadata_audit: UserMetadataAuditTable;
   users: UserTable;
   users_audit: UserAuditTable;
   version_history: VersionHistoryTable;

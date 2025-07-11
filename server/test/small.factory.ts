@@ -58,7 +58,11 @@ const authFactory = ({
   }
 
   if (session) {
-    auth.session = { id: session.id, hasElevatedPermission: false };
+    auth.session = {
+      id: session.id,
+      isPendingSyncReset: false,
+      hasElevatedPermission: false,
+    };
   }
 
   if (sharedLink) {
@@ -131,6 +135,7 @@ const sessionFactory = (session: Partial<Session> = {}) => ({
   expiresAt: null,
   userId: newUuid(),
   pinExpiresAt: newDate(),
+  isPendingSyncReset: false,
   ...session,
 });
 

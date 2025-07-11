@@ -19,6 +19,7 @@ const table1: DatabaseTable = {
     },
     {
       name: 'column2',
+      primary: false,
       tableName: 'table1',
       type: 'character varying',
       nullable: true,
@@ -106,6 +107,7 @@ describe(transformTables.name, () => {
             columns: [
               {
                 tableName: 'table1',
+                primary: false,
                 name: 'column1',
                 type: 'character varying',
                 isArray: false,
@@ -137,6 +139,7 @@ describe(transformTables.name, () => {
               {
                 tableName: 'table1',
                 name: 'column1',
+                primary: false,
                 type: 'character varying',
                 isArray: false,
                 nullable: true,
@@ -167,6 +170,7 @@ describe(transformTables.name, () => {
             columns: [
               {
                 tableName: 'table1',
+                primary: false,
                 name: 'column1',
                 type: 'character varying',
                 length: 2,
@@ -198,6 +202,7 @@ describe(transformTables.name, () => {
             columns: [
               {
                 tableName: 'table1',
+                primary: false,
                 name: 'column1',
                 type: 'character varying',
                 isArray: true,

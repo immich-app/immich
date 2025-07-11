@@ -203,7 +203,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
 
     if (album != null) {
       context.replaceRoute(
-        RemoteTimelineRoute(album: album),
+        RemoteAlbumRoute(album: album),
       );
     }
   }
