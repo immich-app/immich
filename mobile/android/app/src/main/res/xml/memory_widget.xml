@@ -1,0 +1,9 @@
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+  android:initialLayout="@layout/glance_default_loading_layout"
+  android:minWidth="110dp"
+  android:minHeight="110dp"
+  android:resizeMode="horizontal|vertical"
+  android:updatePeriodMillis="1200000"
+  android:description="@string/memory_widget_description"
+  android:previewImage="@drawable/memory_preview"
+  />
