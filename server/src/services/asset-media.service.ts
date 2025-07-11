@@ -27,6 +27,7 @@ import { BaseService } from 'src/services/base.service';
 import { UploadFile } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
 import { asRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
+import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -150,7 +151,15 @@ export class AssetMediaService extends BaseService {
 
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
-      return { id: asset.id, status: AssetMediaStatus.CREATED };
+      return {
+        id: asset.id,
+        status: AssetMediaStatus.CREATED,
+        payload: {
+          ...asset,
+          checksum: hexOrBufferToBase64(asset.checksum),
+          thumbhash: asset.thumbhash ? hexOrBufferToBase64(asset.thumbhash) : null,
+        },
+      };
     } catch (error: any) {
       return this.handleUploadError(error, auth, file, sidecarFile);
     }
@@ -323,7 +332,21 @@ export class AssetMediaService extends BaseService {
         this.logger.error(`Error locating duplicate for checksum constraint`);
         throw new InternalServerErrorException();
       }
-      return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
+
+      const asset = await this.assetRepository.getById(duplicateId, { files: false });
+      if (!asset) {
+        return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
+      }
+
+      return {
+        status: AssetMediaStatus.DUPLICATE,
+        id: duplicateId,
+        payload: {
+          ...asset,
+          checksum: hexOrBufferToBase64(asset.checksum),
+          thumbhash: asset.thumbhash ? hexOrBufferToBase64(asset.thumbhash) : null,
+        },
+      };
     }
 
     this.logger.error(`Error uploading file ${error}`, error?.stack);
