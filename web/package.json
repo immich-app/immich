@@ -36,6 +36,7 @@
     "@photo-sphere-viewer/resolution-plugin": "^5.11.5",
     "@photo-sphere-viewer/settings-plugin": "^5.11.5",
     "@photo-sphere-viewer/video-plugin": "^5.11.5",
+    "@types/geojson": "^7946.0.16",
     "@zoom-image/core": "^0.41.0",
     "@zoom-image/svelte": "^0.3.0",
     "async-mutex": "^0.5.0",
