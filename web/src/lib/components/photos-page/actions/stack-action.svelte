@@ -4,7 +4,7 @@
   import type { OnStack, OnUnstack } from '$lib/utils/actions';
   import { deleteStack, stackAssets } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { mdiImageMinusOutline, mdiImageMultipleOutline } from '@mdi/js';
+  import { mdiImageMultipleOutline, mdiImageOffOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -42,7 +42,7 @@
 </script>
 
 {#if unstack}
-  <MenuOption text={$t('unstack')} icon={mdiImageMinusOutline} onClick={handleUnstack} />
+  <MenuOption text={$t('unstack')} icon={mdiImageOffOutline} onClick={handleUnstack} />
 {:else}
   <MenuOption text={$t('stack')} icon={mdiImageMultipleOutline} onClick={handleStack} />
 {/if}
