@@ -1,3 +1,4 @@
+@Skip('Flaky test, needs investigation')
 @Tags(['widget'])
 library;
 

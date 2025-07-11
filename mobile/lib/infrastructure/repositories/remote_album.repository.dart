@@ -98,6 +98,12 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       }
     });
   }
+
+  Future<int> removeAssets(String albumId, List<String> assetIds) {
+    return _db.remoteAlbumAssetEntity.deleteWhere(
+      (tbl) => tbl.albumId.equals(albumId) & tbl.assetId.isIn(assetIds),
+    );
+  }
 }
 
 extension on RemoteAlbumEntityData {

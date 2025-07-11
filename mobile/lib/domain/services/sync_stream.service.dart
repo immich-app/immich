@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -23,7 +24,12 @@ class SyncStreamService {
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
-  Future<void> sync() => _syncApiRepository.streamChanges(_handleEvents);
+  Future<void> sync() {
+    _logger.info("Remote sync request for userr");
+    DLog.log("Remote sync request for user");
+    // Start the sync stream and handle events
+    return _syncApiRepository.streamChanges(_handleEvents);
+  }
 
   Future<void> _handleEvents(List<SyncEvent> events, Function() abort) async {
     List<SyncEvent> items = [];

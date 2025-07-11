@@ -18,6 +18,21 @@ import 'package:immich_mobile/routing/router.dart';
 
 final _features = [
   _Feature(
+    name: 'Main Timeline',
+    icon: Icons.timeline_rounded,
+    onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
+  ),
+  _Feature(
+    name: 'Video',
+    icon: Icons.video_collection_outlined,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftVideoRoute()),
+  ),
+  _Feature(
+    name: 'Recently Taken',
+    icon: Icons.schedule_outlined,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftRecentlyTakenRoute()),
+  ),
+  _Feature(
     name: 'Selection Mode Timeline',
     icon: Icons.developer_mode_rounded,
     onTap: (ctx, ref) async {
@@ -43,22 +58,27 @@ final _features = [
     },
   ),
   _Feature(
+    name: '',
+    icon: Icons.vertical_align_center_sharp,
+    onTap: (_, __) => Future.value(),
+  ),
+  _Feature(
     name: 'Sync Local',
     icon: Icons.photo_album_rounded,
     onTap: (_, ref) => ref.read(backgroundSyncProvider).syncLocal(),
   ),
   _Feature(
-    name: 'Sync Local Full',
+    name: 'Sync Local Full (1)',
     icon: Icons.photo_library_rounded,
     onTap: (_, ref) => ref.read(backgroundSyncProvider).syncLocal(full: true),
   ),
   _Feature(
-    name: 'Hash Local Assets',
+    name: 'Hash Local Assets (2)',
     icon: Icons.numbers_outlined,
     onTap: (_, ref) => ref.read(backgroundSyncProvider).hashAssets(),
   ),
   _Feature(
-    name: 'Sync Remote',
+    name: 'Sync Remote (3)',
     icon: Icons.refresh_rounded,
     onTap: (_, ref) => ref.read(backgroundSyncProvider).syncRemote(),
   ),
@@ -68,6 +88,11 @@ final _features = [
     onTap: (_, ref) => ref
         .read(driftProvider)
         .customStatement("pragma wal_checkpoint(truncate)"),
+  ),
+  _Feature(
+    name: '',
+    icon: Icons.vertical_align_center_sharp,
+    onTap: (_, __) => Future.value(),
   ),
   _Feature(
     name: 'Clear Delta Checkpoint',
@@ -121,21 +146,6 @@ final _features = [
         await migrator.create(entity);
       }
     },
-  ),
-  _Feature(
-    name: 'Main Timeline',
-    icon: Icons.timeline_rounded,
-    onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
-  ),
-  _Feature(
-    name: 'Video',
-    icon: Icons.video_collection_outlined,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftVideoRoute()),
-  ),
-  _Feature(
-    name: 'Recently Taken',
-    icon: Icons.schedule_outlined,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftRecentlyTakenRoute()),
   ),
 ];
 

@@ -234,11 +234,11 @@ export class SyncTestContext extends MediumTestContext<SyncService> {
     });
   }
 
-  async syncStream(auth: AuthDto, types: SyncRequestType[]) {
+  async syncStream(auth: AuthDto, types: SyncRequestType[], reset?: boolean) {
     const stream = mediumFactory.syncStream();
     // Wait for 2ms to ensure all updates are available and account for setTimeout inaccuracy
     await wait(2);
-    await this.sut.stream(auth, stream, { types });
+    await this.sut.stream(auth, stream, { types, reset });
 
     return stream.getResponse();
   }
@@ -481,6 +481,7 @@ const sessionInsert = ({
   const defaults: Insertable<SessionTable> = {
     id,
     userId,
+    isPendingSyncReset: false,
     token: sha256(id),
   };
 

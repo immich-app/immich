@@ -122,17 +122,17 @@ jobs:
           IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
         run: |
           if [[ $IS_MAIN == 'true' ]]; then
-            flutter build apk --release
-            flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
+            flutter build apk --release --flavor production
+            flutter build apk --release --flavor production --split-per-abi --target-platform android-arm,android-arm64,android-x64
           else
-            flutter build apk --debug --split-per-abi --target-platform android-arm64
+            flutter build apk --debug --flavor production --split-per-abi --target-platform android-arm64
           fi
 
       - name: Publish Android Artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: release-apk-signed
-          path: mobile/build/app/outputs/flutter-apk/*.apk
+          path: mobile/build/app/outputs/flutter-apk/**/*.apk
 
       - name: Save Gradle Cache
         id: cache-gradle-save
