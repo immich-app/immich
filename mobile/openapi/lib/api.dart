@@ -272,6 +272,8 @@ part 'model/sync_stack_delete_v1.dart';
 part 'model/sync_stack_v1.dart';
 part 'model/sync_stream_dto.dart';
 part 'model/sync_user_delete_v1.dart';
+part 'model/sync_user_metadata_delete_v1.dart';
+part 'model/sync_user_metadata_v1.dart';
 part 'model/sync_user_v1.dart';
 part 'model/system_config_backups_dto.dart';
 part 'model/system_config_dto.dart';

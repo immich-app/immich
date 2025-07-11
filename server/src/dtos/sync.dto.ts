@@ -10,7 +10,9 @@ import {
   MemoryType,
   SyncEntityType,
   SyncRequestType,
+  UserMetadataKey,
 } from 'src/enum';
+import { UserMetadata } from 'src/types';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class AssetFullSyncDto {
@@ -254,6 +256,19 @@ export class SyncPersonDeleteV1 {
 }
 
 @ExtraModel()
+export class SyncUserMetadataV1 {
+  userId!: string;
+  key!: string;
+  value!: UserMetadata[UserMetadataKey];
+}
+
+@ExtraModel()
+export class SyncUserMetadataDeleteV1 {
+  userId!: string;
+  key!: string;
+}
+
+@ExtraModel()
 export class SyncAckV1 {}
 
 @ExtraModel()
@@ -295,6 +310,8 @@ export type SyncItem = {
   [SyncEntityType.PartnerStackV1]: SyncStackV1;
   [SyncEntityType.PersonV1]: SyncPersonV1;
   [SyncEntityType.PersonDeleteV1]: SyncPersonDeleteV1;
+  [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
+  [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;
   [SyncEntityType.SyncAckV1]: SyncAckV1;
   [SyncEntityType.SyncResetV1]: SyncResetV1;
 };

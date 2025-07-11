@@ -16,7 +16,8 @@ type AuditTables =
   | 'memories_audit'
   | 'memory_assets_audit'
   | 'stacks_audit'
-  | 'person_audit';
+  | 'person_audit'
+  | 'user_metadata_audit';
 type UpsertTables =
   | 'users'
   | 'partners'
@@ -27,7 +28,8 @@ type UpsertTables =
   | 'memories'
   | 'memories_assets_assets'
   | 'asset_stack'
-  | 'person';
+  | 'person'
+  | 'user_metadata';
 
 @Injectable()
 export class SyncRepository {
@@ -47,6 +49,7 @@ export class SyncRepository {
   people: PersonSync;
   stack: StackSync;
   user: UserSync;
+  userMetadata: UserMetadataSync;
 
   constructor(@InjectKysely() private db: Kysely<DB>) {
     this.album = new AlbumSync(this.db);
@@ -65,6 +68,7 @@ export class SyncRepository {
     this.people = new PersonSync(this.db);
     this.stack = new StackSync(this.db);
     this.user = new UserSync(this.db);
+    this.userMetadata = new UserMetadataSync(this.db);
   }
 }
 
@@ -641,6 +645,7 @@ class PartnerStackSync extends BaseSync {
       .stream();
   }
 }
+
 class UserSync extends BaseSync {
   @GenerateSql({ params: [], stream: true })
   getDeletes(ack?: SyncAck) {
@@ -656,6 +661,28 @@ class UserSync extends BaseSync {
     return this.db
       .selectFrom('users')
       .select(['id', 'name', 'email', 'deletedAt', 'updateId'])
+      .$call((qb) => this.upsertTableFilters(qb, ack))
+      .stream();
+  }
+}
+
+class UserMetadataSync extends BaseSync {
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getDeletes(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('user_metadata_audit')
+      .select(['id', 'userId', 'key'])
+      .where('userId', '=', userId)
+      .$call((qb) => this.auditTableFilters(qb, ack))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('user_metadata')
+      .select(['userId', 'key', 'value', 'updateId'])
+      .where('userId', '=', userId)
       .$call((qb) => this.upsertTableFilters(qb, ack))
       .stream();
   }

@@ -490,6 +490,8 @@ Class | Method | HTTP request | Description
  - [SyncStackV1](doc//SyncStackV1.md)
  - [SyncStreamDto](doc//SyncStreamDto.md)
  - [SyncUserDeleteV1](doc//SyncUserDeleteV1.md)
+ - [SyncUserMetadataDeleteV1](doc//SyncUserMetadataDeleteV1.md)
+ - [SyncUserMetadataV1](doc//SyncUserMetadataV1.md)
  - [SyncUserV1](doc//SyncUserV1.md)
  - [SystemConfigBackupsDto](doc//SystemConfigBackupsDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
