@@ -9,7 +9,13 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import 'src/schema';
-import { schemaDiff, schemaFromCode, schemaFromDatabase } from 'src/sql-tools';
+import {
+  DefaultNamingStrategy,
+  HashNamingStrategy,
+  schemaDiff,
+  schemaFromCode,
+  schemaFromDatabase,
+} from 'src/sql-tools';
 import { asPostgresConnectionConfig, getKyselyConfig } from 'src/utils/database';
 
 const main = async () => {
@@ -107,7 +113,22 @@ const compare = async () => {
   const { database } = configRepository.getEnv();
   const db = postgres(asPostgresConnectionConfig(database.config));
 
-  const source = schemaFromCode({ overrides: true });
+  const tables = new Set<string>();
+  const preferred = new DefaultNamingStrategy();
+  const fallback = new HashNamingStrategy();
+
+  const source = schemaFromCode({
+    overrides: true,
+    namingStrategy: {
+      getName(item) {
+        if ('tableName' in item && tables.has(item.tableName)) {
+          return preferred.getName(item);
+        }
+
+        return fallback.getName(item);
+      },
+    },
+  });
   const target = await schemaFromDatabase(db, {});
 
   console.log(source.warnings.join('\n'));
