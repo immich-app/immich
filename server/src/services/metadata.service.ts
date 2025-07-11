@@ -24,8 +24,8 @@ import {
 import { ArgOf } from 'src/repositories/event.repository';
 import { ReverseGeocodeResult } from 'src/repositories/map.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { ExifTable } from 'src/schema/tables/exif.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
@@ -164,7 +164,7 @@ export class MetadataService extends BaseService {
 
   private async linkLivePhotos(
     asset: { id: string; type: AssetType; ownerId: string; libraryId: string | null },
-    exifInfo: Insertable<ExifTable>,
+    exifInfo: Insertable<AssetExifTable>,
   ): Promise<void> {
     if (!exifInfo.livePhotoCID) {
       return;
@@ -242,7 +242,7 @@ export class MetadataService extends BaseService {
       }
     }
 
-    const exifData: Insertable<ExifTable> = {
+    const exifData: Insertable<AssetExifTable> = {
       assetId: asset.id,
 
       // dates

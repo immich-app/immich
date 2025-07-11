@@ -13,8 +13,9 @@ import {
   Timestamp,
 } from 'src/sql-tools';
 
-@Table({ name: 'asset_faces' })
-@Index({ name: 'IDX_asset_faces_assetId_personId', columns: ['assetId', 'personId'] })
+@Table({ name: 'asset_face' })
+// schemaFromDatabase does not preserve column order
+@Index({ name: 'asset_face_assetId_personId_idx', columns: ['assetId', 'personId'] })
 @Index({ columns: ['personId', 'assetId'] })
 export class AssetFaceTable {
   @PrimaryGeneratedColumn()

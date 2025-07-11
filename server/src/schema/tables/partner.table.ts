@@ -1,5 +1,5 @@
 import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { partners_delete_audit } from 'src/schema/functions';
+import { partner_delete_audit } from 'src/schema/functions';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
@@ -12,11 +12,11 @@ import {
   UpdateDateColumn,
 } from 'src/sql-tools';
 
-@Table('partners')
-@UpdatedAtTrigger('partners_updated_at')
+@Table('partner')
+@UpdatedAtTrigger('partner_updatedAt')
 @AfterDeleteTrigger({
   scope: 'statement',
-  function: partners_delete_audit,
+  function: partner_delete_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
 })
@@ -35,7 +35,7 @@ export class PartnerTable {
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 
-  @CreateIdColumn({ indexName: 'IDX_partners_create_id' })
+  @CreateIdColumn({ index: true })
   createId!: Generated<string>;
 
   @UpdateDateColumn()
@@ -44,6 +44,6 @@ export class PartnerTable {
   @Column({ type: 'boolean', default: false })
   inTimeline!: Generated<boolean>;
 
-  @UpdateIdColumn({ indexName: 'IDX_partners_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

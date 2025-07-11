@@ -12,8 +12,8 @@ import {
   UpdateDateColumn,
 } from 'src/sql-tools';
 
-@Table('libraries')
-@UpdatedAtTrigger('libraries_updated_at')
+@Table('library')
+@UpdatedAtTrigger('library_updatedAt')
 export class LibraryTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
@@ -42,6 +42,6 @@ export class LibraryTable {
   @Column({ type: 'timestamp with time zone', nullable: true })
   refreshedAt!: Timestamp | null;
 
-  @UpdateIdColumn({ indexName: 'IDX_libraries_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

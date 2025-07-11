@@ -34,9 +34,9 @@ import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { ExifTable } from 'src/schema/tables/exif.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { MemoryTable } from 'src/schema/tables/memory.table';
 import { PersonTable } from 'src/schema/tables/person.table';
@@ -165,7 +165,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { memoryAsset: dto, result };
   }
 
-  async newExif(dto: Insertable<ExifTable>) {
+  async newExif(dto: Insertable<AssetExifTable>) {
     const result = await this.get(AssetRepository).upsertExif(dto);
     return { result };
   }

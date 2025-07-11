@@ -13,18 +13,14 @@ import {
   UpdateDateColumn,
 } from 'src/sql-tools';
 
-@Table('asset_files')
-@Unique({ name: 'UQ_assetId_type', columns: ['assetId', 'type'] })
-@UpdatedAtTrigger('asset_files_updated_at')
+@Table('asset_file')
+@Unique({ columns: ['assetId', 'type'] })
+@UpdatedAtTrigger('asset_file_updatedAt')
 export class AssetFileTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
 
-  @ForeignKeyColumn(() => AssetTable, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-    indexName: 'IDX_asset_files_assetId',
-  })
+  @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   assetId!: string;
 
   @CreateDateColumn()
@@ -39,6 +35,6 @@ export class AssetFileTable {
   @Column()
   path!: string;
 
-  @UpdateIdColumn({ indexName: 'IDX_asset_files_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

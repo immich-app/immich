@@ -12,8 +12,8 @@ import {
   UpdateDateColumn,
 } from 'src/sql-tools';
 
-@Table('tags')
-@UpdatedAtTrigger('tags_updated_at')
+@Table('tag')
+@UpdatedAtTrigger('tag_updatedAt')
 @Unique({ columns: ['userId', 'value'] })
 export class TagTable {
   @PrimaryGeneratedColumn()
@@ -42,6 +42,6 @@ export class TagTable {
   @ForeignKeyColumn(() => TagTable, { nullable: true, onDelete: 'CASCADE' })
   parentId!: string | null;
 
-  @UpdateIdColumn({ indexName: 'IDX_tags_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

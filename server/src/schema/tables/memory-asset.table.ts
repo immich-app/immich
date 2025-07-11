@@ -1,5 +1,5 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { memory_assets_delete_audit } from 'src/schema/functions';
+import { memory_asset_delete_audit } from 'src/schema/functions';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { MemoryTable } from 'src/schema/tables/memory.table';
 import {
@@ -12,11 +12,11 @@ import {
   UpdateDateColumn,
 } from 'src/sql-tools';
 
-@Table('memories_assets_assets')
-@UpdatedAtTrigger('memory_assets_updated_at')
+@Table('memory_asset')
+@UpdatedAtTrigger('memory_asset_updatedAt')
 @AfterDeleteTrigger({
   scope: 'statement',
-  function: memory_assets_delete_audit,
+  function: memory_asset_delete_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() <= 1',
 })
@@ -33,6 +33,6 @@ export class MemoryAssetTable {
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
 
-  @UpdateIdColumn({ indexName: 'IDX_memory_assets_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

@@ -4,31 +4,31 @@
 with
   "duplicates" as (
     select
-      "assets"."duplicateId",
+      "asset"."duplicateId",
       json_agg(
-        "asset"
+        "asset2"
         order by
-          "assets"."localDateTime" asc
+          "asset"."localDateTime" asc
       ) as "assets"
     from
-      "assets"
+      "asset"
       left join lateral (
         select
-          "assets".*,
-          "exif" as "exifInfo"
+          "asset".*,
+          "asset_exif" as "exifInfo"
         from
-          "exif"
+          "asset_exif"
         where
-          "exif"."assetId" = "assets"."id"
-      ) as "asset" on true
+          "asset_exif"."assetId" = "asset"."id"
+      ) as "asset2" on true
     where
-      "assets"."visibility" in ('archive', 'timeline')
-      and "assets"."ownerId" = $1::uuid
-      and "assets"."duplicateId" is not null
-      and "assets"."deletedAt" is null
-      and "assets"."stackId" is null
+      "asset"."visibility" in ('archive', 'timeline')
+      and "asset"."ownerId" = $1::uuid
+      and "asset"."duplicateId" is not null
+      and "asset"."deletedAt" is null
+      and "asset"."stackId" is null
     group by
-      "assets"."duplicateId"
+      "asset"."duplicateId"
   ),
   "unique" as (
     select
@@ -39,13 +39,13 @@ with
       json_array_length("assets") = $2
   ),
   "removed_unique" as (
-    update "assets"
+    update "asset"
     set
       "duplicateId" = $3
     from
       "unique"
     where
-      "assets"."duplicateId" = "unique"."duplicateId"
+      "asset"."duplicateId" = "unique"."duplicateId"
   )
 select
   *
@@ -61,7 +61,7 @@ where
   )
 
 -- DuplicateRepository.delete
-update "assets"
+update "asset"
 set
   "duplicateId" = $1
 where
@@ -69,7 +69,7 @@ where
   and "duplicateId" = $3
 
 -- DuplicateRepository.deleteAll
-update "assets"
+update "asset"
 set
   "duplicateId" = $1
 where
@@ -83,19 +83,19 @@ set
 with
   "cte" as (
     select
-      "assets"."id" as "assetId",
-      "assets"."duplicateId",
+      "asset"."id" as "assetId",
+      "asset"."duplicateId",
       smart_search.embedding <=> $1 as "distance"
     from
-      "assets"
-      inner join "smart_search" on "assets"."id" = "smart_search"."assetId"
+      "asset"
+      inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
     where
-      "assets"."visibility" in ('archive', 'timeline')
-      and "assets"."ownerId" = any ($2::uuid[])
-      and "assets"."deletedAt" is null
-      and "assets"."type" = $3
-      and "assets"."id" != $4::uuid
-      and "assets"."stackId" is null
+      "asset"."visibility" in ('archive', 'timeline')
+      and "asset"."ownerId" = any ($2::uuid[])
+      and "asset"."deletedAt" is null
+      and "asset"."type" = $3
+      and "asset"."id" != $4::uuid
+      and "asset"."stackId" is null
     order by
       "distance"
     limit
@@ -110,7 +110,7 @@ where
 commit
 
 -- DuplicateRepository.merge
-update "assets"
+update "asset"
 set
 where
   (

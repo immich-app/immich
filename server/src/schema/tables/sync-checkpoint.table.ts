@@ -12,8 +12,8 @@ import {
   UpdateDateColumn,
 } from 'src/sql-tools';
 
-@Table('session_sync_checkpoints')
-@UpdatedAtTrigger('session_sync_checkpoints_updated_at')
+@Table('session_sync_checkpoint')
+@UpdatedAtTrigger('session_sync_checkpoint_updatedAt')
 export class SessionSyncCheckpointTable {
   @ForeignKeyColumn(() => SessionTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', primary: true })
   sessionId!: string;
@@ -30,6 +30,6 @@ export class SessionSyncCheckpointTable {
   @Column()
   ack!: string;
 
-  @UpdateIdColumn({ indexName: 'IDX_session_sync_checkpoints_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

@@ -14,161 +14,161 @@ select
   "activity"."id"
 from
   "activity"
-  left join "albums" on "activity"."albumId" = "albums"."id"
-  and "albums"."deletedAt" is null
+  left join "album" on "activity"."albumId" = "album"."id"
+  and "album"."deletedAt" is null
 where
   "activity"."id" in ($1)
-  and "albums"."ownerId" = $2::uuid
+  and "album"."ownerId" = $2::uuid
 
 -- AccessRepository.activity.checkCreateAccess
 select
-  "albums"."id"
+  "album"."id"
 from
-  "albums"
-  left join "albums_shared_users_users" as "albumUsers" on "albumUsers"."albumsId" = "albums"."id"
-  left join "users" on "users"."id" = "albumUsers"."usersId"
-  and "users"."deletedAt" is null
+  "album"
+  left join "album_user" as "albumUsers" on "albumUsers"."albumsId" = "album"."id"
+  left join "user" on "user"."id" = "albumUsers"."usersId"
+  and "user"."deletedAt" is null
 where
-  "albums"."id" in ($1)
-  and "albums"."isActivityEnabled" = $2
+  "album"."id" in ($1)
+  and "album"."isActivityEnabled" = $2
   and (
-    "albums"."ownerId" = $3
-    or "users"."id" = $4
+    "album"."ownerId" = $3
+    or "user"."id" = $4
   )
-  and "albums"."deletedAt" is null
+  and "album"."deletedAt" is null
 
 -- AccessRepository.album.checkOwnerAccess
 select
-  "albums"."id"
+  "album"."id"
 from
-  "albums"
+  "album"
 where
-  "albums"."id" in ($1)
-  and "albums"."ownerId" = $2
-  and "albums"."deletedAt" is null
+  "album"."id" in ($1)
+  and "album"."ownerId" = $2
+  and "album"."deletedAt" is null
 
 -- AccessRepository.album.checkSharedAlbumAccess
 select
-  "albums"."id"
+  "album"."id"
 from
-  "albums"
-  left join "albums_shared_users_users" as "albumUsers" on "albumUsers"."albumsId" = "albums"."id"
-  left join "users" on "users"."id" = "albumUsers"."usersId"
-  and "users"."deletedAt" is null
+  "album"
+  left join "album_user" on "album_user"."albumsId" = "album"."id"
+  left join "user" on "user"."id" = "album_user"."usersId"
+  and "user"."deletedAt" is null
 where
-  "albums"."id" in ($1)
-  and "albums"."deletedAt" is null
-  and "users"."id" = $2
-  and "albumUsers"."role" in ($3, $4)
+  "album"."id" in ($1)
+  and "album"."deletedAt" is null
+  and "user"."id" = $2
+  and "album_user"."role" in ($3, $4)
 
 -- AccessRepository.album.checkSharedLinkAccess
 select
-  "shared_links"."albumId"
+  "shared_link"."albumId"
 from
-  "shared_links"
+  "shared_link"
 where
-  "shared_links"."id" = $1
-  and "shared_links"."albumId" in ($2)
+  "shared_link"."id" = $1
+  and "shared_link"."albumId" in ($2)
 
 -- AccessRepository.asset.checkAlbumAccess
 select
-  "assets"."id",
-  "assets"."livePhotoVideoId"
+  "asset"."id",
+  "asset"."livePhotoVideoId"
 from
-  "albums"
-  inner join "albums_assets_assets" as "albumAssets" on "albums"."id" = "albumAssets"."albumsId"
-  inner join "assets" on "assets"."id" = "albumAssets"."assetsId"
-  and "assets"."deletedAt" is null
-  left join "albums_shared_users_users" as "albumUsers" on "albumUsers"."albumsId" = "albums"."id"
-  left join "users" on "users"."id" = "albumUsers"."usersId"
-  and "users"."deletedAt" is null
+  "album"
+  inner join "album_asset" as "albumAssets" on "album"."id" = "albumAssets"."albumsId"
+  inner join "asset" on "asset"."id" = "albumAssets"."assetsId"
+  and "asset"."deletedAt" is null
+  left join "album_user" as "albumUsers" on "albumUsers"."albumsId" = "album"."id"
+  left join "user" on "user"."id" = "albumUsers"."usersId"
+  and "user"."deletedAt" is null
 where
-  array["assets"."id", "assets"."livePhotoVideoId"] && array[$1]::uuid[]
+  array["asset"."id", "asset"."livePhotoVideoId"] && array[$1]::uuid[]
   and (
-    "albums"."ownerId" = $2
-    or "users"."id" = $3
+    "album"."ownerId" = $2
+    or "user"."id" = $3
   )
-  and "albums"."deletedAt" is null
+  and "album"."deletedAt" is null
 
 -- AccessRepository.asset.checkOwnerAccess
 select
-  "assets"."id"
+  "asset"."id"
 from
-  "assets"
+  "asset"
 where
-  "assets"."id" in ($1)
-  and "assets"."ownerId" = $2
-  and "assets"."visibility" != $3
+  "asset"."id" in ($1)
+  and "asset"."ownerId" = $2
+  and "asset"."visibility" != $3
 
 -- AccessRepository.asset.checkPartnerAccess
 select
-  "assets"."id"
+  "asset"."id"
 from
-  "partners" as "partner"
-  inner join "users" as "sharedBy" on "sharedBy"."id" = "partner"."sharedById"
+  "partner"
+  inner join "user" as "sharedBy" on "sharedBy"."id" = "partner"."sharedById"
   and "sharedBy"."deletedAt" is null
-  inner join "assets" on "assets"."ownerId" = "sharedBy"."id"
-  and "assets"."deletedAt" is null
+  inner join "asset" on "asset"."ownerId" = "sharedBy"."id"
+  and "asset"."deletedAt" is null
 where
   "partner"."sharedWithId" = $1
   and (
-    "assets"."visibility" = 'timeline'
-    or "assets"."visibility" = 'hidden'
+    "asset"."visibility" = 'timeline'
+    or "asset"."visibility" = 'hidden'
   )
-  and "assets"."id" in ($2)
+  and "asset"."id" in ($2)
 
 -- AccessRepository.asset.checkSharedLinkAccess
 select
-  "assets"."id" as "assetId",
-  "assets"."livePhotoVideoId" as "assetLivePhotoVideoId",
+  "asset"."id" as "assetId",
+  "asset"."livePhotoVideoId" as "assetLivePhotoVideoId",
   "albumAssets"."id" as "albumAssetId",
   "albumAssets"."livePhotoVideoId" as "albumAssetLivePhotoVideoId"
 from
-  "shared_links"
-  left join "albums" on "albums"."id" = "shared_links"."albumId"
-  and "albums"."deletedAt" is null
-  left join "shared_link__asset" on "shared_link__asset"."sharedLinksId" = "shared_links"."id"
-  left join "assets" on "assets"."id" = "shared_link__asset"."assetsId"
-  and "assets"."deletedAt" is null
-  left join "albums_assets_assets" on "albums_assets_assets"."albumsId" = "albums"."id"
-  left join "assets" as "albumAssets" on "albumAssets"."id" = "albums_assets_assets"."assetsId"
+  "shared_link"
+  left join "album" on "album"."id" = "shared_link"."albumId"
+  and "album"."deletedAt" is null
+  left join "shared_link_asset" on "shared_link_asset"."sharedLinksId" = "shared_link"."id"
+  left join "asset" on "asset"."id" = "shared_link_asset"."assetsId"
+  and "asset"."deletedAt" is null
+  left join "album_asset" on "album_asset"."albumsId" = "album"."id"
+  left join "asset" as "albumAssets" on "albumAssets"."id" = "album_asset"."assetsId"
   and "albumAssets"."deletedAt" is null
 where
-  "shared_links"."id" = $1
+  "shared_link"."id" = $1
   and array[
-    "assets"."id",
-    "assets"."livePhotoVideoId",
+    "asset"."id",
+    "asset"."livePhotoVideoId",
     "albumAssets"."id",
     "albumAssets"."livePhotoVideoId"
   ] && array[$2]::uuid[]
 
 -- AccessRepository.authDevice.checkOwnerAccess
 select
-  "sessions"."id"
+  "session"."id"
 from
-  "sessions"
+  "session"
 where
-  "sessions"."userId" = $1
-  and "sessions"."id" in ($2)
+  "session"."userId" = $1
+  and "session"."id" in ($2)
 
 -- AccessRepository.memory.checkOwnerAccess
 select
-  "memories"."id"
+  "memory"."id"
 from
-  "memories"
+  "memory"
 where
-  "memories"."id" in ($1)
-  and "memories"."ownerId" = $2
-  and "memories"."deletedAt" is null
+  "memory"."id" in ($1)
+  and "memory"."ownerId" = $2
+  and "memory"."deletedAt" is null
 
 -- AccessRepository.notification.checkOwnerAccess
 select
-  "notifications"."id"
+  "notification"."id"
 from
-  "notifications"
+  "notification"
 where
-  "notifications"."id" in ($1)
-  and "notifications"."userId" = $2
+  "notification"."id" in ($1)
+  and "notification"."userId" = $2
 
 -- AccessRepository.person.checkOwnerAccess
 select
@@ -181,56 +181,56 @@ where
 
 -- AccessRepository.person.checkFaceOwnerAccess
 select
-  "asset_faces"."id"
+  "asset_face"."id"
 from
-  "asset_faces"
-  left join "assets" on "assets"."id" = "asset_faces"."assetId"
-  and "assets"."deletedAt" is null
+  "asset_face"
+  left join "asset" on "asset"."id" = "asset_face"."assetId"
+  and "asset"."deletedAt" is null
 where
-  "asset_faces"."id" in ($1)
-  and "assets"."ownerId" = $2
+  "asset_face"."id" in ($1)
+  and "asset"."ownerId" = $2
 
 -- AccessRepository.partner.checkUpdateAccess
 select
-  "partners"."sharedById"
+  "partner"."sharedById"
 from
-  "partners"
+  "partner"
 where
-  "partners"."sharedById" in ($1)
-  and "partners"."sharedWithId" = $2
+  "partner"."sharedById" in ($1)
+  and "partner"."sharedWithId" = $2
 
 -- AccessRepository.session.checkOwnerAccess
 select
-  "sessions"."id"
+  "session"."id"
 from
-  "sessions"
+  "session"
 where
-  "sessions"."id" in ($1)
-  and "sessions"."userId" = $2
+  "session"."id" in ($1)
+  and "session"."userId" = $2
 
 -- AccessRepository.stack.checkOwnerAccess
 select
-  "stacks"."id"
+  "stack"."id"
 from
-  "asset_stack" as "stacks"
+  "stack"
 where
-  "stacks"."id" in ($1)
-  and "stacks"."ownerId" = $2
+  "stack"."id" in ($1)
+  and "stack"."ownerId" = $2
 
 -- AccessRepository.tag.checkOwnerAccess
 select
-  "tags"."id"
+  "tag"."id"
 from
-  "tags"
+  "tag"
 where
-  "tags"."id" in ($1)
-  and "tags"."userId" = $2
+  "tag"."id" in ($1)
+  and "tag"."userId" = $2
 
 -- AccessRepository.timeline.checkPartnerAccess
 select
-  "partners"."sharedById"
+  "partner"."sharedById"
 from
-  "partners"
+  "partner"
 where
-  "partners"."sharedById" in ($1)
-  and "partners"."sharedWithId" = $2
+  "partner"."sharedById" in ($1)
+  and "partner"."sharedWithId" = $2

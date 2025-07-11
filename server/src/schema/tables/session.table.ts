@@ -11,8 +11,8 @@ import {
   UpdateDateColumn,
 } from 'src/sql-tools';
 
-@Table({ name: 'sessions', primaryConstraintName: 'PK_48cb6b5c20faa63157b3c1baf7f' })
-@UpdatedAtTrigger('sessions_updated_at')
+@Table({ name: 'session' })
+@UpdatedAtTrigger('session_updatedAt')
 export class SessionTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
@@ -42,7 +42,7 @@ export class SessionTable {
   @Column({ default: '' })
   deviceOS!: Generated<string>;
 
-  @UpdateIdColumn({ indexName: 'IDX_sessions_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 
   @Column({ type: 'boolean', default: false })

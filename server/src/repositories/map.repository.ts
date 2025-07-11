@@ -83,25 +83,32 @@ export class MapRepository {
     { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore }: MapMarkerSearchOptions = {},
   ) {
     return this.db
-      .selectFrom('assets')
-      .innerJoin('exif', (builder) =>
+      .selectFrom('asset')
+      .innerJoin('asset_exif', (builder) =>
         builder
-          .onRef('assets.id', '=', 'exif.assetId')
-          .on('exif.latitude', 'is not', null)
-          .on('exif.longitude', 'is not', null),
+          .onRef('asset.id', '=', 'asset_exif.assetId')
+          .on('asset_exif.latitude', 'is not', null)
+          .on('asset_exif.longitude', 'is not', null),
       )
-      .select(['id', 'exif.latitude as lat', 'exif.longitude as lon', 'exif.city', 'exif.state', 'exif.country'])
+      .select([
+        'id',
+        'asset_exif.latitude as lat',
+        'asset_exif.longitude as lon',
+        'asset_exif.city',
+        'asset_exif.state',
+        'asset_exif.country',
+      ])
       .$narrowType<{ lat: NotNull; lon: NotNull }>()
       .$if(isArchived === true, (qb) =>
         qb.where((eb) =>
           eb.or([
-            eb('assets.visibility', '=', AssetVisibility.TIMELINE),
-            eb('assets.visibility', '=', AssetVisibility.ARCHIVE),
+            eb('asset.visibility', '=', AssetVisibility.TIMELINE),
+            eb('asset.visibility', '=', AssetVisibility.ARCHIVE),
           ]),
         ),
       )
       .$if(isArchived === false || isArchived === undefined, (qb) =>
-        qb.where('assets.visibility', '=', AssetVisibility.TIMELINE),
+        qb.where('asset.visibility', '=', AssetVisibility.TIMELINE),
       )
       .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
       .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))
@@ -118,9 +125,9 @@ export class MapRepository {
           expression.push(
             eb.exists((eb) =>
               eb
-                .selectFrom('albums_assets_assets')
-                .whereRef('assets.id', '=', 'albums_assets_assets.assetsId')
-                .where('albums_assets_assets.albumsId', 'in', albumIds),
+                .selectFrom('album_asset')
+                .whereRef('asset.id', '=', 'album_asset.assetsId')
+                .where('album_asset.albumsId', 'in', albumIds),
             ),
           );
         }

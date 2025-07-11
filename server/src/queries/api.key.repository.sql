@@ -2,31 +2,31 @@
 
 -- ApiKeyRepository.getKey
 select
-  "api_keys"."id",
-  "api_keys"."permissions",
+  "api_key"."id",
+  "api_key"."permissions",
   (
     select
       to_json(obj)
     from
       (
         select
-          "users"."id",
-          "users"."name",
-          "users"."email",
-          "users"."isAdmin",
-          "users"."quotaUsageInBytes",
-          "users"."quotaSizeInBytes"
+          "user"."id",
+          "user"."name",
+          "user"."email",
+          "user"."isAdmin",
+          "user"."quotaUsageInBytes",
+          "user"."quotaSizeInBytes"
         from
-          "users"
+          "user"
         where
-          "users"."id" = "api_keys"."userId"
-          and "users"."deletedAt" is null
+          "user"."id" = "api_key"."userId"
+          and "user"."deletedAt" is null
       ) as obj
   ) as "user"
 from
-  "api_keys"
+  "api_key"
 where
-  "api_keys"."key" = $1
+  "api_key"."key" = $1
 
 -- ApiKeyRepository.getById
 select
@@ -37,7 +37,7 @@ select
   "updatedAt",
   "permissions"
 from
-  "api_keys"
+  "api_key"
 where
   "id" = $1::uuid
   and "userId" = $2
@@ -51,7 +51,7 @@ select
   "updatedAt",
   "permissions"
 from
-  "api_keys"
+  "api_key"
 where
   "userId" = $1
 order by

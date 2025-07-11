@@ -1,6 +1,6 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { MemoryType } from 'src/enum';
-import { memories_delete_audit } from 'src/schema/functions';
+import { memory_delete_audit } from 'src/schema/functions';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
@@ -15,11 +15,11 @@ import {
   UpdateDateColumn,
 } from 'src/sql-tools';
 
-@Table('memories')
-@UpdatedAtTrigger('memories_updated_at')
+@Table('memory')
+@UpdatedAtTrigger('memory_updatedAt')
 @AfterDeleteTrigger({
   scope: 'statement',
-  function: memories_delete_audit,
+  function: memory_delete_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
 })
@@ -63,6 +63,6 @@ export class MemoryTable {
   @Column({ type: 'timestamp with time zone', nullable: true })
   hideAt!: Timestamp | null;
 
-  @UpdateIdColumn({ indexName: 'IDX_memories_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

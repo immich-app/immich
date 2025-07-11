@@ -4,7 +4,7 @@
 select
   count(*) as "total"
 from
-  "memories"
+  "memory"
 where
   "deletedAt" is null
   and "ownerId" = $1
@@ -13,7 +13,7 @@ where
 select
   count(*) as "total"
 from
-  "memories"
+  "memory"
 where
   (
     "showAt" is null
@@ -34,21 +34,21 @@ select
     from
       (
         select
-          "assets".*
+          "asset".*
         from
-          "assets"
-          inner join "memories_assets_assets" on "assets"."id" = "memories_assets_assets"."assetsId"
+          "asset"
+          inner join "memory_asset" on "asset"."id" = "memory_asset"."assetsId"
         where
-          "memories_assets_assets"."memoriesId" = "memories"."id"
-          and "assets"."visibility" = 'timeline'
-          and "assets"."deletedAt" is null
+          "memory_asset"."memoriesId" = "memory"."id"
+          and "asset"."visibility" = 'timeline'
+          and "asset"."deletedAt" is null
         order by
-          "assets"."fileCreatedAt" asc
+          "asset"."fileCreatedAt" asc
       ) as agg
   ) as "assets",
-  "memories".*
+  "memory".*
 from
-  "memories"
+  "memory"
 where
   "deletedAt" is null
   and "ownerId" = $1
@@ -63,21 +63,21 @@ select
     from
       (
         select
-          "assets".*
+          "asset".*
         from
-          "assets"
-          inner join "memories_assets_assets" on "assets"."id" = "memories_assets_assets"."assetsId"
+          "asset"
+          inner join "memory_asset" on "asset"."id" = "memory_asset"."assetsId"
         where
-          "memories_assets_assets"."memoriesId" = "memories"."id"
-          and "assets"."visibility" = 'timeline'
-          and "assets"."deletedAt" is null
+          "memory_asset"."memoriesId" = "memory"."id"
+          and "asset"."visibility" = 'timeline'
+          and "asset"."deletedAt" is null
         order by
-          "assets"."fileCreatedAt" asc
+          "asset"."fileCreatedAt" asc
       ) as agg
   ) as "assets",
-  "memories".*
+  "memory".*
 from
-  "memories"
+  "memory"
 where
   (
     "showAt" is null
@@ -94,66 +94,66 @@ order by
 
 -- MemoryRepository.get
 select
-  "memories".*,
+  "memory".*,
   (
     select
       coalesce(json_agg(agg), '[]')
     from
       (
         select
-          "assets".*
+          "asset".*
         from
-          "assets"
-          inner join "memories_assets_assets" on "assets"."id" = "memories_assets_assets"."assetsId"
+          "asset"
+          inner join "memory_asset" on "asset"."id" = "memory_asset"."assetsId"
         where
-          "memories_assets_assets"."memoriesId" = "memories"."id"
-          and "assets"."visibility" = 'timeline'
-          and "assets"."deletedAt" is null
+          "memory_asset"."memoriesId" = "memory"."id"
+          and "asset"."visibility" = 'timeline'
+          and "asset"."deletedAt" is null
         order by
-          "assets"."fileCreatedAt" asc
+          "asset"."fileCreatedAt" asc
       ) as agg
   ) as "assets"
 from
-  "memories"
+  "memory"
 where
   "id" = $1
   and "deletedAt" is null
 
 -- MemoryRepository.update
-update "memories"
+update "memory"
 set
   "ownerId" = $1,
   "isSaved" = $2
 where
   "id" = $3
 select
-  "memories".*,
+  "memory".*,
   (
     select
       coalesce(json_agg(agg), '[]')
     from
       (
         select
-          "assets".*
+          "asset".*
         from
-          "assets"
-          inner join "memories_assets_assets" on "assets"."id" = "memories_assets_assets"."assetsId"
+          "asset"
+          inner join "memory_asset" on "asset"."id" = "memory_asset"."assetsId"
         where
-          "memories_assets_assets"."memoriesId" = "memories"."id"
-          and "assets"."visibility" = 'timeline'
-          and "assets"."deletedAt" is null
+          "memory_asset"."memoriesId" = "memory"."id"
+          and "asset"."visibility" = 'timeline'
+          and "asset"."deletedAt" is null
         order by
-          "assets"."fileCreatedAt" asc
+          "asset"."fileCreatedAt" asc
       ) as agg
   ) as "assets"
 from
-  "memories"
+  "memory"
 where
   "id" = $1
   and "deletedAt" is null
 
 -- MemoryRepository.delete
-delete from "memories"
+delete from "memory"
 where
   "id" = $1
 
@@ -161,13 +161,13 @@ where
 select
   "assetsId"
 from
-  "memories_assets_assets"
+  "memory_asset"
 where
   "memoriesId" = $1
   and "assetsId" in ($2)
 
 -- MemoryRepository.addAssetIds
 insert into
-  "memories_assets_assets" ("memoriesId", "assetsId")
+  "memory_asset" ("memoriesId", "assetsId")
 values
   ($1, $2)

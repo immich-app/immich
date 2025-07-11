@@ -31,7 +31,8 @@ export const compareConstraints: Comparer<DatabaseConstraint> = {
       }
 
       case ConstraintType.CHECK: {
-        return asRenameKey([constraint.type, constraint.tableName, constraint.expression]);
+        const expression = constraint.expression.replaceAll('(', '').replaceAll(')', '');
+        return asRenameKey([constraint.type, constraint.tableName, expression]);
       }
     }
   },

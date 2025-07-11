@@ -20,7 +20,7 @@ describe('/api-keys', () => {
   });
 
   beforeEach(async () => {
-    await utils.resetDatabase(['api_keys']);
+    await utils.resetDatabase(['api_key']);
   });
 
   describe('POST /api-keys', () => {

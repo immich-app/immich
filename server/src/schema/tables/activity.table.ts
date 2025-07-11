@@ -18,19 +18,18 @@ import {
 } from 'src/sql-tools';
 
 @Table('activity')
-@UpdatedAtTrigger('activity_updated_at')
+@UpdatedAtTrigger('activity_updatedAt')
 @Index({
-  name: 'IDX_activity_like',
+  name: 'activity_like_idx',
   columns: ['assetId', 'userId', 'albumId'],
   unique: true,
   where: '("isLiked" = true)',
 })
 @Check({
-  name: 'CHK_2ab1e70f113f450eb40c1e3ec8',
-  expression: `("comment" IS NULL AND "isLiked" = true) OR ("comment" IS NOT NULL AND "isLiked" = false)`,
+  name: 'activity_like_check',
+  expression: `(comment IS NULL AND "isLiked" = true) OR (comment IS NOT NULL AND "isLiked" = false)`,
 })
 @ForeignKeyConstraint({
-  name: 'fk_activity_album_asset_composite',
   columns: ['albumId', 'assetId'],
   referenceTable: () => AlbumAssetTable,
   referenceColumns: ['albumsId', 'assetsId'],
@@ -62,6 +61,6 @@ export class ActivityTable {
   @Column({ type: 'boolean', default: false })
   isLiked!: Generated<boolean>;
 
-  @UpdateIdColumn({ indexName: 'IDX_activity_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

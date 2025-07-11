@@ -11,7 +11,7 @@ select
   "data",
   "readAt"
 from
-  "notifications"
+  "notification"
 where
   "userId" = $1
   and "deletedAt" is null
@@ -29,7 +29,7 @@ select
   "data",
   "readAt"
 from
-  "notifications"
+  "notification"
 where
   (
     "userId" = $1

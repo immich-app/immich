@@ -2,30 +2,30 @@
 
 -- LibraryRepository.get
 select
-  "libraries".*
+  "library".*
 from
-  "libraries"
+  "library"
 where
-  "libraries"."id" = $1
-  and "libraries"."deletedAt" is null
+  "library"."id" = $1
+  and "library"."deletedAt" is null
 
 -- LibraryRepository.getAll
 select
-  "libraries".*
+  "library".*
 from
-  "libraries"
+  "library"
 where
-  "libraries"."deletedAt" is null
+  "library"."deletedAt" is null
 order by
   "createdAt" asc
 
 -- LibraryRepository.getAllDeleted
 select
-  "libraries".*
+  "library".*
 from
-  "libraries"
+  "library"
 where
-  "libraries"."deletedAt" is not null
+  "library"."deletedAt" is not null
 order by
   "createdAt" asc
 
@@ -34,32 +34,32 @@ select
   count(*) filter (
     where
       (
-        "assets"."type" = $1
-        and "assets"."visibility" != $2
+        "asset"."type" = $1
+        and "asset"."visibility" != $2
       )
   ) as "photos",
   count(*) filter (
     where
       (
-        "assets"."type" = $3
-        and "assets"."visibility" != $4
+        "asset"."type" = $3
+        and "asset"."visibility" != $4
       )
   ) as "videos",
-  coalesce(sum("exif"."fileSizeInByte"), $5) as "usage"
+  coalesce(sum("asset_exif"."fileSizeInByte"), $5) as "usage"
 from
-  "libraries"
-  inner join "assets" on "assets"."libraryId" = "libraries"."id"
-  left join "exif" on "exif"."assetId" = "assets"."id"
+  "library"
+  inner join "asset" on "asset"."libraryId" = "library"."id"
+  left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
 where
-  "libraries"."id" = $6
+  "library"."id" = $6
 group by
-  "libraries"."id"
+  "library"."id"
 select
   0::int as "photos",
   0::int as "videos",
   0::int as "usage",
   0::int as "total"
 from
-  "libraries"
+  "library"
 where
-  "libraries"."id" = $1
+  "library"."id" = $1
