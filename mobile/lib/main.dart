@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
+import 'package:flutter_user_certificates_android/flutter_user_certificates_android.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -59,6 +60,7 @@ void main() async {
 }
 
 Future<void> initApp() async {
+  await _trustAndroidUserCerts();
   await EasyLocalization.ensureInitialized();
   await initializeDateFormatting();
 
@@ -98,6 +100,14 @@ Future<void> initApp() async {
   );
 
   await FileDownloader().trackTasks();
+}
+
+Future<void> _trustAndroidUserCerts() async {
+  // Extend the default security context to trust Android user certificates.
+  // This is a workaround for <https://github.com/dart-lang/sdk/issues/50435>.
+  WidgetsFlutterBinding.ensureInitialized();
+  final flutterUserCertificatesAndroidPlugin = FlutterUserCertificatesAndroid();
+  await flutterUserCertificatesAndroidPlugin.trustAndroidUserCertificates(SecurityContext.defaultContext);
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
