@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
@@ -81,6 +82,21 @@ class FixedSegment extends Segment {
       spacing: spacing,
     );
   }
+
+  const FixedSegment.empty()
+      : this(
+          firstIndex: 0,
+          lastIndex: 0,
+          startOffset: 0,
+          endOffset: 0,
+          firstAssetIndex: 0,
+          bucket: const Bucket(assetCount: 0),
+          tileHeight: 1,
+          columnCount: 0,
+          headerExtent: 0,
+          spacing: 0,
+          header: HeaderType.none,
+        );
 }
 
 class _FixedSegmentRow extends ConsumerWidget {
