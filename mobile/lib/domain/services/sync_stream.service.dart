@@ -31,6 +31,40 @@ class SyncStreamService {
     return _syncApiRepository.streamChanges(_handleEvents);
   }
 
+  Future<void> handleWsAssetUploadReadyV1(dynamic data) async {
+    try {
+      if (data is! Map<String, dynamic>) {
+        return;
+      }
+
+      final payload = data;
+      final assetData = payload['asset'];
+      final exifData = payload['exif'];
+
+      if (assetData == null || exifData == null) {
+        return;
+      }
+
+      final asset = SyncAssetV1.fromJson(assetData);
+      final exif = SyncAssetExifV1.fromJson(exifData);
+
+      if (asset == null || exif == null) {
+        return;
+      }
+
+      await _syncStreamRepository
+          .updateAssetsV1([asset], debugLabel: 'websocket');
+      await _syncStreamRepository
+          .updateAssetsExifV1([exif], debugLabel: 'websocket');
+    } catch (error, stackTrace) {
+      _logger.severe(
+        "Error processing AssetUploadReadyV1 websocket event",
+        error,
+        stackTrace,
+      );
+    }
+  }
+
   Future<void> _handleEvents(List<SyncEvent> events, Function() abort) async {
     List<SyncEvent> items = [];
     for (final event in events) {

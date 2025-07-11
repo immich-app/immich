@@ -72,4 +72,18 @@ class BackgroundSyncManager {
       _syncTask = null;
     });
   }
+
+  Future<void> syncWebsocket(dynamic data) {
+    if (_syncTask != null) {
+      return _syncTask!.future;
+    }
+
+    _syncTask = runInIsolateGentle(
+      computation: (ref) =>
+          ref.read(syncStreamServiceProvider).handleWsAssetUploadReadyV1(data),
+    );
+    return _syncTask!.whenComplete(() {
+      _syncTask = null;
+    });
+  }
 }
