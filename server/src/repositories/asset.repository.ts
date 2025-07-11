@@ -11,22 +11,22 @@ import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { ExifTable } from 'src/schema/tables/exif.table';
 import {
-  anyUuid,
-  asUuid,
-  hasPeople,
-  removeUndefinedKeys,
-  truncatedDate,
-  unnest,
-  withDefaultVisibility,
-  withExif,
-  withFaces,
-  withFacesAndPeople,
-  withFiles,
-  withLibrary,
-  withOwner,
-  withSmartSearch,
-  withTagId,
-  withTags,
+    anyUuid,
+    asUuid,
+    hasPeople,
+    removeUndefinedKeys,
+    truncatedDate,
+    unnest,
+    withDefaultVisibility,
+    withExif,
+    withFaces,
+    withFacesAndPeople,
+    withFiles,
+    withLibrary,
+    withOwner,
+    withSmartSearch,
+    withTagId,
+    withTags,
 } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 
@@ -621,7 +621,8 @@ export class AssetRepository {
           )
           .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
-          .orderBy('assets.fileCreatedAt', options.order ?? 'desc'),
+          .orderBy('assets.fileCreatedAt', options.order ?? 'desc')
+          .orderBy('assets.originalFileName', options.order ?? 'desc'),
       )
       .with('agg', (qb) =>
         qb

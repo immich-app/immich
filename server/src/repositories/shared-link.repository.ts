@@ -38,6 +38,7 @@ export class SharedLinkRepository {
             )
             .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo'))
             .orderBy('assets.fileCreatedAt', 'asc')
+            .orderBy('assets.originalFileName', 'asc')
             .as('a'),
         (join) => join.onTrue(),
       )
@@ -67,6 +68,7 @@ export class SharedLinkRepository {
                   )
                   .select((eb) => eb.fn.toJson(eb.table('assets_exifInfo')).as('exifInfo'))
                   .orderBy('assets.fileCreatedAt', 'asc')
+                  .orderBy('assets.originalFileName', 'asc')
                   .as('assets'),
               (join) => join.onTrue(),
             )

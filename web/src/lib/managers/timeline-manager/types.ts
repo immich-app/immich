@@ -19,6 +19,7 @@ export type TimelineAsset = {
   thumbhash: string | null;
   localDateTime: TimelinePlainDateTime;
   fileCreatedAt: TimelinePlainDateTime;
+  originalFileName: string;
   visibility: AssetVisibility;
   isFavorite: boolean;
   isTrashed: boolean;

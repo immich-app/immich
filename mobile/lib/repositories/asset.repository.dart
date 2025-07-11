@@ -185,6 +185,7 @@ class AssetRepository extends DatabaseRepository {
         // orders primary asset first as its ID is null
         .sortByStackPrimaryAssetId()
         .thenByFileCreatedAtDesc()
+        .thenByFileName()
         .findAll();
   }
 
@@ -215,6 +216,7 @@ class AssetRepository extends DatabaseRepository {
         .filter()
         .visibilityEqualTo(AssetVisibilityEnum.timeline)
         .sortByFileCreatedAtDesc()
+        .thenByFileName()
         .findAll();
   }
 

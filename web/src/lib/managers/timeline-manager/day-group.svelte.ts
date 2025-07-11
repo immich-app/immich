@@ -2,7 +2,7 @@ import { AssetOrder } from '@immich/sdk';
 
 import type { CommonLayoutOptions } from '$lib/utils/layout-utils';
 import { getJustifiedLayoutFromAssets, getPosition } from '$lib/utils/layout-utils';
-import { plainDateTimeCompare } from '$lib/utils/timeline-util';
+import { plainDateTimeWithFileNameCompare } from '$lib/utils/timeline-util';
 
 import type { MonthGroup } from './month-group.svelte';
 import type { AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
@@ -73,8 +73,8 @@ export class DayGroup {
   }
 
   sortAssets(sortOrder: AssetOrder = AssetOrder.Desc) {
-    const sortFn = plainDateTimeCompare.bind(undefined, sortOrder === AssetOrder.Asc);
-    this.viewerAssets.sort((a, b) => sortFn(a.asset.fileCreatedAt, b.asset.fileCreatedAt));
+    const sortFn = plainDateTimeWithFileNameCompare.bind(undefined, sortOrder === AssetOrder.Asc);
+    this.viewerAssets.sort((a, b) => sortFn(a.asset, b.asset));
   }
 
   getFirstAsset() {
