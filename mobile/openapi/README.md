@@ -509,6 +509,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigMapDto](doc//SystemConfigMapDto.md)
  - [SystemConfigMetadataDto](doc//SystemConfigMetadataDto.md)
  - [SystemConfigNewVersionCheckDto](doc//SystemConfigNewVersionCheckDto.md)
+ - [SystemConfigNightlyTasksDto](doc//SystemConfigNightlyTasksDto.md)
  - [SystemConfigNotificationsDto](doc//SystemConfigNotificationsDto.md)
  - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
  - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)

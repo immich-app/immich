@@ -1389,6 +1389,14 @@ export type SystemConfigMetadataDto = {
 export type SystemConfigNewVersionCheckDto = {
     enabled: boolean;
 };
+export type SystemConfigNightlyTasksDto = {
+    clusterNewFaces: boolean;
+    databaseCleanup: boolean;
+    generateMemories: boolean;
+    missingThumbnails: boolean;
+    startTime: string;
+    syncQuotaUsage: boolean;
+};
 export type SystemConfigNotificationsDto = {
     smtp: SystemConfigSmtpDto;
 };
@@ -1457,6 +1465,7 @@ export type SystemConfigDto = {
     map: SystemConfigMapDto;
     metadata: SystemConfigMetadataDto;
     newVersionCheck: SystemConfigNewVersionCheckDto;
+    nightlyTasks: SystemConfigNightlyTasksDto;
     notifications: SystemConfigNotificationsDto;
     oauth: SystemConfigOAuthDto;
     passwordLogin: SystemConfigPasswordLoginDto;

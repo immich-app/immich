@@ -567,6 +567,7 @@ export enum DatabaseLock {
   VersionHistory = 500,
   CLIPDimSize = 512,
   Library = 1337,
+  NightlyJobs = 600,
   GetSystemConfig = 69,
   BackupDatabase = 42,
   MemoryCreation = 777,
@@ -683,4 +684,9 @@ export enum AssetVisibility {
    */
   HIDDEN = 'hidden',
   LOCKED = 'locked',
+}
+
+export enum CronJob {
+  LibraryScan = 'LibraryScan',
+  NightlyJobs = 'NightlyJobs',
 }

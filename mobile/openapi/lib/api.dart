@@ -291,6 +291,7 @@ part 'model/system_config_machine_learning_dto.dart';
 part 'model/system_config_map_dto.dart';
 part 'model/system_config_metadata_dto.dart';
 part 'model/system_config_new_version_check_dto.dart';
+part 'model/system_config_nightly_tasks_dto.dart';
 part 'model/system_config_notifications_dto.dart';
 part 'model/system_config_o_auth_dto.dart';
 part 'model/system_config_password_login_dto.dart';
