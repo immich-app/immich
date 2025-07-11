@@ -31,6 +31,27 @@ class DriftAlbumApiRepository extends ApiRepository {
 
     return responseDto.toRemoteAlbum();
   }
+
+  Future<({List<String> removed, List<String> failed})> removeAssets(
+    String albumId,
+    Iterable<String> assetIds,
+  ) async {
+    final response = await checkNull(
+      _api.removeAssetFromAlbum(
+        albumId,
+        BulkIdsDto(ids: assetIds.toList()),
+      ),
+    );
+    final List<String> removed = [], failed = [];
+    for (final dto in response) {
+      if (dto.success) {
+        removed.add(dto.id);
+      } else {
+        failed.add(dto.id);
+      }
+    }
+    return (removed: removed, failed: failed);
+  }
 }
 
 extension on AlbumResponseDto {

@@ -1501,6 +1501,7 @@
   "remove_custom_date_range": "Remove custom date range",
   "remove_deleted_assets": "Remove Deleted Assets",
   "remove_from_album": "Remove from album",
+  "remove_from_album_action_prompt": "{count} removed from the album",
   "remove_from_favorites": "Remove from favorites",
   "remove_from_lock_folder_action_prompt": "{count} removed from the locked folder",
   "remove_from_locked_folder": "Remove from locked folder",
