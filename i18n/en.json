@@ -1967,5 +1967,8 @@
   "yes": "Yes",
   "you_dont_have_any_shared_links": "You don't have any shared links",
   "your_wifi_name": "Your Wi-Fi name",
-  "zoom_image": "Zoom Image"
+  "zoom_image": "Zoom Image",
+  "sort_by": "Sort by",
+  "sort_by_created_at": "Created date",
+  "sort_by_deleted_at": "Deleted date"
 }

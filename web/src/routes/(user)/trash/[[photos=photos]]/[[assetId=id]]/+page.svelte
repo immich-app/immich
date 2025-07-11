@@ -37,7 +37,14 @@
   }
 
   const timelineManager = new TimelineManager();
-  void timelineManager.updateOptions({ isTrashed: true });
+  let sortBy = $state<'createdAt' | 'deletedAt'>('createdAt');
+  void timelineManager.updateOptions({ isTrashed: true, sortBy: 'createdAt' });
+
+  function handleSortChange(event: Event) {
+    const value = (event.target as HTMLSelectElement).value as 'createdAt' | 'deletedAt';
+    sortBy = value;
+    void timelineManager.updateOptions({ isTrashed: true, sortBy });
+  }
   onDestroy(() => timelineManager.destroy());
 
   const assetInteraction = new AssetInteraction();
@@ -92,7 +99,7 @@
 
 {#if $featureFlags.loaded && $featureFlags.trash}
   <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
-    {#snippet buttons()}
+    <div class="flex flex-row items-center gap-4 mb-2">
       <HStack gap={0}>
         <Button
           leadingIcon={mdiHistory}
@@ -115,8 +122,14 @@
           <Text class="hidden md:block">{$t('empty_trash')}</Text>
         </Button>
       </HStack>
-    {/snippet}
-
+      <div class="ml-auto">
+        <label for="sortBy" class="mr-2">{$t('sort_by')}</label>
+        <select id="sortBy" bind:value={sortBy} onchange={handleSortChange} class="border rounded px-2 py-1">
+          <option value="createdAt">{$t('sort_by_created_at', { default: 'Date de création' })}</option>
+          <option value="deletedAt">{$t('sort_by_deleted_at', { default: "Date d'effacement" })}</option>
+        </select>
+      </div>
+    </div>
     <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}

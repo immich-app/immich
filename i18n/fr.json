@@ -1956,5 +1956,8 @@
   "yes": "Oui",
   "you_dont_have_any_shared_links": "Vous n'avez aucun lien partagé",
   "your_wifi_name": "Nom du réseau wifi",
-  "zoom_image": "Zoomer"
+  "zoom_image": "Zoomer",
+  "sort_by": "Trier par",
+  "sort_by_created_at": "Date de création",
+  "sort_by_deleted_at": "Date d'effacement"
 }

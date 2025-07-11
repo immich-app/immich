@@ -7637,6 +7637,15 @@
             }
           },
           {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Permet de choisir le champ de tri/groupe pour les buckets (createdAt ou deletedAt)",
+            "schema": {
+              "$ref": "#/components/schemas/TimeBucketSortBy"
+            }
+          },
+          {
             "name": "tagId",
             "required": false,
             "in": "query",
@@ -7779,6 +7788,15 @@
             "schema": {
               "format": "uuid",
               "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Permet de choisir le champ de tri/groupe pour les buckets (createdAt ou deletedAt)",
+            "schema": {
+              "$ref": "#/components/schemas/TimeBucketSortBy"
             }
           },
           {
@@ -15345,6 +15363,13 @@
           "visibility"
         ],
         "type": "object"
+      },
+      "TimeBucketSortBy": {
+        "enum": [
+          "createdAt",
+          "deletedAt"
+        ],
+        "type": "string"
       },
       "TimeBucketsResponseDto": {
         "properties": {
