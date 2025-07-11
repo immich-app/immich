@@ -29,9 +29,11 @@ import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.
     as i13;
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart'
     as i14;
-import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart'
     as i15;
-import 'package:drift/internal/modular.dart' as i16;
+import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+    as i16;
+import 'package:drift/internal/modular.dart' as i17;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -61,8 +63,9 @@ abstract class $Drift extends i0.GeneratedDatabase {
   late final i13.$MemoryAssetEntityTable memoryAssetEntity =
       i13.$MemoryAssetEntityTable(this);
   late final i14.$StackEntityTable stackEntity = i14.$StackEntityTable(this);
-  i15.MergedAssetDrift get mergedAssetDrift => i16.ReadDatabaseContainer(this)
-      .accessor<i15.MergedAssetDrift>(i15.MergedAssetDrift.new);
+  late final i15.$PersonEntityTable personEntity = i15.$PersonEntityTable(this);
+  i16.MergedAssetDrift get mergedAssetDrift => i17.ReadDatabaseContainer(this)
+      .accessor<i16.MergedAssetDrift>(i16.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -84,7 +87,8 @@ abstract class $Drift extends i0.GeneratedDatabase {
         remoteAlbumUserEntity,
         memoryEntity,
         memoryAssetEntity,
-        stackEntity
+        stackEntity,
+        personEntity
       ];
   @override
   i0.StreamQueryUpdateRules get streamUpdateRules =>
@@ -216,6 +220,13 @@ abstract class $Drift extends i0.GeneratedDatabase {
               i0.TableUpdate('stack_entity', kind: i0.UpdateKind.delete),
             ],
           ),
+          i0.WritePropagation(
+            on: i0.TableUpdateQuery.onTableName('user_entity',
+                limitUpdateKind: i0.UpdateKind.delete),
+            result: [
+              i0.TableUpdate('person_entity', kind: i0.UpdateKind.delete),
+            ],
+          ),
         ],
       );
   @override
@@ -255,4 +266,6 @@ class $DriftManager {
       i13.$$MemoryAssetEntityTableTableManager(_db, _db.memoryAssetEntity);
   i14.$$StackEntityTableTableManager get stackEntity =>
       i14.$$StackEntityTableTableManager(_db, _db.stackEntity);
+  i15.$$PersonEntityTableTableManager get personEntity =>
+      i15.$$PersonEntityTableTableManager(_db, _db.personEntity);
 }
