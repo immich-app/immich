@@ -1,10 +1,12 @@
 #!/usr/bin/env sh
 
-TYPESCRIPT_SDK=/usr/src/open-api/typescript-sdk
+TYPESCRIPT_SDK=/usr/src/app/open-api/typescript-sdk
 
+cd /usr/src/app/web || exit 1
 npm --prefix "$TYPESCRIPT_SDK" install
 npm --prefix "$TYPESCRIPT_SDK" run build
 
+npm install
 
 COUNT=0
 UPSTREAM="${IMMICH_SERVER_URL:-http://immich-server:2283/}"

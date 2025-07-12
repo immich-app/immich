@@ -16,7 +16,7 @@ name: immich-dev
 services:
   immich-server:
     container_name: immich_server
-    command: ['/usr/src/app/bin/immich-dev']
+    command: ['/usr/src/app/server/bin/immich-dev']
     image: immich-server-dev:latest
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -27,11 +27,11 @@ services:
       target: dev
     restart: unless-stopped
     volumes:
-      - ../server:/usr/src/app
-      - ../open-api:/usr/src/open-api
-      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
-      - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
-      - /usr/src/app/node_modules
+      - ../server:/usr/src/app/server
+      - ../open-api:/usr/src/app/open-api
+      - ${UPLOAD_LOCATION}/photos:/usr/src/app/server/upload
+      - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/server/upload/upload
+      - /usr/src/app/server/node_modules
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
@@ -69,19 +69,20 @@ services:
     # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
     # user: 0:0
     build:
-      context: ../web
-    command: ['/usr/src/app/bin/immich-web']
+      context: ../
+      dockerfile: web/Dockerfile
+    command: ['/usr/src/app/web/bin/immich-web']
     env_file:
       - .env
     ports:
       - 3000:3000
       - 24678:24678
     volumes:
-      - ../web:/usr/src/app
-      - ../i18n:/usr/src/i18n
-      - ../open-api/:/usr/src/open-api/
+      - ../web:/usr/src/app/web
+      - ../i18n:/usr/src/app/i18n
+      - ../open-api/:/usr/src/app/open-api/
       # - ../../ui:/usr/ui
-      - /usr/src/app/node_modules
+      - /usr/src/app/web/node_modules
     ulimits:
       nofile:
         soft: 1048576
