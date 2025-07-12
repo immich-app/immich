@@ -25,24 +25,37 @@ class AuthRepository extends DatabaseRepository {
   const AuthRepository(super.db, this._drift);
 
   Future<void> clearLocalData() {
-    return db.writeTxn(() {
-      return Future.wait([
+    return db.writeTxn(() async {
+      // Delete relationship tables first to avoid foreign key constraint violations
+      await Future.wait([
+        _drift.remoteAlbumAssetEntity.deleteAll(),
+        _drift.remoteAlbumUserEntity.deleteAll(),
+        _drift.memoryAssetEntity.deleteAll(),
+      ]);
+
+      // Delete dependent
+      await Future.wait([
+        _drift.remoteExifEntity.deleteAll(),
+        _drift.userMetadataEntity.deleteAll(),
+        _drift.partnerEntity.deleteAll(),
+        _drift.stackEntity.deleteAll(),
+      ]);
+
+      // Delete main entities
+      await Future.wait([
+        _drift.memoryEntity.deleteAll(),
+        _drift.remoteAlbumEntity.deleteAll(),
+        _drift.remoteAssetEntity.deleteAll(),
+        _drift.userEntity.deleteAll(),
+      ]);
+
+      // Clear Isar collections in parallel (no foreign key constraints)
+      await Future.wait([
         db.assets.clear(),
         db.exifInfos.clear(),
         db.albums.clear(),
         db.eTags.clear(),
         db.users.clear(),
-        _drift.remoteAssetEntity.deleteAll(),
-        _drift.remoteExifEntity.deleteAll(),
-        _drift.userEntity.deleteAll(),
-        _drift.userMetadataEntity.deleteAll(),
-        _drift.partnerEntity.deleteAll(),
-        _drift.remoteAlbumEntity.deleteAll(),
-        _drift.remoteAlbumAssetEntity.deleteAll(),
-        _drift.remoteAlbumUserEntity.deleteAll(),
-        _drift.memoryEntity.deleteAll(),
-        _drift.memoryAssetEntity.deleteAll(),
-        _drift.stackEntity.deleteAll(),
       ]);
     });
   }
