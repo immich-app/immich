@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
-import 'package:immich_mobile/presentation/widgets/images/thumb_hash_provider.dart';
-import 'package:immich_mobile/widgets/asset_grid/thumbnail_placeholder.dart';
-import 'package:immich_mobile/widgets/common/fade_in_placeholder_image.dart';
+import 'package:immich_mobile/widgets/common/thumbhash.dart';
 import 'package:logging/logging.dart';
 import 'package:octo_image/octo_image.dart';
 
@@ -56,13 +54,7 @@ OctoPlaceholderBuilder _blurHashPlaceholderBuilder(
   String? thumbHash, {
   BoxFit? fit,
 }) {
-  return (context) => thumbHash == null
-      ? const ThumbnailPlaceholder()
-      : FadeInPlaceholderImage(
-          placeholder: const ThumbnailPlaceholder(),
-          image: ThumbHashProvider(thumbHash: thumbHash),
-          fit: fit ?? BoxFit.cover,
-        );
+  return (context) => Thumbhash(blurhash: thumbHash, fit: fit ?? BoxFit.cover);
 }
 
 OctoErrorBuilder _blurHashErrorBuilder(
