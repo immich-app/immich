@@ -13,12 +13,14 @@ import 'package:drift/internal/modular.dart' as i5;
 typedef $$UserMetadataEntityTableCreateCompanionBuilder
     = i1.UserMetadataEntityCompanion Function({
   required String userId,
-  required i2.UserPreferences preferences,
+  required i2.UserMetadataKey key,
+  required Map<String, Object?> value,
 });
 typedef $$UserMetadataEntityTableUpdateCompanionBuilder
     = i1.UserMetadataEntityCompanion Function({
   i0.Value<String> userId,
-  i0.Value<i2.UserPreferences> preferences,
+  i0.Value<i2.UserMetadataKey> key,
+  i0.Value<Map<String, Object?>> value,
 });
 
 final class $$UserMetadataEntityTableReferences extends i0.BaseReferences<
@@ -65,10 +67,15 @@ class $$UserMetadataEntityTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnWithTypeConverterFilters<i2.UserPreferences, i2.UserPreferences,
+  i0.ColumnWithTypeConverterFilters<i2.UserMetadataKey, i2.UserMetadataKey, int>
+      get key => $composableBuilder(
+          column: $table.key,
+          builder: (column) => i0.ColumnWithTypeConverterFilters(column));
+
+  i0.ColumnWithTypeConverterFilters<Map<String, Object?>, Map<String, Object>,
           String>
-      get preferences => $composableBuilder(
-          column: $table.preferences,
+      get value => $composableBuilder(
+          column: $table.value,
           builder: (column) => i0.ColumnWithTypeConverterFilters(column));
 
   i4.$$UserEntityTableFilterComposer get userId {
@@ -103,9 +110,11 @@ class $$UserMetadataEntityTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnOrderings<String> get preferences => $composableBuilder(
-      column: $table.preferences,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<int> get key => $composableBuilder(
+      column: $table.key, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<String> get value => $composableBuilder(
+      column: $table.value, builder: (column) => i0.ColumnOrderings(column));
 
   i4.$$UserEntityTableOrderingComposer get userId {
     final i4.$$UserEntityTableOrderingComposer composer = $composerBuilder(
@@ -139,9 +148,11 @@ class $$UserMetadataEntityTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumnWithTypeConverter<i2.UserPreferences, String>
-      get preferences => $composableBuilder(
-          column: $table.preferences, builder: (column) => column);
+  i0.GeneratedColumnWithTypeConverter<i2.UserMetadataKey, int> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  i0.GeneratedColumnWithTypeConverter<Map<String, Object?>, String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
 
   i4.$$UserEntityTableAnnotationComposer get userId {
     final i4.$$UserEntityTableAnnotationComposer composer = $composerBuilder(
@@ -193,19 +204,23 @@ class $$UserMetadataEntityTableTableManager extends i0.RootTableManager<
                   $db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<String> userId = const i0.Value.absent(),
-            i0.Value<i2.UserPreferences> preferences = const i0.Value.absent(),
+            i0.Value<i2.UserMetadataKey> key = const i0.Value.absent(),
+            i0.Value<Map<String, Object?>> value = const i0.Value.absent(),
           }) =>
               i1.UserMetadataEntityCompanion(
             userId: userId,
-            preferences: preferences,
+            key: key,
+            value: value,
           ),
           createCompanionCallback: ({
             required String userId,
-            required i2.UserPreferences preferences,
+            required i2.UserMetadataKey key,
+            required Map<String, Object?> value,
           }) =>
               i1.UserMetadataEntityCompanion.insert(
             userId: userId,
-            preferences: preferences,
+            key: key,
+            value: value,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
@@ -282,14 +297,19 @@ class $UserMetadataEntityTable extends i3.UserMetadataEntity
       defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
           'REFERENCES user_entity (id) ON DELETE CASCADE'));
   @override
-  late final i0.GeneratedColumnWithTypeConverter<i2.UserPreferences, String>
-      preferences = i0.GeneratedColumn<String>(
-              'preferences', aliasedName, false,
-              type: i0.DriftSqlType.string, requiredDuringInsert: true)
-          .withConverter<i2.UserPreferences>(
-              i1.$UserMetadataEntityTable.$converterpreferences);
+  late final i0.GeneratedColumnWithTypeConverter<i2.UserMetadataKey, int> key =
+      i0.GeneratedColumn<int>('key', aliasedName, false,
+              type: i0.DriftSqlType.int, requiredDuringInsert: true)
+          .withConverter<i2.UserMetadataKey>(
+              i1.$UserMetadataEntityTable.$converterkey);
   @override
-  List<i0.GeneratedColumn> get $columns => [userId, preferences];
+  late final i0.GeneratedColumnWithTypeConverter<Map<String, Object?>, String>
+      value = i0.GeneratedColumn<String>('value', aliasedName, false,
+              type: i0.DriftSqlType.string, requiredDuringInsert: true)
+          .withConverter<Map<String, Object?>>(
+              i1.$UserMetadataEntityTable.$convertervalue);
+  @override
+  List<i0.GeneratedColumn> get $columns => [userId, key, value];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -319,9 +339,12 @@ class $UserMetadataEntityTable extends i3.UserMetadataEntity
     return i1.UserMetadataEntityData(
       userId: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}user_id'])!,
-      preferences: i1.$UserMetadataEntityTable.$converterpreferences.fromSql(
-          attachedDatabase.typeMapping.read(
-              i0.DriftSqlType.string, data['${effectivePrefix}preferences'])!),
+      key: i1.$UserMetadataEntityTable.$converterkey.fromSql(attachedDatabase
+          .typeMapping
+          .read(i0.DriftSqlType.int, data['${effectivePrefix}key'])!),
+      value: i1.$UserMetadataEntityTable.$convertervalue.fromSql(
+          attachedDatabase.typeMapping
+              .read(i0.DriftSqlType.string, data['${effectivePrefix}value'])!),
     );
   }
 
@@ -330,8 +353,11 @@ class $UserMetadataEntityTable extends i3.UserMetadataEntity
     return $UserMetadataEntityTable(attachedDatabase, alias);
   }
 
-  static i0.JsonTypeConverter2<i2.UserPreferences, String, Object?>
-      $converterpreferences = i3.userPreferenceConverter;
+  static i0.JsonTypeConverter2<i2.UserMetadataKey, int, int> $converterkey =
+      const i0.EnumIndexConverter<i2.UserMetadataKey>(
+          i2.UserMetadataKey.values);
+  static i0.JsonTypeConverter2<Map<String, Object?>, String, Object?>
+      $convertervalue = i3.userMetadataConverter;
   @override
   bool get withoutRowId => true;
   @override
@@ -341,16 +367,21 @@ class $UserMetadataEntityTable extends i3.UserMetadataEntity
 class UserMetadataEntityData extends i0.DataClass
     implements i0.Insertable<i1.UserMetadataEntityData> {
   final String userId;
-  final i2.UserPreferences preferences;
+  final i2.UserMetadataKey key;
+  final Map<String, Object?> value;
   const UserMetadataEntityData(
-      {required this.userId, required this.preferences});
+      {required this.userId, required this.key, required this.value});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
     map['user_id'] = i0.Variable<String>(userId);
     {
-      map['preferences'] = i0.Variable<String>(
-          i1.$UserMetadataEntityTable.$converterpreferences.toSql(preferences));
+      map['key'] = i0.Variable<int>(
+          i1.$UserMetadataEntityTable.$converterkey.toSql(key));
+    }
+    {
+      map['value'] = i0.Variable<String>(
+          i1.$UserMetadataEntityTable.$convertervalue.toSql(value));
     }
     return map;
   }
@@ -360,8 +391,10 @@ class UserMetadataEntityData extends i0.DataClass
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return UserMetadataEntityData(
       userId: serializer.fromJson<String>(json['userId']),
-      preferences: i1.$UserMetadataEntityTable.$converterpreferences
-          .fromJson(serializer.fromJson<Object?>(json['preferences'])),
+      key: i1.$UserMetadataEntityTable.$converterkey
+          .fromJson(serializer.fromJson<int>(json['key'])),
+      value: i1.$UserMetadataEntityTable.$convertervalue
+          .fromJson(serializer.fromJson<Object?>(json['value'])),
     );
   }
   @override
@@ -369,24 +402,28 @@ class UserMetadataEntityData extends i0.DataClass
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'userId': serializer.toJson<String>(userId),
-      'preferences': serializer.toJson<Object?>(i1
-          .$UserMetadataEntityTable.$converterpreferences
-          .toJson(preferences)),
+      'key': serializer
+          .toJson<int>(i1.$UserMetadataEntityTable.$converterkey.toJson(key)),
+      'value': serializer.toJson<Object?>(
+          i1.$UserMetadataEntityTable.$convertervalue.toJson(value)),
     };
   }
 
   i1.UserMetadataEntityData copyWith(
-          {String? userId, i2.UserPreferences? preferences}) =>
+          {String? userId,
+          i2.UserMetadataKey? key,
+          Map<String, Object?>? value}) =>
       i1.UserMetadataEntityData(
         userId: userId ?? this.userId,
-        preferences: preferences ?? this.preferences,
+        key: key ?? this.key,
+        value: value ?? this.value,
       );
   UserMetadataEntityData copyWithCompanion(
       i1.UserMetadataEntityCompanion data) {
     return UserMetadataEntityData(
       userId: data.userId.present ? data.userId.value : this.userId,
-      preferences:
-          data.preferences.present ? data.preferences.value : this.preferences,
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
     );
   }
 
@@ -394,49 +431,60 @@ class UserMetadataEntityData extends i0.DataClass
   String toString() {
     return (StringBuffer('UserMetadataEntityData(')
           ..write('userId: $userId, ')
-          ..write('preferences: $preferences')
+          ..write('key: $key, ')
+          ..write('value: $value')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(userId, preferences);
+  int get hashCode => Object.hash(userId, key, value);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is i1.UserMetadataEntityData &&
           other.userId == this.userId &&
-          other.preferences == this.preferences);
+          other.key == this.key &&
+          other.value == this.value);
 }
 
 class UserMetadataEntityCompanion
     extends i0.UpdateCompanion<i1.UserMetadataEntityData> {
   final i0.Value<String> userId;
-  final i0.Value<i2.UserPreferences> preferences;
+  final i0.Value<i2.UserMetadataKey> key;
+  final i0.Value<Map<String, Object?>> value;
   const UserMetadataEntityCompanion({
     this.userId = const i0.Value.absent(),
-    this.preferences = const i0.Value.absent(),
+    this.key = const i0.Value.absent(),
+    this.value = const i0.Value.absent(),
   });
   UserMetadataEntityCompanion.insert({
     required String userId,
-    required i2.UserPreferences preferences,
+    required i2.UserMetadataKey key,
+    required Map<String, Object?> value,
   })  : userId = i0.Value(userId),
-        preferences = i0.Value(preferences);
+        key = i0.Value(key),
+        value = i0.Value(value);
   static i0.Insertable<i1.UserMetadataEntityData> custom({
     i0.Expression<String>? userId,
-    i0.Expression<String>? preferences,
+    i0.Expression<int>? key,
+    i0.Expression<String>? value,
   }) {
     return i0.RawValuesInsertable({
       if (userId != null) 'user_id': userId,
-      if (preferences != null) 'preferences': preferences,
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
     });
   }
 
   i1.UserMetadataEntityCompanion copyWith(
-      {i0.Value<String>? userId, i0.Value<i2.UserPreferences>? preferences}) {
+      {i0.Value<String>? userId,
+      i0.Value<i2.UserMetadataKey>? key,
+      i0.Value<Map<String, Object?>>? value}) {
     return i1.UserMetadataEntityCompanion(
       userId: userId ?? this.userId,
-      preferences: preferences ?? this.preferences,
+      key: key ?? this.key,
+      value: value ?? this.value,
     );
   }
 
@@ -446,10 +494,13 @@ class UserMetadataEntityCompanion
     if (userId.present) {
       map['user_id'] = i0.Variable<String>(userId.value);
     }
-    if (preferences.present) {
-      map['preferences'] = i0.Variable<String>(i1
-          .$UserMetadataEntityTable.$converterpreferences
-          .toSql(preferences.value));
+    if (key.present) {
+      map['key'] = i0.Variable<int>(
+          i1.$UserMetadataEntityTable.$converterkey.toSql(key.value));
+    }
+    if (value.present) {
+      map['value'] = i0.Variable<String>(
+          i1.$UserMetadataEntityTable.$convertervalue.toSql(value.value));
     }
     return map;
   }
@@ -458,7 +509,8 @@ class UserMetadataEntityCompanion
   String toString() {
     return (StringBuffer('UserMetadataEntityCompanion(')
           ..write('userId: $userId, ')
-          ..write('preferences: $preferences')
+          ..write('key: $key, ')
+          ..write('value: $value')
           ..write(')'))
         .toString();
   }

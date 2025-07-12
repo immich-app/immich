@@ -8,14 +8,16 @@ class UserMetadataEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get userId =>
       text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
-  TextColumn get preferences => text().map(userPreferenceConverter)();
+
+  IntColumn get key => intEnum<UserMetadataKey>()();
+
+  TextColumn get value => text().map(userMetadataConverter)();
 
   @override
   Set<Column> get primaryKey => {userId};
 }
 
-final JsonTypeConverter2<UserPreferences, String, Object?>
-    userPreferenceConverter = TypeConverter.json2(
-  fromJson: (json) => UserPreferences.fromMap(json as Map<String, Object?>),
-  toJson: (pref) => pref.toMap(),
+final JsonTypeConverter2<Map<String, Object?>, String, Object?>
+    userMetadataConverter = TypeConverter.json2(
+  fromJson: (json) => json as Map<String, Object?>,
 );
