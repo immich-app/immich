@@ -11,13 +11,13 @@ class UserMetadataEntity extends Table with DriftDefaultsMixin {
 
   IntColumn get key => intEnum<UserMetadataKey>()();
 
-  TextColumn get value => text().map(userMetadataConverter)();
+  BlobColumn get value => blob().map(userMetadataConverter)();
 
   @override
   Set<Column> get primaryKey => {userId};
 }
 
-final JsonTypeConverter2<Map<String, Object?>, String, Object?>
-    userMetadataConverter = TypeConverter.json2(
+final JsonTypeConverter2<Map<String, Object?>, Uint8List, Object?>
+    userMetadataConverter = TypeConverter.jsonb(
   fromJson: (json) => json as Map<String, Object?>,
 );
