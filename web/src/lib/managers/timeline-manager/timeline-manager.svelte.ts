@@ -3,7 +3,12 @@ import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 
 import { CancellableTask } from '$lib/utils/cancellable-task';
-import { toTimelineAsset, type TimelinePlainDateTime, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
+import {
+  toTimelineAsset,
+  weightedRandomSample,
+  type TimelinePlainDateTime,
+  type TimelinePlainYearMonth,
+} from '$lib/utils/timeline-util';
 
 import { clamp, debounce, isEqual } from 'lodash-es';
 import { SvelteSet } from 'svelte/reactivity';
@@ -444,8 +449,12 @@ export class TimelineManager {
   }
 
   async getRandomMonthGroup() {
-    const random = Math.floor(Math.random() * this.months.length);
-    const month = this.months[random];
+    const weights: number[] = this.months.map((month) => month.assetsCount);
+    const idx = weightedRandomSample(weights);
+    if (idx === undefined) {
+      return undefined;
+    }
+    const month = this.months[idx];
     await this.loadMonthGroup(month.yearMonth, { cancelable: false });
     return month;
   }

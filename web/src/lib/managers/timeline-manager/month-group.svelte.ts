@@ -10,6 +10,7 @@ import {
   fromTimelinePlainYearMonth,
   getTimes,
   setDifference,
+  weightedRandomSample,
   type TimelinePlainDateTime,
   type TimelinePlainYearMonth,
 } from '$lib/utils/timeline-util';
@@ -228,8 +229,12 @@ export class MonthGroup {
   }
 
   getRandomDayGroup() {
-    const random = Math.floor(Math.random() * this.dayGroups.length);
-    return this.dayGroups[random];
+    const weights: number[] = this.dayGroups.map((dayGroup) => dayGroup.viewerAssets.length);
+    const idx = weightedRandomSample(weights);
+    if (idx === undefined) {
+      return undefined;
+    }
+    return this.dayGroups[idx];
   }
 
   getRandomAsset() {
