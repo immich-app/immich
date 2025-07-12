@@ -105,20 +105,6 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
       return ImageEntry.handleError(for: cacheKey, error: .noLogin)
     }
 
-    if !album.isVirtual {
-      // make sure the album exists on server, otherwise show error
-      guard let albums = try? await api.fetchAlbums() else {
-        return ImageEntry.handleError(for: cacheKey)
-      }
-
-      if !albums.contains(where: { $0.id == album.id }) {
-        return ImageEntry.handleError(
-          for: cacheKey,
-          error: .albumNotFound
-        )
-      }
-    }
-
     // build entries
     // this must be a do/catch since we need to
     // distinguish between a network fail and an empty search
