@@ -14,19 +14,6 @@ struct ImageEntry: TimelineEntry {
     var deepLink: URL? = nil
   }
 
-  // Resizes the stored image to a maximum width of 450 pixels
-  mutating func resize() {
-    if image == nil || image!.size.height < 450 || image!.size.width < 450 {
-      return
-    }
-
-    image = image?.resized(toWidth: 450)
-
-    if image == nil {
-      metadata.error = .unableToResize
-    }
-  }
-
   static func build(
     api: ImmichAPI,
     asset: Asset,
@@ -83,7 +70,10 @@ struct ImageEntry: TimelineEntry {
 
       guard let imageData = try? Data(contentsOf: imageURL),
         let metadataJSON = try? Data(contentsOf: metadataURL),
-        let decodedMetadata = try? JSONDecoder().decode(Metadata.self, from: metadataJSON)
+        let decodedMetadata = try? JSONDecoder().decode(
+          Metadata.self,
+          from: metadataJSON
+        )
       else {
         return nil
       }
@@ -98,7 +88,7 @@ struct ImageEntry: TimelineEntry {
     return nil
   }
 
-  static func handleCacheFallback(
+  static func handleError(
     for key: String,
     error: WidgetError = .fetchFailed
   ) -> Timeline<ImageEntry> {
@@ -108,35 +98,32 @@ struct ImageEntry: TimelineEntry {
       metadata: EntryMetadata(error: error)
     )
 
-    // skip cache if album not found or no login
-    // we want to show these errors to the user since without intervention,
+    // use cache if generic failed error
+    // we want to show the other errors to the user since without intervention,
     // it will never succeed
-    if error != .noLogin && error != .albumNotFound {
-      if let cachedEntry = ImageEntry.loadCached(for: key) {
-        timelineEntry = cachedEntry
-      }
+    if error == .fetchFailed, let cachedEntry = ImageEntry.loadCached(for: key)
+    {
+      timelineEntry = cachedEntry
     }
 
     return Timeline(entries: [timelineEntry], policy: .atEnd)
   }
+
 }
 
 func generateRandomEntries(
   api: ImmichAPI,
   now: Date,
   count: Int,
-  albumId: String? = nil,
+  filter: SearchFilter = Album.NONE.filter,
   subtitle: String? = nil
 )
   async throws -> [ImageEntry]
 {
 
   var entries: [ImageEntry] = []
-  let albumIds = albumId != nil ? [albumId!] : []
 
-  let randomAssets = try await api.fetchSearchResults(
-    with: SearchFilters(size: count, albumIds: albumIds)
-  )
+  let randomAssets = try await api.fetchSearchResults(with: filter)
 
   await withTaskGroup(of: ImageEntry?.self) { group in
     for (dateOffset, asset) in randomAssets.enumerated() {

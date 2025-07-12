@@ -1,6 +1,18 @@
 import SwiftUI
 import WidgetKit
 
+extension Image {
+  @ViewBuilder
+  func tintedWidgetImageModifier() -> some View {
+    if #available(iOS 18.0, *) {
+      self
+        .widgetAccentedRenderingMode(.accentedDesaturated)
+    } else {
+      self
+    }
+  }
+}
+
 struct ImmichWidgetView: View {
   var entry: ImageEntry
 
@@ -8,6 +20,7 @@ struct ImmichWidgetView: View {
     if entry.image == nil {
       VStack {
         Image("LaunchImage")
+          .tintedWidgetImageModifier()
         Text(entry.metadata.error?.errorDescription ?? "")
           .minimumScaleFactor(0.25)
           .multilineTextAlignment(.center)
@@ -19,7 +32,9 @@ struct ImmichWidgetView: View {
         Color.clear.overlay(
           Image(uiImage: entry.image!)
             .resizable()
+            .tintedWidgetImageModifier()
             .scaledToFill()
+
         )
         VStack {
           Spacer()

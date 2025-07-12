@@ -2,14 +2,20 @@ import Foundation
 import SwiftUI
 import WidgetKit
 
+let IMMICH_SHARE_GROUP = "group.app.immich.share"
+
 enum WidgetError: Error, Codable {
   case noLogin
   case fetchFailed
-  case unknown
   case albumNotFound
+  case noAssetsAvailable
+}
+
+enum FetchError: Error {
   case unableToResize
   case invalidImage
   case invalidURL
+  case fetchFailed
 }
 
 extension WidgetError: LocalizedError {
@@ -24,14 +30,8 @@ extension WidgetError: LocalizedError {
     case .albumNotFound:
       return "Album not found"
 
-    case .invalidURL:
-      return "An invalid URL was used"
-
-    case .invalidImage:
-      return "An invalid image was received"
-
-    default:
-      return "An unknown error occured"
+    case .noAssetsAvailable:
+      return "No assets available"
     }
   }
 }
@@ -52,10 +52,11 @@ struct Asset: Codable {
   }
 }
 
-struct SearchFilters: Codable {
-  var type: AssetType = .image
-  let size: Int
+struct SearchFilter: Codable {
+  var type = AssetType.image
+  var size = 1
   var albumIds: [String] = []
+  var isFavorite: Bool? = nil
 }
 
 struct MemoryResult: Codable {
@@ -70,12 +71,35 @@ struct MemoryResult: Codable {
   let data: MemoryData
 }
 
-struct Album: Codable {
+struct Album: Codable, Equatable {
   let id: String
   let albumName: String
-}
 
-let IMMICH_SHARE_GROUP = "group.app.immich.share"
+  static let NONE = Album(id: "NONE", albumName: "None")
+  static let FAVORITES = Album(id: "FAVORITES", albumName: "Favorites")
+
+  var filter: SearchFilter {
+    switch self {
+    case Album.NONE:
+      return SearchFilter()
+    case Album.FAVORITES:
+      return SearchFilter(isFavorite: true)
+
+    // regular album
+    default:
+      return SearchFilter(albumIds: [id])
+    }
+  }
+
+  var isVirtual: Bool {
+    switch self {
+    case Album.NONE, Album.FAVORITES:
+      return true
+    default:
+      return false
+    }
+  }
+}
 
 // MARK: API
 
@@ -132,7 +156,8 @@ class ImmichAPI {
     return components?.url
   }
 
-  func fetchSearchResults(with filters: SearchFilters) async throws
+  func fetchSearchResults(with filters: SearchFilter = Album.NONE.filter)
+    async throws
     -> [Asset]
   {
     // get URL
@@ -178,7 +203,7 @@ class ImmichAPI {
     return try JSONDecoder().decode([MemoryResult].self, from: data)
   }
 
-  func fetchImage(asset: Asset) async throws(WidgetError) -> UIImage {
+  func fetchImage(asset: Asset) async throws(FetchError) -> UIImage {
     let thumbnailParams = [URLQueryItem(name: "size", value: "preview")]
     let assetEndpoint = "/assets/" + asset.id + "/thumbnail"
 
@@ -199,7 +224,7 @@ class ImmichAPI {
 
     let decodeOptions: [NSString: Any] = [
       kCGImageSourceCreateThumbnailFromImageAlways: true,
-      kCGImageSourceThumbnailMaxPixelSize: 400,
+      kCGImageSourceThumbnailMaxPixelSize: 512,
       kCGImageSourceCreateThumbnailWithTransform: true,
     ]
 
