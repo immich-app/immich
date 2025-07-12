@@ -621,7 +621,8 @@ export class AssetRepository {
           )
           .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
-          .orderBy('assets.fileCreatedAt', options.order ?? 'desc'),
+          .orderBy('assets.fileCreatedAt', options.order ?? 'desc')
+          .orderBy('assets.originalFileName', options.order ?? 'desc'),
       )
       .with('agg', (qb) =>
         qb
