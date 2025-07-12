@@ -1,5 +1,6 @@
 import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { SemVer } from 'semver';
 import { DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
 
@@ -40,8 +41,13 @@ export const VECTORCHORD_LIST_SLACK_FACTOR = 1.2;
 export const SALT_ROUNDS = 10;
 
 export const IWorker = 'IWorker';
-
-const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
+// This is where server is install to, should always be absolute.
+export const SERVER_HOME = process.env.SERVER_HOME || '.';
+// This is what APP_MEDIA_LOCATION is resolved against. (Only matters if APP_MEDIA_LOCATION is relative).
+// Defaults to SERVER_HOME.
+export const BASE_FOLDER = process.env.BASE_FOLDER || SERVER_HOME;
+const packageFile = 'TESTING' in globalThis ? resolve('./package.json') : resolve(SERVER_HOME, './package.json');
+const { version } = JSON.parse(readFileSync(packageFile, 'utf8'));
 export const serverVersion = new SemVer(version);
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });

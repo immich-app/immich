@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
-import { APP_MEDIA_LOCATION } from 'src/constants';
+import { APP_MEDIA_LOCATION, BASE_FOLDER } from 'src/constants';
 import { StorageAsset } from 'src/database';
 import { AssetFileType, AssetPathType, ImageFormat, PathType, PersonPathType, StorageFolder } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -83,7 +83,11 @@ export class StorageCore {
   }
 
   static getBaseFolder(folder: StorageFolder) {
-    return join(APP_MEDIA_LOCATION, folder);
+    if ('TESTING' in globalThis) {
+      // this is a special case for testing, since it expects the spys to be called with relative paths
+      return join(APP_MEDIA_LOCATION, folder);
+    }
+    return resolve(BASE_FOLDER, join(APP_MEDIA_LOCATION, folder));
   }
 
   static getPersonThumbnailPath(person: ThumbnailPathEntity) {

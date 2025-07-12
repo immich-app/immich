@@ -1,7 +1,9 @@
 import { CommandFactory } from 'nest-commander';
 import { ChildProcess, fork } from 'node:child_process';
+import { resolve } from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { ImmichAdminModule } from 'src/app.module';
+import { SERVER_HOME } from 'src/constants';
 import { ImmichWorker, LogLevel } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 
@@ -35,12 +37,12 @@ function bootstrapWorker(name: ImmichWorker) {
 
   let worker: Worker | ChildProcess;
   if (name === ImmichWorker.API) {
-    worker = fork(`./dist/workers/${name}.js`, [], {
+    worker = fork(resolve(SERVER_HOME, `./dist/workers/${name}.js`), [], {
       execArgv: process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg)),
     });
     apiProcess = worker;
   } else {
-    worker = new Worker(`./dist/workers/${name}.js`);
+    worker = new Worker(resolve(SERVER_HOME, `./dist/workers/${name}.js`));
   }
 
   worker.on('error', (error) => onError(name, error));
