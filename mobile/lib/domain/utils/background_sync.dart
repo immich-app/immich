@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
 import 'package:worker_manager/worker_manager.dart';
@@ -14,11 +13,6 @@ class BackgroundSyncManager {
 
   Future<void> cancel() async {
     final futures = <Future>[];
-
-    // Gracefully disconnect websocket first
-    if (_syncWebsocketTask != null) {
-      await disconnectWebsocketIsolate();
-    }
 
     if (_syncTask != null) {
       futures.add(_syncTask!.future);
@@ -96,16 +90,7 @@ class BackgroundSyncManager {
 
   Future<void> disconnectWebsocketIsolate() async {
     if (_syncWebsocketTask != null) {
-      try {
-        await runInIsolateGentle(
-          computation: (ref) =>
-              ref.read(syncStreamServiceProvider).disconnectWebsocketIsolate(),
-        ).timeout(const Duration(seconds: 5));
-      } catch (e) {
-        debugPrint("Error during graceful websocket disconnect: $e");
-      }
-
-      _syncWebsocketTask?.cancel();
+      _syncWebsocketTask!.cancel();
       _syncWebsocketTask = null;
     }
   }

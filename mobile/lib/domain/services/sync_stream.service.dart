@@ -49,13 +49,6 @@ class SyncStreamService {
     return _isolateCompleter!.future;
   }
 
-  Future<void> disconnectWebsocketIsolate() async {
-    await _websocketRepository.disconnect();
-    if (_isolateCompleter != null && !_isolateCompleter!.isCompleted) {
-      _isolateCompleter!.complete();
-    }
-  }
-
   Future<void> _handleAssetUploadReadyV1(dynamic data) async {
     try {
       if (data is! Map<String, dynamic>) {
