@@ -1,6 +1,6 @@
 import { locale } from '$lib/stores/preferences.store';
 import { parseUtcDate } from '$lib/utils/date-time';
-import { formatGroupTitle } from '$lib/utils/timeline-util';
+import { formatGroupTitle, weightedRandomSample } from '$lib/utils/timeline-util';
 import { DateTime } from 'luxon';
 
 describe('formatGroupTitle', () => {
@@ -75,5 +75,39 @@ describe('formatGroupTitle', () => {
     expect(formatGroupTitle(date)).toBe('Invalid DateTime');
     locale.set('es');
     expect(formatGroupTitle(date)).toBe('Invalid DateTime');
+  });
+});
+
+describe('randomSample', () => {
+  it('always returns a valid index', () => {
+    const n = 240;
+    const data: number[] = [...Array(n).keys()].map(() => Math.random());
+
+    for (let i = 0; i < 100; i++) {
+      const idx = weightedRandomSample(data);
+      expect(idx).toBeDefined();
+      expect(idx).toBeGreaterThanOrEqual(0);
+      expect(idx).toBeLessThan(n);
+      expect(idx % 1).toBe(0); // index must be a whole number
+    }
+  });
+
+  it('handles empty inputs', () => {
+    const idx = weightedRandomSample([]);
+    expect(idx).toBeUndefined();
+  });
+
+  it('does not select zero-weight elements', () => {
+    const data = [0, 0, 2, 0];
+
+    for (let i = 0; i < 100; i++) {
+      const idx = weightedRandomSample(data);
+      expect(idx).toBe(2);
+    }
+  });
+
+  it('handles all zero weight lists', () => {
+    const idx = weightedRandomSample([0, 0, 0, 0]);
+    expect(idx).toBeUndefined();
   });
 });
