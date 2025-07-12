@@ -242,15 +242,13 @@ licenseKey: $licenseKey,
     if (identical(this, other)) return true;
 
     return activatedAt == other.activatedAt &&
-      activationKey == other.activationKey &&
-      licenseKey == other.licenseKey;
+        activationKey == other.activationKey &&
+        licenseKey == other.licenseKey;
   }
 
   @override
   int get hashCode =>
-    activatedAt.hashCode ^
-    activationKey.hashCode ^
-    licenseKey.hashCode;
+      activatedAt.hashCode ^ activationKey.hashCode ^ licenseKey.hashCode;
 }
 
 // Model for a user metadata stored in the server
@@ -304,18 +302,18 @@ license: ${license ?? "<NA>"},
     if (identical(this, other)) return true;
 
     return other.userId == userId &&
-      other.key == key &&
-      other.onboarding == onboarding &&
-      other.preferences == preferences &&
-      other.license == license;
+        other.key == key &&
+        other.onboarding == onboarding &&
+        other.preferences == preferences &&
+        other.license == license;
   }
 
   @override
   int get hashCode {
     return userId.hashCode ^
-      key.hashCode ^
-      onboarding.hashCode ^
-      preferences.hashCode ^
-      license.hashCode;
+        key.hashCode ^
+        onboarding.hashCode ^
+        preferences.hashCode ^
+        license.hashCode;
   }
 }

@@ -14,7 +14,7 @@ class UserMetadataEntity extends Table with DriftDefaultsMixin {
   BlobColumn get value => blob().map(userMetadataConverter)();
 
   @override
-  Set<Column> get primaryKey => {userId};
+  Set<Column> get primaryKey => {userId, key};
 }
 
 final JsonTypeConverter2<Map<String, Object?>, Uint8List, Object?>

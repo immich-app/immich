@@ -334,7 +334,7 @@ class $UserMetadataEntityTable extends i4.UserMetadataEntity
   }
 
   @override
-  Set<i0.GeneratedColumn> get $primaryKey => {userId};
+  Set<i0.GeneratedColumn> get $primaryKey => {userId, key};
   @override
   i1.UserMetadataEntityData map(Map<String, dynamic> data,
       {String? tablePrefix}) {

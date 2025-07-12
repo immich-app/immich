@@ -470,13 +470,15 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       await _db.batch((batch) {
         for (final userMetadata in data) {
           final companion = UserMetadataEntityCompanion(
-            key: Value(userMetadata.key.toUserMetadataKey()),
             value: Value(userMetadata.value as Map<String, Object?>),
           );
 
           batch.insert(
             _db.userMetadataEntity,
-            companion.copyWith(userId: Value(userMetadata.userId)),
+            companion.copyWith(
+              userId: Value(userMetadata.userId),
+              key: Value(userMetadata.key.toUserMetadataKey()),
+            ),
             onConflict: DoUpdate((_) => companion),
           );
         }
@@ -491,9 +493,17 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     Iterable<SyncUserMetadataDeleteV1> data,
   ) async {
     try {
-      await _db.userMetadataEntity.deleteWhere(
-        (row) => row.userId.isIn(data.map((e) => e.userId)),
-      );
+      await _db.batch((batch) {
+        for (final userMetadata in data) {
+          batch.delete(
+            _db.userMetadataEntity,
+            UserMetadataEntityCompanion(
+              userId: Value(userMetadata.userId),
+              key: Value(userMetadata.key.toUserMetadataKey()),
+            ),
+          );
+        }
+      });
     } catch (error, stack) {
       _logger.severe('Error: deleteUserMetadatasV1', error, stack);
       rethrow;
@@ -546,11 +556,11 @@ extension on api.AssetVisibility {
 
 extension on String {
   UserMetadataKey toUserMetadataKey() => switch (this) {
-    "onboarding" => UserMetadataKey.onboarding,
-    "preferences" => UserMetadataKey.preferences,
-    "license" => UserMetadataKey.license,
-    _ => throw Exception('Unknown UserMetadataKey value: $this'),
-  };
+        "onboarding" => UserMetadataKey.onboarding,
+        "preferences" => UserMetadataKey.preferences,
+        "license" => UserMetadataKey.license,
+        _ => throw Exception('Unknown UserMetadataKey value: $this'),
+      };
 }
 
 extension on String {
