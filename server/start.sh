@@ -5,13 +5,15 @@ echo "Initializing Immich $IMMICH_SOURCE_REF"
 lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2"
 export LD_PRELOAD="$lib_path"
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib/jellyfin-ffmpeg/lib"
+export SERVER_HOME=/usr/src/app
+export BASE_FOLDER=/usr/src/app
 
 read_file_and_export() {
-	if [ -n "${!1}" ]; then
-		content="$(cat "${!1}")"
-		export "$2"="${content}"
-		unset "$1"
-	fi
+  if [ -n "${!1}" ]; then
+    content="$(cat "${!1}")"
+    export "$2"="${content}"
+    unset "$1"
+  fi
 }
 read_file_and_export "DB_URL_FILE" "DB_URL"
 read_file_and_export "DB_HOSTNAME_FILE" "DB_HOSTNAME"
@@ -26,4 +28,4 @@ if [ "$CPU_CORES" -gt 4 ]; then
   export UV_THREADPOOL_SIZE=$CPU_CORES
 fi
 
-exec node /usr/src/app/dist/main "$@"
+exec node "${SERVER_HOME}/dist/main" "$@"

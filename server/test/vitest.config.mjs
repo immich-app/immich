@@ -10,6 +10,7 @@ export default defineConfig({
     root: './',
     globals: true,
     include: ['src/**/*.spec.ts'],
+    setupFiles: ['./test/vitest-setup.ts'],
     coverage: {
       provider: 'v8',
       include: ['src/cores/**', 'src/services/**', 'src/utils/**', 'src/sql-tools/**'],

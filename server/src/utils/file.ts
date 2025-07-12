@@ -3,6 +3,7 @@ import { NextFunction, Response } from 'express';
 import { access, constants } from 'node:fs/promises';
 import { basename, extname, isAbsolute } from 'node:path';
 import { promisify } from 'node:util';
+import { BASE_FOLDER } from 'src/constants';
 import { CacheControl } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { ImmichReadStream } from 'src/repositories/storage.repository';
@@ -65,7 +66,7 @@ export const sendFile = async (
     // configure options for serving
     const options: SendFileOptions = { dotfiles: 'allow' };
     if (!isAbsolute(file.path)) {
-      options.root = process.cwd();
+      options.root = BASE_FOLDER;
     }
 
     await access(file.path, constants.R_OK);
