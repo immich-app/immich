@@ -43,7 +43,7 @@ class TimelineRepository extends DatabaseRepository {
         .isTrashedEqualTo(false)
         .visibilityEqualTo(AssetVisibilityEnum.archive)
         .sortByFileCreatedAtDesc()
-        .thenByFileName();
+        .thenByFileNameDesc();
 
     return _watchRenderList(query, GroupAssetsBy.none);
   }
@@ -58,7 +58,7 @@ class TimelineRepository extends DatabaseRepository {
         .visibilityEqualTo(AssetVisibilityEnum.locked)
         .isTrashedEqualTo(false)
         .sortByFileCreatedAtDesc()
-        .thenByFileName();
+        .thenByFileNameDesc();
 
     return _watchRenderList(query, GroupAssetsBy.none);
   }
@@ -75,7 +75,7 @@ class TimelineRepository extends DatabaseRepository {
 
     final withSortedOption = switch (album.sortOrder) {
       SortOrder.asc => query.sortByFileCreatedAt().thenByFileName(),
-      SortOrder.desc => query.sortByFileCreatedAtDesc().thenByFileName(),
+      SortOrder.desc => query.sortByFileCreatedAtDesc().thenByFileNameDesc(),
     };
 
     return _watchRenderList(withSortedOption, groupAssetByOption);
@@ -87,7 +87,7 @@ class TimelineRepository extends DatabaseRepository {
         .ownerIdEqualTo(fastHash(userId))
         .isTrashedEqualTo(true)
         .sortByFileCreatedAtDesc()
-        .thenByFileName();
+        .thenByFileNameDesc();
 
     return _watchRenderList(query, GroupAssetsBy.none);
   }
@@ -101,7 +101,7 @@ class TimelineRepository extends DatabaseRepository {
         .visibilityEqualTo(AssetVisibilityEnum.timeline)
         .typeEqualTo(AssetType.video)
         .sortByFileCreatedAtDesc()
-        .thenByFileName();
+        .thenByFileNameDesc();
 
     return _watchRenderList(query, GroupAssetsBy.none);
   }
@@ -118,7 +118,7 @@ class TimelineRepository extends DatabaseRepository {
         .stackPrimaryAssetIdIsNull()
         .visibilityEqualTo(AssetVisibilityEnum.timeline)
         .sortByFileCreatedAtDesc()
-        .thenByFileName();
+        .thenByFileNameDesc();
 
     return _watchRenderList(query, groupAssetByOption);
   }
@@ -136,7 +136,7 @@ class TimelineRepository extends DatabaseRepository {
         .visibilityEqualTo(AssetVisibilityEnum.timeline)
         .stackPrimaryAssetIdIsNull()
         .sortByFileCreatedAtDesc()
-        .thenByFileName();
+        .thenByFileNameDesc();
     return _watchRenderList(query, groupAssetByOption);
   }
 
@@ -157,7 +157,7 @@ class TimelineRepository extends DatabaseRepository {
         .isTrashedEqualTo(false)
         .stackPrimaryAssetIdIsNull()
         .sortByFileCreatedAtDesc()
-        .thenByFileName();
+        .thenByFileNameDesc();
 
     return _watchRenderList(query, GroupAssetsBy.none);
   }
@@ -173,7 +173,7 @@ class TimelineRepository extends DatabaseRepository {
         .visibilityEqualTo(AssetVisibilityEnum.locked)
         .isTrashedEqualTo(false)
         .sortByFileCreatedAtDesc()
-        .thenByFileName();
+        .thenByFileNameDesc();
 
     return _watchRenderList(query, getGroupByOption);
   }
