@@ -302,6 +302,12 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         groupBy: groupBy,
       );
 
+  TimelineQuery map(List<String> assetIds, GroupAssetsBy groupBy) =>
+      _remoteQueryBuilder(
+        filter: (row) => row.id.isIn(assetIds),
+        groupBy: groupBy,
+      );
+
   TimelineQuery _remoteQueryBuilder({
     required Expression<bool> Function($RemoteAssetEntityTable row) filter,
     GroupAssetsBy groupBy = GroupAssetsBy.day,

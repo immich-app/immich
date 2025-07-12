@@ -62,6 +62,9 @@ class TimelineFactory {
 
   TimelineService video(String userId) =>
       TimelineService(_timelineRepository.video(userId, groupBy));
+
+  TimelineService map(List<String> assetIds) =>
+      TimelineService(_timelineRepository.map(assetIds, groupBy));
 }
 
 class TimelineService {
