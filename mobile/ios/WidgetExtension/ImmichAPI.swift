@@ -56,7 +56,7 @@ struct SearchFilter: Codable {
   var type = AssetType.image
   var size = 1
   var albumIds: [String] = []
-  var isFavorite = false
+  var isFavorite: Bool? = nil
 }
 
 struct MemoryResult: Codable {
