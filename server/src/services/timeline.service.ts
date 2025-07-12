@@ -12,6 +12,9 @@ export class TimelineService extends BaseService {
   async getTimeBuckets(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketsResponseDto[]> {
     await this.timeBucketChecks(auth, dto);
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, dto);
+    if (dto.sortBy) {
+      (timeBucketOptions as any).sortBy = dto.sortBy;
+    }
     return await this.assetRepository.getTimeBuckets(timeBucketOptions);
   }
 
@@ -26,7 +29,7 @@ export class TimelineService extends BaseService {
   }
 
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
-    const { userId, ...options } = dto;
+    const { userId, sortBy, ...options } = dto;
     let userIds: string[] | undefined = undefined;
 
     if (userId) {
@@ -41,6 +44,7 @@ export class TimelineService extends BaseService {
       }
     }
 
+    // sortBy est propagé plus haut
     return { ...options, userIds };
   }
 

@@ -63,6 +63,8 @@ interface AssetBuilderOptions {
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
   order?: AssetOrder;
+  /** Ajouté pour permettre le tri/groupe par createdAt ou deletedAt */
+  sortBy?: 'createdAt' | 'deletedAt';
 }
 
 export interface TimeBucketItem {
@@ -491,11 +493,13 @@ export class AssetRepository {
 
   @GenerateSql({ params: [{}] })
   async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
+    // Par défaut, on groupe/ordonne par fileCreatedAt, sinon par deletedAt si demandé
+    const groupField = options.sortBy === 'deletedAt' ? 'deletedAt' : 'fileCreatedAt';
     return this.db
       .with('assets', (qb) =>
         qb
           .selectFrom('assets')
-          .select(truncatedDate<Date>().as('timeBucket'))
+          .select(sql.raw<string>(`date_trunc('day', assets."${groupField}")`).as('timeBucket'))
           .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
           .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility === undefined, withDefaultVisibility)

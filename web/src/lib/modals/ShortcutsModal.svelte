@@ -44,6 +44,7 @@
         { key: ['⇧', 'd'], action: $t('download') },
         { key: ['Space'], action: $t('play_or_pause_video') },
         { key: ['Del'], action: $t('trash_delete_asset'), info: $t('shift_to_permanent_delete') },
+        { key: ['1', '2', '3', '4', '5', '0'], action: $t('star_rating_set_1_5_0') },
       ],
     },
   }: Props = $props();

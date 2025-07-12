@@ -47,6 +47,16 @@ export class TimeBucketDto {
   })
   order?: AssetOrder;
 
+  @ApiProperty({
+    enum: ['createdAt', 'deletedAt'],
+    enumName: 'TimeBucketSortBy',
+    required: false,
+    description: 'Permet de choisir le champ de tri/groupe pour les buckets (createdAt ou deletedAt)',
+    example: 'deletedAt',
+  })
+  @Optional()
+  sortBy?: 'createdAt' | 'deletedAt';
+
   @ValidateAssetVisibility({
     optional: true,
     description: 'Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)',
