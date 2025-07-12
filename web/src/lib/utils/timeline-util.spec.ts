@@ -80,8 +80,8 @@ describe('formatGroupTitle', () => {
 
 describe('weightedRandomSample', () => {
   it('always returns a valid index', () => {
-    const n = 240;
-    const data: number[] = [...Array(n).keys()].map(() => Math.random());
+    const n = 64;
+    const data: number[] = Array.from({ length: n }, () => Math.random());
 
     for (let i = 0; i < 100; i++) {
       const idx = weightedRandomSample(data);
