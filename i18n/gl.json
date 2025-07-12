@@ -455,7 +455,6 @@
   "assets": "Activos",
   "assets_added_count": "Engadido {count, plural, one {# activo} other {# activos}}",
   "assets_added_to_album_count": "Engadido {count, plural, one {# activo} other {# activos}} ao álbum",
-  "assets_added_to_name_count": "Engadido {count, plural, one {# activo} other {# activos}} a {hasName, select, true {<b>{name}</b>} other {novo álbum}}",
   "assets_count": "{count, plural, one {# activo} other {# activos}}",
   "assets_deleted_permanently": "{count} activo(s) eliminado(s) permanentemente",
   "assets_deleted_permanently_from_server": "{count} activo(s) eliminado(s) permanentemente do servidor Immich",
