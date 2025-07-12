@@ -462,7 +462,6 @@
   "assets": "Sredstva",
   "assets_added_count": "Dodano {count, plural, one {# asset} other {# assets}}",
   "assets_added_to_album_count": "Dodano {count, plural, one {# asset} other {# assets}} u album",
-  "assets_added_to_name_count": "Dodano {count, plural, one {# asset} other {# assets}} u {hasName, select, true {<b>{name}</b>} other {new album}}",
   "assets_cannot_be_added_to_album_count": "{count, plural,\n one {Nije moguće dodati medij u album}\n few {Nije moguće dodati # medija u album}\n other {Nije moguće dodati # medija u album}\n}",
   "assets_count": "{count, plural, one {# asset} other {# assets}}",
   "assets_deleted_permanently": "{count} resurs(i) uspješno uklonjeni",

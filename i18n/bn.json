@@ -8,6 +8,7 @@
   "actions": "কর্ম",
   "active": "সচল",
   "activity": "কার্যকলাপ",
+  "activity_changed": "একটিভিটি এখন {enabled, select, true {চালু} other {বন্ধ}} আছে",
   "add": "যোগ করুন",
   "add_a_description": "একটি বিবরণ যোগ করুন",
   "add_a_location": "একটি অবস্থান যোগ করুন",
@@ -15,5 +16,24 @@
   "add_a_title": "একটি শিরোনাম যোগ করুন",
   "add_endpoint": "এন্ডপয়েন্ট যোগ করুন",
   "add_exclusion_pattern": "বহির্ভূতকরণ নমুনা",
-  "add_url": "লিঙ্ক যোগ করুন"
+  "add_import_path": "ইমপোর্ট করার পাথ যুক্ত করুন",
+  "add_location": "অবস্থান যুক্ত করুন",
+  "add_more_users": "আরো ব্যবহারকারী যুক্ত করুন",
+  "add_partner": "অংশীদার যোগ করুন",
+  "add_path": "পাথ যুক্ত করুন",
+  "add_photos": "ছবি যুক্ত করুন",
+  "add_tag": "ট্যাগ যুক্ত করুন",
+  "add_to": "যুক্ত করুন…",
+  "add_to_album": "এলবাম এ যোগ করুন",
+  "add_to_album_bottom_sheet_added": "{album} এ যোগ করা হয়েছে",
+  "add_to_album_bottom_sheet_already_exists": "{album} এ আগে থেকেই আছে",
+  "add_to_shared_album": "শেয়ার করা অ্যালবামে যোগ করুন",
+  "add_url": "লিঙ্ক যোগ করুন",
+  "added_to_archive": "আর্কাইভ এ যোগ করা হয়েছে",
+  "added_to_favorites": "ফেভারিটে যোগ করা হয়েছে",
+  "added_to_favorites_count": "পছন্দের তালিকায় {count, number} যোগ করা হয়েছে",
+  "admin": {
+    "add_exclusion_pattern_description": "এক্সক্লুশন প্যাটার্ন যোগ করুন। *, **, এবং ? ব্যবহার করে গ্লোবিং করা সম্ভব। \"Raw\" নামের যেকোনো ডিরেক্টরিতে থাকা সমস্ত ফাইল বাদ দিতে \"**/Raw/**\" ব্যবহার করুন। \".tif\" দিয়ে শেষ হওয়া সমস্ত ফাইল বাদ দিতে \"**/*.tif\" ব্যবহার করুন। একটি সম্পূর্ণ পাথ বাদ দিতে, \"/path/to/ignore/**\" ব্যবহার করুন।",
+    "admin_user": "এডমিন ইউজার"
+  }
 }
