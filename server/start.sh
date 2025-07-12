@@ -5,7 +5,7 @@ echo "Initializing Immich $IMMICH_SOURCE_REF"
 lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2"
 export LD_PRELOAD="$lib_path"
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib/jellyfin-ffmpeg/lib"
-export SERVER_HOME=/usr/src/app
+export SERVER_HOME=/usr/src/app/server
 export BASE_FOLDER=/usr/src/app
 
 read_file_and_export() {
@@ -22,7 +22,7 @@ read_file_and_export "DB_USERNAME_FILE" "DB_USERNAME"
 read_file_and_export "DB_PASSWORD_FILE" "DB_PASSWORD"
 read_file_and_export "REDIS_PASSWORD_FILE" "REDIS_PASSWORD"
 
-export CPU_CORES="${CPU_CORES:=$(./get-cpus.sh)}"
+export CPU_CORES="${CPU_CORES:=$("$SERVER_HOME/get-cpus.sh")}"
 echo "Detected CPU Cores: $CPU_CORES"
 if [ "$CPU_CORES" -gt 4 ]; then
   export UV_THREADPOOL_SIZE=$CPU_CORES
