@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/websocket.repository.dart';
 import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -12,15 +13,18 @@ class SyncStreamService {
 
   final SyncApiRepository _syncApiRepository;
   final SyncStreamRepository _syncStreamRepository;
+  final WebsocketRepository _websocketRepository;
   final bool Function()? _cancelChecker;
 
   SyncStreamService({
     required SyncApiRepository syncApiRepository,
     required SyncStreamRepository syncStreamRepository,
+    required WebsocketRepository websocketRepository,
     bool Function()? cancelChecker,
   })  : _syncApiRepository = syncApiRepository,
         _syncStreamRepository = syncStreamRepository,
-        _cancelChecker = cancelChecker;
+        _cancelChecker = cancelChecker,
+        _websocketRepository = websocketRepository;
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
@@ -29,6 +33,54 @@ class SyncStreamService {
     DLog.log("Remote sync request for user");
     // Start the sync stream and handle events
     return _syncApiRepository.streamChanges(_handleEvents);
+  }
+
+  Completer<void>? _isolateCompleter;
+
+  Future<void> connectWebsocketIsolate() async {
+    _websocketRepository.assetUploadReadyCallback((data) {
+      _handleAssetUploadReadyV1(data);
+    });
+
+    await _websocketRepository.connect();
+
+    // Maintain the connection. Better solution?
+    _isolateCompleter = Completer<void>();
+    return _isolateCompleter!.future;
+  }
+
+  Future<void> _handleAssetUploadReadyV1(dynamic data) async {
+    try {
+      if (data is! Map<String, dynamic>) {
+        return;
+      }
+
+      final payload = data;
+      final assetData = payload['asset'];
+      final exifData = payload['exif'];
+
+      if (assetData == null || exifData == null) {
+        return;
+      }
+
+      final asset = SyncAssetV1.fromJson(assetData);
+      final exif = SyncAssetExifV1.fromJson(exifData);
+
+      if (asset == null || exif == null) {
+        return;
+      }
+
+      await _syncStreamRepository
+          .updateAssetsV1([asset], debugLabel: 'websocket');
+      await _syncStreamRepository
+          .updateAssetsExifV1([exif], debugLabel: 'websocket');
+    } catch (error, stackTrace) {
+      _logger.severe(
+        "Error processing AssetUploadReadyV1 websocket event",
+        error,
+        stackTrace,
+      );
+    }
   }
 
   Future<void> _handleEvents(List<SyncEvent> events, Function() abort) async {

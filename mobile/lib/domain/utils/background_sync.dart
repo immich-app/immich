@@ -8,10 +8,10 @@ class BackgroundSyncManager {
   Cancelable<void>? _syncTask;
   Cancelable<void>? _deviceAlbumSyncTask;
   Cancelable<void>? _hashTask;
-
+  Cancelable<void>? _syncWebsocketTask;
   BackgroundSyncManager();
 
-  Future<void> cancel() {
+  Future<void> cancel() async {
     final futures = <Future>[];
 
     if (_syncTask != null) {
@@ -20,7 +20,7 @@ class BackgroundSyncManager {
     _syncTask?.cancel();
     _syncTask = null;
 
-    return Future.wait(futures);
+    await Future.wait(futures);
   }
 
   // No need to cancel the task, as it can also be run when the user logs out
@@ -71,5 +71,27 @@ class BackgroundSyncManager {
     return _syncTask!.whenComplete(() {
       _syncTask = null;
     });
+  }
+
+  Future<void> connectWebsocketIsolate() {
+    if (_syncWebsocketTask != null) {
+      return _syncWebsocketTask!.future;
+    }
+
+    _syncWebsocketTask = runInIsolateGentle(
+      computation: (ref) =>
+          ref.read(syncStreamServiceProvider).connectWebsocketIsolate(),
+    );
+
+    return _syncWebsocketTask!.whenComplete(() {
+      _syncWebsocketTask = null;
+    });
+  }
+
+  Future<void> disconnectWebsocketIsolate() async {
+    if (_syncWebsocketTask != null) {
+      _syncWebsocketTask!.cancel();
+      _syncWebsocketTask = null;
+    }
   }
 }

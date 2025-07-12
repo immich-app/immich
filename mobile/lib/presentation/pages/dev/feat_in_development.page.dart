@@ -58,9 +58,10 @@ final _features = [
     },
   ),
   _Feature(
-    name: '',
+    name: 'websocket',
     icon: Icons.vertical_align_center_sharp,
-    onTap: (_, __) => Future.value(),
+    onTap: (_, ref) =>
+        ref.read(backgroundSyncProvider).connectWebsocketIsolate(),
   ),
   _Feature(
     name: 'Sync Local',

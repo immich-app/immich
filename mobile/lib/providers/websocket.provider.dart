@@ -10,6 +10,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -24,6 +25,7 @@ enum PendingAction {
   assetUploaded,
   assetHidden,
   assetTrash,
+  assetUploadReady,
 }
 
 class PendingChange {
@@ -288,7 +290,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     }
   }
 
-  void handlePendingChanges() async {
+  Future<void> handlePendingChanges() async {
     await _handlePendingUploaded();
     await _handlePendingDeletes();
     await _handlingPendingHidden();
