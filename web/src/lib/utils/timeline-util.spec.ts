@@ -78,7 +78,7 @@ describe('formatGroupTitle', () => {
   });
 });
 
-describe('randomSample', () => {
+describe('weightedRandomSample', () => {
   it('always returns a valid index', () => {
     const n = 240;
     const data: number[] = [...Array(n).keys()].map(() => Math.random());
@@ -88,7 +88,7 @@ describe('randomSample', () => {
       expect(idx).toBeDefined();
       expect(idx).toBeGreaterThanOrEqual(0);
       expect(idx).toBeLessThan(n);
-      expect(idx % 1).toBe(0); // index must be a whole number
+      expect(idx! % 1).toBe(0); // index must be a whole number
     }
   });
 
