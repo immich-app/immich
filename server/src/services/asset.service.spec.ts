@@ -472,8 +472,10 @@ describe(AssetService.name, () => {
     it('should update exif table if dateTimeRelative and timeZone field is provided', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       const dateTimeRelative = 35;
-      const timeZone = 'UTC+2'
-      mocks.asset.updateDateTimeOriginal.mockResolvedValue([{ assetId: 'asset-1', dateTimeOriginal: new Date('2020-02-25T04:41:00') , timeZone: timeZone }]);
+      const timeZone = 'UTC+2';
+      mocks.asset.updateDateTimeOriginal.mockResolvedValue([
+        { assetId: 'asset-1', dateTimeOriginal: new Date('2020-02-25T04:41:00'), timeZone: timeZone },
+      ]);
       await sut.updateAll(authStub.admin, {
         ids: ['asset-1'],
         dateTimeRelative,
