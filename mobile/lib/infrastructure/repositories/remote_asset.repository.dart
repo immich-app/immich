@@ -56,6 +56,42 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
         .getSingleOrNull();
   }
 
+  Future<List<(String, String)>> getPlaces() {
+    final asset = Subquery(
+      _db.remoteAssetEntity.select()
+        ..orderBy([(row) => OrderingTerm.desc(row.createdAt)]),
+      "asset",
+    );
+
+    final query = asset.selectOnly().join([
+      innerJoin(
+        _db.remoteExifEntity,
+        _db.remoteExifEntity.assetId
+            .equalsExp(asset.ref(_db.remoteAssetEntity.id)),
+        useColumns: false,
+      ),
+    ])
+      ..addColumns([
+        _db.remoteExifEntity.city,
+        _db.remoteExifEntity.assetId,
+      ])
+      ..where(
+        _db.remoteExifEntity.city.isNotNull() &
+            asset.ref(_db.remoteAssetEntity.deletedAt).isNull() &
+            asset
+                .ref(_db.remoteAssetEntity.visibility)
+                .equals(AssetVisibility.timeline.index),
+      )
+      ..groupBy([_db.remoteExifEntity.city])
+      ..orderBy([OrderingTerm.asc(_db.remoteExifEntity.city)]);
+
+    return query.map((row) {
+      final assetId = row.read(_db.remoteExifEntity.assetId);
+      final city = row.read(_db.remoteExifEntity.city);
+      return (city!, assetId!);
+    }).get();
+  }
+
   Future<void> updateFavorite(List<String> ids, bool isFavorite) {
     return _db.batch((batch) async {
       for (final id in ids) {
