@@ -71,6 +71,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   StreamSubscription? reloadSubscription;
 
   late Platform platform;
+  late final int heroOffset;
   late PhotoViewControllerValue initialPhotoViewState;
   bool? hasDraggedDown;
   bool isSnapping = false;
@@ -98,6 +99,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       _onAssetChanged(widget.initialIndex);
     });
     reloadSubscription = EventStream.shared.listen(_onEvent);
+    heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
   }
 
   @override
@@ -335,7 +337,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final isDraggingDown = currentExtent < previousExtent;
     previousExtent = currentExtent;
     // Closes the bottom sheet if the user is dragging down
-    if (isDraggingDown && delta.extent < 0.5) {
+    if (isDraggingDown && delta.extent < 0.55) {
       if (dragInProgress) {
         blockGestures = true;
       }
@@ -400,7 +402,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     previousExtent = _kBottomSheetMinimumExtent;
     sheetCloseController = showBottomSheet(
       context: ctx,
-      sheetAnimationStyle: AnimationStyle(
+      sheetAnimationStyle: const AnimationStyle(
         duration: Durations.short4,
         reverseDuration: Durations.short2,
       ),
@@ -487,7 +489,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     return PhotoViewGalleryPageOptions(
       key: ValueKey(asset.heroTag),
       imageProvider: getFullImageProvider(asset, size: size),
-      heroAttributes: PhotoViewHeroAttributes(tag: asset.heroTag),
+      heroAttributes:
+          PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       tightMode: true,
       initialScale: PhotoViewComputedScale.contained * 0.999,
@@ -521,7 +524,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onTapDown: _onTapDown,
-      heroAttributes: PhotoViewHeroAttributes(tag: asset.heroTag),
+      heroAttributes:
+          PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       initialScale: PhotoViewComputedScale.contained * 0.99,
       maxScale: 1.0,

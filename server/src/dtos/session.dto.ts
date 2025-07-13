@@ -1,6 +1,6 @@
 import { IsInt, IsPositive, IsString } from 'class-validator';
 import { Session } from 'src/database';
-import { Optional } from 'src/validation';
+import { Optional, ValidateBoolean } from 'src/validation';
 
 export class SessionCreateDto {
   /**
@@ -20,6 +20,11 @@ export class SessionCreateDto {
   deviceOS?: string;
 }
 
+export class SessionUpdateDto {
+  @ValidateBoolean({ optional: true })
+  isPendingSyncReset?: boolean;
+}
+
 export class SessionResponseDto {
   id!: string;
   createdAt!: string;
@@ -28,6 +33,7 @@ export class SessionResponseDto {
   current!: boolean;
   deviceType!: string;
   deviceOS!: string;
+  isPendingSyncReset!: boolean;
 }
 
 export class SessionCreateResponseDto extends SessionResponseDto {
@@ -42,4 +48,5 @@ export const mapSession = (entity: Session, currentId?: string): SessionResponse
   current: currentId === entity.id,
   deviceOS: entity.deviceOS,
   deviceType: entity.deviceType,
+  isPendingSyncReset: entity.isPendingSyncReset,
 });

@@ -2,9 +2,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
+import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -14,16 +17,22 @@ final actionServiceProvider = Provider<ActionService>(
   (ref) => ActionService(
     ref.watch(assetApiRepositoryProvider),
     ref.watch(remoteAssetRepositoryProvider),
+    ref.watch(driftAlbumApiRepositoryProvider),
+    ref.watch(remoteAlbumRepository),
   ),
 );
 
 class ActionService {
   final AssetApiRepository _assetApiRepository;
   final RemoteAssetRepository _remoteAssetRepository;
+  final DriftAlbumApiRepository _albumApiRepository;
+  final DriftRemoteAlbumRepository _remoteAlbumRepository;
 
   const ActionService(
     this._assetApiRepository,
     this._remoteAssetRepository,
+    this._albumApiRepository,
+    this._remoteAlbumRepository,
   );
 
   Future<void> shareLink(List<String> remoteIds, BuildContext context) async {
@@ -130,5 +139,17 @@ class ActionService {
     );
 
     return true;
+  }
+
+  Future<int> removeFromAlbum(List<String> remoteIds, String albumId) async {
+    int removedCount = 0;
+    final result = await _albumApiRepository.removeAssets(albumId, remoteIds);
+
+    if (result.removed.isNotEmpty) {
+      removedCount =
+          await _remoteAlbumRepository.removeAssets(albumId, result.removed);
+    }
+
+    return removedCount;
   }
 }

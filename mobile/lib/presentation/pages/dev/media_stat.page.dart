@@ -125,7 +125,7 @@ class LocalMediaSummaryPage extends StatelessWidget {
                         name: album.name,
                         countFuture: countFuture,
                         onTap: () => context.router.push(
-                          LocalTimelineRoute(albumId: album.id),
+                          LocalTimelineRoute(album: album),
                         ),
                       );
                     },
@@ -226,7 +226,7 @@ class RemoteMediaSummaryPage extends StatelessWidget {
                         name: album.name,
                         countFuture: countFuture,
                         onTap: () => context.router.push(
-                          RemoteTimelineRoute(albumId: album.id),
+                          RemoteAlbumRoute(album: album),
                         ),
                       );
                     },

@@ -1,4 +1,3 @@
-import { asForeignKeyConstraintName, asKey } from 'src/sql-tools/helpers';
 import { ActionType, ConstraintType, Processor } from 'src/sql-tools/types';
 
 export const processForeignKeyColumns: Processor = (ctx, items) => {
@@ -31,15 +30,24 @@ export const processForeignKeyColumns: Processor = (ctx, items) => {
       column.type = referenceColumns[0].type;
     }
 
+    const referenceTableName = referenceTable.name;
     const referenceColumnNames = referenceColumns.map((column) => column.name);
-    const name = options.constraintName || asForeignKeyConstraintName(table.name, columnNames);
+    const name =
+      options.constraintName ||
+      ctx.getNameFor({
+        type: 'foreignKey',
+        tableName: table.name,
+        columnNames,
+        referenceTableName,
+        referenceColumnNames,
+      });
 
     table.constraints.push({
       name,
       tableName: table.name,
       columnNames,
       type: ConstraintType.FOREIGN_KEY,
-      referenceTableName: referenceTable.name,
+      referenceTableName,
       referenceColumnNames,
       onUpdate: options.onUpdate as ActionType,
       onDelete: options.onDelete as ActionType,
@@ -48,7 +56,7 @@ export const processForeignKeyColumns: Processor = (ctx, items) => {
 
     if (options.unique || options.uniqueConstraintName) {
       table.constraints.push({
-        name: options.uniqueConstraintName || asRelationKeyConstraintName(table.name, columnNames),
+        name: options.uniqueConstraintName || ctx.getNameFor({ type: 'unique', tableName: table.name, columnNames }),
         tableName: table.name,
         columnNames,
         type: ConstraintType.UNIQUE,
@@ -57,5 +65,3 @@ export const processForeignKeyColumns: Processor = (ctx, items) => {
     }
   }
 };
-
-const asRelationKeyConstraintName = (table: string, columns: string[]) => asKey('REL_', table, columns);

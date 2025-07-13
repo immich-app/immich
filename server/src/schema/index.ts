@@ -11,6 +11,7 @@ import {
   memories_delete_audit,
   memory_assets_delete_audit,
   partners_delete_audit,
+  person_delete_audit,
   stacks_delete_audit,
   updated_at,
   users_delete_audit,
@@ -42,6 +43,7 @@ import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-coun
 import { NotificationTable } from 'src/schema/tables/notification.table';
 import { PartnerAuditTable } from 'src/schema/tables/partner-audit.table';
 import { PartnerTable } from 'src/schema/tables/partner.table';
+import { PersonAuditTable } from 'src/schema/tables/person-audit.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { SessionTable } from 'src/schema/tables/session.table';
 import { SharedLinkAssetTable } from 'src/schema/tables/shared-link-asset.table';
@@ -55,6 +57,7 @@ import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { TagClosureTable } from 'src/schema/tables/tag-closure.table';
 import { TagTable } from 'src/schema/tables/tag.table';
 import { UserAuditTable } from 'src/schema/tables/user-audit.table';
+import { UserMetadataAuditTable } from 'src/schema/tables/user-metadata-audit.table';
 import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
@@ -92,6 +95,7 @@ export class ImmichDatabase {
     PartnerAuditTable,
     PartnerTable,
     PersonTable,
+    PersonAuditTable,
     SessionTable,
     SharedLinkAssetTable,
     SharedLinkTable,
@@ -105,6 +109,7 @@ export class ImmichDatabase {
     TagClosureTable,
     UserAuditTable,
     UserMetadataTable,
+    UserMetadataAuditTable,
     UserTable,
     VersionHistoryTable,
   ];
@@ -124,6 +129,8 @@ export class ImmichDatabase {
     memories_delete_audit,
     memory_assets_delete_audit,
     stacks_delete_audit,
+    person_delete_audit,
+    users_delete_audit,
   ];
 
   enum = [assets_status_enum, asset_face_source_type, asset_visibility_enum];
@@ -166,6 +173,7 @@ export interface DB {
   partners_audit: PartnerAuditTable;
   partners: PartnerTable;
   person: PersonTable;
+  person_audit: PersonAuditTable;
   sessions: SessionTable;
   session_sync_checkpoints: SessionSyncCheckpointTable;
   shared_link__asset: SharedLinkAssetTable;
@@ -177,6 +185,7 @@ export interface DB {
   tags: TagTable;
   tags_closure: TagClosureTable;
   user_metadata: UserMetadataTable;
+  user_metadata_audit: UserMetadataAuditTable;
   users: UserTable;
   users_audit: UserAuditTable;
   version_history: VersionHistoryTable;

@@ -18,6 +18,11 @@ typedef TimelineAssetSource = Future<List<BaseAsset>> Function(
 
 typedef TimelineBucketSource = Stream<List<Bucket>> Function();
 
+typedef TimelineQuery = ({
+  TimelineAssetSource assetSource,
+  TimelineBucketSource bucketSource,
+});
+
 class TimelineFactory {
   final DriftTimelineRepository _timelineRepository;
   final SettingsService _settingsService;
@@ -31,78 +36,32 @@ class TimelineFactory {
   GroupAssetsBy get groupBy =>
       GroupAssetsBy.values[_settingsService.get(Setting.groupAssetsBy)];
 
-  TimelineService main(List<String> timelineUsers) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getMainBucketAssets(timelineUsers, offset: offset, count: count),
-        bucketSource: () => _timelineRepository.watchMainBucket(
-          timelineUsers,
-          groupBy: groupBy,
-        ),
-      );
+  TimelineService main(List<String> timelineUsers) =>
+      TimelineService(_timelineRepository.main(timelineUsers, groupBy));
 
-  TimelineService localAlbum({required String albumId}) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getLocalAlbumBucketAssets(albumId, offset: offset, count: count),
-        bucketSource: () => _timelineRepository.watchLocalAlbumBucket(
-          albumId,
-          groupBy: groupBy,
-        ),
-      );
+  TimelineService localAlbum({required String albumId}) =>
+      TimelineService(_timelineRepository.localAlbum(albumId, groupBy));
 
-  TimelineService remoteAlbum({required String albumId}) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getRemoteAlbumBucketAssets(albumId, offset: offset, count: count),
-        bucketSource: () => _timelineRepository.watchRemoteAlbumBucket(
-          albumId,
-          groupBy: groupBy,
-        ),
-      );
+  TimelineService remoteAlbum({required String albumId}) =>
+      TimelineService(_timelineRepository.remoteAlbum(albumId, groupBy));
 
-  TimelineService remoteAssets(String ownerId) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getRemoteBucketAssets(ownerId, offset: offset, count: count),
-        bucketSource: () => _timelineRepository.watchRemoteBucket(
-          ownerId,
-          groupBy: GroupAssetsBy.month,
-        ),
-      );
+  TimelineService remoteAssets(String userId) =>
+      TimelineService(_timelineRepository.remote(userId, groupBy));
 
-  TimelineService favorite(String userId) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getFavoriteBucketAssets(userId, offset: offset, count: count),
-        bucketSource: () =>
-            _timelineRepository.watchFavoriteBucket(userId, groupBy: groupBy),
-      );
+  TimelineService favorite(String userId) =>
+      TimelineService(_timelineRepository.favorite(userId, groupBy));
 
-  TimelineService trash(String userId) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getTrashBucketAssets(userId, offset: offset, count: count),
-        bucketSource: () =>
-            _timelineRepository.watchTrashBucket(userId, groupBy: groupBy),
-      );
+  TimelineService trash(String userId) =>
+      TimelineService(_timelineRepository.trash(userId, groupBy));
 
-  TimelineService archive(String userId) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getArchiveBucketAssets(userId, offset: offset, count: count),
-        bucketSource: () =>
-            _timelineRepository.watchArchiveBucket(userId, groupBy: groupBy),
-      );
+  TimelineService archive(String userId) =>
+      TimelineService(_timelineRepository.archived(userId, groupBy));
 
-  TimelineService lockedFolder(String userId) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getLockedFolderBucketAssets(userId, offset: offset, count: count),
-        bucketSource: () => _timelineRepository.watchLockedFolderBucket(
-          userId,
-          groupBy: groupBy,
-        ),
-      );
+  TimelineService lockedFolder(String userId) =>
+      TimelineService(_timelineRepository.locked(userId, groupBy));
 
-  TimelineService video(String userId) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getVideoBucketAssets(userId, offset: offset, count: count),
-        bucketSource: () =>
-            _timelineRepository.watchVideoBucket(userId, groupBy: groupBy),
-      );
+  TimelineService video(String userId) =>
+      TimelineService(_timelineRepository.video(userId, groupBy));
 }
 
 class TimelineService {
@@ -116,7 +75,13 @@ class TimelineService {
   int _totalAssets = 0;
   int get totalAssets => _totalAssets;
 
-  TimelineService({
+  TimelineService(TimelineQuery query)
+      : this._(
+          assetSource: query.assetSource,
+          bucketSource: query.bucketSource,
+        );
+
+  TimelineService._({
     required TimelineAssetSource assetSource,
     required TimelineBucketSource bucketSource,
   })  : _assetSource = assetSource,
@@ -209,6 +174,9 @@ class TimelineService {
   // Pre-cache assets around the given index for asset viewer
   Future<void> preCacheAssets(int index) =>
       _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
+
+  BaseAsset getRandomAsset() =>
+      _buffer.elementAt(math.Random().nextInt(_buffer.length));
 
   BaseAsset getAsset(int index) {
     if (!hasRange(index, 1)) {

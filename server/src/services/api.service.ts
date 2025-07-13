@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Cron, CronExpression, Interval } from '@nestjs/schedule';
+import { Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'node:fs';
 import sanitizeHtml from 'sanitize-html';
@@ -52,11 +52,6 @@ export class ApiService {
   @Interval(ONE_HOUR.as('milliseconds'))
   async onVersionCheck() {
     await this.versionService.handleQueueVersionCheck();
-  }
-
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async onNightlyJob() {
-    await this.jobService.handleNightlyJobs();
   }
 
   ssr(excludePaths: string[]) {

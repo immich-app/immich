@@ -35,7 +35,11 @@ export class StackTable {
   updateId!: Generated<string>;
 
   //TODO: Add constraint to ensure primary asset exists in the assets array
-  @ForeignKeyColumn(() => AssetTable, { nullable: false, unique: true })
+  @ForeignKeyColumn(() => AssetTable, {
+    nullable: false,
+    unique: true,
+    uniqueConstraintName: 'REL_91704e101438fd0653f582426d',
+  })
   primaryAssetId!: string;
 
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })

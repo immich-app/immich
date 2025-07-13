@@ -66,6 +66,20 @@ android {
     }
   }
 
+  flavorDimensions "default"
+  productFlavors {
+    production {
+      dimension "default"
+      applicationId "app.alextran.immich"
+    }
+    
+    beta {
+      dimension "default"
+      applicationId "app.alextran.immich.beta"
+      versionNameSuffix "-BETA"
+    }
+  }
+
   buildTypes {
     debug {
       applicationIdSuffix '.debug'

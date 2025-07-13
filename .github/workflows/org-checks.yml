@@ -2,6 +2,7 @@ name: Org Checks
 
 on:
   pull_request_review:
+  pull_request:
 
 jobs:
   check-approvals:

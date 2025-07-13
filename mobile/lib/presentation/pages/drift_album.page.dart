@@ -97,7 +97,20 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
       onRefresh: onRefresh,
       child: CustomScrollView(
         slivers: [
-          const ImmichSliverAppBar(),
+          ImmichSliverAppBar(
+            actions: [
+              IconButton(
+                icon: const Icon(
+                  Icons.add_rounded,
+                  size: 28,
+                ),
+                onPressed: () => context.pushRoute(
+                  const DriftCreateAlbumRoute(),
+                ),
+              ),
+            ],
+            showUploadButton: false,
+          ),
           _SearchBar(
             searchController: searchController,
             searchFocusNode: searchFocusNode,
@@ -475,7 +488,7 @@ class _AlbumList extends StatelessWidget {
 
   final bool isLoading;
   final String? error;
-  final List<Album> albums;
+  final List<RemoteAlbum> albums;
   final String? userId;
 
   @override
@@ -555,7 +568,7 @@ class _AlbumList extends StatelessWidget {
                 ),
               ),
               onTap: () => context.router.push(
-                RemoteTimelineRoute(albumId: album.id),
+                RemoteAlbumRoute(album: album),
               ),
               leadingPadding: const EdgeInsets.only(
                 right: 16,
@@ -573,13 +586,24 @@ class _AlbumList extends StatelessWidget {
                         ),
                       ),
                     )
-                  : const SizedBox(
+                  : SizedBox(
                       width: 80,
                       height: 80,
-                      child: Icon(
-                        Icons.photo_album_rounded,
-                        size: 40,
-                        color: Colors.grey,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.surfaceContainer,
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(16)),
+                          border: Border.all(
+                            color: context.colorScheme.outline.withAlpha(50),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.photo_album_rounded,
+                          size: 24,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
             ),
@@ -599,7 +623,7 @@ class _AlbumGrid extends StatelessWidget {
     required this.error,
   });
 
-  final List<Album> albums;
+  final List<RemoteAlbum> albums;
   final String? userId;
   final bool isLoading;
   final String? error;
@@ -674,14 +698,14 @@ class _GridAlbumCard extends StatelessWidget {
     required this.userId,
   });
 
-  final Album album;
+  final RemoteAlbum album;
   final String? userId;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => context.router.push(
-        RemoteTimelineRoute(albumId: album.id),
+        RemoteAlbumRoute(album: album),
       ),
       child: Card(
         elevation: 0,

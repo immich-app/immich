@@ -121,6 +121,14 @@ export interface SystemConfig {
   newVersionCheck: {
     enabled: boolean;
   };
+  nightlyTasks: {
+    startTime: string;
+    databaseCleanup: boolean;
+    missingThumbnails: boolean;
+    clusterNewFaces: boolean;
+    generateMemories: boolean;
+    syncQuotaUsage: boolean;
+  };
   trash: {
     enabled: boolean;
     days: number;
@@ -297,6 +305,14 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   newVersionCheck: {
     enabled: true,
+  },
+  nightlyTasks: {
+    startTime: '00:00',
+    databaseCleanup: true,
+    generateMemories: true,
+    syncQuotaUsage: true,
+    missingThumbnails: true,
+    clusterNewFaces: true,
   },
   trash: {
     enabled: true,

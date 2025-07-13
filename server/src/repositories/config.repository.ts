@@ -334,6 +334,10 @@ export class ConfigRepository {
     return cached;
   }
 
+  isDev() {
+    return this.getEnv().environment === ImmichEnvironment.DEVELOPMENT;
+  }
+
   getWorker() {
     return this.worker;
   }

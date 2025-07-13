@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -25,6 +26,8 @@ class ThumbnailTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+
     final assetContainerColor = context.isDarkTheme
         ? context.primaryColor.darken(amount: 0.4)
         : context.primaryColor.lighten(amount: 0.75);
@@ -64,7 +67,7 @@ class ThumbnailTile extends ConsumerWidget {
               children: [
                 Positioned.fill(
                   child: Hero(
-                    tag: asset.heroTag,
+                    tag: '${asset.heroTag}_$heroOffset',
                     child: Thumbnail(
                       asset: asset,
                       fit: fit,

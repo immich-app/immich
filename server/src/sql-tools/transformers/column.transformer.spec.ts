@@ -13,6 +13,7 @@ describe(transformColumns.name, () => {
           column: {
             name: 'column1',
             tableName: 'table1',
+            primary: false,
             type: 'character varying',
             nullable: false,
             isArray: false,
@@ -30,6 +31,7 @@ describe(transformColumns.name, () => {
           column: {
             name: 'column1',
             tableName: 'table1',
+            primary: false,
             type: 'character varying',
             nullable: true,
             isArray: false,
@@ -47,6 +49,7 @@ describe(transformColumns.name, () => {
           column: {
             name: 'column1',
             tableName: 'table1',
+            primary: false,
             type: 'character varying',
             enumName: 'table1_column1_enum',
             nullable: true,
@@ -65,6 +68,7 @@ describe(transformColumns.name, () => {
           column: {
             name: 'column1',
             tableName: 'table1',
+            primary: false,
             type: 'boolean',
             nullable: true,
             isArray: true,

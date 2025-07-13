@@ -13,6 +13,7 @@ where
 -- SessionRepository.getByToken
 select
   "sessions"."id",
+  "sessions"."isPendingSyncReset",
   "sessions"."updatedAt",
   "sessions"."pinExpiresAt",
   (
@@ -71,3 +72,15 @@ set
   "pinExpiresAt" = $1
 where
   "userId" = $2
+
+-- SessionRepository.resetSyncProgress
+begin
+update "sessions"
+set
+  "isPendingSyncReset" = $1
+where
+  "id" = $2
+delete from "session_sync_checkpoints"
+where
+  "sessionId" = $1
+commit
