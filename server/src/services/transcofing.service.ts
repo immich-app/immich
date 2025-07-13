@@ -1,24 +1,23 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { BaseService } from 'src/services/base.service';
-import { AssetType, ImmichWorker, Permission, TranscodeTarget, VideoCodec } from 'src/enum';
-import { VideoInfo, VideoInterfaces } from 'src/types';
-import { OnEvent } from 'src/decorators';
-import { ArgOf } from 'src/repositories/event.repository';
-import child_process from 'node:child_process';
 import { sign } from 'jsonwebtoken';
+import child_process from 'node:child_process';
+import { createWriteStream } from 'node:fs';
 import fs from 'node:fs/promises';
+import { OnEvent } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetType, ImmichWorker, Permission, TranscodeTarget, VideoCodec } from 'src/enum';
+import { ArgOf } from 'src/repositories/event.repository';
+import { BaseService } from 'src/services/base.service';
+import { VideoInfo, VideoInterfaces } from 'src/types';
 import { BaseConfig } from 'src/utils/media';
-import {createWriteStream} from 'fs'
 
-type VideoStream = VideoInfo['videoStreams'][0]
-type AudioStream = VideoInfo['audioStreams'][0]
-
+type VideoStream = VideoInfo['videoStreams'][0];
+type AudioStream = VideoInfo['audioStreams'][0];
 
 @Injectable()
 export class TranscodingService extends BaseService {
   SUPPORTED_TAGS = ['avc1', 'hvc', 'dvh1'];
-  AVC_PROFILES: { [key: string]: string } = { 'high': '.6400', 'main': '.4D40', 'baseline': '.42E0' };
+  AVC_PROFILES: { [key: string]: string } = { high: '.6400', main: '.4D40', baseline: '.42E0' };
   videoInterfaces: VideoInterfaces = { dri: [], mali: false };
 
   // https://github.com/zoriya/Kyoo/blob/d08febf803e307da1277996f7856bd901b6e83e2/transcoder/src/codec.go#L18
@@ -57,7 +56,7 @@ export class TranscodingService extends BaseService {
     }
 
     const videoStream = stats.videoStreams[0],
-      audioStream = (stats.audioStreams.length > 0) ? stats.audioStreams[0] : undefined;
+      audioStream = stats.audioStreams.length > 0 ? stats.audioStreams[0] : undefined;
 
     playlist.push(
       '#EXTM3U',
@@ -70,7 +69,7 @@ export class TranscodingService extends BaseService {
 
     if (videoStream.codecTag && this.SUPPORTED_TAGS.includes(videoStream.codecTag)) {
       playlist.push(
-        `#EXT-X-STREAM-INF:BANDWIDTH=${videoStream.bitrate},CODECS="${this.videoStreamToMime(videoStream)}${(audioStream ? (', ' + this.audioStreamToMime(audioStream)) : '')}",RESOLUTION=${videoStream.width}x${videoStream.height},FRAME-RATE=${videoStream.fps}`,
+        `#EXT-X-STREAM-INF:BANDWIDTH=${videoStream.bitrate},CODECS="${this.videoStreamToMime(videoStream)}${audioStream ? ', ' + this.audioStreamToMime(audioStream) : ''}",RESOLUTION=${videoStream.width}x${videoStream.height},FRAME-RATE=${videoStream.fps}`,
         `original.m3u8`,
       );
     }
@@ -94,10 +93,13 @@ export class TranscodingService extends BaseService {
       `#EXT-X-MAP:URI="${quality}/init.mp4"`,
     );
 
+    // prettier-ignore
     const s = child_process.spawn('ffprobe', [
-      '-loglevel', 'error', '-select_streams', 'v:0',
+      '-loglevel', 'error',
+      '-select_streams', 'v:0',
       '-show_entries', 'packet=pts_time,flags',
-      '-of', 'csv=print_section=0', asset.originalPath,
+      '-of', 'csv=print_section=0',
+      asset.originalPath,
     ]);
     const frames: number[] = [];
 
@@ -110,7 +112,7 @@ export class TranscodingService extends BaseService {
         if (code === 0) {
           resolve();
         } else {
-          reject(new InternalServerErrorException('Can\'t decode video'));
+          reject(new InternalServerErrorException("Can't decode video"));
         }
       });
     });
@@ -121,7 +123,7 @@ export class TranscodingService extends BaseService {
       }
       const [time_, type] = data.split(',');
 
-      const time = Number.parseFloat(time_) * ((type.startsWith('K')) ? -1 : 1);
+      const time = Number.parseFloat(time_) * (type.startsWith('K') ? -1 : 1);
       frames.push(time);
     }
     if (frames.length === 0) {
@@ -131,7 +133,8 @@ export class TranscodingService extends BaseService {
 
     const partTimes: number[] = [];
     const keyTimes: number[] = [];
-    let prevPart = frames[0], prevSeg = frames[0];
+    let prevPart = frames[0];
+    let prevSeg = frames[0];
     let partIdx = 0;
     let prevPartIdx = 0;
 
@@ -142,7 +145,9 @@ export class TranscodingService extends BaseService {
       if (!original && (frames[i] - prevPart > 0.5 || isKf)) {
         partTimes.push(frames[i]);
 
-        playlist.push(`#EXT-X-PART:DURATION=${(frames[i] - prevPart).toFixed(5)},URI="${quality}/${partIdx++}.mp4"${(prevPart === prevSeg) ? ',INDEPENDENT=YES' : ''}`);
+        playlist.push(
+          `#EXT-X-PART:DURATION=${(frames[i] - prevPart).toFixed(5)},URI="${quality}/${partIdx++}.mp4"${prevPart === prevSeg ? ',INDEPENDENT=YES' : ''}`,
+        );
         prevPart = frames[i];
       }
 
@@ -156,7 +161,7 @@ export class TranscodingService extends BaseService {
         // TODO: If client decides to request full part, then we have to concat it using concat muxer
         playlist.push(
           `#EXTINF:${(frames[i] - prevSeg).toFixed(5)},`,
-          `${quality}/${Array.from({ length: partIdx - prevPartIdx }, (_, i) => (prevPartIdx + i).toFixed(0)).join('.')}.mp4`,
+          `${quality}/${Array.from({ length: partIdx - prevPartIdx }, (_, i) => prevPartIdx + i).join('.')}.mp4`,
         );
         prevPart = prevSeg = frames[i];
         prevPartIdx = partIdx;
@@ -189,7 +194,8 @@ export class TranscodingService extends BaseService {
     this.logger.debug(`Started transcoding video ${id}`);
     await fs.mkdir(`/tmp/video/${id}/`, { mode: 0o700, recursive: true });
 
-    const { liveFfmpeg } = await this.getConfig({ withCache: true });
+    const config = await this.getConfig({ withCache: true });
+    const liveFfmpeg = { ...config.liveFfmpeg };
     liveFfmpeg.targetVideoCodec = codec;
 
     const stats = await this.mediaRepository.probe(path);
@@ -197,46 +203,54 @@ export class TranscodingService extends BaseService {
       throw new NotFoundException('No video streams in file');
     }
 
-    const args = [
-      '-nostats', '-hide_banner', '-loglevel', 'warning',
-      '-i', path];
+    const args = ['-nostats', '-hide_banner', '-loglevel', 'warning'];
     if (quality === 'original') {
       args.push('-vcodec', 'copy');
     } else {
-      const videoStream = stats.videoStreams[0],
-        audioStream = stats.audioStreams[0];
+      const videoStream = stats.videoStreams[0];
+      const audioStream = stats.audioStreams[0];
 
+      const options = BaseConfig.create(liveFfmpeg, this.videoInterfaces).getCommand(
+        TranscodeTarget.ALL,
+        videoStream,
+        audioStream,
+      );
       for (const option of options.inputOptions) {
-        args.push(...option.split(' '))
+        args.push(...option.split(' '));
       }
-      const options = BaseConfig.create(liveFfmpeg, this.videoInterfaces).getCommand(TranscodeTarget.ALL, videoStream, audioStream);
+      args.push('-i', path);
       for (const option of options.outputOptions) {
-        args.push(...option.split(' '))
+        args.push(...option.split(' '));
       }
+
+      // prettier-ignore
       args.push(
         //'-vf', `scale=${quality}:-2`,
-        '-maxrate', '4000k', '-bufsize', '1835k');
+        '-maxrate', '4000k',
+        '-bufsize', '1835k',
+      );
     }
+    // prettier-ignore
     args.push(
       '-f', 'segment',
       '-segment_format', 'mp4',
       '-segment_list_type', 'csv',
 
-      '-copyts', '-start_at_zero',
+      '-copyts',
+      '-start_at_zero',
       '-muxdelay', '0',
 
       '-break_non_keyframes', '1',
       '-segment_times', partTimes.join(','),
       '-force_key_frames', keyTimes.join(','),
-      '-segment_header_filename',
-      `/tmp/video/${id}/init.mp4`,
 
+      '-segment_header_filename', `/tmp/video/${id}/init.mp4`,
       '-segment_format_options', 'movflags=dash+skip_sidx',
-
       '-segment_list', 'pipe:0',
 
       '-strict', '-2',
-      `/tmp/video/${id}/%d.mp4`);
+      `/tmp/video/${id}/%d.mp4`,
+    );
     const s = child_process.spawn('ffmpeg', args);
 
     s.stdout.on('data', (bytes) => {
@@ -245,8 +259,8 @@ export class TranscodingService extends BaseService {
         this.logger.debug(`Segment ${data.split(',')[0]} ready`);
       }
     });
-    var log = createWriteStream(`/tmp/video/${id}/transcoding.log`);
-    s.stderr.pipe(log)
+    const log = createWriteStream(`/tmp/video/${id}/transcoding.log`);
+    s.stderr.pipe(log);
     s.on('exit', (code) => {
       if (code === 0) {
         this.logger.debug(`Finished live transcoding of video ${path}`);
@@ -294,5 +308,4 @@ export class TranscodingService extends BaseService {
       return [];
     }
   }
-
 }
