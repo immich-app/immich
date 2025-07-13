@@ -54,6 +54,27 @@ class _MesmerizingSliverAppBarState
     final isMultiSelectEnabled =
         ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
+    Color? actionIconColor = Color.lerp(
+      Colors.white,
+      context.primaryColor,
+      _scrollProgress,
+    );
+
+    List<Shadow> actionIconShadows = [
+      if (_scrollProgress < 0.95)
+        Shadow(
+          offset: const Offset(0, 2),
+          blurRadius: 5,
+          color: Colors.black.withValues(alpha: 0.5),
+        )
+      else
+        const Shadow(
+          offset: Offset(0, 2),
+          blurRadius: 0,
+          color: Colors.transparent,
+        ),
+    ];
+
     return isMultiSelectEnabled
         ? SliverToBoxAdapter(
             child: switch (_scrollProgress) {
@@ -72,29 +93,31 @@ class _MesmerizingSliverAppBarState
                 Platform.isIOS
                     ? Icons.arrow_back_ios_new_rounded
                     : Icons.arrow_back,
-                color: Color.lerp(
-                  Colors.white,
-                  context.primaryColor,
-                  _scrollProgress,
-                ),
-                shadows: [
-                  _scrollProgress < 0.95
-                      ? Shadow(
-                          offset: const Offset(0, 2),
-                          blurRadius: 5,
-                          color: Colors.black.withValues(alpha: 0.5),
-                        )
-                      : const Shadow(
-                          offset: Offset(0, 2),
-                          blurRadius: 0,
-                          color: Colors.transparent,
-                        ),
-                ],
+                color: actionIconColor,
+                shadows: actionIconShadows,
               ),
               onPressed: () {
                 context.pop();
               },
             ),
+            actions: [
+              IconButton(
+                icon: Icon(
+                  Icons.swap_vert,
+                  color: actionIconColor,
+                  shadows: actionIconShadows,
+                ),
+                onPressed: () {},
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.more_vert,
+                  color: actionIconColor,
+                  shadows: actionIconShadows,
+                ),
+                onPressed: () {},
+              ),
+            ],
             flexibleSpace: Builder(
               builder: (context) {
                 final settings = context.dependOnInheritedWidgetOfExactType<
