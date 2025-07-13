@@ -65,6 +65,53 @@ class SyncStreamService {
     }
   }
 
+  Future<void> handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) async {
+    if (batchData.isEmpty) return;
+
+    _logger.info('Processing batch of ${batchData.length} AssetUploadReadyV1 events');
+
+    final List<SyncAssetV1> assets = [];
+    final List<SyncAssetExifV1> exifs = [];
+
+    try {
+      for (final data in batchData) {
+        if (data is! Map<String, dynamic>) {
+          continue;
+        }
+
+        final payload = data;
+        final assetData = payload['asset'];
+        final exifData = payload['exif'];
+
+        if (assetData == null || exifData == null) {
+          continue;
+        }
+
+        final asset = SyncAssetV1.fromJson(assetData);
+        final exif = SyncAssetExifV1.fromJson(exifData);
+
+        if (asset != null && exif != null) {
+          assets.add(asset);
+          exifs.add(exif);
+        }
+      }
+
+      if (assets.isNotEmpty && exifs.isNotEmpty) {
+        await _syncStreamRepository
+            .updateAssetsV1(assets, debugLabel: 'websocket-batch');
+        await _syncStreamRepository
+            .updateAssetsExifV1(exifs, debugLabel: 'websocket-batch');
+        _logger.info('Successfully processed ${assets.length} assets in batch');
+      }
+    } catch (error, stackTrace) {
+      _logger.severe(
+        "Error processing AssetUploadReadyV1 websocket batch events",
+        error,
+        stackTrace,
+      );
+    }
+  }
+
   Future<void> _handleEvents(List<SyncEvent> events, Function() abort) async {
     List<SyncEvent> items = [];
     for (final event in events) {

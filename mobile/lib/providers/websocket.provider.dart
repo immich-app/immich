@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
@@ -25,7 +26,6 @@ enum PendingAction {
   assetUploaded,
   assetHidden,
   assetTrash,
-  assetUploadReady,
 }
 
 class PendingChange {
@@ -108,6 +108,18 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   final Debouncer _debounce =
       Debouncer(interval: const Duration(milliseconds: 500));
 
+  final Debouncer _batchDebouncer = Debouncer(
+    interval: const Duration(seconds: 5),
+    maxWaitTime: const Duration(seconds: 10),
+  );
+  final List<dynamic> _batchedAssetUploadReady = [];
+
+  @override
+  void dispose() {
+    _batchDebouncer.dispose();
+    super.dispose();
+  }
+
   /// Connects websocket to server unless already connected
   void connect() {
     if (state.isConnected) return;
@@ -182,6 +194,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   void disconnect() {
     debugPrint("Attempting to disconnect from websocket");
+
+    _batchedAssetUploadReady.clear();
 
     var socket = state.socket?.disconnect();
 
@@ -291,32 +305,11 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     }
   }
 
-  Future<void> _handlePendingAssetUploadReady() async {
-    final uploadReadyChanges = state.pendingChanges
-        .where((c) => c.action == PendingAction.assetUploadReady)
-        .toList();
-    if (uploadReadyChanges.isNotEmpty) {
-      for (final change in uploadReadyChanges) {
-        try {
-          _ref.read(backgroundSyncProvider).syncWebsocket(change.value);
-        } catch (error) {
-          _log.severe("Error processing AssetUploadReadyV1: $error");
-        }
-      }
-      state = state.copyWith(
-        pendingChanges: state.pendingChanges
-            .whereNot((c) => uploadReadyChanges.contains(c))
-            .toList(),
-      );
-    }
-  }
-
   Future<void> handlePendingChanges() async {
     await _handlePendingUploaded();
     await _handlePendingDeletes();
     await _handlingPendingHidden();
     await _handlePendingTrashes();
-    await _handlePendingAssetUploadReady();
   }
 
   void _handleOnConfigUpdate(dynamic _) {
@@ -373,7 +366,24 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   void _handleSyncAssetUploadReady(dynamic data) {
-    addPendingChange(PendingAction.assetUploadReady, data);
+    _batchedAssetUploadReady.add(data);
+    _batchDebouncer.run(_processBatchedAssetUploadReady);
+  }
+
+  void _processBatchedAssetUploadReady() {
+    if (_batchedAssetUploadReady.isEmpty) {
+      return;
+    }
+
+    try {
+      _ref
+          .read(backgroundSyncProvider)
+          .syncWebsocketBatch(_batchedAssetUploadReady.toList());
+    } catch (error) {
+      _log.severe("Error processing batched AssetUploadReadyV1 events: $error");
+    }
+
+    _batchedAssetUploadReady.clear();
   }
 }
 
