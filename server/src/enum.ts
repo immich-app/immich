@@ -567,6 +567,7 @@ export enum DatabaseLock {
   VersionHistory = 500,
   CLIPDimSize = 512,
   Library = 1337,
+  NightlyJobs = 600,
   GetSystemConfig = 69,
   BackupDatabase = 42,
   MemoryCreation = 777,
@@ -588,6 +589,8 @@ export enum SyncRequestType {
   PartnerStacksV1 = 'PartnerStacksV1',
   StacksV1 = 'StacksV1',
   UsersV1 = 'UsersV1',
+  PeopleV1 = 'PeopleV1',
+  UserMetadataV1 = 'UserMetadataV1',
 }
 
 export enum SyncEntityType {
@@ -635,7 +638,14 @@ export enum SyncEntityType {
   StackV1 = 'StackV1',
   StackDeleteV1 = 'StackDeleteV1',
 
+  PersonV1 = 'PersonV1',
+  PersonDeleteV1 = 'PersonDeleteV1',
+
+  UserMetadataV1 = 'UserMetadataV1',
+  UserMetadataDeleteV1 = 'UserMetadataDeleteV1',
+
   SyncAckV1 = 'SyncAckV1',
+  SyncResetV1 = 'SyncResetV1',
 }
 
 export enum NotificationLevel {
@@ -674,4 +684,9 @@ export enum AssetVisibility {
    */
   HIDDEN = 'hidden',
   LOCKED = 'locked',
+}
+
+export enum CronJob {
+  LibraryScan = 'LibraryScan',
+  NightlyJobs = 'NightlyJobs',
 }

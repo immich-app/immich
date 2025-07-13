@@ -125,7 +125,7 @@ class LocalMediaSummaryPage extends StatelessWidget {
                         name: album.name,
                         countFuture: countFuture,
                         onTap: () => context.router.push(
-                          LocalTimelineRoute(albumId: album.id),
+                          LocalTimelineRoute(album: album),
                         ),
                       );
                     },
@@ -153,6 +153,18 @@ final _remoteStats = [
   _Stat(
     name: 'Remote Albums',
     load: (db) => db.managers.remoteAlbumEntity.count(),
+  ),
+  _Stat(
+    name: 'Memories',
+    load: (db) => db.managers.memoryEntity.count(),
+  ),
+  _Stat(
+    name: 'Memories Assets',
+    load: (db) => db.managers.memoryAssetEntity.count(),
+  ),
+  _Stat(
+    name: 'Stacks',
+    load: (db) => db.managers.stackEntity.count(),
   ),
 ];
 
@@ -214,7 +226,7 @@ class RemoteMediaSummaryPage extends StatelessWidget {
                         name: album.name,
                         countFuture: countFuture,
                         onTap: () => context.router.push(
-                          RemoteTimelineRoute(albumId: album.id),
+                          RemoteAlbumRoute(album: album),
                         ),
                       );
                     },

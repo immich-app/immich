@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -23,7 +24,12 @@ class SyncStreamService {
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
-  Future<void> sync() => _syncApiRepository.streamChanges(_handleEvents);
+  Future<void> sync() {
+    _logger.info("Remote sync request for userr");
+    DLog.log("Remote sync request for user");
+    // Start the sync stream and handle events
+    return _syncApiRepository.streamChanges(_handleEvents);
+  }
 
   Future<void> _handleEvents(List<SyncEvent> events, Function() abort) async {
     List<SyncEvent> items = [];
@@ -146,6 +152,33 @@ class SyncStreamService {
       // to acknowledge that the client has processed all the backfill events
       case SyncEntityType.syncAckV1:
         return;
+      case SyncEntityType.memoryV1:
+        return _syncStreamRepository.updateMemoriesV1(data.cast());
+      case SyncEntityType.memoryDeleteV1:
+        return _syncStreamRepository.deleteMemoriesV1(data.cast());
+      case SyncEntityType.memoryToAssetV1:
+        return _syncStreamRepository.updateMemoryAssetsV1(data.cast());
+      case SyncEntityType.memoryToAssetDeleteV1:
+        return _syncStreamRepository.deleteMemoryAssetsV1(data.cast());
+      case SyncEntityType.stackV1:
+        return _syncStreamRepository.updateStacksV1(data.cast());
+      case SyncEntityType.stackDeleteV1:
+        return _syncStreamRepository.deleteStacksV1(data.cast());
+      case SyncEntityType.partnerStackV1:
+        return _syncStreamRepository.updateStacksV1(
+          data.cast(),
+          debugLabel: 'partner',
+        );
+      case SyncEntityType.partnerStackBackfillV1:
+        return _syncStreamRepository.updateStacksV1(
+          data.cast(),
+          debugLabel: 'partner backfill',
+        );
+      case SyncEntityType.partnerStackDeleteV1:
+        return _syncStreamRepository.deleteStacksV1(
+          data.cast(),
+          debugLabel: 'partner',
+        );
       default:
         _logger.warning("Unknown sync data type: $type");
     }

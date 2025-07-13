@@ -103,6 +103,14 @@ const updatedConfig = Object.freeze<SystemConfig>({
     lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
     darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
   },
+  nightlyTasks: {
+    startTime: '00:00',
+    databaseCleanup: true,
+    clusterNewFaces: true,
+    missingThumbnails: true,
+    generateMemories: true,
+    syncQuotaUsage: true,
+  },
   reverseGeocoding: {
     enabled: true,
   },
@@ -124,6 +132,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     timeout: 30_000,
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
+    roleClaim: 'immich_role',
   },
   passwordLogin: {
     enabled: true,

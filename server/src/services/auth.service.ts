@@ -250,7 +250,7 @@ export class AuthService extends BaseService {
     const { oauth } = await this.getConfig({ withCache: false });
     const url = this.resolveRedirectUri(oauth, dto.url);
     const profile = await this.oauthRepository.getProfile(oauth, url, expectedState, codeVerifier);
-    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = oauth;
+    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
 
@@ -290,6 +290,11 @@ export class AuthService extends BaseService {
         default: defaultStorageQuota,
         isValid: (value: unknown) => Number(value) >= 0,
       });
+      const role = this.getClaim<'admin' | 'user'>(profile, {
+        key: roleClaim,
+        default: 'user',
+        isValid: (value: unknown) => isString(value) && ['admin', 'user'].includes(value),
+      });
 
       const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
       user = await this.createUser({
@@ -298,6 +303,7 @@ export class AuthService extends BaseService {
         oauthId: profile.sub,
         quotaSizeInBytes: storageQuota === null ? null : storageQuota * HumanReadableSize.GiB,
         storageLabel: storageLabel || null,
+        isAdmin: role === 'admin',
       });
     }
 
@@ -460,6 +466,7 @@ export class AuthService extends BaseService {
         user: session.user,
         session: {
           id: session.id,
+          isPendingSyncReset: session.isPendingSyncReset,
           hasElevatedPermission,
         },
       };

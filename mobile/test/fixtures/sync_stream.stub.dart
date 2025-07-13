@@ -42,4 +42,47 @@ abstract final class SyncStreamStub {
     data: SyncPartnerDeleteV1(sharedById: "3", sharedWithId: "4"),
     ack: "4",
   );
+
+  static final memoryV1 = SyncEvent(
+    type: SyncEntityType.memoryV1,
+    data: SyncMemoryV1(
+      createdAt: DateTime(2023, 1, 1),
+      data: {"year": 2023, "title": "Test Memory"},
+      deletedAt: null,
+      hideAt: null,
+      id: "memory-1",
+      isSaved: false,
+      memoryAt: DateTime(2023, 1, 1),
+      ownerId: "user-1",
+      seenAt: null,
+      showAt: DateTime(2023, 1, 1),
+      type: MemoryType.onThisDay,
+      updatedAt: DateTime(2023, 1, 1),
+    ),
+    ack: "5",
+  );
+
+  static final memoryDeleteV1 = SyncEvent(
+    type: SyncEntityType.memoryDeleteV1,
+    data: SyncMemoryDeleteV1(memoryId: "memory-2"),
+    ack: "6",
+  );
+
+  static final memoryToAssetV1 = SyncEvent(
+    type: SyncEntityType.memoryToAssetV1,
+    data: SyncMemoryAssetV1(
+      assetId: "asset-1",
+      memoryId: "memory-1",
+    ),
+    ack: "7",
+  );
+
+  static final memoryToAssetDeleteV1 = SyncEvent(
+    type: SyncEntityType.memoryToAssetDeleteV1,
+    data: SyncMemoryAssetDeleteV1(
+      assetId: "asset-2",
+      memoryId: "memory-1",
+    ),
+    ack: "8",
+  );
 }

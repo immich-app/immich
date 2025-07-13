@@ -45,6 +45,9 @@ export class SessionTable {
   @UpdateIdColumn({ indexName: 'IDX_sessions_update_id' })
   updateId!: Generated<string>;
 
+  @Column({ type: 'boolean', default: false })
+  isPendingSyncReset!: Generated<boolean>;
+
   @Column({ type: 'timestamp with time zone', nullable: true })
   pinExpiresAt!: Timestamp | null;
 }

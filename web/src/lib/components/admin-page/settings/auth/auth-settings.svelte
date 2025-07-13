@@ -169,6 +169,16 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
+                label={$t('admin.oauth_role_claim').toUpperCase()}
+                description={$t('admin.oauth_role_claim_description')}
+                bind:value={config.oauth.roleClaim}
+                required={true}
+                disabled={disabled || !config.oauth.enabled}
+                isEdited={!(config.oauth.roleClaim == savedConfig.oauth.roleClaim)}
+              />
+
+              <SettingInputField
+                inputType={SettingInputFieldType.TEXT}
                 label={$t('admin.oauth_storage_quota_claim').toUpperCase()}
                 description={$t('admin.oauth_storage_quota_claim_description')}
                 bind:value={config.oauth.storageQuotaClaim}

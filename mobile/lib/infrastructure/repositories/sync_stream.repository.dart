@@ -1,12 +1,18 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:logging/logging.dart';
@@ -64,8 +70,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (e, s) {
-      _logger.severe('Error: SyncPartnerDeleteV1', e, s);
+    } catch (error, stack) {
+      _logger.severe('Error: SyncPartnerDeleteV1', error, stack);
       rethrow;
     }
   }
@@ -87,8 +93,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (e, s) {
-      _logger.severe('Error: SyncPartnerV1', e, s);
+    } catch (error, stack) {
+      _logger.severe('Error: SyncPartnerV1', error, stack);
       rethrow;
     }
   }
@@ -98,10 +104,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     String debugLabel = 'user',
   }) async {
     try {
-      await _db.remoteAssetEntity
-          .deleteWhere((row) => row.id.isIn(data.map((e) => e.assetId)));
-    } catch (e, s) {
-      _logger.severe('Error: deleteAssetsV1 - $debugLabel', e, s);
+      await _db.remoteAssetEntity.deleteWhere(
+        (row) => row.id.isIn(data.map((e) => e.assetId)),
+      );
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAssetsV1 - $debugLabel', error, stack);
       rethrow;
     }
   }
@@ -136,8 +143,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (e, s) {
-      _logger.severe('Error: updateAssetsV1 - $debugLabel', e, s);
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetsV1 - $debugLabel', error, stack);
       rethrow;
     }
   }
@@ -180,18 +187,23 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (e, s) {
-      _logger.severe('Error: updateAssetsExifV1 - $debugLabel', e, s);
+    } catch (error, stack) {
+      _logger.severe(
+        'Error: updateAssetsExifV1 - $debugLabel',
+        error,
+        stack,
+      );
       rethrow;
     }
   }
 
   Future<void> deleteAlbumsV1(Iterable<SyncAlbumDeleteV1> data) async {
     try {
-      await _db.remoteAlbumEntity
-          .deleteWhere((row) => row.id.isIn(data.map((e) => e.albumId)));
-    } catch (e, s) {
-      _logger.severe('Error: deleteAlbumsV1', e, s);
+      await _db.remoteAlbumEntity.deleteWhere(
+        (row) => row.id.isIn(data.map((e) => e.albumId)),
+      );
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAlbumsV1', error, stack);
       rethrow;
     }
   }
@@ -218,8 +230,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (e, s) {
-      _logger.severe('Error: updateAlbumsV1', e, s);
+    } catch (error, stack) {
+      _logger.severe('Error: updateAlbumsV1', error, stack);
       rethrow;
     }
   }
@@ -237,8 +249,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (e, s) {
-      _logger.severe('Error: deleteAlbumUsersV1', e, s);
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAlbumUsersV1', error, stack);
       rethrow;
     }
   }
@@ -264,8 +276,12 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (e, s) {
-      _logger.severe('Error: updateAlbumUsersV1 - $debugLabel', e, s);
+    } catch (error, stack) {
+      _logger.severe(
+        'Error: updateAlbumUsersV1 - $debugLabel',
+        error,
+        stack,
+      );
       rethrow;
     }
   }
@@ -285,8 +301,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (e, s) {
-      _logger.severe('Error: deleteAlbumToAssetsV1', e, s);
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAlbumToAssetsV1', error, stack);
       rethrow;
     }
   }
@@ -310,8 +326,137 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           );
         }
       });
-    } catch (e, s) {
-      _logger.severe('Error: updateAlbumToAssetsV1 - $debugLabel', e, s);
+    } catch (error, stack) {
+      _logger.severe(
+        'Error: updateAlbumToAssetsV1 - $debugLabel',
+        error,
+        stack,
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> updateMemoriesV1(Iterable<SyncMemoryV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final memory in data) {
+          final companion = MemoryEntityCompanion(
+            createdAt: Value(memory.createdAt),
+            deletedAt: Value(memory.deletedAt),
+            ownerId: Value(memory.ownerId),
+            type: Value(memory.type.toMemoryType()),
+            data: Value(jsonEncode(memory.data)),
+            isSaved: Value(memory.isSaved),
+            memoryAt: Value(memory.memoryAt),
+            seenAt: Value.absentIfNull(memory.seenAt),
+            showAt: Value.absentIfNull(memory.showAt),
+            hideAt: Value.absentIfNull(memory.hideAt),
+          );
+
+          batch.insert(
+            _db.memoryEntity,
+            companion.copyWith(id: Value(memory.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateMemoriesV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteMemoriesV1(Iterable<SyncMemoryDeleteV1> data) async {
+    try {
+      await _db.memoryEntity.deleteWhere(
+        (row) => row.id.isIn(data.map((e) => e.memoryId)),
+      );
+    } catch (error, stack) {
+      _logger.severe('Error: deleteMemoriesV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateMemoryAssetsV1(Iterable<SyncMemoryAssetV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final asset in data) {
+          final companion = MemoryAssetEntityCompanion(
+            memoryId: Value(asset.memoryId),
+            assetId: Value(asset.assetId),
+          );
+
+          batch.insert(
+            _db.memoryAssetEntity,
+            companion,
+            onConflict: DoNothing(),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateMemoryAssetsV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteMemoryAssetsV1(
+    Iterable<SyncMemoryAssetDeleteV1> data,
+  ) async {
+    try {
+      await _db.batch((batch) {
+        for (final asset in data) {
+          batch.delete(
+            _db.memoryAssetEntity,
+            MemoryAssetEntityCompanion(
+              memoryId: Value(asset.memoryId),
+              assetId: Value(asset.assetId),
+            ),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteMemoryAssetsV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateStacksV1(
+    Iterable<SyncStackV1> data, {
+    String debugLabel = 'user',
+  }) async {
+    try {
+      await _db.batch((batch) {
+        for (final stack in data) {
+          final companion = StackEntityCompanion(
+            createdAt: Value(stack.createdAt),
+            updatedAt: Value(stack.updatedAt),
+            ownerId: Value(stack.ownerId),
+            primaryAssetId: Value(stack.primaryAssetId),
+          );
+
+          batch.insert(
+            _db.stackEntity,
+            companion.copyWith(id: Value(stack.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateStacksV1 - $debugLabel', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteStacksV1(
+    Iterable<SyncStackDeleteV1> data, {
+    String debugLabel = 'user',
+  }) async {
+    try {
+      await _db.stackEntity.deleteWhere(
+        (row) => row.id.isIn(data.map((e) => e.stackId)),
+      );
+    } catch (error, stack) {
+      _logger.severe('Error: deleteStacksV1 - $debugLabel', error, stack);
       rethrow;
     }
   }
@@ -332,6 +477,13 @@ extension on AssetOrder {
         AssetOrder.asc => AlbumAssetOrder.asc,
         AssetOrder.desc => AlbumAssetOrder.desc,
         _ => throw Exception('Unknown AssetOrder value: $this'),
+      };
+}
+
+extension on MemoryType {
+  MemoryTypeEnum toMemoryType() => switch (this) {
+        MemoryType.onThisDay => MemoryTypeEnum.onThisDay,
+        _ => throw Exception('Unknown MemoryType value: $this'),
       };
 }
 

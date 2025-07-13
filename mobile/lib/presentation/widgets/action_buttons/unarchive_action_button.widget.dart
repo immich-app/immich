@@ -5,14 +5,13 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class UnarchiveActionButton extends ConsumerWidget {
+class UnArchiveActionButton extends ConsumerWidget {
   final ActionSource source;
 
-  const UnarchiveActionButton({super.key, required this.source});
+  const UnArchiveActionButton({super.key, required this.source});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -20,7 +19,6 @@ class UnarchiveActionButton extends ConsumerWidget {
     }
 
     final result = await ref.read(actionProvider.notifier).unArchive(source);
-    await ref.read(timelineServiceProvider).reloadBucket();
     ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'unarchive_action_prompt'.t(

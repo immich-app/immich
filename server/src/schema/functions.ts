@@ -20,7 +20,6 @@ export const immich_uuid_v7 = registerFunction({
       ),
       'hex')::uuid;
 `,
-  synchronize: false,
 });
 
 export const album_user_after_insert = registerFunction({
@@ -33,7 +32,6 @@ export const album_user_after_insert = registerFunction({
       WHERE "id" IN (SELECT DISTINCT "albumsId" FROM inserted_rows);
       RETURN NULL;
     END`,
-  synchronize: false,
 });
 
 export const updated_at = registerFunction({
@@ -48,7 +46,6 @@ export const updated_at = registerFunction({
         new."updateId" = immich_uuid_v7(clock_timestamp);
         return new;
     END;`,
-  synchronize: false,
 });
 
 export const f_concat_ws = registerFunction({
@@ -59,7 +56,6 @@ export const f_concat_ws = registerFunction({
   parallel: 'safe',
   behavior: 'immutable',
   body: `SELECT array_to_string($2, $1)`,
-  synchronize: false,
 });
 
 export const f_unaccent = registerFunction({
@@ -71,7 +67,6 @@ export const f_unaccent = registerFunction({
   strict: true,
   behavior: 'immutable',
   return: `unaccent('unaccent', $1)`,
-  synchronize: false,
 });
 
 export const ll_to_earth_public = registerFunction({
@@ -83,7 +78,6 @@ export const ll_to_earth_public = registerFunction({
   strict: true,
   behavior: 'immutable',
   body: `SELECT public.cube(public.cube(public.cube(public.earth()*cos(radians(latitude))*cos(radians(longitude))),public.earth()*cos(radians(latitude))*sin(radians(longitude))),public.earth()*sin(radians(latitude)))::public.earth`,
-  synchronize: false,
 });
 
 export const users_delete_audit = registerFunction({
@@ -97,7 +91,6 @@ export const users_delete_audit = registerFunction({
       FROM OLD;
       RETURN NULL;
     END`,
-  synchronize: false,
 });
 
 export const partners_delete_audit = registerFunction({
@@ -111,7 +104,6 @@ export const partners_delete_audit = registerFunction({
       FROM OLD;
       RETURN NULL;
     END`,
-  synchronize: false,
 });
 
 export const assets_delete_audit = registerFunction({
@@ -125,7 +117,6 @@ export const assets_delete_audit = registerFunction({
       FROM OLD;
       RETURN NULL;
     END`,
-  synchronize: false,
 });
 
 export const albums_delete_audit = registerFunction({
@@ -139,7 +130,6 @@ export const albums_delete_audit = registerFunction({
       FROM OLD;
       RETURN NULL;
     END`,
-  synchronize: false,
 });
 
 export const album_assets_delete_audit = registerFunction({
@@ -153,7 +143,6 @@ export const album_assets_delete_audit = registerFunction({
       WHERE "albumsId" IN (SELECT "id" FROM albums WHERE "id" IN (SELECT "albumsId" FROM OLD));
       RETURN NULL;
     END`,
-  synchronize: false,
 });
 
 export const album_users_delete_audit = registerFunction({
@@ -174,7 +163,6 @@ export const album_users_delete_audit = registerFunction({
 
       RETURN NULL;
     END`,
-  synchronize: false,
 });
 
 export const memories_delete_audit = registerFunction({
@@ -188,7 +176,6 @@ export const memories_delete_audit = registerFunction({
       FROM OLD;
       RETURN NULL;
     END`,
-  synchronize: false,
 });
 
 export const memory_assets_delete_audit = registerFunction({
@@ -202,7 +189,6 @@ export const memory_assets_delete_audit = registerFunction({
       WHERE "memoriesId" IN (SELECT "id" FROM memories WHERE "id" IN (SELECT "memoriesId" FROM OLD));
       RETURN NULL;
     END`,
-  synchronize: false,
 });
 
 export const stacks_delete_audit = registerFunction({
@@ -216,5 +202,30 @@ export const stacks_delete_audit = registerFunction({
       FROM OLD;
       RETURN NULL;
     END`,
-  synchronize: false,
+});
+
+export const person_delete_audit = registerFunction({
+  name: 'person_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO person_audit ("personId", "ownerId")
+      SELECT "id", "ownerId"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+});
+
+export const user_metadata_audit = registerFunction({
+  name: 'user_metadata_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO user_metadata_audit ("userId", "key")
+      SELECT "userId", "key"
+      FROM OLD;
+      RETURN NULL;
+    END`,
 });

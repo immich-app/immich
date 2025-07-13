@@ -1,7 +1,9 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { person_delete_audit } from 'src/schema/functions';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
+  AfterDeleteTrigger,
   Check,
   Column,
   CreateDateColumn,
@@ -15,6 +17,12 @@ import {
 
 @Table('person')
 @UpdatedAtTrigger('person_updated_at')
+@AfterDeleteTrigger({
+  scope: 'statement',
+  function: person_delete_audit,
+  referencingOldTableAs: 'old',
+  when: 'pg_trigger_depth() = 0',
+})
 @Check({ name: 'CHK_b0f82b0ed662bfc24fbb58bb45', expression: `"birthDate" <= CURRENT_DATE` })
 export class PersonTable {
   @PrimaryGeneratedColumn('uuid')

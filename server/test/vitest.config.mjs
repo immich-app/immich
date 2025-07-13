@@ -18,7 +18,6 @@ export default defineConfig({
         'src/services/api.service.ts',
         'src/services/microservices.service.ts',
         'src/services/index.ts',
-        'src/sql-tools/from-database/index.ts',
       ],
     },
     server: {

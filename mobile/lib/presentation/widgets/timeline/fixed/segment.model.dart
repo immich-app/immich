@@ -159,29 +159,30 @@ class _AssetTileWidget extends ConsumerWidget {
     required this.assetIndex,
   });
 
-  void _handleOnTap(
+  Future _handleOnTap(
     BuildContext ctx,
     WidgetRef ref,
     int assetIndex,
     BaseAsset asset,
-  ) {
+  ) async {
     final multiSelectState = ref.read(multiSelectProvider);
-    if (!multiSelectState.isEnabled) {
+
+    if (multiSelectState.forceEnable || multiSelectState.isEnabled) {
+      ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
+    } else {
+      await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
       ctx.pushRoute(
         AssetViewerRoute(
           initialIndex: assetIndex,
           timelineService: ref.read(timelineServiceProvider),
         ),
       );
-      return;
     }
-
-    ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
   }
 
   void _handleOnLongPress(WidgetRef ref, BaseAsset asset) {
     final multiSelectState = ref.read(multiSelectProvider);
-    if (multiSelectState.isEnabled) {
+    if (multiSelectState.isEnabled || multiSelectState.forceEnable) {
       return;
     }
 
@@ -189,13 +190,39 @@ class _AssetTileWidget extends ConsumerWidget {
     ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
   }
 
+  bool _getLockSelectionStatus(WidgetRef ref) {
+    final lockSelectionAssets = ref.read(
+      multiSelectProvider.select(
+        (state) => state.lockedSelectionAssets,
+      ),
+    );
+
+    if (lockSelectionAssets.isEmpty) {
+      return false;
+    }
+
+    return lockSelectionAssets.contains(asset);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final lockSelection = _getLockSelectionStatus(ref);
+    final showStorageIndicator = ref.watch(
+      timelineArgsProvider.select((args) => args.showStorageIndicator),
+    );
+
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () => _handleOnTap(context, ref, assetIndex, asset),
-        onLongPress: () => _handleOnLongPress(ref, asset),
-        child: ThumbnailTile(asset),
+        onTap: () => lockSelection
+            ? null
+            : _handleOnTap(context, ref, assetIndex, asset),
+        onLongPress: () =>
+            lockSelection ? null : _handleOnLongPress(ref, asset),
+        child: ThumbnailTile(
+          asset,
+          lockSelection: lockSelection,
+          showStorageIndicator: showStorageIndicator,
+        ),
       ),
     );
   }
