@@ -225,33 +225,3 @@ export function setDifference<T>(setA: Set<T>, setB: Set<T>): Set<T> {
   }
   return result;
 }
-
-// Generate a weighted random sample from a list of weights.
-//
-// The given weights are not required to sum to one. This function returns the
-// index of the drawn sample, or undefined if no sample can be drawn.
-// Zero-weights are supported but the input must not contain negative weights.
-export const weightedRandomSample = (weights: number[]): number | undefined => {
-  let sum = 0;
-  const prefixSum = weights.map((val) => {
-    sum += val;
-    return sum;
-  });
-  const searchValue = sum * Math.random();
-
-  if (sum <= 0) {
-    return undefined;
-  }
-
-  // Given the prefix sum list we could in theory run a binary search,
-  // but in practice this is only beneficial for input sizes in the thousands,
-  // which will usually not be the case for our inputs.
-
-  const idx = prefixSum.findIndex((val) => val > searchValue);
-  if (idx === -1) {
-    // This must be due to rounding errors, so just return the last
-    // element in that case.
-    return prefixSum.length - 1;
-  }
-  return idx;
-};
