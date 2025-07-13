@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:easy_localization/easy_localization.dart';
 
 extension TimeAgoExtension on DateTime {
@@ -46,7 +47,8 @@ extension DateRangeFormatting on DateTime {
   /// - Date range of this year: "Mar 23-May 31"
   /// - Date range of other year: "Aug 28 - Sep 30, 2023"
   /// - Date range over multiple years: "Apr 17, 2021 - Apr 9, 2022"
-  static String formatDateRange(DateTime startDate, DateTime endDate) {
+  static String formatDateRange(
+      DateTime startDate, DateTime endDate, Locale locale) {
     final now = DateTime.now();
     final currentYear = now.year;
 
@@ -56,10 +58,10 @@ extension DateRangeFormatting on DateTime {
         startDate.day == endDate.day) {
       if (startDate.year == currentYear) {
         // Single date of this year: "Aug 28"
-        return DateFormat.MMMd().format(startDate);
+        return DateFormat.MMMd(locale.toString()).format(startDate);
       } else {
         // Single date of other year: "Aug 28, 2023"
-        return DateFormat.yMMMd().format(startDate);
+        return DateFormat.yMMMd(locale.toString()).format(startDate);
       }
     }
 
@@ -68,19 +70,22 @@ extension DateRangeFormatting on DateTime {
       // Same year
       if (startDate.year == currentYear) {
         // Date range of this year: "Mar 23-May 31"
-        final startFormatted = DateFormat.MMMd().format(startDate);
-        final endFormatted = DateFormat.MMMd().format(endDate);
+        final startFormatted =
+            DateFormat.MMMd(locale.toString()).format(startDate);
+        final endFormatted = DateFormat.MMMd(locale.toString()).format(endDate);
         return '$startFormatted-$endFormatted';
       } else {
         // Date range of other year: "Aug 28 - Sep 30, 2023"
-        final startFormatted = DateFormat.MMMd().format(startDate);
-        final endFormatted = DateFormat.MMMd().format(endDate);
+        final startFormatted =
+            DateFormat.MMMd(locale.toString()).format(startDate);
+        final endFormatted = DateFormat.MMMd(locale.toString()).format(endDate);
         return '$startFormatted - $endFormatted, ${startDate.year}';
       }
     } else {
       // Date range over multiple years: "Apr 17, 2021 - Apr 9, 2022"
-      final startFormatted = DateFormat.yMMMd().format(startDate);
-      final endFormatted = DateFormat.yMMMd().format(endDate);
+      final startFormatted =
+          DateFormat.yMMMd(locale.toString()).format(startDate);
+      final endFormatted = DateFormat.yMMMd(locale.toString()).format(endDate);
       return '$startFormatted - $endFormatted';
     }
   }

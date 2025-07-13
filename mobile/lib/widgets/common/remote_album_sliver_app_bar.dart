@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
@@ -217,10 +218,10 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                 Colors.transparent,
                 Colors.transparent,
                 Colors.black.withValues(
-                  alpha: 0.6 + (widget.scrollProgress * 0.2),
+                  alpha: 0.4 + (widget.scrollProgress * 0.2),
                 ),
               ],
-              stops: const [0.0, 0.65, 1.0],
+              stops: const [0.0, 0.6, 1.0],
             ),
           ),
         ),
@@ -241,12 +242,10 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                         DateRangeFormatting.formatDateRange(
                           dateRange.value!.$1.toLocal(),
                           dateRange.value!.$2.toLocal(),
+                          context.locale,
                         ),
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 15,
-                          letterSpacing: 0.2,
-                          fontWeight: FontWeight.w600,
                           shadows: [
                             Shadow(
                               offset: Offset(0, 2),
@@ -256,6 +255,23 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                           ],
                         ),
                       ),
+                    const Text(
+                      " • ",
+                      style: TextStyle(
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(0, 2),
+                            blurRadius: 12,
+                            color: Colors.black45,
+                          ),
+                        ],
+                      ),
+                    ),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      child: const _ItemCountText(),
+                    ),
                   ],
                 ),
                 SizedBox(
@@ -281,10 +297,21 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                     ),
                   ),
                 ),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  child: const _ItemCountText(),
-                ),
+                if (widget.album.description.isNotEmpty)
+                  Text(
+                    widget.album.description,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(0, 2),
+                          blurRadius: 12,
+                          color: Colors.black45,
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),
@@ -329,13 +356,11 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
         args: {"count": assetCount},
       ),
       style: context.textTheme.labelLarge?.copyWith(
-        // letterSpacing: 0.2,
-        fontWeight: FontWeight.bold,
         color: Colors.white,
         shadows: [
           const Shadow(
-            offset: Offset(0, 1),
-            blurRadius: 6,
+            offset: Offset(0, 2),
+            blurRadius: 12,
             color: Colors.black45,
           ),
         ],
