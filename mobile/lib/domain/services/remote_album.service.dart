@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
@@ -74,5 +76,9 @@ class RemoteAlbumService {
     await _repository.create(album, assetIds);
 
     return album;
+  }
+
+  FutureOr<(DateTime, DateTime)> getDateRange(String albumId) {
+    return _repository.getDateRange(albumId);
   }
 }

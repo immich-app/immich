@@ -146,3 +146,11 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     }
   }
 }
+
+final remoteAlbumDateRangeProvider =
+    FutureProvider.family<(DateTime, DateTime), String>(
+  (ref, albumId) async {
+    final service = ref.watch(remoteAlbumServiceProvider);
+    return service.getDateRange(albumId);
+  },
+);

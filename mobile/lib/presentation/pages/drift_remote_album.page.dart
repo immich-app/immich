@@ -5,7 +5,7 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/remote_album_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
+import 'package:immich_mobile/widgets/common/remote_album_sliver_app_bar.dart';
 
 @RoutePage()
 class RemoteAlbumPage extends StatelessWidget {
@@ -28,8 +28,8 @@ class RemoteAlbumPage extends StatelessWidget {
         ),
       ],
       child: Timeline(
-        appBar: MesmerizingSliverAppBar(
-          title: album.name,
+        appBar: RemoteAlbumSliverAppBar(
+          album: album,
           icon: Icons.photo_album_outlined,
         ),
         bottomSheet: RemoteAlbumBottomSheet(

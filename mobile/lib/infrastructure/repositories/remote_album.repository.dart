@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
@@ -103,6 +105,28 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     return _db.remoteAlbumAssetEntity.deleteWhere(
       (tbl) => tbl.albumId.equals(albumId) & tbl.assetId.isIn(assetIds),
     );
+  }
+
+  FutureOr<(DateTime, DateTime)> getDateRange(String albumId) {
+    final query = _db.remoteAlbumAssetEntity.selectOnly()
+      ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
+      ..addColumns([
+        _db.remoteAssetEntity.createdAt.min(),
+        _db.remoteAssetEntity.createdAt.max(),
+      ])
+      ..join([
+        innerJoin(
+          _db.remoteAssetEntity,
+          _db.remoteAssetEntity.id
+              .equalsExp(_db.remoteAlbumAssetEntity.assetId),
+        ),
+      ]);
+
+    return query.map((row) {
+      final minDate = row.read(_db.remoteAssetEntity.createdAt.min());
+      final maxDate = row.read(_db.remoteAssetEntity.createdAt.max());
+      return (minDate ?? DateTime.now(), maxDate ?? DateTime.now());
+    }).getSingle();
   }
 }
 
