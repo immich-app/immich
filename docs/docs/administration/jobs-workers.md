@@ -53,5 +53,5 @@ Additionally, some jobs (such as memories generation) run on a schedule, which i
 <img src={require('./img/admin-nightly-tasks.webp').default} width="60%" title="Admin nightly tasks" />
 
 :::note
-The [External Libraries](/docs/features/libraries) scan job has its own section in System Settings -> External Library -> Periodic Scanning.
+Some jobs ([External Libraries](/docs/features/libraries) scanning, Database Dump) are configured in their own sections in System Settings.
 :::
