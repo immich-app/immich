@@ -169,8 +169,7 @@ class _PlaceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LargeLeadingTile(
-      // TODO: navigate to the place timeline
-      onTap: () {},
+      onTap: () => context.pushRoute(DriftPlaceDetailRoute(place: place.$1)),
       title: Text(
         place.$1,
         style: context.textTheme.titleMedium?.copyWith(
