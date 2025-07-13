@@ -16,10 +16,9 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { parse } from 'pg-connection-string';
 import postgres, { Notice } from 'postgres';
 import { columns, Exif, Person } from 'src/database';
-import { DB } from 'src/db';
 import { AssetFileType, AssetVisibility, DatabaseExtension, DatabaseSslMode } from 'src/enum';
-import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
+import { DB } from 'src/schema';
 import { DatabaseConnectionParams, VectorExtension } from 'src/types';
 
 type Ssl = 'require' | 'allow' | 'prefer' | 'verify-full' | boolean | object;
@@ -279,8 +278,8 @@ export function withTags(eb: ExpressionBuilder<DB, 'assets'>) {
   ).as('tags');
 }
 
-export function truncatedDate<O>(size: TimeBucketSize) {
-  return sql<O>`date_trunc(${sql.lit(size)}, "localDateTime" at time zone 'UTC') at time zone 'UTC'`;
+export function truncatedDate<O>() {
+  return sql<O>`date_trunc(${sql.lit('MONTH')}, "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagId: string) {
@@ -308,6 +307,9 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .where('assets.visibility', '=', visibility)
     .$if(!!options.albumIds && options.albumIds.length > 0, (qb) => inAlbums(qb, options.albumIds!))
     .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
+    .$if(options.tagIds === null, (qb) =>
+      qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('assetsId', '=', 'assets.id')))),
+    )
     .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
     .$if(!!options.createdBefore, (qb) => qb.where('assets.createdAt', '<=', options.createdBefore!))
     .$if(!!options.createdAfter, (qb) => qb.where('assets.createdAt', '>=', options.createdAfter!))

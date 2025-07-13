@@ -17,13 +17,13 @@ typedef $$RemoteAlbumEntityTableCreateCompanionBuilder
     = i1.RemoteAlbumEntityCompanion Function({
   required String id,
   required String name,
-  required String description,
+  i0.Value<String> description,
   i0.Value<DateTime> createdAt,
   i0.Value<DateTime> updatedAt,
   required String ownerId,
   i0.Value<String?> thumbnailAssetId,
   i0.Value<bool> isActivityEnabled,
-  required i2.AssetOrder order,
+  required i2.AlbumAssetOrder order,
 });
 typedef $$RemoteAlbumEntityTableUpdateCompanionBuilder
     = i1.RemoteAlbumEntityCompanion Function({
@@ -35,7 +35,7 @@ typedef $$RemoteAlbumEntityTableUpdateCompanionBuilder
   i0.Value<String> ownerId,
   i0.Value<String?> thumbnailAssetId,
   i0.Value<bool> isActivityEnabled,
-  i0.Value<i2.AssetOrder> order,
+  i0.Value<i2.AlbumAssetOrder> order,
 });
 
 final class $$RemoteAlbumEntityTableReferences extends i0.BaseReferences<
@@ -128,7 +128,7 @@ class $$RemoteAlbumEntityTableFilterComposer
       column: $table.isActivityEnabled,
       builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnWithTypeConverterFilters<i2.AssetOrder, i2.AssetOrder, int>
+  i0.ColumnWithTypeConverterFilters<i2.AlbumAssetOrder, i2.AlbumAssetOrder, int>
       get order => $composableBuilder(
           column: $table.order,
           builder: (column) => i0.ColumnWithTypeConverterFilters(column));
@@ -286,7 +286,7 @@ class $$RemoteAlbumEntityTableAnnotationComposer
   i0.GeneratedColumn<bool> get isActivityEnabled => $composableBuilder(
       column: $table.isActivityEnabled, builder: (column) => column);
 
-  i0.GeneratedColumnWithTypeConverter<i2.AssetOrder, int> get order =>
+  i0.GeneratedColumnWithTypeConverter<i2.AlbumAssetOrder, int> get order =>
       $composableBuilder(column: $table.order, builder: (column) => column);
 
   i5.$$UserEntityTableAnnotationComposer get ownerId {
@@ -369,7 +369,7 @@ class $$RemoteAlbumEntityTableTableManager extends i0.RootTableManager<
             i0.Value<String> ownerId = const i0.Value.absent(),
             i0.Value<String?> thumbnailAssetId = const i0.Value.absent(),
             i0.Value<bool> isActivityEnabled = const i0.Value.absent(),
-            i0.Value<i2.AssetOrder> order = const i0.Value.absent(),
+            i0.Value<i2.AlbumAssetOrder> order = const i0.Value.absent(),
           }) =>
               i1.RemoteAlbumEntityCompanion(
             id: id,
@@ -385,13 +385,13 @@ class $$RemoteAlbumEntityTableTableManager extends i0.RootTableManager<
           createCompanionCallback: ({
             required String id,
             required String name,
-            required String description,
+            i0.Value<String> description = const i0.Value.absent(),
             i0.Value<DateTime> createdAt = const i0.Value.absent(),
             i0.Value<DateTime> updatedAt = const i0.Value.absent(),
             required String ownerId,
             i0.Value<String?> thumbnailAssetId = const i0.Value.absent(),
             i0.Value<bool> isActivityEnabled = const i0.Value.absent(),
-            required i2.AssetOrder order,
+            required i2.AlbumAssetOrder order,
           }) =>
               i1.RemoteAlbumEntityCompanion.insert(
             id: id,
@@ -496,7 +496,9 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
   @override
   late final i0.GeneratedColumn<String> description =
       i0.GeneratedColumn<String>('description', aliasedName, false,
-          type: i0.DriftSqlType.string, requiredDuringInsert: true);
+          type: i0.DriftSqlType.string,
+          requiredDuringInsert: false,
+          defaultValue: const i4.Constant(''));
   static const i0.VerificationMeta _createdAtMeta =
       const i0.VerificationMeta('createdAt');
   @override
@@ -542,10 +544,10 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
               'CHECK ("is_activity_enabled" IN (0, 1))'),
           defaultValue: const i4.Constant(true));
   @override
-  late final i0.GeneratedColumnWithTypeConverter<i2.AssetOrder, int> order =
-      i0.GeneratedColumn<int>('order', aliasedName, false,
+  late final i0.GeneratedColumnWithTypeConverter<i2.AlbumAssetOrder, int>
+      order = i0.GeneratedColumn<int>('order', aliasedName, false,
               type: i0.DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<i2.AssetOrder>(
+          .withConverter<i2.AlbumAssetOrder>(
               i1.$RemoteAlbumEntityTable.$converterorder);
   @override
   List<i0.GeneratedColumn> get $columns => [
@@ -586,8 +588,6 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
           _descriptionMeta,
           description.isAcceptableOrUnknown(
               data['description']!, _descriptionMeta));
-    } else if (isInserting) {
-      context.missing(_descriptionMeta);
     }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
@@ -652,8 +652,9 @@ class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
     return $RemoteAlbumEntityTable(attachedDatabase, alias);
   }
 
-  static i0.JsonTypeConverter2<i2.AssetOrder, int, int> $converterorder =
-      const i0.EnumIndexConverter<i2.AssetOrder>(i2.AssetOrder.values);
+  static i0.JsonTypeConverter2<i2.AlbumAssetOrder, int, int> $converterorder =
+      const i0.EnumIndexConverter<i2.AlbumAssetOrder>(
+          i2.AlbumAssetOrder.values);
   @override
   bool get withoutRowId => true;
   @override
@@ -670,7 +671,7 @@ class RemoteAlbumEntityData extends i0.DataClass
   final String ownerId;
   final String? thumbnailAssetId;
   final bool isActivityEnabled;
-  final i2.AssetOrder order;
+  final i2.AlbumAssetOrder order;
   const RemoteAlbumEntityData(
       {required this.id,
       required this.name,
@@ -743,7 +744,7 @@ class RemoteAlbumEntityData extends i0.DataClass
           String? ownerId,
           i0.Value<String?> thumbnailAssetId = const i0.Value.absent(),
           bool? isActivityEnabled,
-          i2.AssetOrder? order}) =>
+          i2.AlbumAssetOrder? order}) =>
       i1.RemoteAlbumEntityData(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -820,7 +821,7 @@ class RemoteAlbumEntityCompanion
   final i0.Value<String> ownerId;
   final i0.Value<String?> thumbnailAssetId;
   final i0.Value<bool> isActivityEnabled;
-  final i0.Value<i2.AssetOrder> order;
+  final i0.Value<i2.AlbumAssetOrder> order;
   const RemoteAlbumEntityCompanion({
     this.id = const i0.Value.absent(),
     this.name = const i0.Value.absent(),
@@ -835,16 +836,15 @@ class RemoteAlbumEntityCompanion
   RemoteAlbumEntityCompanion.insert({
     required String id,
     required String name,
-    required String description,
+    this.description = const i0.Value.absent(),
     this.createdAt = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
     required String ownerId,
     this.thumbnailAssetId = const i0.Value.absent(),
     this.isActivityEnabled = const i0.Value.absent(),
-    required i2.AssetOrder order,
+    required i2.AlbumAssetOrder order,
   })  : id = i0.Value(id),
         name = i0.Value(name),
-        description = i0.Value(description),
         ownerId = i0.Value(ownerId),
         order = i0.Value(order);
   static i0.Insertable<i1.RemoteAlbumEntityData> custom({
@@ -880,7 +880,7 @@ class RemoteAlbumEntityCompanion
       i0.Value<String>? ownerId,
       i0.Value<String?>? thumbnailAssetId,
       i0.Value<bool>? isActivityEnabled,
-      i0.Value<i2.AssetOrder>? order}) {
+      i0.Value<i2.AlbumAssetOrder>? order}) {
     return i1.RemoteAlbumEntityCompanion(
       id: id ?? this.id,
       name: name ?? this.name,

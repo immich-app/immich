@@ -94,5 +94,6 @@ export const newConfigRepositoryMock = (): Mocked<RepositoryInterface<ConfigRepo
   return {
     getEnv: vitest.fn().mockReturnValue(mockEnvData({})),
     getWorker: vitest.fn().mockReturnValue(ImmichWorker.API),
+    isDev: vitest.fn().mockReturnValue(false),
   };
 };

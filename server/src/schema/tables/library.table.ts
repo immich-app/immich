@@ -5,8 +5,10 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
+  Generated,
   PrimaryGeneratedColumn,
   Table,
+  Timestamp,
   UpdateDateColumn,
 } from 'src/sql-tools';
 
@@ -14,7 +16,7 @@ import {
 @UpdatedAtTrigger('libraries_updated_at')
 export class LibraryTable {
   @PrimaryGeneratedColumn()
-  id!: string;
+  id!: Generated<string>;
 
   @Column()
   name!: string;
@@ -29,17 +31,17 @@ export class LibraryTable {
   exclusionPatterns!: string[];
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Generated<Date>;
 
   @DeleteDateColumn()
-  deletedAt?: Date;
+  deletedAt!: Timestamp | null;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  refreshedAt!: Date | null;
+  refreshedAt!: Timestamp | null;
 
   @UpdateIdColumn({ indexName: 'IDX_libraries_update_id' })
-  updateId?: string;
+  updateId!: Generated<string>;
 }

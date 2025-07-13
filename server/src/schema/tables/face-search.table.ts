@@ -7,7 +7,6 @@ import { Column, ForeignKeyColumn, Index, Table } from 'src/sql-tools';
   using: 'hnsw',
   expression: `embedding vector_cosine_ops`,
   with: 'ef_construction = 300, m = 16',
-  synchronize: false,
 })
 export class FaceSearchTable {
   @ForeignKeyColumn(() => AssetFaceTable, {

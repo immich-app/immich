@@ -117,7 +117,24 @@ describe('/shared-links', () => {
       const resp = await request(shareUrl).get(`/${linkWithAssets.key}`);
       expect(resp.status).toBe(200);
       expect(resp.header['content-type']).toContain('text/html');
+      expect(resp.text).toContain(`<meta property="og:image" content="http://127.0.0.1:2285`);
+    });
+
+    it('should fall back to my.immich.app og:image meta tag for shared asset if Host header is not present', async () => {
+      const resp = await request(shareUrl).get(`/${linkWithAssets.key}`).set('Host', '');
+      expect(resp.status).toBe(200);
+      expect(resp.header['content-type']).toContain('text/html');
       expect(resp.text).toContain(`<meta property="og:image" content="https://my.immich.app`);
+    });
+
+    it('should return 404 for an invalid shared link', async () => {
+      const resp = await request(shareUrl).get(`/invalid-key`);
+      expect(resp.status).toBe(404);
+      expect(resp.header['content-type']).toContain('text/html');
+      expect(resp.text).not.toContain(`og:type`);
+      expect(resp.text).not.toContain(`og:title`);
+      expect(resp.text).not.toContain(`og:description`);
+      expect(resp.text).not.toContain(`og:image`);
     });
   });
 

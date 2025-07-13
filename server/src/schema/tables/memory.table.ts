@@ -1,59 +1,68 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { MemoryType } from 'src/enum';
+import { memories_delete_audit } from 'src/schema/functions';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
+  AfterDeleteTrigger,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   ForeignKeyColumn,
+  Generated,
   PrimaryGeneratedColumn,
   Table,
+  Timestamp,
   UpdateDateColumn,
 } from 'src/sql-tools';
-import { MemoryData } from 'src/types';
 
 @Table('memories')
 @UpdatedAtTrigger('memories_updated_at')
-export class MemoryTable<T extends MemoryType = MemoryType> {
+@AfterDeleteTrigger({
+  scope: 'statement',
+  function: memories_delete_audit,
+  referencingOldTableAs: 'old',
+  when: 'pg_trigger_depth() = 0',
+})
+export class MemoryTable {
   @PrimaryGeneratedColumn()
-  id!: string;
+  id!: Generated<string>;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Generated<Timestamp>;
 
   @DeleteDateColumn()
-  deletedAt?: Date;
+  deletedAt!: Timestamp | null;
 
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   ownerId!: string;
 
   @Column()
-  type!: T;
+  type!: MemoryType;
 
   @Column({ type: 'jsonb' })
-  data!: MemoryData[T];
+  data!: object;
 
   /** unless set to true, will be automatically deleted in the future */
   @Column({ type: 'boolean', default: false })
-  isSaved!: boolean;
+  isSaved!: Generated<boolean>;
 
   /** memories are sorted in ascending order by this value */
   @Column({ type: 'timestamp with time zone' })
-  memoryAt!: Date;
+  memoryAt!: Timestamp;
 
   /** when the user last viewed the memory */
   @Column({ type: 'timestamp with time zone', nullable: true })
-  seenAt?: Date;
+  seenAt!: Timestamp | null;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  showAt?: Date;
+  showAt!: Timestamp | null;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  hideAt?: Date;
+  hideAt!: Timestamp | null;
 
   @UpdateIdColumn({ indexName: 'IDX_memories_update_id' })
-  updateId?: string;
+  updateId!: Generated<string>;
 }

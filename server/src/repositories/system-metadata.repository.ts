@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { readFile } from 'node:fs/promises';
-import { DB, SystemMetadata as DbSystemMetadata } from 'src/db';
 import { GenerateSql } from 'src/decorators';
+import { DB } from 'src/schema';
+import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table';
 import { SystemMetadata } from 'src/types';
 import { SystemMetadataKey } from 'src/enum';
 import { randomBytes } from 'node:crypto';
 
-type Upsert = Insertable<DbSystemMetadata>;
+type Upsert = Insertable<SystemMetadataTable>;
 
 @Injectable()
 export class SystemMetadataRepository {

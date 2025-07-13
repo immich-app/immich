@@ -147,7 +147,9 @@ class BackupControllerPage extends HookConsumerWidget {
         padding: const EdgeInsets.only(top: 8.0),
         child: Card(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(20),
+            ),
             side: BorderSide(
               color: context.colorScheme.outlineVariant,
               width: 1,

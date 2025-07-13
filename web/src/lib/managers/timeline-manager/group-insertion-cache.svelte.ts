@@ -1,4 +1,4 @@
-import type { TimelinePlainDate } from '$lib/utils/timeline-util';
+import { setDifference, type TimelinePlainDate } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
 import type { DayGroup } from './day-group.svelte';
 import type { MonthGroup } from './month-group.svelte';
@@ -27,7 +27,7 @@ export class GroupInsertionCache {
   }
 
   get existingDayGroups() {
-    return this.changedDayGroups.difference(this.newDayGroups);
+    return setDifference(this.changedDayGroups, this.newDayGroups);
   }
 
   get updatedBuckets() {

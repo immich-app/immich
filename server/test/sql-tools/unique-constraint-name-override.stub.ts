@@ -1,4 +1,4 @@
-import { Column, DatabaseConstraintType, DatabaseSchema, Table, Unique } from 'src/sql-tools';
+import { Column, ConstraintType, DatabaseSchema, Table, Unique } from 'src/sql-tools';
 
 @Table()
 @Unique({ name: 'UQ_test', columns: ['id'] })
@@ -9,12 +9,13 @@ export class Table1 {
 
 export const description = 'should add a unique constraint to the table with a specific name';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [],
   extensions: [],
   parameters: [],
+  overrides: [],
   tables: [
     {
       name: 'table1',
@@ -33,7 +34,7 @@ export const schema: DatabaseSchema = {
       triggers: [],
       constraints: [
         {
-          type: DatabaseConstraintType.UNIQUE,
+          type: ConstraintType.UNIQUE,
           name: 'UQ_test',
           tableName: 'table1',
           columnNames: ['id'],

@@ -16,7 +16,12 @@ import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { NotificationDto } from 'src/dtos/notification.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
+<<<<<<< HEAD
 import { ImmichWorker, MetadataKey, QueueName, VideoCodec } from 'src/enum';
+=======
+import { SyncAssetExifV1, SyncAssetV1 } from 'src/dtos/sync.dto';
+import { ImmichWorker, MetadataKey, QueueName } from 'src/enum';
+>>>>>>> upstream/main
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { JobItem, JobSource } from 'src/types';
@@ -118,6 +123,8 @@ export interface ClientEventMap {
   on_new_release: [ReleaseNotification];
   on_notification: [NotificationDto];
   on_session_delete: [string];
+
+  AssetUploadReadyV1: [{ asset: SyncAssetV1; exif: SyncAssetExifV1 }];
 }
 
 export type EventItem<T extends EmitEvent> = {

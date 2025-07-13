@@ -3,10 +3,11 @@ import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB, Memories } from 'src/db';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { MemorySearchDto } from 'src/dtos/memory.dto';
 import { AssetVisibility } from 'src/enum';
+import { DB } from 'src/schema';
+import { MemoryTable } from 'src/schema/tables/memory.table';
 import { IBulkAsset } from 'src/types';
 
 @Injectable()
@@ -80,7 +81,7 @@ export class MemoryRepository implements IBulkAsset {
     return this.getByIdBuilder(id).executeTakeFirst();
   }
 
-  async create(memory: Insertable<Memories>, assetIds: Set<string>) {
+  async create(memory: Insertable<MemoryTable>, assetIds: Set<string>) {
     const id = await this.db.transaction().execute(async (tx) => {
       const { id } = await tx.insertInto('memories').values(memory).returning('id').executeTakeFirstOrThrow();
 
@@ -96,7 +97,7 @@ export class MemoryRepository implements IBulkAsset {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { ownerId: DummyValue.UUID, isSaved: true }] })
-  async update(id: string, memory: Updateable<Memories>) {
+  async update(id: string, memory: Updateable<MemoryTable>) {
     await this.db.updateTable('memories').set(memory).where('id', '=', id).execute();
     return this.getByIdBuilder(id).executeTakeFirstOrThrow();
   }

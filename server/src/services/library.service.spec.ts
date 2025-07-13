@@ -3,7 +3,7 @@ import { Stats } from 'node:fs';
 import { defaults, SystemConfig } from 'src/config';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { mapLibrary } from 'src/dtos/library.dto';
-import { AssetType, ImmichWorker, JobName, JobStatus } from 'src/enum';
+import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
 import { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -56,7 +56,11 @@ describe(LibraryService.name, () => {
         } as SystemConfig,
       });
 
-      expect(mocks.cron.update).toHaveBeenCalledWith({ name: 'libraryScan', expression: '0 1 * * *', start: true });
+      expect(mocks.cron.update).toHaveBeenCalledWith({
+        name: CronJob.LibraryScan,
+        expression: '0 1 * * *',
+        start: true,
+      });
     });
 
     it('should initialize watcher for all external libraries', async () => {
@@ -128,7 +132,7 @@ describe(LibraryService.name, () => {
       });
 
       expect(mocks.cron.update).toHaveBeenCalledWith({
-        name: 'libraryScan',
+        name: CronJob.LibraryScan,
         expression: systemConfigStub.libraryScan.library.scan.cronExpression,
         start: systemConfigStub.libraryScan.library.scan.enabled,
       });
@@ -149,7 +153,7 @@ describe(LibraryService.name, () => {
       });
 
       expect(mocks.cron.update).toHaveBeenCalledWith({
-        name: 'libraryScan',
+        name: CronJob.LibraryScan,
         expression: systemConfigStub.libraryScan.library.scan.cronExpression,
         start: systemConfigStub.libraryScan.library.scan.enabled,
       });
@@ -1112,8 +1116,6 @@ describe(LibraryService.name, () => {
 
       mocks.library.get.mockResolvedValue(library);
       mocks.library.streamAssetIds.mockReturnValue(makeStream([assetStub.image1]));
-
-      mocks.asset.getById.mockResolvedValue(assetStub.image1);
 
       await expect(sut.handleDeleteLibrary({ id: library.id })).resolves.toBe(JobStatus.SUCCESS);
     });

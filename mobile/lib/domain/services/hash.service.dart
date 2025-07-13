@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/interfaces/local_album.interface.dart';
-import 'package:immich_mobile/domain/interfaces/local_asset.interface.dart';
-import 'package:immich_mobile/domain/interfaces/storage.interface.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:logging/logging.dart';
@@ -12,16 +12,16 @@ import 'package:logging/logging.dart';
 class HashService {
   final int batchSizeLimit;
   final int batchFileLimit;
-  final ILocalAlbumRepository _localAlbumRepository;
-  final ILocalAssetRepository _localAssetRepository;
-  final IStorageRepository _storageRepository;
+  final DriftLocalAlbumRepository _localAlbumRepository;
+  final DriftLocalAssetRepository _localAssetRepository;
+  final StorageRepository _storageRepository;
   final NativeSyncApi _nativeSyncApi;
   final _log = Logger('HashService');
 
   HashService({
-    required ILocalAlbumRepository localAlbumRepository,
-    required ILocalAssetRepository localAssetRepository,
-    required IStorageRepository storageRepository,
+    required DriftLocalAlbumRepository localAlbumRepository,
+    required DriftLocalAssetRepository localAssetRepository,
+    required StorageRepository storageRepository,
     required NativeSyncApi nativeSyncApi,
     this.batchSizeLimit = kBatchHashSizeLimit,
     this.batchFileLimit = kBatchHashFileLimit,
@@ -61,7 +61,7 @@ class HashService {
     final toHash = <_AssetToPath>[];
 
     for (final asset in assetsToHash) {
-      final file = await _storageRepository.getFileForAsset(asset);
+      final file = await _storageRepository.getFileForAsset(asset.id);
       if (file == null) {
         continue;
       }

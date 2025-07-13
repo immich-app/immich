@@ -1,7 +1,16 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { SyncEntityType } from 'src/enum';
 import { SessionTable } from 'src/schema/tables/session.table';
-import { Column, CreateDateColumn, ForeignKeyColumn, PrimaryColumn, Table, UpdateDateColumn } from 'src/sql-tools';
+import {
+  Column,
+  CreateDateColumn,
+  ForeignKeyColumn,
+  Generated,
+  PrimaryColumn,
+  Table,
+  Timestamp,
+  UpdateDateColumn,
+} from 'src/sql-tools';
 
 @Table('session_sync_checkpoints')
 @UpdatedAtTrigger('session_sync_checkpoints_updated_at')
@@ -13,14 +22,14 @@ export class SessionSyncCheckpointTable {
   type!: SyncEntityType;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Generated<Timestamp>;
 
   @Column()
   ack!: string;
 
   @UpdateIdColumn({ indexName: 'IDX_session_sync_checkpoints_update_id' })
-  updateId!: string;
+  updateId!: Generated<string>;
 }

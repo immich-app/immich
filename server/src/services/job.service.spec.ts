@@ -41,12 +41,12 @@ describe(JobService.name, () => {
         { name: JobName.USER_DELETE_CHECK },
         { name: JobName.PERSON_CLEANUP },
         { name: JobName.MEMORIES_CLEANUP },
-        { name: JobName.MEMORIES_CREATE },
-        { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
-        { name: JobName.CLEAN_OLD_AUDIT_LOGS },
-        { name: JobName.USER_SYNC_USAGE },
-        { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false, nightly: true } },
         { name: JobName.CLEAN_OLD_SESSION_TOKENS },
+        { name: JobName.CLEAN_OLD_AUDIT_LOGS },
+        { name: JobName.MEMORIES_CREATE },
+        { name: JobName.USER_SYNC_USAGE },
+        { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
+        { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false, nightly: true } },
       ]);
     });
   });

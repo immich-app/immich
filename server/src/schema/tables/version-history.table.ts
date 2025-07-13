@@ -1,12 +1,12 @@
-import { Column, CreateDateColumn, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
+import { Column, CreateDateColumn, Generated, PrimaryGeneratedColumn, Table, Timestamp } from 'src/sql-tools';
 
 @Table('version_history')
 export class VersionHistoryTable {
   @PrimaryGeneratedColumn()
-  id!: string;
+  id!: Generated<string>;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 
   @Column()
   version!: string;

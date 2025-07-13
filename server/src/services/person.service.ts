@@ -2,9 +2,8 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { Insertable, Updateable } from 'kysely';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { Person } from 'src/database';
-import { AssetFaces, FaceSearch } from 'src/db';
 import { Chunked, OnJob } from 'src/decorators';
-import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceCreateDto,
@@ -37,6 +36,8 @@ import {
 } from 'src/enum';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { UpdateFacesData } from 'src/repositories/person.repository';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
+import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
@@ -216,6 +217,10 @@ export class PersonService extends BaseService {
     return mapPerson(person);
   }
 
+  delete(auth: AuthDto, id: string): Promise<void> {
+    return this.deleteAll(auth, { ids: [id] });
+  }
+
   async updateAll(auth: AuthDto, dto: PeopleUpdateDto): Promise<BulkIdResponseDto[]> {
     const results: BulkIdResponseDto[] = [];
     for (const person of dto.people) {
@@ -236,8 +241,14 @@ export class PersonService extends BaseService {
     return results;
   }
 
+  async deleteAll(auth: AuthDto, { ids }: BulkIdsDto): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.PERSON_DELETE, ids });
+    const people = await this.personRepository.getForPeopleDelete(ids);
+    await this.removeAllPeople(people);
+  }
+
   @Chunked()
-  private async delete(people: { id: string; thumbnailPath: string }[]) {
+  private async removeAllPeople(people: { id: string; thumbnailPath: string }[]) {
     await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
     await this.personRepository.delete(people.map((person) => person.id));
     this.logger.debug(`Deleted ${people.length} people`);
@@ -246,7 +257,7 @@ export class PersonService extends BaseService {
   @OnJob({ name: JobName.PERSON_CLEANUP, queue: QueueName.BACKGROUND_TASK })
   async handlePersonCleanup(): Promise<JobStatus> {
     const people = await this.personRepository.getAllWithoutFaces();
-    await this.delete(people);
+    await this.removeAllPeople(people);
     return JobStatus.SUCCESS;
   }
 
@@ -307,8 +318,8 @@ export class PersonService extends BaseService {
     );
     this.logger.debug(`${faces.length} faces detected in ${previewFile.path}`);
 
-    const facesToAdd: (Insertable<AssetFaces> & { id: string })[] = [];
-    const embeddings: FaceSearch[] = [];
+    const facesToAdd: (Insertable<AssetFaceTable> & { id: string })[] = [];
+    const embeddings: FaceSearchTable[] = [];
     const mlFaceIds = new Set<string>();
 
     for (const face of asset.faces) {
@@ -589,7 +600,7 @@ export class PersonService extends BaseService {
         this.logger.log(`Merging ${mergeName} into ${primaryName}`);
 
         await this.personRepository.reassignFaces(mergeData);
-        await this.delete([mergePerson]);
+        await this.removeAllPeople([mergePerson]);
 
         this.logger.log(`Merged ${mergeName} into ${primaryName}`);
         results.push({ id: mergeId, success: true });

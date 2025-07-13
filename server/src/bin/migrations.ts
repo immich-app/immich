@@ -9,7 +9,13 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import 'src/schema';
-import { schemaDiff, schemaFromCode, schemaFromDatabase } from 'src/sql-tools';
+import {
+  DefaultNamingStrategy,
+  HashNamingStrategy,
+  schemaDiff,
+  schemaFromCode,
+  schemaFromDatabase,
+} from 'src/sql-tools';
 import { asPostgresConnectionConfig, getKyselyConfig } from 'src/utils/database';
 
 const main = async () => {
@@ -107,25 +113,36 @@ const compare = async () => {
   const { database } = configRepository.getEnv();
   const db = postgres(asPostgresConnectionConfig(database.config));
 
-  const source = schemaFromCode();
+  const tables = new Set<string>();
+  const preferred = new DefaultNamingStrategy();
+  const fallback = new HashNamingStrategy();
+
+  const source = schemaFromCode({
+    overrides: true,
+    namingStrategy: {
+      getName(item) {
+        if ('tableName' in item && tables.has(item.tableName)) {
+          return preferred.getName(item);
+        }
+
+        return fallback.getName(item);
+      },
+    },
+  });
   const target = await schemaFromDatabase(db, {});
-
-  const sourceParams = new Set(source.parameters.map(({ name }) => name));
-  target.parameters = target.parameters.filter(({ name }) => sourceParams.has(name));
-
-  const sourceTables = new Set(source.tables.map(({ name }) => name));
-  target.tables = target.tables.filter(({ name }) => sourceTables.has(name));
 
   console.log(source.warnings.join('\n'));
 
   const up = schemaDiff(source, target, {
     tables: { ignoreExtra: true },
     functions: { ignoreExtra: false },
+    parameters: { ignoreExtra: true },
   });
   const down = schemaDiff(target, source, {
-    tables: { ignoreExtra: false },
+    tables: { ignoreExtra: false, ignoreMissing: true },
     functions: { ignoreExtra: false },
-    extension: { ignoreMissing: true },
+    extensions: { ignoreMissing: true },
+    parameters: { ignoreMissing: true },
   });
 
   return { up, down };

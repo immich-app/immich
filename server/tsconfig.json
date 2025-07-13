@@ -17,6 +17,9 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "preserveWatchOutput": true,
+    "paths": {
+      "src/*": ["./src/*"],
+    },
     "baseUrl": "./",
     "jsx": "react",
     "types": ["vitest/globals"],

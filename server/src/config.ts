@@ -113,7 +113,7 @@ export interface SystemConfig {
     buttonText: string;
     clientId: string;
     clientSecret: string;
-    defaultStorageQuota: number;
+    defaultStorageQuota: number | null;
     enabled: boolean;
     issuerUrl: string;
     mobileOverrideEnabled: boolean;
@@ -125,6 +125,7 @@ export interface SystemConfig {
     timeout: number;
     storageLabelClaim: string;
     storageQuotaClaim: string;
+    roleClaim: string;
   };
   passwordLogin: {
     enabled: boolean;
@@ -143,6 +144,14 @@ export interface SystemConfig {
   };
   newVersionCheck: {
     enabled: boolean;
+  };
+  nightlyTasks: {
+    startTime: string;
+    databaseCleanup: boolean;
+    missingThumbnails: boolean;
+    clusterNewFaces: boolean;
+    generateMemories: boolean;
+    syncQuotaUsage: boolean;
   };
   trash: {
     enabled: boolean;
@@ -301,7 +310,7 @@ export const defaults = Object.freeze<SystemConfig>({
     buttonText: 'Login with OAuth',
     clientId: '',
     clientSecret: '',
-    defaultStorageQuota: 0,
+    defaultStorageQuota: null,
     enabled: false,
     issuerUrl: '',
     mobileOverrideEnabled: false,
@@ -311,6 +320,7 @@ export const defaults = Object.freeze<SystemConfig>({
     profileSigningAlgorithm: 'none',
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
+    roleClaim: 'immich_role',
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.CLIENT_SECRET_POST,
     timeout: 30_000,
   },
@@ -343,6 +353,14 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   newVersionCheck: {
     enabled: true,
+  },
+  nightlyTasks: {
+    startTime: '00:00',
+    databaseCleanup: true,
+    generateMemories: true,
+    syncQuotaUsage: true,
+    missingThumbnails: true,
+    clusterNewFaces: true,
   },
   trash: {
     enabled: true,

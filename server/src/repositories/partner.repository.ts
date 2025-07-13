@@ -3,8 +3,9 @@ import { ExpressionBuilder, Insertable, Kysely, NotNull, Updateable } from 'kyse
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { DB, Partners } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { DB } from 'src/schema';
+import { PartnerTable } from 'src/schema/tables/partner.table';
 
 export interface PartnerIds {
   sharedById: string;
@@ -47,7 +48,7 @@ export class PartnerRepository {
       .executeTakeFirst();
   }
 
-  create(values: Insertable<Partners>) {
+  create(values: Insertable<PartnerTable>) {
     return this.db
       .insertInto('partners')
       .values(values)
@@ -59,7 +60,7 @@ export class PartnerRepository {
   }
 
   @GenerateSql({ params: [{ sharedWithId: DummyValue.UUID, sharedById: DummyValue.UUID }, { inTimeline: true }] })
-  update({ sharedWithId, sharedById }: PartnerIds, values: Updateable<Partners>) {
+  update({ sharedWithId, sharedById }: PartnerIds, values: Updateable<PartnerTable>) {
     return this.db
       .updateTable('partners')
       .set(values)

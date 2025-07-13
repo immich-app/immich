@@ -1,5 +1,5 @@
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { Column, ForeignKeyColumn, Table } from 'src/sql-tools';
+import { Column, ForeignKeyColumn, Table, Timestamp } from 'src/sql-tools';
 
 @Table('asset_job_status')
 export class AssetJobStatusTable {
@@ -7,17 +7,17 @@ export class AssetJobStatusTable {
   assetId!: string;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  facesRecognizedAt!: Date | null;
+  facesRecognizedAt!: Timestamp | null;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  metadataExtractedAt!: Date | null;
+  metadataExtractedAt!: Timestamp | null;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  duplicatesDetectedAt!: Date | null;
+  duplicatesDetectedAt!: Timestamp | null;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  previewAt!: Date | null;
+  previewAt!: Timestamp | null;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  thumbnailAt!: Date | null;
+  thumbnailAt!: Timestamp | null;
 }

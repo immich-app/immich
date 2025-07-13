@@ -169,19 +169,9 @@
         >
           <td class="w-1/8 text-ellipsis ps-8 text-sm">
             {#if validatedPath.isValid}
-              <Icon
-                path={mdiCheckCircleOutline}
-                size="24"
-                title={validatedPath.message}
-                class="text-immich-success dark:text-immich-dark-success"
-              />
+              <Icon path={mdiCheckCircleOutline} size="24" title={validatedPath.message} class="text-success" />
             {:else}
-              <Icon
-                path={mdiAlertOutline}
-                size="24"
-                title={validatedPath.message}
-                class="text-immich-warning dark:text-immich-dark-warning"
-              />
+              <Icon path={mdiAlertOutline} size="24" title={validatedPath.message} class="text-warning" />
             {/if}
           </td>
 

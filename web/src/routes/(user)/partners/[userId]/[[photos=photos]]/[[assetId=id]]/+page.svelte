@@ -42,28 +42,28 @@
   };
 </script>
 
-<main class="grid h-dvh pt-18">
+<main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
   <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape} />
-
-  {#if assetInteraction.selectionActive}
-    <AssetSelectControlBar
-      assets={assetInteraction.selectedAssets}
-      clearSelect={() => assetInteraction.clearMultiselect()}
-    >
-      <CreateSharedLink />
-      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-        <AddToAlbum />
-        <AddToAlbum shared />
-      </ButtonContextMenu>
-      <DownloadAction />
-    </AssetSelectControlBar>
-  {:else}
-    <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(AppRoute.SHARING)}>
-      {#snippet leading()}
-        <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
-          {data.partner.name}'s photos
-        </p>
-      {/snippet}
-    </ControlAppBar>
-  {/if}
 </main>
+
+{#if assetInteraction.selectionActive}
+  <AssetSelectControlBar
+    assets={assetInteraction.selectedAssets}
+    clearSelect={() => assetInteraction.clearMultiselect()}
+  >
+    <CreateSharedLink />
+    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
+      <AddToAlbum />
+      <AddToAlbum shared />
+    </ButtonContextMenu>
+    <DownloadAction />
+  </AssetSelectControlBar>
+{:else}
+  <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(AppRoute.SHARING)}>
+    {#snippet leading()}
+      <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
+        {data.partner.name}'s photos
+      </p>
+    {/snippet}
+  </ControlAppBar>
+{/if}

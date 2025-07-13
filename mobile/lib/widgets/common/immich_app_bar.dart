@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -42,7 +43,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           useRootNavigator: false,
           builder: (ctx) => const ImmichAppBarDialog(),
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Badge(
           label: Container(
             decoration: BoxDecoration(
@@ -66,10 +67,13 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   Icons.face_outlined,
                   size: widgetSize,
                 )
-              : UserCircleAvatar(
-                  radius: 17,
-                  size: 31,
-                  user: user,
+              : Semantics(
+                  label: "logged_in_as".tr(namedArgs: {"user": user.name}),
+                  child: UserCircleAvatar(
+                    radius: 17,
+                    size: 31,
+                    user: user,
+                  ),
                 ),
         ),
       );
@@ -117,7 +121,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
       return InkWell(
         onTap: () => context.pushRoute(const BackupControllerRoute()),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Badge(
           label: Container(
             width: widgetSize / 2,
@@ -182,7 +186,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
               child: action,
             ),
           ),
-        if (kDebugMode || kProfileMode)
+        if (kDebugMode || kProfileMode || appFlavor == 'beta')
           IconButton(
             icon: const Icon(Icons.science_rounded),
             onPressed: () => context.pushRoute(const FeatInDevRoute()),

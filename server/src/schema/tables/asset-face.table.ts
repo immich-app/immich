@@ -2,12 +2,24 @@ import { SourceType } from 'src/enum';
 import { asset_face_source_type } from 'src/schema/enums';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { PersonTable } from 'src/schema/tables/person.table';
-import { Column, DeleteDateColumn, ForeignKeyColumn, Index, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
+import {
+  Column,
+  DeleteDateColumn,
+  ForeignKeyColumn,
+  Generated,
+  Index,
+  PrimaryGeneratedColumn,
+  Table,
+  Timestamp,
+} from 'src/sql-tools';
 
 @Table({ name: 'asset_faces' })
 @Index({ name: 'IDX_asset_faces_assetId_personId', columns: ['assetId', 'personId'] })
 @Index({ columns: ['personId', 'assetId'] })
 export class AssetFaceTable {
+  @PrimaryGeneratedColumn()
+  id!: Generated<string>;
+
   @ForeignKeyColumn(() => AssetTable, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
@@ -26,29 +38,26 @@ export class AssetFaceTable {
   personId!: string | null;
 
   @Column({ default: 0, type: 'integer' })
-  imageWidth!: number;
+  imageWidth!: Generated<number>;
 
   @Column({ default: 0, type: 'integer' })
-  imageHeight!: number;
+  imageHeight!: Generated<number>;
 
   @Column({ default: 0, type: 'integer' })
-  boundingBoxX1!: number;
+  boundingBoxX1!: Generated<number>;
 
   @Column({ default: 0, type: 'integer' })
-  boundingBoxY1!: number;
+  boundingBoxY1!: Generated<number>;
 
   @Column({ default: 0, type: 'integer' })
-  boundingBoxX2!: number;
+  boundingBoxX2!: Generated<number>;
 
   @Column({ default: 0, type: 'integer' })
-  boundingBoxY2!: number;
-
-  @PrimaryGeneratedColumn()
-  id!: string;
+  boundingBoxY2!: Generated<number>;
 
   @Column({ default: SourceType.MACHINE_LEARNING, enum: asset_face_source_type })
-  sourceType!: SourceType;
+  sourceType!: Generated<SourceType>;
 
   @DeleteDateColumn()
-  deletedAt!: Date | null;
+  deletedAt!: Timestamp | null;
 }

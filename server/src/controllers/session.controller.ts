@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { SessionCreateDto, SessionCreateResponseDto, SessionResponseDto } from 'src/dtos/session.dto';
+import { SessionCreateDto, SessionCreateResponseDto, SessionResponseDto, SessionUpdateDto } from 'src/dtos/session.dto';
 import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { SessionService } from 'src/services/session.service';
@@ -29,6 +29,16 @@ export class SessionController {
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteAllSessions(@Auth() auth: AuthDto): Promise<void> {
     return this.service.deleteAll(auth);
+  }
+
+  @Put(':id')
+  @Authenticated({ permission: Permission.SESSION_UPDATE })
+  updateSession(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: SessionUpdateDto,
+  ): Promise<SessionResponseDto> {
+    return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')

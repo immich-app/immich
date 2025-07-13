@@ -108,7 +108,6 @@ export function formatMonthGroupTitle(_date: DateTime): string {
     {
       month: 'short',
       year: 'numeric',
-      timeZone: 'UTC',
     },
     { locale: get(locale) },
   );
@@ -216,3 +215,13 @@ export const plainDateTimeCompare = (ascending: boolean, a: TimelinePlainDateTim
   }
   return aDateTime.millisecond - bDateTime.millisecond;
 };
+
+export function setDifference<T>(setA: Set<T>, setB: Set<T>): Set<T> {
+  const result = new Set<T>();
+  for (const value of setA) {
+    if (!setB.has(value)) {
+      result.add(value);
+    }
+  }
+  return result;
+}
