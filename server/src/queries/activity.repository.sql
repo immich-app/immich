@@ -6,26 +6,26 @@ select
   to_json("user") as "user"
 from
   "activity"
-  inner join "users" on "users"."id" = "activity"."userId"
-  and "users"."deletedAt" is null
+  inner join "user" as "user2" on "user2"."id" = "activity"."userId"
+  and "user2"."deletedAt" is null
   inner join lateral (
     select
-      "users"."id",
-      "users"."name",
-      "users"."email",
-      "users"."avatarColor",
-      "users"."profileImagePath",
-      "users"."profileChangedAt"
+      "user2"."id",
+      "user2"."name",
+      "user2"."email",
+      "user2"."avatarColor",
+      "user2"."profileImagePath",
+      "user2"."profileChangedAt"
     from
       (
         select
           1
       ) as "dummy"
   ) as "user" on true
-  left join "assets" on "assets"."id" = "activity"."assetId"
+  left join "asset" on "asset"."id" = "activity"."assetId"
 where
   "activity"."albumId" = $1
-  and "assets"."deletedAt" is null
+  and "asset"."deletedAt" is null
 order by
   "activity"."createdAt" asc
 
@@ -49,9 +49,9 @@ returning
           "profileImagePath",
           "profileChangedAt"
         from
-          "users"
+          "user"
         where
-          "users"."id" = "activity"."userId"
+          "user"."id" = "activity"."userId"
       ) as obj
   ) as "user"
 
@@ -72,16 +72,16 @@ select
   ) as "likes"
 from
   "activity"
-  inner join "users" on "users"."id" = "activity"."userId"
-  and "users"."deletedAt" is null
-  left join "assets" on "assets"."id" = "activity"."assetId"
+  inner join "user" on "user"."id" = "activity"."userId"
+  and "user"."deletedAt" is null
+  left join "asset" on "asset"."id" = "activity"."assetId"
 where
   "activity"."assetId" = $3
   and "activity"."albumId" = $4
   and (
     (
-      "assets"."deletedAt" is null
-      and "assets"."visibility" != 'locked'
+      "asset"."deletedAt" is null
+      and "asset"."visibility" != 'locked'
     )
-    or "assets"."id" is null
+    or "asset"."id" is null
   )
