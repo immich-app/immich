@@ -37,7 +37,7 @@ describe('/tags', () => {
   beforeEach(async () => {
     //  tagging assets eventually triggers metadata extraction which can impact other tests
     await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
-    await utils.resetDatabase(['tags']);
+    await utils.resetDatabase(['tag']);
   });
 
   describe('POST /tags', () => {

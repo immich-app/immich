@@ -2,9 +2,9 @@ import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { Column, ForeignKeyColumn, Generated, Int8, Table, Timestamp, UpdateDateColumn } from 'src/sql-tools';
 
-@Table('exif')
-@UpdatedAtTrigger('asset_exif_updated_at')
-export class ExifTable {
+@Table('asset_exif')
+@UpdatedAtTrigger('asset_exif_updatedAt')
+export class AssetExifTable {
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', primary: true })
   assetId!: string;
 
@@ -50,7 +50,7 @@ export class ExifTable {
   @Column({ type: 'double precision', nullable: true })
   longitude!: number | null;
 
-  @Column({ type: 'character varying', nullable: true, indexName: 'exif_city' })
+  @Column({ type: 'character varying', nullable: true, index: true })
   city!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
@@ -68,7 +68,7 @@ export class ExifTable {
   @Column({ type: 'character varying', nullable: true })
   exposureTime!: string | null;
 
-  @Column({ type: 'character varying', nullable: true, indexName: 'IDX_live_photo_cid' })
+  @Column({ type: 'character varying', nullable: true, index: true })
   livePhotoCID!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
@@ -86,7 +86,7 @@ export class ExifTable {
   @Column({ type: 'integer', nullable: true })
   bitsPerSample!: number | null;
 
-  @Column({ type: 'character varying', nullable: true, indexName: 'IDX_auto_stack_id' })
+  @Column({ type: 'character varying', nullable: true, index: true })
   autoStackId!: string | null;
 
   @Column({ type: 'integer', nullable: true })
@@ -95,6 +95,6 @@ export class ExifTable {
   @UpdateDateColumn({ default: () => 'clock_timestamp()' })
   updatedAt!: Generated<Date>;
 
-  @UpdateIdColumn({ indexName: 'IDX_asset_exif_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }
