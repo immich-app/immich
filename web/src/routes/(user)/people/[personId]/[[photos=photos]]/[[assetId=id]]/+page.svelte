@@ -233,7 +233,7 @@
     });
 
     if (!result) {
-      return;
+      return false;
     }
 
     const [personToMerge, personToBeMergedInto] = result;
@@ -317,8 +317,9 @@
             !person.isHidden,
         )
         .slice(0, 3);
-      await handleMergeSuggestion();
-      return;
+      if ((await handleMergeSuggestion()) !== false) {
+        return;
+      }
     }
     await changeName();
   };
