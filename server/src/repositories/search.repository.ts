@@ -185,6 +185,7 @@ export class SearchRepository {
     const items = await searchAssetBuilder(this.db, options)
       .selectAll('assets')
       .orderBy('assets.fileCreatedAt', orderDirection)
+      .orderBy('assets.originalFileName', orderDirection)
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
       .execute();

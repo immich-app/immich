@@ -174,6 +174,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     thumbhash: assetResponse.thumbhash,
     localDateTime,
     fileCreatedAt,
+    originalFileName: assetResponse.originalFileName,
     isFavorite: assetResponse.isFavorite,
     visibility: assetResponse.visibility,
     isTrashed: assetResponse.isTrashed,
@@ -214,6 +215,19 @@ export const plainDateTimeCompare = (ascending: boolean, a: TimelinePlainDateTim
     return aDateTime.second - bDateTime.second;
   }
   return aDateTime.millisecond - bDateTime.millisecond;
+};
+
+export const plainDateTimeWithFileNameCompare = (
+  ascending: boolean,
+  a: { fileCreatedAt: TimelinePlainDateTime; originalFileName: string },
+  b: { fileCreatedAt: TimelinePlainDateTime; originalFileName: string },
+) => {
+  const dateTimeComparison = plainDateTimeCompare(ascending, a.fileCreatedAt, b.fileCreatedAt);
+  if (dateTimeComparison !== 0) {
+    return dateTimeComparison;
+  }
+  // If dates are equal, sort by filename in the same direction
+  return ascending ? a.originalFileName.localeCompare(b.originalFileName) : b.originalFileName.localeCompare(a.originalFileName);
 };
 
 export function setDifference<T>(setA: Set<T>, setB: Set<T>): Set<T> {
