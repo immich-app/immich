@@ -64,6 +64,8 @@ select
   "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
+  "asset"."livePhotoVideoId",
+  "asset"."stackId",
   "asset"."updateId"
 from
   "asset"
@@ -91,6 +93,8 @@ select
   "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
+  "asset"."livePhotoVideoId",
+  "asset"."stackId",
   "asset"."updateId"
 from
   "asset"
@@ -351,6 +355,8 @@ select
   "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
+  "asset"."livePhotoVideoId",
+  "asset"."stackId",
   "asset"."updateId"
 from
   "asset"
@@ -539,6 +545,8 @@ select
   "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
+  "asset"."livePhotoVideoId",
+  "asset"."stackId",
   "asset"."updateId"
 from
   "asset"
@@ -584,6 +592,8 @@ select
   "asset"."isFavorite",
   "asset"."visibility",
   "asset"."duration",
+  "asset"."livePhotoVideoId",
+  "asset"."stackId",
   "asset"."updateId"
 from
   "asset"
