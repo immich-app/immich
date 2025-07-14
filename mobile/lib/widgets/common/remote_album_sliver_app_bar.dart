@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -23,10 +23,16 @@ class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
     super.key,
     required this.album,
     this.icon = Icons.camera,
+    this.onShowOptions,
+    this.onToggleAlbumOrder,
+    this.onEditTitle,
   });
 
   final RemoteAlbum album;
   final IconData icon;
+  final void Function()? onShowOptions;
+  final void Function()? onToggleAlbumOrder;
+  final void Function()? onEditTitle;
 
   @override
   ConsumerState<RemoteAlbumSliverAppBar> createState() =>
@@ -49,14 +55,6 @@ class _MesmerizingSliverAppBarState
 
     return (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent)
         .clamp(0.0, 1.0);
-  }
-
-  Future<void> _toggleAlbumOrder() async {
-    await ref.read(remoteAlbumProvider.notifier).toggleAlbumOrder(
-          widget.album.id,
-        );
-
-    ref.invalidate(timelineServiceProvider);
   }
 
   @override
@@ -89,11 +87,11 @@ class _MesmerizingSliverAppBarState
         ? SliverToBoxAdapter(
             child: switch (_scrollProgress) {
               < 0.8 => const SizedBox(height: 120),
-              _ => const SizedBox(height: 352),
+              _ => const SizedBox(height: 452),
             },
           )
         : SliverAppBar(
-            expandedHeight: 300.0,
+            expandedHeight: 400.0,
             floating: false,
             pinned: true,
             snap: false,
@@ -111,22 +109,24 @@ class _MesmerizingSliverAppBarState
               },
             ),
             actions: [
-              IconButton(
-                icon: Icon(
-                  Icons.swap_vert_rounded,
-                  color: actionIconColor,
-                  shadows: actionIconShadows,
+              if (widget.onToggleAlbumOrder != null)
+                IconButton(
+                  icon: Icon(
+                    Icons.swap_vert_rounded,
+                    color: actionIconColor,
+                    shadows: actionIconShadows,
+                  ),
+                  onPressed: widget.onToggleAlbumOrder,
                 ),
-                onPressed: _toggleAlbumOrder,
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.more_vert,
-                  color: actionIconColor,
-                  shadows: actionIconShadows,
+              if (widget.onShowOptions != null)
+                IconButton(
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: actionIconColor,
+                    shadows: actionIconShadows,
+                  ),
+                  onPressed: widget.onShowOptions,
                 ),
-                onPressed: () {},
-              ),
             ],
             flexibleSpace: Builder(
               builder: (context) {
@@ -162,6 +162,7 @@ class _MesmerizingSliverAppBarState
                     scrollProgress: scrollProgress,
                     album: widget.album,
                     icon: widget.icon,
+                    onEditTitle: widget.onEditTitle,
                   ),
                 );
               },
@@ -174,11 +175,13 @@ class _ExpandedBackground extends ConsumerStatefulWidget {
   final double scrollProgress;
   final RemoteAlbum album;
   final IconData icon;
+  final void Function()? onEditTitle;
 
   const _ExpandedBackground({
     required this.scrollProgress,
     required this.album,
     required this.icon,
+    this.onEditTitle,
   });
 
   @override
@@ -242,19 +245,28 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
             ),
           ),
         ),
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.transparent,
-                Colors.transparent,
-                Colors.black.withValues(
-                  alpha: 0.4 + (widget.scrollProgress * 0.2),
+        ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(
+              sigmaX: widget.scrollProgress * 2.0,
+              sigmaY: widget.scrollProgress * 2.0,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.05),
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.3),
+                    Colors.black.withValues(
+                      alpha: 0.6 + (widget.scrollProgress * 0.25),
+                    ),
+                  ],
+                  stops: const [0.0, 0.15, 0.55, 1.0],
                 ),
-              ],
-              stops: const [0.0, 0.6, 1.0],
+              ),
             ),
           ),
         ),
@@ -283,7 +295,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                             Shadow(
                               offset: Offset(0, 2),
                               blurRadius: 12,
-                              color: Colors.black45,
+                              color: Colors.black87,
                             ),
                           ],
                         ),
@@ -296,7 +308,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                           Shadow(
                             offset: Offset(0, 2),
                             blurRadius: 12,
-                            color: Colors.black45,
+                            color: Colors.black87,
                           ),
                         ],
                       ),
@@ -307,45 +319,61 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                     ),
                   ],
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Text(
-                      widget.album.name,
-                      maxLines: 1,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(0, 2),
-                            blurRadius: 12,
-                            color: Colors.black45,
-                          ),
-                        ],
+                GestureDetector(
+                  onTap: widget.onEditTitle,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Text(
+                        widget.album.name,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(0, 2),
+                              blurRadius: 12,
+                              color: Colors.black54,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
                 if (widget.album.description.isNotEmpty)
-                  Text(
-                    widget.album.description,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      shadows: [
-                        Shadow(
-                          offset: Offset(0, 2),
-                          blurRadius: 12,
-                          color: Colors.black45,
+                  GestureDetector(
+                    onTap: widget.onEditTitle,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxHeight: 80,
+                      ),
+                      child: SingleChildScrollView(
+                        child: Text(
+                          widget.album.description,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(0, 2),
+                                blurRadius: 8,
+                                color: Colors.black54,
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                RemoteAlbumSharedUserIcons(albumId: widget.album.id),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: RemoteAlbumSharedUserIcons(albumId: widget.album.id),
+                ),
               ],
             ),
           ),
@@ -395,7 +423,7 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
           const Shadow(
             offset: Offset(0, 2),
             blurRadius: 12,
-            color: Colors.black45,
+            color: Colors.black87,
           ),
         ],
       ),

@@ -1,8 +1,6 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class RemoteAlbumSharedUserIcons extends ConsumerWidget {
@@ -23,26 +21,22 @@ class RemoteAlbumSharedUserIcons extends ConsumerWidget {
           return const SizedBox();
         }
 
-        return GestureDetector(
-          onTap: () => context.pushRoute(const AlbumOptionsRoute()),
-          child: Container(
-            margin: const EdgeInsets.only(top: 8),
-            height: 50,
-            child: ListView.builder(
-              padding: const EdgeInsets.only(left: 16, bottom: 8),
-              scrollDirection: Axis.horizontal,
-              itemBuilder: ((context, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: UserCircleAvatar(
-                    user: sharedUsers[index],
-                    radius: 18,
-                    size: 36,
-                  ),
-                );
-              }),
-              itemCount: sharedUsers.length,
-            ),
+        return SizedBox(
+          height: 50,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemBuilder: ((context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 4.0),
+                child: UserCircleAvatar(
+                  user: sharedUsers[index],
+                  radius: 18,
+                  size: 36,
+                  hasBorder: true,
+                ),
+              );
+            }),
+            itemCount: sharedUsers.length,
           ),
         );
       },

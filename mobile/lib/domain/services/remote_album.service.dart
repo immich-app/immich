@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
@@ -108,5 +109,38 @@ class RemoteAlbumService {
 
   Future<List<UserDto>> getSharedUsers(String albumId) {
     return _repository.getSharedUsersForRemoteAlbum(albumId);
+  }
+
+  Future<List<RemoteAsset>> getAssets(String albumId) {
+    return _repository.getAssets(albumId);
+  }
+
+  Future<int> addAssets({
+    required String albumId,
+    required List<String> assetIds,
+  }) async {
+    final album = await _albumApiRepository.addAssets(
+      albumId,
+      assetIds,
+    );
+
+    await _repository.addAssets(albumId, album.added);
+
+    return album.added.length;
+  }
+
+  Future<void> deleteAlbum(String albumId) async {
+    await _albumApiRepository.deleteAlbum(albumId);
+
+    await _repository.deleteAlbum(albumId);
+  }
+
+  Future<void> addUsers({
+    required String albumId,
+    required List<String> userIds,
+  }) async {
+    await _albumApiRepository.addUsers(albumId, userIds);
+
+    return _repository.addUsers(albumId, userIds);
   }
 }

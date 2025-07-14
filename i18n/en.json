@@ -1938,6 +1938,7 @@
   "user_usage_stats_description": "View account usage statistics",
   "username": "Username",
   "users": "Users",
+  "users_added_to_album_count": "Added {count, plural, one {# user} other {# users}} to the album",
   "utilities": "Utilities",
   "validate": "Validate",
   "validate_endpoint_error": "Please enter a valid URL",

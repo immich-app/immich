@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 enum SortRemoteAlbumsBy { id, updatedAt }
@@ -175,7 +178,6 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
           updatedAt: user.updatedAt,
           quotaSizeInBytes: user.quotaSizeInBytes ?? 0,
           quotaUsageInBytes: user.quotaUsageInBytes,
-          // Default values for fields not in UserEntity table
           memoryEnabled: true,
           inTimeline: false,
           isPartnerSharedBy: false,
@@ -185,6 +187,63 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     }
 
     return userDtos;
+  }
+
+  Future<List<RemoteAsset>> getAssets(String albumId) {
+    final query = _db.remoteAlbumAssetEntity.select().join([
+      innerJoin(
+        _db.remoteAssetEntity,
+        _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId),
+      ),
+    ])
+      ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId));
+
+    return query
+        .map((row) => row.readTable(_db.remoteAssetEntity).toDto())
+        .get();
+  }
+
+  Future<int> addAssets(String albumId, List<String> assetIds) async {
+    final albumAssets = assetIds.map(
+      (assetId) => RemoteAlbumAssetEntityCompanion(
+        albumId: Value(albumId),
+        assetId: Value(assetId),
+      ),
+    );
+
+    await _db.batch((batch) {
+      batch.insertAll(
+        _db.remoteAlbumAssetEntity,
+        albumAssets,
+      );
+    });
+
+    return assetIds.length;
+  }
+
+  Future<void> addUsers(String albumId, List<String> userIds) async {
+    final albumUsers = userIds.map(
+      (assetId) => RemoteAlbumUserEntityCompanion(
+        albumId: Value(albumId),
+        userId: Value(assetId),
+        role: const Value(AlbumUserRole.editor),
+      ),
+    );
+
+    await _db.batch((batch) {
+      batch.insertAll(
+        _db.remoteAlbumUserEntity,
+        albumUsers,
+      );
+    });
+  }
+
+  Future<void> deleteAlbum(String albumId) async {
+    await _db.transaction(() async {
+      await _db.remoteAlbumEntity.deleteWhere(
+        (table) => table.id.equals(albumId),
+      );
+    });
   }
 }
 

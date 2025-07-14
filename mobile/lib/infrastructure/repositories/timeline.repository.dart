@@ -195,13 +195,22 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       return _db.remoteAlbumAssetEntity
           .count(where: (row) => row.albumId.equals(albumId))
           .map(_generateBuckets)
-          .watchSingle();
+          .watch()
+          .map((results) => results.isNotEmpty ? results.first : <Bucket>[])
+          .handleError((error) {
+        return [];
+      });
     }
 
     return (_db.remoteAlbumEntity.select()
           ..where((row) => row.id.equals(albumId)))
-        .watchSingle()
-        .switchMap((album) {
+        .watch()
+        .switchMap((albums) {
+      if (albums.isEmpty) {
+        return Stream.value(<Bucket>[]);
+      }
+
+      final album = albums.first;
       final isAscending = album.order == AlbumAssetOrder.asc;
       final assetCountExp = _db.remoteAssetEntity.id.count();
       final dateExp = _db.remoteAssetEntity.createdAt.dateFmt(groupBy);
@@ -233,6 +242,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         final assetCount = row.read(assetCountExp)!;
         return TimeBucket(date: timeline, assetCount: assetCount);
       }).watch();
+    }).handleError((error) {
+      // If there's an error (e.g., album was deleted), return empty buckets
+      return <Bucket>[];
     });
   }
 
@@ -245,7 +257,12 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
           ..where((row) => row.id.equals(albumId)))
         .getSingleOrNull();
 
-    final isAscending = albumData?.order == AlbumAssetOrder.asc;
+    // If album doesn't exist (was deleted), return empty list
+    if (albumData == null) {
+      return <BaseAsset>[];
+    }
+
+    final isAscending = albumData.order == AlbumAssetOrder.asc;
 
     final query = _db.remoteAssetEntity.select().join(
       [

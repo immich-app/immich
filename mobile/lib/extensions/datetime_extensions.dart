@@ -54,6 +54,7 @@ extension DateRangeFormatting on DateTime {
   ) {
     final now = DateTime.now();
     final currentYear = now.year;
+    final localeString = locale?.toString() ?? 'en_US';
 
     // Check if it's a single date (same day)
     if (startDate.year == endDate.year &&
@@ -61,10 +62,10 @@ extension DateRangeFormatting on DateTime {
         startDate.day == endDate.day) {
       if (startDate.year == currentYear) {
         // Single date of this year: "Aug 28"
-        return DateFormat.MMMd(locale.toString()).format(startDate);
+        return DateFormat.MMMd(localeString).format(startDate);
       } else {
         // Single date of other year: "Aug 28, 2023"
-        return DateFormat.yMMMd(locale.toString()).format(startDate);
+        return DateFormat.yMMMd(localeString).format(startDate);
       }
     }
 
@@ -73,22 +74,19 @@ extension DateRangeFormatting on DateTime {
       // Same year
       if (startDate.year == currentYear) {
         // Date range of this year: "Mar 23-May 31"
-        final startFormatted =
-            DateFormat.MMMd(locale.toString()).format(startDate);
-        final endFormatted = DateFormat.MMMd(locale.toString()).format(endDate);
-        return '$startFormatted-$endFormatted';
+        final startFormatted = DateFormat.MMMd(localeString).format(startDate);
+        final endFormatted = DateFormat.MMMd(localeString).format(endDate);
+        return '$startFormatted - $endFormatted';
       } else {
         // Date range of other year: "Aug 28 - Sep 30, 2023"
-        final startFormatted =
-            DateFormat.MMMd(locale.toString()).format(startDate);
-        final endFormatted = DateFormat.MMMd(locale.toString()).format(endDate);
+        final startFormatted = DateFormat.MMMd(localeString).format(startDate);
+        final endFormatted = DateFormat.MMMd(localeString).format(endDate);
         return '$startFormatted - $endFormatted, ${startDate.year}';
       }
     } else {
       // Date range over multiple years: "Apr 17, 2021 - Apr 9, 2022"
-      final startFormatted =
-          DateFormat.yMMMd(locale.toString()).format(startDate);
-      final endFormatted = DateFormat.yMMMd(locale.toString()).format(endDate);
+      final startFormatted = DateFormat.yMMMd(localeString).format(startDate);
+      final endFormatted = DateFormat.yMMMd(localeString).format(endDate);
       return '$startFormatted - $endFormatted';
     }
   }

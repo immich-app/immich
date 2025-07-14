@@ -1,7 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting();
+  });
+
   group('DateRangeFormatting.formatDateRange', () {
     final currentYear = DateTime.now().year;
 
@@ -22,7 +27,7 @@ void main() {
       final endDate = DateTime(currentYear, 5, 31); // May 31
       final result =
           DateRangeFormatting.formatDateRange(startDate, endDate, null);
-      expect(result, 'Mar 23-May 31');
+      expect(result, 'Mar 23 - May 31');
     });
 
     test('returns date range format for other year (same year)', () {
