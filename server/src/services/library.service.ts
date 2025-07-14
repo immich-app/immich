@@ -17,7 +17,7 @@ import {
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
-import { AssetStatus, AssetType, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetStatus, AssetType, CronJob, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { AssetSyncResult } from 'src/repositories/library.repository';
 import { AssetTable } from 'src/schema/tables/asset.table';
@@ -45,7 +45,7 @@ export class LibraryService extends BaseService {
 
     if (this.lock) {
       this.cronRepository.create({
-        name: 'libraryScan',
+        name: CronJob.LibraryScan,
         expression: scan.cronExpression,
         onTick: () =>
           handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL }), this.logger),
@@ -65,7 +65,7 @@ export class LibraryService extends BaseService {
     }
 
     this.cronRepository.update({
-      name: 'libraryScan',
+      name: CronJob.LibraryScan,
       expression: library.scan.cronExpression,
       start: library.scan.enabled,
     });

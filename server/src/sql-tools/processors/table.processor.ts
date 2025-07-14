@@ -1,4 +1,3 @@
-import { asSnakeCase } from 'src/sql-tools/helpers';
 import { Processor } from 'src/sql-tools/types';
 
 export const processTables: Processor = (ctx, items) => {
@@ -14,7 +13,7 @@ export const processTables: Processor = (ctx, items) => {
 
     ctx.addTable(
       {
-        name: options.name || asSnakeCase(object.name),
+        name: options.name || ctx.getNameFor({ type: 'table', name: object.name }),
         columns: [],
         constraints: [],
         indexes: [],

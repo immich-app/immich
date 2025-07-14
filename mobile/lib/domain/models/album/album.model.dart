@@ -11,7 +11,7 @@ enum AlbumUserRole {
 }
 
 // Model for an album stored in the server
-class Album {
+class RemoteAlbum {
   final String id;
   final String name;
   final String ownerId;
@@ -24,7 +24,7 @@ class Album {
   final int assetCount;
   final String ownerName;
 
-  const Album({
+  const RemoteAlbum({
     required this.id,
     required this.name,
     required this.ownerId,
@@ -57,7 +57,7 @@ class Album {
 
   @override
   bool operator ==(Object other) {
-    if (other is! Album) return false;
+    if (other is! RemoteAlbum) return false;
     if (identical(this, other)) return true;
     return id == other.id &&
         name == other.name &&

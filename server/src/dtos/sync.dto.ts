@@ -10,8 +10,10 @@ import {
   MemoryType,
   SyncEntityType,
   SyncRequestType,
+  UserMetadataKey,
 } from 'src/enum';
-import { Optional, ValidateDate, ValidateUUID } from 'src/validation';
+import { UserMetadata } from 'src/types';
+import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class AssetFullSyncDto {
   @ValidateUUID({ optional: true })
@@ -94,6 +96,8 @@ export class SyncAssetV1 {
   isFavorite!: boolean;
   @ApiProperty({ enumName: 'AssetVisibility', enum: AssetVisibility })
   visibility!: AssetVisibility;
+  livePhotoVideoId!: string | null;
+  stackId!: string | null;
 }
 
 @ExtraModel()
@@ -234,7 +238,43 @@ export class SyncStackDeleteV1 {
 }
 
 @ExtraModel()
+export class SyncPersonV1 {
+  id!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
+  ownerId!: string;
+  name!: string;
+  birthDate!: Date | null;
+  thumbnailPath!: string;
+  isHidden!: boolean;
+  isFavorite!: boolean;
+  color!: string | null;
+  faceAssetId!: string | null;
+}
+
+@ExtraModel()
+export class SyncPersonDeleteV1 {
+  personId!: string;
+}
+
+@ExtraModel()
+export class SyncUserMetadataV1 {
+  userId!: string;
+  key!: string;
+  value!: UserMetadata[UserMetadataKey];
+}
+
+@ExtraModel()
+export class SyncUserMetadataDeleteV1 {
+  userId!: string;
+  key!: string;
+}
+
+@ExtraModel()
 export class SyncAckV1 {}
+
+@ExtraModel()
+export class SyncResetV1 {}
 
 export type SyncItem = {
   [SyncEntityType.UserV1]: SyncUserV1;
@@ -270,13 +310,21 @@ export type SyncItem = {
   [SyncEntityType.PartnerStackBackfillV1]: SyncStackV1;
   [SyncEntityType.PartnerStackDeleteV1]: SyncStackDeleteV1;
   [SyncEntityType.PartnerStackV1]: SyncStackV1;
+  [SyncEntityType.PersonV1]: SyncPersonV1;
+  [SyncEntityType.PersonDeleteV1]: SyncPersonDeleteV1;
+  [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
+  [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;
   [SyncEntityType.SyncAckV1]: SyncAckV1;
+  [SyncEntityType.SyncResetV1]: SyncResetV1;
 };
 
 export class SyncStreamDto {
   @IsEnum(SyncRequestType, { each: true })
   @ApiProperty({ enumName: 'SyncRequestType', enum: SyncRequestType, isArray: true })
   types!: SyncRequestType[];
+
+  @ValidateBoolean({ optional: true })
+  reset?: boolean;
 }
 
 export class SyncAckDto {

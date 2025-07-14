@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 const testColumn: DatabaseColumn = {
   name: 'test',
   tableName: 'table1',
+  primary: false,
   nullable: false,
   isArray: false,
   type: 'character varying',

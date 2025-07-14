@@ -406,6 +406,7 @@ export class DatabaseRepository {
     const migrator = new Migrator({
       db: this.db,
       migrationLockTableName: 'kysely_migrations_lock',
+      allowUnorderedMigrations: this.configRepository.isDev(),
       migrationTableName: 'kysely_migrations',
       provider: new FileMigrationProvider({
         fs: { readdir },

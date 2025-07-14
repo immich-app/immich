@@ -100,24 +100,24 @@
 
       <!-- my.immich.app deep link -->
       <intent-filter android:autoVerify="true">
-          <action android:name="android.intent.action.VIEW" />
-          <category android:name="android.intent.category.DEFAULT" />
-          <category android:name="android.intent.category.BROWSABLE" />
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
 
-          <data android:scheme="https" />
+        <data android:scheme="https" />
 
-          <data
-              android:host="my.immich.app"
-              android:path="/" />
-          <data
-              android:host="my.immich.app"
-              android:pathPrefix="/albums/" />
-          <data
-              android:host="my.immich.app"
-              android:pathPrefix="/memories/" />
-          <data
-              android:host="my.immich.app"
-              android:pathPrefix="/photos/" />
+        <data
+          android:host="my.immich.app"
+          android:path="/" />
+        <data
+          android:host="my.immich.app"
+          android:pathPrefix="/albums/" />
+        <data
+          android:host="my.immich.app"
+          android:pathPrefix="/memories/" />
+        <data
+          android:host="my.immich.app"
+          android:pathPrefix="/photos/" />
       </intent-filter>
     </activity>
 

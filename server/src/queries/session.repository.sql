@@ -6,68 +6,81 @@ select
   "expiresAt",
   "pinExpiresAt"
 from
-  "sessions"
+  "session"
 where
   "id" = $1
 
 -- SessionRepository.getByToken
 select
-  "sessions"."id",
-  "sessions"."updatedAt",
-  "sessions"."pinExpiresAt",
+  "session"."id",
+  "session"."isPendingSyncReset",
+  "session"."updatedAt",
+  "session"."pinExpiresAt",
   (
     select
       to_json(obj)
     from
       (
         select
-          "users"."id",
-          "users"."name",
-          "users"."email",
-          "users"."isAdmin",
-          "users"."quotaUsageInBytes",
-          "users"."quotaSizeInBytes"
+          "user"."id",
+          "user"."name",
+          "user"."email",
+          "user"."isAdmin",
+          "user"."quotaUsageInBytes",
+          "user"."quotaSizeInBytes"
         from
-          "users"
+          "user"
         where
-          "users"."id" = "sessions"."userId"
-          and "users"."deletedAt" is null
+          "user"."id" = "session"."userId"
+          and "user"."deletedAt" is null
       ) as obj
   ) as "user"
 from
-  "sessions"
+  "session"
 where
-  "sessions"."token" = $1
+  "session"."token" = $1
   and (
-    "sessions"."expiresAt" is null
-    or "sessions"."expiresAt" > $2
+    "session"."expiresAt" is null
+    or "session"."expiresAt" > $2
   )
 
 -- SessionRepository.getByUserId
 select
-  "sessions".*
+  "session".*
 from
-  "sessions"
-  inner join "users" on "users"."id" = "sessions"."userId"
-  and "users"."deletedAt" is null
+  "session"
+  inner join "user" on "user"."id" = "session"."userId"
+  and "user"."deletedAt" is null
 where
-  "sessions"."userId" = $1
+  "session"."userId" = $1
   and (
-    "sessions"."expiresAt" is null
-    or "sessions"."expiresAt" > $2
+    "session"."expiresAt" is null
+    or "session"."expiresAt" > $2
   )
 order by
-  "sessions"."updatedAt" desc,
-  "sessions"."createdAt" desc
+  "session"."updatedAt" desc,
+  "session"."createdAt" desc
 
 -- SessionRepository.delete
-delete from "sessions"
+delete from "session"
 where
   "id" = $1::uuid
 
 -- SessionRepository.lockAll
-update "sessions"
+update "session"
 set
   "pinExpiresAt" = $1
 where
   "userId" = $2
+
+-- SessionRepository.resetSyncProgress
+begin
+update "session"
+set
+  "isPendingSyncReset" = $1
+where
+  "id" = $2
+delete from "session_sync_checkpoint"
+where
+  "sessionId" = $1
+commit

@@ -13,25 +13,41 @@ part of openapi.api;
 class SyncStreamDto {
   /// Returns a new [SyncStreamDto] instance.
   SyncStreamDto({
+    this.reset,
     this.types = const [],
   });
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? reset;
 
   List<SyncRequestType> types;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncStreamDto &&
+    other.reset == reset &&
     _deepEquality.equals(other.types, types);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (reset == null ? 0 : reset!.hashCode) +
     (types.hashCode);
 
   @override
-  String toString() => 'SyncStreamDto[types=$types]';
+  String toString() => 'SyncStreamDto[reset=$reset, types=$types]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.reset != null) {
+      json[r'reset'] = this.reset;
+    } else {
+    //  json[r'reset'] = null;
+    }
       json[r'types'] = this.types;
     return json;
   }
@@ -45,6 +61,7 @@ class SyncStreamDto {
       final json = value.cast<String, dynamic>();
 
       return SyncStreamDto(
+        reset: mapValueOfType<bool>(json, r'reset'),
         types: SyncRequestType.listFromJson(json[r'types']),
       );
     }

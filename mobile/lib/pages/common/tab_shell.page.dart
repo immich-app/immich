@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -127,10 +128,6 @@ class TabShellPage extends ConsumerWidget {
       ),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
-        final heroedChild = HeroControllerScope(
-          controller: HeroController(),
-          child: child,
-        );
         return PopScope(
           canPop: tabsRouter.activeIndex == 0,
           onPopInvokedWithResult: (didPop, _) =>
@@ -142,10 +139,10 @@ class TabShellPage extends ConsumerWidget {
                     children: [
                       navigationRail(tabsRouter),
                       const VerticalDivider(),
-                      Expanded(child: heroedChild),
+                      Expanded(child: child),
                     ],
                   )
-                : heroedChild,
+                : child,
             bottomNavigationBar: _BottomNavigationBar(
               tabsRouter: tabsRouter,
               destinations: navigationDestinations,
@@ -166,6 +163,11 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
   // On Search page tapped
   if (router.activeIndex == 1 && index == 1) {
     ref.read(searchInputFocusProvider).requestFocus();
+  }
+
+  // Album page
+  if (index == 2) {
+    ref.read(remoteAlbumProvider.notifier).getAll();
   }
 
   ref.read(hapticFeedbackProvider.notifier).selectionClick();

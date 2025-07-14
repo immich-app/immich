@@ -1,4 +1,3 @@
-import { asKey } from 'src/sql-tools/helpers';
 import { ConstraintType, Processor } from 'src/sql-tools/types';
 
 export const processUniqueConstraints: Processor = (ctx, items) => {
@@ -16,7 +15,7 @@ export const processUniqueConstraints: Processor = (ctx, items) => {
 
     table.constraints.push({
       type: ConstraintType.UNIQUE,
-      name: options.name || asUniqueConstraintName(tableName, columnNames),
+      name: options.name || ctx.getNameFor({ type: 'unique', tableName, columnNames }),
       tableName,
       columnNames,
       synchronize: options.synchronize ?? true,
@@ -41,9 +40,17 @@ export const processUniqueConstraints: Processor = (ctx, items) => {
     }
 
     if (type === 'column' && !options.primary && (options.unique || options.uniqueConstraintName)) {
+      const uniqueConstraintName =
+        options.uniqueConstraintName ||
+        ctx.getNameFor({
+          type: 'unique',
+          tableName: table.name,
+          columnNames: [column.name],
+        });
+
       table.constraints.push({
         type: ConstraintType.UNIQUE,
-        name: options.uniqueConstraintName || asUniqueConstraintName(table.name, [column.name]),
+        name: uniqueConstraintName,
         tableName: table.name,
         columnNames: [column.name],
         synchronize: options.synchronize ?? true,
@@ -51,5 +58,3 @@ export const processUniqueConstraints: Processor = (ctx, items) => {
     }
   }
 };
-
-const asUniqueConstraintName = (table: string, columns: string[]) => asKey('UQ_', table, columns);
