@@ -474,12 +474,12 @@ describe(AssetService.name, () => {
       const dateTimeRelative = 35;
       const timeZone = 'UTC+2';
       mocks.asset.updateDateTimeOriginal.mockResolvedValue([
-        { assetId: 'asset-1', dateTimeOriginal: new Date('2020-02-25T04:41:00'), timeZone: timeZone },
+        { assetId: 'asset-1', dateTimeOriginal: new Date('2020-02-25T04:41:00'), timeZone },
       ]);
       await sut.updateAll(authStub.admin, {
         ids: ['asset-1'],
         dateTimeRelative,
-        timeZone: timeZone,
+        timeZone,
       });
       expect(mocks.asset.updateDateTimeOriginal).toHaveBeenCalledWith(['asset-1'], dateTimeRelative, timeZone);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([

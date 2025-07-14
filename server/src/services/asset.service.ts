@@ -123,26 +123,25 @@ export class AssetService extends BaseService {
       await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
     }
 
-    const dateTimes =
+    const assets =
       (dateTimeRelative !== undefined && dateTimeRelative !== 0) || timeZone !== undefined
         ? await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone)
         : null;
 
-    let dateTimesWithTimezone: { assetId: string; dateTimeOriginal: string | null }[] | null = null;
+    const dateTimesWithTimezone =
+      assets?.map((asset) => {
+        const isoString = asset.dateTimeOriginal?.toISOString();
+        let dateTime = isoString ? DateTime.fromISO(isoString) : null;
 
-    if (dateTimes !== null) {
-      dateTimesWithTimezone = [];
-      for (const dt of dateTimes) {
-        let dateTime = DateTime.fromISO(dt.dateTimeOriginal?.toISOString()!);
-        if (dt.timeZone) {
-          dateTime = dateTime.setZone(dt.timeZone);
+        if (dateTime && asset.timeZone) {
+          dateTime = dateTime.setZone(asset.timeZone);
         }
-        dateTimesWithTimezone.push({
-          assetId: dt.assetId,
-          dateTimeOriginal: dateTime.toISO(),
-        });
-      }
-    }
+
+        return {
+          assetId: asset.assetId,
+          dateTimeOriginal: dateTime?.toISO() ?? null,
+        };
+      }) ?? null;
 
     if (staticValuesChanged || dateTimesWithTimezone) {
       const entries: JobItem[] = (dateTimesWithTimezone ?? ids).map((entry: any) => ({
