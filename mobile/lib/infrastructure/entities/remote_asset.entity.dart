@@ -30,6 +30,8 @@ class RemoteAssetEntity extends Table
 
   DateTimeColumn get deletedAt => dateTime().nullable()();
 
+  TextColumn get livePhotoVideoId => text().nullable()();
+
   IntColumn get visibility => intEnum<AssetVisibility>()();
 
   @override
@@ -51,6 +53,7 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
         width: width,
         thumbHash: thumbHash,
         visibility: visibility,
+        livePhotoVideoId: livePhotoVideoId,
         localId: null,
       );
 }
