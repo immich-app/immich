@@ -12,9 +12,11 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/widgets/album/remote_album_shared_user_icons.dart';
 
 class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
   const RemoteAlbumSliverAppBar({
@@ -47,6 +49,14 @@ class _MesmerizingSliverAppBarState
 
     return (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent)
         .clamp(0.0, 1.0);
+  }
+
+  Future<void> _toggleAlbumOrder() async {
+    await ref.read(remoteAlbumProvider.notifier).toggleAlbumOrder(
+          widget.album.id,
+        );
+
+    ref.invalidate(timelineServiceProvider);
   }
 
   @override
@@ -103,11 +113,11 @@ class _MesmerizingSliverAppBarState
             actions: [
               IconButton(
                 icon: Icon(
-                  Icons.swap_vert,
+                  Icons.swap_vert_rounded,
                   color: actionIconColor,
                   shadows: actionIconShadows,
                 ),
-                onPressed: () {},
+                onPressed: _toggleAlbumOrder,
               ),
               IconButton(
                 icon: Icon(
@@ -335,6 +345,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                       ],
                     ),
                   ),
+                RemoteAlbumSharedUserIcons(albumId: widget.album.id),
               ],
             ),
           ),

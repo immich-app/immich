@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/utils/remote_album.utils.dart';
@@ -145,6 +147,58 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
       rethrow;
     }
   }
+
+  Future<RemoteAlbum?> updateAlbum(
+    String albumId, {
+    String? name,
+    String? description,
+    String? thumbnailAssetId,
+    bool? isActivityEnabled,
+    AlbumAssetOrder? order,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final updatedAlbum = await _remoteAlbumService.updateAlbum(
+        albumId,
+        name: name,
+        description: description,
+        thumbnailAssetId: thumbnailAssetId,
+        isActivityEnabled: isActivityEnabled,
+        order: order,
+      );
+
+      final updatedAlbums = state.albums.map((album) {
+        return album.id == albumId ? updatedAlbum : album;
+      }).toList();
+
+      final updatedFilteredAlbums = state.filteredAlbums.map((album) {
+        return album.id == albumId ? updatedAlbum : album;
+      }).toList();
+
+      state = state.copyWith(
+        albums: updatedAlbums,
+        filteredAlbums: updatedFilteredAlbums,
+        isLoading: false,
+      );
+
+      return updatedAlbum;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
+    }
+  }
+
+  Future<RemoteAlbum?> toggleAlbumOrder(String albumId) async {
+    final currentAlbum =
+        state.albums.firstWhere((album) => album.id == albumId);
+
+    final newOrder = currentAlbum.order == AlbumAssetOrder.asc
+        ? AlbumAssetOrder.desc
+        : AlbumAssetOrder.asc;
+
+    return updateAlbum(albumId, order: newOrder);
+  }
 }
 
 final remoteAlbumDateRangeProvider =
@@ -154,3 +208,9 @@ final remoteAlbumDateRangeProvider =
     return service.getDateRange(albumId);
   },
 );
+
+final remoteAlbumSharedUsersProvider = 
+    FutureProvider.family<List<UserDto>, String>((ref, albumId) async {
+  final service = ref.watch(remoteAlbumServiceProvider);
+  return service.getSharedUsers(albumId);
+});

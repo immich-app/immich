@@ -52,6 +52,36 @@ class DriftAlbumApiRepository extends ApiRepository {
     }
     return (removed: removed, failed: failed);
   }
+
+  Future<RemoteAlbum> updateAlbum(
+    String albumId, {
+    String? name,
+    String? description,
+    String? thumbnailAssetId,
+    bool? isActivityEnabled,
+    AlbumAssetOrder? order,
+  }) async {
+    AssetOrder? apiOrder;
+    if (order != null) {
+      apiOrder =
+          order == AlbumAssetOrder.asc ? AssetOrder.asc : AssetOrder.desc;
+    }
+
+    final responseDto = await checkNull(
+      _api.updateAlbumInfo(
+        albumId,
+        UpdateAlbumDto(
+          albumName: name,
+          description: description,
+          albumThumbnailAssetId: thumbnailAssetId,
+          isActivityEnabled: isActivityEnabled,
+          order: apiOrder,
+        ),
+      ),
+    );
+
+    return responseDto.toRemoteAlbum();
+  }
 }
 
 extension on AlbumResponseDto {

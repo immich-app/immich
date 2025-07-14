@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
@@ -78,7 +79,34 @@ class RemoteAlbumService {
     return album;
   }
 
+  Future<RemoteAlbum> updateAlbum(
+    String albumId, {
+    String? name,
+    String? description,
+    String? thumbnailAssetId,
+    bool? isActivityEnabled,
+    AlbumAssetOrder? order,
+  }) async {
+    final updatedAlbum = await _albumApiRepository.updateAlbum(
+      albumId,
+      name: name,
+      description: description,
+      thumbnailAssetId: thumbnailAssetId,
+      isActivityEnabled: isActivityEnabled,
+      order: order,
+    );
+
+    // Update the local database
+    await _repository.update(updatedAlbum);
+
+    return updatedAlbum;
+  }
+
   FutureOr<(DateTime, DateTime)> getDateRange(String albumId) {
     return _repository.getDateRange(albumId);
+  }
+
+  Future<List<UserDto>> getSharedUsers(String albumId) {
+    return _repository.getSharedUsersForRemoteAlbum(albumId);
   }
 }

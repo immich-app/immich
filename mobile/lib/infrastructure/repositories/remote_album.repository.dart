@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -101,6 +102,22 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     });
   }
 
+  Future<void> update(RemoteAlbum album) async {
+    await _db.remoteAlbumEntity.update().replace(
+          RemoteAlbumEntityCompanion(
+            id: Value(album.id),
+            name: Value(album.name),
+            ownerId: Value(album.ownerId),
+            createdAt: Value(album.createdAt),
+            updatedAt: Value(album.updatedAt),
+            description: Value(album.description),
+            thumbnailAssetId: Value(album.thumbnailAssetId),
+            isActivityEnabled: Value(album.isActivityEnabled),
+            order: Value(album.order),
+          ),
+        );
+  }
+
   Future<int> removeAssets(String albumId, List<String> assetIds) {
     return _db.remoteAlbumAssetEntity.deleteWhere(
       (tbl) => tbl.albumId.equals(albumId) & tbl.assetId.isIn(assetIds),
@@ -127,6 +144,47 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       final maxDate = row.read(_db.remoteAssetEntity.createdAt.max());
       return (minDate ?? DateTime.now(), maxDate ?? DateTime.now());
     }).getSingle();
+  }
+
+  Future<List<UserDto>> getSharedUsersForRemoteAlbum(String albumId) async {
+    final albumUserRows = await (_db.select(_db.remoteAlbumUserEntity)
+          ..where((row) => row.albumId.equals(albumId)))
+        .get();
+
+    if (albumUserRows.isEmpty) {
+      return [];
+    }
+
+    final userIds = albumUserRows.map((row) => row.userId).toList();
+
+    final userRows = await (_db.select(_db.userEntity)
+          ..where((row) => row.id.isIn(userIds)))
+        .get();
+
+    final userDtos = <UserDto>[];
+    for (final user in userRows) {
+      userDtos.add(
+        UserDto(
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          profileImagePath: user.profileImagePath?.isEmpty == true
+              ? null
+              : user.profileImagePath,
+          isAdmin: user.isAdmin,
+          updatedAt: user.updatedAt,
+          quotaSizeInBytes: user.quotaSizeInBytes ?? 0,
+          quotaUsageInBytes: user.quotaUsageInBytes,
+          // Default values for fields not in UserEntity table
+          memoryEnabled: true,
+          inTimeline: false,
+          isPartnerSharedBy: false,
+          isPartnerSharedWith: false,
+        ),
+      );
+    }
+
+    return userDtos;
   }
 }
 
