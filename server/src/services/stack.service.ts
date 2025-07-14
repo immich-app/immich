@@ -58,12 +58,38 @@ export class StackService extends BaseService {
     await this.eventRepository.emit('stacks.delete', { stackIds: dto.ids, userId: auth.user.id });
   }
 
-  async removeAsset(auth: AuthDto, stackId: string, assetId: string) {
+  async removeAsset(auth: AuthDto, stackId: string, assetId: string): Promise<StackResponseDto> {
     await this.requireAccess({ auth, permission: Permission.STACK_UPDATE, ids: [stackId] });
+    await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: [assetId] });
+
     //Verify the asset is in the stack
-    //Verify the asset is not the stack's primary asset
+    const asset = await this.assetRepository.getById(assetId);
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+    if (asset?.stackId !== stackId) {
+      throw new BadRequestException('Asset not in stack');
+    }
+
     //Verify the stack has more than 2 assets
-    
+    const stack = await this.findOrFail(stackId);
+    if (stack.assets?.length <= 2) {
+      throw new BadRequestException('Cannot remove last or second to last asset');
+    }
+
+    //Verify the asset is not the stack's primary asset
+    if (stack.primaryAssetId === assetId) {
+      throw new BadRequestException("Cannot remove stack's primary asset");
+    }
+
+    await this.assetRepository.update({ id: assetId, stackId: null });
+    await this.eventRepository.emit('stack.update', { stackId, userId: auth.user.id });
+
+    const updatedStack = {
+      ...stack,
+      assets: stack.assets?.filter((a) => a.id !== assetId),
+    };
+    return mapStack(updatedStack, { auth });
   }
 
   private async findOrFail(id: string) {

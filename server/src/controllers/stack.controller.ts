@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -55,10 +67,14 @@ export class StackController {
     return this.service.delete(auth, id);
   }
 
-  @Delete(':stackId/assets/:assetId')
+  @Delete(':id/assets/:assetId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.STACK_UPDATE })
-  removeAssetFromStack(@Auth() auth: AuthDto, @Param() { stackId }: UUIDParamDto, @Param() { assetId }: UUIDParamDto): Promise<void> {
-    return this.service.removeAsset(auth, stackId, assetId);
+  removeAssetFromStack(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Param('assetId', new ParseUUIDPipe()) assetId: string,
+  ): Promise<StackResponseDto> {
+    return this.service.removeAsset(auth, id, assetId);
   }
 }
