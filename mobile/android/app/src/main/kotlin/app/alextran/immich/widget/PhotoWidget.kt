@@ -120,9 +120,4 @@ class PhotoWidget : GlanceAppWidget() {
       }
     }
   }
-
-  override suspend fun onDelete(context: Context, glanceId: GlanceId) {
-    super.onDelete(context, glanceId)
-    ImageDownloadWorker.cancel(context, glanceId)
-  }
 }

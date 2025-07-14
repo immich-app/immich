@@ -42,5 +42,13 @@ class RandomReceiver : GlanceAppWidgetReceiver() {
 
     super.onReceive(context, intent)
   }
-}
 
+  override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+    super.onDeleted(context, appWidgetIds)
+    CoroutineScope(Dispatchers.Default).launch {
+      appWidgetIds.forEach { id ->
+        ImageDownloadWorker.cancel(context, id)
+      }
+    }
+  }
+}

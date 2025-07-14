@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.glance.*
+import androidx.glance.appwidget.AppWidgetId
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.work.*
@@ -74,9 +75,18 @@ class ImageDownloadWorker(
       )
     }
 
-    fun cancel(context: Context, glanceId: GlanceId) {
-      val appWidgetId = GlanceAppWidgetManager(context).getAppWidgetId(glanceId)
-      WorkManager.getInstance(context).cancelAllWorkByTag(appWidgetId.toString())
+    suspend fun cancel(context: Context, appWidgetId: Int) {
+      WorkManager.getInstance(context).cancelAllWorkByTag("$uniqueWorkName-$appWidgetId")
+
+      // delete cached image
+      val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(appWidgetId)
+      val widgetConfig = getAppWidgetState(context, PreferencesGlanceStateDefinition, glanceId)
+      val currentImgUUID = widgetConfig[kImageUUID]
+
+      if (!currentImgUUID.isNullOrEmpty()) {
+        val file = File(context.cacheDir, imageFilename(currentImgUUID))
+        file.delete()
+      }
     }
   }
 
