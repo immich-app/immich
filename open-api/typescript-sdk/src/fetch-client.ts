@@ -1164,6 +1164,7 @@ export type SessionResponseDto = {
     deviceType: string;
     expiresAt?: string;
     id: string;
+    isPendingSyncReset: boolean;
     updatedAt: string;
 };
 export type SessionCreateDto = {
@@ -1179,8 +1180,12 @@ export type SessionCreateResponseDto = {
     deviceType: string;
     expiresAt?: string;
     id: string;
+    isPendingSyncReset: boolean;
     token: string;
     updatedAt: string;
+};
+export type SessionUpdateDto = {
+    isPendingSyncReset?: boolean;
 };
 export type SharedLinkResponseDto = {
     album?: AlbumResponseDto;
@@ -1264,6 +1269,7 @@ export type AssetFullSyncDto = {
     userId?: string;
 };
 export type SyncStreamDto = {
+    reset?: boolean;
     types: SyncRequestType[];
 };
 export type DatabaseBackupConfig = {
@@ -1383,6 +1389,14 @@ export type SystemConfigMetadataDto = {
 export type SystemConfigNewVersionCheckDto = {
     enabled: boolean;
 };
+export type SystemConfigNightlyTasksDto = {
+    clusterNewFaces: boolean;
+    databaseCleanup: boolean;
+    generateMemories: boolean;
+    missingThumbnails: boolean;
+    startTime: string;
+    syncQuotaUsage: boolean;
+};
 export type SystemConfigNotificationsDto = {
     smtp: SystemConfigSmtpDto;
 };
@@ -1451,6 +1465,7 @@ export type SystemConfigDto = {
     map: SystemConfigMapDto;
     metadata: SystemConfigMetadataDto;
     newVersionCheck: SystemConfigNewVersionCheckDto;
+    nightlyTasks: SystemConfigNightlyTasksDto;
     notifications: SystemConfigNotificationsDto;
     oauth: SystemConfigOAuthDto;
     passwordLogin: SystemConfigPasswordLoginDto;
@@ -3184,6 +3199,19 @@ export function deleteSession({ id }: {
         method: "DELETE"
     }));
 }
+export function updateSession({ id, sessionUpdateDto }: {
+    id: string;
+    sessionUpdateDto: SessionUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SessionResponseDto;
+    }>(`/sessions/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: sessionUpdateDto
+    })));
+}
 export function lockSession({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4109,7 +4137,12 @@ export enum SyncEntityType {
     MemoryToAssetDeleteV1 = "MemoryToAssetDeleteV1",
     StackV1 = "StackV1",
     StackDeleteV1 = "StackDeleteV1",
-    SyncAckV1 = "SyncAckV1"
+    PersonV1 = "PersonV1",
+    PersonDeleteV1 = "PersonDeleteV1",
+    UserMetadataV1 = "UserMetadataV1",
+    UserMetadataDeleteV1 = "UserMetadataDeleteV1",
+    SyncAckV1 = "SyncAckV1",
+    SyncResetV1 = "SyncResetV1"
 }
 export enum SyncRequestType {
     AlbumsV1 = "AlbumsV1",
@@ -4126,7 +4159,9 @@ export enum SyncRequestType {
     PartnerAssetExifsV1 = "PartnerAssetExifsV1",
     PartnerStacksV1 = "PartnerStacksV1",
     StacksV1 = "StacksV1",
-    UsersV1 = "UsersV1"
+    UsersV1 = "UsersV1",
+    PeopleV1 = "PeopleV1",
+    UserMetadataV1 = "UserMetadataV1"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",

@@ -1,6 +1,6 @@
 import { Column, Index, PrimaryColumn, Table, Timestamp } from 'src/sql-tools';
 
-@Table({ name: 'geodata_places' })
+@Table({ name: 'geodata_places', primaryConstraintName: 'geodata_places_pkey' })
 @Index({
   name: 'idx_geodata_places_alternate_names',
   using: 'gin',

@@ -34,9 +34,9 @@ import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { ExifTable } from 'src/schema/tables/exif.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { MemoryTable } from 'src/schema/tables/memory.table';
 import { PersonTable } from 'src/schema/tables/person.table';
@@ -165,7 +165,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { memoryAsset: dto, result };
   }
 
-  async newExif(dto: Insertable<ExifTable>) {
+  async newExif(dto: Insertable<AssetExifTable>) {
     const result = await this.get(AssetRepository).upsertExif(dto);
     return { result };
   }
@@ -234,11 +234,11 @@ export class SyncTestContext extends MediumTestContext<SyncService> {
     });
   }
 
-  async syncStream(auth: AuthDto, types: SyncRequestType[]) {
+  async syncStream(auth: AuthDto, types: SyncRequestType[], reset?: boolean) {
     const stream = mediumFactory.syncStream();
     // Wait for 2ms to ensure all updates are available and account for setTimeout inaccuracy
     await wait(2);
-    await this.sut.stream(auth, stream, { types });
+    await this.sut.stream(auth, stream, { types, reset });
 
     return stream.getResponse();
   }
@@ -481,6 +481,7 @@ const sessionInsert = ({
   const defaults: Insertable<SessionTable> = {
     id,
     userId,
+    isPendingSyncReset: false,
     token: sha256(id),
   };
 

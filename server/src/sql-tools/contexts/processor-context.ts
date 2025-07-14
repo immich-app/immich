@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { BaseContext } from 'src/sql-tools/contexts/base-context';
-import { ColumnOptions, TableOptions } from 'src/sql-tools/decorators';
-import { asKey } from 'src/sql-tools/helpers';
+import { ColumnOptions } from 'src/sql-tools/decorators/column.decorator';
+import { TableOptions } from 'src/sql-tools/decorators/table.decorator';
 import { DatabaseColumn, DatabaseTable, SchemaFromCodeOptions } from 'src/sql-tools/types';
 
 type TableMetadata = { options: TableOptions; object: Function; methodToColumn: Map<string | symbol, DatabaseColumn> };
@@ -57,19 +57,6 @@ export class ProcessorContext extends BaseContext {
     table.columns.push(column);
     const tableMetadata = this.getTableMetadata(table);
     tableMetadata.methodToColumn.set(propertyName, column);
-  }
-
-  asIndexName(table: string, columns?: string[], where?: string) {
-    const items: string[] = [];
-    for (const columnName of columns ?? []) {
-      items.push(columnName);
-    }
-
-    if (where) {
-      items.push(where);
-    }
-
-    return asKey('IDX_', table, items);
   }
 
   warnMissingTable(context: string, object: object, propertyName?: symbol | string) {

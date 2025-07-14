@@ -73,7 +73,15 @@ class ImmichSliverAppBar extends ConsumerWidget {
             onPressed: () => context.pop(),
           ),
           IconButton(
-            onPressed: () => ref.read(backgroundSyncProvider).syncRemote(),
+            onPressed: () {
+              ref.read(backgroundSyncProvider).syncLocal(full: true);
+              ref.read(backgroundSyncProvider).syncRemote();
+
+              Future.delayed(
+                const Duration(seconds: 10),
+                () => ref.read(backgroundSyncProvider).hashAssets(),
+              );
+            },
             icon: const Icon(
               Icons.sync,
             ),

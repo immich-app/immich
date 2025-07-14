@@ -1,7 +1,32 @@
-import { getColumnType, isDefaultEqual } from 'src/sql-tools/helpers';
+import { asRenameKey, getColumnType, isDefaultEqual } from 'src/sql-tools/helpers';
 import { Comparer, DatabaseColumn, Reason, SchemaDiff } from 'src/sql-tools/types';
 
-export const compareColumns: Comparer<DatabaseColumn> = {
+export const compareColumns = {
+  getRenameKey: (column) => {
+    return asRenameKey([
+      column.tableName,
+      column.type,
+      column.nullable,
+      column.default,
+      column.storage,
+      column.primary,
+      column.isArray,
+      column.length,
+      column.identity,
+      column.enumName,
+      column.numericPrecision,
+      column.numericScale,
+    ]);
+  },
+  onRename: (source, target) => [
+    {
+      type: 'ColumnRename',
+      tableName: source.tableName,
+      oldName: target.name,
+      newName: source.name,
+      reason: Reason.Rename,
+    },
+  ],
   onMissing: (source) => [
     {
       type: 'ColumnAdd',
@@ -67,7 +92,7 @@ export const compareColumns: Comparer<DatabaseColumn> = {
 
     return items;
   },
-};
+} satisfies Comparer<DatabaseColumn>;
 
 const dropAndRecreateColumn = (source: DatabaseColumn, target: DatabaseColumn, reason: string): SchemaDiff[] => {
   return [

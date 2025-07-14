@@ -27,7 +27,12 @@ class DriftLibraryPage extends ConsumerWidget {
     return const Scaffold(
       body: CustomScrollView(
         slivers: [
-          ImmichSliverAppBar(),
+          ImmichSliverAppBar(
+            snap: false,
+            floating: false,
+            pinned: true,
+            showUploadButton: false,
+          ),
           _ActionButtonGrid(),
           _CollectionCards(),
           _QuickAccessButtonList(),
@@ -507,8 +512,9 @@ class _PartnerList extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ).t(context: context, args: {'user': partner.name}),
-          onTap: () =>
-              context.pushRoute(DriftPartnerDetailRoute(partnerId: partner.id)),
+          onTap: () => context.pushRoute(
+            DriftPartnerDetailRoute(partner: partner),
+          ),
         );
       },
     );
