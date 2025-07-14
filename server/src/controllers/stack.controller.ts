@@ -68,7 +68,6 @@ export class StackController {
   }
 
   @Delete(':id/assets/:assetId')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.STACK_UPDATE })
   removeAssetFromStack(
     @Auth() auth: AuthDto,

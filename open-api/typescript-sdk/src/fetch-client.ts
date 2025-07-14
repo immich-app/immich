@@ -3379,7 +3379,7 @@ export function removeAssetFromStack({ assetId, id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 204;
+        status: 200;
         data: StackResponseDto;
     }>(`/stacks/${encodeURIComponent(id)}/assets/${encodeURIComponent(assetId)}`, {
         ...opts,
