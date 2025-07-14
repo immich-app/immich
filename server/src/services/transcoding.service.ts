@@ -5,8 +5,7 @@ import { createWriteStream } from 'node:fs';
 import fs from 'node:fs/promises';
 import { OnEvent } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetType, ImmichWorker, Permission, TranscodeTarget, VideoCodec } from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
+import { AssetType, Permission, TranscodeTarget, VideoCodec } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { VideoInfo, VideoInterfaces } from 'src/types';
 import { BaseConfig } from 'src/utils/media';
@@ -14,11 +13,30 @@ import { BaseConfig } from 'src/utils/media';
 type VideoStream = VideoInfo['videoStreams'][0];
 type AudioStream = VideoInfo['audioStreams'][0];
 
+// There is actually no persistent "connection"
+class HLSConnection {
+  private firstSegmentDone: PromiseWithResolvers<void>;
+
+  constructor() {
+    this.firstSegmentDone = Promise.withResolvers<void>();
+  }
+
+  transcoderFirstSegmentReady() {
+    this.firstSegmentDone.resolve();
+  }
+
+  waitForFirstSegment() {
+    return this.firstSegmentDone.promise;
+  }
+}
+
 @Injectable()
 export class TranscodingService extends BaseService {
   SUPPORTED_TAGS = ['avc1', 'hvc', 'dvh1'];
   AVC_PROFILES: { [key: string]: string } = { high: '.6400', main: '.4D40', baseline: '.42E0' };
   videoInterfaces: VideoInterfaces = { dri: [], mali: false };
+
+  connections: Map<string, HLSConnection> = new Map();
 
   // https://github.com/zoriya/Kyoo/blob/d08febf803e307da1277996f7856bd901b6e83e2/transcoder/src/codec.go#L18
   videoStreamToMime(stream: VideoStream): string {
@@ -64,7 +82,7 @@ export class TranscodingService extends BaseService {
       '#EXT-X-INDEPENDENT-SEGMENTS',
 
       `#EXT-X-STREAM-INF:BANDWIDTH=14358365,CODECS="avc1.64001e,mp4a.40.2",RESOLUTION=1920x1080,FRAME-RATE=30`,
-      `1080p.m3u8`,
+      `h264.1080p.m3u8`,
     );
 
     if (videoStream.codecTag && this.SUPPORTED_TAGS.includes(videoStream.codecTag)) {
@@ -76,7 +94,13 @@ export class TranscodingService extends BaseService {
     return playlist.join('\n');
   }
 
-  async getPlaylist(id: string, quality: string, start: boolean): Promise<string> {
+  async getPlaylist(
+    id: string,
+    sessionId: string,
+    codec: VideoCodec,
+    quality: string,
+    start: boolean,
+  ): Promise<string> {
     const asset = await this.assetRepository.getById(id);
     if (!asset) {
       throw new NotFoundException('Asset not found');
@@ -168,17 +192,11 @@ export class TranscodingService extends BaseService {
       }
     }
 
-    if (start) {
-      this.eventRepository.serverSend('media.liveTranscode', {
-        path: asset.originalPath,
-        id,
-        quality,
-        partTimes,
-        keyTimes,
-        codec: VideoCodec.H264,
-      });
-    }
+    const connection = new HLSConnection();
+    this.connections.set(sessionId, connection);
+    setImmediate(() => this.liveTranscode(asset.originalPath, id, quality, partTimes, keyTimes, codec, connection));
 
+    await connection.waitForFirstSegment();
     return playlist.join('\n');
   }
 
@@ -189,8 +207,17 @@ export class TranscodingService extends BaseService {
     this.videoInterfaces = { dri, mali };
   }
 
-  @OnEvent({ name: 'media.liveTranscode', workers: [ImmichWorker.TRANSCODER], server: true })
-  async liveTranscode({ path, id, quality, codec, partTimes, keyTimes }: ArgOf<'media.liveTranscode'>) {
+  async waitForPart() {}
+
+  async liveTranscode(
+    path: string,
+    id: string,
+    quality: string,
+    partTimes: number[],
+    keyTimes: number[],
+    codec: VideoCodec,
+    connection: HLSConnection,
+  ) {
     this.logger.debug(`Started transcoding video ${id}`);
     await fs.mkdir(`/tmp/video/${id}/`, { mode: 0o700, recursive: true });
 
@@ -225,6 +252,7 @@ export class TranscodingService extends BaseService {
 
       // prettier-ignore
       args.push(
+        '-vcodec', codec.toString(),
         //'-vf', `scale=${quality}:-2`,
         '-maxrate', '4000k',
         '-bufsize', '1835k',
@@ -255,8 +283,13 @@ export class TranscodingService extends BaseService {
 
     s.stdout.on('data', (bytes) => {
       const data = bytes.toString('utf8');
+      const idx = data.split(',')[0];
+
       if (data) {
-        this.logger.debug(`Segment ${data.split(',')[0]} ready`);
+        if(idx == 0) {
+          connection.transcoderFirstSegmentReady();
+        }
+        this.logger.debug(`Segment ${idx} ready`);
       }
     });
     const log = createWriteStream(`/tmp/video/${id}/transcoding.log`);
@@ -284,7 +317,15 @@ export class TranscodingService extends BaseService {
 
     const secret = await this.systemMetadataRepository.getSecretKey();
 
-    return `/playback/${sign({ id, path: asset.originalPath }, secret)}/master.m3u8`;
+    // Session ID is base64-encoded 16 bytes
+    return `/api/playback/${sign(
+      {
+        id,
+        path: asset.originalPath,
+        sessionId: this.cryptoRepository.randomBytesAsText(16),
+      },
+      secret,
+    )}/master.m3u8`;
   }
 
   private async hasMaliOpenCL() {

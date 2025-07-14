@@ -2233,6 +2233,57 @@
         ]
       }
     },
+    "/assets/{id}/video/playback/hls": {
+      "get": {
+        "operationId": "streamAssetVideo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ]
+      }
+    },
     "/auth/admin-sign-up": {
       "post": {
         "operationId": "signUpAdmin",
@@ -5060,6 +5111,138 @@
         ],
         "tags": [
           "People"
+        ]
+      }
+    },
+    "/playback/{secret}/master.m3u8": {
+      "get": {
+        "operationId": "getMasterPlaylist",
+        "parameters": [
+          {
+            "name": "secret",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Transcoder"
+        ]
+      }
+    },
+    "/playback/{secret}/{codec}/{quality}.m3u8": {
+      "get": {
+        "operationId": "getPlaylist",
+        "parameters": [
+          {
+            "name": "codec",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/VideoCodec"
+            }
+          },
+          {
+            "name": "quality",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "secret",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Transcoder"
+        ]
+      }
+    },
+    "/playback/{secret}/{quality}/{name}.mp4": {
+      "get": {
+        "operationId": "getVideoPart",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "quality",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "secret",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Transcoder"
         ]
       }
     },
@@ -9696,6 +9879,12 @@
       },
       "AssetResponseDto": {
         "properties": {
+          "audioStreams": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
           "checksum": {
             "description": "base64 encoded sha1 hash",
             "type": "string"
@@ -9824,6 +10013,12 @@
             "example": "2024-01-16T12:45:30.000Z",
             "format": "date-time",
             "type": "string"
+          },
+          "videoStreams": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
           },
           "visibility": {
             "allOf": [
@@ -12600,7 +12795,7 @@
             "type": "boolean"
           },
           "streaming": {
-            "type": "string"
+            "type": "boolean"
           },
           "trash": {
             "type": "boolean"
@@ -14307,6 +14502,9 @@
           "library": {
             "$ref": "#/components/schemas/SystemConfigLibraryDto"
           },
+          "liveFfmpeg": {
+            "$ref": "#/components/schemas/SystemConfigLiveFFmpegDto"
+          },
           "logging": {
             "$ref": "#/components/schemas/SystemConfigLoggingDto"
           },
@@ -14362,6 +14560,7 @@
           "image",
           "job",
           "library",
+          "liveFfmpeg",
           "logging",
           "machineLearning",
           "map",
@@ -14695,6 +14894,142 @@
         },
         "required": [
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigLiveFFmpegDto": {
+        "properties": {
+          "accel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranscodeHWAccel"
+              }
+            ]
+          },
+          "accelDecode": {
+            "type": "boolean"
+          },
+          "acceptedAudioCodecs": {
+            "items": {
+              "$ref": "#/components/schemas/AudioCodec"
+            },
+            "type": "array"
+          },
+          "acceptedContainers": {
+            "items": {
+              "$ref": "#/components/schemas/VideoContainer"
+            },
+            "type": "array"
+          },
+          "acceptedVideoCodecs": {
+            "items": {
+              "$ref": "#/components/schemas/VideoCodec"
+            },
+            "type": "array"
+          },
+          "bframes": {
+            "maximum": 16,
+            "minimum": -1,
+            "type": "integer"
+          },
+          "cqMode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CQMode"
+              }
+            ]
+          },
+          "crf": {
+            "maximum": 51,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "gopSize": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxBitrate": {
+            "type": "string"
+          },
+          "preferredHwDevice": {
+            "type": "string"
+          },
+          "preset": {
+            "type": "string"
+          },
+          "refs": {
+            "maximum": 6,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "targetAudioCodec": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AudioCodec"
+              }
+            ]
+          },
+          "targetResolution": {
+            "type": "string"
+          },
+          "targetVideoCodec": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VideoCodec"
+              }
+            ]
+          },
+          "temporalAQ": {
+            "type": "boolean"
+          },
+          "threads": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "tonemap": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ToneMapping"
+              }
+            ]
+          },
+          "transcode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranscodePolicy"
+              }
+            ]
+          },
+          "twoPass": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "accel",
+          "accelDecode",
+          "acceptedAudioCodecs",
+          "acceptedContainers",
+          "acceptedVideoCodecs",
+          "bframes",
+          "cqMode",
+          "crf",
+          "enabled",
+          "gopSize",
+          "maxBitrate",
+          "preferredHwDevice",
+          "preset",
+          "refs",
+          "targetAudioCodec",
+          "targetResolution",
+          "targetVideoCodec",
+          "temporalAQ",
+          "threads",
+          "tonemap",
+          "transcode",
+          "twoPass"
         ],
         "type": "object"
       },

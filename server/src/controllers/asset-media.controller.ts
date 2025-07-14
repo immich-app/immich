@@ -44,7 +44,7 @@ import { AssetMediaService } from 'src/services/asset-media.service';
 import { UploadFiles } from 'src/types';
 import { ImmichFileResponse, sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
-import { TranscodingService } from 'src/services/transcofing.service';
+import { TranscodingService } from 'src/services/transcoding.service';
 
 @ApiTags('Assets')
 @Controller(RouteKey.ASSET)
