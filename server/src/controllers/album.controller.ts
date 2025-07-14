@@ -32,7 +32,6 @@ export class AlbumController {
   @Authenticated({ permission: Permission.ALBUM_READ })
   getAllAlbumsSlim(@Auth() auth: AuthDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     return this.service.getAll(auth, query, true);
-    //asdf
   }
 
   @Post()
