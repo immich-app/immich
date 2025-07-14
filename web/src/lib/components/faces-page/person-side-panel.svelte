@@ -323,6 +323,7 @@
                   />
                 {:else}
                   <IconButton
+                    shape="round"
                     color="primary"
                     icon={mdiPencil}
                     aria-label={$t('select_new_face')}
@@ -332,12 +333,12 @@
                   />
                 {/if}
               </div>
-              <div class="absolute end-[30px] -top-[3px] h-[20px] w-[20px] rounded-full">
+              <div class="absolute end-[33px] -top-[3px] h-[20px] w-[20px] rounded-full">
                 {#if !selectedPersonToCreate[face.id] && !selectedPersonToReassign[face.id] && !face.person}
                   <div
                     class="flex place-content-center place-items-center rounded-full bg-[#d3d3d3] p-1 transition-all absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
                   >
-                    <Icon color="primary" path={mdiAccountOff} ariaHidden size="18" />
+                    <Icon color="primary" path={mdiAccountOff} ariaHidden size="24" />
                   </div>
                 {/if}
               </div>
