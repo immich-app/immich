@@ -7,7 +7,7 @@ export const compareIndexes: Comparer<DatabaseIndex> = {
       return index.override.value.sql.replace(index.name, 'INDEX_NAME');
     }
 
-    return asRenameKey([index.tableName, ...(index.columnNames || []).toSorted(), index.unique]);
+    return asRenameKey([index.tableName, ...(index.columnNames || []), index.unique]);
   },
   onRename: (source, target) => [
     {

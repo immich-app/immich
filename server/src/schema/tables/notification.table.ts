@@ -13,8 +13,8 @@ import {
   UpdateDateColumn,
 } from 'src/sql-tools';
 
-@Table('notifications')
-@UpdatedAtTrigger('notifications_updated_at')
+@Table('notification')
+@UpdatedAtTrigger('notification_updatedAt')
 export class NotificationTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
@@ -28,7 +28,7 @@ export class NotificationTable {
   @DeleteDateColumn()
   deletedAt!: Timestamp | null;
 
-  @UpdateIdColumn({ indexName: 'IDX_notifications_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: true })

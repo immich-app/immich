@@ -11,8 +11,8 @@ export class ViewRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async getUniqueOriginalPaths(userId: string) {
     const results = await this.db
-      .selectFrom('assets')
-      .select((eb) => eb.fn<string>('substring', ['assets.originalPath', eb.val('^(.*/)[^/]*$')]).as('directoryPath'))
+      .selectFrom('asset')
+      .select((eb) => eb.fn<string>('substring', ['asset.originalPath', eb.val('^(.*/)[^/]*$')]).as('directoryPath'))
       .distinct()
       .where('ownerId', '=', asUuid(userId))
       .where('visibility', '=', AssetVisibility.TIMELINE)
@@ -30,8 +30,8 @@ export class ViewRepository {
     const normalizedPath = partialPath.replaceAll(/\/$/g, '');
 
     return this.db
-      .selectFrom('assets')
-      .selectAll('assets')
+      .selectFrom('asset')
+      .selectAll('asset')
       .$call(withExif)
       .where('ownerId', '=', asUuid(userId))
       .where('visibility', '=', AssetVisibility.TIMELINE)
@@ -42,7 +42,7 @@ export class ViewRepository {
       .where('originalPath', 'like', `%${normalizedPath}/%`)
       .where('originalPath', 'not like', `%${normalizedPath}/%/%`)
       .orderBy(
-        (eb) => eb.fn('regexp_replace', ['assets.originalPath', eb.val('.*/(.+)'), eb.val(String.raw`\1`)]),
+        (eb) => eb.fn('regexp_replace', ['asset.originalPath', eb.val('.*/(.+)'), eb.val(String.raw`\1`)]),
         'asc',
       )
       .execute();
