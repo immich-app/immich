@@ -39,7 +39,7 @@ describe(AlbumController.name, () => {
 
   describe('GET /albums/slim', () => {
     it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/albums/slim');
+      await request(ctx.getHttpServer()).get('/albums/slim');
       expect(ctx.authenticate).toHaveBeenCalled();
     });
 
