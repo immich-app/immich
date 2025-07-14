@@ -5,13 +5,13 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -134,6 +134,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             thumbHash: Value(asset.thumbhash),
             deletedAt: Value(asset.deletedAt),
             visibility: Value(asset.visibility.toAssetVisibility()),
+            livePhotoVideoId: Value(asset.livePhotoVideoId),
           );
 
           batch.insert(

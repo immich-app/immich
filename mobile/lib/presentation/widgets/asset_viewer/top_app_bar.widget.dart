@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
@@ -44,6 +45,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           source: ActionSource.viewer,
           menuItem: true,
         ),
+      if (asset.isMotionPhoto) const MotionPhotoActionButton(menuItem: true),
       const _KebabMenu(),
     ];
 

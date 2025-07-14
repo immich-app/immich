@@ -94,6 +94,7 @@ class RemoteAsset extends BaseAsset {
     bool? isFavorite,
     String? thumbHash,
     AssetVisibility? visibility,
+    String? livePhotoVideoId,
   }) {
     return RemoteAsset(
       id: id ?? this.id,
@@ -110,6 +111,7 @@ class RemoteAsset extends BaseAsset {
       isFavorite: isFavorite ?? this.isFavorite,
       thumbHash: thumbHash ?? this.thumbHash,
       visibility: visibility ?? this.visibility,
+      livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
     );
   }
 }
