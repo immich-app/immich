@@ -13,6 +13,17 @@ class ServerInfo {
   final bool isNewReleaseAvailable;
   final String versionMismatchErrorMessage;
 
+<<<<<<< HEAD
+  ServerInfo(
+      {required this.serverVersion,
+      required this.latestVersion,
+      required this.serverFeatures,
+      required this.serverConfig,
+      required this.serverDiskInfo,
+      required this.isVersionMismatch,
+      required this.isNewReleaseAvailable,
+      required this.versionMismatchErrorMessage});
+=======
   const ServerInfo({
     required this.serverVersion,
     required this.latestVersion,
@@ -23,6 +34,7 @@ class ServerInfo {
     required this.isNewReleaseAvailable,
     required this.versionMismatchErrorMessage,
   });
+>>>>>>> upstream/main
 
   ServerInfo copyWith({
     ServerVersion? serverVersion,

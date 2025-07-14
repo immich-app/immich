@@ -206,6 +206,7 @@ export enum SystemMetadataKey {
   SYSTEM_FLAGS = 'system-flags',
   VERSION_CHECK_STATE = 'version-check-state',
   LICENSE = 'license',
+  SECRET_KEY = 'secret-key',
 }
 
 export enum UserMetadataKey {
@@ -367,6 +368,7 @@ export enum MetadataKey {
 export enum RouteKey {
   ASSET = 'assets',
   USER = 'users',
+  PLAYBACK = 'playback'
 }
 
 export enum CacheControl {
