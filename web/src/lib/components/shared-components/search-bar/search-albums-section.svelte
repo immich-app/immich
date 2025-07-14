@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
+  import { getAllAlbumsSlim, type AlbumResponseDto } from '@immich/sdk';
   import { mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -23,7 +23,7 @@
   );
 
   onMount(async () => {
-    allAlbums = await getAllAlbums({});
+    allAlbums = await getAllAlbumsSlim({});
   });
 
   const handleSelect = (option?: ComboBoxOption) => {

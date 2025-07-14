@@ -28,6 +28,13 @@ export class AlbumController {
     return this.service.getAll(auth, query);
   }
 
+  @Get('slim')
+  @Authenticated({ permission: Permission.ALBUM_READ })
+  getAllAlbumsSlim(@Auth() auth: AuthDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+    return this.service.getAll(auth, query, true);
+    //asdf
+  }
+
   @Post()
   @Authenticated({ permission: Permission.ALBUM_CREATE })
   createAlbum(@Auth() auth: AuthDto, @Body() dto: CreateAlbumDto): Promise<AlbumResponseDto> {
