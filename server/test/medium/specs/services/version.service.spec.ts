@@ -1,39 +1,41 @@
 import { Kysely } from 'kysely';
 import { serverVersion } from 'src/constants';
-import { DB } from 'src/db';
 import { JobName } from 'src/enum';
+import { DatabaseRepository } from 'src/repositories/database.repository';
+import { JobRepository } from 'src/repositories/job.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { DB } from 'src/schema';
 import { VersionService } from 'src/services/version.service';
 import { newMediumService } from 'test/medium.factory';
 import { getKyselyDB } from 'test/utils';
 
-describe(VersionService.name, () => {
-  let defaultDatabase: Kysely<DB>;
+let defaultDatabase: Kysely<DB>;
 
-  const setup = (db?: Kysely<DB>) => {
-    return newMediumService(VersionService, {
-      database: db || defaultDatabase,
-      repos: {
-        job: 'mock',
-        database: 'real',
-        versionHistory: 'real',
-      },
-    });
-  };
-
-  beforeAll(async () => {
-    defaultDatabase = await getKyselyDB();
+const setup = (db?: Kysely<DB>) => {
+  return newMediumService(VersionService, {
+    database: db || defaultDatabase,
+    real: [DatabaseRepository, VersionHistoryRepository],
+    mock: [LoggingRepository, JobRepository],
   });
+};
 
+beforeAll(async () => {
+  defaultDatabase = await getKyselyDB();
+});
+
+describe(VersionService.name, () => {
   describe('onBootstrap', () => {
     it('record the current version on startup', async () => {
-      const { sut, repos } = setup();
+      const { sut, ctx } = setup();
+      const versionHistoryRepo = ctx.get(VersionHistoryRepository);
 
-      const itemsBefore = await repos.versionHistory.getAll();
+      const itemsBefore = await versionHistoryRepo.getAll();
       expect(itemsBefore).toHaveLength(0);
 
       await sut.onBootstrap();
 
-      const itemsAfter = await repos.versionHistory.getAll();
+      const itemsAfter = await versionHistoryRepo.getAll();
       expect(itemsAfter).toHaveLength(1);
       expect(itemsAfter[0]).toEqual({
         createdAt: expect.any(Date),
@@ -43,22 +45,26 @@ describe(VersionService.name, () => {
     });
 
     it('should queue memory creation when upgrading from 1.128.0', async () => {
-      const { sut, repos, mocks } = setup();
-      mocks.job.queue.mockResolvedValue(void 0);
+      const { sut, ctx } = setup();
+      const jobMock = ctx.getMock(JobRepository);
+      const versionHistoryRepo = ctx.get(VersionHistoryRepository);
+      jobMock.queue.mockResolvedValue(void 0);
 
-      await repos.versionHistory.create({ version: 'v1.128.0' });
+      await versionHistoryRepo.create({ version: 'v1.128.0' });
       await sut.onBootstrap();
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.MEMORIES_CREATE });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.MEMORIES_CREATE });
     });
 
     it('should not queue memory creation when upgrading from 1.129.0', async () => {
-      const { sut, repos, mocks } = setup();
+      const { sut, ctx } = setup();
+      const jobMock = ctx.getMock(JobRepository);
+      const versionHistoryRepo = ctx.get(VersionHistoryRepository);
 
-      await repos.versionHistory.create({ version: 'v1.129.0' });
+      await versionHistoryRepo.create({ version: 'v1.129.0' });
       await sut.onBootstrap();
 
-      expect(mocks.job.queue).not.toHaveBeenCalled();
+      expect(jobMock.queue).not.toHaveBeenCalled();
     });
   });
 });

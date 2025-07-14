@@ -5,10 +5,10 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  analyzer: ^6.0.0
-  analyzer_plugin: ^0.11.3
-  custom_lint_builder: ^0.6.4
+  analyzer: ^7.0.0
+  analyzer_plugin: ^0.13.0
+  custom_lint_builder: ^0.7.5
   glob: ^2.1.2
 
 dev_dependencies:
-  lints: ^5.0.0
+  lints: ^6.0.0

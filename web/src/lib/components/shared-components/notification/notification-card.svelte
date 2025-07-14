@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import {
     isComponentNotification,
@@ -8,10 +7,11 @@
     type ComponentNotification,
     type Notification,
   } from '$lib/components/shared-components/notification/notification';
-  import { onMount } from 'svelte';
+  import { Button, IconButton, type Color } from '@immich/ui';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
 
   interface Props {
     notification: Notification | ComponentNotification;
@@ -40,10 +40,10 @@
     [NotificationType.Warning]: '#D08613',
   };
 
-  const buttonStyle: Record<NotificationType, string> = {
-    [NotificationType.Info]: 'text-white bg-immich-primary hover:bg-immich-primary/75',
-    [NotificationType.Error]: 'text-white bg-immich-error hover:bg-immich-error/75',
-    [NotificationType.Warning]: 'text-white bg-immich-warning hover:bg-immich-warning/75',
+  const colors: Record<NotificationType, Color> = {
+    [NotificationType.Info]: 'primary',
+    [NotificationType.Error]: 'danger',
+    [NotificationType.Warning]: 'warning',
   };
 
   onMount(() => {
@@ -75,7 +75,7 @@
   transition:fade={{ duration: 250 }}
   style:background-color={backgroundColor[notification.type]}
   style:border-color={borderColor[notification.type]}
-  class="border z-[999999] mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md {hoverStyle}"
+  class="border mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md {hoverStyle}"
   onclick={handleClick}
   onkeydown={handleClick}
 >
@@ -88,19 +88,21 @@
         {:else if notification.type == NotificationType.Info}{$t('info')}{/if}
       </h2>
     </div>
-    <CircleIconButton
+    <IconButton
+      variant="ghost"
+      shape="round"
+      color="secondary"
       icon={mdiWindowClose}
-      title={$t('close')}
+      aria-label={$t('close')}
       class="dark:text-immich-dark-gray"
-      size="20"
-      padding="2"
+      size="medium"
       onclick={discard}
       aria-hidden={true}
       tabindex={-1}
     />
   </div>
 
-  <p class="whitespace-pre-wrap ps-[28px] pe-[16px] text-sm" data-testid="message">
+  <p class="whitespace-pre-wrap ps-[28px] pe-[16px] text-sm text-black/80" data-testid="message">
     {#if isComponentNotification(notification)}
       <notification.component.type {...notification.component.props} />
     {:else}
@@ -109,16 +111,16 @@
   </p>
 
   {#if notification.button}
-    <p class="ps-[28px] mt-2.5 text-sm">
-      <button
-        type="button"
-        class="{buttonStyle[notification.type]} rounded px-3 pt-1.5 pb-1 transition-all duration-200"
+    <p class="ps-[28px] mt-2.5 light text-light">
+      <Button
+        size="small"
+        color={colors[notification.type]}
         onclick={handleButtonClick}
         aria-hidden="true"
         tabindex={-1}
       >
         {notification.button.text}
-      </button>
+      </Button>
     </p>
   {/if}
 </div>

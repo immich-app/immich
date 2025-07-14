@@ -7,14 +7,12 @@ import { existsSync } from 'node:fs';
 import sirv from 'sirv';
 import { ApiModule } from 'src/app.module';
 import { excludePaths, serverVersion } from 'src/constants';
-import { ImmichEnvironment } from 'src/enum';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
 import { ApiService } from 'src/services/api.service';
 import { isStartUpError, useSwagger } from 'src/utils/misc';
-
 async function bootstrap() {
   process.title = 'immich-api';
 
@@ -28,7 +26,6 @@ async function bootstrap() {
   const configRepository = app.get(ConfigRepository);
 
   const { environment, host, port, resourcePaths } = configRepository.getEnv();
-  const isDev = environment === ImmichEnvironment.DEVELOPMENT;
 
   logger.setContext('Bootstrap');
   app.useLogger(logger);
@@ -36,11 +33,11 @@ async function bootstrap() {
   app.set('etag', 'strong');
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
-  if (isDev) {
+  if (configRepository.isDev()) {
     app.enableCors();
   }
   app.useWebSocketAdapter(new WebSocketAdapter(app));
-  useSwagger(app, { write: isDev });
+  useSwagger(app, { write: configRepository.isDev() });
 
   app.setGlobalPrefix('api', { exclude: excludePaths });
   if (existsSync(resourcePaths.web.root)) {

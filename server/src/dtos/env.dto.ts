@@ -1,6 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsString } from 'class-validator';
-import { ImmichEnvironment, LogLevel } from 'src/enum';
+import { DatabaseSslMode, ImmichEnvironment, LogLevel } from 'src/enum';
 import { IsIPRange, Optional, ValidateBoolean } from 'src/validation';
 
 export class EnvDto {
@@ -142,6 +142,10 @@ export class EnvDto {
   @ValidateBoolean({ optional: true })
   DB_SKIP_MIGRATIONS?: boolean;
 
+  @IsEnum(DatabaseSslMode)
+  @Optional()
+  DB_SSL_MODE?: DatabaseSslMode;
+
   @IsString()
   @Optional()
   DB_URL?: string;
@@ -150,9 +154,9 @@ export class EnvDto {
   @Optional()
   DB_USERNAME?: string;
 
-  @IsEnum(['pgvector', 'pgvecto.rs'])
+  @IsEnum(['pgvector', 'pgvecto.rs', 'vectorchord'])
   @Optional()
-  DB_VECTOR_EXTENSION?: 'pgvector' | 'pgvecto.rs';
+  DB_VECTOR_EXTENSION?: 'pgvector' | 'pgvecto.rs' | 'vectorchord';
 
   @IsString()
   @Optional()

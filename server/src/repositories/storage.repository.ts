@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
-import chokidar, { WatchOptions } from 'chokidar';
+import chokidar, { ChokidarOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
 import { constants, createReadStream, createWriteStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
@@ -219,14 +219,14 @@ export class StorageRepository {
     }
   }
 
-  watch(paths: string[], options: WatchOptions, events: Partial<WatchEvents>) {
+  watch(paths: string[], options: ChokidarOptions, events: Partial<WatchEvents>) {
     const watcher = chokidar.watch(paths, options);
 
     watcher.on('ready', () => events.onReady?.());
     watcher.on('add', (path) => events.onAdd?.(path));
     watcher.on('change', (path) => events.onChange?.(path));
     watcher.on('unlink', (path) => events.onUnlink?.(path));
-    watcher.on('error', (error) => events.onError?.(error));
+    watcher.on('error', (error) => events.onError?.(error as Error));
 
     return () => watcher.close();
   }

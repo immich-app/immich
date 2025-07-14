@@ -2,16 +2,18 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
@@ -32,6 +34,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final user = ref.watch(currentUserProvider);
     final isDarkTheme = context.isDarkTheme;
     const widgetSize = 30.0;
+    final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
     buildProfileIndicator() {
       return InkWell(
@@ -40,7 +43,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           useRootNavigator: false,
           builder: (ctx) => const ImmichAppBarDialog(),
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Badge(
           label: Container(
             decoration: BoxDecoration(
@@ -64,10 +67,13 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   Icons.face_outlined,
                   size: widgetSize,
                 )
-              : UserCircleAvatar(
-                  radius: 17,
-                  size: 31,
-                  user: user,
+              : Semantics(
+                  label: "logged_in_as".tr(namedArgs: {"user": user.name}),
+                  child: UserCircleAvatar(
+                    radius: 17,
+                    size: 31,
+                    user: user,
+                  ),
                 ),
         ),
       );
@@ -115,7 +121,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
       return InkWell(
         onTap: () => context.pushRoute(const BackupControllerRoute()),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Badge(
           label: Container(
             width: widgetSize / 2,
@@ -180,10 +186,25 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
               child: action,
             ),
           ),
-        if (kDebugMode)
+        if (kDebugMode || kProfileMode || appFlavor == 'beta')
           IconButton(
-            onPressed: () => ref.read(backgroundSyncProvider).sync(),
-            icon: const Icon(Icons.sync),
+            icon: const Icon(Icons.science_rounded),
+            onPressed: () => context.pushRoute(const FeatInDevRoute()),
+          ),
+        if (isCasting)
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: IconButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => const CastDialog(),
+                );
+              },
+              icon: Icon(
+                isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
+              ),
+            ),
           ),
         if (showUploadButton)
           Padding(

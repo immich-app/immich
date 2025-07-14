@@ -88,7 +88,7 @@ enum AppSettingsEnum<T> {
   photoManagerCustomFilter<bool>(
     StoreKey.photoManagerCustomFilter,
     null,
-    false,
+    true,
   ),
   ;
 
@@ -100,11 +100,12 @@ enum AppSettingsEnum<T> {
 }
 
 class AppSettingsService {
+  const AppSettingsService();
   T getSetting<T>(AppSettingsEnum<T> setting) {
     return Store.get(setting.storeKey, setting.defaultValue);
   }
 
-  void setSetting<T>(AppSettingsEnum<T> setting, T value) {
-    Store.put(setting.storeKey, value);
+  Future<void> setSetting<T>(AppSettingsEnum<T> setting, T value) {
+    return Store.put(setting.storeKey, value);
   }
 }

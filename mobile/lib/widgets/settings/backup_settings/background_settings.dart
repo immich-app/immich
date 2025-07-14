@@ -97,7 +97,7 @@ class BackgroundBackupSettings extends ConsumerWidget {
             onBatteryInfo: showBatteryOptimizationInfoToUser,
           ),
         if (Platform.isIOS && iosSettings?.appRefreshEnabled != true)
-          _IOSBackgroundRefreshDisabled(),
+          const _IOSBackgroundRefreshDisabled(),
         if (Platform.isIOS && iosSettings != null)
           IosDebugInfoTile(settings: iosSettings),
       ],
@@ -106,6 +106,8 @@ class BackgroundBackupSettings extends ConsumerWidget {
 }
 
 class _IOSBackgroundRefreshDisabled extends StatelessWidget {
+  const _IOSBackgroundRefreshDisabled();
+
   @override
   Widget build(BuildContext context) {
     return SettingsButtonListTile(
@@ -164,10 +166,14 @@ class _BackgroundSettingsEnabled extends HookConsumerWidget {
         switch (v) { 0 => 5000, 1 => 30000, 2 => 120000, _ => 600000 };
 
     String formatBackupDelaySliderValue(int v) => switch (v) {
-          0 => 'setting_notifications_notify_seconds'.tr(args: const ['5']),
-          1 => 'setting_notifications_notify_seconds'.tr(args: const ['30']),
-          2 => 'setting_notifications_notify_minutes'.tr(args: const ['2']),
-          _ => 'setting_notifications_notify_minutes'.tr(args: const ['10']),
+          0 => 'setting_notifications_notify_seconds'
+              .tr(namedArgs: {'count': '5'}),
+          1 => 'setting_notifications_notify_seconds'
+              .tr(namedArgs: {'count': '30'}),
+          2 => 'setting_notifications_notify_minutes'
+              .tr(namedArgs: {'count': '2'}),
+          _ => 'setting_notifications_notify_minutes'
+              .tr(namedArgs: {'count': '10'}),
         };
 
     final backupTriggerDelay =
@@ -221,7 +227,9 @@ class _BackgroundSettingsEnabled extends HookConsumerWidget {
             SettingsSliderListTile(
               valueNotifier: triggerDelay,
               text: 'backup_controller_page_background_delay'.tr(
-                args: [formatBackupDelaySliderValue(triggerDelay.value)],
+                namedArgs: {
+                  'duration': formatBackupDelaySliderValue(triggerDelay.value),
+                },
               ),
               maxValue: 3.0,
               noDivisons: 3,

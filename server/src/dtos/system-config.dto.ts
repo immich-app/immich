@@ -34,7 +34,7 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName } from 'src/types';
-import { IsCronExpression, Optional, ValidateBoolean } from 'src/validation';
+import { IsCronExpression, IsDateStringFormat, Optional, ValidateBoolean } from 'src/validation';
 
 const isLibraryScanEnabled = (config: SystemConfigLibraryScanDto) => config.enabled;
 const isOAuthEnabled = (config: SystemConfigOAuthDto) => config.enabled;
@@ -329,6 +329,26 @@ class SystemConfigNewVersionCheckDto {
   enabled!: boolean;
 }
 
+class SystemConfigNightlyTasksDto {
+  @IsDateStringFormat('HH:mm', { message: 'startTime must be in HH:mm format' })
+  startTime!: string;
+
+  @ValidateBoolean()
+  databaseCleanup!: boolean;
+
+  @ValidateBoolean()
+  missingThumbnails!: boolean;
+
+  @ValidateBoolean()
+  clusterNewFaces!: boolean;
+
+  @ValidateBoolean()
+  generateMemories!: boolean;
+
+  @ValidateBoolean()
+  syncQuotaUsage!: boolean;
+}
+
 class SystemConfigOAuthDto {
   @ValidateBoolean()
   autoLaunch!: boolean;
@@ -360,7 +380,9 @@ class SystemConfigOAuthDto {
 
   @IsNumber()
   @Min(0)
-  defaultStorageQuota!: number;
+  @Optional({ nullable: true })
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  defaultStorageQuota!: number | null;
 
   @ValidateBoolean()
   enabled!: boolean;
@@ -393,6 +415,9 @@ class SystemConfigOAuthDto {
 
   @IsString()
   storageQuotaClaim!: string;
+
+  @IsString()
+  roleClaim!: string;
 }
 
 class SystemConfigPasswordLoginDto {
@@ -632,6 +657,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   newVersionCheck!: SystemConfigNewVersionCheckDto;
+
+  @Type(() => SystemConfigNightlyTasksDto)
+  @ValidateNested()
+  @IsObject()
+  nightlyTasks!: SystemConfigNightlyTasksDto;
 
   @Type(() => SystemConfigOAuthDto)
   @ValidateNested()

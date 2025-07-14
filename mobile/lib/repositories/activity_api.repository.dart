@@ -1,6 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
-import 'package:immich_mobile/interfaces/activity_api.interface.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
@@ -10,20 +9,17 @@ final activityApiRepositoryProvider = Provider(
   (ref) => ActivityApiRepository(ref.watch(apiServiceProvider).activitiesApi),
 );
 
-class ActivityApiRepository extends ApiRepository
-    implements IActivityApiRepository {
+class ActivityApiRepository extends ApiRepository {
   final ActivitiesApi _api;
 
   ActivityApiRepository(this._api);
 
-  @override
   Future<List<Activity>> getAll(String albumId, {String? assetId}) async {
     final response =
         await checkNull(_api.getActivities(albumId, assetId: assetId));
     return response.map(_toActivity).toList();
   }
 
-  @override
   Future<Activity> create(
     String albumId,
     ActivityType type, {
@@ -42,12 +38,10 @@ class ActivityApiRepository extends ApiRepository
     return _toActivity(response);
   }
 
-  @override
   Future<void> delete(String id) {
     return checkNull(_api.deleteActivity(id));
   }
 
-  @override
   Future<ActivityStats> getStats(String albumId, {String? assetId}) async {
     final response =
         await checkNull(_api.getActivityStatistics(albumId, assetId: assetId));

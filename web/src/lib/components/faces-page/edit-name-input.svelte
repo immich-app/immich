@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { type PersonResponseDto } from '@immich/sdk';
-  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import Button from '../elements/buttons/button.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
+  import { type PersonResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
+  import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 
   interface Props {
     person: PersonResponseDto;
@@ -44,6 +44,6 @@
       inputClass="w-full gap-2 bg-gray-100 dark:bg-gray-700 dark:text-white"
       bind:showLoadingSpinner={isSearchingPeople}
     />
-    <Button size="sm" type="submit">{$t('done')}</Button>
+    <Button size="small" shape="round" type="submit">{$t('done')}</Button>
   </form>
 </div>

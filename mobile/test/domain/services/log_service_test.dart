@@ -1,11 +1,11 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/interfaces/log.interface.dart';
-import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -28,8 +28,8 @@ final _kWarnLog = LogMessage(
 
 void main() {
   late LogService sut;
-  late ILogRepository mockLogRepo;
-  late IStoreRepository mockStoreRepo;
+  late IsarLogRepository mockLogRepo;
+  late IsarStoreRepository mockStoreRepo;
 
   setUp(() async {
     mockLogRepo = MockLogRepository();
@@ -74,7 +74,7 @@ void main() {
     setUp(() async {
       when(() => mockStoreRepo.insert<int>(StoreKey.logLevel, any()))
           .thenAnswer((_) async => true);
-      await sut.setlogLevel(LogLevel.shout);
+      await sut.setLogLevel(LogLevel.shout);
     });
 
     test('Updates the log level in store', () {
@@ -121,7 +121,6 @@ void main() {
         time.elapse(const Duration(seconds: 6));
         final insert = verify(() => mockLogRepo.insertAll(captureAny()));
         insert.called(1);
-        // ignore: prefer-correct-json-casts
         final captured = insert.captured.firstOrNull as List<LogMessage>;
         expect(captured.firstOrNull?.message, _kInfoLog.message);
         expect(captured.firstOrNull?.logger, _kInfoLog.logger);

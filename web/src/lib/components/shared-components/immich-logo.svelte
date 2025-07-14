@@ -14,7 +14,7 @@
 <svg {viewBox} class={cssClass}>
   <title>{$t('immich_logo')}</title>
   {#if !noText}
-    <g class="st0 dark:fill-[#accbfa]">
+    <g class="st0 dark:fill-[#accbfa] fill-[#4251b0]">
       <path
         d="M268.73,63.18c6.34,0,11.52,5.18,11.52,11.35c0,6.34-5.18,11.35-11.52,11.35s-11.69-5.01-11.69-11.35
 		C257.04,68.36,262.39,63.18,268.73,63.18z M258.88,122.45c0-3.01-0.67-7.85-0.67-10.68c0-6.01,4.67-10.68,10.52-10.68
@@ -94,9 +94,6 @@
 </svg>
 
 <style>
-  .st0 {
-    fill: #4251b0;
-  }
   .st1 {
     fill: #fa2921;
   }

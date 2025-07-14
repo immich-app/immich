@@ -4,7 +4,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 class AssetSelectionPageResult {
   final Set<Asset> selectedAssets;
 
-  AssetSelectionPageResult({
+  const AssetSelectionPageResult({
     required this.selectedAssets,
   });
   @override

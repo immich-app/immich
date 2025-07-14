@@ -22,6 +22,9 @@ import UIKit
     BackgroundServicePlugin.registerBackgroundProcessing()
 
     BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
+    
+    let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
+    NativeSyncApiSetup.setUp(binaryMessenger: controller.binaryMessenger, api: NativeSyncApiImpl())
 
     BackgroundServicePlugin.setPluginRegistrantCallback { registry in
       if !registry.hasPlugin("org.cocoapods.path-provider-foundation") {

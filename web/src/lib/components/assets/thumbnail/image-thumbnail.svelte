@@ -5,8 +5,8 @@
   import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { TUNABLES } from '$lib/utils/tunables';
   import { mdiEyeOffOutline } from '@mdi/js';
-  import type { ClassValue } from 'svelte/elements';
   import type { ActionReturn } from 'svelte/action';
+  import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
 
   interface Props {

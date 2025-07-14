@@ -5,8 +5,8 @@ import { get } from 'svelte/store';
 import { NotificationType, notificationController } from '../notification';
 import NotificationList from '../notification-list.svelte';
 
-function _getNotificationListElement(sut: RenderResult<NotificationList>): HTMLAnchorElement | null {
-  return sut.container.querySelector('#notification-list');
+function _getNotificationListElement(): HTMLAnchorElement | null {
+  return document.body.querySelector('#notification-list');
 }
 
 describe('NotificationList component', () => {
@@ -23,7 +23,7 @@ describe('NotificationList component', () => {
     const status = await sut.findAllByRole('status');
 
     expect(status).toHaveLength(1);
-    expect(_getNotificationListElement(sut)).not.toBeInTheDocument();
+    expect(_getNotificationListElement()).not.toBeInTheDocument();
 
     notificationController.show({
       message: 'Notification',
@@ -31,11 +31,11 @@ describe('NotificationList component', () => {
       timeout: 1,
     });
 
-    await waitFor(() => expect(_getNotificationListElement(sut)).toBeInTheDocument());
-    await waitFor(() => expect(_getNotificationListElement(sut)?.children).toHaveLength(1));
+    await waitFor(() => expect(_getNotificationListElement()).toBeInTheDocument());
+    await waitFor(() => expect(_getNotificationListElement()?.children).toHaveLength(1));
     expect(get(notificationController.notificationList)).toHaveLength(1);
 
-    await waitFor(() => expect(_getNotificationListElement(sut)).not.toBeInTheDocument());
+    await waitFor(() => expect(_getNotificationListElement()).not.toBeInTheDocument());
     expect(get(notificationController.notificationList)).toHaveLength(0);
   });
 });

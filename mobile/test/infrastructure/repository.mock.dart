@@ -1,24 +1,35 @@
-import 'package:immich_mobile/domain/interfaces/device_asset.interface.dart';
-import 'package:immich_mobile/domain/interfaces/log.interface.dart';
-import 'package:immich_mobile/domain/interfaces/store.interface.dart';
-import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
-import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
-import 'package:immich_mobile/domain/interfaces/user.interface.dart';
-import 'package:immich_mobile/domain/interfaces/user_api.interface.dart';
+import 'package:immich_mobile/infrastructure/repositories/device_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockStoreRepository extends Mock implements IStoreRepository {}
+class MockStoreRepository extends Mock implements IsarStoreRepository {}
 
-class MockLogRepository extends Mock implements ILogRepository {}
+class MockLogRepository extends Mock implements IsarLogRepository {}
 
-class MockUserRepository extends Mock implements IUserRepository {}
+class MockIsarUserRepository extends Mock implements IsarUserRepository {}
 
 class MockDeviceAssetRepository extends Mock
-    implements IDeviceAssetRepository {}
+    implements IsarDeviceAssetRepository {}
 
-class MockSyncStreamRepository extends Mock implements ISyncStreamRepository {}
+class MockSyncStreamRepository extends Mock implements SyncStreamRepository {}
+
+class MockLocalAlbumRepository extends Mock
+    implements DriftLocalAlbumRepository {}
+
+class MockLocalAssetRepository extends Mock
+    implements DriftLocalAssetRepository {}
+
+class MockStorageRepository extends Mock implements StorageRepository {}
 
 // API Repos
-class MockUserApiRepository extends Mock implements IUserApiRepository {}
+class MockUserApiRepository extends Mock implements UserApiRepository {}
 
-class MockSyncApiRepository extends Mock implements ISyncApiRepository {}
+class MockSyncApiRepository extends Mock implements SyncApiRepository {}

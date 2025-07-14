@@ -2,27 +2,27 @@
 
 -- TagRepository.get
 select
-  "tags"."id",
-  "tags"."value",
-  "tags"."createdAt",
-  "tags"."updatedAt",
-  "tags"."color",
-  "tags"."parentId"
+  "tag"."id",
+  "tag"."value",
+  "tag"."createdAt",
+  "tag"."updatedAt",
+  "tag"."color",
+  "tag"."parentId"
 from
-  "tags"
+  "tag"
 where
   "id" = $1
 
 -- TagRepository.getByValue
 select
-  "tags"."id",
-  "tags"."value",
-  "tags"."createdAt",
-  "tags"."updatedAt",
-  "tags"."color",
-  "tags"."parentId"
+  "tag"."id",
+  "tag"."value",
+  "tag"."createdAt",
+  "tag"."updatedAt",
+  "tag"."color",
+  "tag"."parentId"
 from
-  "tags"
+  "tag"
 where
   "userId" = $1
   and "value" = $2
@@ -30,46 +30,46 @@ where
 -- TagRepository.upsertValue
 begin
 insert into
-  "tags" ("userId", "value", "parentId")
+  "tag" ("userId", "value", "parentId")
 values
   ($1, $2, $3)
 on conflict ("userId", "value") do update
 set
   "parentId" = $4
 returning
-  "tags"."id",
-  "tags"."value",
-  "tags"."createdAt",
-  "tags"."updatedAt",
-  "tags"."color",
-  "tags"."parentId"
+  "tag"."id",
+  "tag"."value",
+  "tag"."createdAt",
+  "tag"."updatedAt",
+  "tag"."color",
+  "tag"."parentId"
 rollback
 
 -- TagRepository.getAll
 select
-  "tags"."id",
-  "tags"."value",
-  "tags"."createdAt",
-  "tags"."updatedAt",
-  "tags"."color",
-  "tags"."parentId"
+  "tag"."id",
+  "tag"."value",
+  "tag"."createdAt",
+  "tag"."updatedAt",
+  "tag"."color",
+  "tag"."parentId"
 from
-  "tags"
+  "tag"
 where
   "userId" = $1
 order by
-  "value" asc
+  "value"
 
 -- TagRepository.create
 insert into
-  "tags" ("userId", "color", "value")
+  "tag" ("userId", "color", "value")
 values
   ($1, $2, $3)
 returning
   *
 
 -- TagRepository.update
-update "tags"
+update "tag"
 set
   "color" = $1
 where
@@ -78,7 +78,7 @@ returning
   *
 
 -- TagRepository.delete
-delete from "tags"
+delete from "tag"
 where
   "id" = $1
 
@@ -94,6 +94,15 @@ where
   "tagsId" = $1
   and "assetsId" in ($2)
 
+-- TagRepository.upsertAssetIds
+insert into
+  "tag_asset" ("assetId", "tagsIds")
+values
+  ($1, $2)
+on conflict do nothing
+returning
+  *
+
 -- TagRepository.replaceAssetTags
 begin
 delete from "tag_asset"
@@ -107,17 +116,3 @@ on conflict do nothing
 returning
   *
 rollback
-
--- TagRepository.deleteEmptyTags
-begin
-select
-  "tags"."id",
-  count("assets"."id") as "count"
-from
-  "assets"
-  inner join "tag_asset" on "tag_asset"."assetsId" = "assets"."id"
-  inner join "tags_closure" on "tags_closure"."id_descendant" = "tag_asset"."tagsId"
-  inner join "tags" on "tags"."id" = "tags_closure"."id_descendant"
-group by
-  "tags"."id"
-commit

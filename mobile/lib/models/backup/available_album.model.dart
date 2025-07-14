@@ -1,12 +1,10 @@
-import 'dart:typed_data';
-
 import 'package:immich_mobile/entities/album.entity.dart';
 
 class AvailableAlbum {
   final Album album;
   final int assetCount;
   final DateTime? lastBackup;
-  AvailableAlbum({
+  const AvailableAlbum({
     required this.album,
     required this.assetCount,
     this.lastBackup,
@@ -16,7 +14,6 @@ class AvailableAlbum {
     Album? album,
     int? assetCount,
     DateTime? lastBackup,
-    Uint8List? thumbnailData,
   }) {
     return AvailableAlbum(
       album: album ?? this.album,

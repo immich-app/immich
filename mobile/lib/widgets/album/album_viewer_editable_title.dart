@@ -52,7 +52,9 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
           }
         },
         focusNode: titleFocusNode,
-        style: context.textTheme.headlineMedium,
+        style: context.textTheme.headlineLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
         controller: titleTextEditController,
         onTap: () {
           context.focusScope.requestFocus(titleFocusNode);
@@ -65,8 +67,10 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
           }
         },
         decoration: InputDecoration(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 0,
+          ),
           suffixIcon: titleFocusNode.hasFocus
               ? IconButton(
                   onPressed: () {

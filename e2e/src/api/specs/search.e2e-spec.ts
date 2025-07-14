@@ -1,4 +1,11 @@
-import { AssetMediaResponseDto, AssetResponseDto, deleteAssets, LoginResponseDto, updateAsset } from '@immich/sdk';
+import {
+  AssetMediaResponseDto,
+  AssetResponseDto,
+  AssetVisibility,
+  deleteAssets,
+  LoginResponseDto,
+  updateAsset,
+} from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -49,7 +56,7 @@ describe('/search', () => {
       { filename: '/formats/motionphoto/samsung-one-ui-6.heic' },
       { filename: '/formats/motionphoto/samsung-one-ui-5.jpg' },
 
-      { filename: '/metadata/gps-position/thompson-springs.jpg', dto: { isArchived: true } },
+      { filename: '/metadata/gps-position/thompson-springs.jpg', dto: { visibility: AssetVisibility.Archive } },
 
       // used for search suggestions
       { filename: '/formats/png/density_plot.png' },
@@ -171,12 +178,12 @@ describe('/search', () => {
         deferred: () => ({ dto: { size: 1, isFavorite: false }, assets: [assetLast] }),
       },
       {
-        should: 'should search by isArchived (true)',
-        deferred: () => ({ dto: { isArchived: true }, assets: [assetSprings] }),
+        should: 'should search by visibility (AssetVisibility.Archive)',
+        deferred: () => ({ dto: { visibility: AssetVisibility.Archive }, assets: [assetSprings] }),
       },
       {
-        should: 'should search by isArchived (false)',
-        deferred: () => ({ dto: { size: 1, isArchived: false }, assets: [assetLast] }),
+        should: 'should search by visibility (AssetVisibility.Timeline)',
+        deferred: () => ({ dto: { size: 1, visibility: AssetVisibility.Timeline }, assets: [assetLast] }),
       },
       {
         should: 'should search by type (image)',
@@ -185,7 +192,7 @@ describe('/search', () => {
       {
         should: 'should search by type (video)',
         deferred: () => ({
-          dto: { type: 'VIDEO' },
+          dto: { type: 'VIDEO', visibility: AssetVisibility.Hidden },
           assets: [
             // the three live motion photos
             { id: expect.any(String) },
@@ -229,13 +236,6 @@ describe('/search', () => {
         should: 'should search by takenAfter (no results)',
         deferred: () => ({ dto: { takenAfter: today.plus({ hour: 1 }).toJSDate() }, assets: [] }),
       },
-      //   {
-      //     should: 'should search by originalPath',
-      //     deferred: () => ({
-      //       dto: { originalPath: asset1.originalPath },
-      //       assets: [asset1],
-      //     }),
-      //   },
       {
         should: 'should search by originalFilename',
         deferred: () => ({
@@ -265,7 +265,7 @@ describe('/search', () => {
         deferred: () => ({
           dto: {
             city: '',
-            isVisible: true,
+            visibility: AssetVisibility.Timeline,
             includeNull: true,
           },
           assets: [assetLast],
@@ -276,7 +276,7 @@ describe('/search', () => {
         deferred: () => ({
           dto: {
             city: null,
-            isVisible: true,
+            visibility: AssetVisibility.Timeline,
             includeNull: true,
           },
           assets: [assetLast],
@@ -297,7 +297,7 @@ describe('/search', () => {
         deferred: () => ({
           dto: {
             state: '',
-            isVisible: true,
+            visibility: AssetVisibility.Timeline,
             withExif: true,
             includeNull: true,
           },
@@ -309,7 +309,7 @@ describe('/search', () => {
         deferred: () => ({
           dto: {
             state: null,
-            isVisible: true,
+            visibility: AssetVisibility.Timeline,
             includeNull: true,
           },
           assets: [assetLast, assetNotocactus],
@@ -330,7 +330,7 @@ describe('/search', () => {
         deferred: () => ({
           dto: {
             country: '',
-            isVisible: true,
+            visibility: AssetVisibility.Timeline,
             includeNull: true,
           },
           assets: [assetLast],
@@ -341,7 +341,7 @@ describe('/search', () => {
         deferred: () => ({
           dto: {
             country: null,
-            isVisible: true,
+            visibility: AssetVisibility.Timeline,
             includeNull: true,
           },
           assets: [assetLast],

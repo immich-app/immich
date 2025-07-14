@@ -6,7 +6,6 @@ import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { Assets } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
   CreateLibraryDto,
@@ -18,9 +17,10 @@ import {
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
-import { AssetStatus, AssetType, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetStatus, AssetType, CronJob, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { AssetSyncResult } from 'src/repositories/library.repository';
+import { AssetTable } from 'src/schema/tables/asset.table';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -45,7 +45,7 @@ export class LibraryService extends BaseService {
 
     if (this.lock) {
       this.cronRepository.create({
-        name: 'libraryScan',
+        name: CronJob.LibraryScan,
         expression: scan.cronExpression,
         onTick: () =>
           handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL }), this.logger),
@@ -65,7 +65,7 @@ export class LibraryService extends BaseService {
     }
 
     this.cronRepository.update({
-      name: 'libraryScan',
+      name: CronJob.LibraryScan,
       expression: library.scan.cronExpression,
       start: library.scan.enabled,
     });
@@ -237,7 +237,7 @@ export class LibraryService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    const assetImports: Insertable<Assets>[] = [];
+    const assetImports: Insertable<AssetTable>[] = [];
     await Promise.all(
       job.paths.map((path) =>
         this.processEntity(path, library.ownerId, job.libraryId)

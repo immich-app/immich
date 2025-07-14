@@ -43,6 +43,7 @@ class AssetResponseDto {
     required this.type,
     this.unassignedFaces = const [],
     required this.updatedAt,
+    required this.visibility,
   });
 
   /// base64 encoded sha1 hash
@@ -64,8 +65,10 @@ class AssetResponseDto {
   ///
   ExifResponseDto? exifInfo;
 
+  /// The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken.
   DateTime fileCreatedAt;
 
+  /// The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken.
   DateTime fileModifiedAt;
 
   bool hasMetadata;
@@ -85,6 +88,7 @@ class AssetResponseDto {
 
   String? livePhotoVideoId;
 
+  /// The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by \"local\" days and months.
   DateTime localDateTime;
 
   String originalFileName;
@@ -130,7 +134,10 @@ class AssetResponseDto {
 
   List<AssetFaceWithoutPersonResponseDto> unassignedFaces;
 
+  /// The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.
   DateTime updatedAt;
+
+  AssetVisibility visibility;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
@@ -163,7 +170,8 @@ class AssetResponseDto {
     other.thumbhash == thumbhash &&
     other.type == type &&
     _deepEquality.equals(other.unassignedFaces, unassignedFaces) &&
-    other.updatedAt == updatedAt;
+    other.updatedAt == updatedAt &&
+    other.visibility == visibility;
 
   @override
   int get hashCode =>
@@ -197,10 +205,11 @@ class AssetResponseDto {
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (type.hashCode) +
     (unassignedFaces.hashCode) +
-    (updatedAt.hashCode);
+    (updatedAt.hashCode) +
+    (visibility.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -270,6 +279,7 @@ class AssetResponseDto {
       json[r'type'] = this.type;
       json[r'unassignedFaces'] = this.unassignedFaces;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+      json[r'visibility'] = this.visibility;
     return json;
   }
 
@@ -312,6 +322,7 @@ class AssetResponseDto {
         type: AssetTypeEnum.fromJson(json[r'type'])!,
         unassignedFaces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'unassignedFaces']),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        visibility: AssetVisibility.fromJson(json[r'visibility'])!,
       );
     }
     return null;
@@ -378,6 +389,7 @@ class AssetResponseDto {
     'thumbhash',
     'type',
     'updatedAt',
+    'visibility',
   };
 }
 

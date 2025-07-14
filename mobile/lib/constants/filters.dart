@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-List<ColorFilter> filters = [
+const List<ColorFilter> filters = [
   //Original
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1,
     0,
     0,
@@ -25,7 +25,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Vintage
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     0.8,
     0.1,
     0.1,
@@ -48,7 +48,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Mood
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.2,
     0.1,
     0.1,
@@ -71,7 +71,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Crisp
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.2,
     0,
     0,
@@ -94,7 +94,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Cool
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     0.9,
     0,
     0.2,
@@ -117,7 +117,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Blush
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.1,
     0.1,
     0.1,
@@ -140,7 +140,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Sunkissed
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.3,
     0,
     0.1,
@@ -163,7 +163,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Fresh
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.2,
     0,
     0,
@@ -186,7 +186,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Classic
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.1,
     0,
     -0.1,
@@ -209,7 +209,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Lomo-ish
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.5,
     0,
     0.1,
@@ -232,7 +232,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Nashville
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.2,
     0.15,
     -0.15,
@@ -255,7 +255,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Valencia
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.15,
     0.1,
     0.1,
@@ -278,7 +278,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Clarendon
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.2,
     0,
     0,
@@ -301,7 +301,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Moon
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     0.33,
     0.33,
     0.33,
@@ -324,7 +324,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Willow
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     0.5,
     0.5,
     0.5,
@@ -347,7 +347,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Kodak
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.3,
     0.1,
     -0.1,
@@ -370,7 +370,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Frost
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     0.8,
     0.2,
     0.1,
@@ -393,7 +393,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Night Vision
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     0.1,
     0.95,
     0.2,
@@ -416,7 +416,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Sunset
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.5,
     0.2,
     0,
@@ -439,7 +439,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Noir
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.3,
     -0.3,
     0.1,
@@ -462,7 +462,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Dreamy
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.1,
     0.1,
     0.1,
@@ -485,7 +485,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Sepia
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     0.393,
     0.769,
     0.189,
@@ -508,7 +508,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Radium
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.438,
     -0.062,
     -0.062,
@@ -531,7 +531,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Aqua
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     0.2126,
     0.7152,
     0.0722,
@@ -554,7 +554,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Purple Haze
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.3,
     0,
     1.2,
@@ -577,7 +577,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Lemonade
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.2,
     0.1,
     0,
@@ -600,7 +600,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Caramel
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.6,
     0.2,
     0,
@@ -623,7 +623,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Peachy
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.3,
     0.5,
     0,
@@ -646,7 +646,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Neon
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1,
     0,
     1,
@@ -669,7 +669,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Cold Morning
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     0.9,
     0.1,
     0.2,
@@ -692,7 +692,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Lush
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     0.9,
     0.2,
     0,
@@ -715,7 +715,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Urban Neon
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     1.1,
     0,
     0.3,
@@ -738,7 +738,7 @@ List<ColorFilter> filters = [
     0,
   ]),
   //Monochrome
-  const ColorFilter.matrix([
+  ColorFilter.matrix([
     0.6,
     0.2,
     0.2,

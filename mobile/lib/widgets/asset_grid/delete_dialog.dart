@@ -1,5 +1,3 @@
-// ignore_for_file: prefer-single-widget-per-file
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';

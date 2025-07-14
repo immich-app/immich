@@ -1,32 +1,29 @@
 import { ColumnType } from 'kysely';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { UserAvatarColor, UserStatus } from 'src/enum';
-import { users_delete_audit } from 'src/schema/functions';
+import { user_delete_audit } from 'src/schema/functions';
 import {
   AfterDeleteTrigger,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
+  Generated,
   Index,
   PrimaryGeneratedColumn,
   Table,
+  Timestamp,
   UpdateDateColumn,
 } from 'src/sql-tools';
 
-type Timestamp = ColumnType<Date, Date | string, Date | string>;
-type Generated<T> =
-  T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S, I | undefined, U> : ColumnType<T, T | undefined, T>;
-
-@Table('users')
-@UpdatedAtTrigger('users_updated_at')
+@Table('user')
+@UpdatedAtTrigger('user_updatedAt')
 @AfterDeleteTrigger({
-  name: 'users_delete_audit',
   scope: 'statement',
-  function: users_delete_audit,
+  function: user_delete_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
 })
-@Index({ name: 'IDX_users_updated_at_asc_id_asc', columns: ['updatedAt', 'id'] })
+@Index({ columns: ['updatedAt', 'id'] })
 export class UserTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
@@ -36,6 +33,9 @@ export class UserTable {
 
   @Column({ default: '' })
   password!: Generated<string>;
+
+  @Column({ nullable: true })
+  pinCode!: string | null;
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
@@ -79,6 +79,6 @@ export class UserTable {
   @Column({ type: 'timestamp with time zone', default: () => 'now()' })
   profileChangedAt!: Generated<Timestamp>;
 
-  @UpdateIdColumn({ indexName: 'IDX_users_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

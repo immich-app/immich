@@ -12,6 +12,7 @@
   import MapSettings from '$lib/components/admin-page/settings/map-settings/map-settings.svelte';
   import MetadataSettings from '$lib/components/admin-page/settings/metadata-settings/metadata-settings.svelte';
   import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
+  import NightlyTasksSettings from '$lib/components/admin-page/settings/nightly-tasks-settings/nightly-tasks-settings.svelte';
   import NotificationSettings from '$lib/components/admin-page/settings/notification-settings/notification-settings.svelte';
   import ServerSettings from '$lib/components/admin-page/settings/server/server-settings.svelte';
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
@@ -19,7 +20,7 @@
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
   import UserSettings from '$lib/components/admin-page/settings/user-settings/user-settings.svelte';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import { QueryParameter } from '$lib/constants';
@@ -33,6 +34,7 @@
     mdiBackupRestore,
     mdiBellOutline,
     mdiBookshelf,
+    mdiClockOutline,
     mdiContentCopy,
     mdiDatabaseOutline,
     mdiDownload,
@@ -137,13 +139,6 @@
       icon: mdiSync,
     },
     {
-      component: MetadataSettings,
-      title: $t('admin.metadata_settings'),
-      subtitle: $t('admin.metadata_settings_description'),
-      key: 'metadata',
-      icon: mdiDatabaseOutline,
-    },
-    {
       component: LibrarySettings,
       title: $t('admin.library_settings'),
       subtitle: $t('admin.library_settings_description'),
@@ -170,6 +165,20 @@
       subtitle: $t('admin.map_gps_settings_description'),
       key: 'location',
       icon: mdiMapMarkerOutline,
+    },
+    {
+      component: MetadataSettings,
+      title: $t('admin.metadata_settings'),
+      subtitle: $t('admin.metadata_settings_description'),
+      key: 'metadata',
+      icon: mdiDatabaseOutline,
+    },
+    {
+      component: NightlyTasksSettings,
+      title: $t('admin.nightly_tasks_settings'),
+      subtitle: $t('admin.nightly_tasks_settings_description'),
+      key: 'nightly-tasks',
+      icon: mdiClockOutline,
     },
     {
       component: NotificationSettings,
@@ -241,7 +250,7 @@
 
 <input bind:this={inputElement} type="file" accept=".json" style="display: none" onchange={uploadConfig} />
 
-<UserPageLayout title={data.meta.title} admin>
+<AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <HStack gap={1}>
       <div class="hidden lg:block">
@@ -301,4 +310,4 @@
       </section>
     {/snippet}
   </AdminSettings>
-</UserPageLayout>
+</AdminPageLayout>

@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
 import 'package:isar/isar.dart';
@@ -20,7 +19,7 @@ Future<void> _populateExifTable(Isar db) async {
 
 void main() {
   late Isar db;
-  late IExifInfoRepository sut;
+  late IsarExifRepository sut;
 
   setUp(() async {
     db = await TestUtils.initIsar();

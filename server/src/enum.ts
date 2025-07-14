@@ -144,9 +144,11 @@ export enum Permission {
   PERSON_MERGE = 'person.merge',
   PERSON_REASSIGN = 'person.reassign',
 
+  SESSION_CREATE = 'session.create',
   SESSION_READ = 'session.read',
   SESSION_UPDATE = 'session.update',
   SESSION_DELETE = 'session.delete',
+  SESSION_LOCK = 'session.lock',
 
   SHARED_LINK_CREATE = 'sharedLink.create',
   SHARED_LINK_READ = 'sharedLink.read',
@@ -209,6 +211,7 @@ export enum SystemMetadataKey {
 export enum UserMetadataKey {
   PREFERENCES = 'preferences',
   LICENSE = 'license',
+  ONBOARDING = 'onboarding',
 }
 
 export enum UserAvatarColor {
@@ -412,6 +415,7 @@ export enum DatabaseExtension {
   EARTH_DISTANCE = 'earthdistance',
   VECTOR = 'vector',
   VECTORS = 'vectors',
+  VECTORCHORD = 'vchord',
 }
 
 export enum BootstrapEventPriority {
@@ -563,33 +567,85 @@ export enum DatabaseLock {
   VersionHistory = 500,
   CLIPDimSize = 512,
   Library = 1337,
+  NightlyJobs = 600,
   GetSystemConfig = 69,
   BackupDatabase = 42,
+  MemoryCreation = 777,
 }
 
 export enum SyncRequestType {
-  UsersV1 = 'UsersV1',
-  PartnersV1 = 'PartnersV1',
+  AlbumsV1 = 'AlbumsV1',
+  AlbumUsersV1 = 'AlbumUsersV1',
+  AlbumToAssetsV1 = 'AlbumToAssetsV1',
+  AlbumAssetsV1 = 'AlbumAssetsV1',
+  AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
   AssetsV1 = 'AssetsV1',
   AssetExifsV1 = 'AssetExifsV1',
+  MemoriesV1 = 'MemoriesV1',
+  MemoryToAssetsV1 = 'MemoryToAssetsV1',
+  PartnersV1 = 'PartnersV1',
   PartnerAssetsV1 = 'PartnerAssetsV1',
   PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
+  PartnerStacksV1 = 'PartnerStacksV1',
+  StacksV1 = 'StacksV1',
+  UsersV1 = 'UsersV1',
+  PeopleV1 = 'PeopleV1',
+  UserMetadataV1 = 'UserMetadataV1',
 }
 
 export enum SyncEntityType {
   UserV1 = 'UserV1',
   UserDeleteV1 = 'UserDeleteV1',
 
-  PartnerV1 = 'PartnerV1',
-  PartnerDeleteV1 = 'PartnerDeleteV1',
-
   AssetV1 = 'AssetV1',
   AssetDeleteV1 = 'AssetDeleteV1',
   AssetExifV1 = 'AssetExifV1',
 
+  PartnerV1 = 'PartnerV1',
+  PartnerDeleteV1 = 'PartnerDeleteV1',
+
   PartnerAssetV1 = 'PartnerAssetV1',
+  PartnerAssetBackfillV1 = 'PartnerAssetBackfillV1',
   PartnerAssetDeleteV1 = 'PartnerAssetDeleteV1',
   PartnerAssetExifV1 = 'PartnerAssetExifV1',
+  PartnerAssetExifBackfillV1 = 'PartnerAssetExifBackfillV1',
+  PartnerStackBackfillV1 = 'PartnerStackBackfillV1',
+  PartnerStackDeleteV1 = 'PartnerStackDeleteV1',
+  PartnerStackV1 = 'PartnerStackV1',
+
+  AlbumV1 = 'AlbumV1',
+  AlbumDeleteV1 = 'AlbumDeleteV1',
+
+  AlbumUserV1 = 'AlbumUserV1',
+  AlbumUserBackfillV1 = 'AlbumUserBackfillV1',
+  AlbumUserDeleteV1 = 'AlbumUserDeleteV1',
+
+  AlbumAssetV1 = 'AlbumAssetV1',
+  AlbumAssetBackfillV1 = 'AlbumAssetBackfillV1',
+  AlbumAssetExifV1 = 'AlbumAssetExifV1',
+  AlbumAssetExifBackfillV1 = 'AlbumAssetExifBackfillV1',
+
+  AlbumToAssetV1 = 'AlbumToAssetV1',
+  AlbumToAssetDeleteV1 = 'AlbumToAssetDeleteV1',
+  AlbumToAssetBackfillV1 = 'AlbumToAssetBackfillV1',
+
+  MemoryV1 = 'MemoryV1',
+  MemoryDeleteV1 = 'MemoryDeleteV1',
+
+  MemoryToAssetV1 = 'MemoryToAssetV1',
+  MemoryToAssetDeleteV1 = 'MemoryToAssetDeleteV1',
+
+  StackV1 = 'StackV1',
+  StackDeleteV1 = 'StackDeleteV1',
+
+  PersonV1 = 'PersonV1',
+  PersonDeleteV1 = 'PersonDeleteV1',
+
+  UserMetadataV1 = 'UserMetadataV1',
+  UserMetadataDeleteV1 = 'UserMetadataDeleteV1',
+
+  SyncAckV1 = 'SyncAckV1',
+  SyncResetV1 = 'SyncResetV1',
 }
 
 export enum NotificationLevel {
@@ -609,4 +665,28 @@ export enum NotificationType {
 export enum OAuthTokenEndpointAuthMethod {
   CLIENT_SECRET_POST = 'client_secret_post',
   CLIENT_SECRET_BASIC = 'client_secret_basic',
+}
+
+export enum DatabaseSslMode {
+  Disable = 'disable',
+  Allow = 'allow',
+  Prefer = 'prefer',
+  Require = 'require',
+  VerifyFull = 'verify-full',
+}
+
+export enum AssetVisibility {
+  ARCHIVE = 'archive',
+  TIMELINE = 'timeline',
+
+  /**
+   * Video part of the LivePhotos and MotionPhotos
+   */
+  HIDDEN = 'hidden',
+  LOCKED = 'locked',
+}
+
+export enum CronJob {
+  LibraryScan = 'LibraryScan',
+  NightlyJobs = 'NightlyJobs',
 }

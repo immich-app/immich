@@ -6,6 +6,7 @@
   } from '$lib/components/shared-components/notification/notification';
   import { AssetAction } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { restoreAssets, type AssetResponseDto } from '@immich/sdk';
   import { mdiHistory } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -23,7 +24,7 @@
       await restoreAssets({ bulkIdsDto: { ids: [asset.id] } });
       asset.isTrashed = false;
 
-      onAction({ type: AssetAction.RESTORE, asset });
+      onAction({ type: AssetAction.RESTORE, asset: toTimelineAsset(asset) });
 
       notificationController.show({
         type: NotificationType.Info,

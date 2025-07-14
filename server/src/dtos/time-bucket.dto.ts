@@ -1,57 +1,203 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { AssetOrder } from 'src/enum';
-import { TimeBucketSize } from 'src/repositories/asset.repository';
-import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
+
+import { IsEnum, IsString } from 'class-validator';
+import { AssetOrder, AssetVisibility } from 'src/enum';
+import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class TimeBucketDto {
-  @IsNotEmpty()
-  @IsEnum(TimeBucketSize)
-  @ApiProperty({ enum: TimeBucketSize, enumName: 'TimeBucketSize' })
-  size!: TimeBucketSize;
-
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter assets by specific user ID' })
   userId?: string;
 
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter assets belonging to a specific album' })
   albumId?: string;
 
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter assets containing a specific person (face recognition)' })
   personId?: string;
 
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter assets with a specific tag' })
   tagId?: string;
 
-  @ValidateBoolean({ optional: true })
-  isArchived?: boolean;
-
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({
+    optional: true,
+    description: 'Filter by favorite status (true for favorites only, false for non-favorites only)',
+  })
   isFavorite?: boolean;
 
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({
+    optional: true,
+    description: 'Filter by trash status (true for trashed assets only, false for non-trashed only)',
+  })
   isTrashed?: boolean;
 
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({
+    optional: true,
+    description: 'Include stacked assets in the response. When true, only primary assets from stacks are returned.',
+  })
   withStacked?: boolean;
 
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Include assets shared by partners' })
   withPartners?: boolean;
 
   @IsEnum(AssetOrder)
   @Optional()
-  @ApiProperty({ enum: AssetOrder, enumName: 'AssetOrder' })
+  @ApiProperty({
+    enum: AssetOrder,
+    enumName: 'AssetOrder',
+    description: 'Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)',
+  })
   order?: AssetOrder;
+
+  @ValidateAssetVisibility({
+    optional: true,
+    description: 'Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)',
+  })
+  visibility?: AssetVisibility;
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {
+  @ApiProperty({
+    type: 'string',
+    description: 'Time bucket identifier in YYYY-MM-DD format (e.g., "2024-01-01" for January 2024)',
+    example: '2024-01-01',
+  })
   @IsString()
   timeBucket!: string;
 }
 
-export class TimeBucketResponseDto {
-  @ApiProperty({ type: 'string' })
+export class TimeBucketAssetResponseDto {
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string' },
+    description: 'Array of asset IDs in the time bucket',
+  })
+  id!: string[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string' },
+    description: 'Array of owner IDs for each asset',
+  })
+  ownerId!: string[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'number' },
+    description: 'Array of aspect ratios (width/height) for each asset',
+  })
+  ratio!: number[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'boolean' },
+    description: 'Array indicating whether each asset is favorited',
+  })
+  isFavorite!: boolean[];
+
+  @ApiProperty({
+    enum: AssetVisibility,
+    enumName: 'AssetVisibility',
+    isArray: true,
+    description: 'Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED)',
+  })
+  visibility!: AssetVisibility[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'boolean' },
+    description: 'Array indicating whether each asset is in the trash',
+  })
+  isTrashed!: boolean[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'boolean' },
+    description: 'Array indicating whether each asset is an image (false for videos)',
+  })
+  isImage!: boolean[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string', nullable: true },
+    description: 'Array of BlurHash strings for generating asset previews (base64 encoded)',
+  })
+  thumbhash!: (string | null)[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string' },
+    description: 'Array of file creation timestamps in UTC (ISO 8601 format, without timezone)',
+  })
+  fileCreatedAt!: string[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'number' },
+    description:
+      "Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.",
+  })
+  localOffsetHours!: number[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string', nullable: true },
+    description: 'Array of video durations in HH:MM:SS format (null for images)',
+  })
+  duration!: (string | null)[];
+
+  @ApiProperty({
+    type: 'array',
+    items: {
+      type: 'array',
+      items: { type: 'string' },
+      minItems: 2,
+      maxItems: 2,
+      nullable: true,
+    },
+    description: 'Array of stack information as [stackId, assetCount] tuples (null for non-stacked assets)',
+  })
+  stack?: ([string, string] | null)[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string', nullable: true },
+    description: 'Array of projection types for 360° content (e.g., "EQUIRECTANGULAR", "CUBEFACE", "CYLINDRICAL")',
+  })
+  projectionType!: (string | null)[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string', nullable: true },
+    description: 'Array of live photo video asset IDs (null for non-live photos)',
+  })
+  livePhotoVideoId!: (string | null)[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string', nullable: true },
+    description: 'Array of city names extracted from EXIF GPS data',
+  })
+  city!: (string | null)[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string', nullable: true },
+    description: 'Array of country names extracted from EXIF GPS data',
+  })
+  country!: (string | null)[];
+}
+
+export class TimeBucketsResponseDto {
+  @ApiProperty({
+    type: 'string',
+    description: 'Time bucket identifier in YYYY-MM-DD format representing the start of the time period',
+    example: '2024-01-01',
+  })
   timeBucket!: string;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({
+    type: 'integer',
+    description: 'Number of assets in this time bucket',
+    example: 42,
+  })
   count!: number;
 }

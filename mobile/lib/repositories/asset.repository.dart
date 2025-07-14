@@ -1,21 +1,22 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
-import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 
+enum AssetSort { checksum, ownerIdChecksum }
+
 final assetRepositoryProvider =
     Provider((ref) => AssetRepository(ref.watch(dbProvider)));
 
-class AssetRepository extends DatabaseRepository implements IAssetRepository {
-  AssetRepository(super.db);
+class AssetRepository extends DatabaseRepository {
+  const AssetRepository(super.db);
 
-  @override
   Future<List<Asset>> getByAlbum(
     Album album, {
     Iterable<String> notOwnedBy = const [],
@@ -53,16 +54,13 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
     return sortedQuery.findAll();
   }
 
-  @override
   Future<void> deleteByIds(List<int> ids) => txn(() async {
         await db.assets.deleteAll(ids);
         await db.exifInfos.deleteAll(ids);
       });
 
-  @override
   Future<Asset?> getByRemoteId(String id) => db.assets.getByRemoteId(id);
 
-  @override
   Future<List<Asset>> getAllByRemoteId(
     Iterable<String> ids, {
     AssetState? state,
@@ -87,7 +85,6 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
     };
   }
 
-  @override
   Future<List<Asset>> getAll({
     required String ownerId,
     AssetState? state,
@@ -126,13 +123,11 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
     return limit == null ? query.findAll() : query.limit(limit).findAll();
   }
 
-  @override
   Future<List<Asset>> updateAll(List<Asset> assets) async {
     await txn(() => db.assets.putAll(assets));
     return assets;
   }
 
-  @override
   Future<List<Asset>> getMatches({
     required List<Asset> assets,
     required String ownerId,
@@ -153,42 +148,34 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
     return _getMatchesImpl(query, fastHash(ownerId), assets, limit);
   }
 
-  @override
   Future<Asset> update(Asset asset) async {
     await txn(() => asset.put(db));
     return asset;
   }
 
-  @override
   Future<void> upsertDuplicatedAssets(Iterable<String> duplicatedAssets) => txn(
         () => db.duplicatedAssets
             .putAll(duplicatedAssets.map(DuplicatedAsset.new).toList()),
       );
 
-  @override
   Future<List<String>> getAllDuplicatedAssetIds() =>
       db.duplicatedAssets.where().idProperty().findAll();
 
-  @override
   Future<Asset?> getByOwnerIdChecksum(int ownerId, String checksum) =>
       db.assets.getByOwnerIdChecksum(ownerId, checksum);
 
-  @override
   Future<List<Asset?>> getAllByOwnerIdChecksum(
     List<int> ownerIds,
     List<String> checksums,
   ) =>
       db.assets.getAllByOwnerIdChecksum(ownerIds, checksums);
 
-  @override
   Future<List<Asset>> getAllLocal() =>
       db.assets.where().localIdIsNotNull().findAll();
 
-  @override
   Future<void> deleteAllByRemoteId(List<String> ids, {AssetState? state}) =>
       txn(() => _getAllByRemoteIdImpl(ids, state).deleteAll());
 
-  @override
   Future<List<Asset>> getStackAssets(String stackId) {
     return db.assets
         .filter()
@@ -201,19 +188,16 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
         .findAll();
   }
 
-  @override
   Future<void> clearTable() async {
     await txn(() async {
       await db.assets.clear();
     });
   }
 
-  @override
   Stream<Asset?> watchAsset(int id, {bool fireImmediately = false}) {
     return db.assets.watchObject(id, fireImmediately: fireImmediately);
   }
 
-  @override
   Future<List<Asset>> getTrashAssets(String userId) {
     return db.assets
         .where()
@@ -224,21 +208,22 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
         .findAll();
   }
 
-  @override
   Future<List<Asset>> getRecentlyTakenAssets(String userId) {
     return db.assets
         .where()
         .ownerIdEqualToAnyChecksum(fastHash(userId))
+        .filter()
+        .visibilityEqualTo(AssetVisibilityEnum.timeline)
         .sortByFileCreatedAtDesc()
         .findAll();
   }
 
-  @override
   Future<List<Asset>> getMotionAssets(String userId) {
     return db.assets
         .where()
         .ownerIdEqualToAnyChecksum(fastHash(userId))
         .filter()
+        .visibilityEqualTo(AssetVisibilityEnum.timeline)
         .livePhotoVideoIdIsNotNull()
         .findAll();
   }

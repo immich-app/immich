@@ -1,18 +1,18 @@
-import 'dart:typed_data';
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/repositories/file_media.repository.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:auto_route/auto_route.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:path/path.dart' as p;
 
 /// A stateless widget that provides functionality for editing an image.
@@ -81,7 +81,7 @@ class EditImagePage extends ConsumerWidget {
       ImmichToast.show(
         durationInSecond: 6,
         context: context,
-        msg: "error_saving_image".tr(args: [e.toString()]),
+        msg: "error_saving_image".tr(namedArgs: {'error': e.toString()}),
         gravity: ToastGravity.CENTER,
       );
     }
@@ -124,7 +124,9 @@ class EditImagePage extends ConsumerWidget {
           ),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(7),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(7),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.2),
@@ -135,7 +137,9 @@ class EditImagePage extends ConsumerWidget {
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(7),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(7),
+              ),
               child: Image(
                 image: image.image,
                 fit: BoxFit.contain,
@@ -149,7 +153,9 @@ class EditImagePage extends ConsumerWidget {
         margin: const EdgeInsets.only(bottom: 60, right: 10, left: 10, top: 10),
         decoration: BoxDecoration(
           color: context.scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(30),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,

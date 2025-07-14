@@ -8,3 +8,9 @@ enum TextSearchType {
   filename,
   description,
 }
+
+enum AssetVisibilityEnum { timeline, hidden, archive, locked }
+
+enum SortUserBy { id }
+
+enum ActionSource { timeline, viewer }

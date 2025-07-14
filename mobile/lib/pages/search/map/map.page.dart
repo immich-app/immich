@@ -156,7 +156,7 @@ class MapPage extends HookConsumerWidget {
       } else {
         // If no asset was previously selected and no new asset is available, close the bottom sheet
         if (selectedMarker.value == null) {
-          bottomSheetStreamController.add(MapCloseBottomSheet());
+          bottomSheetStreamController.add(const MapCloseBottomSheet());
         }
         selectedMarker.value = null;
       }
@@ -395,6 +395,7 @@ class _MapWithMarker extends StatelessWidget {
           children: [
             style.widgetWhen(
               onData: (style) => MapLibreMap(
+                attributionButtonMargins: const Point(8, kToolbarHeight),
                 initialCameraPosition: CameraPosition(
                   target: initialLocation ?? const LatLng(0, 0),
                   zoom: initialLocation != null ? 12 : 0,

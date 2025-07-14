@@ -37,6 +37,13 @@ abstract class PhotoViewControllerBase<T extends PhotoViewControllerValue> {
   /// Closes streams and removes eventual listeners.
   void dispose();
 
+  void positionAnimationBuilder(void Function(Offset)? value);
+  void scaleAnimationBuilder(void Function(double)? value);
+  void rotationAnimationBuilder(void Function(double)? value);
+
+  /// Animates multiple fields of the state
+  void animateMultiple({Offset? position, double? scale, double? rotation});
+
   /// Add a listener that will ignore updates made internally
   ///
   /// Since it is made for internal use, it is not performatic to use more than one
@@ -147,11 +154,30 @@ class PhotoViewController
 
   late StreamController<PhotoViewControllerValue> _outputCtrl;
 
+  late void Function(Offset)? _animatePosition;
+  late void Function(double)? _animateScale;
+  late void Function(double)? _animateRotation;
+
   @override
   Stream<PhotoViewControllerValue> get outputStateStream => _outputCtrl.stream;
 
   @override
   late PhotoViewControllerValue prevValue;
+
+  @override
+  void positionAnimationBuilder(void Function(Offset)? value) {
+    _animatePosition = value;
+  }
+
+  @override
+  void scaleAnimationBuilder(void Function(double)? value) {
+    _animateScale = value;
+  }
+
+  @override
+  void rotationAnimationBuilder(void Function(double)? value) {
+    _animateRotation = value;
+  }
 
   @override
   void reset() {
@@ -170,6 +196,21 @@ class PhotoViewController
   @override
   void removeIgnorableListener(VoidCallback callback) {
     _valueNotifier.removeIgnorableListener(callback);
+  }
+
+  @override
+  void animateMultiple({Offset? position, double? scale, double? rotation}) {
+    if (position != null && _animatePosition != null) {
+      _animatePosition!(position);
+    }
+
+    if (scale != null && _animateScale != null) {
+      _animateScale!(scale);
+    }
+
+    if (rotation != null && _animateRotation != null) {
+      _animateRotation!(rotation);
+    }
   }
 
   @override

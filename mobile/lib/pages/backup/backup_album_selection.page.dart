@@ -214,13 +214,13 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                 ListTile(
                   title: Text(
                     "backup_album_selection_page_albums_device".tr(
-                      args: [
-                        ref
+                      namedArgs: {
+                        'count': ref
                             .watch(backupProvider)
                             .availableAlbums
                             .length
                             .toString(),
-                      ],
+                      },
                     ),
                     style: context.textTheme.titleSmall,
                   ),
@@ -246,8 +246,10 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(10),
+                              ),
                             ),
                             elevation: 5,
                             title: Text(

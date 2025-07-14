@@ -83,8 +83,10 @@ class GalleryAppBar extends ConsumerWidget {
     addToAlbum(Asset addToAlbumAsset) {
       showModalBottomSheet(
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(15.0),
+          ),
         ),
         context: context,
         builder: (BuildContext _) {
@@ -96,7 +98,7 @@ class GalleryAppBar extends ConsumerWidget {
     }
 
     handleDownloadAsset() {
-      ref.read(downloadStateProvider.notifier).downloadAsset(asset, context);
+      ref.read(downloadStateProvider.notifier).downloadAsset(asset);
     }
 
     handleLocateAsset() async {

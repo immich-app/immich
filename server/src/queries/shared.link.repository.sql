@@ -2,7 +2,7 @@
 
 -- SharedLinkRepository.get
 select
-  "shared_links".*,
+  "shared_link".*,
   coalesce(
     json_agg("a") filter (
       where
@@ -12,31 +12,31 @@ select
   ) as "assets",
   to_json("album") as "album"
 from
-  "shared_links"
+  "shared_link"
   left join lateral (
     select
-      "assets".*,
+      "asset".*,
       to_json("exifInfo") as "exifInfo"
     from
-      "shared_link__asset"
-      inner join "assets" on "assets"."id" = "shared_link__asset"."assetsId"
+      "shared_link_asset"
+      inner join "asset" on "asset"."id" = "shared_link_asset"."assetsId"
       inner join lateral (
         select
-          "exif".*
+          "asset_exif".*
         from
-          "exif"
+          "asset_exif"
         where
-          "exif"."assetId" = "assets"."id"
+          "asset_exif"."assetId" = "asset"."id"
       ) as "exifInfo" on true
     where
-      "shared_links"."id" = "shared_link__asset"."sharedLinksId"
-      and "assets"."deletedAt" is null
+      "shared_link"."id" = "shared_link_asset"."sharedLinksId"
+      and "asset"."deletedAt" is null
     order by
-      "assets"."fileCreatedAt" asc
+      "asset"."fileCreatedAt" asc
   ) as "a" on true
   left join lateral (
     select
-      "albums".*,
+      "album".*,
       coalesce(
         json_agg("assets") filter (
           where
@@ -46,151 +46,151 @@ from
       ) as "assets",
       to_json("owner") as "owner"
     from
-      "albums"
-      left join "albums_assets_assets" on "albums_assets_assets"."albumsId" = "albums"."id"
+      "album"
+      left join "album_asset" on "album_asset"."albumsId" = "album"."id"
       left join lateral (
         select
-          "assets".*,
-          to_json("assets_exifInfo") as "exifInfo"
+          "asset".*,
+          to_json("exifInfo") as "exifInfo"
         from
-          "assets"
+          "asset"
           inner join lateral (
             select
-              "exif".*
+              "asset_exif".*
             from
-              "exif"
+              "asset_exif"
             where
-              "exif"."assetId" = "assets"."id"
-          ) as "assets_exifInfo" on true
+              "asset_exif"."assetId" = "asset"."id"
+          ) as "exifInfo" on true
         where
-          "albums_assets_assets"."assetsId" = "assets"."id"
-          and "assets"."deletedAt" is null
+          "album_asset"."assetsId" = "asset"."id"
+          and "asset"."deletedAt" is null
         order by
-          "assets"."fileCreatedAt" asc
+          "asset"."fileCreatedAt" asc
       ) as "assets" on true
       inner join lateral (
         select
-          "users".*
+          "user".*
         from
-          "users"
+          "user"
         where
-          "users"."id" = "albums"."ownerId"
-          and "users"."deletedAt" is null
+          "user"."id" = "album"."ownerId"
+          and "user"."deletedAt" is null
       ) as "owner" on true
     where
-      "albums"."id" = "shared_links"."albumId"
-      and "albums"."deletedAt" is null
+      "album"."id" = "shared_link"."albumId"
+      and "album"."deletedAt" is null
     group by
-      "albums"."id",
+      "album"."id",
       "owner".*
   ) as "album" on true
 where
-  "shared_links"."id" = $1
-  and "shared_links"."userId" = $2
+  "shared_link"."id" = $1
+  and "shared_link"."userId" = $2
   and (
-    "shared_links"."type" = $3
+    "shared_link"."type" = $3
     or "album"."id" is not null
   )
 group by
-  "shared_links"."id",
+  "shared_link"."id",
   "album".*
 order by
-  "shared_links"."createdAt" desc
+  "shared_link"."createdAt" desc
 
 -- SharedLinkRepository.getAll
 select distinct
-  on ("shared_links"."createdAt") "shared_links".*,
+  on ("shared_link"."createdAt") "shared_link".*,
   "assets"."assets",
   to_json("album") as "album"
 from
-  "shared_links"
-  left join "shared_link__asset" on "shared_link__asset"."sharedLinksId" = "shared_links"."id"
+  "shared_link"
+  left join "shared_link_asset" on "shared_link_asset"."sharedLinksId" = "shared_link"."id"
   left join lateral (
     select
-      json_agg("assets") as "assets"
+      json_agg("asset") as "assets"
     from
-      "assets"
+      "asset"
     where
-      "assets"."id" = "shared_link__asset"."assetsId"
-      and "assets"."deletedAt" is null
+      "asset"."id" = "shared_link_asset"."assetsId"
+      and "asset"."deletedAt" is null
   ) as "assets" on true
   left join lateral (
     select
-      "albums".*,
+      "album".*,
       to_json("owner") as "owner"
     from
-      "albums"
+      "album"
       inner join lateral (
         select
-          "users"."id",
-          "users"."email",
-          "users"."createdAt",
-          "users"."profileImagePath",
-          "users"."isAdmin",
-          "users"."shouldChangePassword",
-          "users"."deletedAt",
-          "users"."oauthId",
-          "users"."updatedAt",
-          "users"."storageLabel",
-          "users"."name",
-          "users"."quotaSizeInBytes",
-          "users"."quotaUsageInBytes",
-          "users"."status",
-          "users"."profileChangedAt"
+          "user"."id",
+          "user"."email",
+          "user"."createdAt",
+          "user"."profileImagePath",
+          "user"."isAdmin",
+          "user"."shouldChangePassword",
+          "user"."deletedAt",
+          "user"."oauthId",
+          "user"."updatedAt",
+          "user"."storageLabel",
+          "user"."name",
+          "user"."quotaSizeInBytes",
+          "user"."quotaUsageInBytes",
+          "user"."status",
+          "user"."profileChangedAt"
         from
-          "users"
+          "user"
         where
-          "users"."id" = "albums"."ownerId"
-          and "users"."deletedAt" is null
+          "user"."id" = "album"."ownerId"
+          and "user"."deletedAt" is null
       ) as "owner" on true
     where
-      "albums"."id" = "shared_links"."albumId"
-      and "albums"."deletedAt" is null
+      "album"."id" = "shared_link"."albumId"
+      and "album"."deletedAt" is null
   ) as "album" on true
 where
-  "shared_links"."userId" = $1
+  "shared_link"."userId" = $1
   and (
-    "shared_links"."type" = $2
+    "shared_link"."type" = $2
     or "album"."id" is not null
   )
-  and "shared_links"."albumId" = $3
+  and "shared_link"."albumId" = $3
 order by
-  "shared_links"."createdAt" desc
+  "shared_link"."createdAt" desc
 
 -- SharedLinkRepository.getByKey
 select
-  "shared_links"."id",
-  "shared_links"."userId",
-  "shared_links"."expiresAt",
-  "shared_links"."showExif",
-  "shared_links"."allowUpload",
-  "shared_links"."allowDownload",
-  "shared_links"."password",
+  "shared_link"."id",
+  "shared_link"."userId",
+  "shared_link"."expiresAt",
+  "shared_link"."showExif",
+  "shared_link"."allowUpload",
+  "shared_link"."allowDownload",
+  "shared_link"."password",
   (
     select
       to_json(obj)
     from
       (
         select
-          "users"."id",
-          "users"."name",
-          "users"."email",
-          "users"."isAdmin",
-          "users"."quotaUsageInBytes",
-          "users"."quotaSizeInBytes"
+          "user"."id",
+          "user"."name",
+          "user"."email",
+          "user"."isAdmin",
+          "user"."quotaUsageInBytes",
+          "user"."quotaSizeInBytes"
         from
-          "users"
+          "user"
         where
-          "users"."id" = "shared_links"."userId"
+          "user"."id" = "shared_link"."userId"
       ) as obj
   ) as "user"
 from
-  "shared_links"
-  left join "albums" on "albums"."id" = "shared_links"."albumId"
+  "shared_link"
+  left join "album" on "album"."id" = "shared_link"."albumId"
 where
-  "shared_links"."key" = $1
-  and "albums"."deletedAt" is null
+  "shared_link"."key" = $1
+  and "album"."deletedAt" is null
   and (
-    "shared_links"."type" = $2
-    or "albums"."id" is not null
+    "shared_link"."type" = $2
+    or "album"."id" is not null
   )

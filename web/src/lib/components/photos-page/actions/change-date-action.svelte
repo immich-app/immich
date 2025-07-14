@@ -4,11 +4,11 @@
   import { getSelectedAssets } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
+  import { mdiCalendarEditOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
+  import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { mdiCalendarEditOutline } from '@mdi/js';
-  import { t } from 'svelte-i18n';
   interface Props {
     menuItem?: boolean;
   }

@@ -394,7 +394,9 @@ class LoginForm extends HookConsumerWidget {
           decoration: BoxDecoration(
             color:
                 context.isDarkTheme ? Colors.red.shade700 : Colors.red.shade100,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(8),
+            ),
             border: Border.all(
               color:
                   context.isDarkTheme ? Colors.red.shade900 : Colors.red[200]!,

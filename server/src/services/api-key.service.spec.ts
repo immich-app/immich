@@ -18,7 +18,7 @@ describe(ApiKeyService.name, () => {
       const apiKey = factory.apiKey({ userId: auth.user.id, permissions: [Permission.ALL] });
       const key = 'super-secret';
 
-      mocks.crypto.newPassword.mockReturnValue(key);
+      mocks.crypto.randomBytesAsText.mockReturnValue(key);
       mocks.apiKey.create.mockResolvedValue(apiKey);
 
       await sut.create(auth, { name: apiKey.name, permissions: apiKey.permissions });
@@ -29,7 +29,7 @@ describe(ApiKeyService.name, () => {
         permissions: apiKey.permissions,
         userId: apiKey.userId,
       });
-      expect(mocks.crypto.newPassword).toHaveBeenCalled();
+      expect(mocks.crypto.randomBytesAsText).toHaveBeenCalled();
       expect(mocks.crypto.hashSha256).toHaveBeenCalled();
     });
 
@@ -38,7 +38,7 @@ describe(ApiKeyService.name, () => {
       const apiKey = factory.apiKey({ userId: auth.user.id });
       const key = 'super-secret';
 
-      mocks.crypto.newPassword.mockReturnValue(key);
+      mocks.crypto.randomBytesAsText.mockReturnValue(key);
       mocks.apiKey.create.mockResolvedValue(apiKey);
 
       await sut.create(auth, { permissions: [Permission.ALL] });
@@ -49,7 +49,7 @@ describe(ApiKeyService.name, () => {
         permissions: [Permission.ALL],
         userId: auth.user.id,
       });
-      expect(mocks.crypto.newPassword).toHaveBeenCalled();
+      expect(mocks.crypto.randomBytesAsText).toHaveBeenCalled();
       expect(mocks.crypto.hashSha256).toHaveBeenCalled();
     });
 
@@ -69,7 +69,9 @@ describe(ApiKeyService.name, () => {
 
       mocks.apiKey.getById.mockResolvedValue(void 0);
 
-      await expect(sut.update(auth, id, { name: 'New Name' })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update(auth, id, { name: 'New Name', permissions: [Permission.ALL] })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
 
       expect(mocks.apiKey.update).not.toHaveBeenCalledWith(id);
     });
@@ -82,9 +84,28 @@ describe(ApiKeyService.name, () => {
       mocks.apiKey.getById.mockResolvedValue(apiKey);
       mocks.apiKey.update.mockResolvedValue(apiKey);
 
-      await sut.update(auth, apiKey.id, { name: newName });
+      await sut.update(auth, apiKey.id, { name: newName, permissions: [Permission.ALL] });
 
-      expect(mocks.apiKey.update).toHaveBeenCalledWith(auth.user.id, apiKey.id, { name: newName });
+      expect(mocks.apiKey.update).toHaveBeenCalledWith(auth.user.id, apiKey.id, {
+        name: newName,
+        permissions: [Permission.ALL],
+      });
+    });
+
+    it('should update permissions', async () => {
+      const auth = factory.auth();
+      const apiKey = factory.apiKey({ userId: auth.user.id });
+      const newPermissions = [Permission.ACTIVITY_CREATE, Permission.ACTIVITY_READ, Permission.ACTIVITY_UPDATE];
+
+      mocks.apiKey.getById.mockResolvedValue(apiKey);
+      mocks.apiKey.update.mockResolvedValue(apiKey);
+
+      await sut.update(auth, apiKey.id, { name: apiKey.name, permissions: newPermissions });
+
+      expect(mocks.apiKey.update).toHaveBeenCalledWith(auth.user.id, apiKey.id, {
+        name: apiKey.name,
+        permissions: newPermissions,
+      });
     });
   });
 

@@ -27,7 +27,7 @@ export class SystemConfigService extends BaseService {
     return mapConfig(defaults);
   }
 
-  @OnEvent({ name: 'config.init' })
+  @OnEvent({ name: 'config.init', priority: -100 })
   onConfigInit({ newConfig: { logging } }: ArgOf<'config.init'>) {
     const { logLevel: envLevel } = this.configRepository.getEnv();
     const configLevel = logging.enabled ? logging.level : false;

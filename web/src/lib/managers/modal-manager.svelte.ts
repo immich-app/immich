@@ -1,32 +1,52 @@
-import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
+import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
 import { mount, unmount, type Component, type ComponentProps } from 'svelte';
 
-type OnCloseData<T> = T extends { onClose: (data: infer R) => void } ? R : never;
-// TODO make `props` optional if component only has `onClose`
-// type OptionalIfEmpty<T extends object> = keyof T extends never ? undefined : T;
+type OnCloseData<T> = T extends { onClose: (data?: infer R) => void }
+  ? R | undefined
+  : T extends { onClose: (data: infer R) => void }
+    ? R
+    : never;
+type ExtendsEmptyObject<T> = keyof T extends never ? never : T;
+type StripValueIfOptional<T> = T extends undefined ? undefined : T;
+
+// if the modal does not expect any props, makes the props param optional but also allows passing `{}` and `undefined`
+type OptionalParamIfEmpty<T> = ExtendsEmptyObject<T> extends never ? [] | [Record<string, never> | undefined] : [T];
 
 class ModalManager {
-  open<T extends object, K = OnCloseData<T>>(Component: Component<T>, props: Omit<T, 'onClose'>) {
-    return new Promise<K>((resolve) => {
-      let modal: object = {};
+  show<T extends object>(Component: Component<T>, ...props: OptionalParamIfEmpty<Omit<T, 'onClose'>>) {
+    return this.open(Component, ...props).onClose;
+  }
 
-      const onClose = async (data: K) => {
+  open<T extends object, K = OnCloseData<T>>(
+    Component: Component<T>,
+    ...props: OptionalParamIfEmpty<Omit<T, 'onClose'>>
+  ) {
+    let modal: object = {};
+    let onClose: (...args: [StripValueIfOptional<K>]) => Promise<void>;
+
+    const deferred = new Promise<StripValueIfOptional<K>>((resolve) => {
+      onClose = async (...args: [StripValueIfOptional<K>]) => {
         await unmount(modal);
-        resolve(data);
+        setTimeout(() => resolve(args?.[0]), 0);
       };
 
       modal = mount(Component, {
         target: document.body,
         props: {
-          ...(props as T),
+          ...((props?.[0] ?? {}) as T),
           onClose,
         },
       });
     });
+
+    return {
+      onClose: deferred,
+      close: (...args: [StripValueIfOptional<K>]) => onClose(args[0]),
+    };
   }
 
-  openDialog(options: Omit<ComponentProps<typeof ConfirmDialog>, 'onClose'>) {
-    return this.open(ConfirmDialog, options);
+  showDialog(options: Omit<ComponentProps<typeof ConfirmModal>, 'onClose'>) {
+    return this.show(ConfirmModal, options);
   }
 }
 

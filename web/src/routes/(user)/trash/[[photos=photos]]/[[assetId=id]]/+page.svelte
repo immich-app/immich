@@ -7,15 +7,15 @@
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
+  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -36,17 +36,14 @@
     handlePromiseError(goto(AppRoute.PHOTOS));
   }
 
-  const assetStore = new AssetStore();
-  void assetStore.updateOptions({ isTrashed: true });
-  onDestroy(() => assetStore.destroy());
+  const timelineManager = new TimelineManager();
+  void timelineManager.updateOptions({ isTrashed: true });
+  onDestroy(() => timelineManager.destroy());
 
   const assetInteraction = new AssetInteraction();
 
   const handleEmptyTrash = async () => {
-    const isConfirmed = await dialogController.show({
-      prompt: $t('empty_trash_confirmation'),
-    });
-
+    const isConfirmed = await modalManager.showDialog({ prompt: $t('empty_trash_confirmation') });
     if (!isConfirmed) {
       return;
     }
@@ -64,10 +61,7 @@
   };
 
   const handleRestoreTrash = async () => {
-    const isConfirmed = await dialogController.show({
-      prompt: $t('assets_restore_confirmation'),
-    });
-
+    const isConfirmed = await modalManager.showDialog({ prompt: $t('assets_restore_confirmation') });
     if (!isConfirmed) {
       return;
     }
@@ -81,8 +75,8 @@
       // reset asset grid (TODO fix in asset store that it should reset when it is empty)
       // note - this is still a problem, but updateOptions with the same value will not
       // do anything, so need to flip it for it to reload/reinit
-      // await assetStore.updateOptions({ deferInit: true, isTrashed: true });
-      // await assetStore.updateOptions({ deferInit: false, isTrashed: true });
+      // await timelineManager.updateOptions({ deferInit: true, isTrashed: true });
+      // await timelineManager.updateOptions({ deferInit: false, isTrashed: true });
     } catch (error) {
       handleError(error, $t('errors.unable_to_restore_trash'));
     }
@@ -95,17 +89,6 @@
     }
   };
 </script>
-
-{#if assetInteraction.selectionActive}
-  <AssetSelectControlBar
-    assets={assetInteraction.selectedAssets}
-    clearSelect={() => assetInteraction.clearMultiselect()}
-  >
-    <SelectAllAssets {assetStore} {assetInteraction} />
-    <DeleteAssets force onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
-    <RestoreAssets onRestore={(assetIds) => assetStore.removeAssets(assetIds)} />
-  </AssetSelectControlBar>
-{/if}
 
 {#if $featureFlags.loaded && $featureFlags.trash}
   <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
@@ -134,7 +117,7 @@
       </HStack>
     {/snippet}
 
-    <AssetGrid enableRouting={true} {assetStore} {assetInteraction} onEscape={handleEscape}>
+    <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>
@@ -143,4 +126,15 @@
       {/snippet}
     </AssetGrid>
   </UserPageLayout>
+{/if}
+
+{#if assetInteraction.selectionActive}
+  <AssetSelectControlBar
+    assets={assetInteraction.selectedAssets}
+    clearSelect={() => assetInteraction.clearMultiselect()}
+  >
+    <SelectAllAssets {timelineManager} {assetInteraction} />
+    <DeleteAssets force onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)} />
+    <RestoreAssets onRestore={(assetIds) => timelineManager.removeAssets(assetIds)} />
+  </AssetSelectControlBar>
 {/if}

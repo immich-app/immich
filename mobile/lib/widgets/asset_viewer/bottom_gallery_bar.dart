@@ -15,6 +15,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -46,6 +47,7 @@ class BottomGalleryBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isInLockedView = ref.watch(inLockedViewProvider);
     final asset = ref.watch(currentAssetProvider);
     if (asset == null) {
       return const SizedBox();
@@ -233,7 +235,6 @@ class BottomGalleryBar extends ConsumerWidget {
 
       ref.read(downloadStateProvider.notifier).downloadAsset(
             asset,
-            context,
           );
     }
 
@@ -277,7 +278,7 @@ class BottomGalleryBar extends ConsumerWidget {
           tooltip: 'share'.tr(),
         ): (_) => shareAsset(),
       },
-      if (asset.isImage)
+      if (asset.isImage && !isInLockedView)
         {
           BottomNavigationBarItem(
             icon: const Icon(Icons.tune_outlined),
@@ -285,7 +286,7 @@ class BottomGalleryBar extends ConsumerWidget {
             tooltip: 'edit'.tr(),
           ): (_) => handleEdit(),
         },
-      if (isOwner)
+      if (isOwner && !isInLockedView)
         {
           asset.isArchived
               ? BottomNavigationBarItem(
@@ -299,7 +300,7 @@ class BottomGalleryBar extends ConsumerWidget {
                   tooltip: 'archive'.tr(),
                 ): (_) => handleArchive(),
         },
-      if (isOwner && asset.stackCount > 0)
+      if (isOwner && asset.stackCount > 0 && !isInLockedView)
         {
           BottomNavigationBarItem(
             icon: const Icon(Icons.burst_mode_outlined),

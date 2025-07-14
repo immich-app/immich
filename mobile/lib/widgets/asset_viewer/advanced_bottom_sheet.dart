@@ -38,7 +38,9 @@ class AdvancedBottomSheet extends HookConsumerWidget {
                     color: context.isDarkTheme
                         ? Colors.grey[900]
                         : Colors.grey[200],
-                    borderRadius: BorderRadius.circular(15.0),
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(15.0),
+                    ),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.only(

@@ -14,6 +14,9 @@ const GeneratedUuidV7Column = (options: Omit<ColumnOptions, 'type' | 'default' |
 export const UpdateIdColumn = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
   GeneratedUuidV7Column(options);
 
+export const CreateIdColumn = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>
+  GeneratedUuidV7Column(options);
+
 export const PrimaryGeneratedUuidV7Column = () => GeneratedUuidV7Column({ primary: true });
 
 export const UpdatedAtTrigger = (name: string) =>
@@ -116,7 +119,7 @@ export const DummyValue = {
   DATE: new Date(),
   TIME_BUCKET: '2024-01-01T00:00:00.000Z',
   BOOLEAN: true,
-  VECTOR: '[1, 2, 3]',
+  VECTOR: JSON.stringify(Array.from({ length: 512 }, () => 0)),
 };
 
 export const GENERATE_SQL_KEY = 'generate-sql-key';

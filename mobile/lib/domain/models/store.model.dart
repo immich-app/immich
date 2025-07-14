@@ -75,23 +75,23 @@ enum StoreKey<T> {
   Type get type => T;
 }
 
-class StoreUpdateEvent<T> {
+class StoreDto<T> {
   final StoreKey<T> key;
   final T? value;
 
-  const StoreUpdateEvent(this.key, this.value);
+  const StoreDto(this.key, this.value);
 
   @override
   String toString() {
     return '''
-StoreUpdateEvent: {
+StoreDto: {
   key: $key,
   value: ${value ?? '<NA>'},
 }''';
   }
 
   @override
-  bool operator ==(covariant StoreUpdateEvent<T> other) {
+  bool operator ==(covariant StoreDto<T> other) {
     if (identical(this, other)) return true;
 
     return other.key == key && other.value == value;
