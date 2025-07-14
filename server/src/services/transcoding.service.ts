@@ -82,7 +82,7 @@ export class TranscodingService extends BaseService {
       '#EXT-X-INDEPENDENT-SEGMENTS',
 
       `#EXT-X-STREAM-INF:BANDWIDTH=14358365,CODECS="avc1.64001e,mp4a.40.2",RESOLUTION=1920x1080,FRAME-RATE=30`,
-      `h264.1080p.m3u8`,
+      `h264/1080p.m3u8`,
     );
 
     if (videoStream.codecTag && this.SUPPORTED_TAGS.includes(videoStream.codecTag)) {
@@ -163,14 +163,15 @@ export class TranscodingService extends BaseService {
     let prevPartIdx = 0;
 
     const original = quality == 'original';
-    for (let i = 1; i < frames.length; i++) {
+    frames.push(frames[frames.length - 1]);
+    for (let i = 1; i < frames.length - 1; i++) {
       const isKf = frames[i] <= 0;
       frames[i] = Math.abs(frames[i]);
       if (!original && (frames[i] - prevPart > 0.5 || isKf)) {
-        partTimes.push(frames[i]);
+        partTimes.push(frames[i + 1]);
 
         playlist.push(
-          `#EXT-X-PART:DURATION=${(frames[i] - prevPart).toFixed(5)},URI="${quality}/${partIdx++}.mp4"${prevPart === prevSeg ? ',INDEPENDENT=YES' : ''}`,
+          `#EXT-X-PART:DURATION=${(frames[i] - prevPart).toFixed(20)},URI="${quality}/${partIdx++}.mp4"${prevPart === prevSeg ? ',INDEPENDENT=YES' : ''}`,
         );
         prevPart = frames[i];
       }
@@ -184,7 +185,7 @@ export class TranscodingService extends BaseService {
 
         // TODO: If client decides to request full part, then we have to concat it using concat muxer
         playlist.push(
-          `#EXTINF:${(frames[i] - prevSeg).toFixed(5)},`,
+          `#EXTINF:${(frames[i] - prevSeg).toFixed(20)},`,
           `${quality}/${Array.from({ length: partIdx - prevPartIdx }, (_, i) => prevPartIdx + i).join('.')}.mp4`,
         );
         prevPart = prevSeg = frames[i];
@@ -194,7 +195,7 @@ export class TranscodingService extends BaseService {
 
     const connection = new HLSConnection();
     this.connections.set(sessionId, connection);
-    setImmediate(() => this.liveTranscode(asset.originalPath, id, quality, partTimes, keyTimes, codec, connection));
+    setImmediate(() => this.liveTranscode(asset.originalPath, sessionId, quality, partTimes, keyTimes, codec, connection));
 
     await connection.waitForFirstSegment();
     return playlist.join('\n');
@@ -218,7 +219,7 @@ export class TranscodingService extends BaseService {
     codec: VideoCodec,
     connection: HLSConnection,
   ) {
-    this.logger.debug(`Started transcoding video ${id}`);
+    this.logger.debug(`Started transcoding video ${path}, requested codec ${codec}, quality ${quality}`);
     await fs.mkdir(`/tmp/video/${id}/`, { mode: 0o700, recursive: true });
 
     const config = await this.getConfig({ withCache: true });
@@ -264,6 +265,8 @@ export class TranscodingService extends BaseService {
       '-segment_format', 'mp4',
       '-segment_list_type', 'csv',
 
+      '-threads', '1',
+
       '-copyts',
       '-start_at_zero',
       '-muxdelay', '0',
@@ -274,7 +277,7 @@ export class TranscodingService extends BaseService {
 
       '-segment_header_filename', `/tmp/video/${id}/init.mp4`,
       '-segment_format_options', 'movflags=dash+skip_sidx',
-      '-segment_list', 'pipe:0',
+      '-segment_list', 'pipe:1',
 
       '-strict', '-2',
       `/tmp/video/${id}/%d.mp4`,
@@ -283,13 +286,16 @@ export class TranscodingService extends BaseService {
 
     s.stdout.on('data', (bytes) => {
       const data = bytes.toString('utf8');
-      const idx = data.split(',')[0];
+      for(const line of data.split('\n')) {
+        if(line) {
+          const name = line.split(',')[0];
+          const idx = name.split('.')[0];
 
-      if (data) {
-        if(idx == 0) {
-          connection.transcoderFirstSegmentReady();
+          if (idx == '0') {
+            connection.transcoderFirstSegmentReady();
+          }
+          this.logger.debug(`Segment ${idx} ready`);
         }
-        this.logger.debug(`Segment ${idx} ready`);
       }
     });
     const log = createWriteStream(`/tmp/video/${id}/transcoding.log`);

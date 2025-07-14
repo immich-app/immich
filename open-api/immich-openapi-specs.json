@@ -5199,7 +5199,7 @@
         ]
       }
     },
-    "/playback/{secret}/{quality}/{name}.mp4": {
+    "/playback/{secret}/{codec}/{quality}/{name}.mp4": {
       "get": {
         "operationId": "getVideoPart",
         "parameters": [

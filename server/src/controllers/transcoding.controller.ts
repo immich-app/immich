@@ -46,12 +46,12 @@ export class TranscodingController {
     return await this.service.getPlaylist(data.id, data.sessionId, codec, quality, start == 1);
   }
 
-  @Get(':secret/:quality/:name.mp4')
+  @Get(':secret/:codec/:quality/:name.mp4')
   @FileResponse()
   async getVideoPart(@Param() { secret, name }: PartParamDto, @Res() res: Response, @Next() next: NextFunction) {
     let data;
     try {
-      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as JwtPayload | { id: string };
+      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as JwtPayload | { id: string, sessionId: string };
     } catch (error: any) {
       throw error instanceof JsonWebTokenError ? new UnauthorizedException() : error;
     }
@@ -66,7 +66,7 @@ export class TranscodingController {
         // eslint-disable-next-line @typescript-eslint/require-await
         async () => {
           return {
-            path: `/tmp/video/${sanitize(data['id'])}/${sanitize(arr[0])}.mp4`,
+            path: `/tmp/video/${sanitize(data['sessionId'])}/${sanitize(arr[0])}.mp4`,
             cacheControl: CacheControl.PRIVATE_WITH_CACHE,
             contentType: 'video/mp4',
           };
@@ -79,7 +79,7 @@ export class TranscodingController {
     // Make full segment by joining parts
     for (const name of arr) {
       await new Promise<void>((resolve) => {
-        const buf = fs.createReadStream(`/tmp/video/${sanitize(data['id'])}/${sanitize(name)}.mp4`);
+        const buf = fs.createReadStream(`/tmp/video/${sanitize(data['sessionId'])}/${sanitize(name)}.mp4`);
         buf.pipe(res, { end: false });
         buf.on('end', () => {
           resolve();
