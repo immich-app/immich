@@ -380,6 +380,8 @@ export class JobService extends BaseService {
                 deletedAt: asset.deletedAt,
                 isFavorite: asset.isFavorite,
                 visibility: asset.visibility,
+                livePhotoVideoId: asset.livePhotoVideoId,
+                stackId: asset.stackId,
               },
               exif: {
                 assetId: exif.assetId,
