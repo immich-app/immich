@@ -14,32 +14,26 @@ class StackCreateDto {
   /// Returns a new [StackCreateDto] instance.
   StackCreateDto({
     this.assetIds = const [],
-    this.merge = true,
   });
 
   /// first asset becomes the primary
   List<String> assetIds;
 
-  bool merge;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is StackCreateDto &&
-    _deepEquality.equals(other.assetIds, assetIds) &&
-    other.merge == merge;
+    _deepEquality.equals(other.assetIds, assetIds);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (assetIds.hashCode) +
-    (merge.hashCode);
+    (assetIds.hashCode);
 
   @override
-  String toString() => 'StackCreateDto[assetIds=$assetIds, merge=$merge]';
+  String toString() => 'StackCreateDto[assetIds=$assetIds]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetIds'] = this.assetIds;
-      json[r'merge'] = this.merge;
     return json;
   }
 
@@ -55,7 +49,6 @@ class StackCreateDto {
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        merge: mapValueOfType<bool>(json, r'merge') ?? true,
       );
     }
     return null;
