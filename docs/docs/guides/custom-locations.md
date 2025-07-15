@@ -15,6 +15,8 @@ In our `.env` file, we will define the paths we want to use. Note that you don't
 - UPLOAD_LOCATION=./library
 + UPLOAD_LOCATION=/custom/path/immich/immich_files
 + THUMB_LOCATION=/custom/path/immich/thumbs
++ THUMB_SMALL_LOCATION=/custom/path/immich/small-thumbnails
++ THUMB_PEOPLE_LOCATION=/custom/path/immich/people-thumbnails
 + ENCODED_VIDEO_LOCATION=/custom/path/immich/encoded-video
 + PROFILE_LOCATION=/custom/path/immich/profile
 + BACKUP_LOCATION=/custom/path/immich/backups
@@ -29,6 +31,8 @@ services:
       volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
 +     - ${THUMB_LOCATION}:/usr/src/app/upload/thumbs
++     - ${THUMB_SMALL_LOCATION}:/usr/src/app/upload/thumbs/thumbnails
++     - ${THUMB_PEOPLE_LOCATION}:/usr/src/app/upload/thumbs/people
 +     - ${ENCODED_VIDEO_LOCATION}:/usr/src/app/upload/encoded-video
 +     - ${PROFILE_LOCATION}:/usr/src/app/upload/profile
 +     - ${BACKUP_LOCATION}:/usr/src/app/upload/backups
@@ -46,7 +50,8 @@ docker compose up -d
 Because of the underlying properties of docker bind mounts, it is not recommended to mount the `upload/` and `library/` folders as separate bind mounts if they are on the same device.
 For this reason, we mount the HDD or the network storage (NAS) to `/usr/src/app/upload` and then mount the folders we want to access under that folder.
 
-The `thumbs/` folder contains both the small thumbnails displayed in the timeline and the larger previews shown when clicking into an image. These cannot be separated.
+Normally, the `thumbs/` folder contains all thumbnails such as the small thumbnails displayed in the timeline and the larger previews shown when clicking into an image.
+You can also specify the location of the `thumbs/thumbnails` and `thumbs/people` folders. For example, you could put these folders on a small SSD for snappy loading while the other assets (like the larger previews) can be on a bigger HDD.
 
 The storage metrics of the Immich server will track available storage at `UPLOAD_LOCATION`, so the administrator must set up some sort of monitoring to ensure the storage does not run out of space. The `profile/` folder is much smaller, usually less than 1 MB.
 :::
