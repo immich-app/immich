@@ -152,4 +152,14 @@ class ActionService {
 
     return removedCount;
   }
+
+  Future<void> stack(String userId, List<String> remoteIds) async {
+    final stack = await _assetApiRepository.stack(remoteIds);
+    await _remoteAssetRepository.stack(userId, stack);
+  }
+
+  Future<void> unStack(List<String> stackIds) async {
+    await _remoteAssetRepository.unStack(stackIds);
+    await _assetApiRepository.unStack(stackIds);
+  }
 }

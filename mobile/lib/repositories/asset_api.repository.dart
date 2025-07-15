@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/stack.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
@@ -10,14 +11,16 @@ final assetApiRepositoryProvider = Provider(
   (ref) => AssetApiRepository(
     ref.watch(apiServiceProvider).assetsApi,
     ref.watch(apiServiceProvider).searchApi,
+    ref.watch(apiServiceProvider).stacksApi,
   ),
 );
 
 class AssetApiRepository extends ApiRepository {
   final AssetsApi _api;
   final SearchApi _searchApi;
+  final StacksApi _stacksApi;
 
-  AssetApiRepository(this._api, this._searchApi);
+  AssetApiRepository(this._api, this._searchApi, this._stacksApi);
 
   Future<Asset> update(String id, {String? description}) async {
     final response = await checkNull(
@@ -83,6 +86,16 @@ class AssetApiRepository extends ApiRepository {
     );
   }
 
+  Future<StackResponse> stack(List<String> ids) async {
+    final responseDto = await checkNull(_stacksApi.createStack(StackCreateDto(assetIds: ids)));
+
+    return responseDto.toStack();
+  }
+
+  Future<void> unStack(List<String> ids) async {
+    return _stacksApi.deleteStacks(BulkIdsDto(ids: ids));
+  }
+
   _mapVisibility(AssetVisibilityEnum visibility) => switch (visibility) {
         AssetVisibilityEnum.timeline => AssetVisibility.timeline,
         AssetVisibilityEnum.hidden => AssetVisibility.hidden,
@@ -95,5 +108,15 @@ class AssetApiRepository extends ApiRepository {
 
     // we need to get the MIME of the thumbnail once that gets added to the API
     return response.originalMimeType;
+  }
+}
+
+extension on StackResponseDto {
+  StackResponse toStack() {
+    return StackResponse(
+      id: id,
+      primaryAssetId: primaryAssetId,
+      assetIds: assets.map((asset) => asset.id).toList(),
+    );
   }
 }

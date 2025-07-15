@@ -1,11 +1,13 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
+import 'package:immich_mobile/domain/models/stack.model.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart'
     hide ExifInfo;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -185,6 +187,55 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
           where: (e) => e.assetId.equals(id),
         );
       }
+    });
+  }
+
+  Future<void> stack(String userId, StackResponse stack) {
+    return _db.transaction(() async {
+      final stackIds = await _db.managers.stackEntity
+        .filter((row) => row.primaryAssetId.id.isIn(stack.assetIds))
+        .map((row) => row.id)
+        .get();
+
+      await _db.stackEntity.deleteWhere((row) => row.id.isIn(stackIds));
+
+      await _db.batch((batch) {
+        final companion = StackEntityCompanion(
+          ownerId: Value(userId),
+          primaryAssetId: Value(stack.primaryAssetId),
+        );
+
+        batch.insert(
+          _db.stackEntity,
+          companion.copyWith(id: Value(stack.id)),
+          onConflict: DoUpdate((_) => companion),
+        );
+
+        for (final assetId in stack.assetIds) {
+          batch.update(
+            _db.remoteAssetEntity,
+            RemoteAssetEntityCompanion(
+              stackId: Value(stack.id),
+            ),
+            where: (e) => e.id.equals(assetId),
+          );
+        }
+      });
+    });
+  }
+
+  Future<void> unStack(List<String> stackIds) {
+    return _db.transaction(() async {
+      await _db.stackEntity.deleteWhere((row) => row.id.isIn(stackIds));
+
+      // TODO: delete this after adding foreign key on stackId
+      await _db.batch((batch) {
+        batch.update(
+          _db.remoteAssetEntity,
+          const RemoteAssetEntityCompanion(stackId: Value(null)),
+          where: (e) => e.stackId.isIn(stackIds),
+        );
+      });
     });
   }
 }

@@ -44,11 +44,18 @@ class ActionNotifier extends Notifier<void> {
     return _getIdsForSource<RemoteAsset>(source).toIds().toList();
   }
 
-  List<String> _getOwnedRemoteForSource(ActionSource source) {
+  List<String> _getOwnedRemoteIdsForSource(ActionSource source) {
     final ownerId = ref.read(currentUserProvider)?.id;
     return _getIdsForSource<RemoteAsset>(source)
         .ownedAssets(ownerId)
         .toIds()
+        .toList();
+  }
+
+  List<RemoteAsset> _getOwnedRemoteAssetsForSource(ActionSource source) {
+    final ownerId = ref.read(currentUserProvider)?.id;
+    return _getIdsForSource<RemoteAsset>(source)
+        .ownedAssets(ownerId)
         .toList();
   }
 
@@ -88,7 +95,7 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> favorite(ActionSource source) async {
-    final ids = _getOwnedRemoteForSource(source);
+    final ids = _getOwnedRemoteIdsForSource(source);
     try {
       await _service.favorite(ids);
       return ActionResult(count: ids.length, success: true);
@@ -103,7 +110,7 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> unFavorite(ActionSource source) async {
-    final ids = _getOwnedRemoteForSource(source);
+    final ids = _getOwnedRemoteIdsForSource(source);
     try {
       await _service.unFavorite(ids);
       return ActionResult(count: ids.length, success: true);
@@ -118,7 +125,7 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> archive(ActionSource source) async {
-    final ids = _getOwnedRemoteForSource(source);
+    final ids = _getOwnedRemoteIdsForSource(source);
     try {
       await _service.archive(ids);
       return ActionResult(count: ids.length, success: true);
@@ -133,7 +140,7 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> unArchive(ActionSource source) async {
-    final ids = _getOwnedRemoteForSource(source);
+    final ids = _getOwnedRemoteIdsForSource(source);
     try {
       await _service.unArchive(ids);
       return ActionResult(count: ids.length, success: true);
@@ -148,7 +155,7 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> moveToLockFolder(ActionSource source) async {
-    final ids = _getOwnedRemoteForSource(source);
+    final ids = _getOwnedRemoteIdsForSource(source);
     try {
       await _service.moveToLockFolder(ids);
       return ActionResult(count: ids.length, success: true);
@@ -163,7 +170,7 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> removeFromLockFolder(ActionSource source) async {
-    final ids = _getOwnedRemoteForSource(source);
+    final ids = _getOwnedRemoteIdsForSource(source);
     try {
       await _service.removeFromLockFolder(ids);
       return ActionResult(count: ids.length, success: true);
@@ -178,7 +185,7 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> trash(ActionSource source) async {
-    final ids = _getOwnedRemoteForSource(source);
+    final ids = _getOwnedRemoteIdsForSource(source);
     try {
       await _service.trash(ids);
       return ActionResult(count: ids.length, success: true);
@@ -193,7 +200,7 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> delete(ActionSource source) async {
-    final ids = _getOwnedRemoteForSource(source);
+    final ids = _getOwnedRemoteIdsForSource(source);
     try {
       await _service.delete(ids);
       return ActionResult(count: ids.length, success: true);
@@ -211,7 +218,7 @@ class ActionNotifier extends Notifier<void> {
     ActionSource source,
     BuildContext context,
   ) async {
-    final ids = _getOwnedRemoteForSource(source);
+    final ids = _getOwnedRemoteIdsForSource(source);
     try {
       final isEdited = await _service.editLocation(ids, context);
       if (!isEdited) {
@@ -241,6 +248,36 @@ class ActionNotifier extends Notifier<void> {
       _logger.severe('Failed to remove assets from album', error, stack);
       return ActionResult(
         count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
+
+  Future<ActionResult> stack(String userId, ActionSource source) async {
+    final ids = _getOwnedRemoteIdsForSource(source);
+    try {
+      await _service.stack(userId, ids);
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to stack assets', error, stack);
+      return ActionResult(
+        count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
+
+  Future<ActionResult> unStack(ActionSource source) async {
+    final assets = _getOwnedRemoteAssetsForSource(source);
+    try {
+      await _service.unStack(assets.map((e) => e.stackId).nonNulls.toList());
+      return ActionResult(count: assets.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to unstack assets', error, stack);
+      return ActionResult(
+        count: assets.length,
         success: false,
         error: error.toString(),
       );
