@@ -14,4 +14,8 @@ class LocalAlbumService {
   Future<LocalAsset?> getThumbnail(String albumId) {
     return _repository.getThumbnail(albumId);
   }
+
+  Future<int> getCount() {
+    return _repository.getCount();
+  }
 }

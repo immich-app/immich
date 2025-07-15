@@ -58,6 +58,10 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
 
     return memoriesMap.values.toList();
   }
+
+  Future<int> getCount() {
+    return _db.managers.memoryEntity.count();
+  }
 }
 
 extension on MemoryEntityData {

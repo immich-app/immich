@@ -380,6 +380,10 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
 
     return results.isNotEmpty ? results.first : null;
   }
+
+  Future<int> getCount() {
+    return _db.managers.localAlbumEntity.count();
+  }
 }
 
 extension on LocalAlbumEntityData {
