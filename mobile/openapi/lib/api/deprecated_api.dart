@@ -16,6 +16,51 @@ class DeprecatedApi {
 
   final ApiClient apiClient;
 
+  /// This property was deprecated in v1.135.3
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> deleteStackWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/stacks/{id}'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This property was deprecated in v1.135.3
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> deleteStack(String id,) async {
+    final response = await deleteStackWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// This property was deprecated in v1.116.0
   ///
   /// Note: This method returns the HTTP [Response].

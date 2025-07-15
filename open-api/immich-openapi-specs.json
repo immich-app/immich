@@ -6623,6 +6623,8 @@
     },
     "/stacks/{id}": {
       "delete": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.135.3",
         "operationId": "deleteStack",
         "parameters": [
           {
@@ -6652,8 +6654,12 @@
           }
         ],
         "tags": [
-          "Stacks"
-        ]
+          "Stacks",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.135.3"
+        }
       },
       "get": {
         "operationId": "getStack",

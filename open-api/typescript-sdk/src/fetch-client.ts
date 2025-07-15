@@ -3342,6 +3342,9 @@ export function createStack({ stackCreateDto }: {
         body: stackCreateDto
     })));
 }
+/**
+ * This property was deprecated in v1.135.3
+ */
 export function deleteStack({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {

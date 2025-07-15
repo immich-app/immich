@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { EndpointLifecycle } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { StackCreateDto, StackResponseDto, StackSearchDto, StackUpdateDto } from 'src/dtos/stack.dto';
@@ -51,6 +52,7 @@ export class StackController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.STACK_DELETE })
+  @EndpointLifecycle({ deprecatedAt: 'v1.135.3' })
   deleteStack(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

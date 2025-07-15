@@ -63,7 +63,10 @@ class StacksApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /stacks/{id}' operation and returns the [Response].
+  /// This property was deprecated in v1.135.3
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -93,6 +96,8 @@ class StacksApi {
     );
   }
 
+  /// This property was deprecated in v1.135.3
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
