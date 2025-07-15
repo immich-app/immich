@@ -5,7 +5,7 @@ import { createWriteStream } from 'node:fs';
 import fs from 'node:fs/promises';
 import { OnEvent } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetType, Permission, TranscodeTarget, VideoCodec } from 'src/enum';
+import { AssetType, AudioCodec, Permission, TranscodeTarget, VideoCodec } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { VideoInfo, VideoInterfaces } from 'src/types';
 import { BaseConfig } from 'src/utils/media';
@@ -163,12 +163,11 @@ export class TranscodingService extends BaseService {
     let prevPartIdx = 0;
 
     const original = quality == 'original';
-    frames.push(frames[frames.length - 1]);
     for (let i = 1; i < frames.length - 1; i++) {
       const isKf = frames[i] <= 0;
       frames[i] = Math.abs(frames[i]);
       if (!original && (frames[i] - prevPart > 0.5 || isKf)) {
-        partTimes.push(frames[i + 1]);
+        partTimes.push(i + 1);
 
         playlist.push(
           `#EXT-X-PART:DURATION=${(frames[i] - prevPart).toFixed(20)},URI="${quality}/${partIdx++}.mp4"${prevPart === prevSeg ? ',INDEPENDENT=YES' : ''}`,
@@ -178,7 +177,7 @@ export class TranscodingService extends BaseService {
 
       if (isKf && frames[i] - prevSeg > 10) {
         if (original) {
-          partTimes.push(frames[i]);
+          partTimes.push(i);
         }
 
         keyTimes.push(frames[i]);
@@ -224,6 +223,7 @@ export class TranscodingService extends BaseService {
 
     const config = await this.getConfig({ withCache: true });
     const liveFfmpeg = { ...config.liveFfmpeg };
+    liveFfmpeg.targetAudioCodec = AudioCodec.LIBOPUS;
     liveFfmpeg.targetVideoCodec = codec;
 
     const stats = await this.mediaRepository.probe(path);
@@ -247,18 +247,23 @@ export class TranscodingService extends BaseService {
         args.push(...option.split(' '));
       }
       args.push('-i', path);
+      args.push(
+        '-start_at_zero',
+        '-copyts',
+        '-muxdelay', '0',
+      );
       for (const option of options.outputOptions) {
         args.push(...option.split(' '));
       }
 
       // prettier-ignore
       args.push(
-        '-vcodec', codec.toString(),
         //'-vf', `scale=${quality}:-2`,
         '-maxrate', '4000k',
-        '-bufsize', '1835k',
+        '-bufsize', '20000k',
       );
     }
+
     // prettier-ignore
     args.push(
       '-f', 'segment',
@@ -267,19 +272,14 @@ export class TranscodingService extends BaseService {
 
       '-threads', '1',
 
-      '-copyts',
-      '-start_at_zero',
-      '-muxdelay', '0',
-
       '-break_non_keyframes', '1',
-      '-segment_times', partTimes.join(','),
+      '-segment_frames', partTimes.join(','),
       '-force_key_frames', keyTimes.join(','),
 
       '-segment_header_filename', `/tmp/video/${id}/init.mp4`,
       '-segment_format_options', 'movflags=dash+skip_sidx',
       '-segment_list', 'pipe:1',
 
-      '-strict', '-2',
       `/tmp/video/${id}/%d.mp4`,
     );
     const s = child_process.spawn('ffmpeg', args);
