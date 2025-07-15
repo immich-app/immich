@@ -17,15 +17,15 @@ export class DownloadService extends BaseService {
 
     if (dto.assetIds) {
       const assetIds = dto.assetIds;
-      await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: assetIds });
+      await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: assetIds });
       assets = this.downloadRepository.downloadAssetIds(assetIds);
     } else if (dto.albumId) {
       const albumId = dto.albumId;
-      await this.requireAccess({ auth, permission: Permission.ALBUM_DOWNLOAD, ids: [albumId] });
+      await this.requireAccess({ auth, permission: Permission.AlbumDownload, ids: [albumId] });
       assets = this.downloadRepository.downloadAlbumId(albumId);
     } else if (dto.userId) {
       const userId = dto.userId;
-      await this.requireAccess({ auth, permission: Permission.TIMELINE_DOWNLOAD, ids: [userId] });
+      await this.requireAccess({ auth, permission: Permission.TimelineDownload, ids: [userId] });
       assets = this.downloadRepository.downloadUserId(userId);
     } else {
       throw new BadRequestException('assetIds, albumId, or userId is required');
@@ -81,7 +81,7 @@ export class DownloadService extends BaseService {
   }
 
   async downloadArchive(auth: AuthDto, dto: AssetIdsDto): Promise<ImmichReadStream> {
-    await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: dto.assetIds });
+    await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: dto.assetIds });
 
     const zip = this.storageRepository.createZipStream();
     const assets = await this.assetRepository.getByIds(dto.assetIds);

@@ -109,14 +109,14 @@ export class DuplicateRepository {
         assetId: DummyValue.UUID,
         embedding: DummyValue.VECTOR,
         maxDistance: 0.6,
-        type: AssetType.IMAGE,
+        type: AssetType.Image,
         userIds: [DummyValue.UUID],
       },
     ],
   })
   search({ assetId, embedding, maxDistance, type, userIds }: DuplicateSearch) {
     return this.db.transaction().execute(async (trx) => {
-      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
       return await trx
         .with('cte', (qb) =>
           qb

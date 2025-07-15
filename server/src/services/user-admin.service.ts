@@ -100,11 +100,11 @@ export class UserAdminService extends BaseService {
 
     await this.albumRepository.softDeleteAll(id);
 
-    const status = force ? UserStatus.REMOVING : UserStatus.DELETED;
+    const status = force ? UserStatus.Removing : UserStatus.Deleted;
     const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
 
     if (force) {
-      await this.jobRepository.queue({ name: JobName.USER_DELETION, data: { id: user.id, force } });
+      await this.jobRepository.queue({ name: JobName.UserDeletion, data: { id: user.id, force } });
     }
 
     return mapUserAdmin(user);
@@ -134,7 +134,7 @@ export class UserAdminService extends BaseService {
     const newPreferences = mergePreferences(getPreferences(metadata), dto);
 
     await this.userRepository.upsertMetadata(id, {
-      key: UserMetadataKey.PREFERENCES,
+      key: UserMetadataKey.Preferences,
       value: getPreferencesPartial(newPreferences),
     });
 

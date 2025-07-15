@@ -640,7 +640,7 @@ export class SyncService extends BaseService {
   async getFullSync(auth: AuthDto, dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
     // mobile implementation is faster if this is a single id
     const userId = dto.userId || auth.user.id;
-    await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: [userId] });
+    await this.requireAccess({ auth, permission: Permission.TimelineRead, ids: [userId] });
     const assets = await this.assetRepository.getAllForUserFullSync({
       ownerId: userId,
       updatedUntil: dto.updatedUntil,
@@ -664,7 +664,7 @@ export class SyncService extends BaseService {
       return FULL_SYNC;
     }
 
-    await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: dto.userIds });
+    await this.requireAccess({ auth, permission: Permission.TimelineRead, ids: dto.userIds });
 
     const limit = 10_000;
     const upserted = await this.assetRepository.getChangedDeltaSync({ limit, updatedAfter: dto.updatedAfter, userIds });
@@ -676,8 +676,8 @@ export class SyncService extends BaseService {
 
     const deleted = await this.auditRepository.getAfter(dto.updatedAfter, {
       userIds,
-      entityType: EntityType.ASSET,
-      action: DatabaseAction.DELETE,
+      entityType: EntityType.Asset,
+      action: DatabaseAction.Delete,
     });
 
     const result = {
@@ -686,7 +686,7 @@ export class SyncService extends BaseService {
         // do not return archived assets for partner users
         .filter(
           (a) =>
-            a.ownerId === auth.user.id || (a.ownerId !== auth.user.id && a.visibility === AssetVisibility.TIMELINE),
+            a.ownerId === auth.user.id || (a.ownerId !== auth.user.id && a.visibility === AssetVisibility.Timeline),
         )
         .map((a) =>
           mapAsset(a, {

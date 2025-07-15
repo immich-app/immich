@@ -19,7 +19,7 @@ export class MemoryRepository implements IBulkAsset {
       .deleteFrom('memory_asset')
       .using('asset')
       .whereRef('memory_asset.assetsId', '=', 'asset.id')
-      .where('asset.visibility', '!=', AssetVisibility.TIMELINE)
+      .where('asset.visibility', '!=', AssetVisibility.Timeline)
       .execute();
 
     return this.db
@@ -67,7 +67,7 @@ export class MemoryRepository implements IBulkAsset {
             .innerJoin('memory_asset', 'asset.id', 'memory_asset.assetsId')
             .whereRef('memory_asset.memoriesId', '=', 'memory.id')
             .orderBy('asset.fileCreatedAt', 'asc')
-            .where('asset.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
+            .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
             .where('asset.deletedAt', 'is', null),
         ).as('assets'),
       )
@@ -158,7 +158,7 @@ export class MemoryRepository implements IBulkAsset {
             .innerJoin('memory_asset', 'asset.id', 'memory_asset.assetsId')
             .whereRef('memory_asset.memoriesId', '=', 'memory.id')
             .orderBy('asset.fileCreatedAt', 'asc')
-            .where('asset.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
+            .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
             .where('asset.deletedAt', 'is', null),
         ).as('assets'),
       )

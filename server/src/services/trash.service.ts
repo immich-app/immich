@@ -15,7 +15,7 @@ export class TrashService extends BaseService {
       return { count: 0 };
     }
 
-    await this.requireAccess({ auth, permission: Permission.ASSET_DELETE, ids });
+    await this.requireAccess({ auth, permission: Permission.AssetDelete, ids });
     await this.trashRepository.restoreAll(ids);
     await this.eventRepository.emit('AssetRestoreAll', { assetIds: ids, userId: auth.user.id });
 
@@ -35,17 +35,17 @@ export class TrashService extends BaseService {
   async empty(auth: AuthDto): Promise<TrashResponseDto> {
     const count = await this.trashRepository.empty(auth.user.id);
     if (count > 0) {
-      await this.jobRepository.queue({ name: JobName.QUEUE_TRASH_EMPTY, data: {} });
+      await this.jobRepository.queue({ name: JobName.QueueTrashEmpty, data: {} });
     }
     return { count };
   }
 
   @OnEvent({ name: 'AssetDeleteAll' })
   async onAssetsDelete() {
-    await this.jobRepository.queue({ name: JobName.QUEUE_TRASH_EMPTY, data: {} });
+    await this.jobRepository.queue({ name: JobName.QueueTrashEmpty, data: {} });
   }
 
-  @OnJob({ name: JobName.QUEUE_TRASH_EMPTY, queue: QueueName.BACKGROUND_TASK })
+  @OnJob({ name: JobName.QueueTrashEmpty, queue: QueueName.BackgroundTask })
   async handleQueueEmptyTrash() {
     const assets = this.trashRepository.getDeletedIds();
 
@@ -67,14 +67,14 @@ export class TrashService extends BaseService {
 
     this.logger.log(`Queued ${count} asset(s) for deletion from the trash`);
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   private async handleBatch(ids: string[]) {
     this.logger.debug(`Queueing ${ids.length} asset(s) for deletion from the trash`);
     await this.jobRepository.queueAll(
       ids.map((assetId) => ({
-        name: JobName.ASSET_DELETION,
+        name: JobName.AssetDeletion,
         data: {
           id: assetId,
           deleteOnDisk: true,

@@ -166,7 +166,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
           continue;
         }
 
-        const event = reflector.get<EventConfig>(MetadataKey.EVENT_CONFIG, handler);
+        const event = reflector.get<EventConfig>(MetadataKey.EventConfig, handler);
         if (!event) {
           continue;
         }

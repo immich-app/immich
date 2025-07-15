@@ -230,13 +230,13 @@ export class AssetRepository {
                 .where('asset_job_status.previewAt', 'is not', null)
                 .where(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
                 .where('asset.ownerId', '=', anyUuid(ownerIds))
-                .where('asset.visibility', '=', AssetVisibility.TIMELINE)
+                .where('asset.visibility', '=', AssetVisibility.Timeline)
                 .where((eb) =>
                   eb.exists((qb) =>
                     qb
                       .selectFrom('asset_file')
                       .whereRef('assetId', '=', 'asset.id')
-                      .where('asset_file.type', '=', AssetFileType.PREVIEW),
+                      .where('asset_file.type', '=', AssetFileType.Preview),
                   ),
                 )
                 .where('asset.deletedAt', 'is', null)
@@ -318,7 +318,7 @@ export class AssetRepository {
       .select(['deviceAssetId'])
       .where('ownerId', '=', asUuid(ownerId))
       .where('deviceId', '=', deviceId)
-      .where('visibility', '!=', AssetVisibility.HIDDEN)
+      .where('visibility', '!=', AssetVisibility.Hidden)
       .where('deletedAt', 'is', null)
       .execute();
 
@@ -363,7 +363,7 @@ export class AssetRepository {
                     .whereRef('stacked.stackId', '=', 'stack.id')
                     .whereRef('stacked.id', '!=', 'stack.primaryAssetId')
                     .where('stacked.deletedAt', 'is', null)
-                    .where('stacked.visibility', '=', AssetVisibility.TIMELINE)
+                    .where('stacked.visibility', '=', AssetVisibility.Timeline)
                     .groupBy('stack.id')
                     .as('stacked_assets'),
                 (join) => join.on('stack.id', 'is not', null),
@@ -463,15 +463,15 @@ export class AssetRepository {
   getStatistics(ownerId: string, { visibility, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {
     return this.db
       .selectFrom('asset')
-      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.AUDIO).as(AssetType.AUDIO))
-      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.IMAGE).as(AssetType.IMAGE))
-      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
-      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.Audio).as(AssetType.Audio))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.Image).as(AssetType.Image))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.Video).as(AssetType.Video))
+      .select((eb) => eb.fn.countAll<number>().filterWhere('type', '=', AssetType.Other).as(AssetType.Other))
       .where('ownerId', '=', asUuid(ownerId))
       .$if(visibility === undefined, withDefaultVisibility)
       .$if(!!visibility, (qb) => qb.where('asset.visibility', '=', visibility!))
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
-      .$if(!!isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.DELETED))
+      .$if(!!isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
       .where('deletedAt', isTrashed ? 'is not' : 'is', null)
       .executeTakeFirstOrThrow();
   }
@@ -496,7 +496,7 @@ export class AssetRepository {
         qb
           .selectFrom('asset')
           .select(truncatedDate<Date>().as('timeBucket'))
-          .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.DELETED))
+          .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility === undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
@@ -606,7 +606,7 @@ export class AssetRepository {
                     .select(sql`array[stacked."stackId"::text, count('stacked')::text]`.as('stack'))
                     .whereRef('stacked.stackId', '=', 'asset.stackId')
                     .where('stacked.deletedAt', 'is', null)
-                    .where('stacked.visibility', '=', AssetVisibility.TIMELINE)
+                    .where('stacked.visibility', '=', AssetVisibility.Timeline)
                     .groupBy('stacked.stackId')
                     .as('stacked_assets'),
                 (join) => join.onTrue(),
@@ -617,7 +617,7 @@ export class AssetRepository {
           .$if(options.isDuplicate !== undefined, (qb) =>
             qb.where('asset.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
           )
-          .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.DELETED))
+          .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
           .orderBy('asset.fileCreatedAt', options.order ?? 'desc'),
       )
@@ -671,8 +671,8 @@ export class AssetRepository {
       .select(['assetId as data', 'asset_exif.city as value'])
       .$narrowType<{ value: NotNull }>()
       .where('ownerId', '=', asUuid(ownerId))
-      .where('visibility', '=', AssetVisibility.TIMELINE)
-      .where('type', '=', AssetType.IMAGE)
+      .where('visibility', '=', AssetVisibility.Timeline)
+      .where('type', '=', AssetType.Image)
       .where('deletedAt', 'is', null)
       .limit(maxFields)
       .execute();
@@ -710,7 +710,7 @@ export class AssetRepository {
       )
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).$castTo<Stack | null>().as('stack'))
       .where('asset.ownerId', '=', asUuid(ownerId))
-      .where('asset.visibility', '!=', AssetVisibility.HIDDEN)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .where('asset.updatedAt', '<=', updatedUntil)
       .$if(!!lastId, (qb) => qb.where('asset.id', '>', lastId!))
       .orderBy('asset.id')
@@ -738,7 +738,7 @@ export class AssetRepository {
       )
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets').$castTo<Stack | null>()).as('stack'))
       .where('asset.ownerId', '=', anyUuid(options.userIds))
-      .where('asset.visibility', '!=', AssetVisibility.HIDDEN)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .where('asset.updatedAt', '>', options.updatedAfter)
       .limit(options.limit)
       .execute();

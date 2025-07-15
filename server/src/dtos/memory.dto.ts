@@ -50,7 +50,7 @@ export class MemoryCreateDto extends MemoryBaseDto {
   @ValidateNested()
   @Type((options) => {
     switch (options?.object.type) {
-      case MemoryType.ON_THIS_DAY: {
+      case MemoryType.OnThisDay: {
         return OnThisDayDto;
       }
 

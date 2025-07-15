@@ -17,7 +17,7 @@ export class StorageService extends BaseService {
 
     await this.databaseRepository.withLock(DatabaseLock.SystemFileMounts, async () => {
       const flags =
-        (await this.systemMetadataRepository.get(SystemMetadataKey.SYSTEM_FLAGS)) ||
+        (await this.systemMetadataRepository.get(SystemMetadataKey.SystemFlags)) ||
         ({ mountChecks: {} } as SystemFlags);
 
       if (!flags.mountChecks) {
@@ -46,7 +46,7 @@ export class StorageService extends BaseService {
         }
 
         if (updated) {
-          await this.systemMetadataRepository.set(SystemMetadataKey.SYSTEM_FLAGS, flags);
+          await this.systemMetadataRepository.set(SystemMetadataKey.SystemFlags, flags);
           this.logger.log('Successfully enabled system mount folders checks');
         }
 
@@ -62,8 +62,8 @@ export class StorageService extends BaseService {
     });
   }
 
-  @OnJob({ name: JobName.DELETE_FILES, queue: QueueName.BACKGROUND_TASK })
-  async handleDeleteFiles(job: JobOf<JobName.DELETE_FILES>): Promise<JobStatus> {
+  @OnJob({ name: JobName.DeleteFiles, queue: QueueName.BackgroundTask })
+  async handleDeleteFiles(job: JobOf<JobName.DeleteFiles>): Promise<JobStatus> {
     const { files } = job;
 
     // TODO: one job per file
@@ -79,7 +79,7 @@ export class StorageService extends BaseService {
       }
     }
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   private async verifyReadAccess(folder: StorageFolder) {
