@@ -179,6 +179,14 @@ class SyncStreamService {
           data.cast(),
           debugLabel: 'partner',
         );
+      case SyncEntityType.userMetadataV1:
+        return _syncStreamRepository.updateUserMetadatasV1(
+          data.cast(),
+        );
+      case SyncEntityType.userMetadataDeleteV1:
+        return _syncStreamRepository.deleteUserMetadatasV1(
+          data.cast(),
+        );
       default:
         _logger.warning("Unknown sync data type: $type");
     }
