@@ -24,7 +24,8 @@ class StackActionButton extends ConsumerWidget {
       throw Exception('User must be logged in to access stack action');
     }
 
-    final result = await ref.read(actionProvider.notifier).stack(user.id, source);
+    final result =
+        await ref.read(actionProvider.notifier).stack(user.id, source);
     ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'stack_action_prompt'.t(

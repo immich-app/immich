@@ -193,9 +193,9 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
   Future<void> stack(String userId, StackResponse stack) {
     return _db.transaction(() async {
       final stackIds = await _db.managers.stackEntity
-        .filter((row) => row.primaryAssetId.id.isIn(stack.assetIds))
-        .map((row) => row.id)
-        .get();
+          .filter((row) => row.primaryAssetId.id.isIn(stack.assetIds))
+          .map((row) => row.id)
+          .get();
 
       await _db.stackEntity.deleteWhere((row) => row.id.isIn(stackIds));
 

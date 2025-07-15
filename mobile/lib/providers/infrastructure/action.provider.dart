@@ -54,9 +54,7 @@ class ActionNotifier extends Notifier<void> {
 
   List<RemoteAsset> _getOwnedRemoteAssetsForSource(ActionSource source) {
     final ownerId = ref.read(currentUserProvider)?.id;
-    return _getIdsForSource<RemoteAsset>(source)
-        .ownedAssets(ownerId)
-        .toList();
+    return _getIdsForSource<RemoteAsset>(source).ownedAssets(ownerId).toList();
   }
 
   Iterable<T> _getIdsForSource<T extends BaseAsset>(ActionSource source) {
