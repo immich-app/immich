@@ -60,7 +60,7 @@ export class StackRepository {
       .execute();
   }
 
-  async create(entity: Omit<Insertable<StackTable>, 'primaryAssetId'>, assetIds: string[], merge: boolean = true) {
+  async create(entity: Omit<Insertable<StackTable>, 'primaryAssetId'>, assetIds: string[]) {
     return this.db.transaction().execute(async (tx) => {
       const stacks = await tx
         .selectFrom('stack')
@@ -81,12 +81,10 @@ export class StackRepository {
       const uniqueIds = new Set<string>(assetIds);
 
       // children
-      if (merge) {
-        for (const stack of stacks) {
-          if (stack.assets && stack.assets.length > 0) {
-            for (const asset of stack.assets) {
-              uniqueIds.add(asset.id);
-            }
+      for (const stack of stacks) {
+        if (stack.assets && stack.assets.length > 0) {
+          for (const asset of stack.assets) {
+            uniqueIds.add(asset.id);
           }
         }
       }
