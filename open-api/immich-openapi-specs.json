@@ -4103,6 +4103,8 @@
     },
     "/notifications/{id}": {
       "delete": {
+        "deprecated": true,
+        "description": "This property was deprecated in v1.135.3",
         "operationId": "deleteNotification",
         "parameters": [
           {
@@ -4132,8 +4134,12 @@
           }
         ],
         "tags": [
-          "Notifications"
-        ]
+          "Notifications",
+          "Deprecated"
+        ],
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.135.3"
+        }
       },
       "get": {
         "operationId": "getNotification",

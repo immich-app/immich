@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { EndpointLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   NotificationDeleteAllDto,
@@ -54,6 +55,7 @@ export class NotificationController {
 
   @Delete(':id')
   @Authenticated({ permission: Permission.NOTIFICATION_DELETE })
+  @EndpointLifecycle({ deprecatedAt: 'v1.135.3' })
   deleteNotification(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

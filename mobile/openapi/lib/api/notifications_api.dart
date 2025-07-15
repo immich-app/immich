@@ -16,7 +16,10 @@ class NotificationsApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'DELETE /notifications/{id}' operation and returns the [Response].
+  /// This property was deprecated in v1.135.3
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -46,6 +49,8 @@ class NotificationsApi {
     );
   }
 
+  /// This property was deprecated in v1.135.3
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

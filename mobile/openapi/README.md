@@ -119,6 +119,7 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**signUpAdmin**](doc//AuthenticationApi.md#signupadmin) | **POST** /auth/admin-sign-up | 
 *AuthenticationApi* | [**unlockAuthSession**](doc//AuthenticationApi.md#unlockauthsession) | **POST** /auth/session/unlock | 
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
+*DeprecatedApi* | [**deleteNotification**](doc//DeprecatedApi.md#deletenotification) | **DELETE** /notifications/{id} | 
 *DeprecatedApi* | [**deleteStack**](doc//DeprecatedApi.md#deletestack) | **DELETE** /stacks/{id} | 
 *DeprecatedApi* | [**getRandom**](doc//DeprecatedApi.md#getrandom) | **GET** /assets/random | 
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 

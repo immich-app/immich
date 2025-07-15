@@ -2660,6 +2660,9 @@ export function updateNotifications({ notificationUpdateAllDto }: {
         body: notificationUpdateAllDto
     })));
 }
+/**
+ * This property was deprecated in v1.135.3
+ */
 export function deleteNotification({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
