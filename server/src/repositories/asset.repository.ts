@@ -177,7 +177,7 @@ export class AssetRepository {
     timeZone?: string,
   ): Promise<{ assetId: string; dateTimeOriginal: Date | null; timeZone: string | null }[]> {
     return await this.db
-      .updateTable('exif')
+      .updateTable('asset_exif')
       .set({ dateTimeOriginal: sql`"dateTimeOriginal" + ${(delta ?? 0) + ' minute'}::interval`, timeZone })
       .where('assetId', 'in', ids)
       .returning(['assetId', 'dateTimeOriginal', 'timeZone'])
