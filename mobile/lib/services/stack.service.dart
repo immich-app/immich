@@ -49,7 +49,7 @@ class StackService {
 
   Future<void> deleteStack(String stackId, List<Asset> assets) async {
     try {
-      await _api.stacksApi.deleteStack(stackId);
+      await _api.stacksApi.deleteStacks(BulkIdsDto(ids: [stackId]));
 
       // Update local database to trigger rerendering
       final List<Asset> removeAssets = [];
