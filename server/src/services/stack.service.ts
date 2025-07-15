@@ -59,7 +59,7 @@ export class StackService extends BaseService {
     await this.eventRepository.emit('StackDeleteAll', { stackIds: dto.ids, userId: auth.user.id });
   }
 
-  async removeAsset(auth: AuthDto, dto: UUIDAssetIDParamDto): Promise<StackResponseDto> {
+  async removeAsset(auth: AuthDto, dto: UUIDAssetIDParamDto): Promise<void> {
     const { id: stackId, assetId } = dto;
     await this.requireAccess({ auth, permission: Permission.STACK_UPDATE, ids: [stackId] });
 
@@ -77,12 +77,6 @@ export class StackService extends BaseService {
 
     await this.assetRepository.update({ id: assetId, stackId: null });
     await this.eventRepository.emit('StackUpdate', { stackId, userId: auth.user.id });
-
-    const updatedStack = {
-      ...stack,
-      assets: stack.assets?.filter((a) => a.id !== assetId),
-    };
-    return mapStack(updatedStack, { auth });
   }
 
   private async findOrFail(id: string) {

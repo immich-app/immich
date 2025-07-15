@@ -16,13 +16,15 @@
   let { asset, stack, onAction }: Props = $props();
 
   const handleRemoveFromStack = async () => {
-    const updatedStack = await removeAssetFromStack({
+    await removeAssetFromStack({
       id: stack.id,
       assetId: asset.id,
     });
-    if (updatedStack) {
-      onAction({ type: AssetAction.REMOVE_ASSET_FROM_STACK, stack: updatedStack, asset });
-    }
+    const updatedStack = {
+      ...stack,
+      assets: stack.assets.filter((a) => a.id !== asset.id),
+    };
+    onAction({ type: AssetAction.REMOVE_ASSET_FROM_STACK, stack: updatedStack, asset });
   };
 </script>
 
