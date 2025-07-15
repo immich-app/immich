@@ -14,12 +14,12 @@ import { handlePromiseError } from 'src/utils/misc';
 export class BackupService extends BaseService {
   private backupLock = false;
 
-  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
+  @OnEvent({ name: 'ConfigInit', workers: [ImmichWorker.MICROSERVICES] })
   async onConfigInit({
     newConfig: {
       backup: { database },
     },
-  }: ArgOf<'config.init'>) {
+  }: ArgOf<'ConfigInit'>) {
     this.backupLock = await this.databaseRepository.tryLock(DatabaseLock.BackupDatabase);
 
     if (this.backupLock) {
@@ -32,8 +32,8 @@ export class BackupService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'config.update', server: true })
-  onConfigUpdate({ newConfig: { backup } }: ArgOf<'config.update'>) {
+  @OnEvent({ name: 'ConfigUpdate', server: true })
+  onConfigUpdate({ newConfig: { backup } }: ArgOf<'ConfigUpdate'>) {
     if (!this.backupLock) {
       return;
     }

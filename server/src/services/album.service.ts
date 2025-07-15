@@ -122,7 +122,7 @@ export class AlbumService extends BaseService {
     );
 
     for (const { userId } of albumUsers) {
-      await this.eventRepository.emit('album.invite', { id: album.id, userId });
+      await this.eventRepository.emit('AlbumInvite', { id: album.id, userId });
     }
 
     return mapAlbumWithAssets(album);
@@ -179,7 +179,7 @@ export class AlbumService extends BaseService {
       );
 
       for (const recipientId of allUsersExceptUs) {
-        await this.eventRepository.emit('album.update', { id, recipientId });
+        await this.eventRepository.emit('AlbumUpdate', { id, recipientId });
       }
     }
 
@@ -225,7 +225,7 @@ export class AlbumService extends BaseService {
       }
 
       await this.albumUserRepository.create({ usersId: userId, albumsId: id, role });
-      await this.eventRepository.emit('album.invite', { id, userId });
+      await this.eventRepository.emit('AlbumInvite', { id, userId });
     }
 
     return this.findOrFail(id, { withAssets: true }).then(mapAlbumWithoutAssets);

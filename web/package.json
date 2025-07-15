@@ -42,6 +42,7 @@
     "async-mutex": "^0.5.0",
     "dom-to-image": "^2.6.0",
     "fabric": "^6.5.4",
+    "geo-coordinates-parser": "^1.7.4",
     "geojson": "^0.5.0",
     "handlebars": "^4.7.8",
     "happy-dom": "^18.0.1",
