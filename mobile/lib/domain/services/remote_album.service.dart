@@ -147,4 +147,8 @@ class RemoteAlbumService {
 
     return _repository.addUsers(albumId, userIds);
   }
+
+  Future<int> getCount() {
+    return _repository.getCount();
+  }
 }

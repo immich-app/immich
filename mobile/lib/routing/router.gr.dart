@@ -504,6 +504,22 @@ class BackupOptionsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [BetaSyncSettingsPage]
+class BetaSyncSettingsRoute extends PageRouteInfo<void> {
+  const BetaSyncSettingsRoute({List<PageRouteInfo>? children})
+      : super(BetaSyncSettingsRoute.name, initialChildren: children);
+
+  static const String name = 'BetaSyncSettingsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const BetaSyncSettingsPage();
+    },
+  );
+}
+
+/// generated route for
 /// [ChangeExperiencePage]
 class ChangeExperienceRoute extends PageRouteInfo<ChangeExperienceRouteArgs> {
   ChangeExperienceRoute({

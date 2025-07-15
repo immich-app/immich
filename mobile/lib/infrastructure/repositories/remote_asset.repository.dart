@@ -238,4 +238,8 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
       });
     });
   }
+
+  Future<int> getCount() {
+    return _db.managers.remoteAssetEntity.count();
+  }
 }
