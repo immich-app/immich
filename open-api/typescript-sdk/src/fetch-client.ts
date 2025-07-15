@@ -1239,7 +1239,6 @@ export type StackResponseDto = {
 export type StackCreateDto = {
     /** first asset becomes the primary */
     assetIds: string[];
-    merge?: boolean;
 };
 export type StackUpdateDto = {
     primaryAssetId?: string;
