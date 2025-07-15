@@ -64,7 +64,7 @@ describe(NotificationService.name, () => {
       const update = { oldConfig: defaults, newConfig: defaults };
       expect(sut.onConfigUpdate(update)).toBeUndefined();
       expect(mocks.event.clientBroadcast).toHaveBeenCalledWith('on_config_update');
-      expect(mocks.event.serverSend).toHaveBeenCalledWith('config.update', update);
+      expect(mocks.event.serverSend).toHaveBeenCalledWith('ConfigUpdate', update);
     });
   });
 

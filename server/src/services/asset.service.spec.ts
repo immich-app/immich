@@ -255,7 +255,7 @@ describe(AssetService.name, () => {
         id: assetStub.livePhotoMotionAsset.id,
         visibility: AssetVisibility.TIMELINE,
       });
-      expect(mocks.event.emit).not.toHaveBeenCalledWith('asset.show', {
+      expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetShow', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
       });
@@ -279,7 +279,7 @@ describe(AssetService.name, () => {
         id: assetStub.livePhotoMotionAsset.id,
         visibility: AssetVisibility.TIMELINE,
       });
-      expect(mocks.event.emit).not.toHaveBeenCalledWith('asset.show', {
+      expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetShow', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
       });
@@ -303,7 +303,7 @@ describe(AssetService.name, () => {
         id: assetStub.livePhotoMotionAsset.id,
         visibility: AssetVisibility.TIMELINE,
       });
-      expect(mocks.event.emit).not.toHaveBeenCalledWith('asset.show', {
+      expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetShow', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
       });
@@ -327,7 +327,7 @@ describe(AssetService.name, () => {
         id: assetStub.livePhotoMotionAsset.id,
         visibility: AssetVisibility.HIDDEN,
       });
-      expect(mocks.event.emit).toHaveBeenCalledWith('asset.hide', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetHide', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
       });
@@ -360,7 +360,7 @@ describe(AssetService.name, () => {
         id: assetStub.livePhotoMotionAsset.id,
         visibility: assetStub.livePhotoStillAsset.visibility,
       });
-      expect(mocks.event.emit).toHaveBeenCalledWith('asset.show', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetShow', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
       });
@@ -484,7 +484,7 @@ describe(AssetService.name, () => {
 
       await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: true });
 
-      expect(mocks.event.emit).toHaveBeenCalledWith('assets.delete', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetDeleteAll', {
         assetIds: ['asset1', 'asset2'],
         userId: 'user-id',
       });

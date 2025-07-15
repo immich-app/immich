@@ -75,8 +75,8 @@ export class StorageTemplateService extends BaseService {
     return this._template;
   }
 
-  @OnEvent({ name: 'config.init' })
-  onConfigInit({ newConfig }: ArgOf<'config.init'>) {
+  @OnEvent({ name: 'ConfigInit' })
+  onConfigInit({ newConfig }: ArgOf<'ConfigInit'>) {
     const template = newConfig.storageTemplate.template;
     if (!this._template || template !== this.template.raw) {
       this.logger.debug(`Compiling new storage template: ${template}`);
@@ -84,13 +84,13 @@ export class StorageTemplateService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'config.update', server: true })
-  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+  @OnEvent({ name: 'ConfigUpdate', server: true })
+  onConfigUpdate({ newConfig }: ArgOf<'ConfigUpdate'>) {
     this.onConfigInit({ newConfig });
   }
 
-  @OnEvent({ name: 'config.validate' })
-  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
+  @OnEvent({ name: 'ConfigValidate' })
+  onConfigValidate({ newConfig }: ArgOf<'ConfigValidate'>) {
     try {
       const { compiled } = this.compile(newConfig.storageTemplate.template);
       this.render(compiled, {
@@ -116,8 +116,8 @@ export class StorageTemplateService extends BaseService {
     return { ...storageTokens, presetOptions: storagePresets };
   }
 
-  @OnEvent({ name: 'asset.metadataExtracted' })
-  async onAssetMetadataExtracted({ source, assetId }: ArgOf<'asset.metadataExtracted'>) {
+  @OnEvent({ name: 'AssetMetadataExtracted' })
+  async onAssetMetadataExtracted({ source, assetId }: ArgOf<'AssetMetadataExtracted'>) {
     await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { source, id: assetId } });
   }
 
@@ -182,8 +182,8 @@ export class StorageTemplateService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  @OnEvent({ name: 'asset.delete' })
-  async handleMoveHistoryCleanup({ assetId }: ArgOf<'asset.delete'>) {
+  @OnEvent({ name: 'AssetDelete' })
+  async handleMoveHistoryCleanup({ assetId }: ArgOf<'AssetDelete'>) {
     this.logger.debug(`Cleaning up move history for asset ${assetId}`);
     await this.moveRepository.cleanMoveHistorySingle(assetId);
   }

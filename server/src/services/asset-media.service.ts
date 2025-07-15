@@ -180,7 +180,7 @@ export class AssetMediaService extends BaseService {
       const copiedPhoto = await this.createCopy(asset);
       // and immediate trash it
       await this.assetRepository.updateAll([copiedPhoto.id], { deletedAt: new Date(), status: AssetStatus.TRASHED });
-      await this.eventRepository.emit('asset.trash', { assetId: copiedPhoto.id, userId: auth.user.id });
+      await this.eventRepository.emit('AssetTrash', { assetId: copiedPhoto.id, userId: auth.user.id });
 
       await this.userRepository.updateUsage(auth.user.id, file.size);
 

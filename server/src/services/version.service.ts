@@ -20,7 +20,7 @@ const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): Re
 
 @Injectable()
 export class VersionService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap' })
+  @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap(): Promise<void> {
     await this.handleVersionCheck();
 
@@ -102,8 +102,8 @@ export class VersionService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  @OnEvent({ name: 'websocket.connect' })
-  async onWebsocketConnection({ userId }: ArgOf<'websocket.connect'>) {
+  @OnEvent({ name: 'WebsocketConnect' })
+  async onWebsocketConnection({ userId }: ArgOf<'WebsocketConnect'>) {
     this.eventRepository.clientSend('on_server_version', userId, serverVersion);
     const metadata = await this.systemMetadataRepository.get(SystemMetadataKey.VERSION_CHECK_STATE);
     if (metadata) {

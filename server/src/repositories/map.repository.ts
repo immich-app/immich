@@ -265,6 +265,9 @@ export class MapRepository {
       throw new Error(`Geodata file ${cities500} not found`);
     }
 
+    this.logger.log(`Starting geodata import`);
+    const startTime = performance.now();
+
     const input = createReadStream(cities500, { highWaterMark: 512 * 1024 * 1024 });
     let bufferGeodata = [];
     const lineReader = readLine.createInterface({ input });
@@ -314,7 +317,20 @@ export class MapRepository {
       }
     }
 
-    await this.db.insertInto('geodata_places').values(bufferGeodata).execute();
+    if (bufferGeodata.length > 0) {
+      await this.db.insertInto('geodata_places').values(bufferGeodata).execute();
+      count += bufferGeodata.length;
+    }
+
+    await Promise.all(futures);
+
+    const duration = performance.now() - startTime;
+    const seconds = duration / 1000;
+    const recordsPerSecond = Math.round(count / seconds);
+
+    this.logger.log(
+      `Successfully imported ${count} geodata records in ${seconds.toFixed(2)}s (${recordsPerSecond} records/second)`,
+    );
   }
 
   private async loadAdmin(filePath: string) {

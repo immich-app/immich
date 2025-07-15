@@ -32,12 +32,12 @@ export class LibraryService extends BaseService {
   private lock = false;
   private watchers: Record<string, () => Promise<void>> = {};
 
-  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
+  @OnEvent({ name: 'ConfigInit', workers: [ImmichWorker.MICROSERVICES] })
   async onConfigInit({
     newConfig: {
       library: { watch, scan },
     },
-  }: ArgOf<'config.init'>) {
+  }: ArgOf<'ConfigInit'>) {
     // This ensures that library watching only occurs in one microservice
     this.lock = await this.databaseRepository.tryLock(DatabaseLock.Library);
 
@@ -58,8 +58,8 @@ export class LibraryService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'config.update', server: true })
-  async onConfigUpdate({ newConfig: { library } }: ArgOf<'config.update'>) {
+  @OnEvent({ name: 'ConfigUpdate', server: true })
+  async onConfigUpdate({ newConfig: { library } }: ArgOf<'ConfigUpdate'>) {
     if (!this.lock) {
       return;
     }
@@ -155,7 +155,7 @@ export class LibraryService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'app.shutdown' })
+  @OnEvent({ name: 'AppShutdown' })
   async onShutdown() {
     await this.unwatchAll();
   }

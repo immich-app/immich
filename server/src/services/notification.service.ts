@@ -77,8 +77,8 @@ export class NotificationService extends BaseService {
     await this.notificationRepository.cleanup();
   }
 
-  @OnEvent({ name: 'job.failed' })
-  async onJobFailed({ job, error }: ArgOf<'job.failed'>) {
+  @OnEvent({ name: 'JobFailed' })
+  async onJobFailed({ job, error }: ArgOf<'JobFailed'>) {
     const admin = await this.userRepository.getAdmin();
     if (!admin) {
       return;
@@ -107,14 +107,14 @@ export class NotificationService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'config.update' })
-  onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
+  @OnEvent({ name: 'ConfigUpdate' })
+  onConfigUpdate({ oldConfig, newConfig }: ArgOf<'ConfigUpdate'>) {
     this.eventRepository.clientBroadcast('on_config_update');
-    this.eventRepository.serverSend('config.update', { oldConfig, newConfig });
+    this.eventRepository.serverSend('ConfigUpdate', { oldConfig, newConfig });
   }
 
-  @OnEvent({ name: 'config.validate', priority: -100 })
-  async onConfigValidate({ oldConfig, newConfig }: ArgOf<'config.validate'>) {
+  @OnEvent({ name: 'ConfigValidate', priority: -100 })
+  async onConfigValidate({ oldConfig, newConfig }: ArgOf<'ConfigValidate'>) {
     try {
       if (
         newConfig.notifications.smtp.enabled &&
@@ -128,33 +128,33 @@ export class NotificationService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'asset.hide' })
-  onAssetHide({ assetId, userId }: ArgOf<'asset.hide'>) {
+  @OnEvent({ name: 'AssetHide' })
+  onAssetHide({ assetId, userId }: ArgOf<'AssetHide'>) {
     this.eventRepository.clientSend('on_asset_hidden', userId, assetId);
   }
 
-  @OnEvent({ name: 'asset.show' })
-  async onAssetShow({ assetId }: ArgOf<'asset.show'>) {
+  @OnEvent({ name: 'AssetShow' })
+  async onAssetShow({ assetId }: ArgOf<'AssetShow'>) {
     await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: { id: assetId, notify: true } });
   }
 
-  @OnEvent({ name: 'asset.trash' })
-  onAssetTrash({ assetId, userId }: ArgOf<'asset.trash'>) {
+  @OnEvent({ name: 'AssetTrash' })
+  onAssetTrash({ assetId, userId }: ArgOf<'AssetTrash'>) {
     this.eventRepository.clientSend('on_asset_trash', userId, [assetId]);
   }
 
-  @OnEvent({ name: 'asset.delete' })
-  onAssetDelete({ assetId, userId }: ArgOf<'asset.delete'>) {
+  @OnEvent({ name: 'AssetDelete' })
+  onAssetDelete({ assetId, userId }: ArgOf<'AssetDelete'>) {
     this.eventRepository.clientSend('on_asset_delete', userId, assetId);
   }
 
-  @OnEvent({ name: 'assets.trash' })
-  onAssetsTrash({ assetIds, userId }: ArgOf<'assets.trash'>) {
+  @OnEvent({ name: 'AssetTrashAll' })
+  onAssetsTrash({ assetIds, userId }: ArgOf<'AssetTrashAll'>) {
     this.eventRepository.clientSend('on_asset_trash', userId, assetIds);
   }
 
-  @OnEvent({ name: 'asset.metadataExtracted' })
-  async onAssetMetadataExtracted({ assetId, userId, source }: ArgOf<'asset.metadataExtracted'>) {
+  @OnEvent({ name: 'AssetMetadataExtracted' })
+  async onAssetMetadataExtracted({ assetId, userId, source }: ArgOf<'AssetMetadataExtracted'>) {
     if (source !== 'sidecar-write') {
       return;
     }
@@ -165,40 +165,40 @@ export class NotificationService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'assets.restore' })
-  onAssetsRestore({ assetIds, userId }: ArgOf<'assets.restore'>) {
+  @OnEvent({ name: 'AssetRestoreAll' })
+  onAssetsRestore({ assetIds, userId }: ArgOf<'AssetRestoreAll'>) {
     this.eventRepository.clientSend('on_asset_restore', userId, assetIds);
   }
 
-  @OnEvent({ name: 'stack.create' })
-  onStackCreate({ userId }: ArgOf<'stack.create'>) {
+  @OnEvent({ name: 'StackCreate' })
+  onStackCreate({ userId }: ArgOf<'StackCreate'>) {
     this.eventRepository.clientSend('on_asset_stack_update', userId);
   }
 
-  @OnEvent({ name: 'stack.update' })
-  onStackUpdate({ userId }: ArgOf<'stack.update'>) {
+  @OnEvent({ name: 'StackUpdate' })
+  onStackUpdate({ userId }: ArgOf<'StackUpdate'>) {
     this.eventRepository.clientSend('on_asset_stack_update', userId);
   }
 
-  @OnEvent({ name: 'stack.delete' })
-  onStackDelete({ userId }: ArgOf<'stack.delete'>) {
+  @OnEvent({ name: 'StackDelete' })
+  onStackDelete({ userId }: ArgOf<'StackDelete'>) {
     this.eventRepository.clientSend('on_asset_stack_update', userId);
   }
 
-  @OnEvent({ name: 'stacks.delete' })
-  onStacksDelete({ userId }: ArgOf<'stacks.delete'>) {
+  @OnEvent({ name: 'StackDeleteAll' })
+  onStacksDelete({ userId }: ArgOf<'StackDeleteAll'>) {
     this.eventRepository.clientSend('on_asset_stack_update', userId);
   }
 
-  @OnEvent({ name: 'user.signup' })
-  async onUserSignup({ notify, id, tempPassword }: ArgOf<'user.signup'>) {
+  @OnEvent({ name: 'UserSignup' })
+  async onUserSignup({ notify, id, tempPassword }: ArgOf<'UserSignup'>) {
     if (notify) {
       await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id, tempPassword } });
     }
   }
 
-  @OnEvent({ name: 'album.update' })
-  async onAlbumUpdate({ id, recipientId }: ArgOf<'album.update'>) {
+  @OnEvent({ name: 'AlbumUpdate' })
+  async onAlbumUpdate({ id, recipientId }: ArgOf<'AlbumUpdate'>) {
     await this.jobRepository.removeJob(JobName.NOTIFY_ALBUM_UPDATE, `${id}/${recipientId}`);
     await this.jobRepository.queue({
       name: JobName.NOTIFY_ALBUM_UPDATE,
@@ -206,13 +206,13 @@ export class NotificationService extends BaseService {
     });
   }
 
-  @OnEvent({ name: 'album.invite' })
-  async onAlbumInvite({ id, userId }: ArgOf<'album.invite'>) {
+  @OnEvent({ name: 'AlbumInvite' })
+  async onAlbumInvite({ id, userId }: ArgOf<'AlbumInvite'>) {
     await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_INVITE, data: { id, recipientId: userId } });
   }
 
-  @OnEvent({ name: 'session.delete' })
-  onSessionDelete({ sessionId }: ArgOf<'session.delete'>) {
+  @OnEvent({ name: 'SessionDelete' })
+  onSessionDelete({ sessionId }: ArgOf<'SessionDelete'>) {
     // after the response is sent
     setTimeout(() => this.eventRepository.clientSend('on_session_delete', sessionId, sessionId), 500);
   }
