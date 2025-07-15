@@ -376,9 +376,11 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     }
 
     try {
-      _ref
-          .read(backgroundSyncProvider)
-          .syncWebsocketBatch(_batchedAssetUploadReady.toList());
+      unawaited(
+        _ref
+            .read(backgroundSyncProvider)
+            .syncWebsocketBatch(_batchedAssetUploadReady.toList()),
+      );
     } catch (error) {
       _log.severe("Error processing batched AssetUploadReadyV1 events: $error");
     }
