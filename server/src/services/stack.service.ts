@@ -83,7 +83,7 @@ export class StackService extends BaseService {
     }
 
     await this.assetRepository.update({ id: assetId, stackId: null });
-    await this.eventRepository.emit('stack.update', { stackId, userId: auth.user.id });
+    await this.eventRepository.emit('StackUpdate', { stackId, userId: auth.user.id });
 
     const updatedStack = {
       ...stack,
