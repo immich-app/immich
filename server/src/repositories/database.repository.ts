@@ -53,8 +53,8 @@ export async function getVectorExtension(runner: Kysely<DB> | QueryRunner): Prom
 }
 
 export const probes: Record<VectorIndex, number> = {
-  [VectorIndex.CLIP]: 1,
-  [VectorIndex.FACE]: 1,
+  [VectorIndex.Clip]: 1,
+  [VectorIndex.Face]: 1,
 };
 
 @Injectable()
@@ -77,7 +77,7 @@ export class DatabaseRepository {
     return getVectorExtension(this.db);
   }
 
-  @GenerateSql({ params: [[DatabaseExtension.VECTORS]] })
+  @GenerateSql({ params: [[DatabaseExtension.Vectors]] })
   async getExtensionVersions(extensions: readonly DatabaseExtension[]): Promise<ExtensionVersion[]> {
     const { rows } = await sql<ExtensionVersion>`
       SELECT name, default_version as "availableVersion", installed_version as "installedVersion"
@@ -89,13 +89,13 @@ export class DatabaseRepository {
 
   getExtensionVersionRange(extension: VectorExtension): string {
     switch (extension) {
-      case DatabaseExtension.VECTORCHORD: {
+      case DatabaseExtension.VectorChord: {
         return VECTORCHORD_VERSION_RANGE;
       }
-      case DatabaseExtension.VECTORS: {
+      case DatabaseExtension.Vectors: {
         return VECTORS_VERSION_RANGE;
       }
-      case DatabaseExtension.VECTOR: {
+      case DatabaseExtension.Vector: {
         return VECTOR_VERSION_RANGE;
       }
       default: {
@@ -117,7 +117,7 @@ export class DatabaseRepository {
   async createExtension(extension: DatabaseExtension): Promise<void> {
     this.logger.log(`Creating ${EXTENSION_NAMES[extension]} extension`);
     await sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(extension)} CASCADE`.execute(this.db);
-    if (extension === DatabaseExtension.VECTORCHORD) {
+    if (extension === DatabaseExtension.VectorChord) {
       const dbName = sql.id(await this.getDatabaseName());
       await sql`ALTER DATABASE ${dbName} SET vchordrq.probes = 1`.execute(this.db);
       await sql`SET vchordrq.probes = 1`.execute(this.db);
@@ -147,8 +147,8 @@ export class DatabaseRepository {
     }
 
     await Promise.all([
-      this.db.schema.dropIndex(VectorIndex.CLIP).ifExists().execute(),
-      this.db.schema.dropIndex(VectorIndex.FACE).ifExists().execute(),
+      this.db.schema.dropIndex(VectorIndex.Clip).ifExists().execute(),
+      this.db.schema.dropIndex(VectorIndex.Face).ifExists().execute(),
     ]);
 
     await this.db.transaction().execute(async (tx) => {
@@ -156,14 +156,14 @@ export class DatabaseRepository {
 
       await sql`ALTER EXTENSION ${sql.raw(extension)} UPDATE TO ${sql.lit(targetVersion)}`.execute(tx);
 
-      if (extension === DatabaseExtension.VECTORS && (diff === 'major' || diff === 'minor')) {
+      if (extension === DatabaseExtension.Vectors && (diff === 'major' || diff === 'minor')) {
         await sql`SELECT pgvectors_upgrade()`.execute(tx);
         restartRequired = true;
       }
     });
 
     if (!restartRequired) {
-      await Promise.all([this.reindexVectors(VectorIndex.CLIP), this.reindexVectors(VectorIndex.FACE)]);
+      await Promise.all([this.reindexVectors(VectorIndex.Clip), this.reindexVectors(VectorIndex.Face)]);
     }
 
     return { restartRequired };
@@ -171,7 +171,7 @@ export class DatabaseRepository {
 
   async prewarm(index: VectorIndex): Promise<void> {
     const vectorExtension = await getVectorExtension(this.db);
-    if (vectorExtension !== DatabaseExtension.VECTORCHORD) {
+    if (vectorExtension !== DatabaseExtension.VectorChord) {
       return;
     }
     this.logger.debug(`Prewarming ${index}`);
@@ -196,19 +196,19 @@ export class DatabaseRepository {
       }
 
       switch (vectorExtension) {
-        case DatabaseExtension.VECTOR: {
+        case DatabaseExtension.Vector: {
           if (!row.indexdef.toLowerCase().includes('using hnsw')) {
             promises.push(this.reindexVectors(indexName));
           }
           break;
         }
-        case DatabaseExtension.VECTORS: {
+        case DatabaseExtension.Vectors: {
           if (!row.indexdef.toLowerCase().includes('using vectors')) {
             promises.push(this.reindexVectors(indexName));
           }
           break;
         }
-        case DatabaseExtension.VECTORCHORD: {
+        case DatabaseExtension.VectorChord: {
           const matches = row.indexdef.match(/(?<=lists = \[)\d+/g);
           const lists = matches && matches.length > 0 ? Number(matches[0]) : 1;
           promises.push(
@@ -264,7 +264,7 @@ export class DatabaseRepository {
         await sql`ALTER TABLE ${sql.raw(table)} ADD COLUMN embedding real[] NOT NULL`.execute(tx);
       }
       await sql`ALTER TABLE ${sql.raw(table)} ALTER COLUMN embedding SET DATA TYPE real[]`.execute(tx);
-      const schema = vectorExtension === DatabaseExtension.VECTORS ? 'vectors.' : '';
+      const schema = vectorExtension === DatabaseExtension.Vectors ? 'vectors.' : '';
       await sql`
         ALTER TABLE ${sql.raw(table)}
         ALTER COLUMN embedding
@@ -329,11 +329,11 @@ export class DatabaseRepository {
         .alterColumn('embedding', (col) => col.setDataType(sql.raw(`vector(${dimSize})`)))
         .execute();
       await sql
-        .raw(vectorIndexQuery({ vectorExtension, table: 'smart_search', indexName: VectorIndex.CLIP }))
+        .raw(vectorIndexQuery({ vectorExtension, table: 'smart_search', indexName: VectorIndex.Clip }))
         .execute(trx);
       await trx.schema.alterTable('smart_search').dropConstraint('dim_size_constraint').ifExists().execute();
     });
-    probes[VectorIndex.CLIP] = 1;
+    probes[VectorIndex.Clip] = 1;
 
     await sql`vacuum analyze ${sql.table('smart_search')}`.execute(this.db);
   }

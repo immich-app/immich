@@ -24,7 +24,7 @@ export class AlbumUserRepository {
       .executeTakeFirstOrThrow();
   }
 
-  @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }, { role: AlbumUserRole.VIEWER }] })
+  @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }, { role: AlbumUserRole.Viewer }] })
   update({ usersId, albumsId }: AlbumPermissionId, dto: Updateable<AlbumUserTable>) {
     return this.db
       .updateTable('album_user')

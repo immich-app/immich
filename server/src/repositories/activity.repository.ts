@@ -90,7 +90,7 @@ export class ActivityRepository {
       .where('activity.albumId', '=', albumId)
       .where(({ or, and, eb }) =>
         or([
-          and([eb('asset.deletedAt', 'is', null), eb('asset.visibility', '!=', sql.lit(AssetVisibility.LOCKED))]),
+          and([eb('asset.deletedAt', 'is', null), eb('asset.visibility', '!=', sql.lit(AssetVisibility.Locked))]),
           eb('asset.id', 'is', null),
         ]),
       )

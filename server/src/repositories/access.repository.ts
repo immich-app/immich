@@ -91,7 +91,7 @@ class AlbumAccess {
     }
 
     const accessRole =
-      access === AlbumUserRole.EDITOR ? [AlbumUserRole.EDITOR] : [AlbumUserRole.EDITOR, AlbumUserRole.VIEWER];
+      access === AlbumUserRole.Editor ? [AlbumUserRole.Editor] : [AlbumUserRole.Editor, AlbumUserRole.Viewer];
 
     return this.db
       .selectFrom('album')
@@ -178,7 +178,7 @@ class AssetAccess {
       .select('asset.id')
       .where('asset.id', 'in', [...assetIds])
       .where('asset.ownerId', '=', userId)
-      .$if(!hasElevatedPermission, (eb) => eb.where('asset.visibility', '!=', AssetVisibility.LOCKED))
+      .$if(!hasElevatedPermission, (eb) => eb.where('asset.visibility', '!=', AssetVisibility.Locked))
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
@@ -200,8 +200,8 @@ class AssetAccess {
       .where('partner.sharedWithId', '=', userId)
       .where((eb) =>
         eb.or([
-          eb('asset.visibility', '=', sql.lit(AssetVisibility.TIMELINE)),
-          eb('asset.visibility', '=', sql.lit(AssetVisibility.HIDDEN)),
+          eb('asset.visibility', '=', sql.lit(AssetVisibility.Timeline)),
+          eb('asset.visibility', '=', sql.lit(AssetVisibility.Hidden)),
         ]),
       )
 
