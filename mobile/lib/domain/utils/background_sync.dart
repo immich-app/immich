@@ -6,6 +6,7 @@ import 'package:worker_manager/worker_manager.dart';
 
 class BackgroundSyncManager {
   Cancelable<void>? _syncTask;
+  Cancelable<void>? _syncWebsocketTask;
   Cancelable<void>? _deviceAlbumSyncTask;
   Cancelable<void>? _hashTask;
 
@@ -19,6 +20,12 @@ class BackgroundSyncManager {
     }
     _syncTask?.cancel();
     _syncTask = null;
+
+    if (_syncWebsocketTask != null) {
+      futures.add(_syncWebsocketTask!.future);
+    }
+    _syncWebsocketTask?.cancel();
+    _syncWebsocketTask = null;
 
     return Future.wait(futures);
   }
@@ -70,6 +77,21 @@ class BackgroundSyncManager {
     );
     return _syncTask!.whenComplete(() {
       _syncTask = null;
+    });
+  }
+
+  Future<void> syncWebsocketBatch(List<dynamic> batchData) {
+    if (_syncWebsocketTask != null) {
+      return _syncWebsocketTask!.future;
+    }
+
+    _syncWebsocketTask = runInIsolateGentle(
+      computation: (ref) => ref
+          .read(syncStreamServiceProvider)
+          .handleWsAssetUploadReadyV1Batch(batchData),
+    );
+    return _syncWebsocketTask!.whenComplete(() {
+      _syncWebsocketTask = null;
     });
   }
 }

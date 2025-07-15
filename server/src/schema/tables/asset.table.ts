@@ -1,7 +1,7 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
-import { assets_delete_audit } from 'src/schema/functions';
+import { asset_delete_audit } from 'src/schema/functions';
 import { LibraryTable } from 'src/schema/tables/library.table';
 import { StackTable } from 'src/schema/tables/stack.table';
 import { UserTable } from 'src/schema/tables/user.table';
@@ -20,11 +20,11 @@ import {
 } from 'src/sql-tools';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 
-@Table('assets')
-@UpdatedAtTrigger('assets_updated_at')
+@Table('asset')
+@UpdatedAtTrigger('asset_updatedAt')
 @AfterDeleteTrigger({
   scope: 'statement',
-  function: assets_delete_audit,
+  function: asset_delete_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
 })
@@ -36,23 +36,22 @@ import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
   where: '("libraryId" IS NULL)',
 })
 @Index({
-  name: 'UQ_assets_owner_library_checksum' + '',
   columns: ['ownerId', 'libraryId', 'checksum'],
   unique: true,
   where: '("libraryId" IS NOT NULL)',
 })
 @Index({
-  name: 'idx_local_date_time',
+  name: 'asset_localDateTime_idx',
   expression: `(("localDateTime" at time zone 'UTC')::date)`,
 })
 @Index({
-  name: 'idx_local_date_time_month',
+  name: 'asset_localDateTime_month_idx',
   expression: `(date_trunc('MONTH'::text, ("localDateTime" AT TIME ZONE 'UTC'::text)) AT TIME ZONE 'UTC'::text)`,
 })
-@Index({ name: 'IDX_originalPath_libraryId', columns: ['originalPath', 'libraryId'] })
-@Index({ name: 'IDX_asset_id_stackId', columns: ['id', 'stackId'] })
+@Index({ columns: ['originalPath', 'libraryId'] })
+@Index({ columns: ['id', 'stackId'] })
 @Index({
-  name: 'idx_originalfilename_trigram',
+  name: 'asset_originalFilename_trigram_idx',
   using: 'gin',
   expression: 'f_unaccent("originalFileName") gin_trgm_ops',
 })
@@ -76,7 +75,7 @@ export class AssetTable {
   @Column()
   originalPath!: string;
 
-  @Column({ type: 'timestamp with time zone', indexName: 'idx_asset_file_created_at' })
+  @Column({ type: 'timestamp with time zone', index: true })
   fileCreatedAt!: Timestamp;
 
   @Column({ type: 'timestamp with time zone' })
@@ -130,13 +129,13 @@ export class AssetTable {
   @ForeignKeyColumn(() => StackTable, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
   stackId!: string | null;
 
-  @Column({ type: 'uuid', nullable: true, indexName: 'IDX_assets_duplicateId' })
+  @Column({ type: 'uuid', nullable: true, index: true })
   duplicateId!: string | null;
 
   @Column({ enum: assets_status_enum, default: AssetStatus.ACTIVE })
   status!: Generated<AssetStatus>;
 
-  @UpdateIdColumn({ indexName: 'IDX_assets_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 
   @Column({ enum: asset_visibility_enum, default: AssetVisibility.TIMELINE })

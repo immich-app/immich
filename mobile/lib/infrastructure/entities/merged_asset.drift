@@ -17,6 +17,7 @@ mergedAsset: SELECT * FROM
 		rae.thumb_hash,
 		rae.checksum,
 		rae.owner_id,
+		rae.live_photo_video_id,
 		0 as orientation
 	FROM
 		remote_asset_entity rae
@@ -39,6 +40,7 @@ mergedAsset: SELECT * FROM
 		NULL as thumb_hash,
 		lae.checksum,
 		NULL as owner_id,
+		NULL as live_photo_video_id,
 		lae.orientation
 	FROM
 		local_asset_entity lae
