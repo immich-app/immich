@@ -195,27 +195,14 @@ describe(StackService.name, () => {
         BadRequestException,
       );
 
-      expect(mocks.stack.getById).not.toHaveBeenCalled();
-      expect(mocks.asset.update).not.toHaveBeenCalled();
-      expect(mocks.event.emit).not.toHaveBeenCalled();
-    });
-
-    it('should fail if the stack could not be found', async () => {
-      mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['unknown-stack']));
-      mocks.stack.getById.mockResolvedValue(stackStub('stack-id', [assetStub.image, assetStub.image1]));
-
-      await expect(
-        sut.removeAsset(authStub.admin, { id: 'unknown-stack', assetId: assetStub.image.id }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(mocks.stack.getById).toHaveBeenCalledWith('unknown-stack');
+      expect(mocks.stack.getForAssetRemoval).not.toHaveBeenCalled();
       expect(mocks.asset.update).not.toHaveBeenCalled();
       expect(mocks.event.emit).not.toHaveBeenCalled();
     });
 
     it('should fail if the asset is not in the stack', async () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
-      mocks.stack.getById.mockResolvedValue(stackStub('stack-id', [assetStub.image, assetStub.image1]));
+      mocks.stack.getForAssetRemoval.mockResolvedValue({ id: null, primaryAssetId: null });
 
       await expect(
         sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: assetStub.imageFrom2015.id }),
@@ -227,26 +214,22 @@ describe(StackService.name, () => {
 
     it('should fail if the assetId is the primaryAssetId', async () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
-      mocks.stack.getById.mockResolvedValue(stackStub('stack-id', [assetStub.image, assetStub.image1]));
+      mocks.stack.getForAssetRemoval.mockResolvedValue({ id: 'stack-id', primaryAssetId: assetStub.image.id });
 
       await expect(
         sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: assetStub.image.id }),
       ).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(mocks.stack.getById).toHaveBeenCalledWith('stack-id');
       expect(mocks.asset.update).not.toHaveBeenCalled();
       expect(mocks.event.emit).not.toHaveBeenCalled();
     });
 
     it("should update the asset to nullify it's stack-id", async () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
-      mocks.stack.getById.mockResolvedValue(
-        stackStub('stack-id', [assetStub.image, assetStub.image1, assetStub.imageFrom2015]),
-      );
+      mocks.stack.getForAssetRemoval.mockResolvedValue({ id: 'stack-id', primaryAssetId: assetStub.image.id });
 
       await sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: assetStub.image1.id });
 
-      expect(mocks.stack.getById).toHaveBeenCalledWith('stack-id');
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetStub.image1.id, stackId: null });
       expect(mocks.event.emit).toHaveBeenCalledWith('StackUpdate', {
         stackId: 'stack-id',
