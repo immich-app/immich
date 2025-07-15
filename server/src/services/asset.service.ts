@@ -208,7 +208,7 @@ export class AssetService extends BaseService {
       await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
     }
 
-    await this.eventRepository.emit('asset.delete', { assetId: id, userId: asset.ownerId });
+    await this.eventRepository.emit('AssetDelete', { assetId: id, userId: asset.ownerId });
 
     // delete the motion if it is not used by another asset
     if (asset.livePhotoVideoId) {
@@ -241,7 +241,10 @@ export class AssetService extends BaseService {
       deletedAt: new Date(),
       status: force ? AssetStatus.DELETED : AssetStatus.TRASHED,
     });
-    await this.eventRepository.emit(force ? 'assets.delete' : 'assets.trash', { assetIds: ids, userId: auth.user.id });
+    await this.eventRepository.emit(force ? 'AssetDeleteAll' : 'AssetTrashAll', {
+      assetIds: ids,
+      userId: auth.user.id,
+    });
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {

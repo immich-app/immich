@@ -35,7 +35,7 @@ export class UserAdminService extends BaseService {
 
     const user = await this.createUser(userDto);
 
-    await this.eventRepository.emit('user.signup', {
+    await this.eventRepository.emit('UserSignup', {
       notify: !!notify,
       id: user.id,
       tempPassword: user.shouldChangePassword ? userDto.password : undefined,

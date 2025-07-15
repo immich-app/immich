@@ -126,24 +126,24 @@ type Dates = {
 
 @Injectable()
 export class MetadataService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap', workers: [ImmichWorker.MICROSERVICES] })
+  @OnEvent({ name: 'AppBootstrap', workers: [ImmichWorker.MICROSERVICES] })
   async onBootstrap() {
     this.logger.log('Bootstrapping metadata service');
     await this.init();
   }
 
-  @OnEvent({ name: 'app.shutdown' })
+  @OnEvent({ name: 'AppShutdown' })
   async onShutdown() {
     await this.metadataRepository.teardown();
   }
 
-  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
-  onConfigInit({ newConfig }: ArgOf<'config.init'>) {
+  @OnEvent({ name: 'ConfigInit', workers: [ImmichWorker.MICROSERVICES] })
+  onConfigInit({ newConfig }: ArgOf<'ConfigInit'>) {
     this.metadataRepository.setMaxConcurrency(newConfig.job.metadataExtraction.concurrency);
   }
 
-  @OnEvent({ name: 'config.update', workers: [ImmichWorker.MICROSERVICES], server: true })
-  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+  @OnEvent({ name: 'ConfigUpdate', workers: [ImmichWorker.MICROSERVICES], server: true })
+  onConfigUpdate({ newConfig }: ArgOf<'ConfigUpdate'>) {
     this.metadataRepository.setMaxConcurrency(newConfig.job.metadataExtraction.concurrency);
   }
 
@@ -190,7 +190,7 @@ export class MetadataService extends BaseService {
       this.albumRepository.removeAssetsFromAll([motionAsset.id]),
     ]);
 
-    await this.eventRepository.emit('asset.hide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
+    await this.eventRepository.emit('AssetHide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
   }
 
   @OnJob({ name: JobName.QUEUE_METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
@@ -313,7 +313,7 @@ export class MetadataService extends BaseService {
 
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, metadataExtractedAt: new Date() });
 
-    await this.eventRepository.emit('asset.metadataExtracted', {
+    await this.eventRepository.emit('AssetMetadataExtracted', {
       assetId: asset.id,
       userId: asset.ownerId,
       source: data.source,
@@ -351,13 +351,13 @@ export class MetadataService extends BaseService {
     return this.processSidecar(id, false);
   }
 
-  @OnEvent({ name: 'asset.tag' })
-  async handleTagAsset({ assetId }: ArgOf<'asset.tag'>) {
+  @OnEvent({ name: 'AssetTag' })
+  async handleTagAsset({ assetId }: ArgOf<'AssetTag'>) {
     await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id: assetId, tags: true } });
   }
 
-  @OnEvent({ name: 'asset.untag' })
-  async handleUntagAsset({ assetId }: ArgOf<'asset.untag'>) {
+  @OnEvent({ name: 'AssetUntag' })
+  async handleUntagAsset({ assetId }: ArgOf<'AssetUntag'>) {
     await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id: assetId, tags: true } });
   }
 

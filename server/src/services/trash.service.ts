@@ -17,7 +17,7 @@ export class TrashService extends BaseService {
 
     await this.requireAccess({ auth, permission: Permission.ASSET_DELETE, ids });
     await this.trashRepository.restoreAll(ids);
-    await this.eventRepository.emit('assets.restore', { assetIds: ids, userId: auth.user.id });
+    await this.eventRepository.emit('AssetRestoreAll', { assetIds: ids, userId: auth.user.id });
 
     this.logger.log(`Restored ${ids.length} asset(s) from trash`);
 
@@ -40,7 +40,7 @@ export class TrashService extends BaseService {
     return { count };
   }
 
-  @OnEvent({ name: 'assets.delete' })
+  @OnEvent({ name: 'AssetDeleteAll' })
   async onAssetsDelete() {
     await this.jobRepository.queue({ name: JobName.QUEUE_TRASH_EMPTY, data: {} });
   }

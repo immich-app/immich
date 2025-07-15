@@ -1368,7 +1368,7 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
 
-      expect(mocks.event.emit).toHaveBeenCalledWith('asset.hide', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetHide', {
         userId: assetStub.livePhotoMotionAsset.ownerId,
         assetId: assetStub.livePhotoMotionAsset.id,
       });
@@ -1384,7 +1384,7 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
 
-      expect(mocks.event.emit).toHaveBeenCalledWith('asset.metadataExtracted', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetMetadataExtracted', {
         assetId: assetStub.livePhotoStillAsset.id,
         userId: assetStub.livePhotoStillAsset.ownerId,
       });
