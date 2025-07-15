@@ -272,7 +272,7 @@ class ActionNotifier extends Notifier<void> {
   Future<ActionResult> unStack(ActionSource source) async {
     final assets = _getOwnedRemoteAssetsForSource(source);
     try {
-      await _service.unStack(assets.where((e) => e.stackId != null).map((e) => e.stackId!).toList());
+      await _service.unStack(assets.map((e) => e.stackId).nonNulls.toList());
       return ActionResult(count: assets.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to unstack assets', error, stack);
