@@ -22,7 +22,7 @@ describe(StorageService.name, () => {
 
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
-      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.SYSTEM_FLAGS, {
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.SystemFlags, {
         mountChecks: {
           backups: true,
           'encoded-video': true,
@@ -60,7 +60,7 @@ describe(StorageService.name, () => {
 
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
-      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.SYSTEM_FLAGS, {
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.SystemFlags, {
         mountChecks: {
           backups: true,
           'encoded-video': true,

@@ -131,7 +131,7 @@ export interface GenerateSqlQueries {
 }
 
 export const Telemetry = (options: { enabled?: boolean }) =>
-  SetMetadata(MetadataKey.TELEMETRY_ENABLED, options?.enabled ?? true);
+  SetMetadata(MetadataKey.TelemetryEnabled, options?.enabled ?? true);
 
 /** Decorator to enable versioning/tracking of generated Sql */
 export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GENERATE_SQL_KEY, options);
@@ -145,13 +145,13 @@ export type EventConfig = {
   /** register events for these workers, defaults to all workers */
   workers?: ImmichWorker[];
 };
-export const OnEvent = (config: EventConfig) => SetMetadata(MetadataKey.EVENT_CONFIG, config);
+export const OnEvent = (config: EventConfig) => SetMetadata(MetadataKey.EventConfig, config);
 
 export type JobConfig = {
   name: JobName;
   queue: QueueName;
 };
-export const OnJob = (config: JobConfig) => SetMetadata(MetadataKey.JOB_CONFIG, config);
+export const OnJob = (config: JobConfig) => SetMetadata(MetadataKey.JobConfig, config);
 
 type LifecycleRelease = 'NEXT_RELEASE' | string;
 type LifecycleMetadata = {

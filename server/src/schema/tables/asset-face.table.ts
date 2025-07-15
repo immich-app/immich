@@ -56,7 +56,7 @@ export class AssetFaceTable {
   @Column({ default: 0, type: 'integer' })
   boundingBoxY2!: Generated<number>;
 
-  @Column({ default: SourceType.MACHINE_LEARNING, enum: asset_face_source_type })
+  @Column({ default: SourceType.MachineLearning, enum: asset_face_source_type })
   sourceType!: Generated<SourceType>;
 
   @DeleteDateColumn()

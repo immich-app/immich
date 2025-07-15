@@ -20,7 +20,7 @@ const onExit = (name: string, exitCode: number | null) => {
   if (exitCode !== 0) {
     console.error(`${name} worker exited with code ${exitCode}`);
 
-    if (apiProcess && name !== ImmichWorker.API) {
+    if (apiProcess && name !== ImmichWorker.Api) {
       console.error('Killing api process');
       apiProcess.kill('SIGTERM');
       apiProcess = undefined;
@@ -34,7 +34,7 @@ function bootstrapWorker(name: ImmichWorker) {
   console.log(`Starting ${name} worker`);
 
   let worker: Worker | ChildProcess;
-  if (name === ImmichWorker.API) {
+  if (name === ImmichWorker.Api) {
     worker = fork(`./dist/workers/${name}.js`, [], {
       execArgv: process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg)),
     });
@@ -50,7 +50,7 @@ function bootstrapWorker(name: ImmichWorker) {
 function bootstrap() {
   if (immichApp === 'immich-admin') {
     process.title = 'immich_admin_cli';
-    process.env.IMMICH_LOG_LEVEL = LogLevel.WARN;
+    process.env.IMMICH_LOG_LEVEL = LogLevel.Warn;
     return CommandFactory.run(ImmichAdminModule);
   }
 

@@ -256,7 +256,7 @@ describe(ServerService.name, () => {
       const license = { licenseKey: 'IMSV-license-key', activationKey: 'activation-key' };
       await sut.setLicense(license);
 
-      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.LICENSE, expect.any(Object));
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.License, expect.any(Object));
     });
 
     it('should not save license if invalid', async () => {

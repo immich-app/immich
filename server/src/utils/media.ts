@@ -1,5 +1,5 @@
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { CQMode, ToneMapping, TranscodeHWAccel, TranscodeTarget, VideoCodec } from 'src/enum';
+import { CQMode, ToneMapping, TranscodeHardwareAcceleration, TranscodeTarget, VideoCodec } from 'src/enum';
 import {
   AudioStreamInfo,
   BitrateDistribution,
@@ -16,7 +16,7 @@ export class BaseConfig implements VideoCodecSWConfig {
   protected constructor(protected config: SystemConfigFFmpegDto) {}
 
   static create(config: SystemConfigFFmpegDto, interfaces: VideoInterfaces): VideoCodecSWConfig {
-    if (config.accel === TranscodeHWAccel.DISABLED) {
+    if (config.accel === TranscodeHardwareAcceleration.Disabled) {
       return this.getSWCodecConfig(config);
     }
     return this.getHWCodecConfig(config, interfaces);
@@ -27,13 +27,13 @@ export class BaseConfig implements VideoCodecSWConfig {
       case VideoCodec.H264: {
         return new H264Config(config);
       }
-      case VideoCodec.HEVC: {
+      case VideoCodec.Hevc: {
         return new HEVCConfig(config);
       }
-      case VideoCodec.VP9: {
+      case VideoCodec.Vp9: {
         return new VP9Config(config);
       }
-      case VideoCodec.AV1: {
+      case VideoCodec.Av1: {
         return new AV1Config(config);
       }
       default: {
@@ -45,25 +45,25 @@ export class BaseConfig implements VideoCodecSWConfig {
   private static getHWCodecConfig(config: SystemConfigFFmpegDto, interfaces: VideoInterfaces) {
     let handler: VideoCodecHWConfig;
     switch (config.accel) {
-      case TranscodeHWAccel.NVENC: {
+      case TranscodeHardwareAcceleration.Nvenc: {
         handler = config.accelDecode
           ? new NvencHwDecodeConfig(config, interfaces)
           : new NvencSwDecodeConfig(config, interfaces);
         break;
       }
-      case TranscodeHWAccel.QSV: {
+      case TranscodeHardwareAcceleration.Qsv: {
         handler = config.accelDecode
           ? new QsvHwDecodeConfig(config, interfaces)
           : new QsvSwDecodeConfig(config, interfaces);
         break;
       }
-      case TranscodeHWAccel.VAAPI: {
+      case TranscodeHardwareAcceleration.Vaapi: {
         handler = config.accelDecode
           ? new VaapiHwDecodeConfig(config, interfaces)
           : new VaapiSwDecodeConfig(config, interfaces);
         break;
       }
-      case TranscodeHWAccel.RKMPP: {
+      case TranscodeHardwareAcceleration.Rkmpp: {
         handler = config.accelDecode
           ? new RkmppHwDecodeConfig(config, interfaces)
           : new RkmppSwDecodeConfig(config, interfaces);
@@ -94,7 +94,7 @@ export class BaseConfig implements VideoCodecSWConfig {
       twoPass: this.eligibleForTwoPass(),
       progress: { frameCount: videoStream.frameCount, percentInterval: 5 },
     } as TranscodeCommand;
-    if ([TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target)) {
+    if ([TranscodeTarget.All, TranscodeTarget.Video].includes(target)) {
       const filters = this.getFilterOptions(videoStream);
       if (filters.length > 0) {
         options.outputOptions.push(`-vf ${filters.join(',')}`);
@@ -116,8 +116,8 @@ export class BaseConfig implements VideoCodecSWConfig {
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
-    const videoCodec = [TranscodeTarget.ALL, TranscodeTarget.VIDEO].includes(target) ? this.getVideoCodec() : 'copy';
-    const audioCodec = [TranscodeTarget.ALL, TranscodeTarget.AUDIO].includes(target) ? this.getAudioCodec() : 'copy';
+    const videoCodec = [TranscodeTarget.All, TranscodeTarget.Video].includes(target) ? this.getVideoCodec() : 'copy';
+    const audioCodec = [TranscodeTarget.All, TranscodeTarget.Audio].includes(target) ? this.getAudioCodec() : 'copy';
 
     const options = [
       `-c:v ${videoCodec}`,
@@ -146,7 +146,7 @@ export class BaseConfig implements VideoCodecSWConfig {
     }
 
     if (
-      this.config.targetVideoCodec === VideoCodec.HEVC &&
+      this.config.targetVideoCodec === VideoCodec.Hevc &&
       (videoCodec !== 'copy' || videoStream.codecName === 'hevc')
     ) {
       options.push('-tag:v hvc1');
@@ -207,7 +207,7 @@ export class BaseConfig implements VideoCodecSWConfig {
   }
 
   eligibleForTwoPass() {
-    if (!this.config.twoPass || this.config.accel !== TranscodeHWAccel.DISABLED) {
+    if (!this.config.twoPass || this.config.accel !== TranscodeHardwareAcceleration.Disabled) {
       return false;
     }
 
@@ -244,7 +244,7 @@ export class BaseConfig implements VideoCodecSWConfig {
   }
 
   shouldToneMap(videoStream: VideoStreamInfo) {
-    return videoStream.isHDR && this.config.tonemap !== ToneMapping.DISABLED;
+    return videoStream.isHDR && this.config.tonemap !== ToneMapping.Disabled;
   }
 
   getScaling(videoStream: VideoStreamInfo, mult = 2) {
@@ -326,7 +326,7 @@ export class BaseConfig implements VideoCodecSWConfig {
   }
 
   useCQP() {
-    return this.config.cqMode === CQMode.CQP;
+    return this.config.cqMode === CQMode.Cqp;
   }
 }
 
@@ -344,7 +344,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC];
+    return [VideoCodec.H264, VideoCodec.Hevc];
   }
 
   validateDevices(devices: string[]) {
@@ -526,7 +526,7 @@ export class NvencSwDecodeConfig extends BaseHWConfig {
   }
 
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.AV1];
+    return [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Av1];
   }
 
   getBaseInputOptions() {
@@ -658,7 +658,7 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const options = super.getBaseOutputOptions(target, videoStream, audioStream);
     // VP9 requires enabling low power mode https://git.ffmpeg.org/gitweb/ffmpeg.git/commit/33583803e107b6d532def0f9d949364b01b6ad5a
-    if (this.config.targetVideoCodec === VideoCodec.VP9) {
+    if (this.config.targetVideoCodec === VideoCodec.Vp9) {
       options.push('-low_power 1');
     }
     return options;
@@ -693,7 +693,7 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
   }
 
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9, VideoCodec.AV1];
+    return [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Vp9, VideoCodec.Av1];
   }
 
   // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
@@ -712,7 +712,7 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
   }
 
   useCQP() {
-    return this.config.cqMode === CQMode.CQP || this.config.targetVideoCodec === VideoCodec.VP9;
+    return this.config.cqMode === CQMode.Cqp || this.config.targetVideoCodec === VideoCodec.Vp9;
   }
 
   getScaling(videoStream: VideoStreamInfo): string {
@@ -802,7 +802,7 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
     const bitrates = this.getBitrateDistribution();
     const options = [];
 
-    if (this.config.targetVideoCodec === VideoCodec.VP9) {
+    if (this.config.targetVideoCodec === VideoCodec.Vp9) {
       options.push('-bsf:v vp9_raw_reorder,vp9_superframe');
     }
 
@@ -824,11 +824,11 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
   }
 
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.VP9, VideoCodec.AV1];
+    return [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Vp9, VideoCodec.Av1];
   }
 
   useCQP() {
-    return this.config.cqMode !== CQMode.ICQ || this.config.targetVideoCodec === VideoCodec.VP9;
+    return this.config.cqMode !== CQMode.Icq || this.config.targetVideoCodec === VideoCodec.Vp9;
   }
 }
 
@@ -900,7 +900,7 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
         // from ffmpeg_mpp help, commonly referred to as H264 level 5.1
         return ['-level 51'];
       }
-      case VideoCodec.HEVC: {
+      case VideoCodec.Hevc: {
         // from ffmpeg_mpp help, commonly referred to as HEVC level 5.1
         return ['-level 153'];
       }
@@ -921,7 +921,7 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
   }
 
   getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.HEVC];
+    return [VideoCodec.H264, VideoCodec.Hevc];
   }
 
   getVideoCodec(): string {

@@ -57,7 +57,7 @@ export class AlbumTable {
   @Column({ type: 'boolean', default: true })
   isActivityEnabled!: Generated<boolean>;
 
-  @Column({ default: AssetOrder.DESC })
+  @Column({ default: AssetOrder.Desc })
   order!: Generated<AssetOrder>;
 
   @UpdateIdColumn({ index: true })

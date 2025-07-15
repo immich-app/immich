@@ -45,7 +45,7 @@ import { ImmichFileResponse, sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
 @ApiTags('Assets')
-@Controller(RouteKey.ASSET)
+@Controller(RouteKey.Asset)
 export class AssetMediaController {
   constructor(
     private logger: LoggingRepository,
@@ -56,7 +56,7 @@ export class AssetMediaController {
   @UseInterceptors(AssetUploadInterceptor, FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiHeader({
-    name: ImmichHeader.CHECKSUM,
+    name: ImmichHeader.Checksum,
     description: 'sha1 checksum that can be used for duplicate detection before the file is uploaded',
     required: false,
   })

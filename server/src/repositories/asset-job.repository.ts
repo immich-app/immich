@@ -62,7 +62,7 @@ export class AssetJobRepository {
       .select(['asset.id', 'asset.thumbhash'])
       .select(withFiles)
       .where('asset.deletedAt', 'is', null)
-      .where('asset.visibility', '!=', AssetVisibility.HIDDEN)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .$if(!force, (qb) =>
         qb
           // If there aren't any entries, metadata extraction hasn't run yet which is required for thumbnails
@@ -117,7 +117,7 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, AssetFileType.THUMBNAIL] })
+  @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Thumbnail] })
   getAlbumThumbnailFiles(id: string, fileType?: AssetFileType) {
     return this.db
       .selectFrom('asset_file')
@@ -130,7 +130,7 @@ export class AssetJobRepository {
   private assetsWithPreviews() {
     return this.db
       .selectFrom('asset')
-      .where('asset.visibility', '!=', AssetVisibility.HIDDEN)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .where('asset.deletedAt', 'is', null)
       .innerJoin('asset_job_status as job_status', 'assetId', 'asset.id')
       .where('job_status.previewAt', 'is not', null);
@@ -167,7 +167,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .select(['asset.id', 'asset.visibility'])
-      .select((eb) => withFiles(eb, AssetFileType.PREVIEW))
+      .select((eb) => withFiles(eb, AssetFileType.Preview))
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }
@@ -179,7 +179,7 @@ export class AssetJobRepository {
       .select(['asset.id', 'asset.visibility'])
       .$call(withExifInner)
       .select((eb) => withFaces(eb, true))
-      .select((eb) => withFiles(eb, AssetFileType.PREVIEW))
+      .select((eb) => withFiles(eb, AssetFileType.Preview))
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }
@@ -225,7 +225,7 @@ export class AssetJobRepository {
             .select(['stack.id', 'stack.primaryAssetId'])
             .select((eb) => eb.fn<Asset[]>('array_agg', [eb.table('stacked')]).as('assets'))
             .where('stacked.deletedAt', 'is not', null)
-            .where('stacked.visibility', '=', AssetVisibility.TIMELINE)
+            .where('stacked.visibility', '=', AssetVisibility.Timeline)
             .whereRef('stacked.stackId', '=', 'stack.id')
             .groupBy('stack.id')
             .as('stacked_assets'),
@@ -241,11 +241,11 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .select(['asset.id'])
-      .where('asset.type', '=', AssetType.VIDEO)
+      .where('asset.type', '=', AssetType.Video)
       .$if(!force, (qb) =>
         qb
           .where((eb) => eb.or([eb('asset.encodedVideoPath', 'is', null), eb('asset.encodedVideoPath', '=', '')]))
-          .where('asset.visibility', '!=', AssetVisibility.HIDDEN),
+          .where('asset.visibility', '!=', AssetVisibility.Hidden),
       )
       .where('asset.deletedAt', 'is', null)
       .stream();
@@ -257,7 +257,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['asset.id', 'asset.ownerId', 'asset.originalPath', 'asset.encodedVideoPath'])
       .where('asset.id', '=', id)
-      .where('asset.type', '=', AssetType.VIDEO)
+      .where('asset.type', '=', AssetType.Video)
       .executeTakeFirst();
   }
 
@@ -327,7 +327,7 @@ export class AssetJobRepository {
       .$if(!force, (qb) =>
         qb.where((eb) => eb.or([eb('asset.sidecarPath', '=', ''), eb('asset.sidecarPath', 'is', null)])),
       )
-      .where('asset.visibility', '!=', AssetVisibility.HIDDEN)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .stream();
   }
 
