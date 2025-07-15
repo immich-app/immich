@@ -166,7 +166,7 @@ describe(AlbumService.name, () => {
       expect(mocks.user.get).toHaveBeenCalledWith('user-id', {});
       expect(mocks.user.getMetadata).toHaveBeenCalledWith(authStub.admin.user.id);
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['123']), false);
-      expect(mocks.event.emit).toHaveBeenCalledWith('album.invite', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AlbumInvite', {
         id: albumStub.empty.id,
         userId: 'user-id',
       });
@@ -209,7 +209,7 @@ describe(AlbumService.name, () => {
       expect(mocks.user.get).toHaveBeenCalledWith('user-id', {});
       expect(mocks.user.getMetadata).toHaveBeenCalledWith(authStub.admin.user.id);
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['123']), false);
-      expect(mocks.event.emit).toHaveBeenCalledWith('album.invite', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AlbumInvite', {
         id: albumStub.empty.id,
         userId: 'user-id',
       });
@@ -413,7 +413,7 @@ describe(AlbumService.name, () => {
         usersId: authStub.user2.user.id,
         albumsId: albumStub.sharedWithAdmin.id,
       });
-      expect(mocks.event.emit).toHaveBeenCalledWith('album.invite', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AlbumInvite', {
         id: albumStub.sharedWithAdmin.id,
         userId: userStub.user2.id,
       });
@@ -662,7 +662,7 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
-      expect(mocks.event.emit).toHaveBeenCalledWith('album.update', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: 'album-123',
         recipientId: 'admin_id',
       });

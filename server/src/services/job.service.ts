@@ -67,8 +67,8 @@ export class JobService extends BaseService {
   private services: ClassConstructor<unknown>[] = [];
   private nightlyJobsLock = false;
 
-  @OnEvent({ name: 'config.init' })
-  async onConfigInit({ newConfig: config }: ArgOf<'config.init'>) {
+  @OnEvent({ name: 'ConfigInit' })
+  async onConfigInit({ newConfig: config }: ArgOf<'ConfigInit'>) {
     if (this.worker === ImmichWorker.MICROSERVICES) {
       this.updateQueueConcurrency(config);
       return;
@@ -87,8 +87,8 @@ export class JobService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'config.update', server: true })
-  onConfigUpdate({ newConfig: config }: ArgOf<'config.update'>) {
+  @OnEvent({ name: 'ConfigUpdate', server: true })
+  onConfigUpdate({ newConfig: config }: ArgOf<'ConfigUpdate'>) {
     if (this.worker === ImmichWorker.MICROSERVICES) {
       this.updateQueueConcurrency(config);
       return;
@@ -101,7 +101,7 @@ export class JobService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.JobService })
+  @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.JobService })
   onBootstrap() {
     this.jobRepository.setup(this.services);
     if (this.worker === ImmichWorker.MICROSERVICES) {
@@ -243,8 +243,8 @@ export class JobService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'job.start' })
-  async onJobStart(...[queueName, job]: ArgsOf<'job.start'>) {
+  @OnEvent({ name: 'JobStart' })
+  async onJobStart(...[queueName, job]: ArgsOf<'JobStart'>) {
     const queueMetric = `immich.queues.${snakeCase(queueName)}.active`;
     this.telemetryRepository.jobs.addToGauge(queueMetric, 1);
     try {
@@ -255,7 +255,7 @@ export class JobService extends BaseService {
         await this.onDone(job);
       }
     } catch (error: Error | any) {
-      await this.eventRepository.emit('job.failed', { job, error });
+      await this.eventRepository.emit('JobFailed', { job, error });
     } finally {
       this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
     }

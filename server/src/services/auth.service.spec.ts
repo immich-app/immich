@@ -179,7 +179,7 @@ describe(AuthService.name, () => {
       });
 
       expect(mocks.session.delete).toHaveBeenCalledWith('token123');
-      expect(mocks.event.emit).toHaveBeenCalledWith('session.delete', { sessionId: 'token123' });
+      expect(mocks.event.emit).toHaveBeenCalledWith('SessionDelete', { sessionId: 'token123' });
     });
 
     it('should return the default redirect if auth type is OAUTH but oauth is not enabled', async () => {

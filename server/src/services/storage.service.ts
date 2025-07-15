@@ -11,7 +11,7 @@ const docsMessage = `Please see https://immich.app/docs/administration/system-in
 
 @Injectable()
 export class StorageService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap' })
+  @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap() {
     const envData = this.configRepository.getEnv();
 

@@ -80,7 +80,7 @@ export class AuthService extends BaseService {
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
     if (auth.session) {
       await this.sessionRepository.delete(auth.session.id);
-      await this.eventRepository.emit('session.delete', { sessionId: auth.session.id });
+      await this.eventRepository.emit('SessionDelete', { sessionId: auth.session.id });
     }
 
     return {

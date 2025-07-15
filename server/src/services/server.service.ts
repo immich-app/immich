@@ -23,7 +23,7 @@ import { isDuplicateDetectionEnabled, isFacialRecognitionEnabled, isSmartSearchE
 
 @Injectable()
 export class ServerService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap' })
+  @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap(): Promise<void> {
     const featureFlags = await this.getFeatures();
     if (featureFlags.configFile) {

@@ -152,7 +152,7 @@ export const onBeforeLink = async (
 
   if (motionAsset && motionAsset.visibility === AssetVisibility.TIMELINE) {
     await assetRepository.update({ id: livePhotoVideoId, visibility: AssetVisibility.HIDDEN });
-    await eventRepository.emit('asset.hide', { assetId: motionAsset.id, userId });
+    await eventRepository.emit('AssetHide', { assetId: motionAsset.id, userId });
   }
 };
 
@@ -177,7 +177,7 @@ export const onAfterUnlink = async (
   { userId, livePhotoVideoId, visibility }: { userId: string; livePhotoVideoId: string; visibility: AssetVisibility },
 ) => {
   await assetRepository.update({ id: livePhotoVideoId, visibility });
-  await eventRepository.emit('asset.show', { assetId: livePhotoVideoId, userId });
+  await eventRepository.emit('AssetShow', { assetId: livePhotoVideoId, userId });
 };
 
 export function mapToUploadFile(file: ImmichFile): UploadFile {
