@@ -62,8 +62,8 @@ export class StorageService extends BaseService {
     });
   }
 
-  @OnJob({ name: JobName.DeleteFiles, queue: QueueName.BackgroundTask })
-  async handleDeleteFiles(job: JobOf<JobName.DeleteFiles>): Promise<JobStatus> {
+  @OnJob({ name: JobName.FileDelete, queue: QueueName.BackgroundTask })
+  async handleDeleteFiles(job: JobOf<JobName.FileDelete>): Promise<JobStatus> {
     const { files } = job;
 
     // TODO: one job per file

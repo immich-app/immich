@@ -384,7 +384,7 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DeleteFiles,
+        name: JobName.FileDelete,
         data: { files: ['fake_path/asset_1.jpeg', undefined] },
       });
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
@@ -409,7 +409,7 @@ describe(AssetMediaService.name, () => {
       );
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DeleteFiles,
+        name: JobName.FileDelete,
         data: { files: ['fake_path/asset_1.jpeg', undefined] },
       });
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
@@ -815,7 +815,7 @@ describe(AssetMediaService.name, () => {
       expect(mocks.asset.create).not.toHaveBeenCalled();
       expect(mocks.asset.updateAll).not.toHaveBeenCalled();
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DeleteFiles,
+        name: JobName.FileDelete,
         data: { files: [updatedFile.originalPath, undefined] },
       });
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
@@ -912,7 +912,7 @@ describe(AssetMediaService.name, () => {
       await sut.onUploadError(request, file);
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DeleteFiles,
+        name: JobName.FileDelete,
         data: { files: ['upload/upload/user-id/ra/nd/random-uuid.jpg'] },
       });
     });

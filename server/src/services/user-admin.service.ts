@@ -104,7 +104,7 @@ export class UserAdminService extends BaseService {
     const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
 
     if (force) {
-      await this.jobRepository.queue({ name: JobName.UserDeletion, data: { id: user.id, force } });
+      await this.jobRepository.queue({ name: JobName.UserDelete, data: { id: user.id, force } });
     }
 
     return mapUserAdmin(user);

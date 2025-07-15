@@ -49,7 +49,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GenerateThumbnails,
+          name: JobName.AssetGenerateThumbnails,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -57,7 +57,7 @@ describe(MediaService.name, () => {
       expect(mocks.person.getAll).toHaveBeenCalledWith(undefined);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GeneratePersonThumbnail,
+          name: JobName.PersonGenerateThumbnail,
           data: { id: personStub.newThumbnail.id },
         },
       ]);
@@ -72,7 +72,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GenerateThumbnails,
+          name: JobName.AssetGenerateThumbnails,
           data: { id: assetStub.trashed.id },
         },
       ]);
@@ -87,7 +87,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GenerateThumbnails,
+          name: JobName.AssetGenerateThumbnails,
           data: { id: assetStub.archived.id },
         },
       ]);
@@ -106,7 +106,7 @@ describe(MediaService.name, () => {
       expect(mocks.person.update).toHaveBeenCalledTimes(1);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GeneratePersonThumbnail,
+          name: JobName.PersonGenerateThumbnail,
           data: {
             id: personStub.newThumbnail.id,
           },
@@ -122,7 +122,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GenerateThumbnails,
+          name: JobName.AssetGenerateThumbnails,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -138,7 +138,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GenerateThumbnails,
+          name: JobName.AssetGenerateThumbnails,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -154,7 +154,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GenerateThumbnails,
+          name: JobName.AssetGenerateThumbnails,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -173,10 +173,10 @@ describe(MediaService.name, () => {
 
       expect(mocks.storage.removeEmptyDirs).toHaveBeenCalledTimes(2);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.MigrateAsset, data: { id: assetStub.image.id } },
+        { name: JobName.AssetFileMigration, data: { id: assetStub.image.id } },
       ]);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.MigratePerson, data: { id: personStub.withName.id } },
+        { name: JobName.PersonFileMigration, data: { id: personStub.withName.id } },
       ]);
     });
   });
@@ -1243,7 +1243,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForVideoConversion).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.VideoConversation,
+          name: JobName.AssetEncodeVideo,
           data: { id: assetStub.video.id },
         },
       ]);
@@ -1257,7 +1257,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForVideoConversion).toHaveBeenCalledWith(void 0);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.VideoConversation,
+          name: JobName.AssetEncodeVideo,
           data: { id: assetStub.video.id },
         },
       ]);
@@ -1616,7 +1616,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).not.toHaveBeenCalled();
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DeleteFiles,
+        name: JobName.FileDelete,
         data: { files: [asset.encodedVideoPath] },
       });
     });
