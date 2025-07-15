@@ -96,6 +96,8 @@ export class SyncAssetV1 {
   isFavorite!: boolean;
   @ApiProperty({ enumName: 'AssetVisibility', enum: AssetVisibility })
   visibility!: AssetVisibility;
+  livePhotoVideoId!: string | null;
+  stackId!: string | null;
 }
 
 @ExtraModel()

@@ -16,14 +16,14 @@ import {
 } from 'src/sql-tools';
 
 @Table('person')
-@UpdatedAtTrigger('person_updated_at')
+@UpdatedAtTrigger('person_updatedAt')
 @AfterDeleteTrigger({
   scope: 'statement',
   function: person_delete_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
 })
-@Check({ name: 'CHK_b0f82b0ed662bfc24fbb58bb45', expression: `"birthDate" <= CURRENT_DATE` })
+@Check({ name: 'person_birthDate_chk', expression: `"birthDate" <= CURRENT_DATE` })
 export class PersonTable {
   @PrimaryGeneratedColumn('uuid')
   id!: Generated<string>;
@@ -58,6 +58,6 @@ export class PersonTable {
   @Column({ type: 'character varying', nullable: true, default: null })
   color!: string | null;
 
-  @UpdateIdColumn({ indexName: 'IDX_person_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

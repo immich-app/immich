@@ -87,6 +87,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                   height: row.height,
                   isFavorite: row.isFavorite,
                   durationInSeconds: row.durationInSeconds,
+                  livePhotoVideoId: row.livePhotoVideoId,
                 )
               : LocalAsset(
                   id: row.localId!,
