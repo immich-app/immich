@@ -1,19 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty } from 'class-validator';
 import { JobCommand, ManualJobName, QueueName } from 'src/enum';
-import { ValidateBoolean } from 'src/validation';
+import { ValidateBoolean, ValidateEnum } from 'src/validation';
 
 export class JobIdParamDto {
-  @IsNotEmpty()
-  @IsEnum(QueueName)
-  @ApiProperty({ type: String, enum: QueueName, enumName: 'JobName' })
+  @ValidateEnum({ enum: QueueName, name: 'JobName' })
   id!: QueueName;
 }
 
 export class JobCommandDto {
-  @IsNotEmpty()
-  @IsEnum(JobCommand)
-  @ApiProperty({ type: 'string', enum: JobCommand, enumName: 'JobCommand' })
+  @ValidateEnum({ enum: JobCommand, name: 'JobCommand' })
   command!: JobCommand;
 
   @ValidateBoolean({ optional: true })
@@ -21,8 +16,7 @@ export class JobCommandDto {
 }
 
 export class JobCreateDto {
-  @IsEnum(ManualJobName)
-  @ApiProperty({ type: 'string', enum: ManualJobName, enumName: 'ManualJobName' })
+  @ValidateEnum({ enum: ManualJobName, name: 'ManualJobName' })
   name!: ManualJobName;
 }
 

@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 import _ from 'lodash';
 import { SharedLink } from 'src/database';
 import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { SharedLinkType } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class SharedLinkSearchDto {
   @ValidateUUID({ optional: true })
@@ -13,8 +13,7 @@ export class SharedLinkSearchDto {
 }
 
 export class SharedLinkCreateDto {
-  @IsEnum(SharedLinkType)
-  @ApiProperty({ enum: SharedLinkType, enumName: 'SharedLinkType' })
+  @ValidateEnum({ enum: SharedLinkType, name: 'SharedLinkType' })
   type!: SharedLinkType;
 
   @ValidateUUID({ each: true, optional: true })
@@ -90,7 +89,7 @@ export class SharedLinkResponseDto {
   userId!: string;
   key!: string;
 
-  @ApiProperty({ enumName: 'SharedLinkType', enum: SharedLinkType })
+  @ValidateEnum({ enum: SharedLinkType, name: 'SharedLinkType' })
   type!: SharedLinkType;
   createdAt!: Date;
   expiresAt!: Date | null;
