@@ -199,16 +199,6 @@ describe(StackService.name, () => {
       expect(mocks.event.emit).not.toHaveBeenCalled();
     });
 
-    it('should require asset.update permissions', async () => {
-      mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
-      await expect(sut.removeAsset(authStub.admin, 'stack-id', 'asset-id')).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(mocks.asset.getById).not.toHaveBeenCalled();
-      expect(mocks.stack.getById).not.toHaveBeenCalled();
-      expect(mocks.asset.update).not.toHaveBeenCalled();
-      expect(mocks.event.emit).not.toHaveBeenCalled();
-    });
-
     it('should fail if the asset could not be found', async () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['unknown-asset']));

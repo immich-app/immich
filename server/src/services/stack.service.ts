@@ -60,7 +60,6 @@ export class StackService extends BaseService {
 
   async removeAsset(auth: AuthDto, stackId: string, assetId: string): Promise<StackResponseDto> {
     await this.requireAccess({ auth, permission: Permission.STACK_UPDATE, ids: [stackId] });
-    await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: [assetId] });
 
     //Verify the asset is in the stack
     const asset = await this.assetRepository.getById(assetId);
