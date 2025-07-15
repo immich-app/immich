@@ -1,17 +1,17 @@
 import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
 import { Column, CreateDateColumn, Generated, Table, Timestamp } from 'src/sql-tools';
 
-@Table('memories_audit')
+@Table('memory_audit')
 export class MemoryAuditTable {
   @PrimaryGeneratedUuidV7Column()
   id!: Generated<string>;
 
-  @Column({ type: 'uuid', indexName: 'IDX_memories_audit_memory_id' })
+  @Column({ type: 'uuid', index: true })
   memoryId!: string;
 
-  @Column({ type: 'uuid', indexName: 'IDX_memories_audit_user_id' })
+  @Column({ type: 'uuid', index: true })
   userId!: string;
 
-  @CreateDateColumn({ default: () => 'clock_timestamp()', indexName: 'IDX_memories_audit_deleted_at' })
+  @CreateDateColumn({ default: () => 'clock_timestamp()', index: true })
   deletedAt!: Generated<Timestamp>;
 }

@@ -46,6 +46,12 @@ services:
 
 When a new asset is uploaded it kicks off a series of jobs, which include metadata extraction, thumbnail generation, machine learning tasks, and storage template migration, if enabled. To view the status of a job navigate to the Administration -> Jobs page.
 
-Additionally, some jobs run on a schedule, which is every night at midnight. This schedule, with the exception of [External Libraries](/docs/features/libraries) scanning, cannot be changed.
-
 <img src={require('./img/admin-jobs.webp').default} width="60%" title="Admin jobs" />
+
+Additionally, some jobs (such as memories generation) run on a schedule, which is every night at midnight by default. To change when they run or enable/disable a job navigate to System Settings -> [Nightly Tasks Settings](https://my.immich.app/admin/system-settings?isOpen=nightly-tasks).
+
+<img src={require('./img/admin-nightly-tasks.webp').default} width="60%" title="Admin nightly tasks" />
+
+:::note
+Some jobs ([External Libraries](/docs/features/libraries) scanning, Database Dump) are configured in their own sections in System Settings.
+:::

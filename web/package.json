@@ -85,7 +85,7 @@
     "dotenv": "^16.4.7",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.0",
-    "eslint-p": "^0.24.0",
+    "eslint-p": "^0.25.0",
     "eslint-plugin-compat": "^6.0.2",
     "eslint-plugin-svelte": "^3.9.0",
     "eslint-plugin-unicorn": "^59.0.0",

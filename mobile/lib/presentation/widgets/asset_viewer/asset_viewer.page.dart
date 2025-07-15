@@ -15,6 +15,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/top_app_bar.widg
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
@@ -165,7 +166,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onAssetChanged(int index) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
     ref.read(currentAssetNotifier.notifier).setAsset(asset);
-    if (asset.isVideo) {
+    if (asset.isVideo || asset.isMotionPhoto) {
       ref.read(videoPlaybackValueProvider.notifier).reset();
       ref.read(videoPlayerControlsProvider.notifier).pause();
     }
@@ -473,11 +474,16 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
+  void _onLongPress(_, __, ___) {
+    ref.read(isPlayingMotionVideoProvider.notifier).playing = true;
+  }
+
   PhotoViewGalleryPageOptions _assetBuilder(BuildContext ctx, int index) {
     scaffoldContext ??= ctx;
     final asset = ref.read(timelineServiceProvider).getAsset(index);
+    final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
 
-    if (asset.isImage) {
+    if (asset.isImage && !isPlayingMotionVideo) {
       return _imageBuilder(ctx, asset);
     }
 
@@ -500,6 +506,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onTapDown: _onTapDown,
+      onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
       errorBuilder: (_, __, ___) => Container(
         width: ctx.width,
         height: ctx.height,
@@ -561,6 +568,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Using multiple selectors to avoid unnecessary rebuilds for other state changes
     ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
     ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
+    ref.watch(isPlayingMotionVideoProvider);
 
     // Currently it is not possible to scroll the asset when the bottom sheet is open all the way.
     // Issue: https://github.com/flutter/flutter/issues/109037

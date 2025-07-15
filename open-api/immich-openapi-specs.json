@@ -13824,6 +13824,10 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "livePhotoVideoId": {
+            "nullable": true,
+            "type": "string"
+          },
           "localDateTime": {
             "format": "date-time",
             "nullable": true,
@@ -13833,6 +13837,10 @@
             "type": "string"
           },
           "ownerId": {
+            "type": "string"
+          },
+          "stackId": {
+            "nullable": true,
             "type": "string"
           },
           "thumbhash": {
@@ -13862,9 +13870,11 @@
           "fileModifiedAt",
           "id",
           "isFavorite",
+          "livePhotoVideoId",
           "localDateTime",
           "originalFileName",
           "ownerId",
+          "stackId",
           "thumbhash",
           "type",
           "visibility"

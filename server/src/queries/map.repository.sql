@@ -3,28 +3,28 @@
 -- MapRepository.getMapMarkers
 select
   "id",
-  "exif"."latitude" as "lat",
-  "exif"."longitude" as "lon",
-  "exif"."city",
-  "exif"."state",
-  "exif"."country"
+  "asset_exif"."latitude" as "lat",
+  "asset_exif"."longitude" as "lon",
+  "asset_exif"."city",
+  "asset_exif"."state",
+  "asset_exif"."country"
 from
-  "assets"
-  inner join "exif" on "assets"."id" = "exif"."assetId"
-  and "exif"."latitude" is not null
-  and "exif"."longitude" is not null
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  and "asset_exif"."latitude" is not null
+  and "asset_exif"."longitude" is not null
 where
-  "assets"."visibility" = $1
+  "asset"."visibility" = $1
   and "deletedAt" is null
   and (
     "ownerId" in ($2)
     or exists (
       select
       from
-        "albums_assets_assets"
+        "album_asset"
       where
-        "assets"."id" = "albums_assets_assets"."assetsId"
-        and "albums_assets_assets"."albumsId" in ($3)
+        "asset"."id" = "album_asset"."assetsId"
+        and "album_asset"."albumsId" in ($3)
     )
   )
 order by
