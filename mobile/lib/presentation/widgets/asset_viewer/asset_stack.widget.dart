@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
@@ -20,15 +21,17 @@ class AssetStackRow extends ConsumerWidget {
       opacity = 0;
     }
 
+    final asset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
+
     return IgnorePointer(
       ignoring: opacity < 255,
       child: AnimatedOpacity(
         opacity: opacity / 255,
         duration: Durations.short2,
-        child: ref.watch(assetWithStackNotifier).when(
+        child: ref.watch(stackChildrenNotifier(asset)).when(
               data: (state) => SizedBox.square(
                 dimension: 80,
-                child: _StackList(state: state),
+                child: _StackList(stack: state),
               ),
               error: (_, __) => const SizedBox.shrink(),
               loading: () => const SizedBox.shrink(),
@@ -39,9 +42,9 @@ class AssetStackRow extends ConsumerWidget {
 }
 
 class _StackList extends ConsumerWidget {
-  final ViewerStackState state;
+  final List<RemoteAsset> stack;
 
-  const _StackList({required this.state});
+  const _StackList({required this.stack});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -52,20 +55,21 @@ class _StackList extends ConsumerWidget {
         right: 5,
         bottom: 30,
       ),
-      itemCount: state.assets.length,
+      itemCount: stack.length,
       itemBuilder: (ctx, index) {
-        final asset = state.assets[index];
+        final asset = stack[index];
         return Padding(
           padding: const EdgeInsets.only(right: 5),
           child: GestureDetector(
             onTap: () {
-              ref.read(assetWithStackNotifier.notifier).setIndex(index);
+              ref.read(assetViewerProvider.notifier).setStackIndex(index);
               ref.read(currentAssetNotifier.notifier).setAsset(asset);
             },
             child: Container(
               height: 60,
               width: 60,
-              decoration: index == state.stackIndex
+              decoration: index ==
+                      ref.watch(assetViewerProvider.select((s) => s.stackIndex))
                   ? const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.all(Radius.circular(6)),

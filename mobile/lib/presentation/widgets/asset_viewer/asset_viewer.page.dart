@@ -169,8 +169,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onAssetChanged(int index) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
+    // Always holds the current asset from the timeline
+    ref.read(assetViewerProvider.notifier).setAsset(asset);
+    // The currentAssetNotifier actually holds the current asset that is displayed
+    // which could be stack children as well
     ref.read(currentAssetNotifier.notifier).setAsset(asset);
-    ref.read(assetWithStackNotifier.notifier).changeAsset(asset);
     if (asset.isVideo || asset.isMotionPhoto) {
       ref.read(videoPlaybackValueProvider.notifier).reset();
       ref.read(videoPlayerControlsProvider.notifier).pause();
@@ -457,7 +460,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     ImageChunkEvent? progress,
     int index,
   ) {
-    final asset = ref.read(timelineServiceProvider).getAsset(index);
+    BaseAsset asset = ref.read(timelineServiceProvider).getAsset(index);
+    final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
+    if (stackChildren != null && stackChildren.isNotEmpty) {
+      asset = stackChildren
+          .elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
+    }
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -486,9 +494,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   PhotoViewGalleryPageOptions _assetBuilder(BuildContext ctx, int index) {
     scaffoldContext ??= ctx;
     BaseAsset asset = ref.read(timelineServiceProvider).getAsset(index);
-    final stackState = ref.read(assetWithStackNotifier).valueOrNull;
-    if (stackState != null && stackState.hasStack) {
-      asset = stackState.currentAsset;
+    final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
+    if (stackChildren != null && stackChildren.isNotEmpty) {
+      asset = stackChildren
+          .elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
     }
 
     final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
@@ -577,8 +586,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Using multiple selectors to avoid unnecessary rebuilds for other state changes
     ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
     ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
+    ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     ref.watch(isPlayingMotionVideoProvider);
-    ref.watch(assetWithStackNotifier);
 
     // Currently it is not possible to scroll the asset when the bottom sheet is open all the way.
     // Issue: https://github.com/flutter/flutter/issues/109037
