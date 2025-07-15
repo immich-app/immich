@@ -10,14 +10,16 @@ final assetApiRepositoryProvider = Provider(
   (ref) => AssetApiRepository(
     ref.watch(apiServiceProvider).assetsApi,
     ref.watch(apiServiceProvider).searchApi,
+    ref.watch(apiServiceProvider).stacksApi,
   ),
 );
 
 class AssetApiRepository extends ApiRepository {
   final AssetsApi _api;
   final SearchApi _searchApi;
+  final StacksApi _stacksApi;
 
-  AssetApiRepository(this._api, this._searchApi);
+  AssetApiRepository(this._api, this._searchApi, this._stacksApi);
 
   Future<Asset> update(String id, {String? description}) async {
     final response = await checkNull(
@@ -81,6 +83,14 @@ class AssetApiRepository extends ApiRepository {
         longitude: location.longitude,
       ),
     );
+  }
+
+  Future<StackResponseDto> stack(List<String> ids) async {
+    return checkNull(_stacksApi.createStack(StackCreateDto(assetIds: ids)));
+  }
+
+  Future<void> unStack(List<String> ids) async {
+    return _stacksApi.deleteStacks(BulkIdsDto(ids: ids));
   }
 
   _mapVisibility(AssetVisibilityEnum visibility) => switch (visibility) {

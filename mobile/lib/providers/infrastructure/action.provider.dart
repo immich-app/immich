@@ -246,6 +246,36 @@ class ActionNotifier extends Notifier<void> {
       );
     }
   }
+
+  Future<ActionResult> stack(String userId, ActionSource source) async {
+    final ids = _getOwnedRemoteForSource(source);
+    try {
+      await _service.stack(userId, ids);
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to stack assets', error, stack);
+      return ActionResult(
+        count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
+
+  Future<ActionResult> unStack(ActionSource source) async {
+    final ids = _getOwnedRemoteForSource(source);
+    try {
+      await _service.unStack(ids);
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to unstack assets', error, stack);
+      return ActionResult(
+        count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
 }
 
 extension on Iterable<RemoteAsset> {

@@ -6,28 +6,22 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class StackActionButton extends ConsumerWidget {
+class UnStackActionButton extends ConsumerWidget {
   final ActionSource source;
 
-  const StackActionButton({super.key, required this.source});
+  const UnStackActionButton({super.key, required this.source});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
 
-    final user = ref.watch(currentUserProvider);
-    if (user == null) {
-      throw Exception('User must be logged in to access stack action');
-    }
-
-    final result = await ref.read(actionProvider.notifier).stack(user.id, source);
+    final result = await ref.read(actionProvider.notifier).unStack(source);
     ref.read(multiSelectProvider.notifier).reset();
 
-    final successMessage = 'stack_action_prompt'.t(
+    final successMessage = 'unstack_action_prompt'.t(
       context: context,
       args: {'count': result.count.toString()},
     );
@@ -48,7 +42,7 @@ class StackActionButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
       iconData: Icons.filter_none_rounded,
-      label: "stack".t(context: context),
+      label: "unstack".t(context: context),
       onPressed: () => _onTap(context, ref),
     );
   }
