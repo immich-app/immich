@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
+import 'package:immich_mobile/domain/models/stack.model.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart'
     hide ExifInfo;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
@@ -9,7 +10,6 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-import 'package:openapi/api.dart' show StackResponseDto;
 
 class RemoteAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -154,14 +154,12 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> stack(String userId, List<String> ids, StackResponseDto stack) {
+  Future<void> stack(String userId, StackResponse stack) {
     return _db.transaction(() async {
       final stackIds = await _db.managers.stackEntity
-        .filter((row) => row.primaryAssetId.id.isIn(ids))
+        .filter((row) => row.primaryAssetId.id.isIn(stack.assetIds))
         .map((row) => row.id)
         .get();
-
-      final assetIds = stack.assets.map((asset) => asset.id);
 
       await _db.stackEntity.deleteWhere((row) => row.id.isIn(stackIds));
 
@@ -177,7 +175,7 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
           onConflict: DoUpdate((_) => companion),
         );
 
-        for (final assetId in assetIds) {
+        for (final assetId in stack.assetIds) {
           batch.update(
             _db.remoteAssetEntity,
             RemoteAssetEntityCompanion(

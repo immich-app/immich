@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/stack.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
@@ -85,8 +86,10 @@ class AssetApiRepository extends ApiRepository {
     );
   }
 
-  Future<StackResponseDto> stack(List<String> ids) async {
-    return checkNull(_stacksApi.createStack(StackCreateDto(assetIds: ids)));
+  Future<StackResponse> stack(List<String> ids) async {
+    final responseDto = await checkNull(_stacksApi.createStack(StackCreateDto(assetIds: ids)));
+
+    return responseDto.toStack();
   }
 
   Future<void> unStack(List<String> ids) async {
@@ -105,5 +108,15 @@ class AssetApiRepository extends ApiRepository {
 
     // we need to get the MIME of the thumbnail once that gets added to the API
     return response.originalMimeType;
+  }
+}
+
+extension on StackResponseDto {
+  StackResponse toStack() {
+    return StackResponse(
+      id: id,
+      primaryAssetId: primaryAssetId,
+      assetIds: assets.map((asset) => asset.id).toList(),
+    );
   }
 }
