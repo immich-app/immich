@@ -854,6 +854,43 @@ class DriftPartnerDetailRouteArgs {
 }
 
 /// generated route for
+/// [DriftPlaceDetailPage]
+class DriftPlaceDetailRoute extends PageRouteInfo<DriftPlaceDetailRouteArgs> {
+  DriftPlaceDetailRoute({
+    Key? key,
+    required String place,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftPlaceDetailRoute.name,
+          args: DriftPlaceDetailRouteArgs(key: key, place: place),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftPlaceDetailRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftPlaceDetailRouteArgs>();
+      return DriftPlaceDetailPage(key: args.key, place: args.place);
+    },
+  );
+}
+
+class DriftPlaceDetailRouteArgs {
+  const DriftPlaceDetailRouteArgs({this.key, required this.place});
+
+  final Key? key;
+
+  final String place;
+
+  @override
+  String toString() {
+    return 'DriftPlaceDetailRouteArgs{key: $key, place: $place}';
+  }
+}
+
+/// generated route for
 /// [DriftPlacePage]
 class DriftPlaceRoute extends PageRouteInfo<DriftPlaceRouteArgs> {
   DriftPlaceRoute({
