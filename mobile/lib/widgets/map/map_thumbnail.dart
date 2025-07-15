@@ -63,8 +63,14 @@ class MapThumbnail extends HookConsumerWidget {
     }
 
     Future<void> onStyleLoaded() async {
-      if (showMarkerPin && controller.value != null) {
-        await controller.value?.addMarkerAtLatLng(centre);
+      try {
+        if (showMarkerPin && controller.value != null) {
+          await controller.value?.addMarkerAtLatLng(centre);
+        }
+      } finally {
+        // Calling methods on the controller after it is disposed will throw an error
+        // We do not have a way to check if the controller is disposed for now
+        // https://github.com/maplibre/flutter-maplibre-gl/issues/192
       }
       styleLoaded.value = true;
     }

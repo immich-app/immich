@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -27,6 +28,7 @@ class Timeline extends StatelessWidget {
     this.topSliverWidget,
     this.topSliverWidgetHeight,
     this.showStorageIndicator = false,
+    this.withStack = false,
     this.appBar,
     this.bottomSheet = const GeneralBottomSheet(),
   });
@@ -36,6 +38,8 @@ class Timeline extends StatelessWidget {
   final bool showStorageIndicator;
   final Widget? appBar;
   final Widget? bottomSheet;
+  final bool withStack;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,6 +54,7 @@ class Timeline extends StatelessWidget {
                   settingsProvider.select((s) => s.get(Setting.tilesPerRow)),
                 ),
                 showStorageIndicator: showStorageIndicator,
+                withStack: withStack,
               ),
             ),
           ],

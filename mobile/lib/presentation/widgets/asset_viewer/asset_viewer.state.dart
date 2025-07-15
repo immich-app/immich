@@ -1,5 +1,10 @@
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+class ViewerOpenBottomSheetEvent extends Event {
+  const ViewerOpenBottomSheetEvent();
+}
 
 class AssetViewerState {
   final int backgroundOpacity;

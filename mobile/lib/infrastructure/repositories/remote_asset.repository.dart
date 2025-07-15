@@ -30,23 +30,64 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
   }
 
   Stream<RemoteAsset?> watchAsset(String id) {
-    final query = _db.remoteAssetEntity
-        .select()
-        .addColumns([_db.localAssetEntity.id]).join([
+    final stackCountRef = _db.stackEntity.id.count();
+
+    final query = _db.remoteAssetEntity.select().addColumns([
+      _db.localAssetEntity.id,
+      _db.stackEntity.primaryAssetId,
+      stackCountRef,
+    ]).join([
       leftOuterJoin(
         _db.localAssetEntity,
         _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
         useColumns: false,
       ),
+      leftOuterJoin(
+        _db.stackEntity,
+        _db.stackEntity.primaryAssetId.equalsExp(_db.remoteAssetEntity.id),
+        useColumns: false,
+      ),
+      leftOuterJoin(
+        _db.remoteAssetEntity.createAlias('stacked_assets'),
+        _db.stackEntity.id.equalsExp(
+          _db.remoteAssetEntity.createAlias('stacked_assets').stackId,
+        ),
+        useColumns: false,
+      ),
     ])
-      ..where(_db.remoteAssetEntity.id.equals(id));
+      ..where(_db.remoteAssetEntity.id.equals(id))
+      ..groupBy([
+        _db.remoteAssetEntity.id,
+        _db.localAssetEntity.id,
+        _db.stackEntity.primaryAssetId,
+      ]);
 
     return query.map((row) {
       final asset = row.readTable(_db.remoteAssetEntity).toDto();
+      final primaryAssetId = row.read(_db.stackEntity.primaryAssetId);
+      final stackCount =
+          primaryAssetId == id ? (row.read(stackCountRef) ?? 0) : 0;
+
       return asset.copyWith(
         localId: row.read(_db.localAssetEntity.id),
+        stackCount: stackCount,
       );
     }).watchSingleOrNull();
+  }
+
+  Future<List<RemoteAsset>> getStackChildren(RemoteAsset asset) {
+    if (asset.stackId == null) {
+      return Future.value([]);
+    }
+
+    final query = _db.remoteAssetEntity.select()
+      ..where(
+        (row) =>
+            row.stackId.equals(asset.stackId!) & row.id.equals(asset.id).not(),
+      )
+      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)]);
+
+    return query.map((row) => row.toDto()).get();
   }
 
   Future<ExifInfo?> getExif(String id) {

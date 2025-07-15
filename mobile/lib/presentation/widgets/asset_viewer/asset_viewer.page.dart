@@ -4,10 +4,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.widget.dart';
@@ -83,6 +86,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   double previousExtent = _kBottomSheetMinimumExtent;
   Offset dragDownPosition = Offset.zero;
   int totalAssets = 0;
+  int stackIndex = 0;
   BuildContext? scaffoldContext;
   Map<String, GlobalKey> videoPlayerKeys = {};
 
@@ -166,6 +170,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onAssetChanged(int index) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
     ref.read(currentAssetNotifier.notifier).setAsset(asset);
+    ref.read(assetWithStackNotifier.notifier).changeAsset(asset);
     if (asset.isVideo || asset.isMotionPhoto) {
       ref.read(videoPlaybackValueProvider.notifier).reset();
       ref.read(videoPlayerControlsProvider.notifier).pause();
@@ -480,9 +485,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   PhotoViewGalleryPageOptions _assetBuilder(BuildContext ctx, int index) {
     scaffoldContext ??= ctx;
-    final asset = ref.read(timelineServiceProvider).getAsset(index);
-    final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
+    BaseAsset asset = ref.read(timelineServiceProvider).getAsset(index);
+    final stackState = ref.read(assetWithStackNotifier).valueOrNull;
+    if (stackState != null && stackState.hasStack) {
+      asset = stackState.currentAsset;
+    }
 
+    final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
     if (asset.isImage && !isPlayingMotionVideo) {
       return _imageBuilder(ctx, asset);
     }
@@ -569,6 +578,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
     ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
     ref.watch(isPlayingMotionVideoProvider);
+    ref.watch(assetWithStackNotifier);
 
     // Currently it is not possible to scroll the asset when the bottom sheet is open all the way.
     // Issue: https://github.com/flutter/flutter/issues/109037
@@ -596,7 +606,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           backgroundDecoration: BoxDecoration(color: backgroundColor),
           enablePanAlways: true,
         ),
-        bottomNavigationBar: const ViewerBottomBar(),
+        bottomNavigationBar: showingBottomSheet
+            ? const SizedBox.shrink()
+            : const Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AssetStackRow(),
+                  ViewerBottomBar(),
+                ],
+              ),
       ),
     );
   }
