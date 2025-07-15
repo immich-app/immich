@@ -504,6 +504,22 @@ class BackupOptionsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ChangeExperiencePage]
+class ChangeExperienceRoute extends PageRouteInfo<void> {
+  const ChangeExperienceRoute({List<PageRouteInfo>? children})
+      : super(ChangeExperienceRoute.name, initialChildren: children);
+
+  static const String name = 'ChangeExperienceRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ChangeExperiencePage();
+    },
+  );
+}
+
+/// generated route for
 /// [ChangePasswordPage]
 class ChangePasswordRoute extends PageRouteInfo<void> {
   const ChangePasswordRoute({List<PageRouteInfo>? children})

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -8,9 +9,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custome_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
@@ -25,6 +28,7 @@ class AdvancedSettings extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     bool isLoggedIn = ref.read(currentUserProvider) != null;
 
+    final betaTimeline = useAppSettingsState(AppSettingsEnum.betaTimeline);
     final advancedTroubleshooting =
         useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
     final manageLocalMediaAndroid =
@@ -54,7 +58,54 @@ class AdvancedSettings extends HookConsumerWidget {
       return false;
     }
 
+    void _onBetaTimelineChanged(bool enabled) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: enabled
+                ? const Text("Enable Beta Timeline")
+                : const Text("Disable Beta Timeline"),
+            content: enabled
+                ? const Text(
+                    "Are you sure you want to enable the beta timeline?",
+                  )
+                : const Text(
+                    "Are you sure you want to disable the beta timeline?",
+                  ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  if (enabled) {
+                    migrateToNewTimeline(ref);
+                  } else {
+                    await migrateToOldTimeline(ref);
+                  }
+                  context.router.replaceAll([const ChangeExperienceRoute()]);
+                  return;
+                },
+                child: const Text("Yes"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text("No"),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     final advancedSettings = [
+      SettingsSwitchListTile(
+        enabled: true,
+        valueNotifier: betaTimeline,
+        onChanged: _onBetaTimelineChanged,
+        title: "advanced_settings_beta_timeline_title".tr(),
+        subtitle: "advanced_settings_beta_timeline_subtitle".tr(),
+      ),
       SettingsSwitchListTile(
         enabled: true,
         valueNotifier: advancedTroubleshooting,

@@ -387,6 +387,8 @@
   "advanced_settings_tile_subtitle": "Advanced user's settings",
   "advanced_settings_troubleshooting_subtitle": "Enable additional features for troubleshooting",
   "advanced_settings_troubleshooting_title": "Troubleshooting",
+  "advanced_settings_beta_timeline_title": "Beta Timeline",
+  "advanced_settings_beta_timeline_subtitle": "Try the new app experience.",
   "age_months": "Age {months, plural, one {# month} other {# months}}",
   "age_year_months": "Age 1 year, {months, plural, one {# month} other {# months}}",
   "age_years": "{years, plural, other {Age #}}",

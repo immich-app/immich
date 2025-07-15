@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -18,8 +19,12 @@ import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.d
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
@@ -211,4 +216,25 @@ class _DeviceAsset {
   final DateTime? dateTime;
 
   const _DeviceAsset({required this.assetId, this.hash, this.dateTime});
+}
+
+Future<void> migrateToNewTimeline(WidgetRef ref) async {
+  await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+  final backgroundManager = ref.read(backgroundSyncProvider);
+  ref.read(backupProvider.notifier).cancelBackup();
+
+  Future.wait([
+    backgroundManager.syncLocal().then(
+      (_) {
+        Logger("migrateToNewTimeline").fine("Hashing assets after syncLocal");
+        backgroundManager.hashAssets();
+      },
+    ),
+    backgroundManager.syncRemote(),
+  ]);
+}
+
+Future<void> migrateToOldTimeline(WidgetRef ref) async {
+  final backgroundManager = ref.read(backgroundSyncProvider);
+  await backgroundManager.cancel();
 }
