@@ -51,7 +51,7 @@ interface UpsertFileOptions {
 export class MediaService extends BaseService {
   videoInterfaces: VideoInterfaces = { dri: [], mali: false };
 
-  @OnEvent({ name: 'app.bootstrap' })
+  @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap() {
     const [dri, mali] = await Promise.all([this.getDevices(), this.hasMaliOpenCL()]);
     this.videoInterfaces = { dri, mali };

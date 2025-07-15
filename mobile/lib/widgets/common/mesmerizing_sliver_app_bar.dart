@@ -482,10 +482,10 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
       builder: (context, child) {
         return Transform.scale(
           scale: _zoomAnimation.value,
-          filterQuality: FilterQuality.low,
+          filterQuality: Platform.isAndroid ? FilterQuality.low : null,
           child: Transform.translate(
             offset: _panAnimation.value,
-            filterQuality: FilterQuality.low,
+            filterQuality: Platform.isAndroid ? FilterQuality.low : null,
             child: Stack(
               fit: StackFit.expand,
               children: [

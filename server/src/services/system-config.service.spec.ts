@@ -412,7 +412,7 @@ describe(SystemConfigService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue(partialConfig);
       await expect(sut.updateSystemConfig(updatedConfig)).resolves.toEqual(updatedConfig);
       expect(mocks.event.emit).toHaveBeenCalledWith(
-        'config.update',
+        'ConfigUpdate',
         expect.objectContaining({ oldConfig: expect.any(Object), newConfig: updatedConfig }),
       );
     });
