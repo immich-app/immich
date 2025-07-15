@@ -188,13 +188,8 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<List<String>> unStack(List<String> ids) {
+  Future<void> unStack(List<String> stackIds) {
     return _db.transaction(() async {
-      final stackIds = await _db.managers.stackEntity
-        .filter((row) => row.primaryAssetId.id.isIn(ids))
-        .map((row) => row.id)
-        .get();
-
       await _db.stackEntity.deleteWhere((row) => row.id.isIn(stackIds));
 
       // TODO: delete this after adding foreign key on stackId
@@ -205,8 +200,6 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
           where: (e) => e.stackId.isIn(stackIds),
         );
       });
-
-      return stackIds;
     });
   }
 }
