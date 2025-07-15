@@ -99,6 +99,12 @@
     </script>
 
     <link rel="stylesheet" href="/custom.css" />
+    <style>
+      /* Prevent flash of white background in dark mode */
+      html.dark { background-color: rgb(10, 10, 10); }
+      html { background-color: rgb(255, 255, 255); }
+      body { transition: background-color 0.15s ease; }
+    </style>
   </head>
 
   <noscript
