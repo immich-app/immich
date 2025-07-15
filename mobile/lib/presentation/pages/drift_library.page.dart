@@ -256,9 +256,7 @@ class _PlacesCollectionCard extends StatelessWidget {
 
         return GestureDetector(
           onTap: () => context.pushRoute(
-            PlacesCollectionRoute(
-              currentLocation: null,
-            ),
+            DriftPlaceRoute(currentLocation: null),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
