@@ -5,7 +5,6 @@ import 'dart:ui';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
@@ -13,6 +12,8 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -21,14 +22,12 @@ import 'package:immich_mobile/widgets/album/remote_album_shared_user_icons.dart'
 class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
   const RemoteAlbumSliverAppBar({
     super.key,
-    required this.album,
     this.icon = Icons.camera,
     this.onShowOptions,
     this.onToggleAlbumOrder,
     this.onEditTitle,
   });
 
-  final RemoteAlbum album;
   final IconData icon;
   final void Function()? onShowOptions;
   final void Function()? onToggleAlbumOrder;
@@ -61,6 +60,11 @@ class _MesmerizingSliverAppBarState
   Widget build(BuildContext context) {
     final isMultiSelectEnabled =
         ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+
+    final currentAlbum = ref.watch(currentRemoteAlbumProvider);
+    if (currentAlbum == null) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
 
     Color? actionIconColor = Color.lerp(
       Colors.white,
@@ -105,6 +109,7 @@ class _MesmerizingSliverAppBarState
                 shadows: actionIconShadows,
               ),
               onPressed: () {
+                ref.read(remoteAlbumProvider.notifier).refresh();
                 context.pop();
               },
             ),
@@ -149,7 +154,7 @@ class _MesmerizingSliverAppBarState
                     duration: const Duration(milliseconds: 200),
                     child: scrollProgress > 0.95
                         ? Text(
-                            widget.album.name,
+                            currentAlbum.name,
                             style: TextStyle(
                               color: context.primaryColor,
                               fontWeight: FontWeight.w600,
@@ -160,7 +165,6 @@ class _MesmerizingSliverAppBarState
                   ),
                   background: _ExpandedBackground(
                     scrollProgress: scrollProgress,
-                    album: widget.album,
                     icon: widget.icon,
                     onEditTitle: widget.onEditTitle,
                   ),
@@ -173,13 +177,11 @@ class _MesmerizingSliverAppBarState
 
 class _ExpandedBackground extends ConsumerStatefulWidget {
   final double scrollProgress;
-  final RemoteAlbum album;
   final IconData icon;
   final void Function()? onEditTitle;
 
   const _ExpandedBackground({
     required this.scrollProgress,
-    required this.album,
     required this.icon,
     this.onEditTitle,
   });
@@ -229,8 +231,14 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
   @override
   Widget build(BuildContext context) {
     final timelineService = ref.watch(timelineServiceProvider);
+    final currentAlbum = ref.watch(currentRemoteAlbumProvider);
+
+    if (currentAlbum == null) {
+      return const SizedBox.shrink();
+    }
+
     final dateRange = ref.watch(
-      remoteAlbumDateRangeProvider(widget.album.id),
+      remoteAlbumDateRangeProvider(currentAlbum.id),
     );
     return Stack(
       fit: StackFit.expand,
@@ -326,7 +334,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Text(
-                        widget.album.name,
+                        currentAlbum.name,
                         maxLines: 1,
                         style: const TextStyle(
                           color: Colors.white,
@@ -345,7 +353,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                     ),
                   ),
                 ),
-                if (widget.album.description.isNotEmpty)
+                if (currentAlbum.description.isNotEmpty)
                   GestureDetector(
                     onTap: widget.onEditTitle,
                     child: ConstrainedBox(
@@ -354,7 +362,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                       ),
                       child: SingleChildScrollView(
                         child: Text(
-                          widget.album.description,
+                          currentAlbum.description,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
@@ -370,9 +378,9 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                       ),
                     ),
                   ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: RemoteAlbumSharedUserIcons(albumId: widget.album.id),
+                const Padding(
+                  padding: EdgeInsets.only(top: 8.0),
+                  child: RemoteAlbumSharedUserIcons(),
                 ),
               ],
             ),
@@ -598,10 +606,10 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
       builder: (context, child) {
         return Transform.scale(
           scale: _zoomAnimation.value,
-          filterQuality: FilterQuality.low,
+          filterQuality: Platform.isAndroid ? FilterQuality.low : null,
           child: Transform.translate(
             offset: _panAnimation.value,
-            filterQuality: FilterQuality.low,
+            filterQuality: Platform.isAndroid ? FilterQuality.low : null,
             child: Stack(
               fit: StackFit.expand,
               children: [

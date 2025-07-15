@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class RemoteAlbumSharedUserIcons extends ConsumerWidget {
-  final String albumId;
-
   const RemoteAlbumSharedUserIcons({
     super.key,
-    required this.albumId,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sharedUsersAsync = ref.watch(remoteAlbumSharedUsersProvider(albumId));
+    final currentAlbum = ref.watch(currentRemoteAlbumProvider);
+    if (currentAlbum == null) {
+      return const SizedBox();
+    }
 
-    return sharedUsersAsync.when(
+    final sharedUsersAsync =
+        ref.watch(remoteAlbumSharedUsersProvider(currentAlbum.id));
+
+    return sharedUsersAsync.maybeWhen(
       data: (sharedUsers) {
         if (sharedUsers.isEmpty) {
           return const SizedBox();
@@ -40,8 +44,7 @@ class RemoteAlbumSharedUserIcons extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const SizedBox(),
-      error: (error, stack) => const SizedBox(),
+      orElse: () => const SizedBox(),
     );
   }
 }

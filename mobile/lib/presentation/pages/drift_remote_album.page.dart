@@ -32,26 +32,14 @@ class RemoteAlbumPage extends ConsumerStatefulWidget {
 }
 
 class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
-  late RemoteAlbum currentAlbum;
-
   @override
   void initState() {
     super.initState();
-    currentAlbum = widget.album;
-  }
-
-  void _updateTitleAndDescription(String name, String? description) {
-    setState(() {
-      currentAlbum = currentAlbum.copyWith(
-        name: name,
-        description: description ?? '',
-      );
-    });
   }
 
   Future<void> addAssets(BuildContext context) async {
     final albumAssets =
-        await ref.read(remoteAlbumProvider.notifier).getAssets(currentAlbum.id);
+        await ref.read(remoteAlbumProvider.notifier).getAssets(widget.album.id);
 
     final newAssets = await context.pushRoute<Set<BaseAsset>>(
       DriftAssetSelectionTimelineRoute(
@@ -64,7 +52,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     }
 
     final added = await ref.read(remoteAlbumProvider.notifier).addAssets(
-          currentAlbum.id,
+          widget.album.id,
           newAssets.map((asset) {
             final remoteAsset = asset as RemoteAsset;
             return remoteAsset.id;
@@ -87,7 +75,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
   Future<void> addUsers(BuildContext context) async {
     final newUsers = await context.pushRoute<List<String>>(
-      DriftUserSelectionRoute(album: currentAlbum),
+      DriftUserSelectionRoute(album: widget.album),
     );
 
     if (newUsers == null || newUsers.isEmpty) {
@@ -97,7 +85,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     try {
       await ref
           .read(remoteAlbumProvider.notifier)
-          .addUsers(currentAlbum.id, newUsers);
+          .addUsers(widget.album.id, newUsers);
 
       if (newUsers.isNotEmpty) {
         ImmichToast.show(
@@ -112,7 +100,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
         );
       }
 
-      ref.invalidate(remoteAlbumSharedUsersProvider(currentAlbum.id));
+      ref.invalidate(remoteAlbumSharedUsersProvider(widget.album.id));
     } catch (e) {
       ImmichToast.show(
         context: context,
@@ -124,7 +112,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
   Future<void> toggleAlbumOrder() async {
     await ref.read(remoteAlbumProvider.notifier).toggleAlbumOrder(
-          currentAlbum.id,
+          widget.album.id,
         );
 
     ref.invalidate(timelineServiceProvider);
@@ -142,7 +130,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
               Text(
                 'album_delete_confirmation'.t(
                   context: context,
-                  args: {'album': currentAlbum.name},
+                  args: {'album': widget.album.name},
                 ),
               ),
               const SizedBox(height: 8),
@@ -172,7 +160,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       try {
         await ref
             .read(remoteAlbumProvider.notifier)
-            .deleteAlbum(currentAlbum.id);
+            .deleteAlbum(widget.album.id);
 
         ImmichToast.show(
           context: context,
@@ -196,18 +184,17 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     final result = await showDialog<_EditAlbumData?>(
       context: context,
       barrierDismissible: true,
-      builder: (context) => _EditAlbumDialog(album: currentAlbum),
+      builder: (context) => _EditAlbumDialog(album: widget.album),
     );
 
     if (result != null && context.mounted) {
       HapticFeedback.mediumImpact();
-      _updateTitleAndDescription(result.name, result.description);
     }
   }
 
   void showOptionSheet(BuildContext context) {
     final user = ref.watch(currentUserProvider);
-    final isOwner = user != null ? user.id == currentAlbum.ownerId : false;
+    final isOwner = user != null ? user.id == widget.album.ownerId : false;
 
     showModalBottomSheet(
       context: context,
@@ -254,7 +241,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
           (ref) {
             final timelineService = ref
                 .watch(timelineFactoryProvider)
-                .remoteAlbum(albumId: currentAlbum.id);
+                .remoteAlbum(albumId: widget.album.id);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },
@@ -262,14 +249,13 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       ],
       child: Timeline(
         appBar: RemoteAlbumSliverAppBar(
-          album: currentAlbum,
           icon: Icons.photo_album_outlined,
           onShowOptions: () => showOptionSheet(context),
           onToggleAlbumOrder: () => toggleAlbumOrder(),
           onEditTitle: () => showEditTitleAndDescription(context),
         ),
         bottomSheet: RemoteAlbumBottomSheet(
-          album: currentAlbum,
+          album: widget.album,
         ),
       ),
     );

@@ -14,6 +14,10 @@ class RemoteAlbumService {
 
   const RemoteAlbumService(this._repository, this._albumApiRepository);
 
+  Stream<RemoteAlbum?> watchAlbum(String albumId) {
+    return _repository.watchAlbum(albumId);
+  }
+
   Future<List<RemoteAlbum>> getAll() {
     return _repository.getAll();
   }
@@ -108,7 +112,7 @@ class RemoteAlbumService {
   }
 
   Future<List<UserDto>> getSharedUsers(String albumId) {
-    return _repository.getSharedUsersForRemoteAlbum(albumId);
+    return _repository.getSharedUsers(albumId);
   }
 
   Future<List<RemoteAsset>> getAssets(String albumId) {

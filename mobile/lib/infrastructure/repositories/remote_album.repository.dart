@@ -149,7 +149,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     }).getSingle();
   }
 
-  Future<List<UserDto>> getSharedUsersForRemoteAlbum(String albumId) async {
+  Future<List<UserDto>> getSharedUsers(String albumId) async {
     final albumUserRows = await (_db.select(_db.remoteAlbumUserEntity)
           ..where((row) => row.albumId.equals(albumId)))
         .get();
@@ -158,35 +158,28 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       return [];
     }
 
-    final userIds = albumUserRows.map((row) => row.userId).toList();
+    final userIds = albumUserRows.map((row) => row.userId);
 
-    final userRows = await (_db.select(_db.userEntity)
-          ..where((row) => row.id.isIn(userIds)))
+    return (_db.select(_db.userEntity)..where((row) => row.id.isIn(userIds)))
+        .map(
+          (user) => UserDto(
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            profileImagePath: user.profileImagePath?.isEmpty == true
+                ? null
+                : user.profileImagePath,
+            isAdmin: user.isAdmin,
+            updatedAt: user.updatedAt,
+            quotaSizeInBytes: user.quotaSizeInBytes ?? 0,
+            quotaUsageInBytes: user.quotaUsageInBytes,
+            memoryEnabled: true,
+            inTimeline: false,
+            isPartnerSharedBy: false,
+            isPartnerSharedWith: false,
+          ),
+        )
         .get();
-
-    final userDtos = <UserDto>[];
-    for (final user in userRows) {
-      userDtos.add(
-        UserDto(
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          profileImagePath: user.profileImagePath?.isEmpty == true
-              ? null
-              : user.profileImagePath,
-          isAdmin: user.isAdmin,
-          updatedAt: user.updatedAt,
-          quotaSizeInBytes: user.quotaSizeInBytes ?? 0,
-          quotaUsageInBytes: user.quotaUsageInBytes,
-          memoryEnabled: true,
-          inTimeline: false,
-          isPartnerSharedBy: false,
-          isPartnerSharedWith: false,
-        ),
-      );
-    }
-
-    return userDtos;
   }
 
   Future<List<RemoteAsset>> getAssets(String albumId) {
@@ -221,7 +214,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     return assetIds.length;
   }
 
-  Future<void> addUsers(String albumId, List<String> userIds) async {
+  Future<void> addUsers(String albumId, List<String> userIds) {
     final albumUsers = userIds.map(
       (assetId) => RemoteAlbumUserEntityCompanion(
         albumId: Value(albumId),
@@ -230,7 +223,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       ),
     );
 
-    await _db.batch((batch) {
+    return _db.batch((batch) {
       batch.insertAll(
         _db.remoteAlbumUserEntity,
         albumUsers,
@@ -239,11 +232,41 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   }
 
   Future<void> deleteAlbum(String albumId) async {
-    await _db.transaction(() async {
+    return _db.transaction(() async {
       await _db.remoteAlbumEntity.deleteWhere(
         (table) => table.id.equals(albumId),
       );
     });
+  }
+
+  Stream<RemoteAlbum?> watchAlbum(String albumId) {
+    final query = _db.remoteAlbumEntity.select().join([
+      leftOuterJoin(
+        _db.remoteAlbumAssetEntity,
+        _db.remoteAlbumAssetEntity.albumId.equalsExp(_db.remoteAlbumEntity.id),
+        useColumns: false,
+      ),
+      leftOuterJoin(
+        _db.remoteAssetEntity,
+        _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId),
+        useColumns: false,
+      ),
+      leftOuterJoin(
+        _db.userEntity,
+        _db.userEntity.id.equalsExp(_db.remoteAlbumEntity.ownerId),
+        useColumns: false,
+      ),
+    ])
+      ..where(_db.remoteAlbumEntity.id.equals(albumId))
+      ..addColumns([_db.userEntity.name])
+      ..groupBy([_db.remoteAlbumEntity.id]);
+
+    return query.map((row) {
+      final album = row.readTable(_db.remoteAlbumEntity).toDto(
+            ownerName: row.read(_db.userEntity.name)!,
+          );
+      return album;
+    }).watchSingleOrNull();
   }
 }
 
