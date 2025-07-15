@@ -59,6 +59,13 @@ describe(APIKeyController.name, () => {
       expect(status).toBe(400);
       expect(body).toEqual(factory.responses.badRequest(['id must be a UUID']));
     });
+
+    it('should allow updating just the name', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .put(`/api-keys/${factory.uuid()}`)
+        .send({ name: 'new name' });
+      expect(status).toBe(200);
+    });
   });
 
   describe('DELETE /api-keys/:id', () => {
