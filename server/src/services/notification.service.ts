@@ -87,7 +87,7 @@ export class NotificationService extends BaseService {
     this.logger.error(`Unable to run job handler (${job.name}): ${error}`, error?.stack, JSON.stringify(job.data));
 
     switch (job.name) {
-      case JobName.BackupDatabase: {
+      case JobName.DatabaseBackup: {
         const errorMessage = error instanceof Error ? error.message : error;
         const item = await this.notificationRepository.create({
           userId: admin.id,
@@ -135,7 +135,7 @@ export class NotificationService extends BaseService {
 
   @OnEvent({ name: 'AssetShow' })
   async onAssetShow({ assetId }: ArgOf<'AssetShow'>) {
-    await this.jobRepository.queue({ name: JobName.GenerateThumbnails, data: { id: assetId, notify: true } });
+    await this.jobRepository.queue({ name: JobName.AssetGenerateThumbnails, data: { id: assetId, notify: true } });
   }
 
   @OnEvent({ name: 'AssetTrash' })
@@ -193,7 +193,7 @@ export class NotificationService extends BaseService {
   @OnEvent({ name: 'UserSignup' })
   async onUserSignup({ notify, id, tempPassword }: ArgOf<'UserSignup'>) {
     if (notify) {
-      await this.jobRepository.queue({ name: JobName.NotifySignup, data: { id, tempPassword } });
+      await this.jobRepository.queue({ name: JobName.NotifyUserSignup, data: { id, tempPassword } });
     }
   }
 
@@ -313,8 +313,8 @@ export class NotificationService extends BaseService {
     return { name, html: templateResponse };
   }
 
-  @OnJob({ name: JobName.NotifySignup, queue: QueueName.Notification })
-  async handleUserSignup({ id, tempPassword }: JobOf<JobName.NotifySignup>) {
+  @OnJob({ name: JobName.NotifyUserSignup, queue: QueueName.Notification })
+  async handleUserSignup({ id, tempPassword }: JobOf<JobName.NotifyUserSignup>) {
     const user = await this.userRepository.get(id, { withDeleted: false });
     if (!user) {
       return JobStatus.Skipped;

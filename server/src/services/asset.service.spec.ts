@@ -522,7 +522,7 @@ describe(AssetService.name, () => {
 
       expect(mocks.assetJob.streamForDeletedJob).toHaveBeenCalledWith(new Date());
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.AssetDeletion, data: { id: asset.id, deleteOnDisk: true } },
+        { name: JobName.AssetDelete, data: { id: asset.id, deleteOnDisk: true } },
       ]);
     });
 
@@ -536,7 +536,7 @@ describe(AssetService.name, () => {
 
       expect(mocks.assetJob.streamForDeletedJob).toHaveBeenCalledWith(DateTime.now().minus({ days: 7 }).toJSDate());
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.AssetDeletion, data: { id: asset.id, deleteOnDisk: true } },
+        { name: JobName.AssetDelete, data: { id: asset.id, deleteOnDisk: true } },
       ]);
     });
   });
@@ -552,7 +552,7 @@ describe(AssetService.name, () => {
       expect(mocks.job.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.DeleteFiles,
+            name: JobName.FileDelete,
             data: {
               files: [
                 '/uploads/user-id/webp/path.ext',
@@ -606,7 +606,7 @@ describe(AssetService.name, () => {
       expect(mocks.job.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.AssetDeletion,
+            name: JobName.AssetDelete,
             data: {
               id: assetStub.livePhotoMotionAsset.id,
               deleteOnDisk: true,
@@ -615,7 +615,7 @@ describe(AssetService.name, () => {
         ],
         [
           {
-            name: JobName.DeleteFiles,
+            name: JobName.FileDelete,
             data: {
               files: [
                 '/uploads/user-id/webp/path.ext',
@@ -643,7 +643,7 @@ describe(AssetService.name, () => {
       expect(mocks.job.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.DeleteFiles,
+            name: JobName.FileDelete,
             data: {
               files: [
                 '/uploads/user-id/webp/path.ext',
@@ -679,7 +679,7 @@ describe(AssetService.name, () => {
 
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REFRESH_FACES });
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.FaceDetection, data: { id: 'asset-1' } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetDetectFaces, data: { id: 'asset-1' } }]);
     });
 
     it('should run the refresh metadata job', async () => {
@@ -687,7 +687,9 @@ describe(AssetService.name, () => {
 
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REFRESH_METADATA });
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.MetadataExtraction, data: { id: 'asset-1' } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.AssetExtractMetadata, data: { id: 'asset-1' } },
+      ]);
     });
 
     it('should run the refresh thumbnails job', async () => {
@@ -695,7 +697,9 @@ describe(AssetService.name, () => {
 
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REGENERATE_THUMBNAIL });
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.GenerateThumbnails, data: { id: 'asset-1' } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1' } },
+      ]);
     });
 
     it('should run the transcode video', async () => {
@@ -703,7 +707,7 @@ describe(AssetService.name, () => {
 
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.TRANSCODE_VIDEO });
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.VideoConversation, data: { id: 'asset-1' } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetEncodeVideo, data: { id: 'asset-1' } }]);
     });
   });
 

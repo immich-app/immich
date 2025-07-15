@@ -41,7 +41,7 @@ export class VersionService extends BaseService {
 
         const needsNewMemories = semver.lt(previousVersion, '1.129.0');
         if (needsNewMemories) {
-          await this.jobRepository.queue({ name: JobName.MemoriesCreate });
+          await this.jobRepository.queue({ name: JobName.MemoryGenerate });
         }
       }
     });

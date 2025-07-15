@@ -64,8 +64,8 @@ export class SmartInfoService extends BaseService {
     });
   }
 
-  @OnJob({ name: JobName.QueueSmartSearch, queue: QueueName.SmartSearch })
-  async handleQueueEncodeClip({ force }: JobOf<JobName.QueueSmartSearch>): Promise<JobStatus> {
+  @OnJob({ name: JobName.SmartSearchQueueAll, queue: QueueName.SmartSearch })
+  async handleQueueEncodeClip({ force }: JobOf<JobName.SmartSearchQueueAll>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.Skipped;

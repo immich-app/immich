@@ -108,7 +108,7 @@ describe(SearchService.name, () => {
       expect(mocks.assetJob.streamForSearchDuplicates).toHaveBeenCalledWith(undefined);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.DuplicateDetection,
+          name: JobName.AssetDetectDuplicates,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -122,7 +122,7 @@ describe(SearchService.name, () => {
       expect(mocks.assetJob.streamForSearchDuplicates).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.DuplicateDetection,
+          name: JobName.AssetDetectDuplicates,
           data: { id: assetStub.image.id },
         },
       ]);

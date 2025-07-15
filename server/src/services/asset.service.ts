@@ -145,7 +145,7 @@ export class AssetService extends BaseService {
     }
   }
 
-  @OnJob({ name: JobName.AssetDeletionCheck, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.AssetDeleteCheck, queue: QueueName.BackgroundTask })
   async handleAssetDeletionCheck(): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: false });
     const trashedDays = config.trash.enabled ? config.trash.days : 0;
@@ -158,7 +158,7 @@ export class AssetService extends BaseService {
       if (chunk.length > 0) {
         await this.jobRepository.queueAll(
           chunk.map(({ id, isOffline }) => ({
-            name: JobName.AssetDeletion,
+            name: JobName.AssetDelete,
             data: { id, deleteOnDisk: !isOffline },
           })),
         );
@@ -179,8 +179,8 @@ export class AssetService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.AssetDeletion, queue: QueueName.BackgroundTask })
-  async handleAssetDeletion(job: JobOf<JobName.AssetDeletion>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetDelete, queue: QueueName.BackgroundTask })
+  async handleAssetDeletion(job: JobOf<JobName.AssetDelete>): Promise<JobStatus> {
     const { id, deleteOnDisk } = job;
 
     const asset = await this.assetJobRepository.getForAssetDeletion(id);
@@ -215,7 +215,7 @@ export class AssetService extends BaseService {
       const count = await this.assetRepository.getLivePhotoCount(asset.livePhotoVideoId);
       if (count === 0) {
         await this.jobRepository.queue({
-          name: JobName.AssetDeletion,
+          name: JobName.AssetDelete,
           data: { id: asset.livePhotoVideoId, deleteOnDisk },
         });
       }
@@ -228,7 +228,7 @@ export class AssetService extends BaseService {
       files.push(asset.sidecarPath, asset.originalPath);
     }
 
-    await this.jobRepository.queue({ name: JobName.DeleteFiles, data: { files } });
+    await this.jobRepository.queue({ name: JobName.FileDelete, data: { files } });
 
     return JobStatus.Success;
   }
@@ -255,22 +255,22 @@ export class AssetService extends BaseService {
     for (const id of dto.assetIds) {
       switch (dto.name) {
         case AssetJobName.REFRESH_FACES: {
-          jobs.push({ name: JobName.FaceDetection, data: { id } });
+          jobs.push({ name: JobName.AssetDetectFaces, data: { id } });
           break;
         }
 
         case AssetJobName.REFRESH_METADATA: {
-          jobs.push({ name: JobName.MetadataExtraction, data: { id } });
+          jobs.push({ name: JobName.AssetExtractMetadata, data: { id } });
           break;
         }
 
         case AssetJobName.REGENERATE_THUMBNAIL: {
-          jobs.push({ name: JobName.GenerateThumbnails, data: { id } });
+          jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id } });
           break;
         }
 
         case AssetJobName.TRANSCODE_VIDEO: {
-          jobs.push({ name: JobName.VideoConversation, data: { id } });
+          jobs.push({ name: JobName.AssetEncodeVideo, data: { id } });
           break;
         }
       }

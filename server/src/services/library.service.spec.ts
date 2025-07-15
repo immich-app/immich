@@ -1010,7 +1010,7 @@ describe(LibraryService.name, () => {
         await sut.watchAll();
 
         expect(mocks.job.queue).toHaveBeenCalledWith({
-          name: JobName.LibraryAssetRemoval,
+          name: JobName.LibraryRemoveAsset,
           data: {
             libraryId: library.id,
             paths: [assetStub.image.originalPath],
@@ -1131,11 +1131,11 @@ describe(LibraryService.name, () => {
 
       expect(mocks.job.queue).toHaveBeenCalledTimes(2);
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LibraryQueueSyncFiles,
+        name: JobName.LibrarySyncFilesQueueAll,
         data: { id: library.id },
       });
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LibraryQueueSyncAssets,
+        name: JobName.LibrarySyncAssetsQueueAll,
         data: { id: library.id },
       });
     });
@@ -1150,11 +1150,11 @@ describe(LibraryService.name, () => {
       await expect(sut.handleQueueScanAll()).resolves.toBe(JobStatus.Success);
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LibraryQueueCleanup,
+        name: JobName.LibraryDeleteCheck,
         data: {},
       });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.LibraryQueueSyncFiles, data: { id: library.id } },
+        { name: JobName.LibrarySyncFilesQueueAll, data: { id: library.id } },
       ]);
     });
   });

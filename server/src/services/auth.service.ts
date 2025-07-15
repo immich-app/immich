@@ -330,7 +330,7 @@ export class AuthService extends BaseService {
       await this.userRepository.update(user.id, { profileImagePath, profileChangedAt: new Date() });
 
       if (oldPath) {
-        await this.jobRepository.queue({ name: JobName.DeleteFiles, data: { files: [oldPath] } });
+        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [oldPath] } });
       }
     } catch (error: Error | any) {
       this.logger.warn(`Unable to sync oauth profile picture: ${error}`, error?.stack);

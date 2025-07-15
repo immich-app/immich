@@ -140,7 +140,7 @@ export class PersonService extends BaseService {
 
       if (assetFace) {
         await this.personRepository.update({ id: personId, faceAssetId: assetFace.id });
-        jobs.push({ name: JobName.GeneratePersonThumbnail, data: { id: personId } });
+        jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: personId } });
       }
     }
 
@@ -211,7 +211,7 @@ export class PersonService extends BaseService {
     });
 
     if (assetId) {
-      await this.jobRepository.queue({ name: JobName.GeneratePersonThumbnail, data: { id } });
+      await this.jobRepository.queue({ name: JobName.PersonGenerateThumbnail, data: { id } });
     }
 
     return mapPerson(person);
@@ -261,8 +261,8 @@ export class PersonService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.QueueFaceDetection, queue: QueueName.FaceDetection })
-  async handleQueueDetectFaces({ force }: JobOf<JobName.QueueFaceDetection>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetDetectFacesQueueAll, queue: QueueName.FaceDetection })
+  async handleQueueDetectFaces({ force }: JobOf<JobName.AssetDetectFacesQueueAll>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.Skipped;
@@ -277,7 +277,7 @@ export class PersonService extends BaseService {
     let jobs: JobItem[] = [];
     const assets = this.assetJobRepository.streamForDetectFacesJob(force);
     for await (const asset of assets) {
-      jobs.push({ name: JobName.FaceDetection, data: { id: asset.id } });
+      jobs.push({ name: JobName.AssetDetectFaces, data: { id: asset.id } });
 
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await this.jobRepository.queueAll(jobs);
@@ -294,8 +294,8 @@ export class PersonService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.FaceDetection, queue: QueueName.FaceDetection })
-  async handleDetectFaces({ id }: JobOf<JobName.FaceDetection>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetDetectFaces, queue: QueueName.FaceDetection })
+  async handleDetectFaces({ id }: JobOf<JobName.AssetDetectFaces>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.Skipped;
@@ -369,7 +369,7 @@ export class PersonService extends BaseService {
     if (facesToAdd.length > 0) {
       this.logger.log(`Detected ${facesToAdd.length} new faces in asset ${id}`);
       const jobs = facesToAdd.map((face) => ({ name: JobName.FacialRecognition, data: { id: face.id } }) as const);
-      await this.jobRepository.queueAll([{ name: JobName.QueueFacialRecognition, data: { force: false } }, ...jobs]);
+      await this.jobRepository.queueAll([{ name: JobName.FacialRecognitionQueueAll, data: { force: false } }, ...jobs]);
     } else if (embeddings.length > 0) {
       this.logger.log(`Added ${embeddings.length} face embeddings for asset ${id}`);
     }
@@ -396,8 +396,8 @@ export class PersonService extends BaseService {
     return intersection / union;
   }
 
-  @OnJob({ name: JobName.QueueFacialRecognition, queue: QueueName.FacialRecognition })
-  async handleQueueRecognizeFaces({ force, nightly }: JobOf<JobName.QueueFacialRecognition>): Promise<JobStatus> {
+  @OnJob({ name: JobName.FacialRecognitionQueueAll, queue: QueueName.FacialRecognition })
+  async handleQueueRecognizeFaces({ force, nightly }: JobOf<JobName.FacialRecognitionQueueAll>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isFacialRecognitionEnabled(machineLearning)) {
       return JobStatus.Skipped;
@@ -526,7 +526,7 @@ export class PersonService extends BaseService {
     if (isCore && !personId) {
       this.logger.log(`Creating new person for face ${id}`);
       const newPerson = await this.personRepository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
-      await this.jobRepository.queue({ name: JobName.GeneratePersonThumbnail, data: { id: newPerson.id } });
+      await this.jobRepository.queue({ name: JobName.PersonGenerateThumbnail, data: { id: newPerson.id } });
       personId = newPerson.id;
     }
 
@@ -538,8 +538,8 @@ export class PersonService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.MigratePerson, queue: QueueName.Migration })
-  async handlePersonMigration({ id }: JobOf<JobName.MigratePerson>): Promise<JobStatus> {
+  @OnJob({ name: JobName.PersonFileMigration, queue: QueueName.Migration })
+  async handlePersonMigration({ id }: JobOf<JobName.PersonFileMigration>): Promise<JobStatus> {
     const person = await this.personRepository.getById(id);
     if (!person) {
       return JobStatus.Failed;

@@ -7,7 +7,7 @@ import { BaseService } from 'src/services/base.service';
 
 @Injectable()
 export class AuditService extends BaseService {
-  @OnJob({ name: JobName.CleanOldAuditLogs, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.AuditLogCleanup, queue: QueueName.BackgroundTask })
   async handleCleanup(): Promise<JobStatus> {
     await this.auditRepository.removeBefore(DateTime.now().minus(AUDIT_LOG_MAX_DURATION).toJSDate());
     return JobStatus.Success;

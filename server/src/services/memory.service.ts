@@ -12,7 +12,7 @@ const DAYS = 3;
 
 @Injectable()
 export class MemoryService extends BaseService {
-  @OnJob({ name: JobName.MemoriesCreate, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.MemoryGenerate, queue: QueueName.BackgroundTask })
   async onMemoriesCreate() {
     const users = await this.userRepository.getList({ withDeleted: false });
     const usersIds = await Promise.all(
@@ -72,7 +72,7 @@ export class MemoryService extends BaseService {
     );
   }
 
-  @OnJob({ name: JobName.MemoriesCleanup, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.MemoryCleanup, queue: QueueName.BackgroundTask })
   async onMemoriesCleanup() {
     await this.memoryRepository.cleanup();
   }

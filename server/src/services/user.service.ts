@@ -99,7 +99,7 @@ export class UserService extends BaseService {
     });
 
     if (oldpath !== '') {
-      await this.jobRepository.queue({ name: JobName.DeleteFiles, data: { files: [oldpath] } });
+      await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [oldpath] } });
     }
 
     return {
@@ -115,7 +115,7 @@ export class UserService extends BaseService {
       throw new BadRequestException("Can't delete a missing profile Image");
     }
     await this.userRepository.update(auth.user.id, { profileImagePath: '', profileChangedAt: new Date() });
-    await this.jobRepository.queue({ name: JobName.DeleteFiles, data: { files: [user.profileImagePath] } });
+    await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [user.profileImagePath] } });
   }
 
   async getProfileImage(id: string): Promise<ImmichFileResponse> {
@@ -213,7 +213,7 @@ export class UserService extends BaseService {
     };
   }
 
-  @OnJob({ name: JobName.userSyncUsage, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.UserSyncUsage, queue: QueueName.BackgroundTask })
   async handleUserSyncUsage(): Promise<JobStatus> {
     await this.userRepository.syncUsage();
     return JobStatus.Success;
@@ -223,12 +223,12 @@ export class UserService extends BaseService {
   async handleUserDeleteCheck(): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: false });
     const users = await this.userRepository.getDeletedAfter(DateTime.now().minus({ days: config.user.deleteDelay }));
-    await this.jobRepository.queueAll(users.map((user) => ({ name: JobName.UserDeletion, data: { id: user.id } })));
+    await this.jobRepository.queueAll(users.map((user) => ({ name: JobName.UserDelete, data: { id: user.id } })));
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.UserDeletion, queue: QueueName.BackgroundTask })
-  async handleUserDelete({ id, force }: JobOf<JobName.UserDeletion>): Promise<JobStatus> {
+  @OnJob({ name: JobName.UserDelete, queue: QueueName.BackgroundTask })
+  async handleUserDelete({ id, force }: JobOf<JobName.UserDelete>): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: false });
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {

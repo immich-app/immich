@@ -122,7 +122,7 @@ describe(UserService.name, () => {
 
       await sut.createProfileImage(authStub.admin, file);
 
-      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.DeleteFiles, data: { files } }]]);
+      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files } }]]);
     });
 
     it('should not delete the profile image if it has not been set', async () => {
@@ -156,7 +156,7 @@ describe(UserService.name, () => {
 
       await sut.deleteProfileImage(authStub.admin);
 
-      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.DeleteFiles, data: { files } }]]);
+      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files } }]]);
     });
   });
 
@@ -211,7 +211,7 @@ describe(UserService.name, () => {
       await sut.handleUserDeleteCheck();
 
       expect(mocks.user.getDeletedAfter).toHaveBeenCalled();
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.UserDeletion, data: { id: user.id } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.UserDelete, data: { id: user.id } }]);
     });
   });
 

@@ -214,11 +214,11 @@ export class JobRepository {
       case JobName.StorageTemplateMigrationSingle: {
         return { jobId: item.data.id };
       }
-      case JobName.GeneratePersonThumbnail: {
+      case JobName.PersonGenerateThumbnail: {
         return { priority: 1 };
       }
-      case JobName.QueueFacialRecognition: {
-        return { jobId: JobName.QueueFacialRecognition };
+      case JobName.FacialRecognitionQueueAll: {
+        return { jobId: JobName.FacialRecognitionQueueAll };
       }
       default: {
         return null;
