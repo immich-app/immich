@@ -462,7 +462,7 @@ export const assetStub = {
   }),
 
   imageFrom2015: Object.freeze({
-    id: 'asset-id-1',
+    id: 'asset-id-2015',
     status: AssetStatus.ACTIVE,
     deviceAssetId: 'device-asset-id',
     fileModifiedAt: new Date('2015-02-23T05:06:29.716Z'),
@@ -484,6 +484,9 @@ export const assetStub = {
     duration: null,
     livePhotoVideo: null,
     livePhotoVideoId: null,
+    updateId: 'foo',
+    libraryId: null,
+    stackId: null,
     sharedLinks: [],
     originalFileName: 'asset-id.ext',
     faces: [],
