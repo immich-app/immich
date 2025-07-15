@@ -23,7 +23,6 @@ class DriftPlacePage extends StatelessWidget {
 
     return Scaffold(
       body: CustomScrollView(
-        physics: const NeverScrollableScrollPhysics(),
         slivers: [
           _PlaceSliverAppBar(search: search),
           _Map(search: search, currentLocation: currentLocation),
