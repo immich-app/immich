@@ -25,11 +25,7 @@ import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import app.alextran.immich.widget.ImageDownloadWorker
 import app.alextran.immich.widget.ImmichAPI
-import app.alextran.immich.widget.WidgetConfigState
-import app.alextran.immich.widget.WidgetType
-import app.alextran.immich.widget.kSelectedAlbum
-import app.alextran.immich.widget.kSelectedAlbumName
-import app.alextran.immich.widget.kShowAlbumName
+import app.alextran.immich.widget.model.*
 import kotlinx.coroutines.launch
 import java.io.FileNotFoundException
 

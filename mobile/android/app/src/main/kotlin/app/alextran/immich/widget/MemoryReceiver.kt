@@ -5,6 +5,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import app.alextran.immich.widget.model.*
 import es.antonborri.home_widget.HomeWidgetPlugin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

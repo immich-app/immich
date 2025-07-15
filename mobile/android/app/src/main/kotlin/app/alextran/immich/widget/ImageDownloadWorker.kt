@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.glance.*
-import androidx.glance.appwidget.AppWidgetId
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.work.*
@@ -17,6 +16,7 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
+import app.alextran.immich.widget.model.*
 import java.time.LocalDate
 
 class ImageDownloadWorker(

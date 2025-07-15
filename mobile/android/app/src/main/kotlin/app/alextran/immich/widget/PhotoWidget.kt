@@ -18,6 +18,7 @@ import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import app.alextran.immich.R
+import app.alextran.immich.widget.model.*
 import java.io.File
 
 class PhotoWidget : GlanceAppWidget() {

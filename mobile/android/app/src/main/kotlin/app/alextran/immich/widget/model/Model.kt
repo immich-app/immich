@@ -1,11 +1,7 @@
-package app.alextran.immich.widget
+package app.alextran.immich.widget.model
 
 import android.graphics.Bitmap
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.doublePreferencesKey
-import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.glance.appwidget.GlanceAppWidget
+import androidx.datastore.preferences.core.*
 
 // MARK: Immich Entities
 
