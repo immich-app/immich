@@ -299,7 +299,7 @@ describe(StackService.name, () => {
       expect(mocks.asset.getById).toHaveBeenCalledWith(assetStub.image1.id);
       expect(mocks.stack.getById).toHaveBeenCalledWith('stack-id');
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetStub.image1.id, stackId: null });
-      expect(mocks.event.emit).toHaveBeenCalledWith('stack.update', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('StackUpdate', {
         stackId: 'stack-id',
         userId: authStub.admin.user.id,
       });
