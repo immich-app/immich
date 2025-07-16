@@ -28,7 +28,7 @@ import 'package:logging/logging.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 13;
+const int targetVersion = 14;
 
 Future<void> migrateDatabaseIfNeeded(Isar db) async {
   final int version = Store.get(StoreKey.version, targetVersion);
@@ -53,16 +53,20 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
     await _migrateDeviceAsset(db);
   }
 
-  if (version < 12 && (!kReleaseMode)) {
+  if (version < 13) {
+    await Store.put(StoreKey.photoManagerCustomFilter, true);
+  }
+
+  if (version < 14) {
+    if (!Store.isBetaTimelineEnabled) {
+      // Try again when beta timeline is enabled and the app is restarted
+      return;
+    }
     final backgroundSync = BackgroundSyncManager();
     await backgroundSync.syncLocal();
     final drift = Drift();
     await _migrateDeviceAssetToSqlite(db, drift);
     await drift.close();
-  }
-
-  if (version < 13) {
-    await Store.put(StoreKey.photoManagerCustomFilter, true);
   }
 
   if (targetVersion >= 12) {
@@ -182,31 +186,22 @@ Future<void> _migrateDeviceAsset(Isar db) async {
 
 Future<void> _migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
   try {
-    final isarDeviceAssets =
-        await db.deviceAssetEntitys.where().sortByAssetId().findAll();
+    final isarDeviceAssets = await db.deviceAssetEntitys.where().findAll();
     await drift.batch((batch) {
       for (final deviceAsset in isarDeviceAssets) {
-        final companion = LocalAssetEntityCompanion(
-          updatedAt: Value(deviceAsset.modifiedTime),
-          id: Value(deviceAsset.assetId),
-          checksum: Value(base64.encode(deviceAsset.hash)),
-        );
-        batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
+        batch.update(
           drift.localAssetEntity,
-          companion,
-          onConflict: DoUpdate(
-            (_) => companion,
-            where: (old) => old.updatedAt.equals(deviceAsset.modifiedTime),
+          LocalAssetEntityCompanion(
+            checksum: Value(base64.encode(deviceAsset.hash)),
           ),
+          where: (t) => t.id.equals(deviceAsset.assetId),
         );
       }
     });
   } catch (error) {
-    if (kDebugMode) {
-      debugPrint(
-        "[MIGRATION] Error while migrating device assets to SQLite: $error",
-      );
-    }
+    debugPrint(
+      "[MIGRATION] Error while migrating device assets to SQLite: $error",
+    );
   }
 }
 
