@@ -33,6 +33,11 @@ final _features = [
     onTap: (ctx, _) => ctx.pushRoute(const DriftRecentlyTakenRoute()),
   ),
   _Feature(
+    name: 'Map',
+    icon: Icons.map_outlined,
+    onTap: (ctx, _) => ctx.pushRoute(const DriftMapRoute()),
+  ),
+  _Feature(
     name: 'Selection Mode Timeline',
     icon: Icons.developer_mode_rounded,
     onTap: (ctx, ref) async {
