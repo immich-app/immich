@@ -14,8 +14,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:share_plus/share_plus.dart';
 
-final assetMediaRepositoryProvider =
-    Provider(
+final assetMediaRepositoryProvider = Provider(
   (ref) => AssetMediaRepository(ref.watch(assetApiRepositoryProvider)),
 );
 
@@ -24,7 +23,7 @@ class AssetMediaRepository {
   static final Logger _log = Logger("AssetMediaRepository");
 
   const AssetMediaRepository(this._assetApiRepository);
-  
+
   Future<List<String>> deleteAll(List<String> ids) =>
       PhotoManager.editor.deleteWithIds(ids);
 
