@@ -58,7 +58,7 @@ class AdvancedSettings extends HookConsumerWidget {
       return false;
     }
 
-    void _onBetaTimelineChanged(bool enabled) {
+    void onBetaTimelineChanged(bool enabled) {
       showDialog(
         context: context,
         builder: (context) {
@@ -102,7 +102,7 @@ class AdvancedSettings extends HookConsumerWidget {
       SettingsSwitchListTile(
         enabled: true,
         valueNotifier: betaTimeline,
-        onChanged: _onBetaTimelineChanged,
+        onChanged: onBetaTimelineChanged,
         title: "advanced_settings_beta_timeline_title".tr(),
         subtitle: "advanced_settings_beta_timeline_subtitle".tr(),
       ),
