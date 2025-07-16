@@ -7,6 +7,7 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/migration.dart';
 import 'package:logging/logging.dart';
 
 @RoutePage()
@@ -73,6 +74,9 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     }
 
     if (context.router.current.name == SplashScreenRoute.name) {
+      if (Store.isBetaTimelineEnabled) {
+        await migrateToNewTimeline(ref);
+      }
       context.replaceRoute(
         Store.isBetaTimelineEnabled
             ? const TabShellRoute()

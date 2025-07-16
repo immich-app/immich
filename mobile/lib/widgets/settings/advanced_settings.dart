@@ -77,7 +77,7 @@ class AdvancedSettings extends HookConsumerWidget {
               TextButton(
                 onPressed: () async {
                   if (enabled) {
-                    migrateToNewTimeline(ref);
+                    await migrateToNewTimeline(ref);
                   } else {
                     await migrateToOldTimeline(ref);
                   }
