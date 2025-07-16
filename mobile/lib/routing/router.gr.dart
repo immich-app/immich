@@ -965,6 +965,44 @@ class DriftTrashRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftUserSelectionPage]
+class DriftUserSelectionRoute
+    extends PageRouteInfo<DriftUserSelectionRouteArgs> {
+  DriftUserSelectionRoute({
+    Key? key,
+    required RemoteAlbum album,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftUserSelectionRoute.name,
+          args: DriftUserSelectionRouteArgs(key: key, album: album),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftUserSelectionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftUserSelectionRouteArgs>();
+      return DriftUserSelectionPage(key: args.key, album: args.album);
+    },
+  );
+}
+
+class DriftUserSelectionRouteArgs {
+  const DriftUserSelectionRouteArgs({this.key, required this.album});
+
+  final Key? key;
+
+  final RemoteAlbum album;
+
+  @override
+  String toString() {
+    return 'DriftUserSelectionRouteArgs{key: $key, album: $album}';
+  }
+}
+
+/// generated route for
 /// [DriftVideoPage]
 class DriftVideoRoute extends PageRouteInfo<void> {
   const DriftVideoRoute({List<PageRouteInfo>? children})
