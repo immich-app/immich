@@ -1691,6 +1691,7 @@
   "settings_saved": "Settings saved",
   "setup_pin_code": "Setup a PIN code",
   "share": "Share",
+  "share_action_prompt": "Shared {count} assets",
   "share_add_photos": "Add photos",
   "share_assets_selected": "{count} selected",
   "share_dialog_preparing": "Preparing...",

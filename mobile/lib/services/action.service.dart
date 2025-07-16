@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
@@ -12,8 +15,12 @@ import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:logging/logging.dart';
+import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
+import 'package:path_provider/path_provider.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:share_plus/share_plus.dart';
 
 final actionServiceProvider = Provider<ActionService>(
   (ref) => ActionService(
@@ -33,6 +40,8 @@ class ActionService {
   final DriftAlbumApiRepository _albumApiRepository;
   final DriftRemoteAlbumRepository _remoteAlbumRepository;
   final AssetMediaRepository _assetMediaRepository;
+
+  static final Logger _log = Logger("ActionService");
 
   const ActionService(
     this._assetApiRepository,
@@ -124,12 +133,12 @@ class ActionService {
     List<String> remoteIds,
     BuildContext context,
   ) async {
-    LatLng? initialLatLng;
+    maplibre.LatLng? initialLatLng;
     if (remoteIds.length == 1) {
       final exif = await _remoteAssetRepository.getExif(remoteIds[0]);
 
       if (exif?.latitude != null && exif?.longitude != null) {
-        initialLatLng = LatLng(exif!.latitude!, exif.longitude!);
+        initialLatLng = maplibre.LatLng(exif!.latitude!, exif.longitude!);
       }
     }
 
@@ -164,5 +173,58 @@ class ActionService {
     }
 
     return removedCount;
+  }
+
+  // TODO: make this more efficient
+  Future<int> shareAssets(List<BaseAsset> assets) async {
+    final downloadedXFiles = <XFile>[];
+
+    for (var asset in assets) {
+      final localId = (asset is LocalAsset)
+          ? asset.id
+          : asset is RemoteAsset
+              ? asset.localId
+              : null;
+      if (localId != null) {
+        File? f =
+            await AssetEntity(id: localId, width: 1, height: 1, typeInt: 0)
+                .originFile;
+        downloadedXFiles.add(XFile(f!.path));
+      } else if (asset is RemoteAsset) {
+        final tempDir = await getTemporaryDirectory();
+        final name = asset.name;
+        final tempFile = await File('${tempDir.path}/$name').create();
+        final res = await _assetApiRepository.downloadAsset(asset.id);
+
+        if (res.statusCode != 200) {
+          _log.severe("Download for $name failed", res.toLoggerString());
+          continue;
+        }
+
+        await tempFile.writeAsBytes(res.bodyBytes);
+        downloadedXFiles.add(XFile(tempFile.path));
+      } else {
+        _log.warning("Asset type not supported for sharing: $asset");
+        continue;
+      }
+    }
+
+    if (downloadedXFiles.isEmpty) {
+      _log.warning("No asset can be retrieved for share");
+      return 0;
+    }
+
+    final result = await Share.shareXFiles(downloadedXFiles);
+
+    for (var file in downloadedXFiles) {
+      try {
+        await File(file.path).delete();
+      } catch (e) {
+        _log.warning("Failed to delete temporary file: ${file.path}", e);
+      }
+    }
+    return result.status == ShareResultStatus.success
+        ? downloadedXFiles.length
+        : 0;
   }
 }
