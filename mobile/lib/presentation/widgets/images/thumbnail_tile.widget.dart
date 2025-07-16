@@ -19,7 +19,7 @@ class ThumbnailTile extends ConsumerWidget {
     super.key,
   });
 
-  final BaseAsset asset;
+  final BaseAsset? asset;
   final Size size;
   final BoxFit fit;
   final bool showStorageIndicator;
@@ -28,6 +28,7 @@ class ThumbnailTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final asset = this.asset;
     final heroIndex = heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
 
     final assetContainerColor = context.isDarkTheme
@@ -50,7 +51,7 @@ class ThumbnailTile extends ConsumerWidget {
           )
         : const BoxDecoration();
 
-    final hasStack = asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
+    final hasStack = asset is RemoteAsset && asset.stackId != null;
 
     return Stack(
       children: [
@@ -66,8 +67,8 @@ class ThumbnailTile extends ConsumerWidget {
               children: [
                 Positioned.fill(
                   child: Hero(
-                    tag: '${asset.heroTag}_$heroIndex',
-                    child: Thumbnail(asset: asset, fit: fit, size: size),
+                    tag: '${asset?.heroTag ?? ''}_$heroIndex',
+                    child: Thumbnail.fromBaseAsset(asset: asset, fit: fit, size: size),
                   ),
                 ),
                 if (hasStack)
@@ -78,7 +79,7 @@ class ThumbnailTile extends ConsumerWidget {
                       child: const _TileOverlayIcon(Icons.burst_mode_rounded),
                     ),
                   ),
-                if (asset.isVideo)
+                if (asset != null && asset.isVideo)
                   Align(
                     alignment: Alignment.topRight,
                     child: Padding(
@@ -86,7 +87,7 @@ class ThumbnailTile extends ConsumerWidget {
                       child: _VideoIndicator(asset.duration),
                     ),
                   ),
-                if (showStorageIndicator)
+                if (showStorageIndicator && asset != null)
                   switch (asset.storage) {
                     AssetState.local => const Align(
                       alignment: Alignment.bottomRight,
@@ -110,7 +111,7 @@ class ThumbnailTile extends ConsumerWidget {
                       ),
                     ),
                   },
-                if (asset.isFavorite)
+                if (asset != null && asset.isFavorite)
                   const Align(
                     alignment: Alignment.bottomLeft,
                     child: Padding(

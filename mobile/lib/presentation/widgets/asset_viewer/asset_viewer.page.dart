@@ -482,7 +482,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       width: double.infinity,
       height: double.infinity,
       color: backgroundColor,
-      child: Thumbnail(asset: asset, fit: BoxFit.contain, size: Size(ctx.width, ctx.height)),
+      child: Thumbnail.fromBaseAsset(asset: asset, fit: BoxFit.contain, size: Size(ctx.width, ctx.height)),
     );
   }
 
@@ -532,7 +532,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         width: ctx.width,
         height: ctx.height,
         color: backgroundColor,
-        child: Thumbnail(asset: asset, fit: BoxFit.contain, size: size),
+        child: Thumbnail.fromBaseAsset(asset: asset, fit: BoxFit.contain, size: size),
       ),
     );
   }
