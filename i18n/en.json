@@ -736,6 +736,7 @@
   "default_locale_description": "Format dates and numbers based on your browser locale",
   "delete": "Delete",
   "delete_action_prompt": "{count} deleted permanently",
+  "delete_local_action_prompt": "{count} deleted locally",
   "delete_album": "Delete album",
   "delete_api_key_prompt": "Are you sure you want to delete this API key?",
   "delete_dialog_alert": "These items will be permanently deleted from Immich and from your device",

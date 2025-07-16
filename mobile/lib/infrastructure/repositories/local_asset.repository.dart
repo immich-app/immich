@@ -43,4 +43,12 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       }
     });
   }
+
+  Future<void> delete(List<String> ids) {
+    if (ids.isEmpty) {
+      return Future.value();
+    }
+
+    return _db.localAssetEntity.deleteWhere((e) => e.id.isIn(ids));
+  }
 }

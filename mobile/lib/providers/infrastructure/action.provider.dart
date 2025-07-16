@@ -41,7 +41,13 @@ class ActionNotifier extends Notifier<void> {
   }
 
   List<String> _getRemoteIdsForSource(ActionSource source) {
-    return _getIdsForSource<RemoteAsset>(source).toIds().toList();
+    return _getIdsForSource<RemoteAsset>(source)
+        .toIds()
+        .toList(growable: false);
+  }
+
+  List<String> _getLocalIdsForSource(ActionSource source) {
+    return _getIdsForSource<LocalAsset>(source).toIds().toList(growable: false);
   }
 
   List<String> _getOwnedRemoteForSource(ActionSource source) {
@@ -49,23 +55,22 @@ class ActionNotifier extends Notifier<void> {
     return _getIdsForSource<RemoteAsset>(source)
         .ownedAssets(ownerId)
         .toIds()
-        .toList();
+        .toList(growable: false);
   }
 
   Iterable<T> _getIdsForSource<T extends BaseAsset>(ActionSource source) {
     final Set<BaseAsset> assets = switch (source) {
-      ActionSource.timeline =>
-        ref.read(multiSelectProvider.select((s) => s.selectedAssets)),
+      ActionSource.timeline => ref.read(multiSelectProvider).selectedAssets,
       ActionSource.viewer => switch (ref.read(currentAssetNotifier)) {
           BaseAsset asset => {asset},
-          null => {},
+          null => const {},
         },
     };
 
     return switch (T) {
       const (RemoteAsset) => assets.whereType<RemoteAsset>(),
       const (LocalAsset) => assets.whereType<LocalAsset>(),
-      _ => <T>[],
+      _ => const [],
     } as Iterable<T>;
   }
 
@@ -207,6 +212,21 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> deleteLocal(ActionSource source) async {
+    final ids = _getLocalIdsForSource(source);
+    try {
+      await _service.deleteLocal(ids);
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to delete assets', error, stack);
+      return ActionResult(
+        count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
+
   Future<ActionResult?> editLocation(
     ActionSource source,
     BuildContext context,
@@ -252,7 +272,11 @@ extension on Iterable<RemoteAsset> {
   Iterable<String> toIds() => map((e) => e.id);
 
   Iterable<RemoteAsset> ownedAssets(String? ownerId) {
-    if (ownerId == null) return [];
+    if (ownerId == null) return const [];
     return whereType<RemoteAsset>().where((a) => a.ownerId == ownerId);
   }
+}
+
+extension on Iterable<LocalAsset> {
+  Iterable<String> toIds() => map((e) => e.id);
 }
