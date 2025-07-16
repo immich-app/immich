@@ -17,12 +17,6 @@ class MapFactory {
 
   MapService remote(String ownerId) =>
       MapService(_mapRepository.remote(ownerId));
-
-  MapService favorite(String ownerId) =>
-      MapService(_mapRepository.favorite(ownerId));
-
-  MapService locked(String ownerId) =>
-      MapService(_mapRepository.locked(ownerId));
 }
 
 class MapService {
