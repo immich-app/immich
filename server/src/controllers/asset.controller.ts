@@ -19,7 +19,7 @@ import { AssetService } from 'src/services/asset.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Assets')
-@Controller(RouteKey.ASSET)
+@Controller(RouteKey.Asset)
 export class AssetController {
   constructor(private service: AssetService) {}
 

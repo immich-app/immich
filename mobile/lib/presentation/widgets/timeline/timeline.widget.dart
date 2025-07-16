@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
@@ -6,17 +7,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
+import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
+import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
 class Timeline extends StatelessWidget {
-  const Timeline({super.key});
+  const Timeline({
+    super.key,
+    this.topSliverWidget,
+    this.topSliverWidgetHeight,
+    this.showStorageIndicator = false,
+    this.appBar,
+    this.bottomSheet = const GeneralBottomSheet(),
+  });
 
+  final Widget? topSliverWidget;
+  final double? topSliverWidgetHeight;
+  final bool showStorageIndicator;
+  final Widget? appBar;
+  final Widget? bottomSheet;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,54 +49,102 @@ class Timeline extends StatelessWidget {
                 columnCount: ref.watch(
                   settingsProvider.select((s) => s.get(Setting.tilesPerRow)),
                 ),
+                showStorageIndicator: showStorageIndicator,
               ),
             ),
           ],
-          child: const _SliverTimeline(),
+          child: _SliverTimeline(
+            topSliverWidget: topSliverWidget,
+            topSliverWidgetHeight: topSliverWidgetHeight,
+            appBar: appBar,
+            bottomSheet: bottomSheet,
+          ),
         ),
       ),
     );
   }
 }
 
-class _SliverTimeline extends StatefulWidget {
-  const _SliverTimeline();
+class _SliverTimeline extends ConsumerStatefulWidget {
+  const _SliverTimeline({
+    this.topSliverWidget,
+    this.topSliverWidgetHeight,
+    this.appBar,
+    this.bottomSheet,
+  });
+
+  final Widget? topSliverWidget;
+  final double? topSliverWidgetHeight;
+  final Widget? appBar;
+  final Widget? bottomSheet;
 
   @override
-  State createState() => _SliverTimelineState();
+  ConsumerState createState() => _SliverTimelineState();
 }
 
-class _SliverTimelineState extends State<_SliverTimeline> {
+class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   final _scrollController = ScrollController();
+  StreamSubscription? _reloadSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _reloadSubscription =
+        EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
+  }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _reloadSubscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext _) {
-    return Consumer(
-      builder: (context, ref, child) {
-        final asyncSegments = ref.watch(timelineSegmentProvider);
-        final maxHeight =
-            ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
-        return asyncSegments.widgetWhen(
-          onData: (segments) {
-            final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
+    final asyncSegments = ref.watch(timelineSegmentProvider);
+    final maxHeight =
+        ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
+    final isSelectionMode = ref.watch(
+      multiSelectProvider.select((s) => s.forceEnable),
+    );
 
-            return PrimaryScrollController(
-              controller: _scrollController,
-              child: Scrubber(
+    return asyncSegments.widgetWhen(
+      onData: (segments) {
+        final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
+        final statusBarHeight = context.padding.top;
+        final double appBarExpandedHeight =
+            widget.appBar != null && widget.appBar is MesmerizingSliverAppBar
+                ? 200
+                : 0;
+        final totalAppBarHeight = statusBarHeight + kToolbarHeight;
+        const scrubberBottomPadding = 100.0;
+
+        return PrimaryScrollController(
+          controller: _scrollController,
+          child: Stack(
+            children: [
+              Scrubber(
                 layoutSegments: segments,
                 timelineHeight: maxHeight,
-                topPadding: context.padding.top + 10,
-                bottomPadding: context.padding.bottom + 10,
+                topPadding: totalAppBarHeight + 10,
+                bottomPadding: context.padding.bottom + scrubberBottomPadding,
+                monthSegmentSnappingOffset:
+                    widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
                 child: CustomScrollView(
                   primary: true,
                   cacheExtent: maxHeight * 2,
                   slivers: [
+                    if (isSelectionMode)
+                      const SelectionSliverAppBar()
+                    else
+                      widget.appBar ??
+                          const ImmichSliverAppBar(
+                            floating: true,
+                            pinned: false,
+                            snap: false,
+                          ),
+                    if (widget.topSliverWidget != null) widget.topSliverWidget!,
                     _SliverSegmentedList(
                       segments: segments,
                       delegate: SliverChildBuilderDelegate(
@@ -93,11 +160,52 @@ class _SliverTimelineState extends State<_SliverTimeline> {
                         addRepaintBoundaries: false,
                       ),
                     ),
+                    const SliverPadding(
+                      padding: EdgeInsets.only(
+                        bottom: scrubberBottomPadding,
+                      ),
+                    ),
                   ],
                 ),
               ),
-            );
-          },
+              if (!isSelectionMode) ...[
+                Consumer(
+                  builder: (_, consumerRef, child) {
+                    final isMultiSelectEnabled = consumerRef.watch(
+                      multiSelectProvider.select(
+                        (s) => s.isEnabled,
+                      ),
+                    );
+
+                    if (isMultiSelectEnabled) {
+                      return child!;
+                    }
+                    return const SizedBox.shrink();
+                  },
+                  child: const Positioned(
+                    top: 60,
+                    left: 25,
+                    child: _MultiSelectStatusButton(),
+                  ),
+                ),
+                Consumer(
+                  builder: (_, consumerRef, child) {
+                    final isMultiSelectEnabled = consumerRef.watch(
+                      multiSelectProvider.select(
+                        (s) => s.isEnabled,
+                      ),
+                    );
+
+                    if (isMultiSelectEnabled) {
+                      return child!;
+                    }
+                    return const SizedBox.shrink();
+                  },
+                  child: widget.bottomSheet,
+                ),
+              ],
+            ],
+          ),
         );
       },
     );
@@ -361,5 +469,29 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
     }
 
     childManager.didFinishLayout();
+  }
+}
+
+class _MultiSelectStatusButton extends ConsumerWidget {
+  const _MultiSelectStatusButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectCount =
+        ref.watch(multiSelectProvider.select((s) => s.selectedAssets.length));
+    return ElevatedButton.icon(
+      onPressed: () => ref.read(multiSelectProvider.notifier).reset(),
+      icon: Icon(
+        Icons.close_rounded,
+        color: context.colorScheme.onPrimary,
+      ),
+      label: Text(
+        selectCount.toString(),
+        style: context.textTheme.titleMedium?.copyWith(
+          height: 2.5,
+          color: context.colorScheme.onPrimary,
+        ),
+      ),
+    );
   }
 }

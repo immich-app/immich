@@ -1,12 +1,12 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import 'package:immich_mobile/domain/models/local_album.model.dart';
-import 'package:immich_mobile/services/local_album.service.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/services/local_album.service.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 
 final backupAlbumProvider =
     StateNotifierProvider<BackupAlbumNotifier, List<LocalAlbum>>(
   (ref) => BackupAlbumNotifier(
-    ref.watch(localAlbumsServiceProvider),
+    ref.watch(localAlbumServiceProvider),
   ),
 );
 

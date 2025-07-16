@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ClassConstructor } from 'class-transformer';
 import { snakeCase } from 'lodash';
+import { SystemConfig } from 'src/config';
 import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
@@ -8,6 +9,8 @@ import {
   AssetType,
   AssetVisibility,
   BootstrapEventPriority,
+  CronJob,
+  DatabaseLock,
   ImmichWorker,
   JobCommand,
   JobName,
@@ -19,31 +22,33 @@ import {
 import { ArgOf, ArgsOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { ConcurrentQueueName, JobItem } from 'src/types';
+import { hexOrBufferToBase64 } from 'src/utils/bytes';
+import { handlePromiseError } from 'src/utils/misc';
 
 const asJobItem = (dto: JobCreateDto): JobItem => {
   switch (dto.name) {
-    case ManualJobName.TAG_CLEANUP: {
-      return { name: JobName.TAG_CLEANUP };
+    case ManualJobName.TagCleanup: {
+      return { name: JobName.TagCleanup };
     }
 
-    case ManualJobName.PERSON_CLEANUP: {
-      return { name: JobName.PERSON_CLEANUP };
+    case ManualJobName.PersonCleanup: {
+      return { name: JobName.PersonCleanup };
     }
 
-    case ManualJobName.USER_CLEANUP: {
-      return { name: JobName.USER_DELETE_CHECK };
+    case ManualJobName.UserCleanup: {
+      return { name: JobName.UserDeleteCheck };
     }
 
-    case ManualJobName.MEMORY_CLEANUP: {
-      return { name: JobName.MEMORIES_CLEANUP };
+    case ManualJobName.MemoryCleanup: {
+      return { name: JobName.MemoryCleanup };
     }
 
-    case ManualJobName.MEMORY_CREATE: {
-      return { name: JobName.MEMORIES_CREATE };
+    case ManualJobName.MemoryCreate: {
+      return { name: JobName.MemoryGenerate };
     }
 
-    case ManualJobName.BACKUP_DATABASE: {
-      return { name: JobName.BACKUP_DATABASE };
+    case ManualJobName.BackupDatabase: {
+      return { name: JobName.DatabaseBackup };
     }
 
     default: {
@@ -52,12 +57,59 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
   }
 };
 
+const asNightlyTasksCron = (config: SystemConfig) => {
+  const [hours, minutes] = config.nightlyTasks.startTime.split(':').map(Number);
+  return `${minutes} ${hours} * * *`;
+};
+
 @Injectable()
 export class JobService extends BaseService {
   private services: ClassConstructor<unknown>[] = [];
+  private nightlyJobsLock = false;
 
-  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
-  onConfigInit({ newConfig: config }: ArgOf<'config.init'>) {
+  @OnEvent({ name: 'ConfigInit' })
+  async onConfigInit({ newConfig: config }: ArgOf<'ConfigInit'>) {
+    if (this.worker === ImmichWorker.Microservices) {
+      this.updateQueueConcurrency(config);
+      return;
+    }
+
+    this.nightlyJobsLock = await this.databaseRepository.tryLock(DatabaseLock.NightlyJobs);
+    if (this.nightlyJobsLock) {
+      const cronExpression = asNightlyTasksCron(config);
+      this.logger.debug(`Scheduling nightly jobs for ${cronExpression}`);
+      this.cronRepository.create({
+        name: CronJob.NightlyJobs,
+        expression: cronExpression,
+        start: true,
+        onTick: () => handlePromiseError(this.handleNightlyJobs(), this.logger),
+      });
+    }
+  }
+
+  @OnEvent({ name: 'ConfigUpdate', server: true })
+  onConfigUpdate({ newConfig: config }: ArgOf<'ConfigUpdate'>) {
+    if (this.worker === ImmichWorker.Microservices) {
+      this.updateQueueConcurrency(config);
+      return;
+    }
+
+    if (this.nightlyJobsLock) {
+      const cronExpression = asNightlyTasksCron(config);
+      this.logger.debug(`Scheduling nightly jobs for ${cronExpression}`);
+      this.cronRepository.update({ name: CronJob.NightlyJobs, expression: cronExpression, start: true });
+    }
+  }
+
+  @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.JobService })
+  onBootstrap() {
+    this.jobRepository.setup(this.services);
+    if (this.worker === ImmichWorker.Microservices) {
+      this.jobRepository.startWorkers();
+    }
+  }
+
+  private updateQueueConcurrency(config: SystemConfig) {
     this.logger.debug(`Updating queue concurrency settings`);
     for (const queueName of Object.values(QueueName)) {
       let concurrency = 1;
@@ -66,19 +118,6 @@ export class JobService extends BaseService {
       }
       this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
       this.jobRepository.setConcurrency(queueName, concurrency);
-    }
-  }
-
-  @OnEvent({ name: 'config.update', server: true, workers: [ImmichWorker.MICROSERVICES] })
-  onConfigUpdate({ newConfig: config }: ArgOf<'config.update'>) {
-    this.onConfigInit({ newConfig: config });
-  }
-
-  @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.JobService })
-  onBootstrap() {
-    this.jobRepository.setup(this.services);
-    if (this.worker === ImmichWorker.MICROSERVICES) {
-      this.jobRepository.startWorkers();
     }
   }
 
@@ -94,28 +133,28 @@ export class JobService extends BaseService {
     this.logger.debug(`Handling command: queue=${queueName},command=${dto.command},force=${dto.force}`);
 
     switch (dto.command) {
-      case JobCommand.START: {
+      case JobCommand.Start: {
         await this.start(queueName, dto);
         break;
       }
 
-      case JobCommand.PAUSE: {
+      case JobCommand.Pause: {
         await this.jobRepository.pause(queueName);
         break;
       }
 
-      case JobCommand.RESUME: {
+      case JobCommand.Resume: {
         await this.jobRepository.resume(queueName);
         break;
       }
 
-      case JobCommand.EMPTY: {
+      case JobCommand.Empty: {
         await this.jobRepository.empty(queueName);
         break;
       }
 
-      case JobCommand.CLEAR_FAILED: {
-        const failedJobs = await this.jobRepository.clear(queueName, QueueCleanType.FAILED);
+      case JobCommand.ClearFailed: {
+        const failedJobs = await this.jobRepository.clear(queueName, QueueCleanType.Failed);
         this.logger.debug(`Cleared failed jobs: ${failedJobs}`);
         break;
       }
@@ -150,52 +189,52 @@ export class JobService extends BaseService {
     this.telemetryRepository.jobs.addToCounter(`immich.queues.${snakeCase(name)}.started`, 1);
 
     switch (name) {
-      case QueueName.VIDEO_CONVERSION: {
-        return this.jobRepository.queue({ name: JobName.QUEUE_VIDEO_CONVERSION, data: { force } });
+      case QueueName.VideoConversion: {
+        return this.jobRepository.queue({ name: JobName.AssetEncodeVideoQueueAll, data: { force } });
       }
 
-      case QueueName.STORAGE_TEMPLATE_MIGRATION: {
-        return this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION });
+      case QueueName.StorageTemplateMigration: {
+        return this.jobRepository.queue({ name: JobName.StorageTemplateMigration });
       }
 
-      case QueueName.MIGRATION: {
-        return this.jobRepository.queue({ name: JobName.QUEUE_MIGRATION });
+      case QueueName.Migration: {
+        return this.jobRepository.queue({ name: JobName.FileMigrationQueueAll });
       }
 
-      case QueueName.SMART_SEARCH: {
-        return this.jobRepository.queue({ name: JobName.QUEUE_SMART_SEARCH, data: { force } });
+      case QueueName.SmartSearch: {
+        return this.jobRepository.queue({ name: JobName.SmartSearchQueueAll, data: { force } });
       }
 
-      case QueueName.DUPLICATE_DETECTION: {
-        return this.jobRepository.queue({ name: JobName.QUEUE_DUPLICATE_DETECTION, data: { force } });
+      case QueueName.DuplicateDetection: {
+        return this.jobRepository.queue({ name: JobName.AssetDetectDuplicatesQueueAll, data: { force } });
       }
 
-      case QueueName.METADATA_EXTRACTION: {
-        return this.jobRepository.queue({ name: JobName.QUEUE_METADATA_EXTRACTION, data: { force } });
+      case QueueName.MetadataExtraction: {
+        return this.jobRepository.queue({ name: JobName.AssetExtractMetadataQueueAll, data: { force } });
       }
 
-      case QueueName.SIDECAR: {
-        return this.jobRepository.queue({ name: JobName.QUEUE_SIDECAR, data: { force } });
+      case QueueName.Sidecar: {
+        return this.jobRepository.queue({ name: JobName.SidecarQueueAll, data: { force } });
       }
 
-      case QueueName.THUMBNAIL_GENERATION: {
-        return this.jobRepository.queue({ name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force } });
+      case QueueName.ThumbnailGeneration: {
+        return this.jobRepository.queue({ name: JobName.AssetGenerateThumbnailsQueueAll, data: { force } });
       }
 
-      case QueueName.FACE_DETECTION: {
-        return this.jobRepository.queue({ name: JobName.QUEUE_FACE_DETECTION, data: { force } });
+      case QueueName.FaceDetection: {
+        return this.jobRepository.queue({ name: JobName.AssetDetectFacesQueueAll, data: { force } });
       }
 
-      case QueueName.FACIAL_RECOGNITION: {
-        return this.jobRepository.queue({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force } });
+      case QueueName.FacialRecognition: {
+        return this.jobRepository.queue({ name: JobName.FacialRecognitionQueueAll, data: { force } });
       }
 
-      case QueueName.LIBRARY: {
-        return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force } });
+      case QueueName.Library: {
+        return this.jobRepository.queue({ name: JobName.LibraryScanQueueAll, data: { force } });
       }
 
-      case QueueName.BACKUP_DATABASE: {
-        return this.jobRepository.queue({ name: JobName.BACKUP_DATABASE, data: { force } });
+      case QueueName.BackupDatabase: {
+        return this.jobRepository.queue({ name: JobName.DatabaseBackup, data: { force } });
       }
 
       default: {
@@ -204,19 +243,19 @@ export class JobService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'job.start' })
-  async onJobStart(...[queueName, job]: ArgsOf<'job.start'>) {
+  @OnEvent({ name: 'JobStart' })
+  async onJobStart(...[queueName, job]: ArgsOf<'JobStart'>) {
     const queueMetric = `immich.queues.${snakeCase(queueName)}.active`;
     this.telemetryRepository.jobs.addToGauge(queueMetric, 1);
     try {
       const status = await this.jobRepository.run(job);
-      const jobMetric = `immich.jobs.${job.name.replaceAll('-', '_')}.${status}`;
+      const jobMetric = `immich.jobs.${snakeCase(job.name)}.${status}`;
       this.telemetryRepository.jobs.addToCounter(jobMetric, 1);
-      if (status === JobStatus.SUCCESS || status == JobStatus.SKIPPED) {
+      if (status === JobStatus.Success || status == JobStatus.Skipped) {
         await this.onDone(job);
       }
     } catch (error: Error | any) {
-      await this.eventRepository.emit('job.failed', { job, error });
+      await this.eventRepository.emit('JobFailed', { job, error });
     } finally {
       this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
     }
@@ -224,26 +263,45 @@ export class JobService extends BaseService {
 
   private isConcurrentQueue(name: QueueName): name is ConcurrentQueueName {
     return ![
-      QueueName.FACIAL_RECOGNITION,
-      QueueName.STORAGE_TEMPLATE_MIGRATION,
-      QueueName.DUPLICATE_DETECTION,
-      QueueName.BACKUP_DATABASE,
+      QueueName.FacialRecognition,
+      QueueName.StorageTemplateMigration,
+      QueueName.DuplicateDetection,
+      QueueName.BackupDatabase,
     ].includes(name);
   }
 
   async handleNightlyJobs() {
-    await this.jobRepository.queueAll([
-      { name: JobName.ASSET_DELETION_CHECK },
-      { name: JobName.USER_DELETE_CHECK },
-      { name: JobName.PERSON_CLEANUP },
-      { name: JobName.MEMORIES_CLEANUP },
-      { name: JobName.MEMORIES_CREATE },
-      { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
-      { name: JobName.CLEAN_OLD_AUDIT_LOGS },
-      { name: JobName.USER_SYNC_USAGE },
-      { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false, nightly: true } },
-      { name: JobName.CLEAN_OLD_SESSION_TOKENS },
-    ]);
+    const config = await this.getConfig({ withCache: false });
+    const jobs: JobItem[] = [];
+
+    if (config.nightlyTasks.databaseCleanup) {
+      jobs.push(
+        { name: JobName.AssetDeleteCheck },
+        { name: JobName.UserDeleteCheck },
+        { name: JobName.PersonCleanup },
+        { name: JobName.MemoryCleanup },
+        { name: JobName.SessionCleanup },
+        { name: JobName.AuditLogCleanup },
+      );
+    }
+
+    if (config.nightlyTasks.generateMemories) {
+      jobs.push({ name: JobName.MemoryGenerate });
+    }
+
+    if (config.nightlyTasks.syncQuotaUsage) {
+      jobs.push({ name: JobName.UserSyncUsage });
+    }
+
+    if (config.nightlyTasks.missingThumbnails) {
+      jobs.push({ name: JobName.AssetGenerateThumbnailsQueueAll, data: { force: false } });
+    }
+
+    if (config.nightlyTasks.clusterNewFaces) {
+      jobs.push({ name: JobName.FacialRecognitionQueueAll, data: { force: false, nightly: true } });
+    }
+
+    await this.jobRepository.queueAll(jobs);
   }
 
   /**
@@ -251,28 +309,28 @@ export class JobService extends BaseService {
    */
   private async onDone(item: JobItem) {
     switch (item.name) {
-      case JobName.SIDECAR_SYNC:
-      case JobName.SIDECAR_DISCOVERY: {
-        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: item.data });
+      case JobName.SidecarSync:
+      case JobName.SidecarDiscovery: {
+        await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: item.data });
         break;
       }
 
-      case JobName.SIDECAR_WRITE: {
+      case JobName.SidecarWrite: {
         await this.jobRepository.queue({
-          name: JobName.METADATA_EXTRACTION,
+          name: JobName.AssetExtractMetadata,
           data: { id: item.data.id, source: 'sidecar-write' },
         });
         break;
       }
 
-      case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
+      case JobName.StorageTemplateMigrationSingle: {
         if (item.data.source === 'upload' || item.data.source === 'copy') {
-          await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: item.data });
+          await this.jobRepository.queue({ name: JobName.AssetGenerateThumbnails, data: item.data });
         }
         break;
       }
 
-      case JobName.GENERATE_PERSON_THUMBNAIL: {
+      case JobName.PersonGenerateThumbnail: {
         const { id } = item.data;
         const person = await this.personRepository.getById(id);
         if (person) {
@@ -281,7 +339,7 @@ export class JobService extends BaseService {
         break;
       }
 
-      case JobName.GENERATE_THUMBNAILS: {
+      case JobName.AssetGenerateThumbnails: {
         if (!item.data.notify && item.data.source !== 'upload') {
           break;
         }
@@ -293,30 +351,80 @@ export class JobService extends BaseService {
         }
 
         const jobs: JobItem[] = [
-          { name: JobName.SMART_SEARCH, data: item.data },
-          { name: JobName.FACE_DETECTION, data: item.data },
+          { name: JobName.SmartSearch, data: item.data },
+          { name: JobName.AssetDetectFaces, data: item.data },
         ];
 
-        if (asset.type === AssetType.VIDEO) {
-          jobs.push({ name: JobName.VIDEO_CONVERSION, data: item.data });
+        if (asset.type === AssetType.Video) {
+          jobs.push({ name: JobName.AssetEncodeVideo, data: item.data });
         }
 
         await this.jobRepository.queueAll(jobs);
-        if (asset.visibility === AssetVisibility.TIMELINE || asset.visibility === AssetVisibility.ARCHIVE) {
+        if (asset.visibility === AssetVisibility.Timeline || asset.visibility === AssetVisibility.Archive) {
           this.eventRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
+          if (asset.exifInfo) {
+            const exif = asset.exifInfo;
+            this.eventRepository.clientSend('AssetUploadReadyV1', asset.ownerId, {
+              // TODO remove `on_upload_success` and then modify the query to select only the required fields)
+              asset: {
+                id: asset.id,
+                ownerId: asset.ownerId,
+                originalFileName: asset.originalFileName,
+                thumbhash: asset.thumbhash ? hexOrBufferToBase64(asset.thumbhash) : null,
+                checksum: hexOrBufferToBase64(asset.checksum),
+                fileCreatedAt: asset.fileCreatedAt,
+                fileModifiedAt: asset.fileModifiedAt,
+                localDateTime: asset.localDateTime,
+                duration: asset.duration,
+                type: asset.type,
+                deletedAt: asset.deletedAt,
+                isFavorite: asset.isFavorite,
+                visibility: asset.visibility,
+                livePhotoVideoId: asset.livePhotoVideoId,
+                stackId: asset.stackId,
+              },
+              exif: {
+                assetId: exif.assetId,
+                description: exif.description,
+                exifImageWidth: exif.exifImageWidth,
+                exifImageHeight: exif.exifImageHeight,
+                fileSizeInByte: exif.fileSizeInByte,
+                orientation: exif.orientation,
+                dateTimeOriginal: exif.dateTimeOriginal,
+                modifyDate: exif.modifyDate,
+                timeZone: exif.timeZone,
+                latitude: exif.latitude,
+                longitude: exif.longitude,
+                projectionType: exif.projectionType,
+                city: exif.city,
+                state: exif.state,
+                country: exif.country,
+                make: exif.make,
+                model: exif.model,
+                lensModel: exif.lensModel,
+                fNumber: exif.fNumber,
+                focalLength: exif.focalLength,
+                iso: exif.iso,
+                exposureTime: exif.exposureTime,
+                profileDescription: exif.profileDescription,
+                rating: exif.rating,
+                fps: exif.fps,
+              },
+            });
+          }
         }
 
         break;
       }
 
-      case JobName.SMART_SEARCH: {
+      case JobName.SmartSearch: {
         if (item.data.source === 'upload') {
-          await this.jobRepository.queue({ name: JobName.DUPLICATE_DETECTION, data: item.data });
+          await this.jobRepository.queue({ name: JobName.AssetDetectDuplicates, data: item.data });
         }
         break;
       }
 
-      case JobName.USER_DELETION: {
+      case JobName.UserDelete: {
         this.eventRepository.clientBroadcast('on_user_delete', item.data.id);
         break;
       }

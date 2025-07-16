@@ -6,7 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/interfaces/upload.interface.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:path/path.dart';
@@ -18,7 +17,8 @@ final uploadServiceProvider = Provider(
 );
 
 class UploadService {
-  final IUploadRepository _uploadRepository;
+  final UploadRepository _uploadRepository;
+  // final Logger _log = Logger("UploadService");
   void Function(TaskStatusUpdate)? onUploadStatus;
   void Function(TaskProgressUpdate)? onTaskProgress;
 

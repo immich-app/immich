@@ -12,13 +12,13 @@ export class TimelineController {
   constructor(private service: TimelineService) {}
 
   @Get('buckets')
-  @Authenticated({ permission: Permission.ASSET_READ, sharedLink: true })
+  @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
   getTimeBuckets(@Auth() auth: AuthDto, @Query() dto: TimeBucketDto) {
     return this.service.getTimeBuckets(auth, dto);
   }
 
   @Get('bucket')
-  @Authenticated({ permission: Permission.ASSET_READ, sharedLink: true })
+  @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
   @ApiOkResponse({ type: TimeBucketAssetResponseDto })
   @Header('Content-Type', 'application/json')
   getTimeBucket(@Auth() auth: AuthDto, @Query() dto: TimeBucketAssetDto) {

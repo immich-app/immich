@@ -520,6 +520,8 @@ class ApiClient {
           return SessionResponseDto.fromJson(value);
         case 'SessionUnlockDto':
           return SessionUnlockDto.fromJson(value);
+        case 'SessionUpdateDto':
+          return SessionUpdateDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
@@ -554,6 +556,10 @@ class ApiClient {
           return SyncAckSetDto.fromJson(value);
         case 'SyncAlbumDeleteV1':
           return SyncAlbumDeleteV1.fromJson(value);
+        case 'SyncAlbumToAssetDeleteV1':
+          return SyncAlbumToAssetDeleteV1.fromJson(value);
+        case 'SyncAlbumToAssetV1':
+          return SyncAlbumToAssetV1.fromJson(value);
         case 'SyncAlbumUserDeleteV1':
           return SyncAlbumUserDeleteV1.fromJson(value);
         case 'SyncAlbumUserV1':
@@ -568,16 +574,36 @@ class ApiClient {
           return SyncAssetV1.fromJson(value);
         case 'SyncEntityType':
           return SyncEntityTypeTypeTransformer().decode(value);
+        case 'SyncMemoryAssetDeleteV1':
+          return SyncMemoryAssetDeleteV1.fromJson(value);
+        case 'SyncMemoryAssetV1':
+          return SyncMemoryAssetV1.fromJson(value);
+        case 'SyncMemoryDeleteV1':
+          return SyncMemoryDeleteV1.fromJson(value);
+        case 'SyncMemoryV1':
+          return SyncMemoryV1.fromJson(value);
         case 'SyncPartnerDeleteV1':
           return SyncPartnerDeleteV1.fromJson(value);
         case 'SyncPartnerV1':
           return SyncPartnerV1.fromJson(value);
+        case 'SyncPersonDeleteV1':
+          return SyncPersonDeleteV1.fromJson(value);
+        case 'SyncPersonV1':
+          return SyncPersonV1.fromJson(value);
         case 'SyncRequestType':
           return SyncRequestTypeTypeTransformer().decode(value);
+        case 'SyncStackDeleteV1':
+          return SyncStackDeleteV1.fromJson(value);
+        case 'SyncStackV1':
+          return SyncStackV1.fromJson(value);
         case 'SyncStreamDto':
           return SyncStreamDto.fromJson(value);
         case 'SyncUserDeleteV1':
           return SyncUserDeleteV1.fromJson(value);
+        case 'SyncUserMetadataDeleteV1':
+          return SyncUserMetadataDeleteV1.fromJson(value);
+        case 'SyncUserMetadataV1':
+          return SyncUserMetadataV1.fromJson(value);
         case 'SyncUserV1':
           return SyncUserV1.fromJson(value);
         case 'SystemConfigBackupsDto':
@@ -612,6 +638,8 @@ class ApiClient {
           return SystemConfigMetadataDto.fromJson(value);
         case 'SystemConfigNewVersionCheckDto':
           return SystemConfigNewVersionCheckDto.fromJson(value);
+        case 'SystemConfigNightlyTasksDto':
+          return SystemConfigNightlyTasksDto.fromJson(value);
         case 'SystemConfigNotificationsDto':
           return SystemConfigNotificationsDto.fromJson(value);
         case 'SystemConfigOAuthDto':

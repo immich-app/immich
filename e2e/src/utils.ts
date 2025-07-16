@@ -60,6 +60,7 @@ import { io, type Socket } from 'socket.io-client';
 import { loginDto, signupDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
+export type { Emitter } from '@socket.io/component-emitter';
 
 type CommandResponse = { stdout: string; stderr: string; exitCode: number | null };
 type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete' | 'assetHidden';
@@ -84,10 +85,10 @@ export const immichAdmin = (args: string[]) =>
 export const specialCharStrings = ["'", '"', ',', '{', '}', '*'];
 export const TEN_TIMES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-const executeCommand = (command: string, args: string[]) => {
+const executeCommand = (command: string, args: string[], options?: { cwd?: string }) => {
   let _resolve: (value: CommandResponse) => void;
   const promise = new Promise<CommandResponse>((resolve) => (_resolve = resolve));
-  const child = spawn(command, args, { stdio: 'pipe' });
+  const child = spawn(command, args, { stdio: 'pipe', cwd: options?.cwd });
 
   let stdout = '';
   let stderr = '';
@@ -153,19 +154,19 @@ export const utils = {
 
       tables = tables || [
         // TODO e2e test for deleting a stack, since it is quite complex
-        'asset_stack',
-        'libraries',
-        'shared_links',
+        'stack',
+        'library',
+        'shared_link',
         'person',
-        'albums',
-        'assets',
-        'asset_faces',
+        'album',
+        'asset',
+        'asset_face',
         'activity',
-        'api_keys',
-        'sessions',
-        'users',
+        'api_key',
+        'session',
+        'user',
         'system_metadata',
-        'tags',
+        'tag',
       ];
 
       const sql: string[] = [];
@@ -174,7 +175,7 @@ export const utils = {
         if (table === 'system_metadata') {
           sql.push(`DELETE FROM "system_metadata" where "key" NOT IN ('reverse-geocoding-state', 'system-flags');`);
         } else {
-          sql.push(`DELETE FROM ${table} CASCADE;`);
+          sql.push(`DELETE FROM "${table}" CASCADE;`);
         }
       }
 
@@ -450,7 +451,7 @@ export const utils = {
       return;
     }
 
-    await client.query('INSERT INTO asset_faces ("assetId", "personId") VALUES ($1, $2)', [assetId, personId]);
+    await client.query('INSERT INTO asset_face ("assetId", "personId") VALUES ($1, $2)', [assetId, personId]);
   },
 
   setPersonThumbnail: async (personId: string) => {

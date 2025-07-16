@@ -30,7 +30,7 @@ import { sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Users')
-@Controller(RouteKey.USER)
+@Controller(RouteKey.User)
 export class UserController {
   constructor(
     private service: UserService,

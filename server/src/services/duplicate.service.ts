@@ -29,11 +29,11 @@ export class DuplicateService extends BaseService {
     await this.duplicateRepository.deleteAll(auth.user.id, dto.ids);
   }
 
-  @OnJob({ name: JobName.QUEUE_DUPLICATE_DETECTION, queue: QueueName.DUPLICATE_DETECTION })
-  async handleQueueSearchDuplicates({ force }: JobOf<JobName.QUEUE_DUPLICATE_DETECTION>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetDetectDuplicatesQueueAll, queue: QueueName.DuplicateDetection })
+  async handleQueueSearchDuplicates({ force }: JobOf<JobName.AssetDetectDuplicatesQueueAll>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isDuplicateDetectionEnabled(machineLearning)) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     let jobs: JobItem[] = [];
@@ -44,7 +44,7 @@ export class DuplicateService extends BaseService {
 
     const assets = this.assetJobRepository.streamForSearchDuplicates(force);
     for await (const asset of assets) {
-      jobs.push({ name: JobName.DUPLICATE_DETECTION, data: { id: asset.id } });
+      jobs.push({ name: JobName.AssetDetectDuplicates, data: { id: asset.id } });
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await queueAll();
       }
@@ -52,40 +52,40 @@ export class DuplicateService extends BaseService {
 
     await queueAll();
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.DUPLICATE_DETECTION, queue: QueueName.DUPLICATE_DETECTION })
-  async handleSearchDuplicates({ id }: JobOf<JobName.DUPLICATE_DETECTION>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetDetectDuplicates, queue: QueueName.DuplicateDetection })
+  async handleSearchDuplicates({ id }: JobOf<JobName.AssetDetectDuplicates>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isDuplicateDetectionEnabled(machineLearning)) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const asset = await this.assetJobRepository.getForSearchDuplicatesJob(id);
     if (!asset) {
       this.logger.error(`Asset ${id} not found`);
-      return JobStatus.FAILED;
+      return JobStatus.Failed;
     }
 
     if (asset.stackId) {
       this.logger.debug(`Asset ${id} is part of a stack, skipping`);
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
-    if (asset.visibility === AssetVisibility.HIDDEN) {
+    if (asset.visibility === AssetVisibility.Hidden) {
       this.logger.debug(`Asset ${id} is not visible, skipping`);
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
-    if (asset.visibility === AssetVisibility.LOCKED) {
+    if (asset.visibility === AssetVisibility.Locked) {
       this.logger.debug(`Asset ${id} is locked, skipping`);
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     if (!asset.embedding) {
       this.logger.debug(`Asset ${id} is missing embedding`);
-      return JobStatus.FAILED;
+      return JobStatus.Failed;
     }
 
     const duplicateAssets = await this.duplicateRepository.search({
@@ -110,7 +110,7 @@ export class DuplicateService extends BaseService {
     const duplicatesDetectedAt = new Date();
     await this.assetRepository.upsertJobStatus(...assetIds.map((assetId) => ({ assetId, duplicatesDetectedAt })));
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   private async updateDuplicates(

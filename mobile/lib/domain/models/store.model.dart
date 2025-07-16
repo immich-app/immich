@@ -68,8 +68,7 @@ enum StoreKey<T> {
   manageLocalMediaAndroid<bool>._(137),
 
   // Experimental stuff
-  photoManagerCustomFilter<bool>._(1000),
-  newUpload<bool>._(1001);
+  photoManagerCustomFilter<bool>._(1000);
 
   const StoreKey._(this.id);
   final int id;

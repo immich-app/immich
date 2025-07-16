@@ -1,4 +1,5 @@
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { uploadManager } from '$lib/managers/upload-manager.svelte';
 import { UploadState } from '$lib/models/upload-asset';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { uploadRequest } from '$lib/utils';
@@ -11,7 +12,6 @@ import {
   checkBulkUpload,
   getAssetOriginalPath,
   getBaseUrl,
-  getSupportedMediaTypes,
   type AssetMediaResponseDto,
 } from '@immich/sdk';
 import { tick } from 'svelte';
@@ -40,17 +40,7 @@ export const addDummyItems = () => {
 
 // addDummyItems();
 
-let _extensions: string[];
-
 export const uploadExecutionQueue = new ExecutorQueue({ concurrency: 2 });
-
-const getExtensions = async () => {
-  if (!_extensions) {
-    const { image, video } = await getSupportedMediaTypes();
-    _extensions = [...image, ...video];
-  }
-  return _extensions;
-};
 
 type FileUploadParam = { multiple?: boolean } & (
   | { albumId?: string; assetId?: never }
@@ -58,7 +48,7 @@ type FileUploadParam = { multiple?: boolean } & (
 );
 export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
   const { albumId, multiple = true, assetId } = options;
-  const extensions = await getExtensions();
+  const extensions = uploadManager.getExtensions();
 
   return new Promise<(string | undefined)[]>((resolve, reject) => {
     try {
@@ -99,7 +89,7 @@ export const fileUploadHandler = async ({
   replaceAssetId,
   isLockedAssets = false,
 }: FileUploadHandlerParams): Promise<string[]> => {
-  const extensions = await getExtensions();
+  const extensions = uploadManager.getExtensions();
   const promises = [];
   for (const file of files) {
     const name = file.name.toLowerCase();

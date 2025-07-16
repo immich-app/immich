@@ -9,11 +9,13 @@ import 'package:url_launcher/url_launcher.dart';
 class ExifMap extends StatelessWidget {
   final ExifInfo exifInfo;
   final String? markerId;
+  final MapCreatedCallback? onMapCreated;
 
   const ExifMap({
     super.key,
     required this.exifInfo,
     this.markerId = 'marker',
+    this.onMapCreated,
   });
 
   @override
@@ -82,6 +84,7 @@ class ExifMap extends StatelessWidget {
             debugPrint('Opening Map Uri: $uri');
             launchUrl(uri);
           },
+          onCreated: onMapCreated,
         );
       },
     );

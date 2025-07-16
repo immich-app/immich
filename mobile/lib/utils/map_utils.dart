@@ -7,7 +7,7 @@ import 'package:logging/logging.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 class MapUtils {
-  MapUtils._();
+  const MapUtils._();
 
   static final Logger _log = Logger("MapUtils");
   static const defaultSourceId = 'asset-map-markers';

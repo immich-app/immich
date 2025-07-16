@@ -1,22 +1,21 @@
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/interfaces/backup.interface.dart';
+
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/local_album.model.dart';
+
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import "package:immich_mobile/utils/database.utils.dart";
 
-final backupRepositoryProvider = Provider<IBackupRepository>(
+final backupRepositoryProvider = Provider<DriftBackupRepository>(
   (ref) => DriftBackupRepository(ref.watch(driftProvider)),
 );
 
-class DriftBackupRepository extends DriftDatabaseRepository
-    implements IBackupRepository {
+class DriftBackupRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftBackupRepository(this._db) : super(_db);
 
-  @override
   Future<List<LocalAsset>> getAssets(String albumId) {
     final query = _db.localAlbumAssetEntity.select().join(
       [
@@ -33,7 +32,6 @@ class DriftBackupRepository extends DriftDatabaseRepository
         .get();
   }
 
-  @override
   Future<List<String>> getAssetIds(String albumId) {
     final query = _db.localAlbumAssetEntity.selectOnly()
       ..addColumns([_db.localAlbumAssetEntity.assetId])
@@ -43,7 +41,6 @@ class DriftBackupRepository extends DriftDatabaseRepository
         .get();
   }
 
-  @override
   Future<int> getTotalCount() async {
     final excludedAssetIds = await _getExcludedAssetIds();
 
@@ -66,7 +63,6 @@ class DriftBackupRepository extends DriftDatabaseRepository
     return query.get().then((rows) => rows.length);
   }
 
-  @override
   Future<int> getRemainderCount() async {
     final excludedAssetIds = await _getExcludedAssetIds();
 
@@ -101,7 +97,6 @@ class DriftBackupRepository extends DriftDatabaseRepository
     return query.get().then((rows) => rows.length);
   }
 
-  @override
   Future<int> getBackupCount() async {
     final excludedAssetIds = await _getExcludedAssetIds();
     final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
@@ -154,7 +149,6 @@ class DriftBackupRepository extends DriftDatabaseRepository
         .get();
   }
 
-  @override
   Future<List<LocalAlbum>> getBackupAlbums(BackupSelection selectionType) {
     final query = _db.localAlbumEntity.select()
       ..where(
@@ -164,7 +158,6 @@ class DriftBackupRepository extends DriftDatabaseRepository
     return query.map((localAlbum) => localAlbum.toDto(assetCount: 0)).get();
   }
 
-  @override
   Future<List<LocalAsset>> getCandidates() async {
     final excludedAssetIds = await _getExcludedAssetIds();
     final selectedAlbums = await getBackupAlbums(BackupSelection.selected);

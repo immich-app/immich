@@ -1,4 +1,4 @@
-import { WatchOptions } from 'chokidar';
+import { ChokidarOptions } from 'chokidar';
 import { StorageCore } from 'src/cores/storage.core';
 import { StorageRepository, WatchEvents } from 'src/repositories/storage.repository';
 import { RepositoryInterface } from 'src/types';
@@ -11,7 +11,7 @@ interface MockWatcherOptions {
 
 export const makeMockWatcher =
   ({ items, close }: MockWatcherOptions) =>
-  (paths: string[], options: WatchOptions, events: Partial<WatchEvents>) => {
+  (paths: string[], options: ChokidarOptions, events: Partial<WatchEvents>) => {
     events.onReady?.();
     for (const item of items || []) {
       switch (item.event) {
@@ -29,6 +29,7 @@ export const makeMockWatcher =
         }
         case 'error': {
           events.onError?.(new Error(item.value));
+          break;
         }
       }
     }

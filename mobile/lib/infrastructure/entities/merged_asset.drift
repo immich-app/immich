@@ -1,7 +1,7 @@
 import 'remote_asset.entity.dart';
 import 'local_asset.entity.dart';
 
-mergedAsset: SELECT * FROM 
+mergedAsset: SELECT * FROM
 (
 	SELECT
 		rae.id as remote_id,
@@ -16,13 +16,15 @@ mergedAsset: SELECT * FROM
 		rae.is_favorite,
 		rae.thumb_hash,
 		rae.checksum,
-		rae.owner_id
+		rae.owner_id,
+		rae.live_photo_video_id,
+		0 as orientation
 	FROM
 		remote_asset_entity rae
 	LEFT JOIN
 		local_asset_entity lae ON rae.checksum  = lae.checksum
 	WHERE
-		rae.visibility = 0 AND rae.owner_id in ?
+		rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id in ?
 	UNION ALL
 	SELECT
 		NULL as remote_id,
@@ -37,7 +39,9 @@ mergedAsset: SELECT * FROM
 		lae.is_favorite,
 		NULL as thumb_hash,
 		lae.checksum,
-		NULL as owner_id
+		NULL as owner_id,
+		NULL as live_photo_video_id,
+		lae.orientation
 	FROM
 		local_asset_entity lae
 	LEFT JOIN
@@ -48,12 +52,12 @@ mergedAsset: SELECT * FROM
 ORDER BY created_at DESC
 LIMIT $limit;
 
-mergedBucket(:group_by AS INTEGER): 
-SELECT 
+mergedBucket(:group_by AS INTEGER):
+SELECT
 	COUNT(*) as asset_count,
 	 CASE
-        WHEN :group_by = 0 THEN STRFTIME('%Y-%m-%d', created_at) -- day
-        WHEN :group_by = 1 THEN STRFTIME('%Y-%m', created_at) -- month
+        WHEN :group_by = 0 THEN STRFTIME('%Y-%m-%d', created_at, 'localtime') -- day
+        WHEN :group_by = 1 THEN STRFTIME('%Y-%m', created_at, 'localtime') -- month
     END AS bucket_date
 FROM
 (
@@ -65,7 +69,7 @@ FROM
 	LEFT JOIN
 		local_asset_entity lae  ON rae.checksum  = lae.checksum
 	WHERE
-		rae.visibility = 0 AND rae.owner_id in ?
+		rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id in ?
 	UNION ALL
 	SELECT
 		lae.name,

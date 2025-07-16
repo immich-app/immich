@@ -1,9 +1,9 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/interfaces/asset_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:openapi/api.dart';
 
 final assetApiRepositoryProvider = Provider(
@@ -13,13 +13,12 @@ final assetApiRepositoryProvider = Provider(
   ),
 );
 
-class AssetApiRepository extends ApiRepository implements IAssetApiRepository {
+class AssetApiRepository extends ApiRepository {
   final AssetsApi _api;
   final SearchApi _searchApi;
 
   AssetApiRepository(this._api, this._searchApi);
 
-  @override
   Future<Asset> update(String id, {String? description}) async {
     final response = await checkNull(
       _api.updateAsset(id, UpdateAssetDto(description: description)),
@@ -27,7 +26,6 @@ class AssetApiRepository extends ApiRepository implements IAssetApiRepository {
     return Asset.remote(response);
   }
 
-  @override
   Future<List<Asset>> search({List<String> personIds = const []}) async {
     // TODO this always fetches all assets, change API and usage to actually do pagination
     final List<Asset> result = [];
@@ -50,7 +48,10 @@ class AssetApiRepository extends ApiRepository implements IAssetApiRepository {
     return result;
   }
 
-  @override
+  Future<void> delete(List<String> ids, bool force) async {
+    return _api.deleteAssets(AssetBulkDeleteDto(ids: ids, force: force));
+  }
+
   Future<void> updateVisibility(
     List<String> ids,
     AssetVisibilityEnum visibility,
@@ -60,20 +61,35 @@ class AssetApiRepository extends ApiRepository implements IAssetApiRepository {
     );
   }
 
-  _mapVisibility(AssetVisibilityEnum visibility) {
-    switch (visibility) {
-      case AssetVisibilityEnum.timeline:
-        return AssetVisibility.timeline;
-      case AssetVisibilityEnum.hidden:
-        return AssetVisibility.hidden;
-      case AssetVisibilityEnum.locked:
-        return AssetVisibility.locked;
-      case AssetVisibilityEnum.archive:
-        return AssetVisibility.archive;
-    }
+  Future<void> updateFavorite(
+    List<String> ids,
+    bool isFavorite,
+  ) async {
+    return _api.updateAssets(
+      AssetBulkUpdateDto(ids: ids, isFavorite: isFavorite),
+    );
   }
 
-  @override
+  Future<void> updateLocation(
+    List<String> ids,
+    LatLng location,
+  ) async {
+    return _api.updateAssets(
+      AssetBulkUpdateDto(
+        ids: ids,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      ),
+    );
+  }
+
+  _mapVisibility(AssetVisibilityEnum visibility) => switch (visibility) {
+        AssetVisibilityEnum.timeline => AssetVisibility.timeline,
+        AssetVisibilityEnum.hidden => AssetVisibility.hidden,
+        AssetVisibilityEnum.locked => AssetVisibility.locked,
+        AssetVisibilityEnum.archive => AssetVisibility.archive,
+      };
+
   Future<String?> getAssetMIMEType(String assetId) async {
     final response = await checkNull(_api.getAssetInfo(assetId));
 

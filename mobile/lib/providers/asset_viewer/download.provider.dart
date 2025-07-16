@@ -23,7 +23,7 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
     this._shareService,
     this._albumService,
   ) : super(
-          DownloadState(
+          const DownloadState(
             downloadStatus: TaskStatus.complete,
             showProgress: false,
             taskProgress: <String, DownloadInfo>{},

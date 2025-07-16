@@ -206,7 +206,7 @@ class {{{classname}}} {
             : {{/isNullable}}{{{datatypeWithEnum}}}.parse('${json[r'{{{baseName}}}']}'),
               {{/isNumber}}
               {{#isDouble}}
-        {{{name}}}: (mapValueOfType<num>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}).toDouble(),
+        {{{name}}}: (mapValueOfType<num>(json, r'{{{baseName}}}'){{#required}}{{^isNullable}}!{{/isNullable}}{{/required}}{{^required}}{{#defaultValue}} ?? {{{.}}}{{/defaultValue}}{{/required}}){{#isNullable}}?{{/isNullable}}.toDouble(),
               {{/isDouble}}
               {{^isDouble}}
               {{^isNumber}}

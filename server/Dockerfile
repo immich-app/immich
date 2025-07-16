@@ -1,10 +1,8 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202505131114@sha256:cf4507bbbf307e9b6d8ee9418993321f2b85867da8ce14d0a20ccaf9574cb995 AS dev
+FROM ghcr.io/immich-app/base-server-dev:202507091427@sha256:733e510024e03bc2450608a1f3622f45bf287b70d89a06e60acbccea4bf4fd8c AS dev
 
-RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
-COPY server/patches ./patches
 RUN npm ci && \
     # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
     # they're marked as optional dependencies, so we need to copy them manually after pruning
@@ -18,6 +16,7 @@ ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 FROM dev AS dev-container-server
 
+RUN rm -rf /usr/src/app
 RUN apt-get update && \
     apt-get install sudo inetutils-ping openjdk-11-jre-headless \
     vim nano \
@@ -27,12 +26,16 @@ RUN usermod -aG sudo node
 RUN echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 RUN mkdir -p /workspaces/immich
 RUN chown node -R /workspaces
+COPY --chown=node:node --chmod=777 ../.devcontainer/server/*.sh /immich-devcontainer/
 
-RUN mkdir /immich-devcontainer && chown node -R /immich-devcontainer
-COPY --chmod=777 ../.devcontainer/server/*.sh /immich-devcontainer/
+USER node
+COPY --chown=node:node .. /tmp/create-dep-cache/
+WORKDIR /tmp/create-dep-cache
+RUN make ci-all && rm -rf /tmp/create-dep-cache
+
 
 FROM dev-container-server AS dev-container-mobile
-
+USER root
 # Enable multiarch for arm64 if necessary
 RUN if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
     dpkg --add-architecture amd64 && \
@@ -47,7 +50,7 @@ RUN if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
 # Flutter SDK
 # https://flutter.dev/docs/development/tools/sdk/releases?tab=linux
 ENV FLUTTER_CHANNEL="stable"
-ENV FLUTTER_VERSION="3.29.3"
+ENV FLUTTER_VERSION="3.32.6"
 ENV FLUTTER_HOME=/flutter
 ENV PATH=${PATH}:${FLUTTER_HOME}/bin
 
@@ -95,7 +98,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:202505061115@sha256:9971d3a089787f0bd01f4682141d3665bcf5efb3e101a88e394ffd25bee4eedb
+FROM ghcr.io/immich-app/base-server-prod:202507091427@sha256:ad10451acd8eda05a006a2586b6b0425cdaaca97c413fb4c1a10896712528bdc
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

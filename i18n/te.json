@@ -230,7 +230,6 @@
     "storage_template_migration_info": "నిల్వ టెంప్లేట్ అన్ని పొడిగింపులను చిన్న అక్షరాలకు మారుస్తుంది. టెంప్లేట్ మార్పులు కొత్త ఆస్తులకు మాత్రమే వర్తిస్తాయి. గతంలో అప్‌లోడ్ చేసిన ఆస్తులకు టెంప్లేట్‌ను మునుపు వర్తింపజేయడానికి, <link>{job}</link>ను అమలు చేయండి.",
     "storage_template_migration_job": "నిల్వ టెంప్లేట్ మైగ్రేషన్ జాబ్",
     "storage_template_more_details": "ఈ ఫీచర్ గురించి మరిన్ని వివరాల కోసం, <template-link>storage template</template-link> మరియు దాని <implications-link>implications</implications-link> చూడండి",
-    "storage_template_onboarding_description": "ప్రారంభించబడినప్పుడు, ఈ లక్షణం వినియోగదారు నిర్వచించిన టెంప్లేట్ ఆధారంగా ఫైళ్ళను స్వయంచాలకంగా నిర్వహిస్తుంది. స్థిరత్వ సమస్యల కారణంగా ఈ లక్షణం డిఫాల్ట్‌గా ఆపివేయబడింది. మరిన్ని వివరాల కోసం, దయచేసి <link>documentation</link> చూడండి.",
     "storage_template_path_length": "సుమారు పాత్ పొడవు పరిమితి: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "నిల్వ టెంప్లేట్",
     "storage_template_settings_description": "అప్‌లోడ్ ఆస్తి యొక్క ఫోల్డర్ నిర్మాణం మరియు ఫైల్ పేరును నిర్వహించండి",

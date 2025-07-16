@@ -21,50 +21,50 @@ export class TagController {
   constructor(private service: TagService) {}
 
   @Post()
-  @Authenticated({ permission: Permission.TAG_CREATE })
+  @Authenticated({ permission: Permission.TagCreate })
   createTag(@Auth() auth: AuthDto, @Body() dto: TagCreateDto): Promise<TagResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Get()
-  @Authenticated({ permission: Permission.TAG_READ })
+  @Authenticated({ permission: Permission.TagRead })
   getAllTags(@Auth() auth: AuthDto): Promise<TagResponseDto[]> {
     return this.service.getAll(auth);
   }
 
   @Put()
-  @Authenticated({ permission: Permission.TAG_CREATE })
+  @Authenticated({ permission: Permission.TagCreate })
   upsertTags(@Auth() auth: AuthDto, @Body() dto: TagUpsertDto): Promise<TagResponseDto[]> {
     return this.service.upsert(auth, dto);
   }
 
   @Put('assets')
-  @Authenticated({ permission: Permission.TAG_ASSET })
+  @Authenticated({ permission: Permission.TagAsset })
   bulkTagAssets(@Auth() auth: AuthDto, @Body() dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
     return this.service.bulkTagAssets(auth, dto);
   }
 
   @Get(':id')
-  @Authenticated({ permission: Permission.TAG_READ })
+  @Authenticated({ permission: Permission.TagRead })
   getTagById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<TagResponseDto> {
     return this.service.get(auth, id);
   }
 
   @Put(':id')
-  @Authenticated({ permission: Permission.TAG_UPDATE })
+  @Authenticated({ permission: Permission.TagUpdate })
   updateTag(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: TagUpdateDto): Promise<TagResponseDto> {
     return this.service.update(auth, id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated({ permission: Permission.TAG_DELETE })
+  @Authenticated({ permission: Permission.TagDelete })
   deleteTag(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }
 
   @Put(':id/assets')
-  @Authenticated({ permission: Permission.TAG_ASSET })
+  @Authenticated({ permission: Permission.TagAsset })
   tagAssets(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -74,7 +74,7 @@ export class TagController {
   }
 
   @Delete(':id/assets')
-  @Authenticated({ permission: Permission.TAG_ASSET })
+  @Authenticated({ permission: Permission.TagAsset })
   untagAssets(
     @Auth() auth: AuthDto,
     @Body() dto: BulkIdsDto,

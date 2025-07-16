@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely, NotNull, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB } from 'src/db';
 import { Chunked, DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetType, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
+import { DB } from 'src/schema';
 import { anyUuid, asUuid, withDefaultVisibility } from 'src/utils/database';
 
 interface DuplicateSearch {
@@ -32,28 +32,28 @@ export class DuplicateRepository {
       this.db
         .with('duplicates', (qb) =>
           qb
-            .selectFrom('assets')
+            .selectFrom('asset')
             .$call(withDefaultVisibility)
             .leftJoinLateral(
               (qb) =>
                 qb
-                  .selectFrom('exif')
-                  .selectAll('assets')
-                  .select((eb) => eb.table('exif').as('exifInfo'))
-                  .whereRef('exif.assetId', '=', 'assets.id')
-                  .as('asset'),
+                  .selectFrom('asset_exif')
+                  .selectAll('asset')
+                  .select((eb) => eb.table('asset_exif').as('exifInfo'))
+                  .whereRef('asset_exif.assetId', '=', 'asset.id')
+                  .as('asset2'),
               (join) => join.onTrue(),
             )
-            .select('assets.duplicateId')
+            .select('asset.duplicateId')
             .select((eb) =>
-              eb.fn.jsonAgg('asset').orderBy('assets.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
+              eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
             )
-            .where('assets.ownerId', '=', asUuid(userId))
-            .where('assets.duplicateId', 'is not', null)
+            .where('asset.ownerId', '=', asUuid(userId))
+            .where('asset.duplicateId', 'is not', null)
             .$narrowType<{ duplicateId: NotNull }>()
-            .where('assets.deletedAt', 'is', null)
-            .where('assets.stackId', 'is', null)
-            .groupBy('assets.duplicateId'),
+            .where('asset.deletedAt', 'is', null)
+            .where('asset.stackId', 'is', null)
+            .groupBy('asset.duplicateId'),
         )
         .with('unique', (qb) =>
           qb
@@ -63,10 +63,10 @@ export class DuplicateRepository {
         )
         .with('removed_unique', (qb) =>
           qb
-            .updateTable('assets')
+            .updateTable('asset')
             .set({ duplicateId: null })
             .from('unique')
-            .whereRef('assets.duplicateId', '=', 'unique.duplicateId'),
+            .whereRef('asset.duplicateId', '=', 'unique.duplicateId'),
         )
         .selectFrom('duplicates')
         .selectAll()
@@ -81,7 +81,7 @@ export class DuplicateRepository {
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   async delete(userId: string, id: string): Promise<void> {
     await this.db
-      .updateTable('assets')
+      .updateTable('asset')
       .set({ duplicateId: null })
       .where('ownerId', '=', userId)
       .where('duplicateId', '=', id)
@@ -96,7 +96,7 @@ export class DuplicateRepository {
     }
 
     await this.db
-      .updateTable('assets')
+      .updateTable('asset')
       .set({ duplicateId: null })
       .where('ownerId', '=', userId)
       .where('duplicateId', 'in', ids)
@@ -109,30 +109,30 @@ export class DuplicateRepository {
         assetId: DummyValue.UUID,
         embedding: DummyValue.VECTOR,
         maxDistance: 0.6,
-        type: AssetType.IMAGE,
+        type: AssetType.Image,
         userIds: [DummyValue.UUID],
       },
     ],
   })
   search({ assetId, embedding, maxDistance, type, userIds }: DuplicateSearch) {
     return this.db.transaction().execute(async (trx) => {
-      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
       return await trx
         .with('cte', (qb) =>
           qb
-            .selectFrom('assets')
+            .selectFrom('asset')
             .$call(withDefaultVisibility)
             .select([
-              'assets.id as assetId',
-              'assets.duplicateId',
+              'asset.id as assetId',
+              'asset.duplicateId',
               sql<number>`smart_search.embedding <=> ${embedding}`.as('distance'),
             ])
-            .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
-            .where('assets.ownerId', '=', anyUuid(userIds))
-            .where('assets.deletedAt', 'is', null)
-            .where('assets.type', '=', type)
-            .where('assets.id', '!=', asUuid(assetId))
-            .where('assets.stackId', 'is', null)
+            .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
+            .where('asset.ownerId', '=', anyUuid(userIds))
+            .where('asset.deletedAt', 'is', null)
+            .where('asset.type', '=', type)
+            .where('asset.id', '!=', asUuid(assetId))
+            .where('asset.stackId', 'is', null)
             .orderBy('distance')
             .limit(64),
         )
@@ -148,7 +148,7 @@ export class DuplicateRepository {
   })
   async merge(options: DuplicateMergeOptions): Promise<void> {
     await this.db
-      .updateTable('assets')
+      .updateTable('asset')
       .set({ duplicateId: options.targetId })
       .where((eb) =>
         eb.or([eb('duplicateId', '=', anyUuid(options.sourceIds)), eb('id', '=', anyUuid(options.assetIds))]),

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -17,10 +18,12 @@ import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provide
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/background.service.dart';
+import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
@@ -28,6 +31,7 @@ import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/download.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
@@ -95,6 +99,17 @@ Future<void> initApp() async {
   );
 
   await FileDownloader().trackTasks();
+
+  LicenseRegistry.addLicense(
+    () async* {
+      for (final license in nonPubLicenses.entries) {
+        yield LicenseEntryWithLineBreaks(
+          [license.key],
+          license.value,
+        );
+      }
+    },
+  );
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
@@ -183,6 +198,34 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     );
   }
 
+  Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
+    final deepLinkHandler = ref.read(deepLinkServiceProvider);
+    final currentRouteName = ref.read(currentRouteNameProvider.notifier).state;
+
+    final isColdStart =
+        currentRouteName == null || currentRouteName == SplashScreenRoute.name;
+
+    if (deepLink.uri.scheme == "immich") {
+      final proposedRoute = await deepLinkHandler.handleScheme(
+        deepLink,
+        isColdStart,
+      );
+
+      return proposedRoute;
+    }
+
+    if (deepLink.uri.host == "my.immich.app") {
+      final proposedRoute = await deepLinkHandler.handleMyImmichApp(
+        deepLink,
+        isColdStart,
+      );
+
+      return proposedRoute;
+    }
+
+    return DeepLink.path(deepLink.path);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -234,9 +277,10 @@ class ImmichAppState extends ConsumerState<ImmichApp>
           colorScheme: immichTheme.light,
           locale: context.locale,
         ),
-        routeInformationParser: router.defaultRouteParser(),
-        routerDelegate: router.delegate(
-          navigatorObservers: () => [AppNavigationObserver(ref: ref)],
+        routerConfig: router.config(
+          deepLinkBuilder: _deepLinkBuilder,
+          navigatorObservers: () =>
+              [AppNavigationObserver(ref: ref), HeroController()],
         ),
       ),
     );

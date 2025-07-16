@@ -15,26 +15,26 @@ export class SystemMetadataController {
   constructor(private service: SystemMetadataService) {}
 
   @Get('admin-onboarding')
-  @Authenticated({ permission: Permission.SYSTEM_METADATA_READ, admin: true })
+  @Authenticated({ permission: Permission.SystemMetadataRead, admin: true })
   getAdminOnboarding(): Promise<AdminOnboardingUpdateDto> {
     return this.service.getAdminOnboarding();
   }
 
   @Post('admin-onboarding')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated({ permission: Permission.SYSTEM_METADATA_UPDATE, admin: true })
+  @Authenticated({ permission: Permission.SystemMetadataUpdate, admin: true })
   updateAdminOnboarding(@Body() dto: AdminOnboardingUpdateDto): Promise<void> {
     return this.service.updateAdminOnboarding(dto);
   }
 
   @Get('reverse-geocoding-state')
-  @Authenticated({ permission: Permission.SYSTEM_METADATA_READ, admin: true })
+  @Authenticated({ permission: Permission.SystemMetadataRead, admin: true })
   getReverseGeocodingState(): Promise<ReverseGeocodingStateResponseDto> {
     return this.service.getReverseGeocodingState();
   }
 
   @Get('version-check-state')
-  @Authenticated({ permission: Permission.SYSTEM_METADATA_READ, admin: true })
+  @Authenticated({ permission: Permission.SystemMetadataRead, admin: true })
   getVersionCheckState(): Promise<VersionCheckStateResponseDto> {
     return this.service.getVersionCheckState();
   }

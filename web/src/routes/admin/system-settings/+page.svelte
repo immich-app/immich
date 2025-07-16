@@ -12,6 +12,7 @@
   import MapSettings from '$lib/components/admin-page/settings/map-settings/map-settings.svelte';
   import MetadataSettings from '$lib/components/admin-page/settings/metadata-settings/metadata-settings.svelte';
   import NewVersionCheckSettings from '$lib/components/admin-page/settings/new-version-check-settings/new-version-check-settings.svelte';
+  import NightlyTasksSettings from '$lib/components/admin-page/settings/nightly-tasks-settings/nightly-tasks-settings.svelte';
   import NotificationSettings from '$lib/components/admin-page/settings/notification-settings/notification-settings.svelte';
   import ServerSettings from '$lib/components/admin-page/settings/server/server-settings.svelte';
   import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
@@ -33,6 +34,7 @@
     mdiBackupRestore,
     mdiBellOutline,
     mdiBookshelf,
+    mdiClockOutline,
     mdiContentCopy,
     mdiDatabaseOutline,
     mdiDownload,
@@ -137,13 +139,6 @@
       icon: mdiSync,
     },
     {
-      component: MetadataSettings,
-      title: $t('admin.metadata_settings'),
-      subtitle: $t('admin.metadata_settings_description'),
-      key: 'metadata',
-      icon: mdiDatabaseOutline,
-    },
-    {
       component: LibrarySettings,
       title: $t('admin.library_settings'),
       subtitle: $t('admin.library_settings_description'),
@@ -170,6 +165,20 @@
       subtitle: $t('admin.map_gps_settings_description'),
       key: 'location',
       icon: mdiMapMarkerOutline,
+    },
+    {
+      component: MetadataSettings,
+      title: $t('admin.metadata_settings'),
+      subtitle: $t('admin.metadata_settings_description'),
+      key: 'metadata',
+      icon: mdiDatabaseOutline,
+    },
+    {
+      component: NightlyTasksSettings,
+      title: $t('admin.nightly_tasks_settings'),
+      subtitle: $t('admin.nightly_tasks_settings_description'),
+      key: 'nightly-tasks',
+      icon: mdiClockOutline,
     },
     {
       component: NotificationSettings,

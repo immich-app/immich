@@ -199,13 +199,11 @@ To use your SSH key for commit signing, see the [GitHub guide on SSH commit sign
 When the Dev Container starts, it automatically:
 
 1. **Runs post-create script** (`container-server-post-create.sh`):
-
    - Adjusts file permissions for the `node` user
    - Installs dependencies: `npm install` in all packages
    - Builds TypeScript SDK: `npm run build` in `open-api/typescript-sdk`
 
 2. **Starts development servers** via VS Code tasks:
-
    - `Immich API Server (Nest)` - API server with hot-reloading on port 2283
    - `Immich Web Server (Vite)` - Web frontend with hot-reloading on port 3000
    - Both servers watch for file changes and recompile automatically
@@ -335,14 +333,12 @@ make install-all      # Install all dependencies
 The Dev Container is pre-configured for debugging:
 
 1. **API Server Debugging**:
-
    - Set breakpoints in VS Code
    - Press `F5` or use "Run and Debug" panel
    - Select "Attach to Server" configuration
    - Debug port: 9231
 
 2. **Worker Debugging**:
-
    - Use "Attach to Workers" configuration
    - Debug port: 9230
 
@@ -428,7 +424,6 @@ While the Dev Container focuses on server and web development, you can connect m
    ```
 
 2. **Configure mobile app**:
-
    - Server URL: `http://YOUR_IP:2283/api`
    - Ensure firewall allows port 2283
 

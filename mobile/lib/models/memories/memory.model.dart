@@ -7,7 +7,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 class Memory {
   final String title;
   final List<Asset> assets;
-  Memory({
+  const Memory({
     required this.title,
     required this.assets,
   });

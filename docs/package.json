@@ -16,8 +16,9 @@
     "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
-    "@docusaurus/core": "~3.7.0",
-    "@docusaurus/preset-classic": "~3.7.0",
+    "@docusaurus/core": "~3.8.0",
+    "@docusaurus/preset-classic": "~3.8.0",
+    "@docusaurus/theme-common": "~3.8.0",
     "@mdi/js": "^7.3.67",
     "@mdi/react": "^1.6.1",
     "@mdx-js/react": "^3.0.0",
@@ -26,6 +27,7 @@
     "clsx": "^2.0.0",
     "docusaurus-lunr-search": "^3.3.2",
     "docusaurus-preset-openapi": "^0.7.5",
+    "lunr": "^2.3.9",
     "postcss": "^8.4.25",
     "prism-react-renderer": "^2.3.1",
     "raw-loader": "^4.0.2",
@@ -35,7 +37,7 @@
     "url": "^0.11.0"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "~3.7.0",
+    "@docusaurus/module-type-aliases": "~3.8.0",
     "@docusaurus/tsconfig": "^3.7.0",
     "@docusaurus/types": "^3.7.0",
     "prettier": "^3.2.4",
@@ -57,6 +59,6 @@
     "node": ">=20"
   },
   "volta": {
-    "node": "22.16.0"
+    "node": "22.17.0"
   }
 }
