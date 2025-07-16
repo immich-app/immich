@@ -49,41 +49,39 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
-              padding: EdgeInsetsGeometry.all(20),
-              child: Image(
-                image: AssetImage('assets/immich-logo.png'),
-                width: 80,
-                filterQuality: FilterQuality.high,
-              ),
+            AnimatedSwitcher(
+              duration: Durations.long4,
+              child: hasMigrated
+                  ? const Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.green,
+                      size: 48.0,
+                    )
+                  : const SizedBox(
+                      width: 50.0,
+                      height: 50.0,
+                      child: CircularProgressIndicator(),
+                    ),
             ),
-            const Padding(padding: EdgeInsets.only(top: 16.0)),
+            const SizedBox(height: 16.0),
             Center(
               child: Column(
                 children: [
-                  AnimatedSwitcher(
-                    duration: Durations.medium4,
-                    child: !hasMigrated
-                        ? const SizedBox(
-                            width: 20.0,
-                            height: 20.0,
-                            child: CircularProgressIndicator(),
-                          )
-                        : const Icon(
-                            Icons.check_circle_rounded,
-                            color: Colors.green,
-                          ),
-                  ),
-                  const SizedBox(height: 20),
                   SizedBox(
                     width: 300.0,
-                    height: 100.0,
-                    child: Text(
-                      !hasMigrated
-                          ? "Do not close the app while the migration is in progress"
-                          : "Migration completed. Close and Reopen the app",
-                      style: context.textTheme.displayLarge,
-                      textAlign: TextAlign.center,
+                    child: AnimatedSwitcher(
+                      duration: Durations.long4,
+                      child: hasMigrated
+                          ? Text(
+                              "Migration success. Please close and reopen the app",
+                              style: context.textTheme.titleMedium,
+                              textAlign: TextAlign.center,
+                            )
+                          : Text(
+                              "Data migration in progress...\nPlease wait and don't close this page",
+                              style: context.textTheme.titleMedium,
+                              textAlign: TextAlign.center,
+                            ),
                     ),
                   ),
                 ],

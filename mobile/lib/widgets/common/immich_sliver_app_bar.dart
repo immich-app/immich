@@ -108,13 +108,26 @@ class _ImmichLogoWithText extends StatelessWidget {
           children: [
             Builder(
               builder: (context) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 3.0),
-                  child: SvgPicture.asset(
-                    context.isDarkTheme
-                        ? 'assets/immich-logo-inline-dark.svg'
-                        : 'assets/immich-logo-inline-light.svg',
-                    height: 40,
+                return Badge(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  label: const Text(
+                    'RC',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Inconsolata',
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 3.0),
+                    child: SvgPicture.asset(
+                      context.isDarkTheme
+                          ? 'assets/immich-logo-inline-dark.svg'
+                          : 'assets/immich-logo-inline-light.svg',
+                      height: 40,
+                    ),
                   ),
                 );
               },

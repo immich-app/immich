@@ -84,6 +84,7 @@ class AdvancedSettings extends HookConsumerWidget {
               ),
               TextButton(
                 onPressed: () {
+                  betaTimeline.value = !enabled;
                   Navigator.of(context).pop();
                 },
                 child: const Text("No"),
