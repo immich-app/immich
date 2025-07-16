@@ -441,94 +441,75 @@ export enum QueueName {
 }
 
 export enum JobName {
-  //backups
-  BackupDatabase = 'database-backup',
+  AssetDelete = 'AssetDelete',
+  AssetDeleteCheck = 'AssetDeleteCheck',
+  AssetDetectFacesQueueAll = 'AssetDetectFacesQueueAll',
+  AssetDetectFaces = 'AssetDetectFaces',
+  AssetDetectDuplicatesQueueAll = 'AssetDetectDuplicatesQueueAll',
+  AssetDetectDuplicates = 'AssetDetectDuplicates',
+  AssetEncodeVideoQueueAll = 'AssetEncodeVideoQueueAll',
+  AssetEncodeVideo = 'AssetEncodeVideo',
+  AssetEmptyTrash = 'AssetEmptyTrash',
+  AssetExtractMetadataQueueAll = 'AssetExtractMetadataQueueAll',
+  AssetExtractMetadata = 'AssetExtractMetadata',
+  AssetFileMigration = 'AssetFileMigration',
+  AssetGenerateThumbnailsQueueAll = 'AssetGenerateThumbnailsQueueAll',
+  AssetGenerateThumbnails = 'AssetGenerateThumbnails',
 
-  // conversion
-  QueueVideoConversion = 'queue-video-conversion',
-  VideoConversation = 'video-conversion',
+  AuditLogCleanup = 'AuditLogCleanup',
 
-  // thumbnails
-  QueueGenerateThumbnails = 'queue-generate-thumbnails',
-  GenerateThumbnails = 'generate-thumbnails',
-  GeneratePersonThumbnail = 'generate-person-thumbnail',
+  DatabaseBackup = 'DatabaseBackup',
 
-  // metadata
-  QueueMetadataExtraction = 'queue-metadata-extraction',
-  MetadataExtraction = 'metadata-extraction',
+  FacialRecognitionQueueAll = 'FacialRecognitionQueueAll',
+  FacialRecognition = 'FacialRecognition',
 
-  // user
-  UserDeletion = 'user-deletion',
-  UserDeleteCheck = 'user-delete-check',
-  userSyncUsage = 'user-sync-usage',
+  FileDelete = 'FileDelete',
+  FileMigrationQueueAll = 'FileMigrationQueueAll',
 
-  // asset
-  AssetDeletion = 'asset-deletion',
-  AssetDeletionCheck = 'asset-deletion-check',
+  LibraryDeleteCheck = 'LibraryDeleteCheck',
+  LibraryDelete = 'LibraryDelete',
+  LibraryRemoveAsset = 'LibraryRemoveAsset',
+  LibrarySyncAssetsQueueAll = 'LibraryScanAssetsQueueAll',
+  LibrarySyncAssets = 'LibrarySyncAssets',
+  LibrarySyncFilesQueueAll = 'LibrarySyncFilesQueueAll',
+  LibrarySyncFiles = 'LibrarySyncFiles',
+  LibraryScanQueueAll = 'LibraryScanQueueAll',
 
-  // storage template
-  StorageTemplateMigration = 'storage-template-migration',
-  StorageTemplateMigrationSingle = 'storage-template-migration-single',
+  MemoryCleanup = 'MemoryCleanup',
+  MemoryGenerate = 'MemoryGenerate',
 
-  // tags
-  TagCleanup = 'tag-cleanup',
+  NotificationsCleanup = 'NotificationsCleanup',
 
-  // migration
-  QueueMigration = 'queue-migration',
-  MigrateAsset = 'migrate-asset',
-  MigratePerson = 'migrate-person',
+  NotifyUserSignup = 'NotifyUserSignup',
+  NotifyAlbumInvite = 'NotifyAlbumInvite',
+  NotifyAlbumUpdate = 'NotifyAlbumUpdate',
 
-  // facial recognition
-  PersonCleanup = 'person-cleanup',
-  QueueFaceDetection = 'queue-face-detection',
-  FaceDetection = 'face-detection',
-  QueueFacialRecognition = 'queue-facial-recognition',
-  FacialRecognition = 'facial-recognition',
+  UserDelete = 'UserDelete',
+  UserDeleteCheck = 'UserDeleteCheck',
+  UserSyncUsage = 'UserSyncUsage',
 
-  // library management
-  LibraryQueueSyncFiles = 'library-queue-sync-files',
-  LibraryQueueSyncAssets = 'library-queue-sync-assets',
-  LibrarySyncFiles = 'library-sync-files',
-  LibrarySyncAssets = 'library-sync-assets',
-  LibraryAssetRemoval = 'handle-library-file-deletion',
-  LibraryDelete = 'library-delete',
-  LibraryQueueScanAll = 'library-queue-scan-all',
-  LibraryQueueCleanup = 'library-queue-cleanup',
+  PersonCleanup = 'PersonCleanup',
+  PersonFileMigration = 'PersonFileMigration',
+  PersonGenerateThumbnail = 'PersonGenerateThumbnail',
 
-  // cleanup
-  DeleteFiles = 'delete-files',
-  CleanOldAuditLogs = 'clean-old-audit-logs',
-  CleanOldSessionTokens = 'clean-old-session-tokens',
+  SessionCleanup = 'SessionCleanup',
 
-  // memories
-  MemoriesCleanup = 'memories-cleanup',
-  MemoriesCreate = 'memories-create',
+  SendMail = 'SendMail',
 
-  // smart search
-  QueueSmartSearch = 'queue-smart-search',
-  SmartSearch = 'smart-search',
+  SidecarQueueAll = 'SidecarQueueAll',
+  SidecarDiscovery = 'SidecarDiscovery',
+  SidecarSync = 'SidecarSync',
+  SidecarWrite = 'SidecarWrite',
 
-  QueueTrashEmpty = 'queue-trash-empty',
+  SmartSearchQueueAll = 'SmartSearchQueueAll',
+  SmartSearch = 'SmartSearch',
 
-  // duplicate detection
-  QueueDuplicateDetection = 'queue-duplicate-detection',
-  DuplicateDetection = 'duplicate-detection',
+  StorageTemplateMigration = 'StorageTemplateMigration',
+  StorageTemplateMigrationSingle = 'StorageTemplateMigrationSingle',
 
-  // XMP sidecars
-  QueueSidecar = 'queue-sidecar',
-  SidecarDiscovery = 'sidecar-discovery',
-  SidecarSync = 'sidecar-sync',
-  SidecarWrite = 'sidecar-write',
+  TagCleanup = 'TagCleanup',
 
-  // Notification
-  NotifySignup = 'notify-signup',
-  NotifyAlbumInvite = 'notify-album-invite',
-  NotifyAlbumUpdate = 'notify-album-update',
-  NotificationsCleanup = 'notifications-cleanup',
-  SendMail = 'notification-send-email',
-
-  // Version check
-  VersionCheck = 'version-check',
+  VersionCheck = 'VersionCheck',
 }
 
 export enum JobCommand {

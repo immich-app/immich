@@ -57,8 +57,8 @@ export class MediaService extends BaseService {
     this.videoInterfaces = { dri, mali };
   }
 
-  @OnJob({ name: JobName.QueueGenerateThumbnails, queue: QueueName.ThumbnailGeneration })
-  async handleQueueGenerateThumbnails({ force }: JobOf<JobName.QueueGenerateThumbnails>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetGenerateThumbnailsQueueAll, queue: QueueName.ThumbnailGeneration })
+  async handleQueueGenerateThumbnails({ force }: JobOf<JobName.AssetGenerateThumbnailsQueueAll>): Promise<JobStatus> {
     let jobs: JobItem[] = [];
 
     const queueAll = async () => {
@@ -70,7 +70,7 @@ export class MediaService extends BaseService {
       const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
 
       if (!previewFile || !thumbnailFile || !asset.thumbhash || force) {
-        jobs.push({ name: JobName.GenerateThumbnails, data: { id: asset.id } });
+        jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
       }
 
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
@@ -92,7 +92,7 @@ export class MediaService extends BaseService {
         await this.personRepository.update({ id: person.id, faceAssetId: face.id });
       }
 
-      jobs.push({ name: JobName.GeneratePersonThumbnail, data: { id: person.id } });
+      jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: person.id } });
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await queueAll();
       }
@@ -103,7 +103,7 @@ export class MediaService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.QueueMigration, queue: QueueName.Migration })
+  @OnJob({ name: JobName.FileMigrationQueueAll, queue: QueueName.Migration })
   async handleQueueMigration(): Promise<JobStatus> {
     const { active, waiting } = await this.jobRepository.getJobCounts(QueueName.Migration);
     if (active === 1 && waiting === 0) {
@@ -114,7 +114,7 @@ export class MediaService extends BaseService {
     let jobs: JobItem[] = [];
     const assets = this.assetJobRepository.streamForMigrationJob();
     for await (const asset of assets) {
-      jobs.push({ name: JobName.MigrateAsset, data: { id: asset.id } });
+      jobs.push({ name: JobName.AssetFileMigration, data: { id: asset.id } });
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await this.jobRepository.queueAll(jobs);
         jobs = [];
@@ -125,7 +125,7 @@ export class MediaService extends BaseService {
     jobs = [];
 
     for await (const person of this.personRepository.getAll()) {
-      jobs.push({ name: JobName.MigratePerson, data: { id: person.id } });
+      jobs.push({ name: JobName.PersonFileMigration, data: { id: person.id } });
 
       if (jobs.length === JOBS_ASSET_PAGINATION_SIZE) {
         await this.jobRepository.queueAll(jobs);
@@ -138,8 +138,8 @@ export class MediaService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.MigrateAsset, queue: QueueName.Migration })
-  async handleAssetMigration({ id }: JobOf<JobName.MigrateAsset>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetFileMigration, queue: QueueName.Migration })
+  async handleAssetMigration({ id }: JobOf<JobName.AssetFileMigration>): Promise<JobStatus> {
     const { image } = await this.getConfig({ withCache: true });
     const asset = await this.assetJobRepository.getForMigrationJob(id);
     if (!asset) {
@@ -154,8 +154,8 @@ export class MediaService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.GenerateThumbnails, queue: QueueName.ThumbnailGeneration })
-  async handleGenerateThumbnails({ id }: JobOf<JobName.GenerateThumbnails>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetGenerateThumbnails, queue: QueueName.ThumbnailGeneration })
+  async handleGenerateThumbnails({ id }: JobOf<JobName.AssetGenerateThumbnails>): Promise<JobStatus> {
     const asset = await this.assetJobRepository.getForGenerateThumbnailJob(id);
     if (!asset) {
       this.logger.warn(`Thumbnail generation failed for asset ${id}: not found`);
@@ -317,8 +317,8 @@ export class MediaService extends BaseService {
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
   }
 
-  @OnJob({ name: JobName.GeneratePersonThumbnail, queue: QueueName.ThumbnailGeneration })
-  async handleGeneratePersonThumbnail({ id }: JobOf<JobName.GeneratePersonThumbnail>): Promise<JobStatus> {
+  @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
+  async handleGeneratePersonThumbnail({ id }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
     const { machineLearning, metadata, image } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
       return JobStatus.Skipped;
@@ -443,13 +443,13 @@ export class MediaService extends BaseService {
     return { previewPath, thumbnailPath, thumbhash };
   }
 
-  @OnJob({ name: JobName.QueueVideoConversion, queue: QueueName.VideoConversion })
-  async handleQueueVideoConversion(job: JobOf<JobName.QueueVideoConversion>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetEncodeVideoQueueAll, queue: QueueName.VideoConversion })
+  async handleQueueVideoConversion(job: JobOf<JobName.AssetEncodeVideoQueueAll>): Promise<JobStatus> {
     const { force } = job;
 
-    let queue: { name: JobName.VideoConversation; data: { id: string } }[] = [];
+    let queue: { name: JobName.AssetEncodeVideo; data: { id: string } }[] = [];
     for await (const asset of this.assetJobRepository.streamForVideoConversion(force)) {
-      queue.push({ name: JobName.VideoConversation, data: { id: asset.id } });
+      queue.push({ name: JobName.AssetEncodeVideo, data: { id: asset.id } });
 
       if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await this.jobRepository.queueAll(queue);
@@ -462,8 +462,8 @@ export class MediaService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.VideoConversation, queue: QueueName.VideoConversion })
-  async handleVideoConversion({ id }: JobOf<JobName.VideoConversation>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetEncodeVideo, queue: QueueName.VideoConversion })
+  async handleVideoConversion({ id }: JobOf<JobName.AssetEncodeVideo>): Promise<JobStatus> {
     const asset = await this.assetJobRepository.getForVideoConversion(id);
     if (!asset) {
       return JobStatus.Failed;
@@ -492,7 +492,7 @@ export class MediaService extends BaseService {
     if (target === TranscodeTarget.None && !this.isRemuxRequired(ffmpeg, format)) {
       if (asset.encodedVideoPath) {
         this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
-        await this.jobRepository.queue({ name: JobName.DeleteFiles, data: { files: [asset.encodedVideoPath] } });
+        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [asset.encodedVideoPath] } });
         await this.assetRepository.update({ id: asset.id, encodedVideoPath: null });
       } else {
         this.logger.verbose(`Asset ${asset.id} does not require transcoding based on current policy, skipping`);

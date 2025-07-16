@@ -86,6 +86,7 @@ import 'package:immich_mobile/presentation/pages/drift_partner_detail.page.dart'
 import 'package:immich_mobile/presentation/pages/drift_place.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_place_detail.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_recently_taken.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_user_selection.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_remote_album.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_trash.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_video.page.dart';
@@ -463,6 +464,11 @@ class AppRouter extends RootStackRouter {
       page: DriftPlaceDetailRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
+    AutoRoute(
+      page: DriftUserSelectionRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+
     AutoRoute(
       page: ChangeExperienceRoute.page,
       guards: [_authGuard, _duplicateGuard],

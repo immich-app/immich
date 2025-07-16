@@ -131,7 +131,7 @@ describe(NotificationService.name, () => {
     it('should queue the generate thumbnail job', async () => {
       await sut.onAssetShow({ assetId: 'asset-id', userId: 'user-id' });
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.GenerateThumbnails,
+        name: JobName.AssetGenerateThumbnails,
         data: { id: 'asset-id', notify: true },
       });
     });
@@ -146,7 +146,7 @@ describe(NotificationService.name, () => {
     it('should queue notify signup event if notify is true', async () => {
       await sut.onUserSignup({ id: '', notify: true });
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.NotifySignup,
+        name: JobName.NotifyUserSignup,
         data: { id: '', tempPassword: undefined },
       });
     });

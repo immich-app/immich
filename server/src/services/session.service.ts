@@ -14,7 +14,7 @@ import { BaseService } from 'src/services/base.service';
 
 @Injectable()
 export class SessionService extends BaseService {
-  @OnJob({ name: JobName.CleanOldSessionTokens, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.SessionCleanup, queue: QueueName.BackgroundTask })
   async handleCleanup(): Promise<JobStatus> {
     const sessions = await this.sessionRepository.cleanup();
     for (const session of sessions) {

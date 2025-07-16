@@ -40,15 +40,15 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
     }
 
     case ManualJobName.MemoryCleanup: {
-      return { name: JobName.MemoriesCleanup };
+      return { name: JobName.MemoryCleanup };
     }
 
     case ManualJobName.MemoryCreate: {
-      return { name: JobName.MemoriesCreate };
+      return { name: JobName.MemoryGenerate };
     }
 
     case ManualJobName.BackupDatabase: {
-      return { name: JobName.BackupDatabase };
+      return { name: JobName.DatabaseBackup };
     }
 
     default: {
@@ -190,7 +190,7 @@ export class JobService extends BaseService {
 
     switch (name) {
       case QueueName.VideoConversion: {
-        return this.jobRepository.queue({ name: JobName.QueueVideoConversion, data: { force } });
+        return this.jobRepository.queue({ name: JobName.AssetEncodeVideoQueueAll, data: { force } });
       }
 
       case QueueName.StorageTemplateMigration: {
@@ -198,43 +198,43 @@ export class JobService extends BaseService {
       }
 
       case QueueName.Migration: {
-        return this.jobRepository.queue({ name: JobName.QueueMigration });
+        return this.jobRepository.queue({ name: JobName.FileMigrationQueueAll });
       }
 
       case QueueName.SmartSearch: {
-        return this.jobRepository.queue({ name: JobName.QueueSmartSearch, data: { force } });
+        return this.jobRepository.queue({ name: JobName.SmartSearchQueueAll, data: { force } });
       }
 
       case QueueName.DuplicateDetection: {
-        return this.jobRepository.queue({ name: JobName.QueueDuplicateDetection, data: { force } });
+        return this.jobRepository.queue({ name: JobName.AssetDetectDuplicatesQueueAll, data: { force } });
       }
 
       case QueueName.MetadataExtraction: {
-        return this.jobRepository.queue({ name: JobName.QueueMetadataExtraction, data: { force } });
+        return this.jobRepository.queue({ name: JobName.AssetExtractMetadataQueueAll, data: { force } });
       }
 
       case QueueName.Sidecar: {
-        return this.jobRepository.queue({ name: JobName.QueueSidecar, data: { force } });
+        return this.jobRepository.queue({ name: JobName.SidecarQueueAll, data: { force } });
       }
 
       case QueueName.ThumbnailGeneration: {
-        return this.jobRepository.queue({ name: JobName.QueueGenerateThumbnails, data: { force } });
+        return this.jobRepository.queue({ name: JobName.AssetGenerateThumbnailsQueueAll, data: { force } });
       }
 
       case QueueName.FaceDetection: {
-        return this.jobRepository.queue({ name: JobName.QueueFaceDetection, data: { force } });
+        return this.jobRepository.queue({ name: JobName.AssetDetectFacesQueueAll, data: { force } });
       }
 
       case QueueName.FacialRecognition: {
-        return this.jobRepository.queue({ name: JobName.QueueFacialRecognition, data: { force } });
+        return this.jobRepository.queue({ name: JobName.FacialRecognitionQueueAll, data: { force } });
       }
 
       case QueueName.Library: {
-        return this.jobRepository.queue({ name: JobName.LibraryQueueScanAll, data: { force } });
+        return this.jobRepository.queue({ name: JobName.LibraryScanQueueAll, data: { force } });
       }
 
       case QueueName.BackupDatabase: {
-        return this.jobRepository.queue({ name: JobName.BackupDatabase, data: { force } });
+        return this.jobRepository.queue({ name: JobName.DatabaseBackup, data: { force } });
       }
 
       default: {
@@ -249,7 +249,7 @@ export class JobService extends BaseService {
     this.telemetryRepository.jobs.addToGauge(queueMetric, 1);
     try {
       const status = await this.jobRepository.run(job);
-      const jobMetric = `immich.jobs.${job.name.replaceAll('-', '_')}.${status}`;
+      const jobMetric = `immich.jobs.${snakeCase(job.name)}.${status}`;
       this.telemetryRepository.jobs.addToCounter(jobMetric, 1);
       if (status === JobStatus.Success || status == JobStatus.Skipped) {
         await this.onDone(job);
@@ -276,29 +276,29 @@ export class JobService extends BaseService {
 
     if (config.nightlyTasks.databaseCleanup) {
       jobs.push(
-        { name: JobName.AssetDeletionCheck },
+        { name: JobName.AssetDeleteCheck },
         { name: JobName.UserDeleteCheck },
         { name: JobName.PersonCleanup },
-        { name: JobName.MemoriesCleanup },
-        { name: JobName.CleanOldSessionTokens },
-        { name: JobName.CleanOldAuditLogs },
+        { name: JobName.MemoryCleanup },
+        { name: JobName.SessionCleanup },
+        { name: JobName.AuditLogCleanup },
       );
     }
 
     if (config.nightlyTasks.generateMemories) {
-      jobs.push({ name: JobName.MemoriesCreate });
+      jobs.push({ name: JobName.MemoryGenerate });
     }
 
     if (config.nightlyTasks.syncQuotaUsage) {
-      jobs.push({ name: JobName.userSyncUsage });
+      jobs.push({ name: JobName.UserSyncUsage });
     }
 
     if (config.nightlyTasks.missingThumbnails) {
-      jobs.push({ name: JobName.QueueGenerateThumbnails, data: { force: false } });
+      jobs.push({ name: JobName.AssetGenerateThumbnailsQueueAll, data: { force: false } });
     }
 
     if (config.nightlyTasks.clusterNewFaces) {
-      jobs.push({ name: JobName.QueueFacialRecognition, data: { force: false, nightly: true } });
+      jobs.push({ name: JobName.FacialRecognitionQueueAll, data: { force: false, nightly: true } });
     }
 
     await this.jobRepository.queueAll(jobs);
@@ -311,13 +311,13 @@ export class JobService extends BaseService {
     switch (item.name) {
       case JobName.SidecarSync:
       case JobName.SidecarDiscovery: {
-        await this.jobRepository.queue({ name: JobName.MetadataExtraction, data: item.data });
+        await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: item.data });
         break;
       }
 
       case JobName.SidecarWrite: {
         await this.jobRepository.queue({
-          name: JobName.MetadataExtraction,
+          name: JobName.AssetExtractMetadata,
           data: { id: item.data.id, source: 'sidecar-write' },
         });
         break;
@@ -325,12 +325,12 @@ export class JobService extends BaseService {
 
       case JobName.StorageTemplateMigrationSingle: {
         if (item.data.source === 'upload' || item.data.source === 'copy') {
-          await this.jobRepository.queue({ name: JobName.GenerateThumbnails, data: item.data });
+          await this.jobRepository.queue({ name: JobName.AssetGenerateThumbnails, data: item.data });
         }
         break;
       }
 
-      case JobName.GeneratePersonThumbnail: {
+      case JobName.PersonGenerateThumbnail: {
         const { id } = item.data;
         const person = await this.personRepository.getById(id);
         if (person) {
@@ -339,7 +339,7 @@ export class JobService extends BaseService {
         break;
       }
 
-      case JobName.GenerateThumbnails: {
+      case JobName.AssetGenerateThumbnails: {
         if (!item.data.notify && item.data.source !== 'upload') {
           break;
         }
@@ -352,11 +352,11 @@ export class JobService extends BaseService {
 
         const jobs: JobItem[] = [
           { name: JobName.SmartSearch, data: item.data },
-          { name: JobName.FaceDetection, data: item.data },
+          { name: JobName.AssetDetectFaces, data: item.data },
         ];
 
         if (asset.type === AssetType.Video) {
-          jobs.push({ name: JobName.VideoConversation, data: item.data });
+          jobs.push({ name: JobName.AssetEncodeVideo, data: item.data });
         }
 
         await this.jobRepository.queueAll(jobs);
@@ -419,12 +419,12 @@ export class JobService extends BaseService {
 
       case JobName.SmartSearch: {
         if (item.data.source === 'upload') {
-          await this.jobRepository.queue({ name: JobName.DuplicateDetection, data: item.data });
+          await this.jobRepository.queue({ name: JobName.AssetDetectDuplicates, data: item.data });
         }
         break;
       }
 
-      case JobName.UserDeletion: {
+      case JobName.UserDelete: {
         this.eventRepository.clientBroadcast('on_user_delete', item.data.id);
         break;
       }

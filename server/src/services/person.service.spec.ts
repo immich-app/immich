@@ -276,7 +276,7 @@ describe(PersonService.name, () => {
         },
       ]);
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.GeneratePersonThumbnail,
+        name: JobName.PersonGenerateThumbnail,
         data: { id: 'person-1' },
       });
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
@@ -337,7 +337,7 @@ describe(PersonService.name, () => {
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GeneratePersonThumbnail,
+          name: JobName.PersonGenerateThumbnail,
           data: { id: personStub.newThumbnail.id },
         },
       ]);
@@ -373,7 +373,7 @@ describe(PersonService.name, () => {
       await sut.createNewFeaturePhoto([personStub.newThumbnail.id]);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GeneratePersonThumbnail,
+          name: JobName.PersonGenerateThumbnail,
           data: { id: personStub.newThumbnail.id },
         },
       ]);
@@ -462,7 +462,7 @@ describe(PersonService.name, () => {
       expect(mocks.person.vacuum).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.FaceDetection,
+          name: JobName.AssetDetectFaces,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -481,7 +481,7 @@ describe(PersonService.name, () => {
       expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.FaceDetection,
+          name: JobName.AssetDetectFaces,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -499,7 +499,7 @@ describe(PersonService.name, () => {
       expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(undefined);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.FaceDetection,
+          name: JobName.AssetDetectFaces,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -518,7 +518,7 @@ describe(PersonService.name, () => {
       expect(mocks.assetJob.streamForDetectFacesJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.FaceDetection,
+          name: JobName.AssetDetectFaces,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -754,7 +754,7 @@ describe(PersonService.name, () => {
 
       expect(mocks.person.refreshFaces).toHaveBeenCalledWith([face], [], [faceSearch]);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.QueueFacialRecognition, data: { force: false } },
+        { name: JobName.FacialRecognitionQueueAll, data: { force: false } },
         { name: JobName.FacialRecognition, data: { id: faceId } },
       ]);
       expect(mocks.person.reassignFace).not.toHaveBeenCalled();
@@ -790,7 +790,7 @@ describe(PersonService.name, () => {
 
       expect(mocks.person.refreshFaces).toHaveBeenCalledWith([face], [faceStub.primaryFace1.id], [faceSearch]);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.QueueFacialRecognition, data: { force: false } },
+        { name: JobName.FacialRecognitionQueueAll, data: { force: false } },
         { name: JobName.FacialRecognition, data: { id: faceId } },
       ]);
       expect(mocks.person.reassignFace).not.toHaveBeenCalled();
@@ -830,7 +830,7 @@ describe(PersonService.name, () => {
 
       expect(mocks.person.refreshFaces).toHaveBeenCalledWith([face], [], [faceSearch]);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.QueueFacialRecognition, data: { force: false } },
+        { name: JobName.FacialRecognitionQueueAll, data: { force: false } },
         { name: JobName.FacialRecognition, data: { id: faceId } },
       ]);
       expect(mocks.person.reassignFace).not.toHaveBeenCalled();

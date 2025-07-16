@@ -150,7 +150,7 @@ describe(UserService.name, () => {
       const { user } = await ctx.newUser({ deletedAt: DateTime.now().minus({ days: 60 }).toJSDate() });
       jobMock.queueAll.mockResolvedValue(void 0);
       await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.Success);
-      expect(jobMock.queueAll).toHaveBeenCalledExactlyOnceWith([{ name: JobName.UserDeletion, data: { id: user.id } }]);
+      expect(jobMock.queueAll).toHaveBeenCalledExactlyOnceWith([{ name: JobName.UserDelete, data: { id: user.id } }]);
     });
 
     it('should skip a recently deleted user', async () => {
