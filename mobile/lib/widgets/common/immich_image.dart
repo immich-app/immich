@@ -3,9 +3,9 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/image/immich_local_image_provider.dart';
 import 'package:immich_mobile/providers/image/immich_remote_image_provider.dart';
-import 'package:immich_mobile/widgets/common/thumbhash.dart';
 import 'package:octo_image/octo_image.dart';
 
 class ImmichImage extends StatelessWidget {
@@ -14,7 +14,7 @@ class ImmichImage extends StatelessWidget {
     this.width,
     this.height,
     this.fit = BoxFit.cover,
-    this.placeholder = const Thumbhash(),
+    this.placeholder = const Thumbnail(),
     super.key,
   });
 

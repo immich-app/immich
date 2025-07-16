@@ -5,8 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/pages/common/native_video_viewer.page.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
-import 'package:immich_mobile/widgets/common/thumbhash.dart';
 
 class MemoryCard extends StatelessWidget {
   final Asset asset;
@@ -90,7 +90,7 @@ class _BlurredBackdrop extends HookWidget {
     final blurhash = asset.thumbhash;
     if (blurhash != null) {
       // Use a nice cheap blur hash image decoration
-      return Thumbhash(blurhash: blurhash, fit: BoxFit.cover);
+      return Thumbnail(blurhash: blurhash, fit: BoxFit.cover);
     }
 
     // Fall back to using a more expensive image filtered

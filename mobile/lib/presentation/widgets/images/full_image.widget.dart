@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
-import 'package:immich_mobile/widgets/common/thumbhash.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:octo_image/octo_image.dart';
 
 class FullImage extends StatelessWidget {
@@ -9,7 +9,7 @@ class FullImage extends StatelessWidget {
     this.asset, {
     required this.size,
     this.fit = BoxFit.cover,
-    this.placeholder = const Thumbhash(),
+    this.placeholder = const Thumbnail(),
     super.key,
   });
 

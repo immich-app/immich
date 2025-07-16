@@ -7,7 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/full_image.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
-import 'package:immich_mobile/widgets/common/thumbhash.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 
 class DriftMemoryCard extends StatelessWidget {
   final RemoteAsset asset;
@@ -91,7 +91,7 @@ class _BlurredBackdrop extends HookWidget {
     final blurhash = asset.thumbHash;
     if (blurhash != null) {
       // Use a nice cheap blur hash image decoration
-      return Thumbhash(blurhash: blurhash, fit: BoxFit.cover);
+      return Thumbnail(blurhash: blurhash);
     }
 
     // Fall back to using a more expensive image filtered
