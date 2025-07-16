@@ -20,20 +20,6 @@ class DriftMapRepository extends DriftDatabaseRepository {
             row.ownerId.equals(ownerId),
       );
 
-  MapQuery favorite(String ownerId) => _mapQueryBuilder(
-        assetFilter: (row) =>
-            row.deletedAt.isNull() &
-            row.isFavorite.equals(true) &
-            row.ownerId.equals(ownerId),
-      );
-
-  MapQuery locked(String userId) => _mapQueryBuilder(
-        assetFilter: (row) =>
-            row.deletedAt.isNull() &
-            row.visibility.equalsValue(AssetVisibility.locked) &
-            row.ownerId.equals(userId),
-      );
-
   MapQuery _mapQueryBuilder({
     Expression<bool> Function($RemoteAssetEntityTable row)? assetFilter,
     Expression<bool> Function($RemoteExifEntityTable row)? exifFilter,
