@@ -21,7 +21,6 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
@@ -213,23 +212,17 @@ class _DeviceAsset {
   const _DeviceAsset({required this.assetId, this.hash, this.dateTime});
 }
 
-Future<void> migrateToNewTimeline(WidgetRef ref) async {
-  await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-  final backgroundManager = ref.read(backgroundSyncProvider);
+Future<void> runNewSync(WidgetRef ref) async {
   ref.read(backupProvider.notifier).cancelBackup();
 
+  final backgroundManager = ref.read(backgroundSyncProvider);
   Future.wait([
     backgroundManager.syncLocal().then(
       (_) {
-        Logger("migrateToNewTimeline").fine("Hashing assets after syncLocal");
+        Logger("runNewSync").fine("Hashing assets after syncLocal");
         backgroundManager.hashAssets();
       },
     ),
     backgroundManager.syncRemote(),
   ]);
-}
-
-Future<void> migrateToOldTimeline(WidgetRef ref) async {
-  final backgroundManager = ref.read(backgroundSyncProvider);
-  await backgroundManager.cancel();
 }

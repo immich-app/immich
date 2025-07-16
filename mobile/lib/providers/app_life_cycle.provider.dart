@@ -88,15 +88,18 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           break;
       }
     } else {
+      _ref.read(backupProvider.notifier).cancelBackup();
+
+      final backgroundManager = _ref.read(backgroundSyncProvider);
       Future.wait([
-        _ref.read(backgroundSyncProvider).syncLocal().then(
+        backgroundManager.syncLocal().then(
           (_) {
             Logger("AppLifeCycleNotifier")
                 .fine("Hashing assets after syncLocal");
-            _ref.read(backgroundSyncProvider).hashAssets();
+            backgroundManager.hashAssets();
           },
         ),
-        _ref.read(backgroundSyncProvider).syncRemote(),
+        backgroundManager.syncRemote(),
       ]);
     }
 

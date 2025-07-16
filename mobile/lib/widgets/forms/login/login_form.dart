@@ -196,7 +196,10 @@ class LoginForm extends HookConsumerWidget {
         } else {
           final isBeta = Store.isBetaTimelineEnabled;
           if (isBeta) {
-            await migrateToNewTimeline(ref);
+            await ref
+                .read(galleryPermissionNotifier.notifier)
+                .requestGalleryPermission();
+            await runNewSync(ref);
             context.replaceRoute(const TabShellRoute());
             return;
           }
@@ -305,7 +308,10 @@ class LoginForm extends HookConsumerWidget {
               ref.watch(backupProvider.notifier).resumeBackup();
             }
             if (isBeta) {
-              await migrateToNewTimeline(ref);
+              await ref
+                  .read(galleryPermissionNotifier.notifier)
+                  .requestGalleryPermission();
+              await runNewSync(ref);
               context.replaceRoute(const TabShellRoute());
               return;
             }

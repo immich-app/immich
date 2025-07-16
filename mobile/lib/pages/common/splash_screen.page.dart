@@ -75,7 +75,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
 
     if (context.router.current.name == SplashScreenRoute.name) {
       if (Store.isBetaTimelineEnabled) {
-        await migrateToNewTimeline(ref);
+        await runNewSync(ref);
       }
       context.replaceRoute(
         Store.isBetaTimelineEnabled
