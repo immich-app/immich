@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
@@ -49,6 +50,10 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       return Future.value();
     }
 
-    return _db.localAssetEntity.deleteWhere((e) => e.id.isIn(ids));
+    return _db.batch((batch) {
+      for (final slice in ids.slices(32000)) {
+        batch.deleteWhere(_db.localAssetEntity, (e) => e.id.isIn(slice));
+      }
+    });
   }
 }
