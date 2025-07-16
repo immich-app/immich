@@ -41,7 +41,8 @@ class ActionNotifier extends Notifier<void> {
   }
 
   List<String> _getRemoteIdsForSource(ActionSource source) {
-    return _getIdsForSource<RemoteAsset>(source)
+    return _getAssets(source)
+        .whereType<RemoteAsset>()
         .toIds()
         .toList(growable: false);
   }
@@ -63,7 +64,8 @@ class ActionNotifier extends Notifier<void> {
 
   List<String> _getOwnedRemoteIdsForSource(ActionSource source) {
     final ownerId = ref.read(currentUserProvider)?.id;
-    return _getIdsForSource<RemoteAsset>(source)
+    return _getAssets(source)
+        .whereType<RemoteAsset>()
         .ownedAssets(ownerId)
         .toIds()
         .toList(growable: false);
@@ -326,6 +328,24 @@ class ActionNotifier extends Notifier<void> {
       _logger.severe('Failed to share assets', error, stack);
       return ActionResult(
         count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
+
+  Future<ActionResult> downloadAll(ActionSource source) async {
+    final assets =
+        _getAssets(source).whereType<RemoteAsset>().toList(growable: false);
+
+    try {
+      final didEnqueue = await _service.downloadAll(assets);
+      final enqueueCount = didEnqueue.where((e) => e).length;
+      return ActionResult(count: enqueueCount, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to download assets', error, stack);
+      return ActionResult(
+        count: assets.length,
         success: false,
         error: error.toString(),
       );
