@@ -31,6 +31,7 @@ import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/download.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
@@ -98,6 +99,17 @@ Future<void> initApp() async {
   );
 
   await FileDownloader().trackTasks();
+
+  LicenseRegistry.addLicense(
+    () async* {
+      for (final license in nonPubLicenses.entries) {
+        yield LicenseEntryWithLineBreaks(
+          [license.key],
+          license.value,
+        );
+      }
+    },
+  );
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
