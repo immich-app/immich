@@ -27,7 +27,7 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
 
   Future<void> _handleMigration() async {
     if (widget.switchingToBeta) {
-      await ref.read(backgroundSyncProvider).syncLocal();
+      await ref.read(backgroundSyncProvider).syncLocal(full: true);
       await migrateDeviceAssetToSqlite(
         ref.read(isarProvider),
         ref.read(driftProvider),

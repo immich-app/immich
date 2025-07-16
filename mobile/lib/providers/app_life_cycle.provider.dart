@@ -91,16 +91,28 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       _ref.read(backupProvider.notifier).cancelBackup();
 
       final backgroundManager = _ref.read(backgroundSyncProvider);
-      Future.wait([
-        backgroundManager.syncLocal().then(
-          (_) {
-            Logger("AppLifeCycleNotifier")
-                .fine("Hashing assets after syncLocal");
-            backgroundManager.hashAssets();
-          },
-        ),
-        backgroundManager.syncRemote(),
-      ]);
+      // Ensure proper cleanup before starting new background tasks
+      try {
+        await Future.wait([
+          backgroundManager.syncLocal().then(
+            (_) {
+              Logger("AppLifeCycleNotifier")
+                  .fine("Hashing assets after syncLocal");
+              // Check if app is still active before hashing
+              if (state == AppLifeCycleEnum.resumed) {
+                backgroundManager.hashAssets();
+              }
+            },
+          ),
+          backgroundManager.syncRemote(),
+        ]);
+      } catch (e, stackTrace) {
+        Logger("AppLifeCycleNotifier").severe(
+          "Error during background sync",
+          e,
+          stackTrace,
+        );
+      }
     }
 
     _ref.read(websocketProvider.notifier).connect();
@@ -139,19 +151,43 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       _ref.read(websocketProvider.notifier).disconnect();
     }
 
-    LogService.I.flush();
+    try {
+      LogService.I.flush();
+    } catch (e) {
+      // Ignore flush errors during pause
+    }
   }
 
   Future<void> handleAppDetached() async {
     state = AppLifeCycleEnum.detached;
-    LogService.I.flush();
-    await Isar.getInstance()?.close();
+    
+    // Flush logs before closing database
+    try {
+      LogService.I.flush();
+    } catch (e) {
+      // Ignore flush errors during shutdown
+    }
+    
+    // Close Isar database safely
+    try {
+      final isar = Isar.getInstance();
+      if (isar != null && isar.isOpen) {
+        await isar.close();
+      }
+    } catch (e) {
+      // Ignore close errors during shutdown
+    }
+    
     if (Store.isBetaTimelineEnabled) {
       return;
     }
 
     // no guarantee this is called at all
-    _ref.read(manualUploadProvider.notifier).cancelBackup();
+    try {
+      _ref.read(manualUploadProvider.notifier).cancelBackup();
+    } catch (e) {
+      // Ignore errors during shutdown
+    }
   }
 
   void handleAppHidden() {
