@@ -6,24 +6,12 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-class MapBottomSheet extends ConsumerStatefulWidget {
+class MapBottomSheet extends ConsumerWidget {
   const MapBottomSheet({super.key});
 
   @override
-  ConsumerState<MapBottomSheet> createState() => _MapBottomSheetState();
-}
-
-class _MapBottomSheetState extends ConsumerState<MapBottomSheet> {
-  GlobalKey key = GlobalKey();
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     LatLngBounds bounds = ref.watch(mapStateProvider.select((s) => s.bounds));
-
-    ref.listen(mapStateProvider, (previous, next) async {
-      bounds = next.bounds;
-      key = GlobalKey();
-    });
 
     return BaseBottomSheet(
       initialChildSize: 0.25,
@@ -32,7 +20,7 @@ class _MapBottomSheetState extends ConsumerState<MapBottomSheet> {
       slivers: [
         SliverFillRemaining(
           child: ProviderScope(
-            key: key,
+            key: ObjectKey(bounds),
             overrides: [
               timelineServiceProvider.overrideWith((ref) {
                 final timelineService =
