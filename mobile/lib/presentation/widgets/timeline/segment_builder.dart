@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
-import 'package:immich_mobile/widgets/common/thumbhash.dart';
 
 abstract class SegmentBuilder {
   final List<Bucket> buckets;
@@ -33,7 +33,7 @@ abstract class SegmentBuilder {
           dimension: size.height,
           spacing: spacing,
           textDirection: Directionality.of(context),
-          children: List.filled(count, const Thumbhash()),
+          children: List.filled(count, const Thumbnail()),
         ),
       );
 }

@@ -506,9 +506,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       width: double.infinity,
       height: double.infinity,
       color: backgroundColor,
-      child: Thumbnail(
-        asset: asset,
-        fit: BoxFit.contain,
+      child: Thumbnail.fromBaseAsset(
+        asset: asset, 
+        // fit: BoxFit.contain,
         size: Size(
           ctx.width,
           ctx.height,
@@ -565,9 +565,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         width: ctx.width,
         height: ctx.height,
         color: backgroundColor,
-        child: Thumbnail(
+        child: Thumbnail.fromBaseAsset(
           asset: asset,
-          fit: BoxFit.contain,
+          // fit: BoxFit.contain,
           size: size,
         ),
       ),

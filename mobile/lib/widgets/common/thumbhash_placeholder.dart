@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/widgets/common/thumbhash.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:octo_image/octo_image.dart';
 
 OctoPlaceholderBuilder blurHashPlaceholderBuilder(
   String? blurhash, {
   required BoxFit fit,
 }) {
-  return (context) => Thumbhash(blurhash: blurhash, fit: fit);
+  return (context) => Thumbnail(blurhash: blurhash, fit: fit);
 }
 
 OctoErrorBuilder blurHashErrorBuilder(
