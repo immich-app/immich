@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -78,6 +79,10 @@ class AdvancedSettings extends HookConsumerWidget {
                 onPressed: () async {
                   if (enabled) {
                     await migrateToNewTimeline(ref);
+                    await migrateDeviceAssetToSqlite(
+                      ref.read(isarProvider),
+                      ref.read(driftProvider),
+                    );
                   } else {
                     await migrateToOldTimeline(ref);
                   }

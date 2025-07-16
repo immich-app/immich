@@ -65,7 +65,7 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
     final backgroundSync = BackgroundSyncManager();
     await backgroundSync.syncLocal();
     final drift = Drift();
-    await _migrateDeviceAssetToSqlite(db, drift);
+    await migrateDeviceAssetToSqlite(db, drift);
     await drift.close();
   }
 
@@ -184,7 +184,7 @@ Future<void> _migrateDeviceAsset(Isar db) async {
   });
 }
 
-Future<void> _migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
+Future<void> migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
   try {
     final isarDeviceAssets = await db.deviceAssetEntitys.where().findAll();
     await drift.batch((batch) {
