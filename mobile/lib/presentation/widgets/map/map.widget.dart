@@ -15,14 +15,14 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/map/map_theme_override.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-class DriftMapWithMarker extends ConsumerStatefulWidget {
-  const DriftMapWithMarker({super.key});
+class DriftMap extends ConsumerStatefulWidget {
+  const DriftMap({super.key});
 
   @override
-  ConsumerState<DriftMapWithMarker> createState() => _DriftMapWithMarkerState();
+  ConsumerState<DriftMap> createState() => _DriftMapState();
 }
 
-class _DriftMapWithMarkerState extends ConsumerState<DriftMapWithMarker> {
+class _DriftMapState extends ConsumerState<DriftMap> {
   MapLibreMapController? mapController;
   bool loadAllMarkers = false;
 
