@@ -134,8 +134,10 @@ class _DriftMapState extends ConsumerState<DriftMap> {
     AsyncValue<Map<String, dynamic>> allMarkers =
         ref.watch(mapMarkerProvider(null));
 
-    ref.listen(mapStateProvider, (previous, next) async {
-      markers = ref.watch(mapMarkerProvider(bounds));
+    ref.listen(mapStateProvider, (_, __) async {
+      if (!loadAllMarkers) {
+        markers = ref.watch(mapMarkerProvider(bounds));
+      }
     });
 
     markers.whenData((markers) => reloadMarkers(markers));
