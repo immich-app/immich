@@ -6,13 +6,17 @@ import { getMySharedLink, isHttpError } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {
+  console.log(params);
   const { key } = params;
+  console.log("before authenticate");
   await authenticate(url, { public: true });
+  console.log("after authenticate");
 
   const $t = await getFormatter();
 
   try {
     const [sharedLink, asset] = await Promise.all([getMySharedLink({ key }), getAssetInfoFromParam(params)]);
+    console.log("After Promise.all")
     setSharedLink(sharedLink);
     const assetCount = sharedLink.assets.length;
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;

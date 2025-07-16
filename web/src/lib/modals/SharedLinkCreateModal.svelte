@@ -28,6 +28,8 @@
   let showMetadata = $state(true);
   let expirationOption: number = $state(0);
   let password = $state('');
+  let shareSlug = $state('');
+  let addSlug = $state(false);
   let shouldChangeExpirationTime = $state(false);
   let enablePassword = $state(false);
 
@@ -91,6 +93,7 @@
           password,
           allowDownload,
           showMetadata,
+          shareSlug
         },
       });
       onClose(data);
@@ -146,6 +149,7 @@
     {#if shareType === SharedLinkType.Album}
       {#if !editingLink}
         <div>{$t('album_with_link_access')}</div>
+        <div class="text-sm text-warning">{$t('album_with_slug_warning')}</div>
       {:else}
         <div class="text-sm">
           {$t('public_album')} |
@@ -210,6 +214,20 @@
         {#if editingLink}
           <div class="my-3">
             <SettingSwitch bind:checked={shouldChangeExpirationTime} title={$t('change_expiration_time')} />
+          </div>
+        {/if}
+        {#if !editingLink}
+          <div class="my-3">
+            <!-- #TODO - Move this to en.json -->
+            <SettingSwitch bind:checked={addSlug} title={"Public Vanity URL"} />
+          </div>
+          <div class="mb-2">
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label={"URL Slug"}
+              bind:value={shareSlug}
+              disabled={!addSlug}
+            />
           </div>
         {/if}
         <div class="mt-3">

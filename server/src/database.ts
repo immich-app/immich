@@ -192,6 +192,7 @@ export type SharedLink = {
   showExif: boolean;
   type: SharedLinkType;
   userId: string;
+  slug: string | null;
 };
 
 export type Album = Selectable<AlbumTable> & {

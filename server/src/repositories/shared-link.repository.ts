@@ -19,6 +19,95 @@ export type SharedLinkSearchOptions = {
 export class SharedLinkRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  getBySlug(userId: string, slug: string) {
+    return this.db
+      .selectFrom('shared_link')
+      .selectAll('shared_link')
+      .leftJoinLateral(
+        (eb) =>
+          eb
+            .selectFrom('shared_link_asset')
+            .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinksId')
+            .innerJoin('asset', 'asset.id', 'shared_link_asset.assetsId')
+            .where('asset.deletedAt', 'is', null)
+            .selectAll('asset')
+            .innerJoinLateral(
+              (eb) =>
+                eb
+                  .selectFrom('asset_exif')
+                  .selectAll('asset_exif')
+                  .whereRef('asset_exif.assetId', '=', 'asset.id')
+                  .as('exifInfo'),
+              (join) => join.onTrue(),
+            )
+            .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo'))
+            .orderBy('asset.fileCreatedAt', 'asc')
+            .as('a'),
+        (join) => join.onTrue(),
+      )
+      .leftJoinLateral(
+        (eb) =>
+          eb
+            .selectFrom('album')
+            .selectAll('album')
+            .whereRef('album.id', '=', 'shared_link.albumId')
+            .where('album.deletedAt', 'is', null)
+            .leftJoin('album_asset', 'album_asset.albumsId', 'album.id')
+            .leftJoinLateral(
+              (eb) =>
+                eb
+                  .selectFrom('asset')
+                  .selectAll('asset')
+                  .whereRef('album_asset.assetsId', '=', 'asset.id')
+                  .where('asset.deletedAt', 'is', null)
+                  .innerJoinLateral(
+                    (eb) =>
+                      eb
+                        .selectFrom('asset_exif')
+                        .selectAll('asset_exif')
+                        .whereRef('asset_exif.assetId', '=', 'asset.id')
+                        .as('exifInfo'),
+                    (join) => join.onTrue(),
+                  )
+                  .select((eb) => eb.fn.toJson(eb.table('exifInfo')).as('exifInfo'))
+                  .orderBy('asset.fileCreatedAt', 'asc')
+                  .as('assets'),
+              (join) => join.onTrue(),
+            )
+            .innerJoinLateral(
+              (eb) =>
+                eb
+                  .selectFrom('user')
+                  .selectAll('user')
+                  .whereRef('user.id', '=', 'album.ownerId')
+                  .where('user.deletedAt', 'is', null)
+                  .as('owner'),
+              (join) => join.onTrue(),
+            )
+            .select((eb) =>
+              eb.fn.coalesce(eb.fn.jsonAgg('assets').filterWhere('assets.id', 'is not', null), sql`'[]'`).as('assets'),
+            )
+            .select((eb) => eb.fn.toJson('owner').as('owner'))
+            .groupBy(['album.id', sql`"owner".*`])
+            .as('album'),
+        (join) => join.onTrue(),
+      )
+      .select((eb) =>
+        eb.fn
+          .coalesce(eb.fn.jsonAgg('a').filterWhere('a.id', 'is not', null), sql`'[]'`)
+          .$castTo<MapAsset[]>()
+          .as('assets'),
+      )
+      .groupBy(['shared_link.id', sql`"album".*`])
+      .select((eb) => eb.fn.toJson('album').$castTo<Album | null>().as('album'))
+      .where('shared_link.slug', '=', slug)
+      .where('shared_link.userId', '=', userId)
+      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]))
+      .orderBy('shared_link.createdAt', 'desc')
+      .executeTakeFirst();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   get(userId: string, id: string) {
     return this.db
@@ -177,6 +266,23 @@ export class SharedLinkRepository {
     return this.db
       .selectFrom('shared_link')
       .where('shared_link.key', '=', key)
+      .leftJoin('album', 'album.id', 'shared_link.albumId')
+      .where('album.deletedAt', 'is', null)
+      .select((eb) => [
+        ...columns.authSharedLink,
+        jsonObjectFrom(
+          eb.selectFrom('user').select(columns.authUser).whereRef('user.id', '=', 'shared_link.userId'),
+        ).as('user'),
+      ])
+      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]))
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.STRING] })
+  async validateGetBySlug(slug: string) {
+    return this.db
+      .selectFrom('shared_link')
+      .where('shared_link.slug', '=', slug)
       .leftJoin('album', 'album.id', 'shared_link.albumId')
       .where('album.deletedAt', 'is', null)
       .select((eb) => [

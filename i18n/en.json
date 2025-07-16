@@ -418,6 +418,7 @@
   "album_viewer_appbar_share_to": "Share To",
   "album_viewer_page_share_add_users": "Add users",
   "album_with_link_access": "Let anyone with the link see photos and people in this album.",
+  "album_with_slug_warning": "Creating a vanity URL for this album will reduce its security by making the URL easier to guess",
   "albums": "Albums",
   "albums_count": "{count, plural, one {{count, number} Album} other {{count, number} Albums}}",
   "albums_default_sort_order": "Default album sort order",

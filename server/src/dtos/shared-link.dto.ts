@@ -30,6 +30,10 @@ export class SharedLinkCreateDto {
   @Optional()
   password?: string;
 
+  @IsString()
+  @Optional()
+  shareSlug?: string;
+
   @ValidateDate({ optional: true, nullable: true })
   expiresAt?: Date | null = null;
 
@@ -99,6 +103,8 @@ export class SharedLinkResponseDto {
 
   allowDownload!: boolean;
   showMetadata!: boolean;
+
+  shareSlug!: string | null;
 }
 
 export function mapSharedLink(sharedLink: SharedLink): SharedLinkResponseDto {
@@ -118,6 +124,7 @@ export function mapSharedLink(sharedLink: SharedLink): SharedLinkResponseDto {
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
+    shareSlug: sharedLink.slug
   };
 }
 
@@ -141,5 +148,6 @@ export function mapSharedLinkWithoutMetadata(sharedLink: SharedLink): SharedLink
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
+    shareSlug: sharedLink.slug
   };
 }

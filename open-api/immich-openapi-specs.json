@@ -12952,6 +12952,9 @@
           "password": {
             "type": "string"
           },
+          "shareSlug": {
+            "type": "string"
+          },
           "showMetadata": {
             "default": true,
             "type": "boolean"
@@ -13038,6 +13041,10 @@
             "nullable": true,
             "type": "string"
           },
+          "shareSlug": {
+            "nullable": true,
+            "type": "string"
+          },
           "showMetadata": {
             "type": "boolean"
           },
@@ -13066,6 +13073,7 @@
           "id",
           "key",
           "password",
+          "shareSlug",
           "showMetadata",
           "type",
           "userId"

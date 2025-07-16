@@ -25,11 +25,14 @@ export class SharedLinkService extends BaseService {
   }
 
   async getMine(auth: AuthDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {
+    console.log("In GetMine")
     if (!auth.sharedLink) {
+      console.log("Failed auth")
       throw new ForbiddenException();
     }
 
-    const sharedLink = await this.findOrFail(auth.user.id, auth.sharedLink.id);
+    console.log("Looking with ID")
+    const sharedLink = await this.findOrFailWithSlug(auth.user.id, auth.sharedLink.id);
     const response = this.mapToSharedLink(sharedLink, { withExif: sharedLink.showExif });
     if (sharedLink.password) {
       response.token = this.validateAndRefreshToken(sharedLink, dto);
@@ -76,6 +79,7 @@ export class SharedLinkService extends BaseService {
       allowUpload: dto.allowUpload ?? true,
       allowDownload: dto.showMetadata === false ? false : (dto.allowDownload ?? true),
       showExif: dto.showMetadata ?? true,
+      slug: dto.shareSlug || null
     });
 
     return this.mapToSharedLink(sharedLink, { withExif: true });
@@ -106,6 +110,18 @@ export class SharedLinkService extends BaseService {
     const sharedLink = await this.sharedLinkRepository.get(userId, id);
     if (!sharedLink) {
       throw new BadRequestException('Shared link not found');
+    }
+    return sharedLink;
+  }
+
+  private async findOrFailWithSlug(userId: string, id: string ) {
+    let sharedLink = await this.sharedLinkRepository.get(userId, id);
+    if (!sharedLink) {
+      console.log("Shared link not found by ID")
+      sharedLink = await this.sharedLinkRepository.getBySlug(userId, id);
+      if (!sharedLink) {
+        throw new BadRequestException('Shared link not found');
+      }
     }
     return sharedLink;
   }
