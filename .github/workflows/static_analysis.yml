@@ -61,8 +61,7 @@ jobs:
         run: dart pub get
 
       - name: Install DCM
-        # TODO: Move to upstream after https://github.com/CQLabs/setup-dcm/pull/235 merges
-        uses: bo0tzz/setup-dcm@b4952ab813659c03513b57bd78bfe3f634171f8a
+        uses: CQLabs/setup-dcm@8697ae0790c0852e964a6ef1d768d62a6675481a # v2.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           version: auto
