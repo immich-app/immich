@@ -2,7 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/domain/services/map.service.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 
 final mapRepositoryProvider = Provider<DriftMapRepository>(
   (ref) => DriftMapRepository(ref.watch(driftProvider)),
@@ -10,8 +10,12 @@ final mapRepositoryProvider = Provider<DriftMapRepository>(
 
 final mapServiceProvider = Provider<MapService>(
   (ref) {
-    final timelineUsers = ref.watch(timelineUsersProvider).valueOrNull ?? [];
-    final mapService = ref.watch(mapFactoryProvider).main(timelineUsers);
+    final user = ref.watch(currentUserProvider);
+    if (user == null) {
+      throw Exception('User must be logged in to access map');
+    }
+
+    final mapService = ref.watch(mapFactoryProvider).remote(user.id);
     ref.onDispose(mapService.dispose);
     return mapService;
   },

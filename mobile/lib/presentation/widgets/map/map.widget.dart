@@ -74,7 +74,8 @@ class _DriftMapWithMarkerState extends ConsumerState<DriftMapWithMarker> {
     }
 
     await mapController!.addSource(
-      MapUtils.defaultSourceId, GeojsonSourceProperties(data: markers),
+      MapUtils.defaultSourceId,
+      GeojsonSourceProperties(data: markers),
     );
 
     if (Platform.isAndroid) {
