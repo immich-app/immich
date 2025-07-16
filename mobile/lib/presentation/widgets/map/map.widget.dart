@@ -128,6 +128,20 @@ class _DriftMapState extends ConsumerState<DriftMap> {
 
   @override
   Widget build(BuildContext context) {
+    final bounds = ref.watch(mapStateProvider.select((s) => s.bounds));
+    AsyncValue<Map<String, dynamic>> markers =
+        ref.watch(mapMarkerProvider(bounds));
+    AsyncValue<Map<String, dynamic>> allMarkers =
+        ref.watch(mapMarkerProvider(null));
+
+    ref.listen(mapStateProvider, (previous, next) async {
+      markers = ref.watch(mapMarkerProvider(bounds));
+    });
+
+    markers.whenData((markers) => reloadMarkers(markers));
+    allMarkers
+        .whenData((markers) => reloadMarkers(markers, isLoadAllMarkers: true));
+
     return Stack(
       children: [
         _Map(
@@ -135,9 +149,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
           onMapMoved: onMapMoved,
         ),
         _MyLocationButton(onZoomToLocation: onZoomToLocation),
-        _Markers(
-          reloadMarkers: reloadMarkers,
-        ),
+        const MapBottomSheet(),
       ],
     );
   }
@@ -167,31 +179,6 @@ class _Map extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _Markers extends ConsumerWidget {
-  const _Markers({required this.reloadMarkers});
-
-  final Function(Map<String, dynamic>, {bool isLoadAllMarkers}) reloadMarkers;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bounds = ref.watch(mapStateProvider.select((s) => s.bounds));
-    AsyncValue<Map<String, dynamic>> markers =
-        ref.watch(mapMarkerProvider(bounds));
-    AsyncValue<Map<String, dynamic>> allMarkers =
-        ref.watch(mapMarkerProvider(null));
-
-    ref.listen(mapStateProvider, (previous, next) async {
-      markers = ref.watch(mapMarkerProvider(bounds));
-    });
-
-    markers.whenData((markers) => reloadMarkers(markers));
-    allMarkers
-        .whenData((markers) => reloadMarkers(markers, isLoadAllMarkers: true));
-
-    return const MapBottomSheet();
   }
 }
 
