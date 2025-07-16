@@ -10,9 +10,10 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 class MapUtils {
   static final Logger _logger = Logger("MapUtils");
 
+  static const mapZoomToAssetLevel = 12.0;
   static const defaultSourceId = 'asset-map-markers';
   static const defaultHeatMapLayerId = 'asset-heatmap-layer';
-  static var completer = Completer()..complete();
+  static var markerCompleter = Completer()..complete();
 
   static const defaultCircleLayerLayerProperties = CircleLayerProperties(
     circleRadius: 10,

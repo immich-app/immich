@@ -41,7 +41,7 @@ class MapStateNotifier extends Notifier<MapState> {
 // This provider watches the markers from the map service and serves the markers.
 // It should be used only after the map service provider is overridden
 final mapMarkerProvider =
-    StreamProvider.family<Map<String, dynamic>, LatLngBounds>(
+    StreamProvider.family<Map<String, dynamic>, LatLngBounds?>(
   (ref, bounds) async* {
     final mapService = ref.watch(mapServiceProvider);
     yield* mapService.watchMarkers(bounds).map((markers) {

@@ -24,7 +24,7 @@ class DriftMapWithMarker extends ConsumerStatefulWidget {
 
 class _DriftMapWithMarkerState extends ConsumerState<DriftMapWithMarker> {
   MapLibreMapController? mapController;
-  static const mapZoomToAssetLevel = 12.0;
+  bool loadAllMarkers = false;
 
   @override
   void initState() {
@@ -51,14 +51,17 @@ class _DriftMapWithMarkerState extends ConsumerState<DriftMapWithMarker> {
     ref.read(mapStateProvider.notifier).setBounds(bounds);
   }
 
-  Future<void> reloadMarkers(Map<String, dynamic> markers) async {
-    if (mapController == null) return;
+  Future<void> reloadMarkers(
+    Map<String, dynamic> markers, {
+    bool isLoadAllMarkers = false,
+  }) async {
+    if (mapController == null || loadAllMarkers) return;
 
     // Wait for previous reload to complete
-    if (!MapUtils.completer.isCompleted) {
-      return MapUtils.completer.future;
+    if (!MapUtils.markerCompleter.isCompleted) {
+      return MapUtils.markerCompleter.future;
     }
-    MapUtils.completer = Completer();
+    MapUtils.markerCompleter = Completer();
 
     // !! Make sure to remove layers before sources else the native
     // maplibre library would crash when removing the source saying that
@@ -92,7 +95,9 @@ class _DriftMapWithMarkerState extends ConsumerState<DriftMapWithMarker> {
       );
     }
 
-    MapUtils.completer.complete();
+    if (isLoadAllMarkers) loadAllMarkers = true;
+
+    MapUtils.markerCompleter.complete();
   }
 
   Future<void> onZoomToLocation() async {
@@ -114,7 +119,7 @@ class _DriftMapWithMarkerState extends ConsumerState<DriftMapWithMarker> {
       mapController!.animateCamera(
         CameraUpdate.newLatLngZoom(
           LatLng(location.latitude, location.longitude),
-          mapZoomToAssetLevel,
+          MapUtils.mapZoomToAssetLevel,
         ),
         duration: const Duration(milliseconds: 800),
       );
@@ -168,19 +173,23 @@ class _Map extends StatelessWidget {
 class _Markers extends ConsumerWidget {
   const _Markers({required this.reloadMarkers});
 
-  final Function(Map<String, dynamic>) reloadMarkers;
+  final Function(Map<String, dynamic>, {bool isLoadAllMarkers}) reloadMarkers;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bounds = ref.watch(mapStateProvider.select((s) => s.bounds));
     AsyncValue<Map<String, dynamic>> markers =
         ref.watch(mapMarkerProvider(bounds));
+    AsyncValue<Map<String, dynamic>> allMarkers =
+        ref.watch(mapMarkerProvider(null));
 
     ref.listen(mapStateProvider, (previous, next) async {
-      markers = ref.watch(mapMarkerProvider(next.bounds));
+      markers = ref.watch(mapMarkerProvider(bounds));
     });
 
     markers.whenData((markers) => reloadMarkers(markers));
+    allMarkers
+        .whenData((markers) => reloadMarkers(markers, isLoadAllMarkers: true));
 
     return const MapBottomSheet();
   }
