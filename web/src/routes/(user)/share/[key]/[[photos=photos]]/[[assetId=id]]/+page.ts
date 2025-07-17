@@ -6,11 +6,8 @@ import { getMySharedLink, isHttpError } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {
-  console.log(params);
   const { key } = params;
-  console.log("before authenticate");
   await authenticate(url, { public: true });
-  console.log("after authenticate");
 
   const $t = await getFormatter();
 

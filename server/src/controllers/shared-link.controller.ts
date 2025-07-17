@@ -38,12 +38,10 @@ export class SharedLinkController {
     @Res({ passthrough: true }) res: Response,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<SharedLinkResponseDto> {
-    console.log("controller method start")
     const sharedLinkToken = request.cookies?.[ImmichCookie.SharedLinkToken];
     if (sharedLinkToken) {
       dto.token = sharedLinkToken;
     }
-    console.log(dto);
     const body = await this.service.getMine(auth, dto);
     return respondWithCookie(res, body, {
       isSecure: loginDetails.isSecure,
@@ -54,7 +52,6 @@ export class SharedLinkController {
   @Get(':id')
   @Authenticated({ permission: Permission.SharedLinkRead })
   getSharedLinkById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<SharedLinkResponseDto> {
-    console.log("query by ID")
     return this.service.get(auth, id);
   }
 
