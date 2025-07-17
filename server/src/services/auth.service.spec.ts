@@ -265,9 +265,31 @@ describe(AuthService.name, () => {
     });
   });
 
+  describe('validate - public slug', () => {
+    it('should accept a slug as a lookup', async () => {
+      const user = factory.userAdmin();
+      const sharedLink = { ...sharedLinkStub.validWithSlug, user } as any;
+
+      mocks.sharedLink.getByKey.mockResolvedValue(void 0);
+      mocks.user.get.mockResolvedValue(user);
+      mocks.sharedLink.validateGetBySlug.mockResolvedValue(sharedLink);
+
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-share-key': sharedLink.slug },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
+        }),
+      ).resolves.toEqual({ user, sharedLink });
+
+      expect(mocks.sharedLink.validateGetBySlug).toHaveBeenCalledWith(sharedLink.slug);
+    })
+  });
+
   describe('validate - shared key', () => {
     it('should not accept a non-existent key', async () => {
       mocks.sharedLink.getByKey.mockResolvedValue(void 0);
+      mocks.sharedLink.validateGetBySlug.mockResolvedValue(void 0);
 
       await expect(
         sut.authenticate({

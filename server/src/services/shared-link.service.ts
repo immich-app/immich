@@ -50,12 +50,6 @@ export class SharedLinkService extends BaseService {
           throw new BadRequestException('Invalid albumId');
         }
         await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [dto.albumId] });
-        if ( dto.shareSlug ) {
-          const existing = await this.sharedLinkRepository.validateGetBySlug(dto.shareSlug);
-          if ( existing ) {
-            throw new BadRequestException('Vanity URL already in use')
-          }
-        }
         break;
       }
 
@@ -67,6 +61,13 @@ export class SharedLinkService extends BaseService {
         await this.requireAccess({ auth, permission: Permission.AssetShare, ids: dto.assetIds });
 
         break;
+      }
+    }
+
+    if ( dto.shareSlug ) {
+      const existing = await this.sharedLinkRepository.validateGetBySlug(dto.shareSlug);
+      if ( existing ) {
+        throw new BadRequestException('Vanity URL already in use')
       }
     }
 
