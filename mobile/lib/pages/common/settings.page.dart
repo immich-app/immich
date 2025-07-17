@@ -143,7 +143,7 @@ class _MobileLayout extends StatelessWidget {
         .toList();
     return ListView(
       physics: const ClampingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      padding: const EdgeInsets.only(top: 10.0, bottom: 56),
       children: [
         const BetaTimelineListTile(),
         ...settings,
