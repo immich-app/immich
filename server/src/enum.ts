@@ -368,7 +368,7 @@ export enum MetadataKey {
 export enum RouteKey {
   ASSET = 'assets',
   USER = 'users',
-  PLAYBACK = 'playback'
+  PLAYBACK = 'playback',
 }
 
 export enum CacheControl {

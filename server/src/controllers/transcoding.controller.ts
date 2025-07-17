@@ -1,10 +1,16 @@
-import { Controller, Get, Header, Next, Param, Query, Res, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Header, Next, Param, Res, UnauthorizedException } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { JsonWebTokenError, JwtPayload, verify } from 'jsonwebtoken';
 import fs from 'node:fs';
 import sanitize from 'sanitize-filename';
-import { MasterPlaylistParamDto, PartParamDto, PlaylistParamDto } from 'src/dtos/video.dto';
+import {
+  AudioPlaylistParamDto,
+  MasterPlaylistParamDto,
+  OriginalPlaylistParamDto,
+  PartParamDto,
+  VideoPlaylistParamDto,
+} from 'src/dtos/video.dto';
 import { CacheControl, RouteKey, VideoCodec } from 'src/enum';
 import { FileResponse } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -26,28 +32,59 @@ export class TranscodingController {
   async getMasterPlaylist(@Param() { secret }: MasterPlaylistParamDto) {
     let data;
     try {
-      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as JwtPayload | { id: string, sessionId: string };
+      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as
+        | JwtPayload
+        | { id: string; sessionId: string };
     } catch (error: any) {
       throw error instanceof JsonWebTokenError ? new UnauthorizedException() : error;
     }
-    return await this.service.getMasterPlaylist(data.id);
+    return await this.service.getMasterPlaylist(data.id, data.sessionId);
   }
 
-  @Get(':secret/:codec/:quality.m3u8')
+  @Get(':secret/:codec/:quality/playlist.m3u8')
   @Header('Content-Type', 'application/vnd.apple.mpegurl')
   @FileResponse()
-  async getPlaylist(@Param() { secret, codec, quality }: PlaylistParamDto) {
+  async getVideoPlaylist(@Param() { secret, codec, quality }: VideoPlaylistParamDto) {
     let data;
     try {
-      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as JwtPayload | { id: string; sessionId: string };
+      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as
+        | JwtPayload
+        | { id: string; sessionId: string };
     } catch (error: any) {
       throw error instanceof JsonWebTokenError ? new UnauthorizedException() : error;
     }
-    if(Object.values(VideoCodec).includes(codec)) {
-      return await this.service.getVideoPlaylist(data.id, data.sessionId, codec, quality);
-    } else {
-      return await this.service.getAudioPlaylist(data.id, data.sessionId, codec, quality);
+    return await this.service.getVideoPlaylist(data.id, data.sessionId, codec, quality);
+  }
+
+  @Get(':secret/a/:codec/:quality/playlist.m3u8')
+  @Header('Content-Type', 'application/vnd.apple.mpegurl')
+  @FileResponse()
+  async getAudioPlaylist(@Param() { secret, codec, quality }: AudioPlaylistParamDto) {
+    let data;
+    try {
+      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as
+        | JwtPayload
+        | { id: string; sessionId: string };
+    } catch (error: any) {
+      throw error instanceof JsonWebTokenError ? new UnauthorizedException() : error;
     }
+    return await this.service.getAudioPlaylist(data.id, data.sessionId, codec, quality);
+  }
+
+  @Get(':secret/original.m3u8')
+  @Header('Content-Type', 'application/vnd.apple.mpegurl')
+  @FileResponse()
+  async getOriginalPlaylist(@Param() { secret }: OriginalPlaylistParamDto) {
+    let data;
+    try {
+      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as
+        | JwtPayload
+        | { id: string; sessionId: string };
+    } catch (error: any) {
+      throw error instanceof JsonWebTokenError ? new UnauthorizedException() : error;
+    }
+    // Here H264 doesn't mean anything as "original" quality will trigger -c:v original option
+    return await this.service.getVideoPlaylist(data.id, data.sessionId, VideoCodec.H264, 'original');
   }
 
   @Get(':secret/:codec/:quality/:name.mp4')
@@ -55,7 +92,9 @@ export class TranscodingController {
   async getVideoPart(@Param() { secret, name }: PartParamDto, @Res() res: Response, @Next() next: NextFunction) {
     let data;
     try {
-      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as JwtPayload | { id: string, sessionId: string };
+      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as
+        | JwtPayload
+        | { id: string; sessionId: string };
     } catch (error: any) {
       throw error instanceof JsonWebTokenError ? new UnauthorizedException() : error;
     }

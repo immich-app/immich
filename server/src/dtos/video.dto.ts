@@ -1,6 +1,5 @@
-import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { PartnerDirection } from 'src/repositories/partner.repository';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { AudioCodec, VideoCodec } from 'src/enum';
 
 export class PartParamDto {
@@ -23,7 +22,13 @@ export class MasterPlaylistParamDto {
   secret!: string;
 }
 
-export class PlaylistParamDto {
+export class OriginalPlaylistParamDto {
+  @IsNotEmpty()
+  @IsString()
+  secret!: string;
+}
+
+export class VideoPlaylistParamDto {
   @IsNotEmpty()
   @IsString()
   secret!: string;
@@ -32,7 +37,21 @@ export class PlaylistParamDto {
   @IsString()
   quality!: string;
 
-  @IsEnum(VideoCodec | AudioCodec)
-  @ApiProperty({ enum: VideoCodec | AudioCodec, enumName: 'Codec' })
-  codec!: VideoCodec | AudioCodec;
+  @IsEnum(VideoCodec)
+  @ApiProperty({ enum: VideoCodec, enumName: 'VideoCodec' })
+  codec!: VideoCodec;
+}
+
+export class AudioPlaylistParamDto {
+  @IsNotEmpty()
+  @IsString()
+  secret!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  quality!: string;
+
+  @IsEnum(AudioCodec)
+  @ApiProperty({ enum: AudioCodec, enumName: 'AudioCodec' })
+  codec!: AudioCodec;
 }

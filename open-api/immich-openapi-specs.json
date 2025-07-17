@@ -5114,6 +5114,53 @@
         ]
       }
     },
+    "/playback/{secret}/a/{codec}/{quality}/playlist.m3u8": {
+      "get": {
+        "operationId": "getAudioPlaylist",
+        "parameters": [
+          {
+            "name": "codec",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/AudioCodec"
+            }
+          },
+          {
+            "name": "quality",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "secret",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Transcoder"
+        ]
+      }
+    },
     "/playback/{secret}/master.m3u8": {
       "get": {
         "operationId": "getMasterPlaylist",
@@ -5144,9 +5191,40 @@
         ]
       }
     },
-    "/playback/{secret}/{codec}/{quality}.m3u8": {
+    "/playback/{secret}/original.m3u8": {
       "get": {
-        "operationId": "getPlaylist",
+        "operationId": "getOriginalPlaylist",
+        "parameters": [
+          {
+            "name": "secret",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Transcoder"
+        ]
+      }
+    },
+    "/playback/{secret}/{codec}/{quality}/playlist.m3u8": {
+      "get": {
+        "operationId": "getVideoPlaylist",
         "parameters": [
           {
             "name": "codec",
@@ -5170,14 +5248,6 @@
             "in": "path",
             "schema": {
               "type": "string"
-            }
-          },
-          {
-            "name": "start",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "number"
             }
           }
         ],

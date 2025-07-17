@@ -1,24 +1,22 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { sign } from 'jsonwebtoken';
-import child_process from 'node:child_process';
+import child_process, { ChildProcess } from 'node:child_process';
 import { createWriteStream } from 'node:fs';
 import fs from 'node:fs/promises';
+import { Asset } from 'src/database';
 import { OnEvent } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import { AssetType, AudioCodec, Permission, TranscodeTarget, VideoCodec } from 'src/enum';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { BaseService } from 'src/services/base.service';
 import { VideoInfo, VideoInterfaces } from 'src/types';
 import { BaseConfig } from 'src/utils/media';
-import { ChildProcess } from 'node:child_process';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { Asset } from 'src/database';
 
 type VideoStream = VideoInfo['videoStreams'][0];
 type AudioStream = VideoInfo['audioStreams'][0];
 
-class PartManager {
-}
+class PartManager {}
 
 // There is actually no persistent "connection"
 class HLSConnection {
@@ -31,8 +29,8 @@ class HLSConnection {
 
   private videoInterfaces: VideoInterfaces;
 
-  private vQuality: string;
-  private aQuality: string;
+  private vQuality?: string;
+  private aQuality?: string;
   private _lastSegmentIdx = 0;
 
   private inputPath: string;
@@ -52,7 +50,14 @@ class HLSConnection {
 
   private parts: PartManager;
 
-  constructor(logger: LoggingRepository, sessionId: string, liveFfmpegConfig: SystemConfigFFmpegDto, asset: Asset, videoInterfaces: VideoInterfaces, stats: VideoInfo) {
+  constructor(
+    logger: LoggingRepository,
+    sessionId: string,
+    liveFfmpegConfig: SystemConfigFFmpegDto,
+    asset: Asset,
+    videoInterfaces: VideoInterfaces,
+    stats: VideoInfo,
+  ) {
     this.logger = logger;
     this.sessionId = sessionId;
     this.liveFfmpegConfig = { ...liveFfmpegConfig };
@@ -66,14 +71,14 @@ class HLSConnection {
     this.parts = new PartManager();
   }
 
-  async generatePlaylists(frames: number[]) {
+  async generatePlaylists() {
     // prettier-ignore
     const s = child_process.spawn('ffprobe', [
       '-loglevel', 'error',
       '-select_streams', 'v:0',
       '-show_entries', 'packet=pts_time,flags',
       '-of', 'csv=print_section=0',
-      asset.originalPath,
+      this.inputPath,
     ]);
     const frames: number[] = [];
 
@@ -86,7 +91,7 @@ class HLSConnection {
         if (code === 0) {
           resolve();
         } else {
-          reject(new InternalServerErrorException('Can\'t decode video'));
+          reject(new InternalServerErrorException("Can't decode video"));
         }
       });
     });
@@ -112,12 +117,9 @@ class HLSConnection {
       '#EXT-X-TARGETDURATION:10',
       '#EXT-X-PART-INF:PART-TARGET=0.5',
       '#EXT-X-PLAYLIST-TYPE:VOD',
+      `#EXT-X-MAP:URI="init.mp4"`,
     ];
-    const audioPlaylist = videoPlaylist;
-
-    videoPlaylist.push(`#EXT-X-MAP:URI="%codec%/%quality%/init.mp4"`);
-    audioPlaylist.push(`#EXT-X-MAP:URI="%codec%/%quality%/init.mp4"`);
-    this.audioCodec;
+    const audioPlaylist = [...videoPlaylist];
 
     let prevPart = frames[0];
     let prevSeg = frames[0];
@@ -132,7 +134,7 @@ class HLSConnection {
         this.partTimes.push(i + 1);
 
         videoPlaylist.push(
-          `#EXT-X-PART:DURATION=${(frames[i] - prevPart).toFixed(20)},URI="%codec%/%quality%/${partIdx++}.mp4"${prevPart === prevSeg ? ',INDEPENDENT=YES' : ''}`,
+          `#EXT-X-PART:DURATION=${(frames[i] - prevPart).toFixed(20)},URI="${partIdx++}.mp4"${prevPart === prevSeg ? ',INDEPENDENT=YES' : ''}`,
         );
         prevPart = frames[i];
       }
@@ -149,7 +151,7 @@ class HLSConnection {
           `#EXTINF:${(frames[i] - prevSeg).toFixed(20)},`,
 
           // This is placeholder
-          `%codec%/%quality%/${Array.from({ length: partIdx - prevPartIdx }, (_, i) => prevPartIdx + i).join('.')}.mp4`,
+          `${Array.from({ length: partIdx - prevPartIdx }, (_, i) => prevPartIdx + i).join('.')}.mp4`,
         );
         prevPart = prevSeg = frames[i];
         prevPartIdx = partIdx;
@@ -177,7 +179,9 @@ class HLSConnection {
 
   // This method should be called ONLY when client switches playlist
   async updateVideoStream(videoCodec: VideoCodec, videoQuality: string) {
-    this.logger.debug(`Client ${this.sessionId} switched video from ${this.videoCodec}:${this.vQuality} to ${videoCodec}:${videoQuality}`);
+    this.logger.debug(
+      `Client ${this.sessionId} switched video from ${this.videoCodec}:${this.vQuality} to ${videoCodec}:${videoQuality}`,
+    );
 
     this.liveFfmpegConfig.targetVideoCodec = videoCodec;
     this.vQuality = videoQuality;
@@ -186,7 +190,9 @@ class HLSConnection {
   }
 
   async updateAudioStream(audioCodec: AudioCodec, audioQuality: string) {
-    this.logger.debug(`Client ${this.sessionId} switched audio from ${this.audioCodec}:${this.aQuality} to ${audioCodec}:${audioQuality}`);
+    this.logger.debug(
+      `Client ${this.sessionId} switched audio from ${this.audioCodec}:${this.aQuality} to ${audioCodec}:${audioQuality}`,
+    );
 
     this.liveFfmpegConfig.targetAudioCodec = audioCodec;
     this.aQuality = audioQuality;
@@ -201,19 +207,22 @@ class HLSConnection {
     }
 
     this.ffmpegCommand?.kill();
-    if (this.ffmpegTerminated) { // Means there is another working instance of ffmpeg
+    if (this.ffmpegTerminated) {
+      // Means there is another working instance of ffmpeg
       this.firstSegmentDone = Promise.withResolvers<void>();
     }
     await this.ffmpegTerminated?.promise;
     this.ffmpegTerminated = Promise.withResolvers<void>();
 
-    this.logger.debug(`Started transcoding video ${this.inputPath}, requested video ${this.videoCodec}:${this.vQuality}, audio ${this.audioCodec}:${this.aQuality}, session ${this.sessionId}`);
+    this.logger.debug(
+      `Started transcoding video ${this.inputPath}, requested video ${this.videoCodec}:${this.vQuality}, audio ${this.audioCodec}:${this.aQuality}, session ${this.sessionId}`,
+    );
     await fs.mkdir(`/tmp/video/${this.sessionId}/${this.videoCodec}/${this.videoQuality}`, {
-      mode: 0o600,
+      mode: 0o700,
       recursive: true,
     });
     await fs.mkdir(`/tmp/video/${this.sessionId}/${this.audioCodec}/${this.audioQuality}`, {
-      mode: 0o600,
+      mode: 0o700,
       recursive: true,
     });
 
@@ -273,7 +282,7 @@ class HLSConnection {
     if (audioStream) {
       // prettier-ignore
       args.push(
-        '-map', 'a:1',
+        '-map', '0:a:0',
         '-f', 'segment',
         '-vn',
         '-segment_format', 'mp4',
@@ -306,7 +315,7 @@ class HLSConnection {
         }
       }
     });
-    const log = createWriteStream(`/tmp/video/${this.id}/transcoding.log`);
+    const log = createWriteStream(`/tmp/video/${this.sessionId}/transcoding.log`);
     s.stderr.pipe(log);
     s.on('exit', (code) => {
       if (code === 0) {
@@ -328,11 +337,17 @@ class HLSConnection {
   }
 
   get videoPlaylist() {
-    return this.vPlaylist.replace('%quality%', this.vQuality).replace('%codec%', this.videoCodec?.toString() ?? '');
+    if (!this.vPlaylist) {
+      throw new Error('Сall generatePlaylists() before videoPlaylist');
+    }
+    return this.vPlaylist;
   }
 
   get audioPlaylist() {
-    return this.aPlaylist.replace('%quality%', this.aQuality).replace('%codec%', this.audioCodec?.toString() ?? '');
+    if (!this.aPlaylist) {
+      throw new Error('Сall generatePlaylists() before audioPlaylist');
+    }
+    return this.aPlaylist;
   }
 }
 
@@ -394,10 +409,10 @@ export class TranscodingService extends BaseService {
       '#EXT-X-INDEPENDENT-SEGMENTS',
 
       `#EXT-X-STREAM-INF:BANDWIDTH=56320,CODECS="mp4a.40.5"`,
-      `aac/55.m3u8`,
+      `a/aac/55/playlist.m3u8`,
 
       `#EXT-X-STREAM-INF:BANDWIDTH=14358365,CODECS="avc1.64001e,mp4a.40.2",RESOLUTION=1920x1080,FRAME-RATE=30`,
-      `h264/1080p.m3u8`,
+      `h264/1080p/playlist.m3u8`,
     );
 
     if (videoStream.codecTag && this.SUPPORTED_TAGS.includes(videoStream.codecTag)) {
@@ -409,12 +424,7 @@ export class TranscodingService extends BaseService {
     return playlist.join('\n');
   }
 
-  async getVideoPlaylist(
-    id: string,
-    sessionId: string,
-    codec: VideoCodec,
-    quality: string,
-  ): Promise<string> {
+  async getVideoPlaylist(id: string, sessionId: string, codec: VideoCodec, quality: string): Promise<string> {
     const connection = this.connections.get(sessionId);
     if (!connection) {
       throw new BadRequestException('Not connected');
@@ -425,12 +435,7 @@ export class TranscodingService extends BaseService {
     return connection.videoPlaylist;
   }
 
-  async getAudioPlaylist(
-    id: string,
-    sessionId: string,
-    codec: AudioCodec,
-    quality: string,
-  ): Promise<string> {
+  async getAudioPlaylist(id: string, sessionId: string, codec: AudioCodec, quality: string): Promise<string> {
     const connection = this.connections.get(sessionId);
     if (!connection) {
       throw new BadRequestException('Not connected');
