@@ -125,7 +125,7 @@ class GalleryViewerPage extends HookConsumerWidget {
       final asset = loadAsset(currentIndex.value);
 
       if (asset.isRemote) {
-        ref.read(castProvider.notifier).loadMedia(asset, false);
+        ref.read(castProvider.notifier).loadMediaOld(asset, false);
       } else {
         if (isCasting) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -394,7 +394,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
                 // send image to casting if the server has it
                 if (newAsset.isRemote) {
-                  ref.read(castProvider.notifier).loadMedia(newAsset, false);
+                  ref.read(castProvider.notifier).loadMediaOld(newAsset, false);
                 } else {
                   context.scaffoldMessenger.clearSnackBars();
 

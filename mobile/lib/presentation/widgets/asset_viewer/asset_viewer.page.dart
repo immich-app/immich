@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -18,6 +19,7 @@ import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart'
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
+import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
@@ -184,6 +186,40 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       }
     });
     _delayedOperations.add(timer);
+
+    _handleCasting(asset);
+  }
+
+  void _handleCasting(BaseAsset asset) {
+    if (!ref.read(castProvider).isCasting) return;
+
+    // hide any casting snackbars if they exist
+    context.scaffoldMessenger.hideCurrentSnackBar();
+
+    // send image to casting if the server has it
+    if (asset.hasRemote) {
+      final remoteAsset = asset as RemoteAsset;
+
+      ref.read(castProvider.notifier).loadMedia(remoteAsset, false);
+    } else {
+      // casting cannot show local assets
+      context.scaffoldMessenger.clearSnackBars();
+
+      if (ref.read(castProvider).isCasting) {
+        ref.read(castProvider.notifier).stop();
+        context.scaffoldMessenger.showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 2),
+            content: Text(
+              "local_asset_cast_failed".tr(),
+              style: context.textTheme.bodyLarge?.copyWith(
+                color: context.primaryColor,
+              ),
+            ),
+          ),
+        );
+      }
+    }
   }
 
   void _onPageBuild(PhotoViewControllerBase controller) {
@@ -569,6 +605,19 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
     ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
     ref.watch(isPlayingMotionVideoProvider);
+
+    // Listen for casting changes and send initial asset to the cast provider
+    ref.listen(castProvider.select((value) => value.isCasting),
+        (_, isCasting) async {
+      if (!isCasting) return;
+
+      final asset = ref.read(currentAssetNotifier);
+      if (asset == null) return;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _handleCasting(asset);
+      });
+    });
 
     // Currently it is not possible to scroll the asset when the bottom sheet is open all the way.
     // Issue: https://github.com/flutter/flutter/issues/109037

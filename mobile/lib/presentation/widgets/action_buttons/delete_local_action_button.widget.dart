@@ -1,10 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class DeleteLocalActionButton extends ConsumerWidget {
-  const DeleteLocalActionButton({super.key});
+  final ActionSource source;
+
+  const DeleteLocalActionButton({super.key, required this.source});
+
+  void _onTap(BuildContext context, WidgetRef ref) async {
+    if (!context.mounted) {
+      return;
+    }
+
+    final result = await ref.read(actionProvider.notifier).deleteLocal(source);
+    ref.read(multiSelectProvider.notifier).reset();
+
+    final successMessage = 'delete_local_action_prompt'.t(
+      context: context,
+      args: {'count': result.count.toString()},
+    );
+
+    if (context.mounted) {
+      ImmichToast.show(
+        context: context,
+        msg: result.success
+            ? successMessage
+            : 'scaffold_body_error_occurred'.t(context: context),
+        gravity: ToastGravity.BOTTOM,
+        toastType: result.success ? ToastType.success : ToastType.error,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -12,6 +44,7 @@ class DeleteLocalActionButton extends ConsumerWidget {
       maxWidth: 95.0,
       iconData: Icons.no_cell_outlined,
       label: "control_bottom_app_bar_delete_from_local".t(context: context),
+      onPressed: () => _onTap(context, ref),
     );
   }
 }
