@@ -57,14 +57,6 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
       await ref.read(backgroundSyncProvider).cancel();
     }
 
-    Future.delayed(const Duration(seconds: 3), () {
-      context.replaceRoute(
-        widget.switchingToBeta
-            ? const TabShellRoute()
-            : const TabControllerRoute(),
-      );
-    });
-
     if (mounted) {
       setState(() {
         HapticFeedback.heavyImpact();
@@ -104,7 +96,7 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
                       duration: Durations.long4,
                       child: hasMigrated
                           ? Text(
-                              "Migration success. Navigating to the new timeline...",
+                              "Migration success!",
                               style: context.textTheme.titleMedium,
                               textAlign: TextAlign.center,
                             )
@@ -115,6 +107,20 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
                             ),
                     ),
                   ),
+                  if (hasMigrated)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.replaceRoute(
+                            widget.switchingToBeta
+                                ? const TabShellRoute()
+                                : const TabControllerRoute(),
+                          );
+                        },
+                        child: const Text("Continue"),
+                      ),
+                    ),
                 ],
               ),
             ),

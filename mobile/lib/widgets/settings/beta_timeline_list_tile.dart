@@ -100,13 +100,27 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
                         [ChangeExperienceRoute(switchingToBeta: value)],
                       );
                     },
-                    child: const Text("Yes"),
+                    child: Text(
+                      "YES",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: context.primaryColor,
+                      ),
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      context.pop();
                     },
-                    child: const Text("No"),
+                    child: Text(
+                      "NO",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: context.colorScheme.outline,
+                      ),
+                    ),
                   ),
                 ],
               );
@@ -116,18 +130,18 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
 
         final gradientColors = [
           Color.lerp(
+            context.primaryColor.withValues(alpha: 0.5),
             context.primaryColor.withValues(alpha: 0.3),
-            context.primaryColor.withValues(alpha: 0.1),
             _gradientAnimation.value,
           )!,
           Color.lerp(
-            context.primaryColor.withValues(alpha: 0.2),
             context.primaryColor.withValues(alpha: 0.4),
+            context.primaryColor.withValues(alpha: 0.6),
             _gradientAnimation.value,
           )!,
           Color.lerp(
-            context.primaryColor.withValues(alpha: 0.1),
             context.primaryColor.withValues(alpha: 0.3),
+            context.primaryColor.withValues(alpha: 0.5),
             _gradientAnimation.value,
           )!,
         ];
