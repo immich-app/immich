@@ -16,7 +16,7 @@ class LocalAlbumBottomSheet extends ConsumerWidget {
       maxChildSize: 0.4,
       shouldCloseOnMinExtent: false,
       actions: [
-        ShareActionButton(),
+        ShareActionButton(source: ActionSource.timeline),
         DeleteLocalActionButton(source: ActionSource.timeline),
         UploadActionButton(),
       ],
