@@ -9,6 +9,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/migration.dart';
 
@@ -24,8 +25,8 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(websocketProvider.notifier).connect();
       runNewSync(ref, full: true);
     });
   }
@@ -132,7 +133,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     return AutoTabsRouter(
       routes: [
         const MainTimelineRoute(),
-        SearchRoute(),
+        DriftSearchRoute(),
         const DriftAlbumsRoute(),
         const DriftLibraryRoute(),
       ],

@@ -165,15 +165,25 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
           _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
           useColumns: false,
         ),
+        leftOuterJoin(
+          _db.remoteAssetEntity,
+          _db.localAssetEntity.checksum
+              .equalsExp(_db.remoteAssetEntity.checksum),
+          useColumns: false,
+        ),
       ],
     )
+      ..addColumns([_db.remoteAssetEntity.id])
       ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
       ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
       ..limit(count, offset: offset);
 
-    return query
-        .map((row) => row.readTable(_db.localAssetEntity).toDto())
-        .get();
+    return query.map((row) {
+      final asset = row.readTable(_db.localAssetEntity).toDto();
+      return asset.copyWith(
+        remoteId: row.read(_db.remoteAssetEntity.id),
+      );
+    }).get();
   }
 
   TimelineQuery remoteAlbum(String albumId, GroupAssetsBy groupBy) => (
@@ -291,6 +301,12 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         .map((row) => row.readTable(_db.remoteAssetEntity).toDto())
         .get();
   }
+
+  TimelineQuery fromAssets(List<BaseAsset> assets) => (
+        bucketSource: () => Stream.value(_generateBuckets(assets.length)),
+        assetSource: (offset, count) =>
+            Future.value(assets.skip(offset).take(count).toList()),
+      );
 
   TimelineQuery remote(String ownerId, GroupAssetsBy groupBy) =>
       _remoteQueryBuilder(
