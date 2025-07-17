@@ -494,7 +494,7 @@ If everything went well, you should now be able to access Immich with the new st
           - In the **Storage Configuration** section, untick the " Use Old Storage Configuration (Deprecated) " checkbox.
           - For the **Data Storage**, you can keep the ixVolume (dataset created automatically by the system) as no data will be directly written to it. We recommend selecting **Host Path (Path that already exists on the system)** and then select a **new** dataset you created for Immich data storage, for example, `data`.
           - For the **Postgres Data Storage**, keep **Host Path (Path that already exists on the system)** and then select the existing dataset you used for Postgres data storage, for example, `pgData`.
-          - Following the instructions in the [Multiple Datasets for Immich Storage](#multiple-datasets-for-immich-storage) section, you can add, **for each old dataset**, a new Additional Storage with the following settings:
+          - Following the instructions in the [Multiple Datasets for Immich Storage](#additional-storage-advanced-users) section, you can add, **for each old dataset**, a new Additional Storage with the following settings:
             - **Type**: `Host Path (Path that already exists on the system)`
             - **Mount Path**: `/usr/src/app/upload/<folder-name>` (e.g. `/usr/src/app/upload/library`)
             - **Host Path**: `/mnt/<your-pool-name>/<dataset-name>` (e.g. `/mnt/tank/immich/library`)
