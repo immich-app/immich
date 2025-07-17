@@ -90,6 +90,7 @@ import 'package:immich_mobile/presentation/pages/drift_user_selection.page.dart'
 import 'package:immich_mobile/presentation/pages/drift_remote_album.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_trash.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_video.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_map.page.dart';
 import 'package:immich_mobile/presentation/pages/local_timeline.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -468,7 +469,10 @@ class AppRouter extends RootStackRouter {
       page: DriftUserSelectionRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
-
+    AutoRoute(
+      page: DriftMapRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
     AutoRoute(
       page: ChangeExperienceRoute.page,
       guards: [_authGuard, _duplicateGuard],

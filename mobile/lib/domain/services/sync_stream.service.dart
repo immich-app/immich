@@ -25,7 +25,7 @@ class SyncStreamService {
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
   Future<void> sync() {
-    _logger.info("Remote sync request for userr");
+    _logger.info("Remote sync request for user");
     DLog.log("Remote sync request for user");
     // Start the sync stream and handle events
     return _syncApiRepository.streamChanges(_handleEvents);
