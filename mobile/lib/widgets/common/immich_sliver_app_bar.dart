@@ -50,7 +50,6 @@ class ImmichSliverAppBar extends ConsumerWidget {
         pinned: pinned,
         snap: snap,
         expandedHeight: expandedHeight,
-        backgroundColor: context.colorScheme.surfaceContainer,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
             Radius.circular(5),
@@ -110,14 +109,18 @@ class _ImmichLogoWithText extends StatelessWidget {
               builder: (context) {
                 return Badge(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  label: const Text(
-                    'RC',
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  backgroundColor: context.primaryColor,
+                  alignment: Alignment.centerRight,
+                  offset: const Offset(16, -8),
+                  label: Text(
+                    'β',
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.white,
+                      color: context.colorScheme.onPrimary,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Inconsolata',
+                      fontFamily: 'OverpassMono',
+                      height: 1.2,
                     ),
                   ),
                   child: Padding(

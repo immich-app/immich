@@ -26,7 +26,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      runNewSync(ref);
+      runNewSync(ref, full: true);
     });
   }
 

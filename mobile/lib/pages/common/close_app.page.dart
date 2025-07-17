@@ -1,10 +1,16 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/migration.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 @RoutePage()
 class ChangeExperiencePage extends ConsumerStatefulWidget {
@@ -27,16 +33,31 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
 
   Future<void> _handleMigration() async {
     if (widget.switchingToBeta) {
-      await ref.read(backgroundSyncProvider).syncLocal(full: true);
-      await migrateDeviceAssetToSqlite(
-        ref.read(isarProvider),
-        ref.read(driftProvider),
-      );
+      ref.read(assetProvider.notifier).dispose();
+      ref.read(albumProvider.notifier).dispose();
+
+      final permission = await ref
+          .read(galleryPermissionNotifier.notifier)
+          .requestGalleryPermission();
+
+      if (permission.isGranted) {
+        await ref.read(backgroundSyncProvider).syncLocal(full: true);
+        await migrateDeviceAssetToSqlite(
+          ref.read(isarProvider),
+          ref.read(driftProvider),
+        );
+      }
+
+      Future.delayed(const Duration(seconds: 3), () {
+        context.replaceRoute(const TabShellRoute());
+      });
     } else {
       await ref.read(backgroundSyncProvider).cancel();
     }
+
     if (mounted) {
       setState(() {
+        HapticFeedback.heavyImpact();
         hasMigrated = true;
       });
     }
@@ -73,7 +94,7 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
                       duration: Durations.long4,
                       child: hasMigrated
                           ? Text(
-                              "Migration success. Please close and reopen the app",
+                              "Migration success. Navigating to the new timeline...",
                               style: context.textTheme.titleMedium,
                               textAlign: TextAlign.center,
                             )
