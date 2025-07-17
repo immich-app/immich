@@ -224,8 +224,7 @@
           </div>
         {/if}
         <div class="my-3">
-          <!-- #TODO - Move this to en.json -->
-          <SettingSwitch bind:checked={addSlug} title={"Public Vanity URL"}/>
+          <SettingSwitch bind:checked={addSlug} title={$t('public_vanity_url')}/>
         </div>
         <div class="mb-2">
           <SettingInputField
