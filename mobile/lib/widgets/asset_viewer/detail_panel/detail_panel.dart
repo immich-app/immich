@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/description_input.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/asset_date_time.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/asset_details.dart';
@@ -15,6 +16,8 @@ class DetailPanel extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+
     return ListView(
       controller: scrollController,
       shrinkWrap: true,
@@ -24,7 +27,7 @@ class DetailPanel extends HookConsumerWidget {
           child: Column(
             children: [
               AssetDateTime(asset: asset),
-              asset.isRemote
+              asset.isRemote && !isReadonlyModeEnabled
                   ? DescriptionInput(asset: asset)
                   : const SizedBox.shrink(),
               PeopleInfo(asset: asset),

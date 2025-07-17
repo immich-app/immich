@@ -15,6 +15,7 @@ import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/trash.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:immich_mobile/widgets/album/add_to_album_bottom_sheet.dart';
@@ -42,6 +43,8 @@ class GalleryAppBar extends ConsumerWidget {
         .watch(partnerSharedWithProvider)
         .map((e) => fastHash(e.id))
         .contains(asset.ownerId);
+
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     toggleFavorite(Asset asset) =>
         ref.read(assetProvider.notifier).toggleFavorite([asset]);
@@ -118,19 +121,22 @@ class GalleryAppBar extends ConsumerWidget {
         opacity: showControls ? 1.0 : 0.0,
         child: Container(
           color: Colors.black.withValues(alpha: 0.4),
-          child: TopControlAppBar(
-            isOwner: isOwner,
-            isPartner: isPartner,
-            asset: asset,
-            onMoreInfoPressed: showInfo,
-            onLocatePressed: handleLocateAsset,
-            onFavorite: toggleFavorite,
-            onRestorePressed: () => handleRestore(asset),
-            onUploadPressed: asset.isLocal ? () => handleUpload(asset) : null,
-            onDownloadPressed: asset.isLocal ? null : handleDownloadAsset,
-            onAddToAlbumPressed: () => addToAlbum(asset),
-            onActivitiesPressed: handleActivities,
-          ),
+          child: isReadonlyModeEnabled
+              ? null
+              : TopControlAppBar(
+                  isOwner: isOwner,
+                  isPartner: isPartner,
+                  asset: asset,
+                  onMoreInfoPressed: showInfo,
+                  onLocatePressed: handleLocateAsset,
+                  onFavorite: toggleFavorite,
+                  onRestorePressed: () => handleRestore(asset),
+                  onUploadPressed:
+                      asset.isLocal ? () => handleUpload(asset) : null,
+                  onDownloadPressed: asset.isLocal ? null : handleDownloadAsset,
+                  onAddToAlbumPressed: () => addToAlbum(asset),
+                  onActivitiesPressed: handleActivities,
+                ),
         ),
       ),
     );

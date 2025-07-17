@@ -23,6 +23,7 @@ import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_viewer/advanced_bottom_sheet.dart';
@@ -65,6 +66,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     final loadAsset = renderList.loadAsset;
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final videoPlayerKeys = useRef<Map<int, GlobalKey>>({});
 
@@ -432,15 +434,16 @@ class GalleryViewerPage extends HookConsumerWidget {
               child: Column(
                 children: [
                   GalleryStackedChildren(stackIndex),
-                  BottomGalleryBar(
-                    key: const ValueKey('bottom-bar'),
-                    renderList: renderList,
-                    totalAssets: totalAssets,
-                    controller: controller,
-                    showStack: showStack,
-                    stackIndex: stackIndex,
-                    assetIndex: currentIndex,
-                  ),
+                  if (!isReadonlyModeEnabled)
+                    BottomGalleryBar(
+                      key: const ValueKey('bottom-bar'),
+                      renderList: renderList,
+                      totalAssets: totalAssets,
+                      controller: controller,
+                      showStack: showStack,
+                      stackIndex: stackIndex,
+                      assetIndex: currentIndex,
+                    ),
                 ],
               ),
             ),
