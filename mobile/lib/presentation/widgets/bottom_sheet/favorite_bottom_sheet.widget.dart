@@ -52,7 +52,7 @@ class FavoriteBottomSheet extends ConsumerWidget {
           const StackActionButton(),
         ],
         if (multiselect.hasLocal) ...[
-          const DeleteLocalActionButton(),
+          const DeleteLocalActionButton(source: ActionSource.timeline),
           const UploadActionButton(),
         ],
       ],
