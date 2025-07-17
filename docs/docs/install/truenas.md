@@ -305,6 +305,9 @@ className="border rounded-xl"
 
 You may configure [External Libraries](/docs/features/libraries) by mounting them using **Additional Storage**.
 
+The dataset that contains your external library files must at least give **read** access to the user running Immich (Default: `apps` (UID 568), `apps` (GID 568)).
+If you want to be able to delete files from the external library using Immich, you will need to give the **modify** permission to the user running Immich.
+
 - **Mount Path** is the location you will need to copy and paste into the External Library settings within Immich.
 - **Host Path** is the location on the TrueNAS Community Edition server where your external library is located.
 - **Read Only** is a checkbox that you can tick if you want to prevent Immich from modifying the files in the external library. This is useful if you want to use Immich to view and search your external library without modifying it.
