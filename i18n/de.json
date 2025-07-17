@@ -359,7 +359,7 @@
   "advanced_settings_enable_alternate_media_filter_subtitle": "Verwende diese Option, um Medien während der Synchronisierung nach anderen Kriterien zu filtern. Versuchen dies nur, wenn Probleme mit der Erkennung aller Alben durch die App auftreten.",
   "advanced_settings_enable_alternate_media_filter_title": "[EXPERIMENTELL] Benutze alternativen Filter für Synchronisierung der Gerätealben",
   "advanced_settings_log_level_title": "Log-Level: {level}",
-  "advanced_settings_prefer_remote_subtitle": "Einige Geräte sind sehr langsam beim Laden von lokalen Miniaturbildern. Aktivieren Sie diese Einstellung, um stattdessen die Server-Bilder zu laden.",
+  "advanced_settings_prefer_remote_subtitle": "Einige Geräte sind sehr langsam beim Laden von Miniaturbildern direkt aus dem Gerät. Aktivieren Sie diese Einstellung, um stattdessen die Server-Bilder zu laden.",
   "advanced_settings_prefer_remote_title": "Server-Bilder bevorzugen",
   "advanced_settings_proxy_headers_subtitle": "Definiere einen Proxy-Header, den Immich bei jeder Netzwerkanfrage mitschicken soll",
   "advanced_settings_proxy_headers_title": "Proxy-Headers",
