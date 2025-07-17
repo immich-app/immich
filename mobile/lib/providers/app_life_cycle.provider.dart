@@ -160,14 +160,14 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> handleAppDetached() async {
     state = AppLifeCycleEnum.detached;
-    
+
     // Flush logs before closing database
     try {
       LogService.I.flush();
     } catch (e) {
       // Ignore flush errors during shutdown
     }
-    
+
     // Close Isar database safely
     try {
       final isar = Isar.getInstance();
@@ -177,7 +177,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     } catch (e) {
       // Ignore close errors during shutdown
     }
-    
+
     if (Store.isBetaTimelineEnabled) {
       return;
     }
