@@ -12,7 +12,13 @@ ImageProvider getFullImageProvider(
   // Create new provider and cache it
   final ImageProvider provider;
   if (_shouldUseLocalAsset(asset)) {
-    provider = LocalFullImageProvider(asset: asset as LocalAsset, size: size);
+    final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
+    provider = LocalFullImageProvider(
+      id: id,
+      name: asset.name,
+      size: size,
+      type: asset.type,
+    );
   } else {
     final String assetId;
     if (asset is LocalAsset && asset.hasRemote) {
@@ -43,7 +49,13 @@ ImageProvider getThumbnailImageProvider({
   }
 
   if (_shouldUseLocalAsset(asset!)) {
-    return LocalThumbProvider(asset: asset as LocalAsset, size: size);
+    final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
+    return LocalThumbProvider(
+      id: id,
+      updatedAt: asset.updatedAt,
+      name: asset.name,
+      size: size,
+    );
   }
 
   final String assetId;
