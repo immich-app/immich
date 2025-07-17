@@ -93,6 +93,8 @@ class StoreService {
     await _storeRepository.deleteAll();
     _cache.clear();
   }
+
+  bool get isBetaTimelineEnabled => tryGet(StoreKey.betaTimeline) ?? false;
 }
 
 class StoreKeyNotFoundException implements Exception {
