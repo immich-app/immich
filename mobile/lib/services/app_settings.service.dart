@@ -90,6 +90,7 @@ enum AppSettingsEnum<T> {
     null,
     true,
   ),
+  betaTimeline<bool>(StoreKey.betaTimeline, null, false),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

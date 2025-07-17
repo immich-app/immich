@@ -58,15 +58,18 @@ class ActionNotifier extends Notifier<void> {
         .toList(growable: false);
   }
 
-  Iterable<T> _getIdsForSource<T extends BaseAsset>(ActionSource source) {
-    final Set<BaseAsset> assets = switch (source) {
+  Set<BaseAsset> _getAssets(ActionSource source) {
+    return switch (source) {
       ActionSource.timeline => ref.read(multiSelectProvider).selectedAssets,
       ActionSource.viewer => switch (ref.read(currentAssetNotifier)) {
           BaseAsset asset => {asset},
           null => const {},
         },
     };
+  }
 
+  Iterable<T> _getIdsForSource<T extends BaseAsset>(ActionSource source) {
+    final Set<BaseAsset> assets = _getAssets(source);
     return switch (T) {
       const (RemoteAsset) => assets.whereType<RemoteAsset>(),
       const (LocalAsset) => assets.whereType<LocalAsset>(),
@@ -259,6 +262,22 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: removedCount, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to remove assets from album', error, stack);
+      return ActionResult(
+        count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
+
+  Future<ActionResult> shareAssets(ActionSource source) async {
+    final ids = _getAssets(source).toList(growable: false);
+
+    try {
+      final count = await _service.shareAssets(ids);
+      return ActionResult(count: count, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to share assets', error, stack);
       return ActionResult(
         count: ids.length,
         success: false,

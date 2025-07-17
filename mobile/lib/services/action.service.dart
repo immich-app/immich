@@ -12,7 +12,7 @@ import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final actionServiceProvider = Provider<ActionService>(
@@ -124,12 +124,12 @@ class ActionService {
     List<String> remoteIds,
     BuildContext context,
   ) async {
-    LatLng? initialLatLng;
+    maplibre.LatLng? initialLatLng;
     if (remoteIds.length == 1) {
       final exif = await _remoteAssetRepository.getExif(remoteIds[0]);
 
       if (exif?.latitude != null && exif?.longitude != null) {
-        initialLatLng = LatLng(exif!.latitude!, exif.longitude!);
+        initialLatLng = maplibre.LatLng(exif!.latitude!, exif.longitude!);
       }
     }
 
@@ -164,5 +164,9 @@ class ActionService {
     }
 
     return removedCount;
+  }
+
+  Future<int> shareAssets(List<BaseAsset> assets) {
+    return _assetMediaRepository.shareAssets(assets);
   }
 }
