@@ -106,6 +106,7 @@ custom_lint:
         - lib/utils/{image_url_builder,openapi_patching}.dart # utils are fine
         - test/modules/utils/openapi_patching_test.dart # filename is self-explanatory...
         - lib/domain/services/sync_stream.service.dart # Making sure to comply with the type from database
+        - lib/domain/services/search.service.dart
 
         # refactor
         - lib/models/map/map_marker.model.dart

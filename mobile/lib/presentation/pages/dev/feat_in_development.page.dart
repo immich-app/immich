@@ -23,16 +23,6 @@ final _features = [
     onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
   ),
   _Feature(
-    name: 'Video',
-    icon: Icons.video_collection_outlined,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftVideoRoute()),
-  ),
-  _Feature(
-    name: 'Recently Taken',
-    icon: Icons.schedule_outlined,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftRecentlyTakenRoute()),
-  ),
-  _Feature(
     name: 'Selection Mode Timeline',
     icon: Icons.developer_mode_rounded,
     onTap: (ctx, ref) async {
