@@ -183,7 +183,7 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
 
   // Album page
   if (index == 2) {
-    ref.read(remoteAlbumProvider.notifier).getAll();
+    ref.read(remoteAlbumProvider.notifier).refresh();
   }
 
   ref.read(hapticFeedbackProvider.notifier).selectionClick();
