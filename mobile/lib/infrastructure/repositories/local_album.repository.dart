@@ -330,7 +330,9 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           for (final assetToUnLink in assetsToUnLink) {
             batch.deleteWhere(
               _db.localAlbumAssetEntity,
-              (row) => row.assetId.equals(assetToUnLink) & row.albumId.equals(albumId),
+              (row) =>
+                  row.assetId.equals(assetToUnLink) &
+                  row.albumId.equals(albumId),
             );
           }
         });

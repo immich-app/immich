@@ -114,7 +114,10 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     try {
       await _db.batch((batch) {
         for (final asset in data) {
-          batch.deleteWhere(_db.remoteAssetEntity, (row) => row.id.equals(asset.assetId));
+          batch.deleteWhere(
+            _db.remoteAssetEntity,
+            (row) => row.id.equals(asset.assetId),
+          );
         }
       });
     } catch (error, stack) {
@@ -212,7 +215,10 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     try {
       await _db.batch((batch) {
         for (final album in data) {
-          batch.deleteWhere(_db.remoteAlbumEntity, (row) => row.id.equals(album.albumId));
+          batch.deleteWhere(
+            _db.remoteAlbumEntity,
+            (row) => row.id.equals(album.albumId),
+          );
         }
       });
     } catch (error, stack) {
@@ -383,7 +389,10 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     try {
       await _db.batch((batch) {
         for (final memory in data) {
-          batch.deleteWhere(_db.memoryEntity, (row) => row.id.equals(memory.memoryId));
+          batch.deleteWhere(
+            _db.memoryEntity,
+            (row) => row.id.equals(memory.memoryId),
+          );
         }
       });
     } catch (error, stack) {
