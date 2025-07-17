@@ -9,6 +9,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/migration.dart';
@@ -59,6 +60,8 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
       );
     }
 
+    final isSyncing =
+        ref.watch(syncStatusProvider.select((s) => s.isRemoteSyncing));
     final navigationDestinations = [
       NavigationDestination(
         label: 'photos'.tr(),
@@ -66,7 +69,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
           Icons.photo_library_outlined,
         ),
         selectedIcon: buildIcon(
-          isProcessing: false,
+          isProcessing: isSyncing,
           icon: Icon(
             Icons.photo_library,
             color: context.primaryColor,
@@ -89,7 +92,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
           Icons.photo_album_outlined,
         ),
         selectedIcon: buildIcon(
-          isProcessing: false,
+          isProcessing: isSyncing,
           icon: Icon(
             Icons.photo_album_rounded,
             color: context.primaryColor,
