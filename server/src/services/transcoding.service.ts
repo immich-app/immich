@@ -9,7 +9,7 @@ import { AssetType, AudioCodec, Permission, TranscodeTarget, VideoCodec } from '
 import { BaseService } from 'src/services/base.service';
 import { VideoInfo, VideoInterfaces } from 'src/types';
 import { BaseConfig } from 'src/utils/media';
-import { ChildProcess } from 'child_process';
+import { ChildProcess } from 'node:child_process';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import { Asset } from 'src/database';
@@ -26,8 +26,10 @@ class HLSConnection {
   private ffmpegTerminated?: PromiseWithResolvers<void>;
   private ffmpegCommand?: ChildProcess;
 
-  private keyTimes?: number[];
-  private partTimes?: number[];
+  private keyTimes: number[] = [];
+  private partTimes: number[] = [];
+
+  private videoInterfaces: VideoInterfaces;
 
   private vQuality: string;
   private aQuality: string;
@@ -36,19 +38,21 @@ class HLSConnection {
   private inputPath: string;
   private id: string;
 
+  private stats: VideoInfo;
+
   // Doubtful but okay
   private logger: LoggingRepository;
   private liveFfmpegConfig: SystemConfigFFmpegDto;
 
   // This is placeholder
-  private vPlaylist: string;
-  private aPlaylist: string;
+  private vPlaylist?: string;
+  private aPlaylist?: string;
 
   private sessionId: string;
 
-  private parts: PartManager
+  private parts: PartManager;
 
-  constructor(logger: LoggingRepository, sessionId: string, liveFfmpegConfig: SystemConfigFFmpegDto, asset: Asset) {
+  constructor(logger: LoggingRepository, sessionId: string, liveFfmpegConfig: SystemConfigFFmpegDto, asset: Asset, videoInterfaces: VideoInterfaces, stats: VideoInfo) {
     this.logger = logger;
     this.sessionId = sessionId;
     this.liveFfmpegConfig = { ...liveFfmpegConfig };
@@ -56,14 +60,13 @@ class HLSConnection {
 
     this.inputPath = asset.originalPath;
     this.id = asset.id;
+    this.stats = stats;
+    this.videoInterfaces = videoInterfaces;
 
     this.parts = new PartManager();
+  }
 
-    const asset = await this.assetRepository.getById(id);
-    if (!asset) {
-      throw new NotFoundException('Asset not found');
-    }
-
+  async generatePlaylists(frames: number[]) {
     // prettier-ignore
     const s = child_process.spawn('ffprobe', [
       '-loglevel', 'error',
@@ -102,10 +105,6 @@ class HLSConnection {
     }
     frames.sort((a, b) => Math.abs(a) - Math.abs(b));
 
-    this.generatePlaylists(frames);
-  }
-
-  private generatePlaylists(frames: number[]) {
     const videoPlaylist = [
       '#EXTM3U',
       '#EXT-X-VERSION:10',
@@ -125,7 +124,7 @@ class HLSConnection {
     let partIdx = 0;
     let prevPartIdx = 0;
 
-    const original = quality == 'original';
+    const original = this.vQuality == 'original';
     for (let i = 1; i < frames.length - 1; i++) {
       const isKf = frames[i] <= 0;
       frames[i] = Math.abs(frames[i]);
@@ -161,11 +160,11 @@ class HLSConnection {
   }
 
   get videoCodec(): VideoCodec | undefined {
-    return this.vQuality ? liveFfmpegConfig.targetVideoCodec : undefined;
+    return this.vQuality ? this.liveFfmpegConfig.targetVideoCodec : undefined;
   }
 
   get audioCodec(): AudioCodec | undefined {
-    return this.aQuality ? liveFfmpegConfig.targetAudioCodec : undefined;
+    return this.aQuality ? this.liveFfmpegConfig.targetAudioCodec : undefined;
   }
 
   get videoQuality() {
@@ -177,25 +176,25 @@ class HLSConnection {
   }
 
   // This method should be called ONLY when client switches playlist
-  updateVideoStream(videoCodec: VideoCodec, videoQuality: string) {
+  async updateVideoStream(videoCodec: VideoCodec, videoQuality: string) {
     this.logger.debug(`Client ${this.sessionId} switched video from ${this.videoCodec}:${this.vQuality} to ${videoCodec}:${videoQuality}`);
 
-    this._videoCodec = videoCodec;
+    this.liveFfmpegConfig.targetVideoCodec = videoCodec;
     this.vQuality = videoQuality;
 
-    this.tryStartTranscoding();
+    await this.tryStartTranscoding();
   }
 
-  updateAudioStream(audioCodec: VideoCodec, audioQuality: string) {
+  async updateAudioStream(audioCodec: AudioCodec, audioQuality: string) {
     this.logger.debug(`Client ${this.sessionId} switched audio from ${this.audioCodec}:${this.aQuality} to ${audioCodec}:${audioQuality}`);
 
-    this._audioCodec = audioCodec;
+    this.liveFfmpegConfig.targetAudioCodec = audioCodec;
     this.aQuality = audioQuality;
 
-    this.tryStartTranscoding();
+    await this.tryStartTranscoding();
   }
 
-  private tryStartTranscoding() {
+  private async tryStartTranscoding() {
     if (!this.vQuality || !this.aQuality) {
       this.logger.debug(`Client ${this.sessionId} is not selected output audio/video yet`);
       return;
@@ -208,7 +207,7 @@ class HLSConnection {
     await this.ffmpegTerminated?.promise;
     this.ffmpegTerminated = Promise.withResolvers<void>();
 
-    this.logger.debug(`Started transcoding video ${path}, requested video ${this.videoCodec}:${this.vQuality}, audio ${this.audioCodec}:${this.aQuality}, session ${this.sessionId}`);
+    this.logger.debug(`Started transcoding video ${this.inputPath}, requested video ${this.videoCodec}:${this.vQuality}, audio ${this.audioCodec}:${this.aQuality}, session ${this.sessionId}`);
     await fs.mkdir(`/tmp/video/${this.sessionId}/${this.videoCodec}/${this.videoQuality}`, {
       mode: 0o600,
       recursive: true,
@@ -218,27 +217,26 @@ class HLSConnection {
       recursive: true,
     });
 
-    const stats = await this.mediaRepository.probe(path);
-    if (stats.videoStreams.length === 0) {
-      throw new NotFoundException('No video streams in file');
-    }
-    const videoStream = stats.videoStreams[0];
-    const audioStream = stats.audioStreams[0];
+    const videoStream = this.stats.videoStreams[0];
+    const audioStream = this.stats.audioStreams[0];
 
     const args = ['-nostats', '-hide_banner', '-loglevel', 'warning'];
-    if (quality === 'original') {
+    if (this.videoQuality === 'original') {
       args.push('-c:v', 'copy');
     } else {
-      const options = BaseConfig.create(liveFfmpeg, this.videoInterfaces).getCommand(
-        TranscodeTarget.Video,
+      const options = BaseConfig.create(this.liveFfmpegConfig, this.videoInterfaces).getCommand(
+        TranscodeTarget.VIDEO,
         videoStream,
-        undefined, // We will handle audio later
+        // We will handle audio later
       );
       for (const option of options.inputOptions) {
         args.push(...option.split(' '));
       }
-      args.push('-i', path);
+
+      // prettier-ignore
       args.push(
+        '-i', this.inputPath,
+
         '-start_at_zero',
         '-copyts',
         '-muxdelay', '0',
@@ -262,8 +260,8 @@ class HLSConnection {
       '-segment_list_type', 'csv',
 
       '-break_non_keyframes', '1',
-      '-segment_frames', this.partTimes.join(','),
-      '-force_key_frames', this.keyTimes.join(','),
+      '-segment_frames', this.partTimes!.join(','),
+      '-force_key_frames', this.keyTimes!.join(','),
 
       '-segment_header_filename', `/tmp/video/${this.sessionId}/${this.videoCodec}/${this.videoQuality}/init.mp4`,
       '-segment_format_options', 'movflags=dash+skip_sidx',
@@ -273,6 +271,7 @@ class HLSConnection {
       `/tmp/video/${this.sessionId}/${this.videoCodec}/${this.videoQuality}/%d.mp4`,
     );
     if (audioStream) {
+      // prettier-ignore
       args.push(
         '-map', 'a:1',
         '-f', 'segment',
@@ -280,7 +279,7 @@ class HLSConnection {
         '-segment_format', 'mp4',
         '-segment_list_type', 'csv',
 
-        '-segment_times', this.keyTimes?.join(','),
+        '-segment_times', this.keyTimes!.join(','),
 
         '-segment_header_filename',
         `/tmp/video/${this.sessionId}/${this.audioCodec}/${this.audioQuality}/init.mp4`,
@@ -381,7 +380,9 @@ export class TranscodingService extends BaseService {
     }
 
     const config = await this.getConfig({ withCache: true });
-    const connection = new HLSConnection(this.logger, sessionId, config.liveFfmpeg, asset);
+    const connection = new HLSConnection(this.logger, sessionId, config.liveFfmpeg, asset, this.videoInterfaces, stats);
+    await connection.generatePlaylists();
+
     this.connections.set(sessionId, connection);
 
     const videoStream = stats.videoStreams[0];
@@ -418,7 +419,7 @@ export class TranscodingService extends BaseService {
     if (!connection) {
       throw new BadRequestException('Not connected');
     }
-    connection.updateVideoStream(codec, quality);
+    await connection.updateVideoStream(codec, quality);
 
     await connection.waitForFirstSegment();
     return connection.videoPlaylist;
@@ -427,14 +428,14 @@ export class TranscodingService extends BaseService {
   async getAudioPlaylist(
     id: string,
     sessionId: string,
-    codec: VideoCodec,
+    codec: AudioCodec,
     quality: string,
   ): Promise<string> {
     const connection = this.connections.get(sessionId);
     if (!connection) {
       throw new BadRequestException('Not connected');
     }
-    connection.updateAudioStream(codec, quality);
+    await connection.updateAudioStream(codec, quality);
 
     await connection.waitForFirstSegment();
     return connection.audioPlaylist;
