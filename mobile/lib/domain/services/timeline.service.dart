@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
+import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
@@ -112,8 +113,19 @@ class TimelineService {
               totalAssets - _bufferOffset,
             );
           }
-          _buffer = await _assetSource(offset, count);
-          _bufferOffset = offset;
+
+          try {
+            _buffer = await _assetSource(offset, count);
+            _bufferOffset = offset;
+          } catch (e) {
+            if (e.toString().contains('database has been locked')) {
+              debugPrint(
+                "TimelineService::loadAssets - Database locked, returning cached assets",
+              );
+              return;
+            }
+            rethrow;
+          }
         }
 
         // change the state's total assets count only after the buffer is reloaded
@@ -153,8 +165,22 @@ class TimelineService {
           : (len > kTimelineAssetLoadBatchSize ? index : index + count - len),
     );
 
-    _buffer = await _assetSource(start, len);
-    _bufferOffset = start;
+    try {
+      _buffer = await _assetSource(start, len);
+      _bufferOffset = start;
+    } catch (e) {
+      if (e.toString().contains('database has been locked') &&
+          _buffer.isNotEmpty) {
+        debugPrint(
+          "TimelineService::loadAssets - Database locked, returning cached assets",
+        );
+        if (hasRange(index, count)) {
+          return getAssets(index, count);
+        }
+        return <BaseAsset>[];
+      }
+      rethrow;
+    }
 
     return getAssets(index, count);
   }

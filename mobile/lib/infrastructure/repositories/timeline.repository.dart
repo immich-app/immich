@@ -254,42 +254,44 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     required int offset,
     required int count,
   }) async {
-    final albumData = await (_db.remoteAlbumEntity.select()
-          ..where((row) => row.id.equals(albumId)))
-        .getSingleOrNull();
+    return await transaction(() async {
+      final albumData = await (_db.remoteAlbumEntity.select()
+            ..where((row) => row.id.equals(albumId)))
+          .getSingleOrNull();
 
-    // If album doesn't exist (was deleted), return empty list
-    if (albumData == null) {
-      return <BaseAsset>[];
-    }
+      // If album doesn't exist (was deleted), return empty list
+      if (albumData == null) {
+        return <BaseAsset>[];
+      }
 
-    final isAscending = albumData.order == AlbumAssetOrder.asc;
+      final isAscending = albumData.order == AlbumAssetOrder.asc;
 
-    final query = _db.remoteAssetEntity.select().join(
-      [
-        innerJoin(
-          _db.remoteAlbumAssetEntity,
-          _db.remoteAlbumAssetEntity.assetId
-              .equalsExp(_db.remoteAssetEntity.id),
-          useColumns: false,
-        ),
-      ],
-    )..where(
-        _db.remoteAssetEntity.deletedAt.isNull() &
-            _db.remoteAlbumAssetEntity.albumId.equals(albumId),
-      );
+      final query = _db.remoteAssetEntity.select().join(
+        [
+          innerJoin(
+            _db.remoteAlbumAssetEntity,
+            _db.remoteAlbumAssetEntity.assetId
+                .equalsExp(_db.remoteAssetEntity.id),
+            useColumns: false,
+          ),
+        ],
+      )..where(
+          _db.remoteAssetEntity.deletedAt.isNull() &
+              _db.remoteAlbumAssetEntity.albumId.equals(albumId),
+        );
 
-    if (isAscending) {
-      query.orderBy([OrderingTerm.asc(_db.remoteAssetEntity.createdAt)]);
-    } else {
-      query.orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)]);
-    }
+      if (isAscending) {
+        query.orderBy([OrderingTerm.asc(_db.remoteAssetEntity.createdAt)]);
+      } else {
+        query.orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)]);
+      }
 
-    query.limit(count, offset: offset);
+      query.limit(count, offset: offset);
 
-    return query
-        .map((row) => row.readTable(_db.remoteAssetEntity).toDto())
-        .get();
+      return query
+          .map((row) => row.readTable(_db.remoteAssetEntity).toDto())
+          .get();
+    });
   }
 
   TimelineQuery remote(String ownerId, GroupAssetsBy groupBy) =>
@@ -462,13 +464,15 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     required Expression<bool> Function($RemoteAssetEntityTable row) filter,
     required int offset,
     required int count,
-  }) {
-    final query = _db.remoteAssetEntity.select()
-      ..where(filter)
-      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
-      ..limit(count, offset: offset);
+  }) async {
+    return await transaction(() async {
+      final query = _db.remoteAssetEntity.select()
+        ..where(filter)
+        ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+        ..limit(count, offset: offset);
 
-    return query.map((row) => row.toDto()).get();
+      return query.map((row) => row.toDto()).get();
+    });
   }
 }
 
