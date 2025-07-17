@@ -29,7 +29,7 @@ import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
 import 'package:immich_mobile/pages/common/activities.page.dart';
 import 'package:immich_mobile/pages/common/app_log.page.dart';
 import 'package:immich_mobile/pages/common/app_log_detail.page.dart';
-import 'package:immich_mobile/pages/common/close_app.page.dart';
+import 'package:immich_mobile/pages/common/change_experience.page.dart';
 import 'package:immich_mobile/pages/common/create_album.page.dart';
 import 'package:immich_mobile/pages/common/gallery_viewer.page.dart';
 import 'package:immich_mobile/pages/common/headers_settings.page.dart';
