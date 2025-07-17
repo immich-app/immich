@@ -16,7 +16,6 @@ export const load = (async ({ params, url }) => {
 
   try {
     const [sharedLink, asset] = await Promise.all([getMySharedLink({ key }), getAssetInfoFromParam(params)]);
-    console.log("After Promise.all")
     setSharedLink(sharedLink);
     const assetCount = sharedLink.assets.length;
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;

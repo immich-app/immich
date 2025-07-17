@@ -12995,6 +12995,9 @@
           "password": {
             "type": "string"
           },
+          "shareSlug": {
+            "type": "string"
+          },
           "showMetadata": {
             "type": "boolean"
           }

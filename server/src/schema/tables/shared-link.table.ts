@@ -49,6 +49,6 @@ export class SharedLinkTable {
   @Column({ type: 'character varying', nullable: true })
   password!: string | null;
 
-  @Column({ type: 'character varying', nullable: true })
+  @Column({ type: 'character varying', nullable: true, unique: true })
   slug!: string | null;
 }

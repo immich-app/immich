@@ -73,6 +73,9 @@ export class SharedLinkEditDto {
    */
   @ValidateBoolean({ optional: true })
   changeExpiryTime?: boolean;
+
+  @Optional()
+  shareSlug?: string;
 }
 
 export class SharedLinkPasswordDto {
