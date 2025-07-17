@@ -33,8 +33,14 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
 
   Future<void> _handleMigration() async {
     if (widget.switchingToBeta) {
-      ref.read(assetProvider.notifier).dispose();
-      ref.read(albumProvider.notifier).dispose();
+      final assetNotifier = ref.read(assetProvider.notifier);
+      if (assetNotifier.mounted) {
+        assetNotifier.dispose();
+      }
+      final albumNotifier = ref.read(albumProvider.notifier);
+      if (albumNotifier.mounted) {
+        albumNotifier.dispose();
+      }
 
       final permission = await ref
           .read(galleryPermissionNotifier.notifier)
