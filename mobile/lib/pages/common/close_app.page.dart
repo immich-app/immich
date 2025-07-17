@@ -47,13 +47,17 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
           ref.read(driftProvider),
         );
       }
-
-      Future.delayed(const Duration(seconds: 3), () {
-        context.replaceRoute(const TabShellRoute());
-      });
     } else {
       await ref.read(backgroundSyncProvider).cancel();
     }
+
+    Future.delayed(const Duration(seconds: 3), () {
+      context.replaceRoute(
+        widget.switchingToBeta
+            ? const TabShellRoute()
+            : const TabControllerRoute(),
+      );
+    });
 
     if (mounted) {
       setState(() {
