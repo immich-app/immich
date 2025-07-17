@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
@@ -59,9 +60,18 @@ Cancelable<T?> runInIsolateGentle<T>({
         stack,
       );
     } finally {
-      await LogService.I.flushBuffer();
-      ref.read(driftProvider).close();
-      ref.read(isarProvider).close();
+      try {
+        await LogService.I.flushBuffer();
+        await ref.read(driftProvider).close();
+        await ref.read(isarProvider).close();
+        ref.dispose();
+      } catch (error) {
+        debugPrint("Error closing resources in isolate: $error");
+      } finally {
+        ref.dispose();
+        // Delay to ensure all resources are released
+        await Future.delayed(const Duration(seconds: 2));
+      }
     }
     return null;
   });

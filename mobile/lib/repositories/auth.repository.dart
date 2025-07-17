@@ -24,7 +24,25 @@ class AuthRepository extends DatabaseRepository {
 
   const AuthRepository(super.db, this._drift);
 
-  Future<void> clearLocalData() {
+  Future<void> clearLocalData() async {
+    // Drift deletions - child entities first (those with foreign keys)
+    await Future.wait([
+      _drift.memoryAssetEntity.deleteAll(),
+      _drift.remoteAlbumAssetEntity.deleteAll(),
+      _drift.remoteAlbumUserEntity.deleteAll(),
+      _drift.remoteExifEntity.deleteAll(),
+      _drift.userMetadataEntity.deleteAll(),
+      _drift.partnerEntity.deleteAll(),
+      _drift.stackEntity.deleteAll(),
+    ]);
+    // Drift deletions - parent entities
+    await Future.wait([
+      _drift.memoryEntity.deleteAll(),
+      _drift.remoteAlbumEntity.deleteAll(),
+      _drift.remoteAssetEntity.deleteAll(),
+      _drift.userEntity.deleteAll(),
+    ]);
+
     return db.writeTxn(() {
       return Future.wait([
         db.assets.clear(),
@@ -32,17 +50,6 @@ class AuthRepository extends DatabaseRepository {
         db.albums.clear(),
         db.eTags.clear(),
         db.users.clear(),
-        _drift.remoteAssetEntity.deleteAll(),
-        _drift.remoteExifEntity.deleteAll(),
-        _drift.userEntity.deleteAll(),
-        _drift.userMetadataEntity.deleteAll(),
-        _drift.partnerEntity.deleteAll(),
-        _drift.remoteAlbumEntity.deleteAll(),
-        _drift.remoteAlbumAssetEntity.deleteAll(),
-        _drift.remoteAlbumUserEntity.deleteAll(),
-        _drift.memoryEntity.deleteAll(),
-        _drift.memoryAssetEntity.deleteAll(),
-        _drift.stackEntity.deleteAll(),
       ]);
     });
   }

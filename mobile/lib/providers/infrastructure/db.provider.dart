@@ -13,5 +13,6 @@ Isar isar(Ref ref) => throw UnimplementedError('isar');
 final driftProvider = Provider<Drift>((ref) {
   final drift = Drift();
   ref.onDispose(() => unawaited(drift.close()));
+  ref.keepAlive();
   return drift;
 });

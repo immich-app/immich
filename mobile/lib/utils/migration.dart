@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -18,12 +19,15 @@ import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.d
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 13;
+const int targetVersion = 14;
 
 Future<void> migrateDatabaseIfNeeded(Isar db) async {
   final int version = Store.get(StoreKey.version, targetVersion);
@@ -48,16 +52,20 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
     await _migrateDeviceAsset(db);
   }
 
-  if (version < 12 && (!kReleaseMode)) {
+  if (version < 13) {
+    await Store.put(StoreKey.photoManagerCustomFilter, true);
+  }
+
+  if (version < 14) {
+    if (!Store.isBetaTimelineEnabled) {
+      // Try again when beta timeline is enabled and the app is restarted
+      return;
+    }
     final backgroundSync = BackgroundSyncManager();
     await backgroundSync.syncLocal();
     final drift = Drift();
-    await _migrateDeviceAssetToSqlite(db, drift);
+    await migrateDeviceAssetToSqlite(db, drift);
     await drift.close();
-  }
-
-  if (version < 13) {
-    await Store.put(StoreKey.photoManagerCustomFilter, true);
   }
 
   if (targetVersion >= 12) {
@@ -175,33 +183,24 @@ Future<void> _migrateDeviceAsset(Isar db) async {
   });
 }
 
-Future<void> _migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
+Future<void> migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
   try {
-    final isarDeviceAssets =
-        await db.deviceAssetEntitys.where().sortByAssetId().findAll();
+    final isarDeviceAssets = await db.deviceAssetEntitys.where().findAll();
     await drift.batch((batch) {
       for (final deviceAsset in isarDeviceAssets) {
-        final companion = LocalAssetEntityCompanion(
-          updatedAt: Value(deviceAsset.modifiedTime),
-          id: Value(deviceAsset.assetId),
-          checksum: Value(base64.encode(deviceAsset.hash)),
-        );
-        batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
+        batch.update(
           drift.localAssetEntity,
-          companion,
-          onConflict: DoUpdate(
-            (_) => companion,
-            where: (old) => old.updatedAt.equals(deviceAsset.modifiedTime),
+          LocalAssetEntityCompanion(
+            checksum: Value(base64.encode(deviceAsset.hash)),
           ),
+          where: (t) => t.id.equals(deviceAsset.assetId),
         );
       }
     });
   } catch (error) {
-    if (kDebugMode) {
-      debugPrint(
-        "[MIGRATION] Error while migrating device assets to SQLite: $error",
-      );
-    }
+    debugPrint(
+      "[MIGRATION] Error while migrating device assets to SQLite: $error",
+    );
   }
 }
 
@@ -211,4 +210,19 @@ class _DeviceAsset {
   final DateTime? dateTime;
 
   const _DeviceAsset({required this.assetId, this.hash, this.dateTime});
+}
+
+Future<void> runNewSync(WidgetRef ref, {bool full = false}) async {
+  ref.read(backupProvider.notifier).cancelBackup();
+
+  final backgroundManager = ref.read(backgroundSyncProvider);
+  Future.wait([
+    backgroundManager.syncLocal(full: full).then(
+      (_) {
+        Logger("runNewSync").fine("Hashing assets after syncLocal");
+        backgroundManager.hashAssets();
+      },
+    ),
+    backgroundManager.syncRemote(),
+  ]);
 }
