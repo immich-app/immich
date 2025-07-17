@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
@@ -35,7 +36,8 @@ class DriftSearchPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textSearchType = useState<TextSearchType>(TextSearchType.context);
-    final searchHintText = useState<String>('sunrise_on_the_beach'.tr());
+    final searchHintText =
+        useState<String>('sunrise_on_the_beach'.t(context: context));
     final textSearchController = useTextEditingController();
     final filter = useState<SearchFilter>(
       SearchFilter(
@@ -95,7 +97,7 @@ class DriftSearchPage extends HookConsumerWidget {
 
       if (!hasResult) {
         context.showSnackBar(
-          searchInfoSnackBar('search_no_result'.tr()),
+          searchInfoSnackBar('search_no_result'.t(context: context)),
         );
       }
 
@@ -111,7 +113,7 @@ class DriftSearchPage extends HookConsumerWidget {
 
       if (!hasResult) {
         context.showSnackBar(
-          searchInfoSnackBar('search_no_more_result'.tr()),
+          searchInfoSnackBar('search_no_more_result'.t(context: context)),
         );
       }
 
@@ -155,7 +157,9 @@ class DriftSearchPage extends HookConsumerWidget {
         );
 
         peopleCurrentFilterWidget.value = Text(
-          value.map((e) => e.name != '' ? e.name : 'no_name'.tr()).join(', '),
+          value
+              .map((e) => e.name != '' ? e.name : 'no_name'.t(context: context))
+              .join(', '),
           style: context.textTheme.labelLarge,
         );
       }
@@ -175,7 +179,7 @@ class DriftSearchPage extends HookConsumerWidget {
         child: FractionallySizedBox(
           heightFactor: 0.8,
           child: FilterBottomSheetScaffold(
-            title: 'search_filter_people_title'.tr(),
+            title: 'search_filter_people_title'.t(context: context),
             expanded: true,
             onSearch: search,
             onClear: handleClear,
@@ -231,7 +235,7 @@ class DriftSearchPage extends HookConsumerWidget {
         isScrollControlled: true,
         isDismissible: true,
         child: FilterBottomSheetScaffold(
-          title: 'search_filter_location_title'.tr(),
+          title: 'search_filter_location_title'.t(context: context),
           onSearch: search,
           onClear: handleClear,
           child: Padding(
@@ -282,7 +286,7 @@ class DriftSearchPage extends HookConsumerWidget {
         isScrollControlled: true,
         isDismissible: true,
         child: FilterBottomSheetScaffold(
-          title: 'search_filter_camera_title'.tr(),
+          title: 'search_filter_camera_title'.t(context: context),
           onSearch: search,
           onClear: handleClear,
           child: Padding(
@@ -309,14 +313,14 @@ class DriftSearchPage extends HookConsumerWidget {
           start: filter.value.date.takenAfter ?? lastDate,
           end: filter.value.date.takenBefore ?? lastDate,
         ),
-        helpText: 'search_filter_date_title'.tr(),
-        cancelText: 'cancel'.tr(),
-        confirmText: 'select'.tr(),
-        saveText: 'save'.tr(),
-        errorFormatText: 'invalid_date_format'.tr(),
-        errorInvalidText: 'invalid_date'.tr(),
-        fieldStartHintText: 'start_date'.tr(),
-        fieldEndHintText: 'end_date'.tr(),
+        helpText: 'search_filter_date_title'.t(context: context),
+        cancelText: 'cancel'.t(context: context),
+        confirmText: 'select'.t(context: context),
+        saveText: 'save'.t(context: context),
+        errorFormatText: 'invalid_date_format'.t(context: context),
+        errorInvalidText: 'invalid_date'.t(context: context),
+        fieldStartHintText: 'start_date'.t(context: context),
+        fieldEndHintText: 'end_date'.t(context: context),
         initialEntryMode: DatePickerEntryMode.calendar,
         keyboardType: TextInputType.text,
       );
@@ -352,8 +356,9 @@ class DriftSearchPage extends HookConsumerWidget {
         );
       } else {
         dateRangeCurrentFilterWidget.value = Text(
-          'search_filter_date_interval'.tr(
-            namedArgs: {
+          'search_filter_date_interval'.t(
+            context: context,
+            args: {
               "start": DateFormat.yMMMd().format(date.start.toLocal()),
               "end": DateFormat.yMMMd().format(date.end.toLocal()),
             },
@@ -374,10 +379,10 @@ class DriftSearchPage extends HookConsumerWidget {
 
         mediaTypeCurrentFilterWidget.value = Text(
           assetType == AssetType.image
-              ? 'image'.tr()
+              ? 'image'.t(context: context)
               : assetType == AssetType.video
-                  ? 'video'.tr()
-                  : 'all'.tr(),
+                  ? 'video'.t(context: context)
+                  : 'all'.t(context: context),
           style: context.textTheme.labelLarge,
         );
       }
@@ -394,7 +399,7 @@ class DriftSearchPage extends HookConsumerWidget {
       showFilterBottomSheet(
         context: context,
         child: FilterBottomSheetScaffold(
-          title: 'search_filter_media_type_title'.tr(),
+          title: 'search_filter_media_type_title'.t(context: context),
           onSearch: search,
           onClear: handleClear,
           child: MediaTypePicker(
@@ -418,8 +423,10 @@ class DriftSearchPage extends HookConsumerWidget {
                 ),
               );
               if (value) {
-                filterText
-                    .add('search_filter_display_option_not_in_album'.tr());
+                filterText.add(
+                  'search_filter_display_option_not_in_album'
+                      .t(context: context),
+                );
               }
               break;
             case DisplayOption.archive:
@@ -429,7 +436,7 @@ class DriftSearchPage extends HookConsumerWidget {
                 ),
               );
               if (value) {
-                filterText.add('archive'.tr());
+                filterText.add('archive'.t(context: context));
               }
               break;
             case DisplayOption.favorite:
@@ -439,7 +446,7 @@ class DriftSearchPage extends HookConsumerWidget {
                 ),
               );
               if (value) {
-                filterText.add('favorite'.tr());
+                filterText.add('favorite'.t(context: context));
               }
               break;
           }
@@ -472,7 +479,7 @@ class DriftSearchPage extends HookConsumerWidget {
       showFilterBottomSheet(
         context: context,
         child: FilterBottomSheetScaffold(
-          title: 'display_options'.tr(),
+          title: 'display_options'.t(context: context),
           onSearch: search,
           onClear: handleClear,
           child: DisplayOptionPicker(
@@ -562,7 +569,7 @@ class DriftSearchPage extends HookConsumerWidget {
                   child: ListTile(
                     leading: const Icon(Icons.image_search_rounded),
                     title: Text(
-                      'search_by_context'.tr(),
+                      'search_by_context'.t(context: context),
                       style: context.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: textSearchType.value == TextSearchType.context
@@ -575,14 +582,15 @@ class DriftSearchPage extends HookConsumerWidget {
                   ),
                   onPressed: () {
                     textSearchType.value = TextSearchType.context;
-                    searchHintText.value = 'sunrise_on_the_beach'.tr();
+                    searchHintText.value =
+                        'sunrise_on_the_beach'.t(context: context);
                   },
                 ),
                 MenuItemButton(
                   child: ListTile(
                     leading: const Icon(Icons.abc_rounded),
                     title: Text(
-                      'search_filter_filename'.tr(),
+                      'search_filter_filename'.t(context: context),
                       style: context.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: textSearchType.value == TextSearchType.filename
@@ -595,14 +603,15 @@ class DriftSearchPage extends HookConsumerWidget {
                   ),
                   onPressed: () {
                     textSearchType.value = TextSearchType.filename;
-                    searchHintText.value = 'file_name_or_extension'.tr();
+                    searchHintText.value =
+                        'file_name_or_extension'.t(context: context);
                   },
                 ),
                 MenuItemButton(
                   child: ListTile(
                     leading: const Icon(Icons.text_snippet_outlined),
                     title: Text(
-                      'search_by_description'.tr(),
+                      'search_by_description'.t(context: context),
                       style: context.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                         color:
@@ -617,7 +626,8 @@ class DriftSearchPage extends HookConsumerWidget {
                   ),
                   onPressed: () {
                     textSearchType.value = TextSearchType.description;
-                    searchHintText.value = 'search_by_description_example'.tr();
+                    searchHintText.value =
+                        'search_by_description_example'.t(context: context);
                   },
                 ),
               ],
@@ -677,38 +687,39 @@ class DriftSearchPage extends HookConsumerWidget {
                     SearchFilterChip(
                       icon: Icons.people_alt_outlined,
                       onTap: showPeoplePicker,
-                      label: 'people'.tr(),
+                      label: 'people'.t(context: context),
                       currentFilter: peopleCurrentFilterWidget.value,
                     ),
                     SearchFilterChip(
                       icon: Icons.location_on_outlined,
                       onTap: showLocationPicker,
-                      label: 'search_filter_location'.tr(),
+                      label: 'search_filter_location'.t(context: context),
                       currentFilter: locationCurrentFilterWidget.value,
                     ),
                     SearchFilterChip(
                       icon: Icons.camera_alt_outlined,
                       onTap: showCameraPicker,
-                      label: 'camera'.tr(),
+                      label: 'camera'.t(context: context),
                       currentFilter: cameraCurrentFilterWidget.value,
                     ),
                     SearchFilterChip(
                       icon: Icons.date_range_outlined,
                       onTap: showDatePicker,
-                      label: 'search_filter_date'.tr(),
+                      label: 'search_filter_date'.t(context: context),
                       currentFilter: dateRangeCurrentFilterWidget.value,
                     ),
                     SearchFilterChip(
                       key: const Key('media_type_chip'),
                       icon: Icons.video_collection_outlined,
                       onTap: showMediaTypePicker,
-                      label: 'search_filter_media_type'.tr(),
+                      label: 'search_filter_media_type'.t(context: context),
                       currentFilter: mediaTypeCurrentFilterWidget.value,
                     ),
                     SearchFilterChip(
                       icon: Icons.display_settings_outlined,
                       onTap: showDisplayOptionPicker,
-                      label: 'search_filter_display_options'.tr(),
+                      label:
+                          'search_filter_display_options'.t(context: context),
                       currentFilter: displayOptionCurrentFilterWidget.value,
                     ),
                   ],
@@ -804,7 +815,7 @@ class _SearchEmptyContent extends StatelessWidget {
           const SizedBox(height: 16),
           Center(
             child: Text(
-              'search_page_search_photos_videos'.tr(),
+              'search_page_search_photos_videos'.t(context: context),
               style: context.textTheme.labelLarge,
             ),
           ),
@@ -848,21 +859,21 @@ class _QuickLinkList extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         children: [
           _QuickLink(
-            title: 'recently_taken'.tr(),
+            title: 'recently_taken'.t(context: context),
             icon: Icons.schedule_outlined,
             isTop: true,
-            onTap: () => context.pushRoute(const RecentlyTakenRoute()),
+            onTap: () => context.pushRoute(const DriftRecentlyTakenRoute()),
           ),
           _QuickLink(
-            title: 'videos'.tr(),
+            title: 'videos'.t(context: context),
             icon: Icons.play_circle_outline_rounded,
-            onTap: () => context.pushRoute(const AllVideosRoute()),
+            onTap: () => context.pushRoute(const DriftVideoRoute()),
           ),
           _QuickLink(
-            title: 'favorites'.tr(),
+            title: 'favorites'.t(context: context),
             icon: Icons.favorite_border_rounded,
             isBottom: true,
-            onTap: () => context.pushRoute(const FavoritesRoute()),
+            onTap: () => context.pushRoute(const DriftFavoriteRoute()),
           ),
         ],
       ),
