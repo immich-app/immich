@@ -33,7 +33,7 @@ class FavoriteBottomSheet extends ConsumerWidget {
       maxChildSize: 0.4,
       shouldCloseOnMinExtent: false,
       actions: [
-        const ShareActionButton(),
+        const ShareActionButton(source: ActionSource.timeline),
         if (multiselect.hasRemote) ...[
           const ShareLinkActionButton(source: ActionSource.timeline),
           const UnFavoriteActionButton(source: ActionSource.timeline),
