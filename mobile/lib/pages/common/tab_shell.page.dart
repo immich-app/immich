@@ -133,7 +133,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     return AutoTabsRouter(
       routes: [
         const MainTimelineRoute(),
-        SearchRoute(),
+        DriftSearchRoute(),
         const DriftAlbumsRoute(),
         const DriftLibraryRoute(),
       ],
