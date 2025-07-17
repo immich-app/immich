@@ -65,6 +65,7 @@ class DriftBackupService {
     }
 
     const batchSize = 100;
+    int count = 0;
     for (int i = 0; i < candidates.length; i += batchSize) {
       if (shouldCancel) {
         break;
@@ -81,7 +82,11 @@ class DriftBackupService {
       }
 
       if (tasks.isNotEmpty && !shouldCancel) {
+        count += tasks.length;
         _uploadService.enqueueTasks(tasks);
+        print(
+          "Enqueued $count/${candidates.length} tasks for backup",
+        );
       }
     }
   }

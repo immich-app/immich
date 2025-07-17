@@ -176,7 +176,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
           );
         });
 
-        socket.on('on_upload_success', _handleOnUploadSuccess);
+        // socket.on('on_upload_success', _handleOnUploadSuccess);
         socket.on('on_config_update', _handleOnConfigUpdate);
         socket.on('on_asset_delete', _handleOnAssetDelete);
         socket.on('on_asset_trash', _handleOnAssetTrash);
@@ -306,7 +306,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   Future<void> handlePendingChanges() async {
-    await _handlePendingUploaded();
+    // await _handlePendingUploaded();
     await _handlePendingDeletes();
     await _handlingPendingHidden();
     await _handlePendingTrashes();

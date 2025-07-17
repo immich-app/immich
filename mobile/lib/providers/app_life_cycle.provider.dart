@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
@@ -64,6 +65,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       }
 
       await _ref.read(serverInfoProvider.notifier).getServerVersion();
+
+      await FileDownloader().start();
     }
 
     switch (_ref.read(tabProvider)) {

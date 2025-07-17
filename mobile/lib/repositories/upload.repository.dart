@@ -9,15 +9,7 @@ class UploadRepository {
 
   void Function(TaskProgressUpdate)? onTaskProgress;
 
-  final taskQueue = MemoryTaskQueue();
-
   UploadRepository() {
-    taskQueue.minInterval = const Duration(milliseconds: 25);
-    taskQueue.maxConcurrent = 5;
-    taskQueue.maxConcurrentByHost = 5;
-    taskQueue.maxConcurrentByGroup = 5;
-
-    FileDownloader().addTaskQueue(taskQueue);
     FileDownloader().registerCallbacks(
       group: kBackupGroup,
       taskStatusCallback: (update) => onUploadStatus?.call(update),
@@ -28,16 +20,10 @@ class UploadRepository {
       taskStatusCallback: (update) => onUploadStatus?.call(update),
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
-
-    taskQueue.enqueueErrors.listen((error) {
-      // Handle errors from the task queue
-      // You can log them or take appropriate actions
-      print('Task Queue Error: $error');
-    });
   }
 
   void enqueueAll(List<UploadTask> tasks) {
-    taskQueue.addAll(tasks);
+    FileDownloader().enqueueAll(tasks);
   }
 
   Future<void> deleteAllTrackingRecords(String group) {
@@ -49,7 +35,6 @@ class UploadRepository {
   }
 
   Future<bool> cancelAll(String group) {
-    taskQueue.removeTasksWithGroup(group);
     return FileDownloader().cancelAll(group: group);
   }
 

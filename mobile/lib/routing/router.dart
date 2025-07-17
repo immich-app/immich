@@ -23,7 +23,7 @@ import 'package:immich_mobile/pages/album/album_viewer.page.dart';
 import 'package:immich_mobile/pages/albums/albums.page.dart';
 import 'package:immich_mobile/pages/backup/album_preview.page.dart';
 import 'package:immich_mobile/pages/backup/drift_backup_album_selection.page.dart';
-import 'package:immich_mobile/pages/backup/drift_backup_controller.page.dart';
+import 'package:immich_mobile/pages/backup/drift_backup.page.dart';
 import 'package:immich_mobile/pages/backup/backup_album_selection.page.dart';
 import 'package:immich_mobile/pages/backup/backup_controller.page.dart';
 import 'package:immich_mobile/pages/backup/backup_options.page.dart';

@@ -93,6 +93,13 @@ Future<void> initApp() async {
 
   initializeTimeZones();
 
+  // Initialize the file downloader
+
+  await FileDownloader().configure(
+    // maxConcurrent: 5, maxConcurrentByHost: 2, maxConcurrentByGroup: 3
+    globalConfig: (Config.holdingQueue, (5, 2, 3)),
+  );
+
   await FileDownloader().trackTasksInGroup(
     downloadGroupLivePhoto,
     markDownloadedComplete: false,

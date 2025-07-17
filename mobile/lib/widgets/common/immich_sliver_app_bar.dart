@@ -74,13 +74,15 @@ class ImmichSliverAppBar extends ConsumerWidget {
           ),
           IconButton(
             onPressed: () {
-              ref.read(backgroundSyncProvider).syncLocal(full: true);
-              ref.read(backgroundSyncProvider).syncRemote();
-
-              Future.delayed(
-                const Duration(seconds: 10),
-                () => ref.read(backgroundSyncProvider).hashAssets(),
-              );
+              Future.wait([
+                ref
+                    .read(backgroundSyncProvider)
+                    .syncLocal(full: true)
+                    .then((_) {
+                  ref.read(backgroundSyncProvider).hashAssets();
+                }),
+                ref.read(backgroundSyncProvider).syncRemote(),
+              ]);
             },
             icon: const Icon(
               Icons.sync,
@@ -206,7 +208,7 @@ class _BackupIndicator extends ConsumerWidget {
     final badgeBackground = context.colorScheme.surfaceContainer;
 
     return InkWell(
-      onTap: () => context.pushRoute(const BackupControllerRoute()),
+      onTap: () => context.pushRoute(const DriftBackupRoute()),
       borderRadius: const BorderRadius.all(Radius.circular(12)),
       child: Badge(
         label: Container(

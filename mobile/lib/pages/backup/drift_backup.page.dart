@@ -20,7 +20,7 @@ class DriftBackupPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     useEffect(
       () {
-        ref.read(expBackupProvider.notifier).getBackupStatus();
+        ref.read(driftBackupProvider.notifier).getBackupStatus();
         return null;
       },
       [],
@@ -34,7 +34,7 @@ class DriftBackupPage extends HookConsumerWidget {
         child: Column(
           children: [
             ElevatedButton(
-              onPressed: () => ref.read(expBackupProvider.notifier).backup(),
+              onPressed: () => ref.read(driftBackupProvider.notifier).backup(),
               child: const Text(
                 "backup_controller_page_start_backup",
                 style: TextStyle(
@@ -44,7 +44,7 @@ class DriftBackupPage extends HookConsumerWidget {
               ).tr(),
             ),
             OutlinedButton(
-              onPressed: () => ref.read(expBackupProvider.notifier).cancel(),
+              onPressed: () => ref.read(driftBackupProvider.notifier).cancel(),
               child: const Text(
                 "cancel",
                 style: TextStyle(
@@ -55,7 +55,7 @@ class DriftBackupPage extends HookConsumerWidget {
             ),
             OutlinedButton(
               onPressed: () =>
-                  ref.read(expBackupProvider.notifier).getDataInfo(),
+                  ref.read(driftBackupProvider.notifier).getDataInfo(),
               child: const Text(
                 "Get database info",
                 style: TextStyle(
@@ -65,7 +65,17 @@ class DriftBackupPage extends HookConsumerWidget {
               ).tr(),
             ),
             ElevatedButton(
-              onPressed: () => ref.read(expBackupProvider.notifier).resume(),
+              onPressed: () => ref.read(driftBackupProvider.notifier).pause(),
+              child: const Text(
+                "Pause",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ).tr(),
+            ),
+            ElevatedButton(
+              onPressed: () => ref.read(driftBackupProvider.notifier).resume(),
               child: const Text(
                 "Resume",
                 style: TextStyle(
@@ -125,7 +135,6 @@ class DriftBackupPage extends HookConsumerWidget {
                 const RemainderCard(),
                 const Divider(),
                 buildControlButtons(),
-                // const CurrentUploadingAssetInfoBox(),
               ],
             ),
           ),
@@ -243,7 +252,7 @@ class BackupAlbumSelectionCard extends ConsumerWidget {
         trailing: ElevatedButton(
           onPressed: () async {
             await context.pushRoute(const DriftBackupAlbumSelectionRoute());
-            ref.read(expBackupProvider.notifier).getBackupStatus();
+            ref.read(driftBackupProvider.notifier).getBackupStatus();
           },
           child: const Text(
             "select",
@@ -262,7 +271,8 @@ class TotalCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final totalCount = ref.watch(expBackupProvider.select((p) => p.totalCount));
+    final totalCount =
+        ref.watch(driftBackupProvider.select((p) => p.totalCount));
 
     return BackupInfoCard(
       title: "total".tr(),
@@ -278,7 +288,7 @@ class BackupCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final backupCount =
-        ref.watch(expBackupProvider.select((p) => p.backupCount));
+        ref.watch(driftBackupProvider.select((p) => p.backupCount));
 
     return BackupInfoCard(
       title: "backup_controller_page_backup".tr(),
@@ -294,7 +304,7 @@ class RemainderCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final remainderCount =
-        ref.watch(expBackupProvider.select((p) => p.remainderCount));
+        ref.watch(driftBackupProvider.select((p) => p.remainderCount));
     return BackupInfoCard(
       title: "backup_controller_page_remainder".tr(),
       subtitle: "backup_controller_page_remainder_sub".tr(),

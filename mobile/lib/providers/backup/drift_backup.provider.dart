@@ -154,7 +154,7 @@ class DriftBackupState {
   }
 }
 
-final expBackupProvider =
+final driftBackupProvider =
     StateNotifierProvider<ExpBackupNotifier, DriftBackupState>((ref) {
   return ExpBackupNotifier(
     ref.watch(driftBackupServiceProvider),
@@ -188,6 +188,9 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   void _handleTaskStatusUpdate(TaskStatusUpdate update) {
     switch (update.status) {
       case TaskStatus.complete:
+        // debugPrint(
+        //   "Task completed: ${update.task.displayName} : ${_uploadService.getActiveUploads()}",
+        // );
         state = state.copyWith(
           backupCount: state.backupCount + 1,
           remainderCount: state.remainderCount - 1,
@@ -202,8 +205,6 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   void _handleTaskProgressUpdate(TaskProgressUpdate update) {}
 
   Future<void> getBackupStatus() async {
-    // await _backgroundSyncManager.syncRemote();
-
     final [totalCount, backupCount, remainderCount] = await Future.wait([
       _backupService.getTotalCount(),
       _backupService.getBackupCount(),
@@ -241,7 +242,21 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> resume() async {
-    await FileDownloader().start();
+    final tasks = await FileDownloader().resumeAll(group: kBackupGroup);
+    if (tasks.isNotEmpty) {
+      debugPrint("Resumed tasks: ${tasks.length}");
+    } else {
+      debugPrint("No tasks to resume");
+    }
+  }
+
+  Future<void> pause() async {
+    final tasks = await FileDownloader().pauseAll(group: kBackupGroup);
+    if (tasks.isNotEmpty) {
+      debugPrint("Paused tasks: ${tasks.length}");
+    } else {
+      debugPrint("No tasks to pause");
+    }
   }
 
   @override

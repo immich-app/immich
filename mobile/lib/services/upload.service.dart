@@ -57,6 +57,15 @@ class UploadService {
     _taskProgressController.close();
   }
 
+  Future<List<Task>> getActiveUploads() async {
+    return await FileDownloader().allTasks(group: kBackupGroup);
+  }
+
+  Future<bool> hasActiveUploads() async {
+    final tasks = await getActiveUploads();
+    return tasks.isNotEmpty;
+  }
+
   Future<bool> cancelUpload(String id) {
     return FileDownloader().cancelTaskWithId(id);
   }
