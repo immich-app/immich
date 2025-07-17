@@ -508,3 +508,5 @@ If everything went well, you should now be able to access Immich with the new st
 
   </TabItem>
 </Tabs>
+
+</details>
