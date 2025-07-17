@@ -141,13 +141,15 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     state = AppLifeCycleEnum.paused;
     _wasPaused = true;
 
-    if (!Store.isBetaTimelineEnabled &&
-        _ref.read(authProvider).isAuthenticated) {
-      // Do not cancel backup if manual upload is in progress
-      if (_ref.read(backupProvider.notifier).backupProgress !=
-          BackUpProgressEnum.manualInProgress) {
-        _ref.read(backupProvider.notifier).cancelBackup();
+    if (_ref.read(authProvider).isAuthenticated) {
+      if (!Store.isBetaTimelineEnabled) {
+        // Do not cancel backup if manual upload is in progress
+        if (_ref.read(backupProvider.notifier).backupProgress !=
+            BackUpProgressEnum.manualInProgress) {
+          _ref.read(backupProvider.notifier).cancelBackup();
+        }
       }
+
       _ref.read(websocketProvider.notifier).disconnect();
     }
 
