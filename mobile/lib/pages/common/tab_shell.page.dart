@@ -9,7 +9,6 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/migration.dart';
@@ -36,44 +35,16 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
   Widget build(BuildContext context) {
     final isScreenLandscape = context.orientation == Orientation.landscape;
 
-    Widget buildIcon({required Widget icon, required bool isProcessing}) {
-      if (!isProcessing) return icon;
-      return Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          icon,
-          Positioned(
-            right: -18,
-            child: SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  context.primaryColor,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
 
-    final isSyncing =
-        ref.watch(syncStatusProvider.select((s) => s.isRemoteSyncing));
     final navigationDestinations = [
       NavigationDestination(
         label: 'photos'.tr(),
         icon: const Icon(
           Icons.photo_library_outlined,
         ),
-        selectedIcon: buildIcon(
-          isProcessing: isSyncing,
-          icon: Icon(
-            Icons.photo_library,
-            color: context.primaryColor,
-          ),
+        selectedIcon: Icon(
+          Icons.photo_library,
+          color: context.primaryColor,
         ),
       ),
       NavigationDestination(
@@ -91,12 +62,9 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         icon: const Icon(
           Icons.photo_album_outlined,
         ),
-        selectedIcon: buildIcon(
-          isProcessing: isSyncing,
-          icon: Icon(
-            Icons.photo_album_rounded,
-            color: context.primaryColor,
-          ),
+        selectedIcon: Icon(
+          Icons.photo_album_rounded,
+          color: context.primaryColor,
         ),
       ),
       NavigationDestination(
@@ -104,12 +72,9 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         icon: const Icon(
           Icons.space_dashboard_outlined,
         ),
-        selectedIcon: buildIcon(
-          isProcessing: false,
-          icon: Icon(
-            Icons.space_dashboard_rounded,
-            color: context.primaryColor,
-          ),
+        selectedIcon: Icon(
+          Icons.space_dashboard_rounded,
+          color: context.primaryColor,
         ),
       ),
     ];
