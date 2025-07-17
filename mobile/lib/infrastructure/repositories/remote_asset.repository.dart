@@ -129,7 +129,14 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<void> delete(List<String> ids) {
-    return _db.remoteAssetEntity.deleteWhere((row) => row.id.isIn(ids));
+    return _db.batch((batch) {
+      for (final id in ids) {
+        batch.deleteWhere(
+          _db.remoteAssetEntity,
+          (row) => row.id.equals(id),
+        );
+      }
+    });
   }
 
   Future<void> updateLocation(List<String> ids, LatLng location) {

@@ -155,14 +155,12 @@ class ActionService {
   }
 
   Future<int> removeFromAlbum(List<String> remoteIds, String albumId) async {
-    int removedCount = 0;
     final result = await _albumApiRepository.removeAssets(albumId, remoteIds);
 
     if (result.removed.isNotEmpty) {
-      removedCount =
-          await _remoteAlbumRepository.removeAssets(albumId, result.removed);
+      await _remoteAlbumRepository.removeAssets(albumId, result.removed);
     }
 
-    return removedCount;
+    return result.removed.length;
   }
 }

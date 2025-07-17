@@ -29,8 +29,14 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> deleteUsersV1(Iterable<SyncUserDeleteV1> data) async {
     try {
-      await _db.userEntity
-          .deleteWhere((row) => row.id.isIn(data.map((e) => e.userId)));
+      await _db.batch((batch) {
+        for (final user in data) {
+          batch.deleteWhere(
+            _db.userEntity,
+            (row) => row.id.equals(user.userId),
+          );
+        }
+      });
     } catch (error, stack) {
       _logger.severe('Error: SyncUserDeleteV1', error, stack);
       rethrow;
@@ -106,9 +112,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     String debugLabel = 'user',
   }) async {
     try {
-      await _db.remoteAssetEntity.deleteWhere(
-        (row) => row.id.isIn(data.map((e) => e.assetId)),
-      );
+      await _db.batch((batch) {
+        for (final asset in data) {
+          batch.deleteWhere(_db.remoteAssetEntity, (row) => row.id.equals(asset.assetId));
+        }
+      });
     } catch (error, stack) {
       _logger.severe('Error: deleteAssetsV1 - $debugLabel', error, stack);
       rethrow;
@@ -202,9 +210,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> deleteAlbumsV1(Iterable<SyncAlbumDeleteV1> data) async {
     try {
-      await _db.remoteAlbumEntity.deleteWhere(
-        (row) => row.id.isIn(data.map((e) => e.albumId)),
-      );
+      await _db.batch((batch) {
+        for (final album in data) {
+          batch.deleteWhere(_db.remoteAlbumEntity, (row) => row.id.equals(album.albumId));
+        }
+      });
     } catch (error, stack) {
       _logger.severe('Error: deleteAlbumsV1', error, stack);
       rethrow;
@@ -371,9 +381,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> deleteMemoriesV1(Iterable<SyncMemoryDeleteV1> data) async {
     try {
-      await _db.memoryEntity.deleteWhere(
-        (row) => row.id.isIn(data.map((e) => e.memoryId)),
-      );
+      await _db.batch((batch) {
+        for (final memory in data) {
+          batch.deleteWhere(_db.memoryEntity, (row) => row.id.equals(memory.memoryId));
+        }
+      });
     } catch (error, stack) {
       _logger.severe('Error: deleteMemoriesV1', error, stack);
       rethrow;
@@ -455,9 +467,14 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     String debugLabel = 'user',
   }) async {
     try {
-      await _db.stackEntity.deleteWhere(
-        (row) => row.id.isIn(data.map((e) => e.stackId)),
-      );
+      await _db.batch((batch) {
+        for (final stack in data) {
+          batch.deleteWhere(
+            _db.stackEntity,
+            (row) => row.id.equals(stack.stackId),
+          );
+        }
+      });
     } catch (error, stack) {
       _logger.severe('Error: deleteStacksV1 - $debugLabel', error, stack);
       rethrow;

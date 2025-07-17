@@ -121,10 +121,15 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         );
   }
 
-  Future<int> removeAssets(String albumId, List<String> assetIds) {
-    return _db.remoteAlbumAssetEntity.deleteWhere(
-      (tbl) => tbl.albumId.equals(albumId) & tbl.assetId.isIn(assetIds),
-    );
+  Future<void> removeAssets(String albumId, List<String> assetIds) {
+    return _db.batch((batch) {
+      for (final assetId in assetIds) {
+        batch.deleteWhere(
+          _db.remoteAlbumAssetEntity,
+          (row) => row.albumId.equals(albumId) & row.assetId.equals(assetId),
+        );
+      }
+    });
   }
 
   FutureOr<(DateTime, DateTime)> getDateRange(String albumId) {
@@ -160,6 +165,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
 
     final userIds = albumUserRows.map((row) => row.userId);
 
+    // TODO: remove this isIn() after removing UserDto
     return (_db.select(_db.userEntity)..where((row) => row.id.isIn(userIds)))
         .map(
           (user) => UserDto(
