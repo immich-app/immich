@@ -146,7 +146,7 @@ describe(AlbumService.name, () => {
 
       await sut.create(authStub.admin, {
         albumName: 'Empty album',
-        albumUsers: [{ userId: 'user-id', role: AlbumUserRole.EDITOR }],
+        albumUsers: [{ userId: 'user-id', role: AlbumUserRole.Editor }],
         description: '',
         assetIds: ['123'],
       });
@@ -160,13 +160,13 @@ describe(AlbumService.name, () => {
           albumThumbnailAssetId: '123',
         },
         ['123'],
-        [{ userId: 'user-id', role: AlbumUserRole.EDITOR }],
+        [{ userId: 'user-id', role: AlbumUserRole.Editor }],
       );
 
       expect(mocks.user.get).toHaveBeenCalledWith('user-id', {});
       expect(mocks.user.getMetadata).toHaveBeenCalledWith(authStub.admin.user.id);
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['123']), false);
-      expect(mocks.event.emit).toHaveBeenCalledWith('album.invite', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AlbumInvite', {
         id: albumStub.empty.id,
         userId: 'user-id',
       });
@@ -177,10 +177,10 @@ describe(AlbumService.name, () => {
       mocks.user.get.mockResolvedValue(userStub.user1);
       mocks.user.getMetadata.mockResolvedValue([
         {
-          key: UserMetadataKey.PREFERENCES,
+          key: UserMetadataKey.Preferences,
           value: {
             albums: {
-              defaultAssetOrder: AssetOrder.ASC,
+              defaultAssetOrder: AssetOrder.Asc,
             },
           },
         },
@@ -189,7 +189,7 @@ describe(AlbumService.name, () => {
 
       await sut.create(authStub.admin, {
         albumName: 'Empty album',
-        albumUsers: [{ userId: 'user-id', role: AlbumUserRole.EDITOR }],
+        albumUsers: [{ userId: 'user-id', role: AlbumUserRole.Editor }],
         description: '',
         assetIds: ['123'],
       });
@@ -203,13 +203,13 @@ describe(AlbumService.name, () => {
           albumThumbnailAssetId: '123',
         },
         ['123'],
-        [{ userId: 'user-id', role: AlbumUserRole.EDITOR }],
+        [{ userId: 'user-id', role: AlbumUserRole.Editor }],
       );
 
       expect(mocks.user.get).toHaveBeenCalledWith('user-id', {});
       expect(mocks.user.getMetadata).toHaveBeenCalledWith(authStub.admin.user.id);
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['123']), false);
-      expect(mocks.event.emit).toHaveBeenCalledWith('album.invite', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AlbumInvite', {
         id: albumStub.empty.id,
         userId: 'user-id',
       });
@@ -220,7 +220,7 @@ describe(AlbumService.name, () => {
       await expect(
         sut.create(authStub.admin, {
           albumName: 'Empty album',
-          albumUsers: [{ userId: 'user-3', role: AlbumUserRole.EDITOR }],
+          albumUsers: [{ userId: 'user-3', role: AlbumUserRole.Editor }],
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.user.get).toHaveBeenCalledWith('user-3', {});
@@ -262,7 +262,7 @@ describe(AlbumService.name, () => {
       await expect(
         sut.create(authStub.admin, {
           albumName: 'Empty album',
-          albumUsers: [{ userId: userStub.admin.id, role: AlbumUserRole.EDITOR }],
+          albumUsers: [{ userId: userStub.admin.id, role: AlbumUserRole.Editor }],
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.album.create).not.toHaveBeenCalled();
@@ -404,7 +404,7 @@ describe(AlbumService.name, () => {
       mocks.albumUser.create.mockResolvedValue({
         usersId: userStub.user2.id,
         albumsId: albumStub.sharedWithAdmin.id,
-        role: AlbumUserRole.EDITOR,
+        role: AlbumUserRole.Editor,
       });
       await sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, {
         albumUsers: [{ userId: authStub.user2.user.id }],
@@ -413,7 +413,7 @@ describe(AlbumService.name, () => {
         usersId: authStub.user2.user.id,
         albumsId: albumStub.sharedWithAdmin.id,
       });
-      expect(mocks.event.emit).toHaveBeenCalledWith('album.invite', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AlbumInvite', {
         id: albumStub.sharedWithAdmin.id,
         userId: userStub.user2.id,
       });
@@ -512,11 +512,11 @@ describe(AlbumService.name, () => {
       mocks.albumUser.update.mockResolvedValue(null as any);
 
       await sut.updateUser(authStub.user1, albumStub.sharedWithAdmin.id, userStub.admin.id, {
-        role: AlbumUserRole.EDITOR,
+        role: AlbumUserRole.Editor,
       });
       expect(mocks.albumUser.update).toHaveBeenCalledWith(
         { albumsId: albumStub.sharedWithAdmin.id, usersId: userStub.admin.id },
-        { role: AlbumUserRole.EDITOR },
+        { role: AlbumUserRole.Editor },
       );
     });
   });
@@ -585,7 +585,7 @@ describe(AlbumService.name, () => {
       expect(mocks.access.album.checkSharedAlbumAccess).toHaveBeenCalledWith(
         authStub.user1.user.id,
         new Set(['album-123']),
-        AlbumUserRole.VIEWER,
+        AlbumUserRole.Viewer,
       );
     });
 
@@ -596,7 +596,7 @@ describe(AlbumService.name, () => {
       expect(mocks.access.album.checkSharedAlbumAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
         new Set(['album-123']),
-        AlbumUserRole.VIEWER,
+        AlbumUserRole.Viewer,
       );
     });
   });
@@ -662,7 +662,7 @@ describe(AlbumService.name, () => {
         albumThumbnailAssetId: 'asset-1',
       });
       expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
-      expect(mocks.event.emit).toHaveBeenCalledWith('album.update', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: 'album-123',
         recipientId: 'admin_id',
       });

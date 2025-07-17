@@ -49,7 +49,7 @@ describe(TimelineService.name, () => {
       await expect(
         sut.getTimeBucket(authStub.admin, {
           timeBucket: 'bucket',
-          visibility: AssetVisibility.ARCHIVE,
+          visibility: AssetVisibility.Archive,
           userId: authStub.admin.user.id,
         }),
       ).resolves.toEqual(json);
@@ -57,7 +57,7 @@ describe(TimelineService.name, () => {
         'bucket',
         expect.objectContaining({
           timeBucket: 'bucket',
-          visibility: AssetVisibility.ARCHIVE,
+          visibility: AssetVisibility.Archive,
           userIds: [authStub.admin.user.id],
         }),
       );
@@ -71,14 +71,14 @@ describe(TimelineService.name, () => {
       await expect(
         sut.getTimeBucket(authStub.admin, {
           timeBucket: 'bucket',
-          visibility: AssetVisibility.TIMELINE,
+          visibility: AssetVisibility.Timeline,
           userId: authStub.admin.user.id,
           withPartners: true,
         }),
       ).resolves.toEqual(json);
       expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith('bucket', {
         timeBucket: 'bucket',
-        visibility: AssetVisibility.TIMELINE,
+        visibility: AssetVisibility.Timeline,
         withPartners: true,
         userIds: [authStub.admin.user.id],
       });
@@ -126,7 +126,7 @@ describe(TimelineService.name, () => {
       await expect(
         sut.getTimeBucket(authStub.admin, {
           timeBucket: 'bucket',
-          visibility: AssetVisibility.ARCHIVE,
+          visibility: AssetVisibility.Archive,
           withPartners: true,
           userId: authStub.admin.user.id,
         }),

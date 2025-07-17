@@ -12,7 +12,7 @@ const DAYS = 3;
 
 @Injectable()
 export class MemoryService extends BaseService {
-  @OnJob({ name: JobName.MEMORIES_CREATE, queue: QueueName.BACKGROUND_TASK })
+  @OnJob({ name: JobName.MemoryGenerate, queue: QueueName.BackgroundTask })
   async onMemoriesCreate() {
     const users = await this.userRepository.getList({ withDeleted: false });
     const usersIds = await Promise.all(
@@ -26,7 +26,7 @@ export class MemoryService extends BaseService {
     );
 
     await this.databaseRepository.withLock(DatabaseLock.MemoryCreation, async () => {
-      const state = await this.systemMetadataRepository.get(SystemMetadataKey.MEMORIES_STATE);
+      const state = await this.systemMetadataRepository.get(SystemMetadataKey.MemoriesState);
       const start = DateTime.utc().startOf('day').minus({ days: DAYS });
       const lastOnThisDayDate = state?.lastOnThisDayDate ? DateTime.fromISO(state.lastOnThisDayDate) : start;
 
@@ -43,7 +43,7 @@ export class MemoryService extends BaseService {
           this.logger.error(`Failed to create memories for ${target.toISO()}`, error);
         }
         // update system metadata even when there is an error to minimize the chance of duplicates
-        await this.systemMetadataRepository.set(SystemMetadataKey.MEMORIES_STATE, {
+        await this.systemMetadataRepository.set(SystemMetadataKey.MemoriesState, {
           ...state,
           lastOnThisDayDate: target.toISO(),
         });
@@ -60,7 +60,7 @@ export class MemoryService extends BaseService {
         this.memoryRepository.create(
           {
             ownerId,
-            type: MemoryType.ON_THIS_DAY,
+            type: MemoryType.OnThisDay,
             data: { year },
             memoryAt: target.set({ year }).toISO()!,
             showAt,
@@ -72,7 +72,7 @@ export class MemoryService extends BaseService {
     );
   }
 
-  @OnJob({ name: JobName.MEMORIES_CLEANUP, queue: QueueName.BACKGROUND_TASK })
+  @OnJob({ name: JobName.MemoryCleanup, queue: QueueName.BackgroundTask })
   async onMemoriesCleanup() {
     await this.memoryRepository.cleanup();
   }
@@ -87,7 +87,7 @@ export class MemoryService extends BaseService {
   }
 
   async get(auth: AuthDto, id: string): Promise<MemoryResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.MEMORY_READ, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MemoryRead, ids: [id] });
     const memory = await this.findOrFail(id);
     return mapMemory(memory, auth);
   }
@@ -98,7 +98,7 @@ export class MemoryService extends BaseService {
     const assetIds = dto.assetIds || [];
     const allowedAssetIds = await this.checkAccess({
       auth,
-      permission: Permission.ASSET_SHARE,
+      permission: Permission.AssetShare,
       ids: assetIds,
     });
     const memory = await this.memoryRepository.create(
@@ -117,7 +117,7 @@ export class MemoryService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: MemoryUpdateDto): Promise<MemoryResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.MEMORY_UPDATE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MemoryUpdate, ids: [id] });
 
     const memory = await this.memoryRepository.update(id, {
       isSaved: dto.isSaved,
@@ -129,12 +129,12 @@ export class MemoryService extends BaseService {
   }
 
   async remove(auth: AuthDto, id: string): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.MEMORY_DELETE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MemoryDelete, ids: [id] });
     await this.memoryRepository.delete(id);
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await this.requireAccess({ auth, permission: Permission.MEMORY_READ, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MemoryRead, ids: [id] });
 
     const repos = { access: this.accessRepository, bulk: this.memoryRepository };
     const results = await addAssets(auth, repos, { parentId: id, assetIds: dto.ids });
@@ -148,13 +148,13 @@ export class MemoryService extends BaseService {
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await this.requireAccess({ auth, permission: Permission.MEMORY_UPDATE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.MemoryUpdate, ids: [id] });
 
     const repos = { access: this.accessRepository, bulk: this.memoryRepository };
     const results = await removeAssets(auth, repos, {
       parentId: id,
       assetIds: dto.ids,
-      canAlwaysRemove: Permission.MEMORY_DELETE,
+      canAlwaysRemove: Permission.MemoryDelete,
     });
 
     const hasSuccess = results.find(({ success }) => success);

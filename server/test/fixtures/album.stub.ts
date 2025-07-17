@@ -19,7 +19,7 @@ export const albumStub = {
     sharedLinks: [],
     albumUsers: [],
     isActivityEnabled: true,
-    order: AssetOrder.DESC,
+    order: AssetOrder.Desc,
     updateId: '42',
   }),
   sharedWithUser: Object.freeze({
@@ -38,11 +38,11 @@ export const albumStub = {
     albumUsers: [
       {
         user: userStub.user1,
-        role: AlbumUserRole.EDITOR,
+        role: AlbumUserRole.Editor,
       },
     ],
     isActivityEnabled: true,
-    order: AssetOrder.DESC,
+    order: AssetOrder.Desc,
     updateId: '42',
   }),
   sharedWithMultiple: Object.freeze({
@@ -61,15 +61,15 @@ export const albumStub = {
     albumUsers: [
       {
         user: userStub.user1,
-        role: AlbumUserRole.EDITOR,
+        role: AlbumUserRole.Editor,
       },
       {
         user: userStub.user2,
-        role: AlbumUserRole.EDITOR,
+        role: AlbumUserRole.Editor,
       },
     ],
     isActivityEnabled: true,
-    order: AssetOrder.DESC,
+    order: AssetOrder.Desc,
     updateId: '42',
   }),
   sharedWithAdmin: Object.freeze({
@@ -88,11 +88,11 @@ export const albumStub = {
     albumUsers: [
       {
         user: userStub.admin,
-        role: AlbumUserRole.EDITOR,
+        role: AlbumUserRole.Editor,
       },
     ],
     isActivityEnabled: true,
-    order: AssetOrder.DESC,
+    order: AssetOrder.Desc,
     updateId: '42',
   }),
   oneAsset: Object.freeze({
@@ -110,7 +110,7 @@ export const albumStub = {
     sharedLinks: [],
     albumUsers: [],
     isActivityEnabled: true,
-    order: AssetOrder.DESC,
+    order: AssetOrder.Desc,
     updateId: '42',
   }),
   twoAssets: Object.freeze({
@@ -128,7 +128,7 @@ export const albumStub = {
     sharedLinks: [],
     albumUsers: [],
     isActivityEnabled: true,
-    order: AssetOrder.DESC,
+    order: AssetOrder.Desc,
     updateId: '42',
   }),
   emptyWithValidThumbnail: Object.freeze({
@@ -146,7 +146,7 @@ export const albumStub = {
     sharedLinks: [],
     albumUsers: [],
     isActivityEnabled: true,
-    order: AssetOrder.DESC,
+    order: AssetOrder.Desc,
     updateId: '42',
   }),
 };

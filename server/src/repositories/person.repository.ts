@@ -151,7 +151,7 @@ export class PersonRepository {
       .innerJoin('asset', (join) =>
         join
           .onRef('asset_face.assetId', '=', 'asset.id')
-          .on('asset.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
+          .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
           .on('asset.deletedAt', 'is', null),
       )
       .where('person.ownerId', '=', userId)
@@ -276,7 +276,7 @@ export class PersonRepository {
           .selectFrom('asset_file')
           .select('asset_file.path')
           .whereRef('asset_file.assetId', '=', 'asset.id')
-          .where('asset_file.type', '=', sql.lit(AssetFileType.PREVIEW))
+          .where('asset_file.type', '=', sql.lit(AssetFileType.Preview))
           .as('previewPath'),
       )
       .where('person.id', '=', id)
@@ -341,7 +341,7 @@ export class PersonRepository {
         join
           .onRef('asset.id', '=', 'asset_face.assetId')
           .on('asset_face.personId', '=', personId)
-          .on('asset.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
+          .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
           .on('asset.deletedAt', 'is', null),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['asset.id'])).as('count'))
@@ -369,7 +369,7 @@ export class PersonRepository {
                 eb
                   .selectFrom('asset')
                   .whereRef('asset.id', '=', 'asset_face.assetId')
-                  .where('asset.visibility', '=', sql.lit(AssetVisibility.TIMELINE))
+                  .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
                   .where('asset.deletedAt', 'is', null),
               ),
             ),

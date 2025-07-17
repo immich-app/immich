@@ -154,7 +154,7 @@ describe(AuthService.name, () => {
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
 
-      await expect(sut.logout(auth, AuthType.OAUTH)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
         successful: true,
         redirectUri: 'http://end-session-endpoint',
       });
@@ -163,7 +163,7 @@ describe(AuthService.name, () => {
     it('should return the default redirect', async () => {
       const auth = factory.auth();
 
-      await expect(sut.logout(auth, AuthType.PASSWORD)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.Password)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });
@@ -173,19 +173,19 @@ describe(AuthService.name, () => {
       const auth = { user: { id: '123' }, session: { id: 'token123' } } as AuthDto;
       mocks.session.delete.mockResolvedValue();
 
-      await expect(sut.logout(auth, AuthType.PASSWORD)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.Password)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });
 
       expect(mocks.session.delete).toHaveBeenCalledWith('token123');
-      expect(mocks.event.emit).toHaveBeenCalledWith('session.delete', { sessionId: 'token123' });
+      expect(mocks.event.emit).toHaveBeenCalledWith('SessionDelete', { sessionId: 'token123' });
     });
 
     it('should return the default redirect if auth type is OAUTH but oauth is not enabled', async () => {
       const auth = { user: { id: '123' } } as AuthDto;
 
-      await expect(sut.logout(auth, AuthType.OAUTH)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });
@@ -463,7 +463,7 @@ describe(AuthService.name, () => {
         sut.authenticate({
           headers: { 'x-api-key': 'auth_token' },
           queryParams: {},
-          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test', permission: Permission.ASSET_READ },
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test', permission: Permission.AssetRead },
         }),
       ).rejects.toBeInstanceOf(ForbiddenException);
     });

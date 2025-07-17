@@ -27,7 +27,7 @@ describe(LibraryService.name, () => {
     ({ sut, mocks } = newTestService(LibraryService, {}));
 
     mocks.database.tryLock.mockResolvedValue(true);
-    mocks.config.getWorker.mockReturnValue(ImmichWorker.MICROSERVICES);
+    mocks.config.getWorker.mockReturnValue(ImmichWorker.Microservices);
   });
 
   it('should work', () => {
@@ -173,7 +173,7 @@ describe(LibraryService.name, () => {
       await sut.handleQueueSyncFiles({ id: library.id });
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LIBRARY_SYNC_FILES,
+        name: JobName.LibrarySyncFiles,
         data: {
           libraryId: library.id,
           paths: ['/data/user1/photo.jpg'],
@@ -185,7 +185,7 @@ describe(LibraryService.name, () => {
     it('should fail when library is not found', async () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
-      await expect(sut.handleQueueSyncFiles({ id: library.id })).resolves.toBe(JobStatus.SKIPPED);
+      await expect(sut.handleQueueSyncFiles({ id: library.id })).resolves.toBe(JobStatus.Skipped);
     });
 
     it('should ignore import paths that do not exist', async () => {
@@ -228,7 +228,7 @@ describe(LibraryService.name, () => {
       await sut.handleQueueSyncFiles({ id: library.id });
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LIBRARY_SYNC_FILES,
+        name: JobName.LibrarySyncFiles,
         data: {
           libraryId: library.id,
           paths: ['/data/user1/photo.jpg'],
@@ -240,7 +240,7 @@ describe(LibraryService.name, () => {
     it("should fail when library can't be found", async () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
-      await expect(sut.handleQueueSyncFiles({ id: library.id })).resolves.toBe(JobStatus.SKIPPED);
+      await expect(sut.handleQueueSyncFiles({ id: library.id })).resolves.toBe(JobStatus.Skipped);
     });
 
     it('should ignore import paths that do not exist', async () => {
@@ -282,7 +282,7 @@ describe(LibraryService.name, () => {
 
       const response = await sut.handleQueueSyncAssets({ id: library.id });
 
-      expect(response).toBe(JobStatus.SUCCESS);
+      expect(response).toBe(JobStatus.Success);
       expect(mocks.asset.detectOfflineExternalAssets).toHaveBeenCalledWith(
         library.id,
         library.importPaths,
@@ -300,7 +300,7 @@ describe(LibraryService.name, () => {
 
       const response = await sut.handleQueueSyncAssets({ id: library.id });
 
-      expect(response).toBe(JobStatus.SUCCESS);
+      expect(response).toBe(JobStatus.Success);
       expect(mocks.asset.detectOfflineExternalAssets).not.toHaveBeenCalled();
     });
 
@@ -317,7 +317,7 @@ describe(LibraryService.name, () => {
       const response = await sut.handleQueueSyncAssets({ id: library.id });
 
       expect(mocks.job.queue).toBeCalledWith({
-        name: JobName.LIBRARY_SYNC_ASSETS,
+        name: JobName.LibrarySyncAssets,
         data: {
           libraryId: library.id,
           importPaths: library.importPaths,
@@ -328,7 +328,7 @@ describe(LibraryService.name, () => {
         },
       });
 
-      expect(response).toBe(JobStatus.SUCCESS);
+      expect(response).toBe(JobStatus.Success);
       expect(mocks.asset.detectOfflineExternalAssets).toHaveBeenCalledWith(
         library.id,
         library.importPaths,
@@ -337,7 +337,7 @@ describe(LibraryService.name, () => {
     });
 
     it("should fail if library can't be found", async () => {
-      await expect(sut.handleQueueSyncAssets({ id: newUuid() })).resolves.toBe(JobStatus.SKIPPED);
+      await expect(sut.handleQueueSyncAssets({ id: newUuid() })).resolves.toBe(JobStatus.Skipped);
     });
   });
 
@@ -355,7 +355,7 @@ describe(LibraryService.name, () => {
       mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.external]);
       mocks.storage.stat.mockRejectedValue(new Error('ENOENT, no such file or directory'));
 
-      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
       expect(mocks.asset.updateAll).toHaveBeenCalledWith([assetStub.external.id], {
         isOffline: true,
@@ -376,7 +376,7 @@ describe(LibraryService.name, () => {
       mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.external]);
       mocks.storage.stat.mockRejectedValue(new Error('Could not read file'));
 
-      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
       expect(mocks.asset.updateAll).toHaveBeenCalledWith([assetStub.external.id], {
         isOffline: true,
@@ -397,7 +397,7 @@ describe(LibraryService.name, () => {
       mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.trashedOffline]);
       mocks.storage.stat.mockRejectedValue(new Error('Could not read file'));
 
-      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
       expect(mocks.asset.updateAll).not.toHaveBeenCalled();
     });
@@ -415,7 +415,7 @@ describe(LibraryService.name, () => {
       mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.trashedOffline]);
       mocks.storage.stat.mockResolvedValue({ mtime: assetStub.external.fileModifiedAt } as Stats);
 
-      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
       expect(mocks.asset.updateAll).toHaveBeenCalledWith([assetStub.external.id], {
         isOffline: false,
@@ -436,7 +436,7 @@ describe(LibraryService.name, () => {
       mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.trashedOffline]);
       mocks.storage.stat.mockResolvedValue({ mtime: assetStub.external.fileModifiedAt } as Stats);
 
-      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
       expect(mocks.asset.updateAll).not.toHaveBeenCalled();
 
@@ -456,7 +456,7 @@ describe(LibraryService.name, () => {
       mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.trashedOffline]);
       mocks.storage.stat.mockResolvedValue({ mtime: assetStub.external.fileModifiedAt } as Stats);
 
-      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
       expect(mocks.asset.updateAll).not.toHaveBeenCalled();
 
@@ -476,7 +476,7 @@ describe(LibraryService.name, () => {
       mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.external]);
       mocks.storage.stat.mockResolvedValue({ mtime: assetStub.external.fileModifiedAt } as Stats);
 
-      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
       expect(mocks.asset.updateAll).not.toHaveBeenCalled();
     });
@@ -494,7 +494,7 @@ describe(LibraryService.name, () => {
       mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.trashedOffline]);
       mocks.storage.stat.mockResolvedValue({ mtime: assetStub.trashedOffline.fileModifiedAt } as Stats);
 
-      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
       expect(mocks.asset.updateAll).toHaveBeenCalledWith(
         [assetStub.trashedOffline.id],
@@ -523,11 +523,11 @@ describe(LibraryService.name, () => {
       mocks.assetJob.getForSyncAssets.mockResolvedValue([assetStub.external]);
       mocks.storage.stat.mockResolvedValue({ mtime } as Stats);
 
-      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.Success);
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.SIDECAR_DISCOVERY,
+          name: JobName.SidecarDiscovery,
           data: {
             id: assetStub.external.id,
             source: 'upload',
@@ -557,7 +557,7 @@ describe(LibraryService.name, () => {
       mocks.asset.createAll.mockResolvedValue([assetStub.image]);
       mocks.library.get.mockResolvedValue(library);
 
-      await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
 
       expect(mocks.asset.createAll).toHaveBeenCalledWith([
         expect.objectContaining({
@@ -565,7 +565,7 @@ describe(LibraryService.name, () => {
           libraryId: library.id,
           originalPath: '/data/user1/photo.jpg',
           deviceId: 'Library Import',
-          type: AssetType.IMAGE,
+          type: AssetType.Image,
           originalFileName: 'photo.jpg',
           isExternal: true,
         }),
@@ -573,7 +573,7 @@ describe(LibraryService.name, () => {
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.SIDECAR_DISCOVERY,
+          name: JobName.SidecarDiscovery,
           data: {
             id: assetStub.image.id,
             source: 'upload',
@@ -592,7 +592,7 @@ describe(LibraryService.name, () => {
 
       mocks.library.get.mockResolvedValue(library);
 
-      await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.FAILED);
+      await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Failed);
 
       expect(mocks.asset.createAll.mock.calls).toEqual([]);
     });
@@ -607,7 +607,7 @@ describe(LibraryService.name, () => {
 
       await sut.delete(library.id);
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.LIBRARY_DELETE, data: { id: library.id } });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.LibraryDelete, data: { id: library.id } });
       expect(mocks.library.softDelete).toHaveBeenCalledWith(library.id);
     });
 
@@ -620,7 +620,7 @@ describe(LibraryService.name, () => {
       await sut.delete(library.id);
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LIBRARY_DELETE,
+        name: JobName.LibraryDelete,
         data: { id: library.id },
       });
 
@@ -838,11 +838,11 @@ describe(LibraryService.name, () => {
       const library2 = factory.library({ deletedAt: new Date() });
 
       mocks.library.getAllDeleted.mockResolvedValue([library1, library2]);
-      await expect(sut.handleQueueCleanup()).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleQueueCleanup()).resolves.toBe(JobStatus.Success);
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.LIBRARY_DELETE, data: { id: library1.id } },
-        { name: JobName.LIBRARY_DELETE, data: { id: library2.id } },
+        { name: JobName.LibraryDelete, data: { id: library1.id } },
+        { name: JobName.LibraryDelete, data: { id: library2.id } },
       ]);
     });
   });
@@ -968,7 +968,7 @@ describe(LibraryService.name, () => {
         await sut.watchAll();
 
         expect(mocks.job.queue).toHaveBeenCalledWith({
-          name: JobName.LIBRARY_SYNC_FILES,
+          name: JobName.LibrarySyncFiles,
           data: {
             libraryId: library.id,
             paths: ['/foo/photo.jpg'],
@@ -989,7 +989,7 @@ describe(LibraryService.name, () => {
         await sut.watchAll();
 
         expect(mocks.job.queue).toHaveBeenCalledWith({
-          name: JobName.LIBRARY_SYNC_FILES,
+          name: JobName.LibrarySyncFiles,
           data: {
             libraryId: library.id,
             paths: ['/foo/photo.jpg'],
@@ -1010,7 +1010,7 @@ describe(LibraryService.name, () => {
         await sut.watchAll();
 
         expect(mocks.job.queue).toHaveBeenCalledWith({
-          name: JobName.LIBRARY_ASSET_REMOVAL,
+          name: JobName.LibraryRemoveAsset,
           data: {
             libraryId: library.id,
             paths: [assetStub.image.originalPath],
@@ -1106,7 +1106,7 @@ describe(LibraryService.name, () => {
       mocks.library.get.mockResolvedValue(library);
       mocks.library.streamAssetIds.mockReturnValue(makeStream([]));
 
-      await expect(sut.handleDeleteLibrary({ id: library.id })).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleDeleteLibrary({ id: library.id })).resolves.toBe(JobStatus.Success);
 
       expect(mocks.library.delete).toHaveBeenCalled();
     });
@@ -1117,7 +1117,7 @@ describe(LibraryService.name, () => {
       mocks.library.get.mockResolvedValue(library);
       mocks.library.streamAssetIds.mockReturnValue(makeStream([assetStub.image1]));
 
-      await expect(sut.handleDeleteLibrary({ id: library.id })).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleDeleteLibrary({ id: library.id })).resolves.toBe(JobStatus.Success);
     });
   });
 
@@ -1131,11 +1131,11 @@ describe(LibraryService.name, () => {
 
       expect(mocks.job.queue).toHaveBeenCalledTimes(2);
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LIBRARY_QUEUE_SYNC_FILES,
+        name: JobName.LibrarySyncFilesQueueAll,
         data: { id: library.id },
       });
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LIBRARY_QUEUE_SYNC_ASSETS,
+        name: JobName.LibrarySyncAssetsQueueAll,
         data: { id: library.id },
       });
     });
@@ -1147,14 +1147,14 @@ describe(LibraryService.name, () => {
 
       mocks.library.getAll.mockResolvedValue([library]);
 
-      await expect(sut.handleQueueScanAll()).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleQueueScanAll()).resolves.toBe(JobStatus.Success);
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LIBRARY_QUEUE_CLEANUP,
+        name: JobName.LibraryDeleteCheck,
         data: {},
       });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.LIBRARY_QUEUE_SYNC_FILES, data: { id: library.id } },
+        { name: JobName.LibrarySyncFilesQueueAll, data: { id: library.id } },
       ]);
     });
   });

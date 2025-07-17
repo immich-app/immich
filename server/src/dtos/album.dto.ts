@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayNotEmpty, IsArray, IsEnum, IsString, ValidateNested } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsString, ValidateNested } from 'class-validator';
 import _ from 'lodash';
 import { AlbumUser, AuthSharedLink, User } from 'src/database';
 import { AssetResponseDto, MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AlbumUserRole, AssetOrder } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class AlbumInfoDto {
   @ValidateBoolean({ optional: true })
@@ -18,8 +18,7 @@ export class AlbumUserAddDto {
   @ValidateUUID()
   userId!: string;
 
-  @IsEnum(AlbumUserRole)
-  @ApiProperty({ enum: AlbumUserRole, enumName: 'AlbumUserRole', default: AlbumUserRole.EDITOR })
+  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole', default: AlbumUserRole.Editor })
   role?: AlbumUserRole;
 }
 
@@ -32,8 +31,7 @@ export class AlbumUserCreateDto {
   @ValidateUUID()
   userId!: string;
 
-  @IsEnum(AlbumUserRole)
-  @ApiProperty({ enum: AlbumUserRole, enumName: 'AlbumUserRole' })
+  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
 }
 
@@ -71,9 +69,7 @@ export class UpdateAlbumDto {
   @ValidateBoolean({ optional: true })
   isActivityEnabled?: boolean;
 
-  @IsEnum(AssetOrder)
-  @Optional()
-  @ApiProperty({ enum: AssetOrder, enumName: 'AssetOrder' })
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
   order?: AssetOrder;
 }
 
@@ -107,14 +103,13 @@ export class AlbumStatisticsResponseDto {
 }
 
 export class UpdateAlbumUserDto {
-  @IsEnum(AlbumUserRole)
-  @ApiProperty({ enum: AlbumUserRole, enumName: 'AlbumUserRole' })
+  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
 }
 
 export class AlbumUserResponseDto {
   user!: UserResponseDto;
-  @ApiProperty({ enum: AlbumUserRole, enumName: 'AlbumUserRole' })
+  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
 }
 
@@ -137,8 +132,7 @@ export class AlbumResponseDto {
   startDate?: Date;
   endDate?: Date;
   isActivityEnabled!: boolean;
-  @Optional()
-  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
   order?: AssetOrder;
 }
 

@@ -34,9 +34,9 @@ type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];
 
 const cacheControlHeaders: Record<CacheControl, string | null> = {
-  [CacheControl.PRIVATE_WITH_CACHE]: 'private, max-age=86400, no-transform',
-  [CacheControl.PRIVATE_WITHOUT_CACHE]: 'private, no-cache, no-transform',
-  [CacheControl.NONE]: null, // falsy value to prevent adding Cache-Control header
+  [CacheControl.PrivateWithCache]: 'private, max-age=86400, no-transform',
+  [CacheControl.PrivateWithoutCache]: 'private, no-cache, no-transform',
+  [CacheControl.None]: null, // falsy value to prevent adding Cache-Control header
 };
 
 export const sendFile = async (

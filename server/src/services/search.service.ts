@@ -46,7 +46,7 @@ export class SearchService extends BaseService {
   }
 
   async searchMetadata(auth: AuthDto, dto: MetadataSearchDto): Promise<SearchResponseDto> {
-    if (dto.visibility === AssetVisibility.LOCKED) {
+    if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
     }
 
@@ -65,7 +65,7 @@ export class SearchService extends BaseService {
         ...dto,
         checksum,
         userIds,
-        orderDirection: dto.order ?? AssetOrder.DESC,
+        orderDirection: dto.order ?? AssetOrder.Desc,
       },
     );
 
@@ -82,7 +82,7 @@ export class SearchService extends BaseService {
   }
 
   async searchRandom(auth: AuthDto, dto: RandomSearchDto): Promise<AssetResponseDto[]> {
-    if (dto.visibility === AssetVisibility.LOCKED) {
+    if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
     }
 
@@ -92,7 +92,7 @@ export class SearchService extends BaseService {
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
-    if (dto.visibility === AssetVisibility.LOCKED) {
+    if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
     }
 

@@ -21,12 +21,21 @@
       html {
         height: 100%;
         width: 100%;
+        background-color: rgb(255, 255, 255);
+      }
+
+      html.dark {
+        background-color: rgb(10, 10, 10);
       }
 
       body,
       html {
         margin: 0;
         padding: 0;
+      }
+
+      body {
+        transition: background-color 0.15s ease;
       }
 
       @keyframes delayedVisibility {

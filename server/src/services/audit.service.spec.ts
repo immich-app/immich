@@ -18,7 +18,7 @@ describe(AuditService.name, () => {
     it('should delete old audit entries', async () => {
       mocks.audit.removeBefore.mockResolvedValue();
 
-      await expect(sut.handleCleanup()).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleCleanup()).resolves.toBe(JobStatus.Success);
 
       expect(mocks.audit.removeBefore).toHaveBeenCalledWith(expect.any(Date));
     });

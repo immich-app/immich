@@ -106,9 +106,9 @@ export class AssetMediaService extends BaseService {
   getUploadFolder({ auth, fieldName, file }: UploadRequest): string {
     auth = requireUploadAccess(auth);
 
-    let folder = StorageCore.getNestedFolder(StorageFolder.UPLOAD, auth.user.id, file.uuid);
+    let folder = StorageCore.getNestedFolder(StorageFolder.Upload, auth.user.id, file.uuid);
     if (fieldName === UploadFieldName.PROFILE_DATA) {
-      folder = StorageCore.getFolderLocation(StorageFolder.PROFILE, auth.user.id);
+      folder = StorageCore.getFolderLocation(StorageFolder.Profile, auth.user.id);
     }
 
     this.storageRepository.mkdirSync(folder);
@@ -121,7 +121,7 @@ export class AssetMediaService extends BaseService {
     const uploadFolder = this.getUploadFolder(asRequest(request, file));
     const uploadPath = `${uploadFolder}/${uploadFilename}`;
 
-    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [uploadPath] } });
+    await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [uploadPath] } });
   }
 
   async uploadAsset(
@@ -133,7 +133,7 @@ export class AssetMediaService extends BaseService {
     try {
       await this.requireAccess({
         auth,
-        permission: Permission.ASSET_UPLOAD,
+        permission: Permission.AssetUpload,
         // do not need an id here, but the interface requires it
         ids: [auth.user.id],
       });
@@ -164,7 +164,7 @@ export class AssetMediaService extends BaseService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     try {
-      await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: [id] });
+      await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
       const asset = await this.assetRepository.getById(id);
 
       if (!asset) {
@@ -179,8 +179,8 @@ export class AssetMediaService extends BaseService {
       // but the local variable holds the original file data paths.
       const copiedPhoto = await this.createCopy(asset);
       // and immediate trash it
-      await this.assetRepository.updateAll([copiedPhoto.id], { deletedAt: new Date(), status: AssetStatus.TRASHED });
-      await this.eventRepository.emit('asset.trash', { assetId: copiedPhoto.id, userId: auth.user.id });
+      await this.assetRepository.updateAll([copiedPhoto.id], { deletedAt: new Date(), status: AssetStatus.Trashed });
+      await this.eventRepository.emit('AssetTrash', { assetId: copiedPhoto.id, userId: auth.user.id });
 
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
@@ -191,14 +191,14 @@ export class AssetMediaService extends BaseService {
   }
 
   async downloadOriginal(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
     const asset = await this.findOrFail(id);
 
     return new ImmichFileResponse({
       path: asset.originalPath,
       contentType: mimeTypes.lookup(asset.originalPath),
-      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+      cacheControl: CacheControl.PrivateWithCache,
     });
   }
 
@@ -207,7 +207,7 @@ export class AssetMediaService extends BaseService {
     id: string,
     dto: AssetMediaOptionsDto,
   ): Promise<ImmichFileResponse | AssetMediaRedirectResponse> {
-    await this.requireAccess({ auth, permission: Permission.ASSET_VIEW, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
 
     const asset = await this.findOrFail(id);
     const size = dto.size ?? AssetMediaSize.THUMBNAIL;
@@ -240,16 +240,16 @@ export class AssetMediaService extends BaseService {
       fileName,
       path: filepath,
       contentType: mimeTypes.lookup(filepath),
-      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+      cacheControl: CacheControl.PrivateWithCache,
     });
   }
 
   async playbackVideo(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await this.requireAccess({ auth, permission: Permission.ASSET_VIEW, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
 
     const asset = await this.findOrFail(id);
 
-    if (asset.type !== AssetType.VIDEO) {
+    if (asset.type !== AssetType.Video) {
       throw new BadRequestException('Asset is not a video');
     }
 
@@ -258,7 +258,7 @@ export class AssetMediaService extends BaseService {
     return new ImmichFileResponse({
       path: filepath,
       contentType: mimeTypes.lookup(filepath),
-      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+      cacheControl: CacheControl.PrivateWithCache,
     });
   }
 
@@ -312,7 +312,7 @@ export class AssetMediaService extends BaseService {
   ): Promise<AssetMediaResponseDto> {
     // clean up files
     await this.jobRepository.queue({
-      name: JobName.DELETE_FILES,
+      name: JobName.FileDelete,
       data: { files: [file.originalPath, sidecarFile?.originalPath] },
     });
 
@@ -365,7 +365,7 @@ export class AssetMediaService extends BaseService {
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
     await this.assetRepository.upsertExif({ assetId, fileSizeInByte: file.size });
     await this.jobRepository.queue({
-      name: JobName.METADATA_EXTRACTION,
+      name: JobName.AssetExtractMetadata,
       data: { id: assetId, source: 'upload' },
     });
   }
@@ -394,7 +394,7 @@ export class AssetMediaService extends BaseService {
 
     const { size } = await this.storageRepository.stat(created.originalPath);
     await this.assetRepository.upsertExif({ assetId: created.id, fileSizeInByte: size });
-    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: created.id, source: 'copy' } });
+    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: created.id, source: 'copy' } });
     return created;
   }
 
@@ -416,7 +416,7 @@ export class AssetMediaService extends BaseService {
       type: mimeTypes.assetType(file.originalPath),
       isFavorite: dto.isFavorite,
       duration: dto.duration || null,
-      visibility: dto.visibility ?? AssetVisibility.TIMELINE,
+      visibility: dto.visibility ?? AssetVisibility.Timeline,
       livePhotoVideoId: dto.livePhotoVideoId,
       originalFileName: dto.filename || file.originalName,
       sidecarPath: sidecarFile?.originalPath,
@@ -427,7 +427,7 @@ export class AssetMediaService extends BaseService {
     }
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
     await this.assetRepository.upsertExif({ assetId: asset.id, fileSizeInByte: file.size });
-    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
+    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } });
 
     return asset;
   }

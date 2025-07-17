@@ -9,7 +9,7 @@ import {
   OAuthTokenEndpointAuthMethod,
   QueueName,
   ToneMapping,
-  TranscodeHWAccel,
+  TranscodeHardwareAcceleration,
   TranscodePolicy,
   VideoCodec,
   VideoContainer,
@@ -28,17 +28,17 @@ const partialConfig = {
 
 const updatedConfig = Object.freeze<SystemConfig>({
   job: {
-    [QueueName.BACKGROUND_TASK]: { concurrency: 5 },
-    [QueueName.SMART_SEARCH]: { concurrency: 2 },
-    [QueueName.METADATA_EXTRACTION]: { concurrency: 5 },
-    [QueueName.FACE_DETECTION]: { concurrency: 2 },
-    [QueueName.SEARCH]: { concurrency: 5 },
-    [QueueName.SIDECAR]: { concurrency: 5 },
-    [QueueName.LIBRARY]: { concurrency: 5 },
-    [QueueName.MIGRATION]: { concurrency: 5 },
-    [QueueName.THUMBNAIL_GENERATION]: { concurrency: 3 },
-    [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
-    [QueueName.NOTIFICATION]: { concurrency: 5 },
+    [QueueName.BackgroundTask]: { concurrency: 5 },
+    [QueueName.SmartSearch]: { concurrency: 2 },
+    [QueueName.MetadataExtraction]: { concurrency: 5 },
+    [QueueName.FaceDetection]: { concurrency: 2 },
+    [QueueName.Search]: { concurrency: 5 },
+    [QueueName.Sidecar]: { concurrency: 5 },
+    [QueueName.Library]: { concurrency: 5 },
+    [QueueName.Migration]: { concurrency: 5 },
+    [QueueName.ThumbnailGeneration]: { concurrency: 3 },
+    [QueueName.VideoConversion]: { concurrency: 1 },
+    [QueueName.Notification]: { concurrency: 5 },
   },
   backup: {
     database: {
@@ -51,28 +51,28 @@ const updatedConfig = Object.freeze<SystemConfig>({
     crf: 30,
     threads: 0,
     preset: 'ultrafast',
-    targetAudioCodec: AudioCodec.AAC,
-    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS, AudioCodec.PCMS16LE],
+    targetAudioCodec: AudioCodec.Aac,
+    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus, AudioCodec.PcmS16le],
     targetResolution: '720',
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
-    acceptedContainers: [VideoContainer.MOV, VideoContainer.OGG, VideoContainer.WEBM],
+    acceptedContainers: [VideoContainer.Mov, VideoContainer.Ogg, VideoContainer.Webm],
     maxBitrate: '0',
     bframes: -1,
     refs: 0,
     gopSize: 0,
     temporalAQ: false,
-    cqMode: CQMode.AUTO,
+    cqMode: CQMode.Auto,
     twoPass: false,
     preferredHwDevice: 'auto',
-    transcode: TranscodePolicy.REQUIRED,
-    accel: TranscodeHWAccel.DISABLED,
+    transcode: TranscodePolicy.Required,
+    accel: TranscodeHardwareAcceleration.Disabled,
     accelDecode: false,
-    tonemap: ToneMapping.HABLE,
+    tonemap: ToneMapping.Hable,
   },
   logging: {
     enabled: true,
-    level: LogLevel.LOG,
+    level: LogLevel.Log,
   },
   metadata: {
     faces: {
@@ -128,7 +128,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
     profileSigningAlgorithm: 'none',
-    tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.CLIENT_SECRET_POST,
+    tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod.ClientSecretPost,
     timeout: 30_000,
     storageLabelClaim: 'preferred_username',
     storageQuotaClaim: 'immich_quota',
@@ -150,15 +150,15 @@ const updatedConfig = Object.freeze<SystemConfig>({
   image: {
     thumbnail: {
       size: 250,
-      format: ImageFormat.WEBP,
+      format: ImageFormat.Webp,
       quality: 80,
     },
     preview: {
       size: 1440,
-      format: ImageFormat.JPEG,
+      format: ImageFormat.Jpeg,
       quality: 80,
     },
-    fullsize: { enabled: false, format: ImageFormat.JPEG, quality: 80 },
+    fullsize: { enabled: false, format: ImageFormat.Jpeg, quality: 80 },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
   },
@@ -412,7 +412,7 @@ describe(SystemConfigService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue(partialConfig);
       await expect(sut.updateSystemConfig(updatedConfig)).resolves.toEqual(updatedConfig);
       expect(mocks.event.emit).toHaveBeenCalledWith(
-        'config.update',
+        'ConfigUpdate',
         expect.objectContaining({ oldConfig: expect.any(Object), newConfig: updatedConfig }),
       );
     });

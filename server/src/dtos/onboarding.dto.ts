@@ -1,8 +1,7 @@
-import { IsBoolean, IsNotEmpty } from 'class-validator';
+import { ValidateBoolean } from 'src/validation';
 
 export class OnboardingDto {
-  @IsBoolean()
-  @IsNotEmpty()
+  @ValidateBoolean()
   isOnboarded!: boolean;
 }
 

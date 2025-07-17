@@ -80,7 +80,7 @@ export class AuthService extends BaseService {
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
     if (auth.session) {
       await this.sessionRepository.delete(auth.session.id);
-      await this.eventRepository.emit('session.delete', { sessionId: auth.session.id });
+      await this.eventRepository.emit('SessionDelete', { sessionId: auth.session.id });
     }
 
     return {
@@ -194,13 +194,13 @@ export class AuthService extends BaseService {
   }
 
   private async validate({ headers, queryParams }: Omit<ValidateRequest, 'metadata'>): Promise<AuthDto> {
-    const shareKey = (headers[ImmichHeader.SHARED_LINK_KEY] || queryParams[ImmichQuery.SHARED_LINK_KEY]) as string;
-    const session = (headers[ImmichHeader.USER_TOKEN] ||
-      headers[ImmichHeader.SESSION_TOKEN] ||
-      queryParams[ImmichQuery.SESSION_KEY] ||
+    const shareKey = (headers[ImmichHeader.SharedLinkKey] || queryParams[ImmichQuery.SharedLinkKey]) as string;
+    const session = (headers[ImmichHeader.UserToken] ||
+      headers[ImmichHeader.SessionToken] ||
+      queryParams[ImmichQuery.SessionKey] ||
       this.getBearerToken(headers) ||
       this.getCookieToken(headers)) as string;
-    const apiKey = (headers[ImmichHeader.API_KEY] || queryParams[ImmichQuery.API_KEY]) as string;
+    const apiKey = (headers[ImmichHeader.ApiKey] || queryParams[ImmichQuery.ApiKey]) as string;
 
     if (shareKey) {
       return this.validateSharedLink(shareKey);
@@ -321,7 +321,7 @@ export class AuthService extends BaseService {
       const { contentType, data } = await this.oauthRepository.getProfilePicture(url);
       const extensionWithDot = mimeTypes.toExtension(contentType || 'image/jpeg') ?? 'jpg';
       const profileImagePath = join(
-        StorageCore.getFolderLocation(StorageFolder.PROFILE, user.id),
+        StorageCore.getFolderLocation(StorageFolder.Profile, user.id),
         `${this.cryptoRepository.randomUUID()}${extensionWithDot}`,
       );
 
@@ -330,7 +330,7 @@ export class AuthService extends BaseService {
       await this.userRepository.update(user.id, { profileImagePath, profileChangedAt: new Date() });
 
       if (oldPath) {
-        await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [oldPath] } });
+        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [oldPath] } });
       }
     } catch (error: Error | any) {
       this.logger.warn(`Unable to sync oauth profile picture: ${error}`, error?.stack);
@@ -366,7 +366,7 @@ export class AuthService extends BaseService {
   }
 
   private async getLogoutEndpoint(authType: AuthType): Promise<string> {
-    if (authType !== AuthType.OAUTH) {
+    if (authType !== AuthType.OAuth) {
       return LOGIN_URL;
     }
 
@@ -389,17 +389,17 @@ export class AuthService extends BaseService {
 
   private getCookieToken(headers: IncomingHttpHeaders): string | null {
     const cookies = parse(headers.cookie || '');
-    return cookies[ImmichCookie.ACCESS_TOKEN] || null;
+    return cookies[ImmichCookie.AccessToken] || null;
   }
 
   private getCookieOauthState(headers: IncomingHttpHeaders): string | null {
     const cookies = parse(headers.cookie || '');
-    return cookies[ImmichCookie.OAUTH_STATE] || null;
+    return cookies[ImmichCookie.OAuthState] || null;
   }
 
   private getCookieCodeVerifier(headers: IncomingHttpHeaders): string | null {
     const cookies = parse(headers.cookie || '');
-    return cookies[ImmichCookie.OAUTH_CODE_VERIFIER] || null;
+    return cookies[ImmichCookie.OAuthCodeVerifier] || null;
   }
 
   async validateSharedLink(key: string | string[]): Promise<AuthDto> {

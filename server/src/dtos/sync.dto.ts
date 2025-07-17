@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMaxSize, IsEnum, IsInt, IsPositive, IsString } from 'class-validator';
+import { ArrayMaxSize, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AlbumUserRole,
@@ -13,7 +13,7 @@ import {
   UserMetadataKey,
 } from 'src/enum';
 import { UserMetadata } from 'src/types';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class AssetFullSyncDto {
   @ValidateUUID({ optional: true })
@@ -90,11 +90,11 @@ export class SyncAssetV1 {
   fileModifiedAt!: Date | null;
   localDateTime!: Date | null;
   duration!: string | null;
-  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
+  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum' })
   type!: AssetType;
   deletedAt!: Date | null;
   isFavorite!: boolean;
-  @ApiProperty({ enumName: 'AssetVisibility', enum: AssetVisibility })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility' })
   visibility!: AssetVisibility;
   livePhotoVideoId!: string | null;
   stackId!: string | null;
@@ -159,7 +159,7 @@ export class SyncAlbumUserDeleteV1 {
 export class SyncAlbumUserV1 {
   albumId!: string;
   userId!: string;
-  @ApiProperty({ enumName: 'AlbumUserRole', enum: AlbumUserRole })
+  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
 }
 
@@ -173,7 +173,7 @@ export class SyncAlbumV1 {
   updatedAt!: Date;
   thumbnailAssetId!: string | null;
   isActivityEnabled!: boolean;
-  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder' })
   order!: AssetOrder;
 }
 
@@ -196,7 +196,7 @@ export class SyncMemoryV1 {
   updatedAt!: Date;
   deletedAt!: Date | null;
   ownerId!: string;
-  @ApiProperty({ enumName: 'MemoryType', enum: MemoryType })
+  @ValidateEnum({ enum: MemoryType, name: 'MemoryType' })
   type!: MemoryType;
   data!: object;
   isSaved!: boolean;
@@ -319,8 +319,7 @@ export type SyncItem = {
 };
 
 export class SyncStreamDto {
-  @IsEnum(SyncRequestType, { each: true })
-  @ApiProperty({ enumName: 'SyncRequestType', enum: SyncRequestType, isArray: true })
+  @ValidateEnum({ enum: SyncRequestType, name: 'SyncRequestType', each: true })
   types!: SyncRequestType[];
 
   @ValidateBoolean({ optional: true })
@@ -328,7 +327,7 @@ export class SyncStreamDto {
 }
 
 export class SyncAckDto {
-  @ApiProperty({ enumName: 'SyncEntityType', enum: SyncEntityType })
+  @ValidateEnum({ enum: SyncEntityType, name: 'SyncEntityType' })
   type!: SyncEntityType;
   ack!: string;
 }
@@ -340,8 +339,6 @@ export class SyncAckSetDto {
 }
 
 export class SyncAckDeleteDto {
-  @IsEnum(SyncEntityType, { each: true })
-  @ApiProperty({ enumName: 'SyncEntityType', enum: SyncEntityType, isArray: true })
-  @Optional()
+  @ValidateEnum({ enum: SyncEntityType, name: 'SyncEntityType', optional: true, each: true })
   types?: SyncEntityType[];
 }

@@ -73,11 +73,11 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
     );
 
     this.eventRepository.setup({ services });
-    await this.eventRepository.emit('app.bootstrap');
+    await this.eventRepository.emit('AppBootstrap');
   }
 
   async onModuleDestroy() {
-    await this.eventRepository.emit('app.shutdown');
+    await this.eventRepository.emit('AppShutdown');
     await teardownTelemetry();
   }
 }
@@ -85,13 +85,13 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
 @Module({
   imports: [...imports, ScheduleModule.forRoot()],
   controllers: [...controllers],
-  providers: [...common, ...middleware, { provide: IWorker, useValue: ImmichWorker.API }],
+  providers: [...common, ...middleware, { provide: IWorker, useValue: ImmichWorker.Api }],
 })
 export class ApiModule extends BaseModule {}
 
 @Module({
   imports: [...imports],
-  providers: [...common, { provide: IWorker, useValue: ImmichWorker.MICROSERVICES }, SchedulerRegistry],
+  providers: [...common, { provide: IWorker, useValue: ImmichWorker.Microservices }, SchedulerRegistry],
 })
 export class MicroservicesModule extends BaseModule {}
 

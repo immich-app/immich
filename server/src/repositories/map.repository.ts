@@ -61,14 +61,14 @@ export class MapRepository {
     const geodataDate = await readFile(resourcePaths.geodata.dateFile, 'utf8');
 
     // TODO move to service init
-    const geocodingMetadata = await this.metadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
+    const geocodingMetadata = await this.metadataRepository.get(SystemMetadataKey.ReverseGeocodingState);
     if (geocodingMetadata?.lastUpdate === geodataDate) {
       return;
     }
 
     await Promise.all([this.importGeodata(), this.importNaturalEarthCountries()]);
 
-    await this.metadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
+    await this.metadataRepository.set(SystemMetadataKey.ReverseGeocodingState, {
       lastUpdate: geodataDate,
       lastImportFileName: citiesFile,
     });
@@ -102,13 +102,13 @@ export class MapRepository {
       .$if(isArchived === true, (qb) =>
         qb.where((eb) =>
           eb.or([
-            eb('asset.visibility', '=', AssetVisibility.TIMELINE),
-            eb('asset.visibility', '=', AssetVisibility.ARCHIVE),
+            eb('asset.visibility', '=', AssetVisibility.Timeline),
+            eb('asset.visibility', '=', AssetVisibility.Archive),
           ]),
         ),
       )
       .$if(isArchived === false || isArchived === undefined, (qb) =>
-        qb.where('asset.visibility', '=', AssetVisibility.TIMELINE),
+        qb.where('asset.visibility', '=', AssetVisibility.Timeline),
       )
       .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
       .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))
@@ -265,6 +265,9 @@ export class MapRepository {
       throw new Error(`Geodata file ${cities500} not found`);
     }
 
+    this.logger.log(`Starting geodata import`);
+    const startTime = performance.now();
+
     const input = createReadStream(cities500, { highWaterMark: 512 * 1024 * 1024 });
     let bufferGeodata = [];
     const lineReader = readLine.createInterface({ input });
@@ -314,7 +317,20 @@ export class MapRepository {
       }
     }
 
-    await this.db.insertInto('geodata_places').values(bufferGeodata).execute();
+    if (bufferGeodata.length > 0) {
+      await this.db.insertInto('geodata_places').values(bufferGeodata).execute();
+      count += bufferGeodata.length;
+    }
+
+    await Promise.all(futures);
+
+    const duration = performance.now() - startTime;
+    const seconds = duration / 1000;
+    const recordsPerSecond = Math.round(count / seconds);
+
+    this.logger.log(
+      `Successfully imported ${count} geodata records in ${seconds.toFixed(2)}s (${recordsPerSecond} records/second)`,
+    );
   }
 
   private async loadAdmin(filePath: string) {

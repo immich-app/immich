@@ -6,7 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -51,7 +50,6 @@ class ImmichSliverAppBar extends ConsumerWidget {
         pinned: pinned,
         snap: snap,
         expandedHeight: expandedHeight,
-        backgroundColor: context.colorScheme.surfaceContainer,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
             Radius.circular(5),
@@ -68,24 +66,6 @@ class ImmichSliverAppBar extends ConsumerWidget {
                 child: action,
               ),
             ),
-          IconButton(
-            icon: const Icon(Icons.swipe_left_alt_rounded),
-            onPressed: () => context.pop(),
-          ),
-          IconButton(
-            onPressed: () {
-              ref.read(backgroundSyncProvider).syncLocal(full: true);
-              ref.read(backgroundSyncProvider).syncRemote();
-
-              Future.delayed(
-                const Duration(seconds: 10),
-                () => ref.read(backgroundSyncProvider).hashAssets(),
-              );
-            },
-            icon: const Icon(
-              Icons.sync,
-            ),
-          ),
           if (isCasting)
             Padding(
               padding: const EdgeInsets.only(right: 12),
@@ -127,13 +107,30 @@ class _ImmichLogoWithText extends StatelessWidget {
           children: [
             Builder(
               builder: (context) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 3.0),
-                  child: SvgPicture.asset(
-                    context.isDarkTheme
-                        ? 'assets/immich-logo-inline-dark.svg'
-                        : 'assets/immich-logo-inline-light.svg',
-                    height: 40,
+                return Badge(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  backgroundColor: context.primaryColor,
+                  alignment: Alignment.centerRight,
+                  offset: const Offset(16, -8),
+                  label: Text(
+                    'β',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: context.colorScheme.onPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'OverpassMono',
+                      height: 1.2,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 3.0),
+                    child: SvgPicture.asset(
+                      context.isDarkTheme
+                          ? 'assets/immich-logo-inline-dark.svg'
+                          : 'assets/immich-logo-inline-light.svg',
+                      height: 40,
+                    ),
                   ),
                 );
               },

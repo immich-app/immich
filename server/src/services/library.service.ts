@@ -32,12 +32,12 @@ export class LibraryService extends BaseService {
   private lock = false;
   private watchers: Record<string, () => Promise<void>> = {};
 
-  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
+  @OnEvent({ name: 'ConfigInit', workers: [ImmichWorker.Microservices] })
   async onConfigInit({
     newConfig: {
       library: { watch, scan },
     },
-  }: ArgOf<'config.init'>) {
+  }: ArgOf<'ConfigInit'>) {
     // This ensures that library watching only occurs in one microservice
     this.lock = await this.databaseRepository.tryLock(DatabaseLock.Library);
 
@@ -47,8 +47,7 @@ export class LibraryService extends BaseService {
       this.cronRepository.create({
         name: CronJob.LibraryScan,
         expression: scan.cronExpression,
-        onTick: () =>
-          handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL }), this.logger),
+        onTick: () => handlePromiseError(this.jobRepository.queue({ name: JobName.LibraryScanQueueAll }), this.logger),
         start: scan.enabled,
       });
     }
@@ -58,8 +57,8 @@ export class LibraryService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'config.update', server: true })
-  async onConfigUpdate({ newConfig: { library } }: ArgOf<'config.update'>) {
+  @OnEvent({ name: 'ConfigUpdate', server: true })
+  async onConfigUpdate({ newConfig: { library } }: ArgOf<'ConfigUpdate'>) {
     if (!this.lock) {
       return;
     }
@@ -103,7 +102,7 @@ export class LibraryService extends BaseService {
       if (matcher(path)) {
         this.logger.debug(`File ${event} event received for ${path} in library ${library.id}}`);
         await this.jobRepository.queue({
-          name: JobName.LIBRARY_SYNC_FILES,
+          name: JobName.LibrarySyncFiles,
           data: { libraryId: library.id, paths: [path] },
         });
       } else {
@@ -114,7 +113,7 @@ export class LibraryService extends BaseService {
     const deletionHandler = async (path: string) => {
       this.logger.debug(`File unlink event received for ${path} in library ${library.id}}`);
       await this.jobRepository.queue({
-        name: JobName.LIBRARY_ASSET_REMOVAL,
+        name: JobName.LibraryRemoveAsset,
         data: { libraryId: library.id, paths: [path] },
       });
     };
@@ -155,7 +154,7 @@ export class LibraryService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'app.shutdown' })
+  @OnEvent({ name: 'AppShutdown' })
   async onShutdown() {
     await this.unwatchAll();
   }
@@ -199,7 +198,7 @@ export class LibraryService extends BaseService {
     return libraries.map((library) => mapLibrary(library));
   }
 
-  @OnJob({ name: JobName.LIBRARY_QUEUE_CLEANUP, queue: QueueName.LIBRARY })
+  @OnJob({ name: JobName.LibraryDeleteCheck, queue: QueueName.Library })
   async handleQueueCleanup(): Promise<JobStatus> {
     this.logger.log('Checking for any libraries pending deletion...');
     const pendingDeletions = await this.libraryRepository.getAllDeleted();
@@ -208,11 +207,11 @@ export class LibraryService extends BaseService {
       this.logger.log(`Found ${pendingDeletions.length} ${libraryString} pending deletion, cleaning up...`);
 
       await this.jobRepository.queueAll(
-        pendingDeletions.map((libraryToDelete) => ({ name: JobName.LIBRARY_DELETE, data: { id: libraryToDelete.id } })),
+        pendingDeletions.map((libraryToDelete) => ({ name: JobName.LibraryDelete, data: { id: libraryToDelete.id } })),
       );
     }
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   async create(dto: CreateLibraryDto): Promise<LibraryResponseDto> {
@@ -225,16 +224,16 @@ export class LibraryService extends BaseService {
     return mapLibrary(library);
   }
 
-  @OnJob({ name: JobName.LIBRARY_SYNC_FILES, queue: QueueName.LIBRARY })
-  async handleSyncFiles(job: JobOf<JobName.LIBRARY_SYNC_FILES>): Promise<JobStatus> {
+  @OnJob({ name: JobName.LibrarySyncFiles, queue: QueueName.Library })
+  async handleSyncFiles(job: JobOf<JobName.LibrarySyncFiles>): Promise<JobStatus> {
     const library = await this.libraryRepository.get(job.libraryId);
     // We need to check if the library still exists as it could have been deleted after the scan was queued
     if (!library) {
       this.logger.debug(`Library ${job.libraryId} not found, skipping file import`);
-      return JobStatus.FAILED;
+      return JobStatus.Failed;
     } else if (library.deletedAt) {
       this.logger.debug(`Library ${job.libraryId} is deleted, won't import assets into it`);
-      return JobStatus.FAILED;
+      return JobStatus.Failed;
     }
 
     const assetImports: Insertable<AssetTable>[] = [];
@@ -263,7 +262,7 @@ export class LibraryService extends BaseService {
 
     await this.queuePostSyncJobs(assetIds);
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   private async validateImportPath(importPath: string): Promise<ValidateLibraryImportPathResponseDto> {
@@ -339,11 +338,11 @@ export class LibraryService extends BaseService {
     }
 
     await this.libraryRepository.softDelete(id);
-    await this.jobRepository.queue({ name: JobName.LIBRARY_DELETE, data: { id } });
+    await this.jobRepository.queue({ name: JobName.LibraryDelete, data: { id } });
   }
 
-  @OnJob({ name: JobName.LIBRARY_DELETE, queue: QueueName.LIBRARY })
-  async handleDeleteLibrary(job: JobOf<JobName.LIBRARY_DELETE>): Promise<JobStatus> {
+  @OnJob({ name: JobName.LibraryDelete, queue: QueueName.Library })
+  async handleDeleteLibrary(job: JobOf<JobName.LibraryDelete>): Promise<JobStatus> {
     const libraryId = job.id;
 
     await this.assetRepository.updateByLibraryId(libraryId, { deletedAt: new Date() });
@@ -356,7 +355,7 @@ export class LibraryService extends BaseService {
         assetsFound = true;
         this.logger.debug(`Queueing deletion of ${chunk.length} asset(s) in library ${libraryId}`);
         await this.jobRepository.queueAll(
-          chunk.map((id) => ({ name: JobName.ASSET_DELETION, data: { id, deleteOnDisk: false } })),
+          chunk.map((id) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: false } })),
         );
         chunk = [];
       }
@@ -379,7 +378,7 @@ export class LibraryService extends BaseService {
       await this.libraryRepository.delete(libraryId);
     }
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   private async processEntity(filePath: string, ownerId: string, libraryId: string) {
@@ -398,7 +397,7 @@ export class LibraryService extends BaseService {
       // TODO: device asset id is deprecated, remove it
       deviceAssetId: `${basename(assetPath)}`.replaceAll(/\s+/g, ''),
       deviceId: 'Library Import',
-      type: mimeTypes.isVideo(assetPath) ? AssetType.VIDEO : AssetType.IMAGE,
+      type: mimeTypes.isVideo(assetPath) ? AssetType.Video : AssetType.Image,
       originalFileName: parse(assetPath).base,
       isExternal: true,
       livePhotoVideoId: null,
@@ -411,7 +410,7 @@ export class LibraryService extends BaseService {
     // We queue a sidecar discovery which, in turn, queues metadata extraction
     await this.jobRepository.queueAll(
       assetIds.map((assetId) => ({
-        name: JobName.SIDECAR_DISCOVERY,
+        name: JobName.SidecarDiscovery,
         data: { id: assetId, source: 'upload' },
       })),
     );
@@ -423,30 +422,30 @@ export class LibraryService extends BaseService {
     this.logger.log(`Starting to scan library ${id}`);
 
     await this.jobRepository.queue({
-      name: JobName.LIBRARY_QUEUE_SYNC_FILES,
+      name: JobName.LibrarySyncFilesQueueAll,
       data: {
         id,
       },
     });
 
-    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, data: { id } });
+    await this.jobRepository.queue({ name: JobName.LibrarySyncAssetsQueueAll, data: { id } });
   }
 
   async queueScanAll() {
-    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: {} });
+    await this.jobRepository.queue({ name: JobName.LibraryScanQueueAll, data: {} });
   }
 
-  @OnJob({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, queue: QueueName.LIBRARY })
+  @OnJob({ name: JobName.LibraryScanQueueAll, queue: QueueName.Library })
   async handleQueueScanAll(): Promise<JobStatus> {
     this.logger.log(`Initiating scan of all external libraries...`);
 
-    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_CLEANUP, data: {} });
+    await this.jobRepository.queue({ name: JobName.LibraryDeleteCheck, data: {} });
 
     const libraries = await this.libraryRepository.getAll(true);
 
     await this.jobRepository.queueAll(
       libraries.map((library) => ({
-        name: JobName.LIBRARY_QUEUE_SYNC_FILES,
+        name: JobName.LibrarySyncFilesQueueAll,
         data: {
           id: library.id,
         },
@@ -454,18 +453,18 @@ export class LibraryService extends BaseService {
     );
     await this.jobRepository.queueAll(
       libraries.map((library) => ({
-        name: JobName.LIBRARY_QUEUE_SYNC_ASSETS,
+        name: JobName.LibrarySyncAssetsQueueAll,
         data: {
           id: library.id,
         },
       })),
     );
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.LIBRARY_SYNC_ASSETS, queue: QueueName.LIBRARY })
-  async handleSyncAssets(job: JobOf<JobName.LIBRARY_SYNC_ASSETS>): Promise<JobStatus> {
+  @OnJob({ name: JobName.LibrarySyncAssets, queue: QueueName.Library })
+  async handleSyncAssets(job: JobOf<JobName.LibrarySyncAssets>): Promise<JobStatus> {
     const assets = await this.assetJobRepository.getForSyncAssets(job.assetIds);
 
     const assetIdsToOffline: string[] = [];
@@ -486,7 +485,7 @@ export class LibraryService extends BaseService {
       const action = this.checkExistingAsset(asset, stat);
       switch (action) {
         case AssetSyncResult.OFFLINE: {
-          if (asset.status === AssetStatus.TRASHED) {
+          if (asset.status === AssetStatus.Trashed) {
             trashedAssetIdsToOffline.push(asset.id);
           } else {
             assetIdsToOffline.push(asset.id);
@@ -511,7 +510,7 @@ export class LibraryService extends BaseService {
 
           if (!isExcluded) {
             this.logger.debug(`Offline asset ${asset.originalPath} is now online in library ${job.libraryId}`);
-            if (asset.status === AssetStatus.TRASHED) {
+            if (asset.status === AssetStatus.Trashed) {
               trashedAssetIdsToOnline.push(asset.id);
             } else {
               assetIdsToOnline.push(asset.id);
@@ -557,7 +556,7 @@ export class LibraryService extends BaseService {
       `Checked existing asset(s): ${assetIdsToOffline.length + trashedAssetIdsToOffline.length} offlined, ${assetIdsToOnline.length + trashedAssetIdsToOnline.length} onlined, ${assetIdsToUpdate.length} updated, ${remainingCount} unchanged of current batch of ${assets.length} (Total progress: ${job.progressCounter} of ${job.totalAssets}, ${cumulativePercentage} %) in library ${job.libraryId}.`,
     );
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   private checkExistingAsset(
@@ -585,7 +584,7 @@ export class LibraryService extends BaseService {
       return AssetSyncResult.OFFLINE;
     }
 
-    if (asset.isOffline && asset.status !== AssetStatus.DELETED) {
+    if (asset.isOffline && asset.status !== AssetStatus.Deleted) {
       // Only perform the expensive check if the asset is offline
       return AssetSyncResult.CHECK_OFFLINE;
     }
@@ -599,12 +598,12 @@ export class LibraryService extends BaseService {
     return AssetSyncResult.DO_NOTHING;
   }
 
-  @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_FILES, queue: QueueName.LIBRARY })
-  async handleQueueSyncFiles(job: JobOf<JobName.LIBRARY_QUEUE_SYNC_FILES>): Promise<JobStatus> {
+  @OnJob({ name: JobName.LibrarySyncFilesQueueAll, queue: QueueName.Library })
+  async handleQueueSyncFiles(job: JobOf<JobName.LibrarySyncFilesQueueAll>): Promise<JobStatus> {
     const library = await this.libraryRepository.get(job.id);
     if (!library) {
       this.logger.debug(`Library ${job.id} not found, skipping refresh`);
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     this.logger.debug(`Validating import paths for library ${library.id}...`);
@@ -623,7 +622,7 @@ export class LibraryService extends BaseService {
     if (validImportPaths.length === 0) {
       this.logger.warn(`No valid import paths found for library ${library.id}`);
 
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const pathsOnDisk = this.storageRepository.walk({
@@ -646,7 +645,7 @@ export class LibraryService extends BaseService {
         importCount += paths.length;
 
         await this.jobRepository.queue({
-          name: JobName.LIBRARY_SYNC_FILES,
+          name: JobName.LibrarySyncFiles,
           data: {
             libraryId: library.id,
             paths,
@@ -666,11 +665,11 @@ export class LibraryService extends BaseService {
 
     await this.libraryRepository.update(job.id, { refreshedAt: new Date() });
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.LIBRARY_ASSET_REMOVAL, queue: QueueName.LIBRARY })
-  async handleAssetRemoval(job: JobOf<JobName.LIBRARY_ASSET_REMOVAL>): Promise<JobStatus> {
+  @OnJob({ name: JobName.LibraryRemoveAsset, queue: QueueName.Library })
+  async handleAssetRemoval(job: JobOf<JobName.LibraryRemoveAsset>): Promise<JobStatus> {
     // This is only for handling file unlink events via the file watcher
     this.logger.verbose(`Deleting asset(s) ${job.paths} from library ${job.libraryId}`);
     for (const assetPath of job.paths) {
@@ -680,20 +679,20 @@ export class LibraryService extends BaseService {
       }
     }
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, queue: QueueName.LIBRARY })
-  async handleQueueSyncAssets(job: JobOf<JobName.LIBRARY_QUEUE_SYNC_ASSETS>): Promise<JobStatus> {
+  @OnJob({ name: JobName.LibrarySyncAssetsQueueAll, queue: QueueName.Library })
+  async handleQueueSyncAssets(job: JobOf<JobName.LibrarySyncAssetsQueueAll>): Promise<JobStatus> {
     const library = await this.libraryRepository.get(job.id);
     if (!library) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const assetCount = await this.assetRepository.getLibraryAssetCount(job.id);
     if (!assetCount) {
       this.logger.log(`Library ${library.id} is empty, no need to check assets`);
-      return JobStatus.SUCCESS;
+      return JobStatus.Success;
     }
 
     this.logger.log(
@@ -713,7 +712,7 @@ export class LibraryService extends BaseService {
     );
 
     if (affectedAssetCount === assetCount) {
-      return JobStatus.SUCCESS;
+      return JobStatus.Success;
     }
 
     let chunk: string[] = [];
@@ -724,7 +723,7 @@ export class LibraryService extends BaseService {
         count += chunk.length;
 
         await this.jobRepository.queue({
-          name: JobName.LIBRARY_SYNC_ASSETS,
+          name: JobName.LibrarySyncAssets,
           data: {
             libraryId: library.id,
             importPaths: library.importPaths,
@@ -758,7 +757,7 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Finished queuing ${count} asset check(s) for library ${library.id}`);
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   private async findOrFail(id: string) {

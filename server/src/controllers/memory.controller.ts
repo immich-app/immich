@@ -20,31 +20,31 @@ export class MemoryController {
   constructor(private service: MemoryService) {}
 
   @Get()
-  @Authenticated({ permission: Permission.MEMORY_READ })
+  @Authenticated({ permission: Permission.MemoryRead })
   searchMemories(@Auth() auth: AuthDto, @Query() dto: MemorySearchDto): Promise<MemoryResponseDto[]> {
     return this.service.search(auth, dto);
   }
 
   @Post()
-  @Authenticated({ permission: Permission.MEMORY_CREATE })
+  @Authenticated({ permission: Permission.MemoryCreate })
   createMemory(@Auth() auth: AuthDto, @Body() dto: MemoryCreateDto): Promise<MemoryResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Get('statistics')
-  @Authenticated({ permission: Permission.MEMORY_READ })
+  @Authenticated({ permission: Permission.MemoryRead })
   memoriesStatistics(@Auth() auth: AuthDto, @Query() dto: MemorySearchDto): Promise<MemoryStatisticsResponseDto> {
     return this.service.statistics(auth, dto);
   }
 
   @Get(':id')
-  @Authenticated({ permission: Permission.MEMORY_READ })
+  @Authenticated({ permission: Permission.MemoryRead })
   getMemory(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<MemoryResponseDto> {
     return this.service.get(auth, id);
   }
 
   @Put(':id')
-  @Authenticated({ permission: Permission.MEMORY_UPDATE })
+  @Authenticated({ permission: Permission.MemoryUpdate })
   updateMemory(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -55,7 +55,7 @@ export class MemoryController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated({ permission: Permission.MEMORY_DELETE })
+  @Authenticated({ permission: Permission.MemoryDelete })
   deleteMemory(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }

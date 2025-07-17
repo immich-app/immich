@@ -73,7 +73,7 @@ export class UserTable {
   @Column({ type: 'bigint', default: 0 })
   quotaUsageInBytes!: Generated<ColumnType<number>>;
 
-  @Column({ type: 'character varying', default: UserStatus.ACTIVE })
+  @Column({ type: 'character varying', default: UserStatus.Active })
   status!: Generated<UserStatus>;
 
   @Column({ type: 'timestamp with time zone', default: () => 'now()' })

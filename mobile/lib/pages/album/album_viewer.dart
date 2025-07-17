@@ -41,6 +41,11 @@ class AlbumViewer extends HookConsumerWidget {
     final userId = ref.watch(authProvider).userId;
     final isMultiselecting = ref.watch(multiselectProvider);
     final isProcessing = useProcessingOverlay();
+    final isOwner = ref.watch(
+      currentAlbumProvider.select((album) {
+        return album?.ownerId == userId;
+      }),
+    );
 
     Future<bool> onRemoveFromAlbumPressed(Iterable<Asset> assets) async {
       final bool isSuccess =
@@ -138,10 +143,13 @@ class AlbumViewer extends HookConsumerWidget {
                 ),
                 const AlbumSharedUserIcons(),
                 if (album.isRemote)
-                  AlbumControlButton(
-                    key: const ValueKey("albumControlButton"),
-                    onAddPhotosPressed: onAddPhotosPressed,
-                    onAddUsersPressed: onAddUsersPressed,
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0),
+                    child: AlbumControlButton(
+                      key: const ValueKey("albumControlButton"),
+                      onAddPhotosPressed: onAddPhotosPressed,
+                      onAddUsersPressed: isOwner ? onAddUsersPressed : null,
+                    ),
                   ),
                 const SizedBox(height: 8),
               ],

@@ -96,7 +96,7 @@ describe(StorageTemplateService.name, () => {
     it('should skip when storage template is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: false } });
 
-      await expect(sut.handleMigrationSingle({ id: testAsset.id })).resolves.toBe(JobStatus.SKIPPED);
+      await expect(sut.handleMigrationSingle({ id: testAsset.id })).resolves.toBe(JobStatus.Skipped);
 
       expect(mocks.asset.getByIds).not.toHaveBeenCalled();
       expect(mocks.storage.checkFileExists).not.toHaveBeenCalled();
@@ -119,7 +119,7 @@ describe(StorageTemplateService.name, () => {
       mocks.move.create.mockResolvedValueOnce({
         id: '123',
         entityId: stillAsset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: stillAsset.originalPath,
         newPath: newStillPicturePath,
       });
@@ -127,12 +127,12 @@ describe(StorageTemplateService.name, () => {
       mocks.move.create.mockResolvedValueOnce({
         id: '124',
         entityId: motionAsset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: motionAsset.originalPath,
         newPath: newMotionPicturePath,
       });
 
-      await expect(sut.handleMigrationSingle({ id: stillAsset.id })).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleMigrationSingle({ id: stillAsset.id })).resolves.toBe(JobStatus.Success);
 
       expect(mocks.storage.checkFileExists).toHaveBeenCalledTimes(2);
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: stillAsset.id, originalPath: newStillPicturePath });
@@ -152,13 +152,13 @@ describe(StorageTemplateService.name, () => {
       mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(asset);
       mocks.album.getByAssetId.mockResolvedValueOnce([album]);
 
-      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.SUCCESS);
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
 
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: asset.id,
         newPath: `upload/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${album.albumName}/${asset.originalFileName}`,
         oldPath: asset.originalPath,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
       });
     });
 
@@ -172,14 +172,14 @@ describe(StorageTemplateService.name, () => {
       mocks.user.get.mockResolvedValue(user);
       mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(asset);
 
-      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.SUCCESS);
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
 
       const month = (asset.fileCreatedAt.getMonth() + 1).toString().padStart(2, '0');
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: asset.id,
         newPath: `upload/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/other/${month}/${asset.originalFileName}`,
         oldPath: asset.originalPath,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
       });
     });
 
@@ -206,14 +206,14 @@ describe(StorageTemplateService.name, () => {
         },
       ]);
 
-      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.SUCCESS);
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
 
       const month = (asset.fileCreatedAt.getMonth() + 1).toString().padStart(2, '0');
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: asset.id,
         newPath: `upload/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${month} - ${album.albumName}/${asset.originalFileName}`,
         oldPath: asset.originalPath,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
       });
     });
 
@@ -229,14 +229,14 @@ describe(StorageTemplateService.name, () => {
       mocks.user.get.mockResolvedValue(user);
       mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(asset);
 
-      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.SUCCESS);
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
 
       const month = (asset.fileCreatedAt.getMonth() + 1).toString().padStart(2, '0');
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: asset.id,
         newPath: `upload/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${month}/${asset.originalFileName}`,
         oldPath: asset.originalPath,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
       });
     });
 
@@ -251,7 +251,7 @@ describe(StorageTemplateService.name, () => {
       mocks.move.getByEntity.mockResolvedValue({
         id: '123',
         entityId: asset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: asset.originalPath,
         newPath: previousFailedNewPath,
       });
@@ -259,12 +259,12 @@ describe(StorageTemplateService.name, () => {
       mocks.move.update.mockResolvedValue({
         id: '123',
         entityId: asset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: asset.originalPath,
         newPath,
       });
 
-      await expect(sut.handleMigrationSingle({ id: asset.id })).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleMigrationSingle({ id: asset.id })).resolves.toBe(JobStatus.Success);
 
       expect(mocks.assetJob.getForStorageTemplateJob).toHaveBeenCalledWith(asset.id);
       expect(mocks.storage.checkFileExists).toHaveBeenCalledTimes(3);
@@ -293,7 +293,7 @@ describe(StorageTemplateService.name, () => {
       mocks.move.getByEntity.mockResolvedValue({
         id: '123',
         entityId: asset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: asset.originalPath,
         newPath: previousFailedNewPath,
       });
@@ -301,12 +301,12 @@ describe(StorageTemplateService.name, () => {
       mocks.move.update.mockResolvedValue({
         id: '123',
         entityId: asset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: previousFailedNewPath,
         newPath,
       });
 
-      await expect(sut.handleMigrationSingle({ id: asset.id })).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleMigrationSingle({ id: asset.id })).resolves.toBe(JobStatus.Success);
 
       expect(mocks.assetJob.getForStorageTemplateJob).toHaveBeenCalledWith(asset.id);
       expect(mocks.storage.checkFileExists).toHaveBeenCalledTimes(3);
@@ -328,19 +328,19 @@ describe(StorageTemplateService.name, () => {
       mocks.move.create.mockResolvedValue({
         id: '123',
         entityId: testAsset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: testAsset.originalPath,
         newPath,
       });
 
-      await expect(sut.handleMigrationSingle({ id: testAsset.id })).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleMigrationSingle({ id: testAsset.id })).resolves.toBe(JobStatus.Success);
 
       expect(mocks.assetJob.getForStorageTemplateJob).toHaveBeenCalledWith(testAsset.id);
       expect(mocks.storage.checkFileExists).toHaveBeenCalledTimes(1);
       expect(mocks.storage.stat).toHaveBeenCalledWith(newPath);
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: testAsset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: testAsset.originalPath,
         newPath,
       });
@@ -370,7 +370,7 @@ describe(StorageTemplateService.name, () => {
         mocks.move.getByEntity.mockResolvedValue({
           id: '123',
           entityId: testAsset.id,
-          pathType: AssetPathType.ORIGINAL,
+          pathType: AssetPathType.Original,
           oldPath: testAsset.originalPath,
           newPath: previousFailedNewPath,
         });
@@ -378,12 +378,12 @@ describe(StorageTemplateService.name, () => {
         mocks.move.update.mockResolvedValue({
           id: '123',
           entityId: testAsset.id,
-          pathType: AssetPathType.ORIGINAL,
+          pathType: AssetPathType.Original,
           oldPath: previousFailedNewPath,
           newPath,
         });
 
-        await expect(sut.handleMigrationSingle({ id: testAsset.id })).resolves.toBe(JobStatus.SUCCESS);
+        await expect(sut.handleMigrationSingle({ id: testAsset.id })).resolves.toBe(JobStatus.Success);
 
         expect(mocks.assetJob.getForStorageTemplateJob).toHaveBeenCalledWith(testAsset.id);
         expect(mocks.storage.checkFileExists).toHaveBeenCalledTimes(3);
@@ -417,7 +417,7 @@ describe(StorageTemplateService.name, () => {
       mocks.move.create.mockResolvedValue({
         id: '123',
         entityId: asset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath,
         newPath,
       });
@@ -472,7 +472,7 @@ describe(StorageTemplateService.name, () => {
       mocks.move.create.mockResolvedValue({
         id: '123',
         entityId: assetStub.image.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: assetStub.image.originalPath,
         newPath,
       });
@@ -492,7 +492,7 @@ describe(StorageTemplateService.name, () => {
       mocks.move.create.mockResolvedValue({
         id: '123',
         entityId: asset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: asset.originalPath,
         newPath: `upload/library/${user.storageLabel}/2023/2023-02-23/${asset.originalFileName}`,
       });
@@ -520,7 +520,7 @@ describe(StorageTemplateService.name, () => {
       mocks.move.create.mockResolvedValue({
         id: '123',
         entityId: asset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath,
         newPath,
       });
@@ -559,7 +559,7 @@ describe(StorageTemplateService.name, () => {
       mocks.move.create.mockResolvedValue({
         id: '123',
         entityId: asset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: asset.originalPath,
         newPath: `upload/library/user-id/2022/2022-06-19/${asset.originalFileName}`,
       });
@@ -592,7 +592,7 @@ describe(StorageTemplateService.name, () => {
       mocks.move.create.mockResolvedValue({
         id: 'move-123',
         entityId: asset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: asset.originalPath,
         newPath: '',
       });
@@ -622,7 +622,7 @@ describe(StorageTemplateService.name, () => {
       mocks.move.create.mockResolvedValue({
         id: '123',
         entityId: asset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: `upload/library/${user.id}/2022/2022-06-19/IMG_7065.heic`,
         newPath: `upload/library/${user.id}/2023/2023-02-23/IMG_7065.heic`,
       });
@@ -648,7 +648,7 @@ describe(StorageTemplateService.name, () => {
       mocks.move.create.mockResolvedValue({
         id: '123',
         entityId: asset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: `upload/library/${user.id}/2022/2022-06-19/IMG_7065.HEIC`,
         newPath: `upload/library/${user.id}/2023/2023-02-23/IMG_7065.heic`,
       });
@@ -674,7 +674,7 @@ describe(StorageTemplateService.name, () => {
       mocks.move.create.mockResolvedValue({
         id: '123',
         entityId: asset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: `upload/library/${user.id}/2022/2022-06-19/IMG_7065.JPEG`,
         newPath: `upload/library/${user.id}/2023/2023-02-23/IMG_7065.jpg`,
       });
@@ -700,7 +700,7 @@ describe(StorageTemplateService.name, () => {
       mocks.move.create.mockResolvedValue({
         id: '123',
         entityId: asset.id,
-        pathType: AssetPathType.ORIGINAL,
+        pathType: AssetPathType.Original,
         oldPath: `upload/library/${user.id}/2022/2022-06-19/IMG_7065.JPG`,
         newPath: `upload/library/${user.id}/2023/2023-02-23/IMG_7065.jpg`,
       });

@@ -1,19 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty } from 'class-validator';
 import { JobCommand, ManualJobName, QueueName } from 'src/enum';
-import { ValidateBoolean } from 'src/validation';
+import { ValidateBoolean, ValidateEnum } from 'src/validation';
 
 export class JobIdParamDto {
-  @IsNotEmpty()
-  @IsEnum(QueueName)
-  @ApiProperty({ type: String, enum: QueueName, enumName: 'JobName' })
+  @ValidateEnum({ enum: QueueName, name: 'JobName' })
   id!: QueueName;
 }
 
 export class JobCommandDto {
-  @IsNotEmpty()
-  @IsEnum(JobCommand)
-  @ApiProperty({ type: 'string', enum: JobCommand, enumName: 'JobCommand' })
+  @ValidateEnum({ enum: JobCommand, name: 'JobCommand' })
   command!: JobCommand;
 
   @ValidateBoolean({ optional: true })
@@ -21,8 +16,7 @@ export class JobCommandDto {
 }
 
 export class JobCreateDto {
-  @IsEnum(ManualJobName)
-  @ApiProperty({ type: 'string', enum: ManualJobName, enumName: 'ManualJobName' })
+  @ValidateEnum({ enum: ManualJobName, name: 'ManualJobName' })
   name!: ManualJobName;
 }
 
@@ -56,47 +50,47 @@ export class JobStatusDto {
 
 export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> {
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.THUMBNAIL_GENERATION]!: JobStatusDto;
+  [QueueName.ThumbnailGeneration]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.METADATA_EXTRACTION]!: JobStatusDto;
+  [QueueName.MetadataExtraction]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.VIDEO_CONVERSION]!: JobStatusDto;
+  [QueueName.VideoConversion]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.SMART_SEARCH]!: JobStatusDto;
+  [QueueName.SmartSearch]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.STORAGE_TEMPLATE_MIGRATION]!: JobStatusDto;
+  [QueueName.StorageTemplateMigration]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.MIGRATION]!: JobStatusDto;
+  [QueueName.Migration]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.BACKGROUND_TASK]!: JobStatusDto;
+  [QueueName.BackgroundTask]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.SEARCH]!: JobStatusDto;
+  [QueueName.Search]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.DUPLICATE_DETECTION]!: JobStatusDto;
+  [QueueName.DuplicateDetection]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.FACE_DETECTION]!: JobStatusDto;
+  [QueueName.FaceDetection]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.FACIAL_RECOGNITION]!: JobStatusDto;
+  [QueueName.FacialRecognition]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.SIDECAR]!: JobStatusDto;
+  [QueueName.Sidecar]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.LIBRARY]!: JobStatusDto;
+  [QueueName.Library]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.NOTIFICATION]!: JobStatusDto;
+  [QueueName.Notification]!: JobStatusDto;
 
   @ApiProperty({ type: JobStatusDto })
-  [QueueName.BACKUP_DATABASE]!: JobStatusDto;
+  [QueueName.BackupDatabase]!: JobStatusDto;
 }
