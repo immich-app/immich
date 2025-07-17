@@ -12952,12 +12952,12 @@
           "password": {
             "type": "string"
           },
-          "shareSlug": {
-            "type": "string"
-          },
           "showMetadata": {
             "default": true,
             "type": "boolean"
+          },
+          "slug": {
+            "type": "string"
           },
           "type": {
             "allOf": [
@@ -12995,11 +12995,11 @@
           "password": {
             "type": "string"
           },
-          "shareSlug": {
-            "type": "string"
-          },
           "showMetadata": {
             "type": "boolean"
+          },
+          "slug": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -13044,12 +13044,12 @@
             "nullable": true,
             "type": "string"
           },
-          "shareSlug": {
-            "nullable": true,
-            "type": "string"
-          },
           "showMetadata": {
             "type": "boolean"
+          },
+          "slug": {
+            "nullable": true,
+            "type": "string"
           },
           "token": {
             "nullable": true,
@@ -13076,8 +13076,8 @@
           "id",
           "key",
           "password",
-          "shareSlug",
           "showMetadata",
+          "slug",
           "type",
           "userId"
         ],

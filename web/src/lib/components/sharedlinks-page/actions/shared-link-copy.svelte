@@ -14,7 +14,7 @@
   let { link, menuItem = false }: Props = $props();
 
   const handleCopy = async () => {
-    const urlKey = link.shareSlug ? link.shareSlug : link.key;
+    const urlKey = link.slug ? link.slug : link.key;
     await copyToClipboard(makeSharedLinkUrl(urlKey));
   };
 </script>

@@ -49,10 +49,10 @@ describe(SharedLinkService.name, () => {
     it('should return the shared link for the public user via slug', async () => {
       const authDto = authStub.adminSharedLinkWithSlug;
       //TODO the id for the auth sharedlink passes the ID but when tested it is explictly sent
-      mocks.sharedLink.get.mockResolvedValue(void 0);
-      mocks.sharedLink.getBySlug.mockResolvedValue(sharedLinkStub.validWithSlug);
+      mocks.sharedLink.get.mockResolvedValueOnce(void 0).mockResolvedValue(sharedLinkStub.validWithSlug);
+      mocks.sharedLink.lookForSlug.mockResolvedValue({ userId: authStub.user1.user.id , id: sharedLinkStub.valid.id});
       await expect(sut.getMine(authDto, {})).resolves.toEqual(sharedLinkResponseStub.validWithSlug);
-      expect(mocks.sharedLink.getBySlug).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
+      expect(mocks.sharedLink.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
     });
 
     it('should not return metadata', async () => {
@@ -132,7 +132,7 @@ describe(SharedLinkService.name, () => {
       mocks.sharedLink.create.mockResolvedValue(sharedLinkStub.validWithSlug);
       mocks.sharedLink.validateGetBySlug.mockResolvedValue(void 0);
 
-      await sut.create(authStub.admin, { type: SharedLinkType.Album, albumId: albumStub.oneAsset.id , shareSlug: sharedLinkStub.validWithSlug.slug});
+      await sut.create(authStub.admin, { type: SharedLinkType.Album, albumId: albumStub.oneAsset.id , slug: sharedLinkStub.validWithSlug.slug});
 
       expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,

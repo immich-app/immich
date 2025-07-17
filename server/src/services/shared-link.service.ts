@@ -64,8 +64,8 @@ export class SharedLinkService extends BaseService {
       }
     }
 
-    if ( dto.shareSlug ) {
-      const existing = await this.sharedLinkRepository.validateGetBySlug(dto.shareSlug);
+    if ( dto.slug ) {
+      const existing = await this.sharedLinkRepository.validateGetBySlug(dto.slug);
       if ( existing ) {
         throw new BadRequestException('Vanity URL already in use')
       }
@@ -83,7 +83,7 @@ export class SharedLinkService extends BaseService {
       allowUpload: dto.allowUpload ?? true,
       allowDownload: dto.showMetadata === false ? false : (dto.allowDownload ?? true),
       showExif: dto.showMetadata ?? true,
-      slug: dto.shareSlug || null
+      slug: dto.slug || null
     });
 
     return this.mapToSharedLink(sharedLink, { withExif: true });
@@ -91,8 +91,8 @@ export class SharedLinkService extends BaseService {
 
   async update(auth: AuthDto, id: string, dto: SharedLinkEditDto) {
     await this.findOrFail(auth.user.id, id);
-    if ( dto.shareSlug ) {
-      const existing = await this.sharedLinkRepository.validateGetBySlug(dto.shareSlug);
+    if ( dto.slug ) {
+      const existing = await this.sharedLinkRepository.validateGetBySlug(dto.slug);
       if ( existing ) {
         throw new BadRequestException('Vanity URL already in use')
       }
@@ -106,7 +106,7 @@ export class SharedLinkService extends BaseService {
       allowUpload: dto.allowUpload,
       allowDownload: dto.allowDownload,
       showExif: dto.showMetadata,
-      slug: dto.shareSlug || null
+      slug: dto.slug || null
     });
     return this.mapToSharedLink(sharedLink, { withExif: true });
   }
@@ -128,7 +128,10 @@ export class SharedLinkService extends BaseService {
   private async findOrFailWithSlug(userId: string, idValue: string) {
     let sharedLink = await this.sharedLinkRepository.get(userId, idValue);
     if (!sharedLink) {
-      sharedLink = await this.sharedLinkRepository.getBySlug(userId, idValue);
+      const slugSharedLink = await this.sharedLinkRepository.lookForSlug(idValue);
+      if ( slugSharedLink ) {
+        sharedLink = await this.sharedLinkRepository.get(userId, slugSharedLink.id);
+      }
     }
     if (!sharedLink) {
       throw new BadRequestException('Shared link not found');

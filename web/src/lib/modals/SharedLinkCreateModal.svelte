@@ -28,7 +28,7 @@
   let showMetadata = $state(true);
   let expirationOption: number = $state(0);
   let password = $state('');
-  let shareSlug = $state('');
+  let slug = $state('');
   let addSlug = $state(false);
   let shouldChangeExpirationTime = $state(false);
   let enablePassword = $state(false);
@@ -68,8 +68,8 @@
     if (editingLink.password) {
       password = editingLink.password;
     }
-    if ( editingLink.shareSlug ) {
-      shareSlug = editingLink.shareSlug;
+    if ( editingLink.slug ) {
+      slug = editingLink.slug;
     }
     allowUpload = editingLink.allowUpload;
     allowDownload = editingLink.allowDownload;
@@ -79,7 +79,7 @@
     assetIds = editingLink.assets.map(({id}) => id);
 
     enablePassword = !!editingLink.password;
-    addSlug = !!editingLink.shareSlug;
+    addSlug = !!editingLink.slug;
   }
 
   const handleCreateSharedLink = async () => {
@@ -97,7 +97,7 @@
           password,
           allowDownload,
           showMetadata,
-          shareSlug
+          slug
         },
       });
       onClose(data);
@@ -108,8 +108,8 @@
 
   const slugToggle = async () => {
     console.log('Slug Toggle Fire')
-    if ( shareSlug && !addSlug ) {
-      shareSlug = '';
+    if ( slug && !addSlug ) {
+      slug = '';
     }
   }
 
@@ -130,7 +130,7 @@
           allowUpload,
           allowDownload,
           showMetadata,
-          shareSlug
+          slug
         },
       });
 
@@ -238,7 +238,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={"URL Slug"}
-              bind:value={shareSlug}
+              bind:value={slug}
               disabled={!addSlug}
             />
           </div>

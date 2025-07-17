@@ -311,7 +311,7 @@ export const sharedLinkResponseStub = {
     showMetadata: true,
     type: SharedLinkType.Album,
     userId: 'admin_id',
-    shareSlug: null
+    slug: null
   }),
   validWithSlug: Object.freeze<SharedLinkResponseDto>({
     allowDownload: true,
@@ -326,7 +326,7 @@ export const sharedLinkResponseStub = {
     showMetadata: true,
     type: SharedLinkType.Album,
     userId: 'admin_id',
-    shareSlug: 'test'
+    slug: 'test'
   }),
   expired: Object.freeze<SharedLinkResponseDto>({
     album: undefined,
@@ -342,7 +342,7 @@ export const sharedLinkResponseStub = {
     showMetadata: true,
     type: SharedLinkType.Album,
     userId: 'admin_id',
-    shareSlug: null
+    slug: null
   }),
   readonlyNoMetadata: Object.freeze<SharedLinkResponseDto>({
     id: '123',
@@ -356,7 +356,7 @@ export const sharedLinkResponseStub = {
     allowUpload: false,
     allowDownload: false,
     showMetadata: false,
-    shareSlug: null,
+    slug: null,
     album: { ...albumResponse, startDate: assetResponse.localDateTime, endDate: assetResponse.localDateTime },
     assets: [{ ...assetResponseWithoutMetadata, exifInfo: undefined }],
   }),
