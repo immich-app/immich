@@ -436,6 +436,39 @@ export class DatabaseRepository {
     this.logger.debug('Finished running kysely migrations');
   }
 
+  async migrateFilePaths(sourceFolder: string, targetFolder: string): Promise<void> {
+    // escaping regex special characters with a backslash
+    const sourceRegex = '^' + sourceFolder.replaceAll(/[-[\]{}()*+?.,\\^$|#\s]/g, String.raw`\$&`);
+    const source = sql.raw(`'${sourceRegex}'`);
+    const target = sql.lit(targetFolder);
+
+    await this.db.transaction().execute(async (tx) => {
+      await tx
+        .updateTable('asset')
+        .set((eb) => ({
+          originalPath: eb.fn('REGEXP_REPLACE', ['originalPath', source, target]),
+          encodedVideoPath: eb.fn('REGEXP_REPLACE', ['encodedVideoPath', source, target]),
+          sidecarPath: eb.fn('REGEXP_REPLACE', ['sidecarPath', source, target]),
+        }))
+        .execute();
+
+      await tx
+        .updateTable('asset_file')
+        .set((eb) => ({ path: eb.fn('REGEXP_REPLACE', ['path', source, target]) }))
+        .execute();
+
+      await tx
+        .updateTable('person')
+        .set((eb) => ({ thumbnailPath: eb.fn('REGEXP_REPLACE', ['thumbnailPath', source, target]) }))
+        .execute();
+
+      await tx
+        .updateTable('user')
+        .set((eb) => ({ profileImagePath: eb.fn('REGEXP_REPLACE', ['profileImagePath', source, target]) }))
+        .execute();
+    });
+  }
+
   async withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R> {
     let res;
     await this.asyncLock.acquire(DatabaseLock[lock], async () => {

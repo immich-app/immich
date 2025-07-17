@@ -294,16 +294,16 @@ describe(AssetMediaService.name, () => {
 
     it('should return profile for profile uploads', () => {
       expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
-        'upload/profile/admin_id',
+        expect.stringContaining('upload/profile/admin_id'),
       );
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/profile/admin_id');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/profile/admin_id'));
     });
 
     it('should return upload for everything else', () => {
       expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
-        'upload/upload/admin_id/ra/nd',
+        expect.stringContaining('upload/upload/admin_id/ra/nd'),
       );
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id/ra/nd');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/upload/admin_id/ra/nd'));
     });
   });
 
@@ -913,7 +913,7 @@ describe(AssetMediaService.name, () => {
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
-        data: { files: ['upload/upload/user-id/ra/nd/random-uuid.jpg'] },
+        data: { files: [expect.stringContaining('upload/upload/user-id/ra/nd/random-uuid.jpg')] },
       });
     });
   });

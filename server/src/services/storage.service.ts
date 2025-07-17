@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
+import { APP_MEDIA_LOCATION } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { DatabaseLock, JobName, JobStatus, QueueName, StorageFolder, SystemMetadataKey } from 'src/enum';
@@ -60,6 +61,17 @@ export class StorageService extends BaseService {
         }
       }
     });
+
+    await this.databaseRepository.withLock(DatabaseLock.MediaLocation, async () => {
+      const current = APP_MEDIA_LOCATION;
+      const savedValue = await this.systemMetadataRepository.get(SystemMetadataKey.MediaLocation);
+      const previous = savedValue?.location || '';
+
+      if (previous !== current) {
+        this.logger.log(`Media location changed (from=${previous}, to=${current})`);
+        await this.systemMetadataRepository.set(SystemMetadataKey.MediaLocation, { location: current });
+      }
+    });
   }
 
   @OnJob({ name: JobName.FileDelete, queue: QueueName.BackgroundTask })
@@ -87,9 +99,8 @@ export class StorageService extends BaseService {
     try {
       await this.storageRepository.readFile(internalPath);
     } catch (error) {
-      const fullyQualifiedPath = resolve(process.cwd(), internalPath);
-      this.logger.error(`Failed to read ${fullyQualifiedPath} (${internalPath}): ${error}`);
-      throw new ImmichStartupError(`Failed to read: "${externalPath} (${fullyQualifiedPath}) - ${docsMessage}"`);
+      this.logger.error(`Failed to read (${internalPath}): ${error}`);
+      throw new ImmichStartupError(`Failed to read: "${externalPath} (${internalPath}) - ${docsMessage}"`);
     }
   }
 

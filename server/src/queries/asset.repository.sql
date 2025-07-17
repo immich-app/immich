@@ -168,6 +168,30 @@ from
 where
   "livePhotoVideoId" = $1::uuid
 
+-- AssetRepository.getFileSamples
+select
+  "asset"."id",
+  "asset"."originalPath",
+  "asset"."sidecarPath",
+  "asset"."encodedVideoPath",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "path"
+        from
+          "asset_file"
+        where
+          "asset"."id" = "asset_file"."assetId"
+      ) as agg
+  ) as "files"
+from
+  "asset"
+limit
+  3
+
 -- AssetRepository.getById
 select
   "asset".*
