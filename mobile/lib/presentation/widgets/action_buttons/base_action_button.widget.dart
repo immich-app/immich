@@ -6,6 +6,7 @@ class BaseActionButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.iconData,
+    this.iconColor,
     this.onPressed,
     this.onLongPressed,
     this.maxWidth = 90.0,
@@ -15,6 +16,7 @@ class BaseActionButton extends StatelessWidget {
 
   final String label;
   final IconData iconData;
+  final Color? iconColor;
   final double maxWidth;
   final double? minWidth;
   final bool menuItem;
@@ -27,7 +29,8 @@ class BaseActionButton extends StatelessWidget {
         minWidth ?? (context.isMobile ? context.width / 4.5 : 75.0);
     final iconTheme = IconTheme.of(context);
     final iconSize = iconTheme.size ?? 24.0;
-    final iconColor = iconTheme.color ?? context.themeData.iconTheme.color;
+    final iconColor =
+        this.iconColor ?? iconTheme.color ?? context.themeData.iconTheme.color;
     final textColor = context.themeData.textTheme.labelLarge?.color;
 
     if (menuItem) {

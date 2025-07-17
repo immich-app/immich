@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:http/http.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -81,6 +82,10 @@ class AssetApiRepository extends ApiRepository {
         longitude: location.longitude,
       ),
     );
+  }
+
+  Future<Response> downloadAsset(String id) {
+    return _api.downloadAssetWithHttpInfo(id);
   }
 
   _mapVisibility(AssetVisibilityEnum visibility) => switch (visibility) {

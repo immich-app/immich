@@ -45,7 +45,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
     );
 
     final actions = <Widget>[
-      const ShareActionButton(),
+      const ShareActionButton(source: ActionSource.viewer),
       if (asset.hasRemote) ...[
         const ShareLinkActionButton(source: ActionSource.viewer),
         const ArchiveActionButton(source: ActionSource.viewer),

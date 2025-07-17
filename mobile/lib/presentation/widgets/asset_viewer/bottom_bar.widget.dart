@@ -38,7 +38,7 @@ class ViewerBottomBar extends ConsumerWidget {
     }
 
     final actions = <Widget>[
-      const ShareActionButton(),
+      const ShareActionButton(source: ActionSource.viewer),
       const _EditActionButton(),
       if (asset.hasRemote && isOwner)
         const ArchiveActionButton(source: ActionSource.viewer),

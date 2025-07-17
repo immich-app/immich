@@ -72,7 +72,7 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
 
     // Guard no lat/lng
     if (!hasCoordinates ||
-        (asset is LocalAsset && !(asset as LocalAsset).hasRemote)) {
+        (asset != null && asset is LocalAsset && asset!.hasRemote)) {
       return const SizedBox.shrink();
     }
 

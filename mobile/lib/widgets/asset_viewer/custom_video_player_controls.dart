@@ -76,7 +76,7 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
           if (asset == null) {
             return;
           }
-          ref.read(castProvider.notifier).loadMedia(asset, true);
+          ref.read(castProvider.notifier).loadMediaOld(asset, true);
         }
         return;
       }
