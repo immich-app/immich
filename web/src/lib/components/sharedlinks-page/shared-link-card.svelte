@@ -91,6 +91,9 @@
         {#if link.password}
           <Badge rounded="full"><span class="text-xs px-1">{$t('password')}</span></Badge>
         {/if}
+        {#if link.shareSlug}
+          <Badge rounded="full"><span class="text-xs px-1">{$t('share_slug')}</span></Badge>
+        {/if}
       </div>
     </div>
   </svelte:element>

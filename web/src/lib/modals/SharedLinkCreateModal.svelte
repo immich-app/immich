@@ -106,6 +106,13 @@
     }
   };
 
+  const slugToggle = async () => {
+    console.log('Slug Toggle Fire')
+    if ( shareSlug && !addSlug ) {
+      shareSlug = '';
+    }
+  }
+
   const handleEditLink = async () => {
     if (!editingLink) {
       return;
@@ -224,16 +231,18 @@
           </div>
         {/if}
         <div class="my-3">
-          <SettingSwitch bind:checked={addSlug} title={$t('public_vanity_url')}/>
+          <SettingSwitch bind:checked={addSlug} onToggle={slugToggle} title={$t('public_vanity_url')}/>
         </div>
-        <div class="mb-2">
-          <SettingInputField
-            inputType={SettingInputFieldType.TEXT}
-            label={"URL Slug"}
-            bind:value={shareSlug}
-            disabled={!addSlug}
-          />
-        </div>
+        {#if addSlug }
+          <div class="mb-2">
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label={"URL Slug"}
+              bind:value={shareSlug}
+              disabled={!addSlug}
+            />
+          </div>
+        {/if}
         <div class="mt-3">
           <SettingSelect
             bind:value={expirationOption}
