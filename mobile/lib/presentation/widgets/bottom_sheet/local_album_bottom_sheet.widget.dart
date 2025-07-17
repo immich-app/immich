@@ -5,20 +5,23 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_a
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class LocalAlbumBottomSheet extends ConsumerWidget {
   const LocalAlbumBottomSheet({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return const BaseBottomSheet(
+    final multiselect = ref.watch(multiSelectProvider);
+
+    return BaseBottomSheet(
       initialChildSize: 0.25,
       maxChildSize: 0.4,
       shouldCloseOnMinExtent: false,
       actions: [
-        ShareActionButton(),
-        DeleteLocalActionButton(source: ActionSource.timeline),
-        UploadActionButton(),
+        const ShareActionButton(),
+        const DeleteLocalActionButton(source: ActionSource.timeline),
+        if (multiselect.hasLocal) const UploadActionButton(),
       ],
     );
   }
