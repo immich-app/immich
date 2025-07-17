@@ -13,7 +13,9 @@ import {
 
 export class BaseConfig implements VideoCodecSWConfig {
   readonly presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
-  protected constructor(protected config: SystemConfigFFmpegDto) {}
+
+  protected constructor(protected config: SystemConfigFFmpegDto) {
+  }
 
   static create(config: SystemConfigFFmpegDto, interfaces: VideoInterfaces): VideoCodecSWConfig {
     if (config.accel === TranscodeHWAccel.DISABLED) {
@@ -121,7 +123,6 @@ export class BaseConfig implements VideoCodecSWConfig {
 
     const options = [
       `-c:v ${videoCodec}`,
-      `-c:a ${audioCodec}`,
       // Makes a second pass moving the moov atom to the
       // beginning of the file for improved playback speed.
       '-movflags faststart',
@@ -133,7 +134,10 @@ export class BaseConfig implements VideoCodecSWConfig {
     ];
 
     if (audioStream) {
-      options.push(`-map 0:${audioStream.index}`);
+      options.push(
+        `-c:a ${audioCodec}`,
+        `-map 0:${audioStream.index}`,
+      );
     }
     if (this.getBFrames() > -1) {
       options.push(`-bf ${this.getBFrames()}`);
@@ -352,7 +356,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
       throw new Error('No /dev/dri devices found. If using Docker, make sure at least one /dev/dri device is mounted');
     }
 
-    return devices.filter(function (device) {
+    return devices.filter(function(device) {
       return device.startsWith('renderD') || device.startsWith('card');
     });
   }
@@ -360,7 +364,7 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
   getDevice({ dri }: VideoInterfaces) {
     if (this.config.preferredHwDevice === 'auto') {
       // eslint-disable-next-line unicorn/no-array-reduce
-      return `/dev/dri/${this.validateDevices(dri).reduce(function (a, b) {
+      return `/dev/dri/${this.validateDevices(dri).reduce(function(a, b) {
         return a.localeCompare(b) < 0 ? b : a;
       })}`;
     }

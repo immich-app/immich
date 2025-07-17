@@ -5,7 +5,7 @@ import { JsonWebTokenError, JwtPayload, verify } from 'jsonwebtoken';
 import fs from 'node:fs';
 import sanitize from 'sanitize-filename';
 import { MasterPlaylistParamDto, PartParamDto, PlaylistParamDto } from 'src/dtos/video.dto';
-import { CacheControl, RouteKey } from 'src/enum';
+import { CacheControl, RouteKey, VideoCodec } from 'src/enum';
 import { FileResponse } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
@@ -26,7 +26,7 @@ export class TranscodingController {
   async getMasterPlaylist(@Param() { secret }: MasterPlaylistParamDto) {
     let data;
     try {
-      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as JwtPayload | { id: string };
+      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as JwtPayload | { id: string, sessionId: string };
     } catch (error: any) {
       throw error instanceof JsonWebTokenError ? new UnauthorizedException() : error;
     }
@@ -36,14 +36,18 @@ export class TranscodingController {
   @Get(':secret/:codec/:quality.m3u8')
   @Header('Content-Type', 'application/vnd.apple.mpegurl')
   @FileResponse()
-  async getPlaylist(@Param() { secret, codec, quality }: PlaylistParamDto, @Query('start') start?: number) {
+  async getPlaylist(@Param() { secret, codec, quality }: PlaylistParamDto) {
     let data;
     try {
       data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as JwtPayload | { id: string; sessionId: string };
     } catch (error: any) {
       throw error instanceof JsonWebTokenError ? new UnauthorizedException() : error;
     }
-    return await this.service.getPlaylist(data.id, data.sessionId, codec, quality, start == 1);
+    if(Object.values(VideoCodec).includes(codec)) {
+      return await this.service.getVideoPlaylist(data.id, data.sessionId, codec, quality);
+    } else {
+      return await this.service.getAudioPlaylist(data.id, data.sessionId, codec, quality);
+    }
   }
 
   @Get(':secret/:codec/:quality/:name.mp4')
