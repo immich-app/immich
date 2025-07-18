@@ -15,9 +15,6 @@ import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 private object ThumbnailsPigeonUtils {
 
-  fun createConnectionError(channelName: String): FlutterError {
-    return FlutterError("channel-error",  "Unable to establish connection on channel: '$channelName'.", "")  }
-
   fun wrapResult(result: Any?): List<Any?> {
     return listOf(result)
   }
@@ -95,33 +92,6 @@ interface ThumbnailApi {
           channel.setMessageHandler(null)
         }
       }
-    }
-  }
-}
-/** Generated class from Pigeon that represents Flutter messages that can be called from Kotlin. */
-class PlatformThumbnailApi(private val binaryMessenger: BinaryMessenger, private val messageChannelSuffix: String = "") {
-  companion object {
-    /** The codec used by PlatformThumbnailApi. */
-    val codec: MessageCodec<Any?> by lazy {
-      ThumbnailsPigeonCodec()
-    }
-  }
-  fun getThumbnail(assetIdArg: String, widthArg: Long, heightArg: Long, callback: (Result<ByteArray?>) -> Unit)
-{
-    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
-    val channelName = "dev.flutter.pigeon.immich_mobile.PlatformThumbnailApi.getThumbnail$separatedMessageChannelSuffix"
-    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
-    channel.send(listOf(assetIdArg, widthArg, heightArg)) {
-      if (it is List<*>) {
-        if (it.size > 1) {
-          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
-        } else {
-          val output = it[0] as ByteArray?
-          callback(Result.success(output))
-        }
-      } else {
-        callback(Result.failure(ThumbnailsPigeonUtils.createConnectionError(channelName)))
-      } 
     }
   }
 }
