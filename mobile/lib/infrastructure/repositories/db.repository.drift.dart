@@ -43,29 +43,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
       i2.$RemoteAssetEntityTable(this);
   late final i3.$LocalAssetEntityTable localAssetEntity =
       i3.$LocalAssetEntityTable(this);
-  late final i4.$UserMetadataEntityTable userMetadataEntity =
-      i4.$UserMetadataEntityTable(this);
-  late final i5.$PartnerEntityTable partnerEntity =
-      i5.$PartnerEntityTable(this);
-  late final i6.$LocalAlbumEntityTable localAlbumEntity =
-      i6.$LocalAlbumEntityTable(this);
-  late final i7.$LocalAlbumAssetEntityTable localAlbumAssetEntity =
-      i7.$LocalAlbumAssetEntityTable(this);
-  late final i8.$RemoteExifEntityTable remoteExifEntity =
-      i8.$RemoteExifEntityTable(this);
-  late final i9.$RemoteAlbumEntityTable remoteAlbumEntity =
-      i9.$RemoteAlbumEntityTable(this);
-  late final i10.$RemoteAlbumAssetEntityTable remoteAlbumAssetEntity =
-      i10.$RemoteAlbumAssetEntityTable(this);
-  late final i11.$RemoteAlbumUserEntityTable remoteAlbumUserEntity =
-      i11.$RemoteAlbumUserEntityTable(this);
-  late final i12.$MemoryEntityTable memoryEntity = i12.$MemoryEntityTable(this);
-  late final i13.$MemoryAssetEntityTable memoryAssetEntity =
-      i13.$MemoryAssetEntityTable(this);
-  late final i14.$StackEntityTable stackEntity = i14.$StackEntityTable(this);
-  late final i15.$PersonEntityTable personEntity = i15.$PersonEntityTable(this);
-  i16.MergedAssetDrift get mergedAssetDrift => i17.ReadDatabaseContainer(this)
-      .accessor<i16.MergedAssetDrift>(i16.MergedAssetDrift.new);
   late final i4.$StackEntityTable stackEntity = i4.$StackEntityTable(this);
   late final i5.$UserMetadataEntityTable userMetadataEntity =
       i5.$UserMetadataEntityTable(this);
@@ -86,8 +63,9 @@ abstract class $Drift extends i0.GeneratedDatabase {
   late final i13.$MemoryEntityTable memoryEntity = i13.$MemoryEntityTable(this);
   late final i14.$MemoryAssetEntityTable memoryAssetEntity =
       i14.$MemoryAssetEntityTable(this);
-  i15.MergedAssetDrift get mergedAssetDrift => i16.ReadDatabaseContainer(this)
-      .accessor<i15.MergedAssetDrift>(i15.MergedAssetDrift.new);
+  late final i15.$PersonEntityTable personEntity = i15.$PersonEntityTable(this);
+  i16.MergedAssetDrift get mergedAssetDrift => i17.ReadDatabaseContainer(this)
+      .accessor<i16.MergedAssetDrift>(i16.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -110,7 +88,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
         remoteAlbumUserEntity,
         memoryEntity,
         memoryAssetEntity,
-        stackEntity,
         personEntity
       ];
   @override
@@ -247,13 +224,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
             on: i0.TableUpdateQuery.onTableName('user_entity',
                 limitUpdateKind: i0.UpdateKind.delete),
             result: [
-              i0.TableUpdate('stack_entity', kind: i0.UpdateKind.delete),
-            ],
-          ),
-          i0.WritePropagation(
-            on: i0.TableUpdateQuery.onTableName('user_entity',
-                limitUpdateKind: i0.UpdateKind.delete),
-            result: [
               i0.TableUpdate('person_entity', kind: i0.UpdateKind.delete),
             ],
           ),
@@ -292,12 +262,10 @@ class $DriftManager {
           _db, _db.remoteAlbumAssetEntity);
   i12.$$RemoteAlbumUserEntityTableTableManager get remoteAlbumUserEntity => i12
       .$$RemoteAlbumUserEntityTableTableManager(_db, _db.remoteAlbumUserEntity);
-  i12.$$MemoryEntityTableTableManager get memoryEntity =>
-      i12.$$MemoryEntityTableTableManager(_db, _db.memoryEntity);
-  i13.$$MemoryAssetEntityTableTableManager get memoryAssetEntity =>
-      i13.$$MemoryAssetEntityTableTableManager(_db, _db.memoryAssetEntity);
-  i14.$$StackEntityTableTableManager get stackEntity =>
-      i14.$$StackEntityTableTableManager(_db, _db.stackEntity);
+  i13.$$MemoryEntityTableTableManager get memoryEntity =>
+      i13.$$MemoryEntityTableTableManager(_db, _db.memoryEntity);
+  i14.$$MemoryAssetEntityTableTableManager get memoryAssetEntity =>
+      i14.$$MemoryAssetEntityTableTableManager(_db, _db.memoryAssetEntity);
   i15.$$PersonEntityTableTableManager get personEntity =>
       i15.$$PersonEntityTableTableManager(_db, _db.personEntity);
 }

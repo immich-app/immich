@@ -26,6 +26,7 @@ final class Schema2 extends i0.VersionedSchema {
     remoteAlbumUserEntity,
     memoryEntity,
     memoryAssetEntity,
+    personEntity,
   ];
   late final Shape0 userEntity = Shape0(
       source: i0.VersionedTable(
@@ -317,6 +318,30 @@ final class Schema2 extends i0.VersionedSchema {
         columns: [
           _column_36,
           _column_68,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape13 personEntity = Shape13(
+      source: i0.VersionedTable(
+        entityName: 'person_entity',
+        withoutRowId: true,
+        isStrict: true,
+        tableConstraints: [
+          'PRIMARY KEY(id)',
+        ],
+        columns: [
+          _column_0,
+          _column_9,
+          _column_5,
+          _column_15,
+          _column_1,
+          _column_69,
+          _column_70,
+          _column_71,
+          _column_72,
+          _column_73,
+          _column_74,
         ],
         attachedDatabase: database,
       ),
@@ -845,6 +870,55 @@ i1.GeneratedColumn<String> _column_68(String aliasedName) =>
         type: i1.DriftSqlType.string,
         defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
             'REFERENCES memory_entity (id) ON DELETE CASCADE'));
+
+class Shape13 extends i0.VersionedTable {
+  Shape13({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<DateTime> get createdAt =>
+      columnsByName['created_at']! as i1.GeneratedColumn<DateTime>;
+  i1.GeneratedColumn<DateTime> get updatedAt =>
+      columnsByName['updated_at']! as i1.GeneratedColumn<DateTime>;
+  i1.GeneratedColumn<String> get ownerId =>
+      columnsByName['owner_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get name =>
+      columnsByName['name']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get faceAssetId =>
+      columnsByName['face_asset_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get thumbnailPath =>
+      columnsByName['thumbnail_path']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<bool> get isFavorite =>
+      columnsByName['is_favorite']! as i1.GeneratedColumn<bool>;
+  i1.GeneratedColumn<bool> get isHidden =>
+      columnsByName['is_hidden']! as i1.GeneratedColumn<bool>;
+  i1.GeneratedColumn<String> get color =>
+      columnsByName['color']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<DateTime> get birthDate =>
+      columnsByName['birth_date']! as i1.GeneratedColumn<DateTime>;
+}
+
+i1.GeneratedColumn<String> _column_69(String aliasedName) =>
+    i1.GeneratedColumn<String>('face_asset_id', aliasedName, true,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<String> _column_70(String aliasedName) =>
+    i1.GeneratedColumn<String>('thumbnail_path', aliasedName, false,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<bool> _column_71(String aliasedName) =>
+    i1.GeneratedColumn<bool>('is_favorite', aliasedName, false,
+        type: i1.DriftSqlType.bool,
+        defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
+            'CHECK ("is_favorite" IN (0, 1))'));
+i1.GeneratedColumn<bool> _column_72(String aliasedName) =>
+    i1.GeneratedColumn<bool>('is_hidden', aliasedName, false,
+        type: i1.DriftSqlType.bool,
+        defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
+            'CHECK ("is_hidden" IN (0, 1))'));
+i1.GeneratedColumn<String> _column_73(String aliasedName) =>
+    i1.GeneratedColumn<String>('color', aliasedName, true,
+        type: i1.DriftSqlType.string);
+i1.GeneratedColumn<DateTime> _column_74(String aliasedName) =>
+    i1.GeneratedColumn<DateTime>('birth_date', aliasedName, true,
+        type: i1.DriftSqlType.dateTime);
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
 }) {
