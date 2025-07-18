@@ -154,6 +154,12 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { asset, result };
   }
 
+  async newAssetFace(dto: Partial<Insertable<AssetFace>> & { assetId: string }) {
+    const assetFace = mediumFactory.assetFaceInsert(dto);
+    const result = await this.get(PersonRepository).createAssetFace(assetFace);
+    return { assetFace, result };
+  }
+
   async newMemory(dto: Partial<Insertable<MemoryTable>> = {}) {
     const memory = mediumFactory.memoryInsert(dto);
     const result = await this.get(MemoryRepository).create(memory, new Set<string>());

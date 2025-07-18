@@ -58,6 +58,8 @@ class SyncEntityType {
   static const stackDeleteV1 = SyncEntityType._(r'StackDeleteV1');
   static const personV1 = SyncEntityType._(r'PersonV1');
   static const personDeleteV1 = SyncEntityType._(r'PersonDeleteV1');
+  static const assetFaceV1 = SyncEntityType._(r'AssetFaceV1');
+  static const assetFaceDeleteV1 = SyncEntityType._(r'AssetFaceDeleteV1');
   static const userMetadataV1 = SyncEntityType._(r'UserMetadataV1');
   static const userMetadataDeleteV1 = SyncEntityType._(r'UserMetadataDeleteV1');
   static const syncAckV1 = SyncEntityType._(r'SyncAckV1');
@@ -100,6 +102,8 @@ class SyncEntityType {
     stackDeleteV1,
     personV1,
     personDeleteV1,
+    assetFaceV1,
+    assetFaceDeleteV1,
     userMetadataV1,
     userMetadataDeleteV1,
     syncAckV1,
@@ -177,6 +181,8 @@ class SyncEntityTypeTypeTransformer {
         case r'StackDeleteV1': return SyncEntityType.stackDeleteV1;
         case r'PersonV1': return SyncEntityType.personV1;
         case r'PersonDeleteV1': return SyncEntityType.personDeleteV1;
+        case r'AssetFaceV1': return SyncEntityType.assetFaceV1;
+        case r'AssetFaceDeleteV1': return SyncEntityType.assetFaceDeleteV1;
         case r'UserMetadataV1': return SyncEntityType.userMetadataV1;
         case r'UserMetadataDeleteV1': return SyncEntityType.userMetadataDeleteV1;
         case r'SyncAckV1': return SyncEntityType.syncAckV1;
