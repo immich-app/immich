@@ -15,17 +15,6 @@ PlatformException _createConnectionError(String channelName) {
   );
 }
 
-List<Object?> wrapResponse(
-    {Object? result, PlatformException? error, bool empty = false}) {
-  if (empty) {
-    return <Object?>[];
-  }
-  if (error == null) {
-    return <Object?>[result];
-  }
-  return <Object?>[error.code, error.message, error.details];
-}
-
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -94,57 +83,6 @@ class ThumbnailApi {
       );
     } else {
       return (pigeonVar_replyList[0] as Uint8List?)!;
-    }
-  }
-}
-
-abstract class PlatformThumbnailApi {
-  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
-
-  Future<Uint8List?> getThumbnail(String assetId, int width, int height);
-
-  static void setUp(
-    PlatformThumbnailApi? api, {
-    BinaryMessenger? binaryMessenger,
-    String messageChannelSuffix = '',
-  }) {
-    messageChannelSuffix =
-        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
-    {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.immich_mobile.PlatformThumbnailApi.getThumbnail$messageChannelSuffix',
-          pigeonChannelCodec,
-          binaryMessenger: binaryMessenger);
-      if (api == null) {
-        pigeonVar_channel.setMessageHandler(null);
-      } else {
-        pigeonVar_channel.setMessageHandler((Object? message) async {
-          assert(message != null,
-              'Argument for dev.flutter.pigeon.immich_mobile.PlatformThumbnailApi.getThumbnail was null.');
-          final List<Object?> args = (message as List<Object?>?)!;
-          final String? arg_assetId = (args[0] as String?);
-          assert(arg_assetId != null,
-              'Argument for dev.flutter.pigeon.immich_mobile.PlatformThumbnailApi.getThumbnail was null, expected non-null String.');
-          final int? arg_width = (args[1] as int?);
-          assert(arg_width != null,
-              'Argument for dev.flutter.pigeon.immich_mobile.PlatformThumbnailApi.getThumbnail was null, expected non-null int.');
-          final int? arg_height = (args[2] as int?);
-          assert(arg_height != null,
-              'Argument for dev.flutter.pigeon.immich_mobile.PlatformThumbnailApi.getThumbnail was null, expected non-null int.');
-          try {
-            final Uint8List? output =
-                await api.getThumbnail(arg_assetId!, arg_width!, arg_height!);
-            return wrapResponse(result: output);
-          } on PlatformException catch (e) {
-            return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
-          }
-        });
-      }
     }
   }
 }
