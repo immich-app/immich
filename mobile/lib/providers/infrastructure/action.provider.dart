@@ -47,7 +47,18 @@ class ActionNotifier extends Notifier<void> {
   }
 
   List<String> _getLocalIdsForSource(ActionSource source) {
-    return _getIdsForSource<LocalAsset>(source).toIds().toList(growable: false);
+    final Set<BaseAsset> assets = _getAssets(source);
+    final List<String> localIds = [];
+
+    for (final asset in assets) {
+      if (asset is LocalAsset) {
+        localIds.add(asset.id);
+      } else if (asset is RemoteAsset && asset.localId != null) {
+        localIds.add(asset.localId!);
+      }
+    }
+
+    return localIds;
   }
 
   List<String> _getOwnedRemoteIdsForSource(ActionSource source) {
@@ -162,8 +173,9 @@ class ActionNotifier extends Notifier<void> {
 
   Future<ActionResult> moveToLockFolder(ActionSource source) async {
     final ids = _getOwnedRemoteIdsForSource(source);
+    final localIds = _getLocalIdsForSource(source);
     try {
-      await _service.moveToLockFolder(ids);
+      await _service.moveToLockFolder(ids, localIds);
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to move assets to lock folder', error, stack);
@@ -328,8 +340,4 @@ extension on Iterable<RemoteAsset> {
     if (ownerId == null) return const [];
     return whereType<RemoteAsset>().where((a) => a.ownerId == ownerId);
   }
-}
-
-extension on Iterable<LocalAsset> {
-  Iterable<String> toIds() => map((e) => e.id);
 }
