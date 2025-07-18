@@ -73,7 +73,7 @@ describe(SyncRequestType.AlbumToAssetsV1, () => {
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     const { album } = await ctx.newAlbum({ ownerId: user2.id });
     await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
-    await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.EDITOR });
+    await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumToAssetsV1]);
     expect(response).toHaveLength(1);
@@ -130,7 +130,7 @@ describe(SyncRequestType.AlbumToAssetsV1, () => {
     await ctx.syncAckAll(auth, response);
 
     // add user to backfill album
-    await ctx.newAlbumUser({ albumId: album2.id, userId: auth.user.id, role: AlbumUserRole.EDITOR });
+    await ctx.newAlbumUser({ albumId: album2.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     // should backfill the album to asset relation
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumToAssetsV1]);

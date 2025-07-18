@@ -14,6 +14,8 @@ class RemoteAsset extends BaseAsset {
   final String? thumbHash;
   final AssetVisibility visibility;
   final String ownerId;
+  final String? stackId;
+  final int stackCount;
 
   const RemoteAsset({
     required this.id,
@@ -31,6 +33,8 @@ class RemoteAsset extends BaseAsset {
     this.thumbHash,
     this.visibility = AssetVisibility.timeline,
     super.livePhotoVideoId,
+    this.stackId,
+    this.stackCount = 0,
   });
 
   @override
@@ -56,9 +60,14 @@ class RemoteAsset extends BaseAsset {
     isFavorite: $isFavorite,
     thumbHash: ${thumbHash ?? "<NA>"},
     visibility: $visibility,
+    stackId: ${stackId ?? "<NA>"},
+    stackCount: $stackCount,
+    checksum: $checksum,
+    livePhotoVideoId: ${livePhotoVideoId ?? "<NA>"},
  }''';
   }
 
+  // Not checking for localId here
   @override
   bool operator ==(Object other) {
     if (other is! RemoteAsset) return false;
@@ -67,7 +76,9 @@ class RemoteAsset extends BaseAsset {
         id == other.id &&
         ownerId == other.ownerId &&
         thumbHash == other.thumbHash &&
-        visibility == other.visibility;
+        visibility == other.visibility &&
+        stackId == other.stackId &&
+        stackCount == other.stackCount;
   }
 
   @override
@@ -77,7 +88,9 @@ class RemoteAsset extends BaseAsset {
       ownerId.hashCode ^
       localId.hashCode ^
       thumbHash.hashCode ^
-      visibility.hashCode;
+      visibility.hashCode ^
+      stackId.hashCode ^
+      stackCount.hashCode;
 
   RemoteAsset copyWith({
     String? id,
@@ -94,6 +107,9 @@ class RemoteAsset extends BaseAsset {
     bool? isFavorite,
     String? thumbHash,
     AssetVisibility? visibility,
+    String? livePhotoVideoId,
+    String? stackId,
+    int? stackCount,
   }) {
     return RemoteAsset(
       id: id ?? this.id,
@@ -110,6 +126,9 @@ class RemoteAsset extends BaseAsset {
       isFavorite: isFavorite ?? this.isFavorite,
       thumbHash: thumbHash ?? this.thumbHash,
       visibility: visibility ?? this.visibility,
+      livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
+      stackId: stackId ?? this.stackId,
+      stackCount: stackCount ?? this.stackCount,
     );
   }
 }

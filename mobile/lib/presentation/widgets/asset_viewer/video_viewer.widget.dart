@@ -270,10 +270,7 @@ class NativeVideoViewer extends HookConsumerWidget {
         return;
       }
 
-      if (videoController.playbackInfo?.status == PlaybackStatus.stopped &&
-          !ref
-              .read(appSettingsServiceProvider)
-              .getSetting<bool>(AppSettingsEnum.loopVideo)) {
+      if (videoController.playbackInfo?.status == PlaybackStatus.stopped) {
         ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
       }
     }
@@ -310,7 +307,7 @@ class NativeVideoViewer extends HookConsumerWidget {
       final loopVideo = ref
           .read(appSettingsServiceProvider)
           .getSetting<bool>(AppSettingsEnum.loopVideo);
-      nc.setLoop(loopVideo);
+      nc.setLoop(!asset.isMotionPhoto && loopVideo);
 
       controller.value = nc;
       Timer(const Duration(milliseconds: 200), checkIfBuffering);

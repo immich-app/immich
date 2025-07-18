@@ -9,11 +9,9 @@ import {
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
-  Unique,
 } from 'src/sql-tools';
 
-@Table('shared_links')
-@Unique({ name: 'UQ_sharedlink_key', columns: ['key'] })
+@Table('shared_link')
 export class SharedLinkTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
@@ -24,7 +22,7 @@ export class SharedLinkTable {
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   userId!: string;
 
-  @Column({ type: 'bytea', indexName: 'IDX_sharedlink_key' })
+  @Column({ type: 'bytea', index: true, unique: true })
   key!: Buffer; // use to access the individual asset
 
   @Column()
@@ -39,12 +37,7 @@ export class SharedLinkTable {
   @Column({ type: 'boolean', default: false })
   allowUpload!: boolean;
 
-  @ForeignKeyColumn(() => AlbumTable, {
-    nullable: true,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-    indexName: 'IDX_sharedlink_albumId',
-  })
+  @ForeignKeyColumn(() => AlbumTable, { nullable: true, onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   albumId!: string | null;
 
   @Column({ type: 'boolean', default: true })

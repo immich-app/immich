@@ -19,7 +19,7 @@ describe(DatabaseService.name, () => {
     ({ sut, mocks } = newTestService(DatabaseService));
 
     extensionRange = '0.2.x';
-    mocks.database.getVectorExtension.mockResolvedValue(DatabaseExtension.VECTORCHORD);
+    mocks.database.getVectorExtension.mockResolvedValue(DatabaseExtension.VectorChord);
     mocks.database.getExtensionVersionRange.mockReturnValue(extensionRange);
 
     versionBelowRange = '0.1.0';
@@ -28,7 +28,7 @@ describe(DatabaseService.name, () => {
     versionAboveRange = '0.3.0';
     mocks.database.getExtensionVersions.mockResolvedValue([
       {
-        name: DatabaseExtension.VECTORCHORD,
+        name: DatabaseExtension.VectorChord,
         installedVersion: null,
         availableVersion: minVersionInRange,
       },
@@ -49,9 +49,9 @@ describe(DatabaseService.name, () => {
     });
 
     describe.each(<Array<{ extension: VectorExtension; extensionName: string }>>[
-      { extension: DatabaseExtension.VECTOR, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTOR] },
-      { extension: DatabaseExtension.VECTORS, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTORS] },
-      { extension: DatabaseExtension.VECTORCHORD, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTORCHORD] },
+      { extension: DatabaseExtension.Vector, extensionName: EXTENSION_NAMES[DatabaseExtension.Vector] },
+      { extension: DatabaseExtension.Vectors, extensionName: EXTENSION_NAMES[DatabaseExtension.Vectors] },
+      { extension: DatabaseExtension.VectorChord, extensionName: EXTENSION_NAMES[DatabaseExtension.VectorChord] },
     ])('should work with $extensionName', ({ extension, extensionName }) => {
       beforeEach(() => {
         mocks.database.getExtensionVersions.mockResolvedValue([
@@ -292,8 +292,8 @@ describe(DatabaseService.name, () => {
         await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
         expect(mocks.database.reindexVectorsIfNeeded).toHaveBeenCalledExactlyOnceWith([
-          VectorIndex.CLIP,
-          VectorIndex.FACE,
+          VectorIndex.Clip,
+          VectorIndex.Face,
         ]);
         expect(mocks.database.reindexVectorsIfNeeded).toHaveBeenCalledTimes(1);
         expect(mocks.database.runMigrations).toHaveBeenCalledTimes(1);
@@ -306,8 +306,8 @@ describe(DatabaseService.name, () => {
         await expect(sut.onBootstrap()).rejects.toBeDefined();
 
         expect(mocks.database.reindexVectorsIfNeeded).toHaveBeenCalledExactlyOnceWith([
-          VectorIndex.CLIP,
-          VectorIndex.FACE,
+          VectorIndex.Clip,
+          VectorIndex.Face,
         ]);
         expect(mocks.database.runMigrations).not.toHaveBeenCalled();
         expect(mocks.logger.fatal).not.toHaveBeenCalled();
@@ -330,7 +330,7 @@ describe(DatabaseService.name, () => {
               database: 'immich',
             },
             skipMigrations: true,
-            vectorExtension: DatabaseExtension.VECTORS,
+            vectorExtension: DatabaseExtension.Vectors,
           },
         }),
       );
@@ -356,12 +356,12 @@ describe(DatabaseService.name, () => {
     it(`should drop unused extension`, async () => {
       mocks.database.getExtensionVersions.mockResolvedValue([
         {
-          name: DatabaseExtension.VECTORS,
+          name: DatabaseExtension.Vectors,
           installedVersion: minVersionInRange,
           availableVersion: minVersionInRange,
         },
         {
-          name: DatabaseExtension.VECTORCHORD,
+          name: DatabaseExtension.VectorChord,
           installedVersion: null,
           availableVersion: minVersionInRange,
         },
@@ -369,19 +369,19 @@ describe(DatabaseService.name, () => {
 
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
-      expect(mocks.database.createExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.VECTORCHORD);
-      expect(mocks.database.dropExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.VECTORS);
+      expect(mocks.database.createExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.VectorChord);
+      expect(mocks.database.dropExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.Vectors);
     });
 
     it(`should warn if unused extension could not be dropped`, async () => {
       mocks.database.getExtensionVersions.mockResolvedValue([
         {
-          name: DatabaseExtension.VECTORS,
+          name: DatabaseExtension.Vectors,
           installedVersion: minVersionInRange,
           availableVersion: minVersionInRange,
         },
         {
-          name: DatabaseExtension.VECTORCHORD,
+          name: DatabaseExtension.VectorChord,
           installedVersion: null,
           availableVersion: minVersionInRange,
         },
@@ -390,8 +390,8 @@ describe(DatabaseService.name, () => {
 
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
-      expect(mocks.database.createExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.VECTORCHORD);
-      expect(mocks.database.dropExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.VECTORS);
+      expect(mocks.database.createExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.VectorChord);
+      expect(mocks.database.dropExtension).toHaveBeenCalledExactlyOnceWith(DatabaseExtension.Vectors);
       expect(mocks.logger.warn).toHaveBeenCalledTimes(1);
       expect(mocks.logger.warn.mock.calls[0][0]).toContain('DROP EXTENSION vectors');
     });
@@ -399,12 +399,12 @@ describe(DatabaseService.name, () => {
     it(`should not try to drop pgvector when using vectorchord`, async () => {
       mocks.database.getExtensionVersions.mockResolvedValue([
         {
-          name: DatabaseExtension.VECTOR,
+          name: DatabaseExtension.Vector,
           installedVersion: minVersionInRange,
           availableVersion: minVersionInRange,
         },
         {
-          name: DatabaseExtension.VECTORCHORD,
+          name: DatabaseExtension.VectorChord,
           installedVersion: minVersionInRange,
           availableVersion: minVersionInRange,
         },

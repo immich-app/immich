@@ -2,9 +2,9 @@
 
 -- ViewRepository.getUniqueOriginalPaths
 select distinct
-  substring("assets"."originalPath", $1) as "directoryPath"
+  substring("asset"."originalPath", $1) as "directoryPath"
 from
-  "assets"
+  "asset"
 where
   "ownerId" = $2::uuid
   and "visibility" = $3
@@ -15,11 +15,11 @@ where
 
 -- ViewRepository.getAssetsByOriginalPath
 select
-  "assets".*,
-  to_json("exif") as "exifInfo"
+  "asset".*,
+  to_json("asset_exif") as "exifInfo"
 from
-  "assets"
-  left join "exif" on "assets"."id" = "exif"."assetId"
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "ownerId" = $1::uuid
   and "visibility" = $2
@@ -30,4 +30,4 @@ where
   and "originalPath" like $3
   and "originalPath" not like $4
 order by
-  regexp_replace("assets"."originalPath", $5, $6) asc
+  regexp_replace("asset"."originalPath", $5, $6) asc

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
@@ -18,6 +19,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
 import 'package:isar/isar.dart';
 
 import 'db.repository.drift.dart';
@@ -70,10 +72,36 @@ class Drift extends $Drift implements IDatabaseRepository {
         );
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          // Run migration steps without foreign keys and re-enable them later
+          await customStatement('PRAGMA foreign_keys = OFF');
+
+          await m.runMigrationSteps(
+            from: from,
+            to: to,
+            steps: migrationSteps(
+              from1To2: (m, _) async {
+                for (final entity in allSchemaEntities) {
+                  await m.drop(entity);
+                  await m.create(entity);
+                }
+              },
+            ),
+          );
+
+          if (kDebugMode) {
+            // Fail if the migration broke foreign keys
+            final wrongFKs =
+                await customSelect('PRAGMA foreign_key_check').get();
+            assert(wrongFKs.isEmpty, '${wrongFKs.map((e) => e.data)}');
+          }
+
+          await customStatement('PRAGMA foreign_keys = ON;');
+        },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
           await customStatement('PRAGMA synchronous = NORMAL');

@@ -25,14 +25,14 @@ export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
 } as const;
 
 export const VECTOR_EXTENSIONS = [
-  DatabaseExtension.VECTORCHORD,
-  DatabaseExtension.VECTORS,
-  DatabaseExtension.VECTOR,
+  DatabaseExtension.VectorChord,
+  DatabaseExtension.Vectors,
+  DatabaseExtension.Vector,
 ] as const;
 
 export const VECTOR_INDEX_TABLES = {
-  [VectorIndex.CLIP]: 'smart_search',
-  [VectorIndex.FACE]: 'face_search',
+  [VectorIndex.Clip]: 'smart_search',
+  [VectorIndex.Face]: 'face_search',
 } as const;
 
 export const VECTORCHORD_LIST_SLACK_FACTOR = 1.2;

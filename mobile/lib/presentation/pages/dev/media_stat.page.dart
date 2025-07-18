@@ -230,7 +230,7 @@ class RemoteMediaSummaryPage extends StatelessWidget {
                         name: album.name,
                         countFuture: countFuture,
                         onTap: () => context.router.push(
-                          RemoteTimelineRoute(album: album),
+                          RemoteAlbumRoute(album: album),
                         ),
                       );
                     },

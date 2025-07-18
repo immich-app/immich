@@ -12,7 +12,7 @@ export class NotificationRepository {
 
   cleanup() {
     return this.db
-      .deleteFrom('notifications')
+      .deleteFrom('notification')
       .where((eb) =>
         eb.or([
           // remove soft-deleted notifications
@@ -38,7 +38,7 @@ export class NotificationRepository {
   @GenerateSql({ params: [DummyValue.UUID, {}] }, { name: 'unread', params: [DummyValue.UUID, { unread: true }] })
   search(userId: string, dto: NotificationSearchDto) {
     return this.db
-      .selectFrom('notifications')
+      .selectFrom('notification')
       .select(columns.notification)
       .where((qb) =>
         qb.and({
@@ -56,7 +56,7 @@ export class NotificationRepository {
 
   create(notification: Insertable<NotificationTable>) {
     return this.db
-      .insertInto('notifications')
+      .insertInto('notification')
       .values(notification)
       .returning(columns.notification)
       .executeTakeFirstOrThrow();
@@ -64,7 +64,7 @@ export class NotificationRepository {
 
   get(id: string) {
     return this.db
-      .selectFrom('notifications')
+      .selectFrom('notification')
       .select(columns.notification)
       .where('id', '=', id)
       .where('deletedAt', 'is not', null)
@@ -73,7 +73,7 @@ export class NotificationRepository {
 
   update(id: string, notification: Updateable<NotificationTable>) {
     return this.db
-      .updateTable('notifications')
+      .updateTable('notification')
       .set(notification)
       .where('deletedAt', 'is', null)
       .where('id', '=', id)
@@ -82,12 +82,12 @@ export class NotificationRepository {
   }
 
   async updateAll(ids: string[], notification: Updateable<NotificationTable>) {
-    await this.db.updateTable('notifications').set(notification).where('id', 'in', ids).execute();
+    await this.db.updateTable('notification').set(notification).where('id', 'in', ids).execute();
   }
 
   async delete(id: string) {
     await this.db
-      .updateTable('notifications')
+      .updateTable('notification')
       .set({ deletedAt: DateTime.now().toJSDate() })
       .where('id', '=', id)
       .execute();
@@ -95,7 +95,7 @@ export class NotificationRepository {
 
   async deleteAll(ids: string[]) {
     await this.db
-      .updateTable('notifications')
+      .updateTable('notification')
       .set({ deletedAt: DateTime.now().toJSDate() })
       .where('id', 'in', ids)
       .execute();

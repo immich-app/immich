@@ -41,7 +41,7 @@ export class JobRepository {
       const instance = this.moduleRef.get<any>(Service);
       for (const methodName of getMethodNames(instance)) {
         const handler = instance[methodName];
-        const config = reflector.get<JobConfig>(MetadataKey.JOB_CONFIG, handler);
+        const config = reflector.get<JobConfig>(MetadataKey.JobConfig, handler);
         if (!config) {
           continue;
         }
@@ -89,7 +89,7 @@ export class JobRepository {
       this.logger.debug(`Starting worker for queue: ${queueName}`);
       this.workers[queueName] = new Worker(
         queueName,
-        (job) => this.eventRepository.emit('job.start', queueName, job as JobItem),
+        (job) => this.eventRepository.emit('JobStart', queueName, job as JobItem),
         { ...bull.config, concurrency: 1 },
       );
     }
@@ -99,7 +99,7 @@ export class JobRepository {
     const item = this.handlers[name as JobName];
     if (!item) {
       this.logger.warn(`Skipping unknown job: "${name}"`);
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     return item.handler(data);
@@ -205,20 +205,20 @@ export class JobRepository {
 
   private getJobOptions(item: JobItem): JobsOptions | null {
     switch (item.name) {
-      case JobName.NOTIFY_ALBUM_UPDATE: {
+      case JobName.NotifyAlbumUpdate: {
         return {
           jobId: `${item.data.id}/${item.data.recipientId}`,
           delay: item.data?.delay,
         };
       }
-      case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
+      case JobName.StorageTemplateMigrationSingle: {
         return { jobId: item.data.id };
       }
-      case JobName.GENERATE_PERSON_THUMBNAIL: {
+      case JobName.PersonGenerateThumbnail: {
         return { priority: 1 };
       }
-      case JobName.QUEUE_FACIAL_RECOGNITION: {
-        return { jobId: JobName.QUEUE_FACIAL_RECOGNITION };
+      case JobName.FacialRecognitionQueueAll: {
+        return { jobId: JobName.FacialRecognitionQueueAll };
       }
       default: {
         return null;

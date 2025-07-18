@@ -76,6 +76,8 @@ export const readColumns: Reader = async (ctx, db) => {
 
     const item: DatabaseColumn = {
       type: column.data_type as ColumnType,
+      // TODO infer this from PK constraints
+      primary: false,
       name: columnName,
       tableName: column.table_name,
       nullable: column.is_nullable === 'YES',

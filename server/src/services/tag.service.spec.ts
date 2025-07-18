@@ -278,7 +278,7 @@ describe(TagService.name, () => {
     it('should delete empty tags', async () => {
       mocks.tag.deleteEmptyTags.mockResolvedValue();
 
-      await expect(sut.handleTagCleanup()).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleTagCleanup()).resolves.toBe(JobStatus.Success);
 
       expect(mocks.tag.deleteEmptyTags).toHaveBeenCalled();
     });

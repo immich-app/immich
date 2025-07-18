@@ -102,7 +102,7 @@ describe(AuthService.name, () => {
     it('should logout', async () => {
       const { sut } = setup();
       const auth = factory.auth();
-      await expect(sut.logout(auth, AuthType.PASSWORD)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.Password)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });
@@ -118,7 +118,7 @@ describe(AuthService.name, () => {
       eventRepo.emit.mockResolvedValue();
 
       await expect(sessionRepo.get(session.id)).resolves.toEqual(expect.objectContaining({ id: session.id }));
-      await expect(sut.logout(auth, AuthType.PASSWORD)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.Password)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });

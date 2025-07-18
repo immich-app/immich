@@ -29,6 +29,7 @@ import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
 import 'package:immich_mobile/pages/common/activities.page.dart';
 import 'package:immich_mobile/pages/common/app_log.page.dart';
 import 'package:immich_mobile/pages/common/app_log_detail.page.dart';
+import 'package:immich_mobile/pages/common/change_experience.page.dart';
 import 'package:immich_mobile/pages/common/create_album.page.dart';
 import 'package:immich_mobile/pages/common/gallery_viewer.page.dart';
 import 'package:immich_mobile/pages/common/headers_settings.page.dart';
@@ -69,24 +70,28 @@ import 'package:immich_mobile/pages/search/person_result.page.dart';
 import 'package:immich_mobile/pages/search/recently_taken.page.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/drift_favorite.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/drift_partner_detail.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/drift_local_album.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/drift_recently_taken.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/drift_video.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/drift_trash.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/drift_archive.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/drift_locked_folder.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/feat_in_development.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/local_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/main_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/media_stat.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/remote_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_album.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_library.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_archive.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_asset_selection_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_create_album.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_favorite.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_library.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_local_album.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_locked_folder.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_memory.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_partner_detail.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_place.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_place_detail.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_recently_taken.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_user_selection.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_remote_album.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_trash.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_video.page.dart';
+import 'package:immich_mobile/presentation/pages/local_timeline.page.dart';
+import 'package:immich_mobile/presentation/pages/search/drift_search.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
@@ -100,7 +105,6 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/local_auth.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
-
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 part 'router.gr.dart';
@@ -186,7 +190,7 @@ class AppRouter extends RootStackRouter {
           guards: [_authGuard, _duplicateGuard],
         ),
         AutoRoute(
-          page: SearchRoute.page,
+          page: DriftSearchRoute.page,
           guards: [_authGuard, _duplicateGuard],
           maintainState: false,
         ),
@@ -390,7 +394,7 @@ class AppRouter extends RootStackRouter {
       guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(
-      page: RemoteTimelineRoute.page,
+      page: RemoteAlbumRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(
@@ -453,7 +457,23 @@ class AppRouter extends RootStackRouter {
       page: DriftCreateAlbumRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
+    AutoRoute(
+      page: DriftPlaceRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: DriftPlaceDetailRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: DriftUserSelectionRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
 
+    AutoRoute(
+      page: ChangeExperienceRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
     // required to handle all deeplinks in deep_link.service.dart
     // auto_route_library#1722
     RedirectRoute(path: '*', redirectTo: '/'),

@@ -18,7 +18,7 @@ import { BaseService } from 'src/services/base.service';
 @Injectable()
 export class ActivityService extends BaseService {
   async getAll(auth: AuthDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
-    await this.requireAccess({ auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
+    await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
     const activities = await this.activityRepository.search({
       userId: dto.userId,
       albumId: dto.albumId,
@@ -30,12 +30,12 @@ export class ActivityService extends BaseService {
   }
 
   async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
+    await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
     return await this.activityRepository.getStatistics({ albumId: dto.albumId, assetId: dto.assetId });
   }
 
   async create(auth: AuthDto, dto: ActivityCreateDto): Promise<MaybeDuplicate<ActivityResponseDto>> {
-    await this.requireAccess({ auth, permission: Permission.ACTIVITY_CREATE, ids: [dto.albumId] });
+    await this.requireAccess({ auth, permission: Permission.ActivityCreate, ids: [dto.albumId] });
 
     const common = {
       userId: auth.user.id,
@@ -69,7 +69,7 @@ export class ActivityService extends BaseService {
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.ACTIVITY_DELETE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ActivityDelete, ids: [id] });
     await this.activityRepository.delete(id);
   }
 }

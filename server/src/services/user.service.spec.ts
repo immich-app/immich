@@ -122,7 +122,7 @@ describe(UserService.name, () => {
 
       await sut.createProfileImage(authStub.admin, file);
 
-      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
+      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files } }]]);
     });
 
     it('should not delete the profile image if it has not been set', async () => {
@@ -156,7 +156,7 @@ describe(UserService.name, () => {
 
       await sut.deleteProfileImage(authStub.admin);
 
-      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.DELETE_FILES, data: { files } }]]);
+      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files } }]]);
     });
   });
 
@@ -185,7 +185,7 @@ describe(UserService.name, () => {
         new ImmichFileResponse({
           path: '/path/to/profile.jpg',
           contentType: 'image/jpeg',
-          cacheControl: CacheControl.NONE,
+          cacheControl: CacheControl.None,
         }),
       );
 
@@ -211,7 +211,7 @@ describe(UserService.name, () => {
       await sut.handleUserDeleteCheck();
 
       expect(mocks.user.getDeletedAfter).toHaveBeenCalled();
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.USER_DELETION, data: { id: user.id } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.UserDelete, data: { id: user.id } }]);
     });
   });
 
@@ -266,7 +266,7 @@ describe(UserService.name, () => {
       await sut.setLicense(authStub.user1, license);
 
       expect(mocks.user.upsertMetadata).toHaveBeenCalledWith(authStub.user1.user.id, {
-        key: UserMetadataKey.LICENSE,
+        key: UserMetadataKey.License,
         value: expect.any(Object),
       });
     });
@@ -279,7 +279,7 @@ describe(UserService.name, () => {
       await sut.setLicense(authStub.user1, license);
 
       expect(mocks.user.upsertMetadata).toHaveBeenCalledWith(authStub.user1.user.id, {
-        key: UserMetadataKey.LICENSE,
+        key: UserMetadataKey.License,
         value: expect.any(Object),
       });
     });
