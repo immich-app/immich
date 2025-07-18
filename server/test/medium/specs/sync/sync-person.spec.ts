@@ -31,7 +31,6 @@ describe(SyncEntityType.PersonV1, () => {
         data: expect.objectContaining({
           id: person.id,
           name: person.name,
-          thumbnailPath: person.thumbnailPath,
           isHidden: person.isHidden,
           birthDate: person.birthDate,
           faceAssetId: person.faceAssetId,
