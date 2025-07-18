@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' as drift_db;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -155,13 +156,36 @@ class BetaSyncSettings extends HookConsumerWidget {
                 title: Text("reset_sqlite".tr()),
                 leading: const Icon(Icons.storage),
                 onTap: () async {
+                  // https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
                   final drift = ref.read(driftProvider);
-                  // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-                  final migrator = drift.createMigrator();
-                  for (final entity in drift.allSchemaEntities) {
-                    await migrator.drop(entity);
-                    await migrator.create(entity);
-                  }
+                  final database = drift.attachedDatabase;
+                  await database.exclusively(() async {
+                    // https://stackoverflow.com/a/65743498/25690041
+                    await database
+                        .customStatement('PRAGMA writable_schema = 1;');
+                    await database
+                        .customStatement('DELETE FROM sqlite_master;');
+                    await database.customStatement('VACUUM;');
+                    await database
+                        .customStatement('PRAGMA writable_schema = 0;');
+                    await database.customStatement('PRAGMA integrity_check');
+
+                    await database.customStatement('PRAGMA user_version = 0');
+                    await database.beforeOpen(
+                      // ignore: invalid_use_of_internal_member
+                      database.resolvedEngine.executor,
+                      drift_db.OpeningDetails(null, database.schemaVersion),
+                    );
+                    await database.customStatement(
+                      'PRAGMA user_version = ${database.schemaVersion}',
+                    );
+
+                    // Refresh all stream queries
+                    database.notifyUpdates({
+                      for (final table in database.allTables)
+                        drift_db.TableUpdate.onTable(table),
+                    });
+                  });
                 },
               ),
             ],
