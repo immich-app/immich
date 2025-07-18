@@ -35,7 +35,6 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
   Widget build(BuildContext context) {
     final isScreenLandscape = context.orientation == Orientation.landscape;
 
-
     final navigationDestinations = [
       NavigationDestination(
         label: 'photos'.tr(),

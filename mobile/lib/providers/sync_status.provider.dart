@@ -40,8 +40,14 @@ class SyncStatusState {
   int get hashCode => Object.hash(remoteSyncStatus, errorMessage);
 }
 
-class SyncStatusNotifier extends StateNotifier<SyncStatusState> {
-  SyncStatusNotifier() : super(const SyncStatusState());
+class SyncStatusNotifier extends Notifier<SyncStatusState> {
+  @override
+  SyncStatusState build() {
+    return const SyncStatusState(
+      errorMessage: null,
+      remoteSyncStatus: SyncStatus.idle,
+    );
+  }
 
   void setRemoteSyncStatus(SyncStatus status, [String? errorMessage]) {
     state = state.copyWith(
@@ -57,6 +63,6 @@ class SyncStatusNotifier extends StateNotifier<SyncStatusState> {
 }
 
 final syncStatusProvider =
-    StateNotifierProvider<SyncStatusNotifier, SyncStatusState>((ref) {
-  return SyncStatusNotifier();
-});
+    NotifierProvider<SyncStatusNotifier, SyncStatusState>(
+  SyncStatusNotifier.new,
+);
