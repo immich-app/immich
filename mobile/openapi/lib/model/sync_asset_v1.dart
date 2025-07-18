@@ -20,9 +20,11 @@ class SyncAssetV1 {
     required this.fileModifiedAt,
     required this.id,
     required this.isFavorite,
+    required this.livePhotoVideoId,
     required this.localDateTime,
     required this.originalFileName,
     required this.ownerId,
+    required this.stackId,
     required this.thumbhash,
     required this.type,
     required this.visibility,
@@ -42,11 +44,15 @@ class SyncAssetV1 {
 
   bool isFavorite;
 
+  String? livePhotoVideoId;
+
   DateTime? localDateTime;
 
   String originalFileName;
 
   String ownerId;
+
+  String? stackId;
 
   String? thumbhash;
 
@@ -63,9 +69,11 @@ class SyncAssetV1 {
     other.fileModifiedAt == fileModifiedAt &&
     other.id == id &&
     other.isFavorite == isFavorite &&
+    other.livePhotoVideoId == livePhotoVideoId &&
     other.localDateTime == localDateTime &&
     other.originalFileName == originalFileName &&
     other.ownerId == ownerId &&
+    other.stackId == stackId &&
     other.thumbhash == thumbhash &&
     other.type == type &&
     other.visibility == visibility;
@@ -80,15 +88,17 @@ class SyncAssetV1 {
     (fileModifiedAt == null ? 0 : fileModifiedAt!.hashCode) +
     (id.hashCode) +
     (isFavorite.hashCode) +
+    (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
     (localDateTime == null ? 0 : localDateTime!.hashCode) +
     (originalFileName.hashCode) +
     (ownerId.hashCode) +
+    (stackId == null ? 0 : stackId!.hashCode) +
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (type.hashCode) +
     (visibility.hashCode);
 
   @override
-  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isFavorite=$isFavorite, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, thumbhash=$thumbhash, type=$type, visibility=$visibility]';
+  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isFavorite=$isFavorite, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, stackId=$stackId, thumbhash=$thumbhash, type=$type, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -115,6 +125,11 @@ class SyncAssetV1 {
     }
       json[r'id'] = this.id;
       json[r'isFavorite'] = this.isFavorite;
+    if (this.livePhotoVideoId != null) {
+      json[r'livePhotoVideoId'] = this.livePhotoVideoId;
+    } else {
+    //  json[r'livePhotoVideoId'] = null;
+    }
     if (this.localDateTime != null) {
       json[r'localDateTime'] = this.localDateTime!.toUtc().toIso8601String();
     } else {
@@ -122,6 +137,11 @@ class SyncAssetV1 {
     }
       json[r'originalFileName'] = this.originalFileName;
       json[r'ownerId'] = this.ownerId;
+    if (this.stackId != null) {
+      json[r'stackId'] = this.stackId;
+    } else {
+    //  json[r'stackId'] = null;
+    }
     if (this.thumbhash != null) {
       json[r'thumbhash'] = this.thumbhash;
     } else {
@@ -148,9 +168,11 @@ class SyncAssetV1 {
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r''),
         id: mapValueOfType<String>(json, r'id')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         localDateTime: mapDateTime(json, r'localDateTime', r''),
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
+        stackId: mapValueOfType<String>(json, r'stackId'),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         type: AssetTypeEnum.fromJson(json[r'type'])!,
         visibility: AssetVisibility.fromJson(json[r'visibility'])!,
@@ -208,9 +230,11 @@ class SyncAssetV1 {
     'fileModifiedAt',
     'id',
     'isFavorite',
+    'livePhotoVideoId',
     'localDateTime',
     'originalFileName',
     'ownerId',
+    'stackId',
     'thumbhash',
     'type',
     'visibility',

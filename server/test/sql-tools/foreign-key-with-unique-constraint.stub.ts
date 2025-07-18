@@ -83,7 +83,7 @@ export const schema: DatabaseSchema = {
         },
         {
           type: ConstraintType.UNIQUE,
-          name: 'REL_3fcca5cc563abf256fc346e3ff',
+          name: 'UQ_3fcca5cc563abf256fc346e3ff4',
           tableName: 'table2',
           columnNames: ['parentId'],
           synchronize: true,

@@ -1,4 +1,3 @@
-import { asKey } from 'src/sql-tools/helpers';
 import { ConstraintType, Processor } from 'src/sql-tools/types';
 
 export const processCheckConstraints: Processor = (ctx, items) => {
@@ -15,12 +14,10 @@ export const processCheckConstraints: Processor = (ctx, items) => {
 
     table.constraints.push({
       type: ConstraintType.CHECK,
-      name: options.name || asCheckConstraintName(tableName, options.expression),
+      name: options.name || ctx.getNameFor({ type: 'check', tableName, expression: options.expression }),
       tableName,
       expression: options.expression,
       synchronize: options.synchronize ?? true,
     });
   }
 };
-
-const asCheckConstraintName = (table: string, expression: string) => asKey('CHK_', table, [expression]);

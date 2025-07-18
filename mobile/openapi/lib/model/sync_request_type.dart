@@ -39,6 +39,7 @@ class SyncRequestType {
   static const stacksV1 = SyncRequestType._(r'StacksV1');
   static const usersV1 = SyncRequestType._(r'UsersV1');
   static const peopleV1 = SyncRequestType._(r'PeopleV1');
+  static const userMetadataV1 = SyncRequestType._(r'UserMetadataV1');
 
   /// List of all possible values in this [enum][SyncRequestType].
   static const values = <SyncRequestType>[
@@ -58,6 +59,7 @@ class SyncRequestType {
     stacksV1,
     usersV1,
     peopleV1,
+    userMetadataV1,
   ];
 
   static SyncRequestType? fromJson(dynamic value) => SyncRequestTypeTypeTransformer().decode(value);
@@ -112,6 +114,7 @@ class SyncRequestTypeTypeTransformer {
         case r'StacksV1': return SyncRequestType.stacksV1;
         case r'UsersV1': return SyncRequestType.usersV1;
         case r'PeopleV1': return SyncRequestType.peopleV1;
+        case r'UserMetadataV1': return SyncRequestType.userMetadataV1;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

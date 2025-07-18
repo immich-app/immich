@@ -12,8 +12,12 @@ export const transformColumns: SqlTransformer = (ctx, item) => {
       return asColumnAlter(item.tableName, item.columnName, item.changes);
     }
 
+    case 'ColumnRename': {
+      return `ALTER TABLE "${item.tableName}" RENAME COLUMN "${item.oldName}" TO "${item.newName}";`;
+    }
+
     case 'ColumnDrop': {
-      return asColumnDrop(item.tableName, item.columnName);
+      return `ALTER TABLE "${item.tableName}" DROP COLUMN "${item.columnName}";`;
     }
 
     default: {
@@ -26,10 +30,6 @@ const asColumnAdd = (column: DatabaseColumn): string => {
   return (
     `ALTER TABLE "${column.tableName}" ADD "${column.name}" ${getColumnType(column)}` + getColumnModifiers(column) + ';'
   );
-};
-
-const asColumnDrop = (tableName: string, columnName: string): string => {
-  return `ALTER TABLE "${tableName}" DROP COLUMN "${columnName}";`;
 };
 
 export const asColumnAlter = (tableName: string, columnName: string, changes: ColumnChanges): string[] => {

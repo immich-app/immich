@@ -41,7 +41,7 @@ In the Immich web UI:
 - Click Add path
   <img src={require('./img/add-path-button.webp').default} width="50%" title="Add Path button" />
 
-- Enter **/usr/src/app/external** as the path and click Add
+- Enter **/home/user/photos1** as the path and click Add
   <img src={require('./img/add-path-field.webp').default} width="50%" title="Add Path field" />
 
 - Save the new path

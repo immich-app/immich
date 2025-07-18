@@ -61,3 +61,27 @@ class Stack {
         primaryAssetId.hashCode;
   }
 }
+
+class StackResponse {
+  final String id;
+  final String primaryAssetId;
+  final List<String> assetIds;
+
+  const StackResponse({
+    required this.id,
+    required this.primaryAssetId,
+    required this.assetIds,
+  });
+
+  @override
+  bool operator ==(covariant StackResponse other) {
+    if (identical(this, other)) return true;
+
+    return other.id == id &&
+        other.primaryAssetId == primaryAssetId &&
+        other.assetIds == assetIds;
+  }
+
+  @override
+  int get hashCode => id.hashCode ^ primaryAssetId.hashCode ^ assetIds.hashCode;
+}

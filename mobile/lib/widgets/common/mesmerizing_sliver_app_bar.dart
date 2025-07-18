@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -482,10 +483,10 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
       builder: (context, child) {
         return Transform.scale(
           scale: _zoomAnimation.value,
-          filterQuality: FilterQuality.low,
+          filterQuality: Platform.isAndroid ? FilterQuality.low : null,
           child: Transform.translate(
             offset: _panAnimation.value,
-            filterQuality: FilterQuality.low,
+            filterQuality: Platform.isAndroid ? FilterQuality.low : null,
             child: Stack(
               fit: StackFit.expand,
               children: [

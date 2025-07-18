@@ -5,7 +5,7 @@ select
   "albumsId" as "id",
   "createId"
 from
-  "albums_shared_users_users"
+  "album_user"
 where
   "usersId" = $1
   and "createId" >= $2
@@ -18,7 +18,7 @@ select
   "id",
   "albumId"
 from
-  "albums_audit"
+  "album_audit"
 where
   "userId" = $1
   and "deletedAt" < now() - interval '1 millisecond'
@@ -27,165 +27,169 @@ order by
 
 -- SyncRepository.album.getUpserts
 select distinct
-  on ("albums"."id", "albums"."updateId") "albums"."id",
-  "albums"."ownerId",
-  "albums"."albumName" as "name",
-  "albums"."description",
-  "albums"."createdAt",
-  "albums"."updatedAt",
-  "albums"."albumThumbnailAssetId" as "thumbnailAssetId",
-  "albums"."isActivityEnabled",
-  "albums"."order",
-  "albums"."updateId"
+  on ("album"."id", "album"."updateId") "album"."id",
+  "album"."ownerId",
+  "album"."albumName" as "name",
+  "album"."description",
+  "album"."createdAt",
+  "album"."updatedAt",
+  "album"."albumThumbnailAssetId" as "thumbnailAssetId",
+  "album"."isActivityEnabled",
+  "album"."order",
+  "album"."updateId"
 from
-  "albums"
-  left join "albums_shared_users_users" as "album_users" on "albums"."id" = "album_users"."albumsId"
+  "album"
+  left join "album_user" as "album_users" on "album"."id" = "album_users"."albumsId"
 where
-  "albums"."updatedAt" < now() - interval '1 millisecond'
+  "album"."updatedAt" < now() - interval '1 millisecond'
   and (
-    "albums"."ownerId" = $1
+    "album"."ownerId" = $1
     or "album_users"."usersId" = $2
   )
 order by
-  "albums"."updateId" asc
+  "album"."updateId" asc
 
 -- SyncRepository.albumAsset.getBackfill
 select
-  "assets"."id",
-  "assets"."ownerId",
-  "assets"."originalFileName",
-  "assets"."thumbhash",
-  "assets"."checksum",
-  "assets"."fileCreatedAt",
-  "assets"."fileModifiedAt",
-  "assets"."localDateTime",
-  "assets"."type",
-  "assets"."deletedAt",
-  "assets"."isFavorite",
-  "assets"."visibility",
-  "assets"."duration",
-  "assets"."updateId"
+  "asset"."id",
+  "asset"."ownerId",
+  "asset"."originalFileName",
+  "asset"."thumbhash",
+  "asset"."checksum",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."localDateTime",
+  "asset"."type",
+  "asset"."deletedAt",
+  "asset"."isFavorite",
+  "asset"."visibility",
+  "asset"."duration",
+  "asset"."livePhotoVideoId",
+  "asset"."stackId",
+  "asset"."updateId"
 from
-  "assets"
-  inner join "albums_assets_assets" as "album_assets" on "album_assets"."assetsId" = "assets"."id"
+  "asset"
+  inner join "album_asset" on "album_asset"."assetsId" = "asset"."id"
 where
-  "album_assets"."albumsId" = $1
-  and "assets"."updatedAt" < now() - interval '1 millisecond'
-  and "assets"."updateId" <= $2
-  and "assets"."updateId" >= $3
+  "album_asset"."albumsId" = $1
+  and "asset"."updatedAt" < now() - interval '1 millisecond'
+  and "asset"."updateId" <= $2
+  and "asset"."updateId" >= $3
 order by
-  "assets"."updateId" asc
+  "asset"."updateId" asc
 
 -- SyncRepository.albumAsset.getUpserts
 select
-  "assets"."id",
-  "assets"."ownerId",
-  "assets"."originalFileName",
-  "assets"."thumbhash",
-  "assets"."checksum",
-  "assets"."fileCreatedAt",
-  "assets"."fileModifiedAt",
-  "assets"."localDateTime",
-  "assets"."type",
-  "assets"."deletedAt",
-  "assets"."isFavorite",
-  "assets"."visibility",
-  "assets"."duration",
-  "assets"."updateId"
+  "asset"."id",
+  "asset"."ownerId",
+  "asset"."originalFileName",
+  "asset"."thumbhash",
+  "asset"."checksum",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."localDateTime",
+  "asset"."type",
+  "asset"."deletedAt",
+  "asset"."isFavorite",
+  "asset"."visibility",
+  "asset"."duration",
+  "asset"."livePhotoVideoId",
+  "asset"."stackId",
+  "asset"."updateId"
 from
-  "assets"
-  inner join "albums_assets_assets" as "album_assets" on "album_assets"."assetsId" = "assets"."id"
-  inner join "albums" on "albums"."id" = "album_assets"."albumsId"
-  left join "albums_shared_users_users" as "album_users" on "album_users"."albumsId" = "album_assets"."albumsId"
+  "asset"
+  inner join "album_asset" on "album_asset"."assetsId" = "asset"."id"
+  inner join "album" on "album"."id" = "album_asset"."albumsId"
+  left join "album_user" on "album_user"."albumsId" = "album_asset"."albumsId"
 where
-  "assets"."updatedAt" < now() - interval '1 millisecond'
+  "asset"."updatedAt" < now() - interval '1 millisecond'
   and (
-    "albums"."ownerId" = $1
-    or "album_users"."usersId" = $2
+    "album"."ownerId" = $1
+    or "album_user"."usersId" = $2
   )
 order by
-  "assets"."updateId" asc
+  "asset"."updateId" asc
 
 -- SyncRepository.albumAssetExif.getBackfill
 select
-  "exif"."assetId",
-  "exif"."description",
-  "exif"."exifImageWidth",
-  "exif"."exifImageHeight",
-  "exif"."fileSizeInByte",
-  "exif"."orientation",
-  "exif"."dateTimeOriginal",
-  "exif"."modifyDate",
-  "exif"."timeZone",
-  "exif"."latitude",
-  "exif"."longitude",
-  "exif"."projectionType",
-  "exif"."city",
-  "exif"."state",
-  "exif"."country",
-  "exif"."make",
-  "exif"."model",
-  "exif"."lensModel",
-  "exif"."fNumber",
-  "exif"."focalLength",
-  "exif"."iso",
-  "exif"."exposureTime",
-  "exif"."profileDescription",
-  "exif"."rating",
-  "exif"."fps",
-  "exif"."updateId"
+  "asset_exif"."assetId",
+  "asset_exif"."description",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."orientation",
+  "asset_exif"."dateTimeOriginal",
+  "asset_exif"."modifyDate",
+  "asset_exif"."timeZone",
+  "asset_exif"."latitude",
+  "asset_exif"."longitude",
+  "asset_exif"."projectionType",
+  "asset_exif"."city",
+  "asset_exif"."state",
+  "asset_exif"."country",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."lensModel",
+  "asset_exif"."fNumber",
+  "asset_exif"."focalLength",
+  "asset_exif"."iso",
+  "asset_exif"."exposureTime",
+  "asset_exif"."profileDescription",
+  "asset_exif"."rating",
+  "asset_exif"."fps",
+  "asset_exif"."updateId"
 from
-  "exif"
-  inner join "albums_assets_assets" as "album_assets" on "album_assets"."assetsId" = "exif"."assetId"
+  "asset_exif"
+  inner join "album_asset" on "album_asset"."assetsId" = "asset_exif"."assetId"
 where
-  "album_assets"."albumsId" = $1
-  and "exif"."updatedAt" < now() - interval '1 millisecond'
-  and "exif"."updateId" <= $2
-  and "exif"."updateId" >= $3
+  "album_asset"."albumsId" = $1
+  and "asset_exif"."updatedAt" < now() - interval '1 millisecond'
+  and "asset_exif"."updateId" <= $2
+  and "asset_exif"."updateId" >= $3
 order by
-  "exif"."updateId" asc
+  "asset_exif"."updateId" asc
 
 -- SyncRepository.albumAssetExif.getUpserts
 select
-  "exif"."assetId",
-  "exif"."description",
-  "exif"."exifImageWidth",
-  "exif"."exifImageHeight",
-  "exif"."fileSizeInByte",
-  "exif"."orientation",
-  "exif"."dateTimeOriginal",
-  "exif"."modifyDate",
-  "exif"."timeZone",
-  "exif"."latitude",
-  "exif"."longitude",
-  "exif"."projectionType",
-  "exif"."city",
-  "exif"."state",
-  "exif"."country",
-  "exif"."make",
-  "exif"."model",
-  "exif"."lensModel",
-  "exif"."fNumber",
-  "exif"."focalLength",
-  "exif"."iso",
-  "exif"."exposureTime",
-  "exif"."profileDescription",
-  "exif"."rating",
-  "exif"."fps",
-  "exif"."updateId"
+  "asset_exif"."assetId",
+  "asset_exif"."description",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."orientation",
+  "asset_exif"."dateTimeOriginal",
+  "asset_exif"."modifyDate",
+  "asset_exif"."timeZone",
+  "asset_exif"."latitude",
+  "asset_exif"."longitude",
+  "asset_exif"."projectionType",
+  "asset_exif"."city",
+  "asset_exif"."state",
+  "asset_exif"."country",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."lensModel",
+  "asset_exif"."fNumber",
+  "asset_exif"."focalLength",
+  "asset_exif"."iso",
+  "asset_exif"."exposureTime",
+  "asset_exif"."profileDescription",
+  "asset_exif"."rating",
+  "asset_exif"."fps",
+  "asset_exif"."updateId"
 from
-  "exif"
-  inner join "albums_assets_assets" as "album_assets" on "album_assets"."assetsId" = "exif"."assetId"
-  inner join "albums" on "albums"."id" = "album_assets"."albumsId"
-  left join "albums_shared_users_users" as "album_users" on "album_users"."albumsId" = "album_assets"."albumsId"
+  "asset_exif"
+  inner join "album_asset" on "album_asset"."assetsId" = "asset_exif"."assetId"
+  inner join "album" on "album"."id" = "album_asset"."albumsId"
+  left join "album_user" on "album_user"."albumsId" = "album_asset"."albumsId"
 where
-  "exif"."updatedAt" < now() - interval '1 millisecond'
+  "asset_exif"."updatedAt" < now() - interval '1 millisecond'
   and (
-    "albums"."ownerId" = $1
-    or "album_users"."usersId" = $2
+    "album"."ownerId" = $1
+    or "album_user"."usersId" = $2
   )
 order by
-  "exif"."updateId" asc
+  "asset_exif"."updateId" asc
 
 -- SyncRepository.albumToAsset.getBackfill
 select
@@ -193,7 +197,7 @@ select
   "album_assets"."albumsId" as "albumId",
   "album_assets"."updateId"
 from
-  "albums_assets_assets" as "album_assets"
+  "album_asset" as "album_assets"
 where
   "album_assets"."albumsId" = $1
   and "album_assets"."updatedAt" < now() - interval '1 millisecond'
@@ -208,23 +212,23 @@ select
   "assetId",
   "albumId"
 from
-  "album_assets_audit"
+  "album_asset_audit"
 where
   "albumId" in (
     select
       "id"
     from
-      "albums"
+      "album"
     where
       "ownerId" = $1
     union
     (
       select
-        "albumUsers"."albumsId" as "id"
+        "album_user"."albumsId" as "id"
       from
-        "albums_shared_users_users" as "albumUsers"
+        "album_user"
       where
-        "albumUsers"."usersId" = $2
+        "album_user"."usersId" = $2
     )
   )
   and "deletedAt" < now() - interval '1 millisecond'
@@ -233,30 +237,30 @@ order by
 
 -- SyncRepository.albumToAsset.getUpserts
 select
-  "album_assets"."assetsId" as "assetId",
-  "album_assets"."albumsId" as "albumId",
-  "album_assets"."updateId"
+  "album_asset"."assetsId" as "assetId",
+  "album_asset"."albumsId" as "albumId",
+  "album_asset"."updateId"
 from
-  "albums_assets_assets" as "album_assets"
-  inner join "albums" on "albums"."id" = "album_assets"."albumsId"
-  left join "albums_shared_users_users" as "album_users" on "album_users"."albumsId" = "album_assets"."albumsId"
+  "album_asset"
+  inner join "album" on "album"."id" = "album_asset"."albumsId"
+  left join "album_user" on "album_user"."albumsId" = "album_asset"."albumsId"
 where
-  "album_assets"."updatedAt" < now() - interval '1 millisecond'
+  "album_asset"."updatedAt" < now() - interval '1 millisecond'
   and (
-    "albums"."ownerId" = $1
-    or "album_users"."usersId" = $2
+    "album"."ownerId" = $1
+    or "album_user"."usersId" = $2
   )
 order by
-  "album_assets"."updateId" asc
+  "album_asset"."updateId" asc
 
 -- SyncRepository.albumUser.getBackfill
 select
-  "album_users"."albumsId" as "albumId",
-  "album_users"."usersId" as "userId",
-  "album_users"."role",
-  "album_users"."updateId"
+  "album_user"."albumsId" as "albumId",
+  "album_user"."usersId" as "userId",
+  "album_user"."role",
+  "album_user"."updateId"
 from
-  "albums_shared_users_users" as "album_users"
+  "album_user"
 where
   "albumsId" = $1
   and "updatedAt" < now() - interval '1 millisecond'
@@ -271,23 +275,23 @@ select
   "userId",
   "albumId"
 from
-  "album_users_audit"
+  "album_user_audit"
 where
   "albumId" in (
     select
       "id"
     from
-      "albums"
+      "album"
     where
       "ownerId" = $1
     union
     (
       select
-        "albumUsers"."albumsId" as "id"
+        "album_user"."albumsId" as "id"
       from
-        "albums_shared_users_users" as "albumUsers"
+        "album_user"
       where
-        "albumUsers"."usersId" = $2
+        "album_user"."usersId" = $2
     )
   )
   and "deletedAt" < now() - interval '1 millisecond'
@@ -296,19 +300,19 @@ order by
 
 -- SyncRepository.albumUser.getUpserts
 select
-  "album_users"."albumsId" as "albumId",
-  "album_users"."usersId" as "userId",
-  "album_users"."role",
-  "album_users"."updateId"
+  "album_user"."albumsId" as "albumId",
+  "album_user"."usersId" as "userId",
+  "album_user"."role",
+  "album_user"."updateId"
 from
-  "albums_shared_users_users" as "album_users"
+  "album_user"
 where
-  "album_users"."updatedAt" < now() - interval '1 millisecond'
-  and "album_users"."albumsId" in (
+  "album_user"."updatedAt" < now() - interval '1 millisecond'
+  and "album_user"."albumsId" in (
     select
       "id"
     from
-      "albums"
+      "album"
     where
       "ownerId" = $1
     union
@@ -316,20 +320,20 @@ where
       select
         "albumUsers"."albumsId" as "id"
       from
-        "albums_shared_users_users" as "albumUsers"
+        "album_user" as "albumUsers"
       where
         "albumUsers"."usersId" = $2
     )
   )
 order by
-  "album_users"."updateId" asc
+  "album_user"."updateId" asc
 
 -- SyncRepository.asset.getDeletes
 select
   "id",
   "assetId"
 from
-  "assets_audit"
+  "asset_audit"
 where
   "ownerId" = $1
   and "deletedAt" < now() - interval '1 millisecond'
@@ -338,22 +342,24 @@ order by
 
 -- SyncRepository.asset.getUpserts
 select
-  "assets"."id",
-  "assets"."ownerId",
-  "assets"."originalFileName",
-  "assets"."thumbhash",
-  "assets"."checksum",
-  "assets"."fileCreatedAt",
-  "assets"."fileModifiedAt",
-  "assets"."localDateTime",
-  "assets"."type",
-  "assets"."deletedAt",
-  "assets"."isFavorite",
-  "assets"."visibility",
-  "assets"."duration",
-  "assets"."updateId"
+  "asset"."id",
+  "asset"."ownerId",
+  "asset"."originalFileName",
+  "asset"."thumbhash",
+  "asset"."checksum",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."localDateTime",
+  "asset"."type",
+  "asset"."deletedAt",
+  "asset"."isFavorite",
+  "asset"."visibility",
+  "asset"."duration",
+  "asset"."livePhotoVideoId",
+  "asset"."stackId",
+  "asset"."updateId"
 from
-  "assets"
+  "asset"
 where
   "ownerId" = $1
   and "updatedAt" < now() - interval '1 millisecond'
@@ -362,40 +368,40 @@ order by
 
 -- SyncRepository.assetExif.getUpserts
 select
-  "exif"."assetId",
-  "exif"."description",
-  "exif"."exifImageWidth",
-  "exif"."exifImageHeight",
-  "exif"."fileSizeInByte",
-  "exif"."orientation",
-  "exif"."dateTimeOriginal",
-  "exif"."modifyDate",
-  "exif"."timeZone",
-  "exif"."latitude",
-  "exif"."longitude",
-  "exif"."projectionType",
-  "exif"."city",
-  "exif"."state",
-  "exif"."country",
-  "exif"."make",
-  "exif"."model",
-  "exif"."lensModel",
-  "exif"."fNumber",
-  "exif"."focalLength",
-  "exif"."iso",
-  "exif"."exposureTime",
-  "exif"."profileDescription",
-  "exif"."rating",
-  "exif"."fps",
-  "exif"."updateId"
+  "asset_exif"."assetId",
+  "asset_exif"."description",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."orientation",
+  "asset_exif"."dateTimeOriginal",
+  "asset_exif"."modifyDate",
+  "asset_exif"."timeZone",
+  "asset_exif"."latitude",
+  "asset_exif"."longitude",
+  "asset_exif"."projectionType",
+  "asset_exif"."city",
+  "asset_exif"."state",
+  "asset_exif"."country",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."lensModel",
+  "asset_exif"."fNumber",
+  "asset_exif"."focalLength",
+  "asset_exif"."iso",
+  "asset_exif"."exposureTime",
+  "asset_exif"."profileDescription",
+  "asset_exif"."rating",
+  "asset_exif"."fps",
+  "asset_exif"."updateId"
 from
-  "exif"
+  "asset_exif"
 where
   "assetId" in (
     select
       "id"
     from
-      "assets"
+      "asset"
     where
       "ownerId" = $1
   )
@@ -408,7 +414,7 @@ select
   "id",
   "memoryId"
 from
-  "memories_audit"
+  "memory_audit"
 where
   "userId" = $1
   and "deletedAt" < now() - interval '1 millisecond'
@@ -431,7 +437,7 @@ select
   "hideAt",
   "updateId"
 from
-  "memories"
+  "memory"
 where
   "ownerId" = $1
   and "updatedAt" < now() - interval '1 millisecond'
@@ -444,13 +450,13 @@ select
   "memoryId",
   "assetId"
 from
-  "memory_assets_audit"
+  "memory_asset_audit"
 where
   "memoryId" in (
     select
       "id"
     from
-      "memories"
+      "memory"
     where
       "ownerId" = $1
   )
@@ -464,13 +470,13 @@ select
   "assetsId" as "assetId",
   "updateId"
 from
-  "memories_assets_assets"
+  "memory_asset"
 where
   "memoriesId" in (
     select
       "id"
     from
-      "memories"
+      "memory"
     where
       "ownerId" = $1
   )
@@ -483,13 +489,13 @@ select
   "sharedById",
   "createId"
 from
-  "partners"
+  "partner"
 where
   "sharedWithId" = $1
   and "createId" >= $2
   and "createdAt" < now() - interval '1 millisecond'
 order by
-  "partners"."createId" asc
+  "partner"."createId" asc
 
 -- SyncRepository.partner.getDeletes
 select
@@ -497,7 +503,7 @@ select
   "sharedById",
   "sharedWithId"
 from
-  "partners_audit"
+  "partner_audit"
 where
   (
     "sharedById" = $1
@@ -514,7 +520,7 @@ select
   "inTimeline",
   "updateId"
 from
-  "partners"
+  "partner"
 where
   (
     "sharedById" = $1
@@ -526,22 +532,24 @@ order by
 
 -- SyncRepository.partnerAsset.getBackfill
 select
-  "assets"."id",
-  "assets"."ownerId",
-  "assets"."originalFileName",
-  "assets"."thumbhash",
-  "assets"."checksum",
-  "assets"."fileCreatedAt",
-  "assets"."fileModifiedAt",
-  "assets"."localDateTime",
-  "assets"."type",
-  "assets"."deletedAt",
-  "assets"."isFavorite",
-  "assets"."visibility",
-  "assets"."duration",
-  "assets"."updateId"
+  "asset"."id",
+  "asset"."ownerId",
+  "asset"."originalFileName",
+  "asset"."thumbhash",
+  "asset"."checksum",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."localDateTime",
+  "asset"."type",
+  "asset"."deletedAt",
+  "asset"."isFavorite",
+  "asset"."visibility",
+  "asset"."duration",
+  "asset"."livePhotoVideoId",
+  "asset"."stackId",
+  "asset"."updateId"
 from
-  "assets"
+  "asset"
 where
   "ownerId" = $1
   and "updatedAt" < now() - interval '1 millisecond'
@@ -555,13 +563,13 @@ select
   "id",
   "assetId"
 from
-  "assets_audit"
+  "asset_audit"
 where
   "ownerId" in (
     select
       "sharedById"
     from
-      "partners"
+      "partner"
     where
       "sharedWithId" = $1
   )
@@ -571,28 +579,30 @@ order by
 
 -- SyncRepository.partnerAsset.getUpserts
 select
-  "assets"."id",
-  "assets"."ownerId",
-  "assets"."originalFileName",
-  "assets"."thumbhash",
-  "assets"."checksum",
-  "assets"."fileCreatedAt",
-  "assets"."fileModifiedAt",
-  "assets"."localDateTime",
-  "assets"."type",
-  "assets"."deletedAt",
-  "assets"."isFavorite",
-  "assets"."visibility",
-  "assets"."duration",
-  "assets"."updateId"
+  "asset"."id",
+  "asset"."ownerId",
+  "asset"."originalFileName",
+  "asset"."thumbhash",
+  "asset"."checksum",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."localDateTime",
+  "asset"."type",
+  "asset"."deletedAt",
+  "asset"."isFavorite",
+  "asset"."visibility",
+  "asset"."duration",
+  "asset"."livePhotoVideoId",
+  "asset"."stackId",
+  "asset"."updateId"
 from
-  "assets"
+  "asset"
 where
   "ownerId" in (
     select
       "sharedById"
     from
-      "partners"
+      "partner"
     where
       "sharedWithId" = $1
   )
@@ -602,85 +612,85 @@ order by
 
 -- SyncRepository.partnerAssetExif.getBackfill
 select
-  "exif"."assetId",
-  "exif"."description",
-  "exif"."exifImageWidth",
-  "exif"."exifImageHeight",
-  "exif"."fileSizeInByte",
-  "exif"."orientation",
-  "exif"."dateTimeOriginal",
-  "exif"."modifyDate",
-  "exif"."timeZone",
-  "exif"."latitude",
-  "exif"."longitude",
-  "exif"."projectionType",
-  "exif"."city",
-  "exif"."state",
-  "exif"."country",
-  "exif"."make",
-  "exif"."model",
-  "exif"."lensModel",
-  "exif"."fNumber",
-  "exif"."focalLength",
-  "exif"."iso",
-  "exif"."exposureTime",
-  "exif"."profileDescription",
-  "exif"."rating",
-  "exif"."fps",
-  "exif"."updateId"
+  "asset_exif"."assetId",
+  "asset_exif"."description",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."orientation",
+  "asset_exif"."dateTimeOriginal",
+  "asset_exif"."modifyDate",
+  "asset_exif"."timeZone",
+  "asset_exif"."latitude",
+  "asset_exif"."longitude",
+  "asset_exif"."projectionType",
+  "asset_exif"."city",
+  "asset_exif"."state",
+  "asset_exif"."country",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."lensModel",
+  "asset_exif"."fNumber",
+  "asset_exif"."focalLength",
+  "asset_exif"."iso",
+  "asset_exif"."exposureTime",
+  "asset_exif"."profileDescription",
+  "asset_exif"."rating",
+  "asset_exif"."fps",
+  "asset_exif"."updateId"
 from
-  "exif"
-  inner join "assets" on "assets"."id" = "exif"."assetId"
+  "asset_exif"
+  inner join "asset" on "asset"."id" = "asset_exif"."assetId"
 where
-  "assets"."ownerId" = $1
-  and "exif"."updatedAt" < now() - interval '1 millisecond'
-  and "exif"."updateId" <= $2
-  and "exif"."updateId" >= $3
+  "asset"."ownerId" = $1
+  and "asset_exif"."updatedAt" < now() - interval '1 millisecond'
+  and "asset_exif"."updateId" <= $2
+  and "asset_exif"."updateId" >= $3
 order by
-  "exif"."updateId" asc
+  "asset_exif"."updateId" asc
 
 -- SyncRepository.partnerAssetExif.getUpserts
 select
-  "exif"."assetId",
-  "exif"."description",
-  "exif"."exifImageWidth",
-  "exif"."exifImageHeight",
-  "exif"."fileSizeInByte",
-  "exif"."orientation",
-  "exif"."dateTimeOriginal",
-  "exif"."modifyDate",
-  "exif"."timeZone",
-  "exif"."latitude",
-  "exif"."longitude",
-  "exif"."projectionType",
-  "exif"."city",
-  "exif"."state",
-  "exif"."country",
-  "exif"."make",
-  "exif"."model",
-  "exif"."lensModel",
-  "exif"."fNumber",
-  "exif"."focalLength",
-  "exif"."iso",
-  "exif"."exposureTime",
-  "exif"."profileDescription",
-  "exif"."rating",
-  "exif"."fps",
-  "exif"."updateId"
+  "asset_exif"."assetId",
+  "asset_exif"."description",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."orientation",
+  "asset_exif"."dateTimeOriginal",
+  "asset_exif"."modifyDate",
+  "asset_exif"."timeZone",
+  "asset_exif"."latitude",
+  "asset_exif"."longitude",
+  "asset_exif"."projectionType",
+  "asset_exif"."city",
+  "asset_exif"."state",
+  "asset_exif"."country",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."lensModel",
+  "asset_exif"."fNumber",
+  "asset_exif"."focalLength",
+  "asset_exif"."iso",
+  "asset_exif"."exposureTime",
+  "asset_exif"."profileDescription",
+  "asset_exif"."rating",
+  "asset_exif"."fps",
+  "asset_exif"."updateId"
 from
-  "exif"
+  "asset_exif"
 where
   "assetId" in (
     select
       "id"
     from
-      "assets"
+      "asset"
     where
       "ownerId" in (
         select
           "sharedById"
         from
-          "partners"
+          "partner"
         where
           "sharedWithId" = $1
       )
@@ -694,13 +704,13 @@ select
   "id",
   "stackId"
 from
-  "stacks_audit"
+  "stack_audit"
 where
   "userId" in (
     select
       "sharedById"
     from
-      "partners"
+      "partner"
     where
       "sharedWithId" = $1
   )
@@ -710,14 +720,14 @@ order by
 
 -- SyncRepository.partnerStack.getBackfill
 select
-  "asset_stack"."id",
-  "asset_stack"."createdAt",
-  "asset_stack"."updatedAt",
-  "asset_stack"."primaryAssetId",
-  "asset_stack"."ownerId",
+  "stack"."id",
+  "stack"."createdAt",
+  "stack"."updatedAt",
+  "stack"."primaryAssetId",
+  "stack"."ownerId",
   "updateId"
 from
-  "asset_stack"
+  "stack"
 where
   "ownerId" = $1
   and "updatedAt" < now() - interval '1 millisecond'
@@ -728,20 +738,20 @@ order by
 
 -- SyncRepository.partnerStack.getUpserts
 select
-  "asset_stack"."id",
-  "asset_stack"."createdAt",
-  "asset_stack"."updatedAt",
-  "asset_stack"."primaryAssetId",
-  "asset_stack"."ownerId",
+  "stack"."id",
+  "stack"."createdAt",
+  "stack"."updatedAt",
+  "stack"."primaryAssetId",
+  "stack"."ownerId",
   "updateId"
 from
-  "asset_stack"
+  "stack"
 where
   "ownerId" in (
     select
       "sharedById"
     from
-      "partners"
+      "partner"
     where
       "sharedWithId" = $1
   )
@@ -788,7 +798,7 @@ select
   "id",
   "stackId"
 from
-  "stacks_audit"
+  "stack_audit"
 where
   "userId" = $1
   and "deletedAt" < now() - interval '1 millisecond'
@@ -797,14 +807,14 @@ order by
 
 -- SyncRepository.stack.getUpserts
 select
-  "asset_stack"."id",
-  "asset_stack"."createdAt",
-  "asset_stack"."updatedAt",
-  "asset_stack"."primaryAssetId",
-  "asset_stack"."ownerId",
+  "stack"."id",
+  "stack"."createdAt",
+  "stack"."updatedAt",
+  "stack"."primaryAssetId",
+  "stack"."ownerId",
   "updateId"
 from
-  "asset_stack"
+  "stack"
 where
   "ownerId" = $1
   and "updatedAt" < now() - interval '1 millisecond'
@@ -816,7 +826,7 @@ select
   "id",
   "userId"
 from
-  "users_audit"
+  "user_audit"
 where
   "deletedAt" < now() - interval '1 millisecond'
 order by
@@ -830,8 +840,35 @@ select
   "deletedAt",
   "updateId"
 from
-  "users"
+  "user"
 where
   "updatedAt" < now() - interval '1 millisecond'
+order by
+  "updateId" asc
+
+-- SyncRepository.userMetadata.getDeletes
+select
+  "id",
+  "userId",
+  "key"
+from
+  "user_metadata_audit"
+where
+  "userId" = $1
+  and "deletedAt" < now() - interval '1 millisecond'
+order by
+  "id" asc
+
+-- SyncRepository.userMetadata.getUpserts
+select
+  "userId",
+  "key",
+  "value",
+  "updateId"
+from
+  "user_metadata"
+where
+  "userId" = $1
+  and "updatedAt" < now() - interval '1 millisecond'
 order by
   "updateId" asc

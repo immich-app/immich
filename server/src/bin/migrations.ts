@@ -107,7 +107,7 @@ const compare = async () => {
   const { database } = configRepository.getEnv();
   const db = postgres(asPostgresConnectionConfig(database.config));
 
-  const source = schemaFromCode({ overrides: true });
+  const source = schemaFromCode({ overrides: true, namingStrategy: 'default' });
   const target = await schemaFromDatabase(db, {});
 
   console.log(source.warnings.join('\n'));

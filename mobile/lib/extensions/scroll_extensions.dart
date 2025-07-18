@@ -11,9 +11,9 @@ class FastScrollPhysics extends ScrollPhysics {
 
   @override
   SpringDescription get spring => const SpringDescription(
-        mass: 40,
-        stiffness: 100,
-        damping: 1,
+        mass: 1,
+        stiffness: 402.49984375,
+        damping: 40,
       );
 }
 
@@ -31,8 +31,8 @@ class FastClampingScrollPhysics extends ClampingScrollPhysics {
         // can briefly be seen and cause a flicker effect if the video begins to initialize
         // before the animation finishes - probably a bug in PhotoViewGallery's animation handling
         // Making the animation faster is not just stylistic, but also helps to avoid this flicker
-        mass: 80,
-        stiffness: 100,
-        damping: 1,
+        mass: 1,
+        stiffness: 1601.2499609375,
+        damping: 80,
       );
 }

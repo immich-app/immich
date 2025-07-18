@@ -20,7 +20,7 @@ const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): Re
 
 @Injectable()
 export class VersionService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap' })
+  @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap(): Promise<void> {
     await this.handleVersionCheck();
 
@@ -41,7 +41,7 @@ export class VersionService extends BaseService {
 
         const needsNewMemories = semver.lt(previousVersion, '1.129.0');
         if (needsNewMemories) {
-          await this.jobRepository.queue({ name: JobName.MEMORIES_CREATE });
+          await this.jobRepository.queue({ name: JobName.MemoryGenerate });
         }
       }
     });
@@ -56,31 +56,31 @@ export class VersionService extends BaseService {
   }
 
   async handleQueueVersionCheck() {
-    await this.jobRepository.queue({ name: JobName.VERSION_CHECK, data: {} });
+    await this.jobRepository.queue({ name: JobName.VersionCheck, data: {} });
   }
 
-  @OnJob({ name: JobName.VERSION_CHECK, queue: QueueName.BACKGROUND_TASK })
+  @OnJob({ name: JobName.VersionCheck, queue: QueueName.BackgroundTask })
   async handleVersionCheck(): Promise<JobStatus> {
     try {
       this.logger.debug('Running version check');
 
       const { environment } = this.configRepository.getEnv();
-      if (environment === ImmichEnvironment.DEVELOPMENT) {
-        return JobStatus.SKIPPED;
+      if (environment === ImmichEnvironment.Development) {
+        return JobStatus.Skipped;
       }
 
       const { newVersionCheck } = await this.getConfig({ withCache: true });
       if (!newVersionCheck.enabled) {
-        return JobStatus.SKIPPED;
+        return JobStatus.Skipped;
       }
 
-      const versionCheck = await this.systemMetadataRepository.get(SystemMetadataKey.VERSION_CHECK_STATE);
+      const versionCheck = await this.systemMetadataRepository.get(SystemMetadataKey.VersionCheckState);
       if (versionCheck?.checkedAt) {
         const lastUpdate = DateTime.fromISO(versionCheck.checkedAt);
         const elapsedTime = DateTime.now().diff(lastUpdate).as('minutes');
         // check once per hour (max)
         if (elapsedTime < 60) {
-          return JobStatus.SKIPPED;
+          return JobStatus.Skipped;
         }
       }
 
@@ -88,7 +88,7 @@ export class VersionService extends BaseService {
         await this.serverInfoRepository.getGitHubRelease();
       const metadata: VersionCheckMetadata = { checkedAt: DateTime.utc().toISO(), releaseVersion };
 
-      await this.systemMetadataRepository.set(SystemMetadataKey.VERSION_CHECK_STATE, metadata);
+      await this.systemMetadataRepository.set(SystemMetadataKey.VersionCheckState, metadata);
 
       if (semver.gt(releaseVersion, serverVersion)) {
         this.logger.log(`Found ${releaseVersion}, released at ${new Date(publishedAt).toLocaleString()}`);
@@ -96,16 +96,16 @@ export class VersionService extends BaseService {
       }
     } catch (error: Error | any) {
       this.logger.warn(`Unable to run version check: ${error}`, error?.stack);
-      return JobStatus.FAILED;
+      return JobStatus.Failed;
     }
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
-  @OnEvent({ name: 'websocket.connect' })
-  async onWebsocketConnection({ userId }: ArgOf<'websocket.connect'>) {
+  @OnEvent({ name: 'WebsocketConnect' })
+  async onWebsocketConnection({ userId }: ArgOf<'WebsocketConnect'>) {
     this.eventRepository.clientSend('on_server_version', userId, serverVersion);
-    const metadata = await this.systemMetadataRepository.get(SystemMetadataKey.VERSION_CHECK_STATE);
+    const metadata = await this.systemMetadataRepository.get(SystemMetadataKey.VersionCheckState);
     if (metadata) {
       this.eventRepository.clientSend('on_new_release', userId, asNotification(metadata));
     }

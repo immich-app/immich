@@ -20,9 +20,9 @@ export const schemaFromCode = (options: SchemaFromCodeOptions = {}) => {
         name: ctx.overrideTableName,
         columns: [
           {
-            primary: true,
             name: 'name',
             tableName: ctx.overrideTableName,
+            primary: true,
             type: 'character varying',
             nullable: false,
             isArray: false,
@@ -31,6 +31,7 @@ export const schemaFromCode = (options: SchemaFromCodeOptions = {}) => {
           {
             name: 'value',
             tableName: ctx.overrideTableName,
+            primary: false,
             type: 'jsonb',
             nullable: false,
             isArray: false,

@@ -38,7 +38,7 @@ describe(BackupService.name, () => {
     });
 
     it('should not initialise backup database job when running on microservices', async () => {
-      mocks.config.getWorker.mockReturnValue(ImmichWorker.MICROSERVICES);
+      mocks.config.getWorker.mockReturnValue(ImmichWorker.Microservices);
       await sut.onConfigInit({ newConfig: systemConfigStub.backupEnabled as SystemConfig });
 
       expect(mocks.cron.create).not.toHaveBeenCalled();
@@ -98,10 +98,10 @@ describe(BackupService.name, () => {
       await sut.cleanupDatabaseBackups();
       expect(mocks.storage.unlink).toHaveBeenCalledTimes(2);
       expect(mocks.storage.unlink).toHaveBeenCalledWith(
-        `${StorageCore.getBaseFolder(StorageFolder.BACKUPS)}/immich-db-backup-123.sql.gz.tmp`,
+        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/immich-db-backup-123.sql.gz.tmp`,
       );
       expect(mocks.storage.unlink).toHaveBeenCalledWith(
-        `${StorageCore.getBaseFolder(StorageFolder.BACKUPS)}/immich-db-backup-345.sql.gz.tmp`,
+        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/immich-db-backup-345.sql.gz.tmp`,
       );
     });
 
@@ -111,7 +111,7 @@ describe(BackupService.name, () => {
       await sut.cleanupDatabaseBackups();
       expect(mocks.storage.unlink).toHaveBeenCalledTimes(1);
       expect(mocks.storage.unlink).toHaveBeenCalledWith(
-        `${StorageCore.getBaseFolder(StorageFolder.BACKUPS)}/immich-db-backup-1.sql.gz`,
+        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/immich-db-backup-1.sql.gz`,
       );
     });
 
@@ -125,10 +125,10 @@ describe(BackupService.name, () => {
       await sut.cleanupDatabaseBackups();
       expect(mocks.storage.unlink).toHaveBeenCalledTimes(2);
       expect(mocks.storage.unlink).toHaveBeenCalledWith(
-        `${StorageCore.getBaseFolder(StorageFolder.BACKUPS)}/immich-db-backup-1.sql.gz.tmp`,
+        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/immich-db-backup-1.sql.gz.tmp`,
       );
       expect(mocks.storage.unlink).toHaveBeenCalledWith(
-        `${StorageCore.getBaseFolder(StorageFolder.BACKUPS)}/immich-db-backup-2.sql.gz`,
+        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/immich-db-backup-2.sql.gz`,
       );
     });
   });
@@ -145,13 +145,13 @@ describe(BackupService.name, () => {
 
     it('should run a database backup successfully', async () => {
       const result = await sut.handleBackupDatabase();
-      expect(result).toBe(JobStatus.SUCCESS);
+      expect(result).toBe(JobStatus.Success);
       expect(mocks.storage.createWriteStream).toHaveBeenCalled();
     });
 
     it('should rename file on success', async () => {
       const result = await sut.handleBackupDatabase();
-      expect(result).toBe(JobStatus.SUCCESS);
+      expect(result).toBe(JobStatus.Success);
       expect(mocks.storage.rename).toHaveBeenCalled();
     });
 
@@ -219,7 +219,7 @@ describe(BackupService.name, () => {
       mocks.database.getPostgresVersion.mockResolvedValue(postgresVersion);
       const result = await sut.handleBackupDatabase();
       expect(mocks.process.spawn).not.toHaveBeenCalled();
-      expect(result).toBe(JobStatus.FAILED);
+      expect(result).toBe(JobStatus.Failed);
     });
   });
 });

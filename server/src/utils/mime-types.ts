@@ -129,11 +129,11 @@ export const mimeTypes = {
   assetType: (filename: string) => {
     const contentType = lookup(filename);
     if (contentType.startsWith('image/')) {
-      return AssetType.IMAGE;
+      return AssetType.Image;
     } else if (contentType.startsWith('video/')) {
-      return AssetType.VIDEO;
+      return AssetType.Video;
     }
-    return AssetType.OTHER;
+    return AssetType.Other;
   },
   getSupportedFileExtensions: () => [...Object.keys(image), ...Object.keys(video)],
 };
