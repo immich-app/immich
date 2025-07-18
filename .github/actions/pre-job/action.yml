@@ -37,13 +37,15 @@ runs:
     - name: Convert filters to JSON
       id: convert-filters
       shell: python
+      env:
+        FILTERS: ${{ inputs.filters }}
       run: |
         import json
         import os
         import yaml
 
         # Get the filters input
-        filters_yaml = """${{ inputs.filters }}"""
+        filters_yaml = os.environ['FILTERS']
 
         try:
             # Parse YAML properly using the yaml library
