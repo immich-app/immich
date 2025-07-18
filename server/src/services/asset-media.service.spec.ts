@@ -505,6 +505,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).resolves.toEqual(
         new ImmichFileResponse({
           path: '/original/path.jpg',
+          fileName: 'asset-id.jpg',
           contentType: 'image/jpeg',
           cacheControl: CacheControl.PrivateWithCache,
         }),
