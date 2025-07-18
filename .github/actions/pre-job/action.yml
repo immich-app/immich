@@ -135,7 +135,7 @@ runs:
         filters: ${{ steps.force_paths.outputs.force-paths-yaml }}
 
     - name: Check main paths
-      if: ${{ steps.check-conditions.outputs.needs_path_filtering == 'true' && (inputs.force-filters == '' || steps.force_paths.outputs.force-paths != 'true') }}
+      if: ${{ steps.check-conditions.outputs.needs_path_filtering == 'true' && (inputs.force-filters == '' || steps.force_paths_filter.outputs.force-paths != 'true') }}
       id: main_paths
       uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
       with:
