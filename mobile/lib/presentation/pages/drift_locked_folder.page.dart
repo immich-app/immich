@@ -4,13 +4,44 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/locked_folder_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 
 @RoutePage()
-class DriftLockedFolderPage extends StatelessWidget {
+class DriftLockedFolderPage extends ConsumerStatefulWidget {
   const DriftLockedFolderPage({super.key});
+
+  @override
+  ConsumerState<DriftLockedFolderPage> createState() =>
+      _DriftLockedFolderPageState();
+}
+
+class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage>
+    with WidgetsBindingObserver {
+  bool _showOverlay = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (mounted) {
+      setState(() {
+        _showOverlay = state != AppLifecycleState.resumed;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,12 +61,17 @@ class DriftLockedFolderPage extends StatelessWidget {
           },
         ),
       ],
-      child: Timeline(
-        appBar: MesmerizingSliverAppBar(
-          title: 'locked_folder'.t(context: context),
-        ),
-        bottomSheet: const LockedFolderBottomSheet(),
-      ),
+      child: _showOverlay
+          ? const SizedBox()
+          : Timeline(
+              appBar: MesmerizingSliverAppBar(
+                title: 'locked_folder'.t(context: context),
+                onBackPressed: () {
+                  ref.read(authProvider.notifier).lockPinCode();
+                },
+              ),
+              bottomSheet: const LockedFolderBottomSheet(),
+            ),
     );
   }
 }

@@ -18,11 +18,12 @@ class MesmerizingSliverAppBar extends ConsumerStatefulWidget {
     super.key,
     required this.title,
     this.icon = Icons.camera,
+    this.onBackPressed,
   });
 
   final String title;
   final IconData icon;
-
+  final VoidCallback? onBackPressed;
   @override
   ConsumerState<MesmerizingSliverAppBar> createState() =>
       _MesmerizingSliverAppBarState();
@@ -89,6 +90,7 @@ class _MesmerizingSliverAppBarState
                 ],
               ),
               onPressed: () {
+                widget.onBackPressed?.call();
                 context.pop();
               },
             ),
