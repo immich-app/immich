@@ -20,7 +20,7 @@ jobs:
     permissions:
       contents: read
     outputs:
-      should_run: ${{ fromJSON(steps.check.outputs.should_run) }}
+      should_run: ${{ steps.check.outputs.should_run }}
     steps:
       - name: Sparse checkout for pre-job action
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -54,7 +54,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    if: ${{ needs.pre-job.outputs.should_run.machine-learning == false && !github.event.pull_request.head.repo.fork }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == false && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -83,7 +83,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    if: ${{ needs.pre-job.outputs.should_run.server == false && !github.event.pull_request.head.repo.fork }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == false && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -109,7 +109,7 @@ jobs:
   machine-learning:
     name: Build and Push ML
     needs: pre-job
-    if: ${{ needs.pre-job.outputs.should_run.machine-learning == true }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == true }}
     strategy:
       fail-fast: false
       matrix:
@@ -154,7 +154,7 @@ jobs:
   server:
     name: Build and Push Server
     needs: pre-job
-    if: ${{ needs.pre-job.outputs.should_run.server == true }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true }}
     uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@129aeda75a450666ce96e8bc8126652e717917a7 # multi-runner-build-workflow-0.1.1
     permissions:
       contents: read
