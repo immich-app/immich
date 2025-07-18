@@ -18,7 +18,7 @@ jobs:
       contents: read
     outputs:
       # TODO: Test if the fromJSON can be pulled up to here
-      should_run: ${{ steps.check.outputs.should_run }}
+      should_run: ${{ fromJSON(steps.check.outputs.should_run) }}
     steps:
       - name: Sparse checkout for pre-job action
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -59,7 +59,7 @@ jobs:
   server-unit-tests:
     name: Test & Lint Server
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true }}
+    if: ${{ needs.pre-job.outputs.should_run.server == true }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -102,7 +102,7 @@ jobs:
   cli-unit-tests:
     name: Unit Test CLI
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).cli == true }}
+    if: ${{ needs.pre-job.outputs.should_run.cli == true }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -149,7 +149,7 @@ jobs:
   cli-unit-tests-win:
     name: Unit Test CLI (Windows)
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).cli == true }}
+    if: ${{ needs.pre-job.outputs.should_run.cli == true }}
     runs-on: windows-latest
     permissions:
       contents: read
@@ -189,7 +189,7 @@ jobs:
   web-lint:
     name: Lint Web
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).web == true }}
+    if: ${{ needs.pre-job.outputs.should_run.web == true }}
     runs-on: mich
     permissions:
       contents: read
@@ -232,7 +232,7 @@ jobs:
   web-unit-tests:
     name: Test Web
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).web == true }}
+    if: ${{ needs.pre-job.outputs.should_run.web == true }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -271,7 +271,7 @@ jobs:
   i18n-tests:
     name: Test i18n
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).i18n == true }}
+    if: ${{ needs.pre-job.outputs.should_run.i18n == true }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -313,7 +313,7 @@ jobs:
   e2e-tests-lint:
     name: End-to-End Lint
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).e2e == true }}
+    if: ${{ needs.pre-job.outputs.should_run.e2e == true }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -358,7 +358,7 @@ jobs:
   server-medium-tests:
     name: Medium Tests (Server)
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true }}
+    if: ${{ needs.pre-job.outputs.should_run.server == true }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -389,7 +389,7 @@ jobs:
   e2e-tests-server-cli:
     name: End-to-End Tests (Server & CLI)
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).e2e == true || fromJSON(needs.pre-job.outputs.should_run).server == true || fromJSON(needs.pre-job.outputs.should_run).cli == true }}
+    if: ${{ needs.pre-job.outputs.should_run.e2e == true || needs.pre-job.outputs.should_run.server == true || needs.pre-job.outputs.should_run.cli == true }}
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -439,7 +439,7 @@ jobs:
   e2e-tests-web:
     name: End-to-End Tests (Web)
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).e2e == true || fromJSON(needs.pre-job.outputs.should_run).web == true }}
+    if: ${{ needs.pre-job.outputs.should_run.e2e == true || needs.pre-job.outputs.should_run.web == true }}
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -499,7 +499,7 @@ jobs:
   mobile-unit-tests:
     name: Unit Test Mobile
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
+    if: ${{ needs.pre-job.outputs.should_run.mobile == true }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -525,7 +525,7 @@ jobs:
   ml-unit-tests:
     name: Unit Test ML
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == true }}
+    if: ${{ needs.pre-job.outputs.should_run.machine-learning == true }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -563,7 +563,7 @@ jobs:
   github-files-formatting:
     name: .github Files Formatting
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run)['.github'] == true }}
+    if: ${{ needs.pre-job.outputs.should_run['.github'] == true }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
