@@ -95,11 +95,59 @@ runs:
     - name: Check force paths
       if: ${{ steps.check-conditions.outputs.needs_path_filtering == 'true' && inputs.force-filters != '' }}
       id: force_paths
+      shell: python
+      env:
+        FORCE_FILTERS: ${{ inputs.force-filters }}
+        GITHUB_OUTPUT: ${{ env.GITHUB_OUTPUT }}
+      run: |
+        import os
+        import yaml
+
+        # Get the force filters input
+        force_filters_input = os.environ.get('FORCE_FILTERS', '').strip()
+
+        if not force_filters_input:
+            print("No force filters provided")
+            exit(0)
+
+        try:
+            # Parse the force-filters as YAML - should be an array of paths
+            force_paths_list = yaml.safe_load(force_filters_input)
+
+            # Ensure it's a list
+            if not isinstance(force_paths_list, list):
+                raise ValueError("force-filters must be a YAML array of paths")
+
+            if not force_paths_list:
+                print("No valid paths found in force-filters")
+                exit(0)
+
+            # Create the YAML structure for paths-filter
+            force_paths_config = {
+                'force-paths': force_paths_list
+            }
+
+            # Generate YAML string directly
+            force_paths_yaml = yaml.dump(force_paths_config, default_flow_style=False)
+
+            print("Generated force paths YAML:")
+            print(force_paths_yaml)
+
+            # Set GitHub Actions output
+            with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                f.write(f"force-paths-yaml<<EOF\n{force_paths_yaml}EOF\n")
+
+        except Exception as e:
+            print(f"Error processing force filters: {e}")
+            print(f"Input was: {repr(force_filters_input)}")
+            exit(1)
+
+    - name: Run force paths filter
+      if: ${{ steps.check-conditions.outputs.needs_path_filtering == 'true' && inputs.force-filters != '' }}
+      id: force_paths_filter
       uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
       with:
-        filters: |
-          force-paths:
-            ${{ inputs.force-filters }}
+        filters: ${{ steps.force_paths.outputs.force-paths-yaml }}
 
     - name: Check main paths
       if: ${{ steps.check-conditions.outputs.needs_path_filtering == 'true' && (inputs.force-filters == '' || steps.force_paths.outputs.force-paths != 'true') }}
@@ -117,7 +165,7 @@ runs:
         force-triggered: ${{ steps.check-conditions.outputs.force_triggered }}
         should-skip: ${{ steps.check-conditions.outputs.should_skip }}
         needs-path-filtering: ${{ steps.check-conditions.outputs.needs_path_filtering }}
-        force-path-results: ${{ toJSON(steps.force_paths.outputs) }}
+        force-path-results: ${{ toJSON(steps.force_paths_filter.outputs) }}
         main-path-results: ${{ toJSON(steps.main_paths.outputs) }}
         script: |
           const script = require('./.github/actions/pre-job/generate-outputs.js')
