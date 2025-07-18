@@ -22,7 +22,6 @@ class MesmerizingSliverAppBar extends ConsumerStatefulWidget {
 
   final String title;
   final IconData icon;
-
   @override
   ConsumerState<MesmerizingSliverAppBar> createState() =>
       _MesmerizingSliverAppBarState();

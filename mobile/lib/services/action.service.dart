@@ -83,7 +83,10 @@ class ActionService {
     );
   }
 
-  Future<void> moveToLockFolder(List<String> remoteIds) async {
+  Future<void> moveToLockFolder(
+    List<String> remoteIds,
+    List<String> localIds,
+  ) async {
     await _assetApiRepository.updateVisibility(
       remoteIds,
       AssetVisibilityEnum.locked,
@@ -92,6 +95,15 @@ class ActionService {
       remoteIds,
       AssetVisibility.locked,
     );
+
+    // Ask user if they want to delete local copies
+    if (localIds.isNotEmpty) {
+      final deletedIds = await _assetMediaRepository.deleteAll(localIds);
+
+      if (deletedIds.isNotEmpty) {
+        await _localAssetRepository.delete(deletedIds);
+      }
+    }
   }
 
   Future<void> removeFromLockFolder(List<String> remoteIds) async {

@@ -427,7 +427,7 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(
       page: DriftLockedFolderRoute.page,
-      guards: [_authGuard, _duplicateGuard],
+      guards: [_authGuard, _lockedGuard, _duplicateGuard],
     ),
     AutoRoute(
       page: DriftVideoRoute.page,
