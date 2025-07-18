@@ -1,7 +1,6 @@
 module.exports = ({ core, context }) => {
   console.log('=== Pre-Job: Checking Conditions ===');
 
-  // Get inputs directly from core
   const forceEvents = core
     .getInput('force-events')
     .split(',')
@@ -17,17 +16,16 @@ module.exports = ({ core, context }) => {
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
-  const skipForceLogic = core.getInput('skip-force-logic') === 'true';
-  const filtersJson = core.getInput('filters-json');
+  const skipForceLogic = core.getBooleanInput('skip-force-logic');
+  const filtersList = core.getInput('filters-list');
 
-  // Parse filter names from comma-separated string
   let filterNames = [];
   try {
-    if (!filtersJson || !filtersJson.trim()) {
-      throw new Error('filters-json input is required and cannot be empty');
+    if (!filtersList || !filtersList.trim()) {
+      throw new Error('filters-list input is required and cannot be empty');
     }
 
-    filterNames = filtersJson
+    filterNames = filtersList
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
@@ -40,9 +38,7 @@ module.exports = ({ core, context }) => {
     return;
   }
 
-  // Get GitHub context
   const currentEvent = context.eventName;
-  // Fix: Handle different ref types safely
   const currentBranch = context.ref?.startsWith('refs/heads/')
     ? context.ref.replace('refs/heads/', '')
     : context.ref || '';

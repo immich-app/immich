@@ -1,18 +1,14 @@
-// No longer need YAML parser - using JSON from Python conversion
 module.exports = ({ core }) => {
   console.log('=== Pre-Job: Generating Final Outputs ===');
 
   try {
-    // Get inputs directly from core
-    const filtersJson = core.getInput('filters-json');
-    const skipForceLogic = core.getInput('skip-force-logic') === 'true';
+    const filtersList = core.getInput('filters-list');
+    const skipForceLogic = core.getBooleanInput('skip-force-logic');
 
-    // Get step outputs
-    const forceTriggered = core.getInput('force-triggered') === 'true';
-    const shouldSkip = core.getInput('should-skip') === 'true';
-    const needsPathFiltering = core.getInput('needs-path-filtering') === 'true';
+    const forceTriggered = core.getBooleanInput('force-triggered');
+    const shouldSkip = core.getBooleanInput('should-skip');
+    const needsPathFiltering = core.getBooleanInput('needs-path-filtering');
 
-    // Parse path results from separate steps
     let forcePathResults = {};
     let mainPathResults = {};
 
@@ -37,11 +33,11 @@ module.exports = ({ core }) => {
     // Parse filter names from comma-separated string
     let filterNames = [];
     try {
-      if (!filtersJson || !filtersJson.trim()) {
-        throw new Error('filters-json input is required and cannot be empty');
+      if (!filtersList || !filtersList.trim()) {
+        throw new Error('filters-list input is required and cannot be empty');
       }
 
-      filterNames = filtersJson
+      filterNames = filtersList
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean);
@@ -77,7 +73,6 @@ module.exports = ({ core }) => {
     } else {
       console.log('📁 Generating PATH-BASED results');
 
-      // Check if force paths triggered (this forces ALL filters to true)
       const forcePathsTriggered = forcePathResults['force-paths'] === 'true';
 
       if (forcePathsTriggered && !skipForceLogic) {
@@ -87,7 +82,6 @@ module.exports = ({ core }) => {
         }
       } else {
         console.log('📋 Using individual path results');
-        // Process each filter based on main path results
         for (const filterName of filterNames) {
           const pathResult = mainPathResults[filterName] === 'true';
           results[filterName] = pathResult;
@@ -97,7 +91,6 @@ module.exports = ({ core }) => {
       }
     }
 
-    // Output as JSON object that can be accessed with fromJSON()
     core.setOutput('should_run', JSON.stringify(results));
 
     console.log('✅ Final results:', results);

@@ -21,12 +21,11 @@ inputs:
     required: false
     default: ''
   skip-force-logic:
-    description: 'Skip the standard force logic (for special cases like weblate)'
+    description: 'Skip the standard force logic'
     required: false
     default: 'false'
 
 outputs:
-  # Individual outputs that can be accessed directly
   should_run:
     description: 'Nested object with filter results (access via fromJSON(steps.pre-job.outputs.should_run).filter_name)'
     value: ${{ steps.generate-outputs.outputs.should_run }}
@@ -34,8 +33,8 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Convert filters to JSON
-      id: convert-filters
+    - name: List filter keys as comma-separated string
+      id: list-filters
       shell: python
       env:
         FILTERS: ${{ inputs.filters }}
@@ -55,13 +54,12 @@ runs:
             if not isinstance(filters_dict, dict):
                 raise ValueError("Filters must be a YAML dictionary")
 
-            # Just pass the filter names as a comma-separated string
             filter_names = ','.join(filters_dict.keys())
 
             print(f"Filter names: {filter_names}")
 
             with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-                f.write(f"filter_names={filter_names}\n")
+                f.write(f"filters={filter_names}\n")
 
         except Exception as e:
             print(f"Error converting filters: {e}")
@@ -75,7 +73,7 @@ runs:
         force-branches: ${{ inputs.force-branches }}
         exclude-branches: ${{ inputs.exclude-branches }}
         skip-force-logic: ${{ inputs.skip-force-logic }}
-        filters-json: ${{ steps.convert-filters.outputs.filter_names }}
+        filters-list: ${{ steps.list-filters.outputs.filters }}
         script: |
           const script = require('./.github/actions/pre-job/check-conditions.js')
           script({ core, context })
@@ -97,7 +95,6 @@ runs:
         import os
         import yaml
 
-        # Get the force filters input
         force_filters_input = os.environ.get('FORCE_FILTERS', '').strip()
 
         if not force_filters_input:
@@ -105,10 +102,8 @@ runs:
             exit(0)
 
         try:
-            # Parse the force-filters as YAML - should be an array of paths
             force_paths_list = yaml.safe_load(force_filters_input)
 
-            # Ensure it's a list
             if not isinstance(force_paths_list, list):
                 raise ValueError("force-filters must be a YAML array of paths")
 
@@ -116,18 +111,14 @@ runs:
                 print("No valid paths found in force-filters")
                 exit(0)
 
-            # Create the YAML structure for paths-filter
             force_paths_config = {
                 'force-paths': force_paths_list
             }
 
-            # Generate YAML string directly
             force_paths_yaml = yaml.dump(force_paths_config, default_flow_style=False)
 
-            print("Generated force paths YAML:")
-            print(force_paths_yaml)
+            print(f"Generated force paths YAML: {force_paths_yaml}")
 
-            # Set GitHub Actions output
             with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
                 f.write(f"force-paths-yaml<<EOF\n{force_paths_yaml}EOF\n")
 
@@ -154,7 +145,7 @@ runs:
       id: generate-outputs
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
       with:
-        filters-json: ${{ steps.convert-filters.outputs.filter_names }}
+        filters-list: ${{ steps.list-filters.outputs.filters }}
         skip-force-logic: ${{ inputs.skip-force-logic }}
         force-triggered: ${{ steps.check-conditions.outputs.force_triggered }}
         should-skip: ${{ steps.check-conditions.outputs.should_skip }}
