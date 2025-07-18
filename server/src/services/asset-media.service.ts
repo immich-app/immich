@@ -197,6 +197,7 @@ export class AssetMediaService extends BaseService {
 
     return new ImmichFileResponse({
       path: asset.originalPath,
+      fileName: asset.originalFileName,
       contentType: mimeTypes.lookup(asset.originalPath),
       cacheControl: CacheControl.PrivateWithCache,
     });

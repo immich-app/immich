@@ -69,9 +69,6 @@ class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage>
               child: Timeline(
                 appBar: MesmerizingSliverAppBar(
                   title: 'locked_folder'.t(context: context),
-                  onBackPressed: () {
-                    ref.read(authProvider.notifier).lockPinCode();
-                  },
                 ),
                 bottomSheet: const LockedFolderBottomSheet(),
               ),

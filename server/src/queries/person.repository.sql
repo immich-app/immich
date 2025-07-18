@@ -12,6 +12,17 @@ delete from "person"
 where
   "person"."id" in ($1)
 
+-- PersonRepository.getFileSamples
+select
+  "id",
+  "thumbnailPath"
+from
+  "person"
+where
+  "thumbnailPath" != ''
+limit
+  3
+
 -- PersonRepository.getAllForUser
 select
   "person".*

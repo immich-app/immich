@@ -142,6 +142,16 @@ export class PersonRepository {
       .stream();
   }
 
+  @GenerateSql()
+  getFileSamples() {
+    return this.db
+      .selectFrom('person')
+      .select(['id', 'thumbnailPath'])
+      .where('thumbnailPath', '!=', sql.lit(''))
+      .limit(sql.lit(3))
+      .execute();
+  }
+
   @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
   async getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions) {
     const items = await this.db

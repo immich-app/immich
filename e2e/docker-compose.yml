@@ -3,7 +3,6 @@ name: immich-e2e
 services:
   immich-server:
     container_name: immich-e2e-server
-    command: ['./start.sh']
     image: immich-server:latest
     build:
       context: ../

@@ -78,6 +78,17 @@ where
   "user"."isAdmin" = $1
   and "user"."deletedAt" is null
 
+-- UserRepository.getFileSamples
+select
+  "id",
+  "profileImagePath"
+from
+  "user"
+where
+  "profileImagePath" != ''
+limit
+  3
+
 -- UserRepository.hasAdmin
 select
   "user"."id"

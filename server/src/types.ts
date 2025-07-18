@@ -451,11 +451,13 @@ export type MemoriesState = {
   /** memories have already been created through this date */
   lastOnThisDayDate: string;
 };
+export type MediaLocation = { location: string };
 
 export interface SystemMetadata extends Record<SystemMetadataKey, Record<string, any>> {
   [SystemMetadataKey.AdminOnboarding]: { isOnboarded: boolean };
   [SystemMetadataKey.FacialRecognitionState]: { lastRun?: string };
   [SystemMetadataKey.License]: { licenseKey: string; activationKey: string; activatedAt: Date };
+  [SystemMetadataKey.MediaLocation]: MediaLocation;
   [SystemMetadataKey.ReverseGeocodingState]: { lastUpdate?: string; lastImportFileName?: string };
   [SystemMetadataKey.SystemConfig]: DeepPartial<SystemConfig>;
   [SystemMetadataKey.SystemFlags]: DeepPartial<SystemFlags>;
