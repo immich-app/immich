@@ -245,7 +245,6 @@ export class SyncPersonV1 {
   ownerId!: string;
   name!: string;
   birthDate!: Date | null;
-  thumbnailPath!: string;
   isHidden!: boolean;
   isFavorite!: boolean;
   color!: string | null;

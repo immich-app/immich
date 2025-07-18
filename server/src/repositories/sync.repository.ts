@@ -385,7 +385,6 @@ class PersonSync extends BaseSync {
         'ownerId',
         'name',
         'birthDate',
-        'thumbnailPath',
         'isHidden',
         'isFavorite',
         'color',
