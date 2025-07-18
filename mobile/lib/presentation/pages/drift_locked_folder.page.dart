@@ -63,14 +63,18 @@ class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage>
       ],
       child: _showOverlay
           ? const SizedBox()
-          : Timeline(
-              appBar: MesmerizingSliverAppBar(
-                title: 'locked_folder'.t(context: context),
-                onBackPressed: () {
-                  ref.read(authProvider.notifier).lockPinCode();
-                },
+          : PopScope(
+              onPopInvokedWithResult: (didPop, _) =>
+                  didPop ? ref.read(authProvider.notifier).lockPinCode() : null,
+              child: Timeline(
+                appBar: MesmerizingSliverAppBar(
+                  title: 'locked_folder'.t(context: context),
+                  onBackPressed: () {
+                    ref.read(authProvider.notifier).lockPinCode();
+                  },
+                ),
+                bottomSheet: const LockedFolderBottomSheet(),
               ),
-              bottomSheet: const LockedFolderBottomSheet(),
             ),
     );
   }

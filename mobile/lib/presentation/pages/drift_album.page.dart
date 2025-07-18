@@ -95,9 +95,13 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
 
     return RefreshIndicator(
       onRefresh: onRefresh,
+      edgeOffset: 100,
       child: CustomScrollView(
         slivers: [
           ImmichSliverAppBar(
+            snap: false,
+            floating: false,
+            pinned: true,
             actions: [
               IconButton(
                 icon: const Icon(
