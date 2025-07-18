@@ -30,8 +30,8 @@ abstract class ThumbnailApi {
   // });
 }
 
-@FlutterApi()
-abstract class PlatformThumbnailApi {
-  @async
-  Uint8List? getThumbnail(String assetId, int width, int height);
-}
+// @FlutterApi()
+// abstract class PlatformThumbnailApi {
+//   @async
+//   Uint8List? getThumbnail(String assetId, int width, int height);
+// }
