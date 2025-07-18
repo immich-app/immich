@@ -73,6 +73,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       expand: false,
       shouldCloseOnMinExtent: false,
       resizeOnScroll: false,
+      backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
     );
   }
 }
@@ -84,14 +85,18 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     final dateTime = asset.createdAt.toLocal();
     final date = DateFormat.yMMMEd(ctx.locale.toLanguageTag()).format(dateTime);
     final time = DateFormat.jm(ctx.locale.toLanguageTag()).format(dateTime);
-    return '$date$_kSeparator$time';
+    final timezone = dateTime.timeZoneOffset.isNegative
+        ? 'UTC-${dateTime.timeZoneOffset.inHours.abs().toString().padLeft(2, '0')}:${(dateTime.timeZoneOffset.inMinutes.abs() % 60).toString().padLeft(2, '0')}'
+        : 'UTC+${dateTime.timeZoneOffset.inHours.toString().padLeft(2, '0')}:${(dateTime.timeZoneOffset.inMinutes.abs() % 60).toString().padLeft(2, '0')}';
+    return '$date$_kSeparator$time $timezone';
   }
 
   String _getFileInfo(BaseAsset asset, ExifInfo? exifInfo) {
     final height = asset.height ?? exifInfo?.height;
     final width = asset.width ?? exifInfo?.width;
-    final resolution =
-        (width != null && height != null) ? "$width x $height" : null;
+    final resolution = (width != null && height != null)
+        ? "${width.toInt()} x ${height.toInt()}"
+        : null;
     final fileSize =
         exifInfo?.fileSize != null ? formatBytes(exifInfo!.fileSize!) : null;
 
@@ -150,46 +155,46 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         // Asset Date and Time
         _SheetTile(
           title: _getDateTime(context, asset),
-          titleStyle: context.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w500,
-            fontSize: 16,
+          titleStyle: context.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
           ),
         ),
         const SheetLocationDetails(),
         // Details header
         _SheetTile(
           title: 'exif_bottom_sheet_details'.t(context: context),
-          titleStyle: context.textTheme.labelLarge,
+          titleStyle: context.textTheme.labelMedium?.copyWith(
+            color: context.textTheme.labelMedium?.color?.withAlpha(200),
+            fontWeight: FontWeight.w600,
+          ),
         ),
         // File info
         _SheetTile(
           title: asset.name,
-          titleStyle: context.textTheme.labelLarge
-              ?.copyWith(fontWeight: FontWeight.w600),
+          titleStyle: context.textTheme.labelLarge,
           leading: Icon(
             asset.isImage ? Icons.image_outlined : Icons.videocam_outlined,
-            size: 30,
+            size: 24,
             color: context.textTheme.labelLarge?.color,
           ),
           subtitle: _getFileInfo(asset, exifInfo),
-          subtitleStyle: context.textTheme.labelLarge?.copyWith(
-            color: context.textTheme.labelLarge?.color?.withAlpha(200),
+          subtitleStyle: context.textTheme.bodyMedium?.copyWith(
+            color: context.textTheme.bodyMedium?.color?.withAlpha(155),
           ),
         ),
         // Camera info
         if (cameraTitle != null)
           _SheetTile(
             title: cameraTitle,
-            titleStyle: context.textTheme.labelLarge
-                ?.copyWith(fontWeight: FontWeight.w600),
+            titleStyle: context.textTheme.labelLarge,
             leading: Icon(
               Icons.camera_outlined,
-              size: 30,
+              size: 24,
               color: context.textTheme.labelLarge?.color,
             ),
             subtitle: _getCameraInfoSubtitle(exifInfo),
-            subtitleStyle: context.textTheme.labelLarge?.copyWith(
-              color: context.textTheme.labelLarge?.color?.withAlpha(200),
+            subtitleStyle: context.textTheme.bodyMedium?.copyWith(
+              color: context.textTheme.bodyMedium?.color?.withAlpha(155),
             ),
           ),
       ],
