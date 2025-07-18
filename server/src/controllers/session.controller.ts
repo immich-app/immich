@@ -13,26 +13,26 @@ export class SessionController {
   constructor(private service: SessionService) {}
 
   @Post()
-  @Authenticated({ permission: Permission.SESSION_CREATE })
+  @Authenticated({ permission: Permission.SessionCreate })
   createSession(@Auth() auth: AuthDto, @Body() dto: SessionCreateDto): Promise<SessionCreateResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Get()
-  @Authenticated({ permission: Permission.SESSION_READ })
+  @Authenticated({ permission: Permission.SessionRead })
   getSessions(@Auth() auth: AuthDto): Promise<SessionResponseDto[]> {
     return this.service.getAll(auth);
   }
 
   @Delete()
-  @Authenticated({ permission: Permission.SESSION_DELETE })
+  @Authenticated({ permission: Permission.SessionDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteAllSessions(@Auth() auth: AuthDto): Promise<void> {
     return this.service.deleteAll(auth);
   }
 
   @Put(':id')
-  @Authenticated({ permission: Permission.SESSION_UPDATE })
+  @Authenticated({ permission: Permission.SessionUpdate })
   updateSession(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -42,14 +42,14 @@ export class SessionController {
   }
 
   @Delete(':id')
-  @Authenticated({ permission: Permission.SESSION_DELETE })
+  @Authenticated({ permission: Permission.SessionDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteSession(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }
 
   @Post(':id/lock')
-  @Authenticated({ permission: Permission.SESSION_LOCK })
+  @Authenticated({ permission: Permission.SessionLock })
   @HttpCode(HttpStatus.NO_CONTENT)
   lockSession(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.lock(auth, id);

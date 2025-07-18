@@ -85,13 +85,13 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
 @Module({
   imports: [...imports, ScheduleModule.forRoot()],
   controllers: [...controllers],
-  providers: [...common, ...middleware, { provide: IWorker, useValue: ImmichWorker.API }],
+  providers: [...common, ...middleware, { provide: IWorker, useValue: ImmichWorker.Api }],
 })
 export class ApiModule extends BaseModule {}
 
 @Module({
   imports: [...imports],
-  providers: [...common, { provide: IWorker, useValue: ImmichWorker.MICROSERVICES }, SchedulerRegistry],
+  providers: [...common, { provide: IWorker, useValue: ImmichWorker.Microservices }, SchedulerRegistry],
 })
 export class MicroservicesModule extends BaseModule {}
 

@@ -1,402 +1,397 @@
 export enum AuthType {
-  PASSWORD = 'password',
-  OAUTH = 'oauth',
+  Password = 'password',
+  OAuth = 'oauth',
 }
 
 export enum ImmichCookie {
-  ACCESS_TOKEN = 'immich_access_token',
-  AUTH_TYPE = 'immich_auth_type',
-  IS_AUTHENTICATED = 'immich_is_authenticated',
-  SHARED_LINK_TOKEN = 'immich_shared_link_token',
-  OAUTH_STATE = 'immich_oauth_state',
-  OAUTH_CODE_VERIFIER = 'immich_oauth_code_verifier',
+  AccessToken = 'immich_access_token',
+  AuthType = 'immich_auth_type',
+  IsAuthenticated = 'immich_is_authenticated',
+  SharedLinkToken = 'immich_shared_link_token',
+  OAuthState = 'immich_oauth_state',
+  OAuthCodeVerifier = 'immich_oauth_code_verifier',
 }
 
 export enum ImmichHeader {
-  API_KEY = 'x-api-key',
-  USER_TOKEN = 'x-immich-user-token',
-  SESSION_TOKEN = 'x-immich-session-token',
-  SHARED_LINK_KEY = 'x-immich-share-key',
-  CHECKSUM = 'x-immich-checksum',
-  CID = 'x-immich-cid',
+  ApiKey = 'x-api-key',
+  UserToken = 'x-immich-user-token',
+  SessionToken = 'x-immich-session-token',
+  SharedLinkKey = 'x-immich-share-key',
+  Checksum = 'x-immich-checksum',
+  Cid = 'x-immich-cid',
 }
 
 export enum ImmichQuery {
-  SHARED_LINK_KEY = 'key',
-  API_KEY = 'apiKey',
-  SESSION_KEY = 'sessionKey',
+  SharedLinkKey = 'key',
+  ApiKey = 'apiKey',
+  SessionKey = 'sessionKey',
 }
 
 export enum AssetType {
-  IMAGE = 'IMAGE',
-  VIDEO = 'VIDEO',
-  AUDIO = 'AUDIO',
-  OTHER = 'OTHER',
+  Image = 'IMAGE',
+  Video = 'VIDEO',
+  Audio = 'AUDIO',
+  Other = 'OTHER',
 }
 
 export enum AssetFileType {
   /**
    * An full/large-size image extracted/converted from RAW photos
    */
-  FULLSIZE = 'fullsize',
-  PREVIEW = 'preview',
-  THUMBNAIL = 'thumbnail',
+  FullSize = 'fullsize',
+  Preview = 'preview',
+  Thumbnail = 'thumbnail',
 }
 
 export enum AlbumUserRole {
-  EDITOR = 'editor',
-  VIEWER = 'viewer',
+  Editor = 'editor',
+  Viewer = 'viewer',
 }
 
 export enum AssetOrder {
-  ASC = 'asc',
-  DESC = 'desc',
+  Asc = 'asc',
+  Desc = 'desc',
 }
 
 export enum DatabaseAction {
-  CREATE = 'CREATE',
-  UPDATE = 'UPDATE',
-  DELETE = 'DELETE',
+  Create = 'CREATE',
+  Update = 'UPDATE',
+  Delete = 'DELETE',
 }
 
 export enum EntityType {
-  ASSET = 'ASSET',
-  ALBUM = 'ALBUM',
+  Asset = 'ASSET',
+  Album = 'ALBUM',
 }
 
 export enum MemoryType {
   /** pictures taken on this day X years ago */
-  ON_THIS_DAY = 'on_this_day',
+  OnThisDay = 'on_this_day',
 }
 
 export enum Permission {
-  ALL = 'all',
+  All = 'all',
 
-  ACTIVITY_CREATE = 'activity.create',
-  ACTIVITY_READ = 'activity.read',
-  ACTIVITY_UPDATE = 'activity.update',
-  ACTIVITY_DELETE = 'activity.delete',
-  ACTIVITY_STATISTICS = 'activity.statistics',
+  ActivityCreate = 'activity.create',
+  ActivityRead = 'activity.read',
+  ActivityUpdate = 'activity.update',
+  ActivityDelete = 'activity.delete',
+  ActivityStatistics = 'activity.statistics',
 
-  API_KEY_CREATE = 'apiKey.create',
-  API_KEY_READ = 'apiKey.read',
-  API_KEY_UPDATE = 'apiKey.update',
-  API_KEY_DELETE = 'apiKey.delete',
+  ApiKeyCreate = 'apiKey.create',
+  ApiKeyRead = 'apiKey.read',
+  ApiKeyUpdate = 'apiKey.update',
+  ApiKeyDelete = 'apiKey.delete',
 
   // ASSET_CREATE = 'asset.create',
-  ASSET_READ = 'asset.read',
-  ASSET_UPDATE = 'asset.update',
-  ASSET_DELETE = 'asset.delete',
-  ASSET_SHARE = 'asset.share',
-  ASSET_VIEW = 'asset.view',
-  ASSET_DOWNLOAD = 'asset.download',
-  ASSET_UPLOAD = 'asset.upload',
+  AssetRead = 'asset.read',
+  AssetUpdate = 'asset.update',
+  AssetDelete = 'asset.delete',
+  AssetShare = 'asset.share',
+  AssetView = 'asset.view',
+  AssetDownload = 'asset.download',
+  AssetUpload = 'asset.upload',
 
-  ALBUM_CREATE = 'album.create',
-  ALBUM_READ = 'album.read',
-  ALBUM_UPDATE = 'album.update',
-  ALBUM_DELETE = 'album.delete',
-  ALBUM_STATISTICS = 'album.statistics',
+  AlbumCreate = 'album.create',
+  AlbumRead = 'album.read',
+  AlbumUpdate = 'album.update',
+  AlbumDelete = 'album.delete',
+  AlbumStatistics = 'album.statistics',
 
-  ALBUM_ADD_ASSET = 'album.addAsset',
-  ALBUM_REMOVE_ASSET = 'album.removeAsset',
-  ALBUM_SHARE = 'album.share',
-  ALBUM_DOWNLOAD = 'album.download',
+  AlbumAddAsset = 'album.addAsset',
+  AlbumRemoveAsset = 'album.removeAsset',
+  AlbumShare = 'album.share',
+  AlbumDownload = 'album.download',
 
-  AUTH_DEVICE_DELETE = 'authDevice.delete',
+  AuthDeviceDelete = 'authDevice.delete',
 
-  ARCHIVE_READ = 'archive.read',
+  ArchiveRead = 'archive.read',
 
-  FACE_CREATE = 'face.create',
-  FACE_READ = 'face.read',
-  FACE_UPDATE = 'face.update',
-  FACE_DELETE = 'face.delete',
+  FaceCreate = 'face.create',
+  FaceRead = 'face.read',
+  FaceUpdate = 'face.update',
+  FaceDelete = 'face.delete',
 
-  LIBRARY_CREATE = 'library.create',
-  LIBRARY_READ = 'library.read',
-  LIBRARY_UPDATE = 'library.update',
-  LIBRARY_DELETE = 'library.delete',
-  LIBRARY_STATISTICS = 'library.statistics',
+  LibraryCreate = 'library.create',
+  LibraryRead = 'library.read',
+  LibraryUpdate = 'library.update',
+  LibraryDelete = 'library.delete',
+  LibraryStatistics = 'library.statistics',
 
-  TIMELINE_READ = 'timeline.read',
-  TIMELINE_DOWNLOAD = 'timeline.download',
+  TimelineRead = 'timeline.read',
+  TimelineDownload = 'timeline.download',
 
-  MEMORY_CREATE = 'memory.create',
-  MEMORY_READ = 'memory.read',
-  MEMORY_UPDATE = 'memory.update',
-  MEMORY_DELETE = 'memory.delete',
+  MemoryCreate = 'memory.create',
+  MemoryRead = 'memory.read',
+  MemoryUpdate = 'memory.update',
+  MemoryDelete = 'memory.delete',
 
-  NOTIFICATION_CREATE = 'notification.create',
-  NOTIFICATION_READ = 'notification.read',
-  NOTIFICATION_UPDATE = 'notification.update',
-  NOTIFICATION_DELETE = 'notification.delete',
+  NotificationCreate = 'notification.create',
+  NotificationRead = 'notification.read',
+  NotificationUpdate = 'notification.update',
+  NotificationDelete = 'notification.delete',
 
-  PARTNER_CREATE = 'partner.create',
-  PARTNER_READ = 'partner.read',
-  PARTNER_UPDATE = 'partner.update',
-  PARTNER_DELETE = 'partner.delete',
+  PartnerCreate = 'partner.create',
+  PartnerRead = 'partner.read',
+  PartnerUpdate = 'partner.update',
+  PartnerDelete = 'partner.delete',
 
-  PERSON_CREATE = 'person.create',
-  PERSON_READ = 'person.read',
-  PERSON_UPDATE = 'person.update',
-  PERSON_DELETE = 'person.delete',
-  PERSON_STATISTICS = 'person.statistics',
-  PERSON_MERGE = 'person.merge',
-  PERSON_REASSIGN = 'person.reassign',
+  PersonCreate = 'person.create',
+  PersonRead = 'person.read',
+  PersonUpdate = 'person.update',
+  PersonDelete = 'person.delete',
+  PersonStatistics = 'person.statistics',
+  PersonMerge = 'person.merge',
+  PersonReassign = 'person.reassign',
 
-  SESSION_CREATE = 'session.create',
-  SESSION_READ = 'session.read',
-  SESSION_UPDATE = 'session.update',
-  SESSION_DELETE = 'session.delete',
-  SESSION_LOCK = 'session.lock',
+  SessionCreate = 'session.create',
+  SessionRead = 'session.read',
+  SessionUpdate = 'session.update',
+  SessionDelete = 'session.delete',
+  SessionLock = 'session.lock',
 
-  SHARED_LINK_CREATE = 'sharedLink.create',
-  SHARED_LINK_READ = 'sharedLink.read',
-  SHARED_LINK_UPDATE = 'sharedLink.update',
-  SHARED_LINK_DELETE = 'sharedLink.delete',
+  SharedLinkCreate = 'sharedLink.create',
+  SharedLinkRead = 'sharedLink.read',
+  SharedLinkUpdate = 'sharedLink.update',
+  SharedLinkDelete = 'sharedLink.delete',
 
-  STACK_CREATE = 'stack.create',
-  STACK_READ = 'stack.read',
-  STACK_UPDATE = 'stack.update',
-  STACK_DELETE = 'stack.delete',
+  StackCreate = 'stack.create',
+  StackRead = 'stack.read',
+  StackUpdate = 'stack.update',
+  StackDelete = 'stack.delete',
 
-  SYSTEM_CONFIG_READ = 'systemConfig.read',
-  SYSTEM_CONFIG_UPDATE = 'systemConfig.update',
+  SystemConfigRead = 'systemConfig.read',
+  SystemConfigUpdate = 'systemConfig.update',
 
-  SYSTEM_METADATA_READ = 'systemMetadata.read',
-  SYSTEM_METADATA_UPDATE = 'systemMetadata.update',
+  SystemMetadataRead = 'systemMetadata.read',
+  SystemMetadataUpdate = 'systemMetadata.update',
 
-  TAG_CREATE = 'tag.create',
-  TAG_READ = 'tag.read',
-  TAG_UPDATE = 'tag.update',
-  TAG_DELETE = 'tag.delete',
-  TAG_ASSET = 'tag.asset',
+  TagCreate = 'tag.create',
+  TagRead = 'tag.read',
+  TagUpdate = 'tag.update',
+  TagDelete = 'tag.delete',
+  TagAsset = 'tag.asset',
 
-  ADMIN_USER_CREATE = 'admin.user.create',
-  ADMIN_USER_READ = 'admin.user.read',
-  ADMIN_USER_UPDATE = 'admin.user.update',
-  ADMIN_USER_DELETE = 'admin.user.delete',
+  AdminUserCreate = 'admin.user.create',
+  AdminUserRead = 'admin.user.read',
+  AdminUserUpdate = 'admin.user.update',
+  AdminUserDelete = 'admin.user.delete',
 }
 
 export enum SharedLinkType {
-  ALBUM = 'ALBUM',
+  Album = 'ALBUM',
 
   /**
    * Individual asset
    * or group of assets that are not in an album
    */
-  INDIVIDUAL = 'INDIVIDUAL',
+  Individual = 'INDIVIDUAL',
 }
 
 export enum StorageFolder {
-  ENCODED_VIDEO = 'encoded-video',
-  LIBRARY = 'library',
-  UPLOAD = 'upload',
-  PROFILE = 'profile',
-  THUMBNAILS = 'thumbs',
-  BACKUPS = 'backups',
+  EncodedVideo = 'encoded-video',
+  Library = 'library',
+  Upload = 'upload',
+  Profile = 'profile',
+  Thumbnails = 'thumbs',
+  Backups = 'backups',
 }
 
 export enum SystemMetadataKey {
-  REVERSE_GEOCODING_STATE = 'reverse-geocoding-state',
-  FACIAL_RECOGNITION_STATE = 'facial-recognition-state',
-  MEMORIES_STATE = 'memories-state',
-  ADMIN_ONBOARDING = 'admin-onboarding',
-  SYSTEM_CONFIG = 'system-config',
-  SYSTEM_FLAGS = 'system-flags',
-  VERSION_CHECK_STATE = 'version-check-state',
-  LICENSE = 'license',
+  ReverseGeocodingState = 'reverse-geocoding-state',
+  FacialRecognitionState = 'facial-recognition-state',
+  MemoriesState = 'memories-state',
+  AdminOnboarding = 'admin-onboarding',
+  SystemConfig = 'system-config',
+  SystemFlags = 'system-flags',
+  VersionCheckState = 'version-check-state',
+  License = 'license',
 }
 
 export enum UserMetadataKey {
-  PREFERENCES = 'preferences',
-  LICENSE = 'license',
-  ONBOARDING = 'onboarding',
+  Preferences = 'preferences',
+  License = 'license',
+  Onboarding = 'onboarding',
 }
 
 export enum UserAvatarColor {
-  PRIMARY = 'primary',
-  PINK = 'pink',
-  RED = 'red',
-  YELLOW = 'yellow',
-  BLUE = 'blue',
-  GREEN = 'green',
-  PURPLE = 'purple',
-  ORANGE = 'orange',
-  GRAY = 'gray',
-  AMBER = 'amber',
+  Primary = 'primary',
+  Pink = 'pink',
+  Red = 'red',
+  Yellow = 'yellow',
+  Blue = 'blue',
+  Green = 'green',
+  Purple = 'purple',
+  Orange = 'orange',
+  Gray = 'gray',
+  Amber = 'amber',
 }
 
 export enum UserStatus {
-  ACTIVE = 'active',
-  REMOVING = 'removing',
-  DELETED = 'deleted',
+  Active = 'active',
+  Removing = 'removing',
+  Deleted = 'deleted',
 }
 
 export enum AssetStatus {
-  ACTIVE = 'active',
-  TRASHED = 'trashed',
-  DELETED = 'deleted',
+  Active = 'active',
+  Trashed = 'trashed',
+  Deleted = 'deleted',
 }
 
 export enum SourceType {
-  MACHINE_LEARNING = 'machine-learning',
-  EXIF = 'exif',
-  MANUAL = 'manual',
+  MachineLearning = 'machine-learning',
+  Exif = 'exif',
+  Manual = 'manual',
 }
 
 export enum ManualJobName {
-  PERSON_CLEANUP = 'person-cleanup',
-  TAG_CLEANUP = 'tag-cleanup',
-  USER_CLEANUP = 'user-cleanup',
-  MEMORY_CLEANUP = 'memory-cleanup',
-  MEMORY_CREATE = 'memory-create',
-  BACKUP_DATABASE = 'backup-database',
+  PersonCleanup = 'person-cleanup',
+  TagCleanup = 'tag-cleanup',
+  UserCleanup = 'user-cleanup',
+  MemoryCleanup = 'memory-cleanup',
+  MemoryCreate = 'memory-create',
+  BackupDatabase = 'backup-database',
 }
 
 export enum AssetPathType {
-  ORIGINAL = 'original',
-  FULLSIZE = 'fullsize',
-  PREVIEW = 'preview',
-  THUMBNAIL = 'thumbnail',
-  ENCODED_VIDEO = 'encoded_video',
-  SIDECAR = 'sidecar',
+  Original = 'original',
+  FullSize = 'fullsize',
+  Preview = 'preview',
+  Thumbnail = 'thumbnail',
+  EncodedVideo = 'encoded_video',
+  Sidecar = 'sidecar',
 }
 
 export enum PersonPathType {
-  FACE = 'face',
+  Face = 'face',
 }
 
 export enum UserPathType {
-  PROFILE = 'profile',
+  Profile = 'profile',
 }
 
 export type PathType = AssetPathType | PersonPathType | UserPathType;
 
 export enum TranscodePolicy {
-  ALL = 'all',
-  OPTIMAL = 'optimal',
-  BITRATE = 'bitrate',
-  REQUIRED = 'required',
-  DISABLED = 'disabled',
+  All = 'all',
+  Optimal = 'optimal',
+  Bitrate = 'bitrate',
+  Required = 'required',
+  Disabled = 'disabled',
 }
 
 export enum TranscodeTarget {
-  NONE,
-  AUDIO,
-  VIDEO,
-  ALL,
+  None = 'NONE',
+  Audio = 'AUDIO',
+  Video = 'VIDEO',
+  All = 'ALL',
 }
 
 export enum VideoCodec {
   H264 = 'h264',
-  HEVC = 'hevc',
-  VP9 = 'vp9',
-  AV1 = 'av1',
+  Hevc = 'hevc',
+  Vp9 = 'vp9',
+  Av1 = 'av1',
 }
 
 export enum AudioCodec {
-  MP3 = 'mp3',
-  AAC = 'aac',
-  LIBOPUS = 'libopus',
-  PCMS16LE = 'pcm_s16le',
+  Mp3 = 'mp3',
+  Aac = 'aac',
+  LibOpus = 'libopus',
+  PcmS16le = 'pcm_s16le',
 }
 
 export enum VideoContainer {
-  MOV = 'mov',
-  MP4 = 'mp4',
-  OGG = 'ogg',
-  WEBM = 'webm',
+  Mov = 'mov',
+  Mp4 = 'mp4',
+  Ogg = 'ogg',
+  Webm = 'webm',
 }
 
-export enum TranscodeHWAccel {
-  NVENC = 'nvenc',
-  QSV = 'qsv',
-  VAAPI = 'vaapi',
-  RKMPP = 'rkmpp',
-  DISABLED = 'disabled',
+export enum TranscodeHardwareAcceleration {
+  Nvenc = 'nvenc',
+  Qsv = 'qsv',
+  Vaapi = 'vaapi',
+  Rkmpp = 'rkmpp',
+  Disabled = 'disabled',
 }
 
 export enum ToneMapping {
-  HABLE = 'hable',
-  MOBIUS = 'mobius',
-  REINHARD = 'reinhard',
-  DISABLED = 'disabled',
+  Hable = 'hable',
+  Mobius = 'mobius',
+  Reinhard = 'reinhard',
+  Disabled = 'disabled',
 }
 
 export enum CQMode {
-  AUTO = 'auto',
-  CQP = 'cqp',
-  ICQ = 'icq',
+  Auto = 'auto',
+  Cqp = 'cqp',
+  Icq = 'icq',
 }
 
 export enum Colorspace {
-  SRGB = 'srgb',
+  Srgb = 'srgb',
   P3 = 'p3',
 }
 
 export enum ImageFormat {
-  JPEG = 'jpeg',
-  WEBP = 'webp',
+  Jpeg = 'jpeg',
+  Webp = 'webp',
 }
 
 export enum RawExtractedFormat {
-  JPEG = 'jpeg',
-  JXL = 'jxl',
+  Jpeg = 'jpeg',
+  Jxl = 'jxl',
 }
 
 export enum LogLevel {
-  VERBOSE = 'verbose',
-  DEBUG = 'debug',
-  LOG = 'log',
-  WARN = 'warn',
-  ERROR = 'error',
-  FATAL = 'fatal',
+  Verbose = 'verbose',
+  Debug = 'debug',
+  Log = 'log',
+  Warn = 'warn',
+  Error = 'error',
+  Fatal = 'fatal',
 }
 
 export enum MetadataKey {
-  AUTH_ROUTE = 'auth_route',
-  ADMIN_ROUTE = 'admin_route',
-  SHARED_ROUTE = 'shared_route',
-  API_KEY_SECURITY = 'api_key',
-  EVENT_CONFIG = 'event_config',
-  JOB_CONFIG = 'job_config',
-  TELEMETRY_ENABLED = 'telemetry_enabled',
+  AuthRoute = 'auth_route',
+  AdminRoute = 'admin_route',
+  SharedRoute = 'shared_route',
+  ApiKeySecurity = 'api_key',
+  EventConfig = 'event_config',
+  JobConfig = 'job_config',
+  TelemetryEnabled = 'telemetry_enabled',
 }
 
 export enum RouteKey {
-  ASSET = 'assets',
-  USER = 'users',
+  Asset = 'assets',
+  User = 'users',
 }
 
 export enum CacheControl {
-  PRIVATE_WITH_CACHE = 'private_with_cache',
-  PRIVATE_WITHOUT_CACHE = 'private_without_cache',
-  NONE = 'none',
-}
-
-export enum PaginationMode {
-  LIMIT_OFFSET = 'limit-offset',
-  SKIP_TAKE = 'skip-take',
+  PrivateWithCache = 'private_with_cache',
+  PrivateWithoutCache = 'private_without_cache',
+  None = 'none',
 }
 
 export enum ImmichEnvironment {
-  DEVELOPMENT = 'development',
-  TESTING = 'testing',
-  PRODUCTION = 'production',
+  Development = 'development',
+  Testing = 'testing',
+  Production = 'production',
 }
 
 export enum ImmichWorker {
-  API = 'api',
-  MICROSERVICES = 'microservices',
+  Api = 'api',
+  Microservices = 'microservices',
 }
 
 export enum ImmichTelemetry {
-  HOST = 'host',
-  API = 'api',
-  IO = 'io',
-  REPO = 'repo',
-  JOB = 'job',
+  Host = 'host',
+  Api = 'api',
+  Io = 'io',
+  Repo = 'repo',
+  Job = 'job',
 }
 
 export enum ExifOrientation {
@@ -411,11 +406,11 @@ export enum ExifOrientation {
 }
 
 export enum DatabaseExtension {
-  CUBE = 'cube',
-  EARTH_DISTANCE = 'earthdistance',
-  VECTOR = 'vector',
-  VECTORS = 'vectors',
-  VECTORCHORD = 'vchord',
+  Cube = 'cube',
+  EarthDistance = 'earthdistance',
+  Vector = 'vector',
+  Vectors = 'vectors',
+  VectorChord = 'vchord',
 }
 
 export enum BootstrapEventPriority {
@@ -428,135 +423,116 @@ export enum BootstrapEventPriority {
 }
 
 export enum QueueName {
-  THUMBNAIL_GENERATION = 'thumbnailGeneration',
-  METADATA_EXTRACTION = 'metadataExtraction',
-  VIDEO_CONVERSION = 'videoConversion',
-  FACE_DETECTION = 'faceDetection',
-  FACIAL_RECOGNITION = 'facialRecognition',
-  SMART_SEARCH = 'smartSearch',
-  DUPLICATE_DETECTION = 'duplicateDetection',
-  BACKGROUND_TASK = 'backgroundTask',
-  STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
-  MIGRATION = 'migration',
-  SEARCH = 'search',
-  SIDECAR = 'sidecar',
-  LIBRARY = 'library',
-  NOTIFICATION = 'notifications',
-  BACKUP_DATABASE = 'backupDatabase',
+  ThumbnailGeneration = 'thumbnailGeneration',
+  MetadataExtraction = 'metadataExtraction',
+  VideoConversion = 'videoConversion',
+  FaceDetection = 'faceDetection',
+  FacialRecognition = 'facialRecognition',
+  SmartSearch = 'smartSearch',
+  DuplicateDetection = 'duplicateDetection',
+  BackgroundTask = 'backgroundTask',
+  StorageTemplateMigration = 'storageTemplateMigration',
+  Migration = 'migration',
+  Search = 'search',
+  Sidecar = 'sidecar',
+  Library = 'library',
+  Notification = 'notifications',
+  BackupDatabase = 'backupDatabase',
 }
 
 export enum JobName {
-  //backups
-  BACKUP_DATABASE = 'database-backup',
+  AssetDelete = 'AssetDelete',
+  AssetDeleteCheck = 'AssetDeleteCheck',
+  AssetDetectFacesQueueAll = 'AssetDetectFacesQueueAll',
+  AssetDetectFaces = 'AssetDetectFaces',
+  AssetDetectDuplicatesQueueAll = 'AssetDetectDuplicatesQueueAll',
+  AssetDetectDuplicates = 'AssetDetectDuplicates',
+  AssetEncodeVideoQueueAll = 'AssetEncodeVideoQueueAll',
+  AssetEncodeVideo = 'AssetEncodeVideo',
+  AssetEmptyTrash = 'AssetEmptyTrash',
+  AssetExtractMetadataQueueAll = 'AssetExtractMetadataQueueAll',
+  AssetExtractMetadata = 'AssetExtractMetadata',
+  AssetFileMigration = 'AssetFileMigration',
+  AssetGenerateThumbnailsQueueAll = 'AssetGenerateThumbnailsQueueAll',
+  AssetGenerateThumbnails = 'AssetGenerateThumbnails',
 
-  // conversion
-  QUEUE_VIDEO_CONVERSION = 'queue-video-conversion',
-  VIDEO_CONVERSION = 'video-conversion',
+  AuditLogCleanup = 'AuditLogCleanup',
 
-  // thumbnails
-  QUEUE_GENERATE_THUMBNAILS = 'queue-generate-thumbnails',
-  GENERATE_THUMBNAILS = 'generate-thumbnails',
-  GENERATE_PERSON_THUMBNAIL = 'generate-person-thumbnail',
+  DatabaseBackup = 'DatabaseBackup',
 
-  // metadata
-  QUEUE_METADATA_EXTRACTION = 'queue-metadata-extraction',
-  METADATA_EXTRACTION = 'metadata-extraction',
+  FacialRecognitionQueueAll = 'FacialRecognitionQueueAll',
+  FacialRecognition = 'FacialRecognition',
 
-  // user
-  USER_DELETION = 'user-deletion',
-  USER_DELETE_CHECK = 'user-delete-check',
-  USER_SYNC_USAGE = 'user-sync-usage',
+  FileDelete = 'FileDelete',
+  FileMigrationQueueAll = 'FileMigrationQueueAll',
 
-  // asset
-  ASSET_DELETION = 'asset-deletion',
-  ASSET_DELETION_CHECK = 'asset-deletion-check',
+  LibraryDeleteCheck = 'LibraryDeleteCheck',
+  LibraryDelete = 'LibraryDelete',
+  LibraryRemoveAsset = 'LibraryRemoveAsset',
+  LibrarySyncAssetsQueueAll = 'LibraryScanAssetsQueueAll',
+  LibrarySyncAssets = 'LibrarySyncAssets',
+  LibrarySyncFilesQueueAll = 'LibrarySyncFilesQueueAll',
+  LibrarySyncFiles = 'LibrarySyncFiles',
+  LibraryScanQueueAll = 'LibraryScanQueueAll',
 
-  // storage template
-  STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
-  STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
+  MemoryCleanup = 'MemoryCleanup',
+  MemoryGenerate = 'MemoryGenerate',
 
-  // tags
-  TAG_CLEANUP = 'tag-cleanup',
+  NotificationsCleanup = 'NotificationsCleanup',
 
-  // migration
-  QUEUE_MIGRATION = 'queue-migration',
-  MIGRATE_ASSET = 'migrate-asset',
-  MIGRATE_PERSON = 'migrate-person',
+  NotifyUserSignup = 'NotifyUserSignup',
+  NotifyAlbumInvite = 'NotifyAlbumInvite',
+  NotifyAlbumUpdate = 'NotifyAlbumUpdate',
 
-  // facial recognition
-  PERSON_CLEANUP = 'person-cleanup',
-  QUEUE_FACE_DETECTION = 'queue-face-detection',
-  FACE_DETECTION = 'face-detection',
-  QUEUE_FACIAL_RECOGNITION = 'queue-facial-recognition',
-  FACIAL_RECOGNITION = 'facial-recognition',
+  UserDelete = 'UserDelete',
+  UserDeleteCheck = 'UserDeleteCheck',
+  UserSyncUsage = 'UserSyncUsage',
 
-  // library management
-  LIBRARY_QUEUE_SYNC_FILES = 'library-queue-sync-files',
-  LIBRARY_QUEUE_SYNC_ASSETS = 'library-queue-sync-assets',
-  LIBRARY_SYNC_FILES = 'library-sync-files',
-  LIBRARY_SYNC_ASSETS = 'library-sync-assets',
-  LIBRARY_ASSET_REMOVAL = 'handle-library-file-deletion',
-  LIBRARY_DELETE = 'library-delete',
-  LIBRARY_QUEUE_SCAN_ALL = 'library-queue-scan-all',
-  LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
+  PersonCleanup = 'PersonCleanup',
+  PersonFileMigration = 'PersonFileMigration',
+  PersonGenerateThumbnail = 'PersonGenerateThumbnail',
 
-  // cleanup
-  DELETE_FILES = 'delete-files',
-  CLEAN_OLD_AUDIT_LOGS = 'clean-old-audit-logs',
-  CLEAN_OLD_SESSION_TOKENS = 'clean-old-session-tokens',
+  SessionCleanup = 'SessionCleanup',
 
-  // memories
-  MEMORIES_CLEANUP = 'memories-cleanup',
-  MEMORIES_CREATE = 'memories-create',
+  SendMail = 'SendMail',
 
-  // smart search
-  QUEUE_SMART_SEARCH = 'queue-smart-search',
-  SMART_SEARCH = 'smart-search',
+  SidecarQueueAll = 'SidecarQueueAll',
+  SidecarDiscovery = 'SidecarDiscovery',
+  SidecarSync = 'SidecarSync',
+  SidecarWrite = 'SidecarWrite',
 
-  QUEUE_TRASH_EMPTY = 'queue-trash-empty',
+  SmartSearchQueueAll = 'SmartSearchQueueAll',
+  SmartSearch = 'SmartSearch',
 
-  // duplicate detection
-  QUEUE_DUPLICATE_DETECTION = 'queue-duplicate-detection',
-  DUPLICATE_DETECTION = 'duplicate-detection',
+  StorageTemplateMigration = 'StorageTemplateMigration',
+  StorageTemplateMigrationSingle = 'StorageTemplateMigrationSingle',
 
-  // XMP sidecars
-  QUEUE_SIDECAR = 'queue-sidecar',
-  SIDECAR_DISCOVERY = 'sidecar-discovery',
-  SIDECAR_SYNC = 'sidecar-sync',
-  SIDECAR_WRITE = 'sidecar-write',
+  TagCleanup = 'TagCleanup',
 
-  // Notification
-  NOTIFY_SIGNUP = 'notify-signup',
-  NOTIFY_ALBUM_INVITE = 'notify-album-invite',
-  NOTIFY_ALBUM_UPDATE = 'notify-album-update',
-  NOTIFICATIONS_CLEANUP = 'notifications-cleanup',
-  SEND_EMAIL = 'notification-send-email',
-
-  // Version check
-  VERSION_CHECK = 'version-check',
+  VersionCheck = 'VersionCheck',
 }
 
 export enum JobCommand {
-  START = 'start',
-  PAUSE = 'pause',
-  RESUME = 'resume',
-  EMPTY = 'empty',
-  CLEAR_FAILED = 'clear-failed',
+  Start = 'start',
+  Pause = 'pause',
+  Resume = 'resume',
+  Empty = 'empty',
+  ClearFailed = 'clear-failed',
 }
 
 export enum JobStatus {
-  SUCCESS = 'success',
-  FAILED = 'failed',
-  SKIPPED = 'skipped',
+  Success = 'success',
+  Failed = 'failed',
+  Skipped = 'skipped',
 }
 
 export enum QueueCleanType {
-  FAILED = 'failed',
+  Failed = 'failed',
 }
 
 export enum VectorIndex {
-  CLIP = 'clip_index',
-  FACE = 'face_index',
+  Clip = 'clip_index',
+  Face = 'face_index',
 }
 
 export enum DatabaseLock {
@@ -663,8 +639,8 @@ export enum NotificationType {
 }
 
 export enum OAuthTokenEndpointAuthMethod {
-  CLIENT_SECRET_POST = 'client_secret_post',
-  CLIENT_SECRET_BASIC = 'client_secret_basic',
+  ClientSecretPost = 'client_secret_post',
+  ClientSecretBasic = 'client_secret_basic',
 }
 
 export enum DatabaseSslMode {
@@ -676,14 +652,14 @@ export enum DatabaseSslMode {
 }
 
 export enum AssetVisibility {
-  ARCHIVE = 'archive',
-  TIMELINE = 'timeline',
+  Archive = 'archive',
+  Timeline = 'timeline',
 
   /**
    * Video part of the LivePhotos and MotionPhotos
    */
-  HIDDEN = 'hidden',
-  LOCKED = 'locked',
+  Hidden = 'hidden',
+  Locked = 'locked',
 }
 
 export enum CronJob {

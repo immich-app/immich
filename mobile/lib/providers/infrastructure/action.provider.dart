@@ -41,7 +41,13 @@ class ActionNotifier extends Notifier<void> {
   }
 
   List<String> _getRemoteIdsForSource(ActionSource source) {
-    return _getIdsForSource<RemoteAsset>(source).toIds().toList();
+    return _getIdsForSource<RemoteAsset>(source)
+        .toIds()
+        .toList(growable: false);
+  }
+
+  List<String> _getLocalIdsForSource(ActionSource source) {
+    return _getIdsForSource<LocalAsset>(source).toIds().toList(growable: false);
   }
 
   List<String> _getOwnedRemoteIdsForSource(ActionSource source) {
@@ -49,7 +55,7 @@ class ActionNotifier extends Notifier<void> {
     return _getIdsForSource<RemoteAsset>(source)
         .ownedAssets(ownerId)
         .toIds()
-        .toList();
+        .toList(growable: false);
   }
 
   List<RemoteAsset> _getOwnedRemoteAssetsForSource(ActionSource source) {
@@ -61,16 +67,23 @@ class ActionNotifier extends Notifier<void> {
     final Set<BaseAsset> assets = switch (source) {
       ActionSource.timeline =>
         ref.read(multiSelectProvider.select((s) => s.selectedAssets)),
+
+  Set<BaseAsset> _getAssets(ActionSource source) {
+    return switch (source) {
+      ActionSource.timeline => ref.read(multiSelectProvider).selectedAssets,
       ActionSource.viewer => switch (ref.read(currentAssetNotifier)) {
           BaseAsset asset => {asset},
-          null => {},
+          null => const {},
         },
     };
+  }
 
+  Iterable<T> _getIdsForSource<T extends BaseAsset>(ActionSource source) {
+    final Set<BaseAsset> assets = _getAssets(source);
     return switch (T) {
       const (RemoteAsset) => assets.whereType<RemoteAsset>(),
       const (LocalAsset) => assets.whereType<LocalAsset>(),
-      _ => <T>[],
+      _ => const [],
     } as Iterable<T>;
   }
 
@@ -212,6 +225,21 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> deleteLocal(ActionSource source) async {
+    final ids = _getLocalIdsForSource(source);
+    try {
+      await _service.deleteLocal(ids);
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to delete assets', error, stack);
+      return ActionResult(
+        count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
+
   Future<ActionResult?> editLocation(
     ActionSource source,
     BuildContext context,
@@ -276,6 +304,17 @@ class ActionNotifier extends Notifier<void> {
       _logger.severe('Failed to unstack assets', error, stack);
       return ActionResult(
         count: assets.length,
+
+  Future<ActionResult> shareAssets(ActionSource source) async {
+    final ids = _getAssets(source).toList(growable: false);
+
+    try {
+      final count = await _service.shareAssets(ids);
+      return ActionResult(count: count, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to share assets', error, stack);
+      return ActionResult(
+        count: ids.length,
         success: false,
         error: error.toString(),
       );
@@ -287,7 +326,11 @@ extension on Iterable<RemoteAsset> {
   Iterable<String> toIds() => map((e) => e.id);
 
   Iterable<RemoteAsset> ownedAssets(String? ownerId) {
-    if (ownerId == null) return [];
+    if (ownerId == null) return const [];
     return whereType<RemoteAsset>().where((a) => a.ownerId == ownerId);
   }
+}
+
+extension on Iterable<LocalAsset> {
+  Iterable<String> toIds() => map((e) => e.id);
 }

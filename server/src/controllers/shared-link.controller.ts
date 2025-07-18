@@ -24,7 +24,7 @@ export class SharedLinkController {
   constructor(private service: SharedLinkService) {}
 
   @Get()
-  @Authenticated({ permission: Permission.SHARED_LINK_READ })
+  @Authenticated({ permission: Permission.SharedLinkRead })
   getAllSharedLinks(@Auth() auth: AuthDto, @Query() dto: SharedLinkSearchDto): Promise<SharedLinkResponseDto[]> {
     return this.service.getAll(auth, dto);
   }
@@ -38,31 +38,31 @@ export class SharedLinkController {
     @Res({ passthrough: true }) res: Response,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<SharedLinkResponseDto> {
-    const sharedLinkToken = request.cookies?.[ImmichCookie.SHARED_LINK_TOKEN];
+    const sharedLinkToken = request.cookies?.[ImmichCookie.SharedLinkToken];
     if (sharedLinkToken) {
       dto.token = sharedLinkToken;
     }
     const body = await this.service.getMine(auth, dto);
     return respondWithCookie(res, body, {
       isSecure: loginDetails.isSecure,
-      values: body.token ? [{ key: ImmichCookie.SHARED_LINK_TOKEN, value: body.token }] : [],
+      values: body.token ? [{ key: ImmichCookie.SharedLinkToken, value: body.token }] : [],
     });
   }
 
   @Get(':id')
-  @Authenticated({ permission: Permission.SHARED_LINK_READ })
+  @Authenticated({ permission: Permission.SharedLinkRead })
   getSharedLinkById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<SharedLinkResponseDto> {
     return this.service.get(auth, id);
   }
 
   @Post()
-  @Authenticated({ permission: Permission.SHARED_LINK_CREATE })
+  @Authenticated({ permission: Permission.SharedLinkCreate })
   createSharedLink(@Auth() auth: AuthDto, @Body() dto: SharedLinkCreateDto) {
     return this.service.create(auth, dto);
   }
 
   @Patch(':id')
-  @Authenticated({ permission: Permission.SHARED_LINK_UPDATE })
+  @Authenticated({ permission: Permission.SharedLinkUpdate })
   updateSharedLink(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -72,7 +72,7 @@ export class SharedLinkController {
   }
 
   @Delete(':id')
-  @Authenticated({ permission: Permission.SHARED_LINK_DELETE })
+  @Authenticated({ permission: Permission.SharedLinkDelete })
   removeSharedLink(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }

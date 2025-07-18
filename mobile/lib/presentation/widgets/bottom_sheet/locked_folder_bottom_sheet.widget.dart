@@ -17,7 +17,7 @@ class LockedFolderBottomSheet extends ConsumerWidget {
       maxChildSize: 0.4,
       shouldCloseOnMinExtent: false,
       actions: [
-        ShareActionButton(),
+        ShareActionButton(source: ActionSource.timeline),
         DownloadActionButton(),
         DeletePermanentActionButton(source: ActionSource.timeline),
         RemoveFromLockFolderActionButton(source: ActionSource.timeline),

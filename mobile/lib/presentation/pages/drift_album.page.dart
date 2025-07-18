@@ -13,6 +13,7 @@ import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/remote_album.utils.dart';
@@ -478,7 +479,7 @@ class _QuickSortAndViewMode extends StatelessWidget {
   }
 }
 
-class _AlbumList extends StatelessWidget {
+class _AlbumList extends ConsumerWidget {
   const _AlbumList({
     required this.isLoading,
     required this.error,
@@ -492,7 +493,7 @@ class _AlbumList extends StatelessWidget {
   final String? userId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (isLoading) {
       return const SliverToBoxAdapter(
         child: Center(
@@ -567,9 +568,12 @@ class _AlbumList extends StatelessWidget {
                   color: context.colorScheme.onSurfaceSecondary,
                 ),
               ),
-              onTap: () => context.router.push(
-                RemoteAlbumRoute(album: album),
-              ),
+              onTap: () {
+                ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
+                context.router.push(
+                  RemoteAlbumRoute(album: album),
+                );
+              },
               leadingPadding: const EdgeInsets.only(
                 right: 16,
               ),
@@ -692,7 +696,7 @@ class _AlbumGrid extends StatelessWidget {
   }
 }
 
-class _GridAlbumCard extends StatelessWidget {
+class _GridAlbumCard extends ConsumerWidget {
   const _GridAlbumCard({
     required this.album,
     required this.userId,
@@ -702,11 +706,14 @@ class _GridAlbumCard extends StatelessWidget {
   final String? userId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-      onTap: () => context.router.push(
-        RemoteAlbumRoute(album: album),
-      ),
+      onTap: () {
+        ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
+        context.router.push(
+          RemoteAlbumRoute(album: album),
+        );
+      },
       child: Card(
         elevation: 0,
         color: context.colorScheme.surfaceBright,

@@ -136,7 +136,7 @@ const getEnv = (): EnvData => {
     );
   }
 
-  const includedWorkers = asSet(dto.IMMICH_WORKERS_INCLUDE, [ImmichWorker.API, ImmichWorker.MICROSERVICES]);
+  const includedWorkers = asSet(dto.IMMICH_WORKERS_INCLUDE, [ImmichWorker.Api, ImmichWorker.Microservices]);
   const excludedWorkers = asSet(dto.IMMICH_WORKERS_EXCLUDE, []);
   const workers = [...setDifference(includedWorkers, excludedWorkers)];
   for (const worker of workers) {
@@ -145,8 +145,8 @@ const getEnv = (): EnvData => {
     }
   }
 
-  const environment = dto.IMMICH_ENV || ImmichEnvironment.PRODUCTION;
-  const isProd = environment === ImmichEnvironment.PRODUCTION;
+  const environment = dto.IMMICH_ENV || ImmichEnvironment.Production;
+  const isProd = environment === ImmichEnvironment.Production;
   const buildFolder = dto.IMMICH_BUILD_DATA || '/build';
   const folders = {
     geodata: join(buildFolder, 'geodata'),
@@ -199,15 +199,15 @@ const getEnv = (): EnvData => {
   let vectorExtension: VectorExtension | undefined;
   switch (dto.DB_VECTOR_EXTENSION) {
     case 'pgvector': {
-      vectorExtension = DatabaseExtension.VECTOR;
+      vectorExtension = DatabaseExtension.Vector;
       break;
     }
     case 'pgvecto.rs': {
-      vectorExtension = DatabaseExtension.VECTORS;
+      vectorExtension = DatabaseExtension.Vectors;
       break;
     }
     case 'vectorchord': {
-      vectorExtension = DatabaseExtension.VECTORCHORD;
+      vectorExtension = DatabaseExtension.VectorChord;
       break;
     }
   }
@@ -254,11 +254,11 @@ const getEnv = (): EnvData => {
           mount: true,
           generateId: true,
           setup: (cls, req: Request, res: Response) => {
-            const headerValues = req.headers[ImmichHeader.CID];
+            const headerValues = req.headers[ImmichHeader.Cid];
             const headerValue = Array.isArray(headerValues) ? headerValues[0] : headerValues;
             const cid = headerValue || cls.get(CLS_ID);
             cls.set(CLS_ID, cid);
-            res.header(ImmichHeader.CID, cid);
+            res.header(ImmichHeader.Cid, cid);
           },
         },
       },
@@ -278,9 +278,9 @@ const getEnv = (): EnvData => {
 
     otel: {
       metrics: {
-        hostMetrics: telemetries.has(ImmichTelemetry.HOST),
+        hostMetrics: telemetries.has(ImmichTelemetry.Host),
         apiMetrics: {
-          enable: telemetries.has(ImmichTelemetry.API),
+          enable: telemetries.has(ImmichTelemetry.Api),
           ignoreRoutes: excludePaths,
         },
       },
@@ -335,7 +335,7 @@ export class ConfigRepository {
   }
 
   isDev() {
-    return this.getEnv().environment === ImmichEnvironment.DEVELOPMENT;
+    return this.getEnv().environment === ImmichEnvironment.Development;
   }
 
   getWorker() {

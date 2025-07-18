@@ -36,7 +36,7 @@ class RemoteAlbumBottomSheet extends ConsumerWidget {
       maxChildSize: 0.4,
       shouldCloseOnMinExtent: false,
       actions: [
-        const ShareActionButton(),
+        const ShareActionButton(source: ActionSource.timeline),
         if (multiselect.hasRemote) ...[
           const ShareLinkActionButton(source: ActionSource.timeline),
           const ArchiveActionButton(source: ActionSource.timeline),
@@ -55,7 +55,7 @@ class RemoteAlbumBottomSheet extends ConsumerWidget {
           const StackActionButton(source: ActionSource.timeline),
         ],
         if (multiselect.hasLocal) ...[
-          const DeleteLocalActionButton(),
+          const DeleteLocalActionButton(source: ActionSource.timeline),
           const UploadActionButton(),
         ],
         RemoveFromAlbumActionButton(

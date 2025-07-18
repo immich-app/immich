@@ -39,19 +39,19 @@ export class NotificationService extends BaseService {
   }
 
   async updateAll(auth: AuthDto, dto: NotificationUpdateAllDto) {
-    await this.requireAccess({ auth, ids: dto.ids, permission: Permission.NOTIFICATION_UPDATE });
+    await this.requireAccess({ auth, ids: dto.ids, permission: Permission.NotificationUpdate });
     await this.notificationRepository.updateAll(dto.ids, {
       readAt: dto.readAt,
     });
   }
 
   async deleteAll(auth: AuthDto, dto: NotificationDeleteAllDto) {
-    await this.requireAccess({ auth, ids: dto.ids, permission: Permission.NOTIFICATION_DELETE });
+    await this.requireAccess({ auth, ids: dto.ids, permission: Permission.NotificationDelete });
     await this.notificationRepository.deleteAll(dto.ids);
   }
 
   async get(auth: AuthDto, id: string) {
-    await this.requireAccess({ auth, ids: [id], permission: Permission.NOTIFICATION_READ });
+    await this.requireAccess({ auth, ids: [id], permission: Permission.NotificationRead });
     const item = await this.notificationRepository.get(id);
     if (!item) {
       throw new BadRequestException('Notification not found');
@@ -60,7 +60,7 @@ export class NotificationService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: NotificationUpdateDto) {
-    await this.requireAccess({ auth, ids: [id], permission: Permission.NOTIFICATION_UPDATE });
+    await this.requireAccess({ auth, ids: [id], permission: Permission.NotificationUpdate });
     const item = await this.notificationRepository.update(id, {
       readAt: dto.readAt,
     });
@@ -68,11 +68,11 @@ export class NotificationService extends BaseService {
   }
 
   async delete(auth: AuthDto, id: string) {
-    await this.requireAccess({ auth, ids: [id], permission: Permission.NOTIFICATION_DELETE });
+    await this.requireAccess({ auth, ids: [id], permission: Permission.NotificationDelete });
     await this.notificationRepository.delete(id);
   }
 
-  @OnJob({ name: JobName.NOTIFICATIONS_CLEANUP, queue: QueueName.BACKGROUND_TASK })
+  @OnJob({ name: JobName.NotificationsCleanup, queue: QueueName.BackgroundTask })
   async onNotificationsCleanup() {
     await this.notificationRepository.cleanup();
   }
@@ -87,7 +87,7 @@ export class NotificationService extends BaseService {
     this.logger.error(`Unable to run job handler (${job.name}): ${error}`, error?.stack, JSON.stringify(job.data));
 
     switch (job.name) {
-      case JobName.BACKUP_DATABASE: {
+      case JobName.DatabaseBackup: {
         const errorMessage = error instanceof Error ? error.message : error;
         const item = await this.notificationRepository.create({
           userId: admin.id,
@@ -135,7 +135,7 @@ export class NotificationService extends BaseService {
 
   @OnEvent({ name: 'AssetShow' })
   async onAssetShow({ assetId }: ArgOf<'AssetShow'>) {
-    await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: { id: assetId, notify: true } });
+    await this.jobRepository.queue({ name: JobName.AssetGenerateThumbnails, data: { id: assetId, notify: true } });
   }
 
   @OnEvent({ name: 'AssetTrash' })
@@ -193,22 +193,22 @@ export class NotificationService extends BaseService {
   @OnEvent({ name: 'UserSignup' })
   async onUserSignup({ notify, id, tempPassword }: ArgOf<'UserSignup'>) {
     if (notify) {
-      await this.jobRepository.queue({ name: JobName.NOTIFY_SIGNUP, data: { id, tempPassword } });
+      await this.jobRepository.queue({ name: JobName.NotifyUserSignup, data: { id, tempPassword } });
     }
   }
 
   @OnEvent({ name: 'AlbumUpdate' })
   async onAlbumUpdate({ id, recipientId }: ArgOf<'AlbumUpdate'>) {
-    await this.jobRepository.removeJob(JobName.NOTIFY_ALBUM_UPDATE, `${id}/${recipientId}`);
+    await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipientId}`);
     await this.jobRepository.queue({
-      name: JobName.NOTIFY_ALBUM_UPDATE,
+      name: JobName.NotifyAlbumUpdate,
       data: { id, recipientId, delay: NotificationService.albumUpdateEmailDelayMs },
     });
   }
 
   @OnEvent({ name: 'AlbumInvite' })
   async onAlbumInvite({ id, userId }: ArgOf<'AlbumInvite'>) {
-    await this.jobRepository.queue({ name: JobName.NOTIFY_ALBUM_INVITE, data: { id, recipientId: userId } });
+    await this.jobRepository.queue({ name: JobName.NotifyAlbumInvite, data: { id, recipientId: userId } });
   }
 
   @OnEvent({ name: 'SessionDelete' })
@@ -313,11 +313,11 @@ export class NotificationService extends BaseService {
     return { name, html: templateResponse };
   }
 
-  @OnJob({ name: JobName.NOTIFY_SIGNUP, queue: QueueName.NOTIFICATION })
-  async handleUserSignup({ id, tempPassword }: JobOf<JobName.NOTIFY_SIGNUP>) {
+  @OnJob({ name: JobName.NotifyUserSignup, queue: QueueName.Notification })
+  async handleUserSignup({ id, tempPassword }: JobOf<JobName.NotifyUserSignup>) {
     const user = await this.userRepository.get(id, { withDeleted: false });
     if (!user) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const { server, templates } = await this.getConfig({ withCache: true });
@@ -333,7 +333,7 @@ export class NotificationService extends BaseService {
     });
 
     await this.jobRepository.queue({
-      name: JobName.SEND_EMAIL,
+      name: JobName.SendMail,
       data: {
         to: user.email,
         subject: 'Welcome to Immich',
@@ -342,25 +342,25 @@ export class NotificationService extends BaseService {
       },
     });
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.NOTIFY_ALBUM_INVITE, queue: QueueName.NOTIFICATION })
-  async handleAlbumInvite({ id, recipientId }: JobOf<JobName.NOTIFY_ALBUM_INVITE>) {
+  @OnJob({ name: JobName.NotifyAlbumInvite, queue: QueueName.Notification })
+  async handleAlbumInvite({ id, recipientId }: JobOf<JobName.NotifyAlbumInvite>) {
     const album = await this.albumRepository.getById(id, { withAssets: false });
     if (!album) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const recipient = await this.userRepository.get(recipientId, { withDeleted: false });
     if (!recipient) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const { emailNotifications } = getPreferences(recipient.metadata);
 
     if (!emailNotifications.enabled || !emailNotifications.albumInvite) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const attachment = await this.getAlbumThumbnailAttachment(album);
@@ -380,7 +380,7 @@ export class NotificationService extends BaseService {
     });
 
     await this.jobRepository.queue({
-      name: JobName.SEND_EMAIL,
+      name: JobName.SendMail,
       data: {
         to: recipient.email,
         subject: `You have been added to a shared album - ${album.albumName}`,
@@ -390,20 +390,20 @@ export class NotificationService extends BaseService {
       },
     });
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.NOTIFY_ALBUM_UPDATE, queue: QueueName.NOTIFICATION })
-  async handleAlbumUpdate({ id, recipientId }: JobOf<JobName.NOTIFY_ALBUM_UPDATE>) {
+  @OnJob({ name: JobName.NotifyAlbumUpdate, queue: QueueName.Notification })
+  async handleAlbumUpdate({ id, recipientId }: JobOf<JobName.NotifyAlbumUpdate>) {
     const album = await this.albumRepository.getById(id, { withAssets: false });
 
     if (!album) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const owner = await this.userRepository.get(album.ownerId, { withDeleted: false });
     if (!owner) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const attachment = await this.getAlbumThumbnailAttachment(album);
@@ -412,13 +412,13 @@ export class NotificationService extends BaseService {
 
     const user = await this.userRepository.get(recipientId, { withDeleted: false });
     if (!user) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const { emailNotifications } = getPreferences(user.metadata);
 
     if (!emailNotifications.enabled || !emailNotifications.albumUpdate) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const { html, text } = await this.emailRepository.renderEmail({
@@ -434,7 +434,7 @@ export class NotificationService extends BaseService {
     });
 
     await this.jobRepository.queue({
-      name: JobName.SEND_EMAIL,
+      name: JobName.SendMail,
       data: {
         to: user.email,
         subject: `New media has been added to an album - ${album.albumName}`,
@@ -444,14 +444,14 @@ export class NotificationService extends BaseService {
       },
     });
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.SEND_EMAIL, queue: QueueName.NOTIFICATION })
-  async handleSendEmail(data: JobOf<JobName.SEND_EMAIL>): Promise<JobStatus> {
+  @OnJob({ name: JobName.SendMail, queue: QueueName.Notification })
+  async handleSendEmail(data: JobOf<JobName.SendMail>): Promise<JobStatus> {
     const { notifications } = await this.getConfig({ withCache: false });
     if (!notifications.smtp.enabled) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const { to, subject, html, text: plain } = data;
@@ -468,7 +468,7 @@ export class NotificationService extends BaseService {
 
     this.logger.log(`Sent mail with id: ${response.messageId} status: ${response.response}`);
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   private async getAlbumThumbnailAttachment(album: {
@@ -480,7 +480,7 @@ export class NotificationService extends BaseService {
 
     const albumThumbnailFiles = await this.assetJobRepository.getAlbumThumbnailFiles(
       album.albumThumbnailAssetId,
-      AssetFileType.THUMBNAIL,
+      AssetFileType.Thumbnail,
     );
 
     if (albumThumbnailFiles.length !== 1) {

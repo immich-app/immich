@@ -154,7 +154,7 @@ export function toJson<DB, TB extends keyof DB & string, T extends TB | Expressi
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 
 export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
-  return qb.where('asset.visibility', 'in', [sql.lit(AssetVisibility.ARCHIVE), sql.lit(AssetVisibility.TIMELINE)]);
+  return qb.where('asset.visibility', 'in', [sql.lit(AssetVisibility.Archive), sql.lit(AssetVisibility.Timeline)]);
 }
 
 // TODO come up with a better query that only selects the fields we need
@@ -299,7 +299,7 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
-  const visibility = options.visibility == null ? AssetVisibility.TIMELINE : options.visibility;
+  const visibility = options.visibility == null ? AssetVisibility.Timeline : options.visibility;
 
   return kysely
     .withPlugin(joinDeduplicationPlugin)
@@ -399,7 +399,7 @@ type VectorIndexQueryOptions = { table: string; vectorExtension: VectorExtension
 
 export function vectorIndexQuery({ vectorExtension, table, indexName, lists }: VectorIndexQueryOptions): string {
   switch (vectorExtension) {
-    case DatabaseExtension.VECTORCHORD: {
+    case DatabaseExtension.VectorChord: {
       return `
         CREATE INDEX IF NOT EXISTS ${indexName} ON ${table} USING vchordrq (embedding vector_cosine_ops) WITH (options = $$
         residual_quantization = false
@@ -410,7 +410,7 @@ export function vectorIndexQuery({ vectorExtension, table, indexName, lists }: V
         sampling_factor = 1024
         $$)`;
     }
-    case DatabaseExtension.VECTORS: {
+    case DatabaseExtension.Vectors: {
       return `
         CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}
         USING vectors (embedding vector_cos_ops) WITH (options = $$
@@ -420,7 +420,7 @@ export function vectorIndexQuery({ vectorExtension, table, indexName, lists }: V
         ef_construction = 300
         $$)`;
     }
-    case DatabaseExtension.VECTOR: {
+    case DatabaseExtension.Vector: {
       return `
         CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}
         USING hnsw (embedding vector_cosine_ops)

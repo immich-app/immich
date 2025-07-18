@@ -504,6 +504,49 @@ class BackupOptionsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ChangeExperiencePage]
+class ChangeExperienceRoute extends PageRouteInfo<ChangeExperienceRouteArgs> {
+  ChangeExperienceRoute({
+    Key? key,
+    required bool switchingToBeta,
+    List<PageRouteInfo>? children,
+  }) : super(
+          ChangeExperienceRoute.name,
+          args: ChangeExperienceRouteArgs(
+            key: key,
+            switchingToBeta: switchingToBeta,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'ChangeExperienceRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<ChangeExperienceRouteArgs>();
+      return ChangeExperiencePage(
+        key: args.key,
+        switchingToBeta: args.switchingToBeta,
+      );
+    },
+  );
+}
+
+class ChangeExperienceRouteArgs {
+  const ChangeExperienceRouteArgs({this.key, required this.switchingToBeta});
+
+  final Key? key;
+
+  final bool switchingToBeta;
+
+  @override
+  String toString() {
+    return 'ChangeExperienceRouteArgs{key: $key, switchingToBeta: $switchingToBeta}';
+  }
+}
+
+/// generated route for
 /// [ChangePasswordPage]
 class ChangePasswordRoute extends PageRouteInfo<void> {
   const ChangePasswordRoute({List<PageRouteInfo>? children})
@@ -949,6 +992,45 @@ class DriftRecentlyTakenRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftSearchPage]
+class DriftSearchRoute extends PageRouteInfo<DriftSearchRouteArgs> {
+  DriftSearchRoute({
+    Key? key,
+    SearchFilter? preFilter,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftSearchRoute.name,
+          args: DriftSearchRouteArgs(key: key, preFilter: preFilter),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftSearchRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftSearchRouteArgs>(
+        orElse: () => const DriftSearchRouteArgs(),
+      );
+      return DriftSearchPage(key: args.key, preFilter: args.preFilter);
+    },
+  );
+}
+
+class DriftSearchRouteArgs {
+  const DriftSearchRouteArgs({this.key, this.preFilter});
+
+  final Key? key;
+
+  final SearchFilter? preFilter;
+
+  @override
+  String toString() {
+    return 'DriftSearchRouteArgs{key: $key, preFilter: $preFilter}';
+  }
+}
+
+/// generated route for
 /// [DriftTrashPage]
 class DriftTrashRoute extends PageRouteInfo<void> {
   const DriftTrashRoute({List<PageRouteInfo>? children})
@@ -962,6 +1044,44 @@ class DriftTrashRoute extends PageRouteInfo<void> {
       return const DriftTrashPage();
     },
   );
+}
+
+/// generated route for
+/// [DriftUserSelectionPage]
+class DriftUserSelectionRoute
+    extends PageRouteInfo<DriftUserSelectionRouteArgs> {
+  DriftUserSelectionRoute({
+    Key? key,
+    required RemoteAlbum album,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftUserSelectionRoute.name,
+          args: DriftUserSelectionRouteArgs(key: key, album: album),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftUserSelectionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftUserSelectionRouteArgs>();
+      return DriftUserSelectionPage(key: args.key, album: args.album);
+    },
+  );
+}
+
+class DriftUserSelectionRouteArgs {
+  const DriftUserSelectionRouteArgs({this.key, required this.album});
+
+  final Key? key;
+
+  final RemoteAlbum album;
+
+  @override
+  String toString() {
+    return 'DriftUserSelectionRouteArgs{key: $key, album: $album}';
+  }
 }
 
 /// generated route for

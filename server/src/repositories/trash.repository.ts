@@ -8,7 +8,7 @@ export class TrashRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   getDeletedIds(): AsyncIterableIterator<{ id: string }> {
-    return this.db.selectFrom('asset').select(['id']).where('status', '=', AssetStatus.DELETED).stream();
+    return this.db.selectFrom('asset').select(['id']).where('status', '=', AssetStatus.Deleted).stream();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -16,8 +16,8 @@ export class TrashRepository {
     const { numUpdatedRows } = await this.db
       .updateTable('asset')
       .where('ownerId', '=', userId)
-      .where('status', '=', AssetStatus.TRASHED)
-      .set({ status: AssetStatus.ACTIVE, deletedAt: null })
+      .where('status', '=', AssetStatus.Trashed)
+      .set({ status: AssetStatus.Active, deletedAt: null })
       .executeTakeFirst();
 
     return Number(numUpdatedRows);
@@ -28,8 +28,8 @@ export class TrashRepository {
     const { numUpdatedRows } = await this.db
       .updateTable('asset')
       .where('ownerId', '=', userId)
-      .where('status', '=', AssetStatus.TRASHED)
-      .set({ status: AssetStatus.DELETED })
+      .where('status', '=', AssetStatus.Trashed)
+      .set({ status: AssetStatus.Deleted })
       .executeTakeFirst();
 
     return Number(numUpdatedRows);
@@ -43,9 +43,9 @@ export class TrashRepository {
 
     const { numUpdatedRows } = await this.db
       .updateTable('asset')
-      .where('status', '=', AssetStatus.TRASHED)
+      .where('status', '=', AssetStatus.Trashed)
       .where('id', 'in', ids)
-      .set({ status: AssetStatus.ACTIVE, deletedAt: null })
+      .set({ status: AssetStatus.Active, deletedAt: null })
       .executeTakeFirst();
 
     return Number(numUpdatedRows);

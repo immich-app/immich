@@ -1,5 +1,8 @@
 import 'package:collection/collection.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/utils/remote_album.utils.dart';
@@ -58,7 +61,7 @@ class RemoteAlbumState {
 }
 
 class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
-  late final RemoteAlbumService _remoteAlbumService;
+  late RemoteAlbumService _remoteAlbumService;
 
   @override
   RemoteAlbumState build() {
@@ -145,4 +148,106 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
       rethrow;
     }
   }
+
+  Future<RemoteAlbum?> updateAlbum(
+    String albumId, {
+    String? name,
+    String? description,
+    String? thumbnailAssetId,
+    bool? isActivityEnabled,
+    AlbumAssetOrder? order,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final updatedAlbum = await _remoteAlbumService.updateAlbum(
+        albumId,
+        name: name,
+        description: description,
+        thumbnailAssetId: thumbnailAssetId,
+        isActivityEnabled: isActivityEnabled,
+        order: order,
+      );
+
+      final updatedAlbums = state.albums.map((album) {
+        return album.id == albumId ? updatedAlbum : album;
+      }).toList();
+
+      final updatedFilteredAlbums = state.filteredAlbums.map((album) {
+        return album.id == albumId ? updatedAlbum : album;
+      }).toList();
+
+      state = state.copyWith(
+        albums: updatedAlbums,
+        filteredAlbums: updatedFilteredAlbums,
+        isLoading: false,
+      );
+
+      return updatedAlbum;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
+    }
+  }
+
+  Future<RemoteAlbum?> toggleAlbumOrder(String albumId) async {
+    final currentAlbum =
+        state.albums.firstWhere((album) => album.id == albumId);
+
+    final newOrder = currentAlbum.order == AlbumAssetOrder.asc
+        ? AlbumAssetOrder.desc
+        : AlbumAssetOrder.asc;
+
+    return updateAlbum(albumId, order: newOrder);
+  }
+
+  Future<void> deleteAlbum(String albumId) async {
+    await _remoteAlbumService.deleteAlbum(albumId);
+
+    final updatedAlbums =
+        state.albums.where((album) => album.id != albumId).toList();
+    final updatedFilteredAlbums =
+        state.filteredAlbums.where((album) => album.id != albumId).toList();
+
+    state = state.copyWith(
+      albums: updatedAlbums,
+      filteredAlbums: updatedFilteredAlbums,
+    );
+  }
+
+  Future<List<RemoteAsset>> getAssets(String albumId) {
+    return _remoteAlbumService.getAssets(albumId);
+  }
+
+  Future<int> addAssets(String albumId, List<String> assetIds) {
+    return _remoteAlbumService.addAssets(
+      albumId: albumId,
+      assetIds: assetIds,
+    );
+  }
+
+  Future<void> addUsers(String albumId, List<String> userIds) {
+    return _remoteAlbumService.addUsers(
+      albumId: albumId,
+      userIds: userIds,
+    );
+  }
 }
+
+final remoteAlbumDateRangeProvider =
+    FutureProvider.family<(DateTime, DateTime), String>(
+  (ref, albumId) async {
+    final service = ref.watch(remoteAlbumServiceProvider);
+    return service.getDateRange(albumId);
+  },
+);
+
+final remoteAlbumSharedUsersProvider =
+    FutureProvider.autoDispose.family<List<UserDto>, String>(
+  (ref, albumId) async {
+    final link = ref.keepAlive();
+    ref.onDispose(() => link.close());
+    final service = ref.watch(remoteAlbumServiceProvider);
+    return service.getSharedUsers(albumId);
+  },
+);
