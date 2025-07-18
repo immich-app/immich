@@ -174,6 +174,7 @@ class ActionService {
   Future<void> unStack(List<String> stackIds) async {
     await _remoteAssetRepository.unStack(stackIds);
     await _assetApiRepository.unStack(stackIds);
+  }
 
   Future<int> shareAssets(List<BaseAsset> assets) {
     return _assetMediaRepository.shareAssets(assets);

@@ -64,9 +64,13 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Iterable<T> _getIdsForSource<T extends BaseAsset>(ActionSource source) {
-    final Set<BaseAsset> assets = switch (source) {
-      ActionSource.timeline =>
-        ref.read(multiSelectProvider.select((s) => s.selectedAssets)),
+    final Set<BaseAsset> assets = _getAssets(source);
+    return switch (T) {
+      const (RemoteAsset) => assets.whereType<RemoteAsset>(),
+      const (LocalAsset) => assets.whereType<LocalAsset>(),
+      _ => const [],
+    } as Iterable<T>;
+  }
 
   Set<BaseAsset> _getAssets(ActionSource source) {
     return switch (source) {
@@ -76,15 +80,6 @@ class ActionNotifier extends Notifier<void> {
           null => const {},
         },
     };
-  }
-
-  Iterable<T> _getIdsForSource<T extends BaseAsset>(ActionSource source) {
-    final Set<BaseAsset> assets = _getAssets(source);
-    return switch (T) {
-      const (RemoteAsset) => assets.whereType<RemoteAsset>(),
-      const (LocalAsset) => assets.whereType<LocalAsset>(),
-      _ => const [],
-    } as Iterable<T>;
   }
 
   Future<ActionResult> shareLink(
@@ -304,6 +299,10 @@ class ActionNotifier extends Notifier<void> {
       _logger.severe('Failed to unstack assets', error, stack);
       return ActionResult(
         count: assets.length,
+        success: false,
+      );
+    }
+  }
 
   Future<ActionResult> shareAssets(ActionSource source) async {
     final ids = _getAssets(source).toList(growable: false);

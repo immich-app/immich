@@ -96,10 +96,10 @@ class AssetApiRepository extends ApiRepository {
 
   Future<void> unStack(List<String> ids) async {
     return _stacksApi.deleteStacks(BulkIdsDto(ids: ids));
+  }
 
   Future<Response> downloadAsset(String id) {
     return _api.downloadAssetWithHttpInfo(id);
-
   }
 
   _mapVisibility(AssetVisibilityEnum visibility) => switch (visibility) {
