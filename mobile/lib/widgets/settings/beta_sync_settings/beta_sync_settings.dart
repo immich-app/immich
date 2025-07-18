@@ -6,6 +6,7 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
+import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_title.dart';
 
@@ -118,6 +119,38 @@ class BetaSyncSettings extends HookConsumerWidget {
                   ],
                 ),
               ),
+              SettingsSubTitle(title: "jobs".tr()),
+              ListTile(
+                title: Text("sync_local".tr()),
+                leading: const Icon(Icons.sync),
+                trailing: Text(
+                  ref.watch(syncStatusProvider).localSyncStatus.localized(),
+                ),
+                onTap: () {
+                  ref.read(backgroundSyncProvider).syncLocal(full: true);
+                },
+              ),
+              ListTile(
+                title: Text("sync_remote".tr()),
+                leading: const Icon(Icons.cloud_sync),
+                trailing: Text(
+                  ref.watch(syncStatusProvider).remoteSyncStatus.localized(),
+                ),
+                onTap: () {
+                  ref.read(backgroundSyncProvider).syncRemote();
+                },
+              ),
+              ListTile(
+                title: Text("hashing".tr()),
+                leading: const Icon(Icons.tag),
+                trailing: Text(
+                  ref.watch(syncStatusProvider).hashJobStatus.localized(),
+                ),
+                onTap: () {
+                  ref.read(backgroundSyncProvider).hashAssets();
+                },
+              ),
+              SettingsSubTitle(title: "actions".tr()),
               ListTile(
                 title: Text("reset_sqlite".tr()),
                 leading: const Icon(Icons.storage),
@@ -129,20 +162,6 @@ class BetaSyncSettings extends HookConsumerWidget {
                     await migrator.drop(entity);
                     await migrator.create(entity);
                   }
-                },
-              ),
-              ListTile(
-                title: Text("sync_local_full".tr()),
-                leading: const Icon(Icons.sync),
-                onTap: () {
-                  ref.read(backgroundSyncProvider).syncLocal(full: true);
-                },
-              ),
-              ListTile(
-                title: Text("sync_remote".tr()),
-                leading: const Icon(Icons.cloud_sync),
-                onTap: () {
-                  ref.read(backgroundSyncProvider).syncRemote();
                 },
               ),
             ],
