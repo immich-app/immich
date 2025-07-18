@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
@@ -48,7 +50,6 @@ class HashService {
       }
     }
 
-    await _storageRepository.clearFileCache();
     stopwatch.stop();
     _log.info("Hashing took - ${stopwatch.elapsedMilliseconds}ms");
     DLog.log("Hashing took - ${stopwatch.elapsedMilliseconds}ms");
@@ -89,6 +90,7 @@ class HashService {
     _log.fine("Hashing ${toHash.length} files");
 
     final hashed = <LocalAsset>[];
+    _printPath(toHash.map((e) => e.path).toList());
     final hashes =
         await _nativeSyncApi.hashPaths(toHash.map((e) => e.path).toList());
     assert(
@@ -110,6 +112,15 @@ class HashService {
     DLog.log("Hashed ${hashed.length}/${toHash.length} assets");
 
     await _localAssetRepository.updateHashes(hashed);
+    await _storageRepository.clearFileCache();
+    _printPath(toHash.map((e) => e.path).toList());
+  }
+
+  void _printPath(List<String> paths) {
+    for (final path in paths) {
+      final file = File(path);
+      debugPrint("path: ${file.path}, exists: ${file.existsSync()}");
+    }
   }
 }
 
