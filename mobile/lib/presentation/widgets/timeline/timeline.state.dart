@@ -15,6 +15,7 @@ class TimelineArgs {
   final double spacing;
   final int columnCount;
   final bool showStorageIndicator;
+  final bool withStack;
   final GroupAssetsBy? groupBy;
 
   const TimelineArgs({
@@ -23,6 +24,7 @@ class TimelineArgs {
     this.spacing = kTimelineSpacing,
     this.columnCount = kTimelineColumnCount,
     this.showStorageIndicator = false,
+    this.withStack = false,
     this.groupBy,
   });
 
@@ -33,6 +35,7 @@ class TimelineArgs {
         maxHeight == other.maxHeight &&
         columnCount == other.columnCount &&
         showStorageIndicator == other.showStorageIndicator &&
+        withStack == other.withStack &&
         groupBy == other.groupBy;
   }
 
@@ -43,6 +46,7 @@ class TimelineArgs {
       spacing.hashCode ^
       columnCount.hashCode ^
       showStorageIndicator.hashCode ^
+      withStack.hashCode ^
       groupBy.hashCode;
 }
 

@@ -28,6 +28,7 @@ class Timeline extends StatelessWidget {
     this.topSliverWidget,
     this.topSliverWidgetHeight,
     this.showStorageIndicator = false,
+    this.withStack = false,
     this.appBar = const ImmichSliverAppBar(
       floating: true,
       pinned: false,
@@ -42,6 +43,7 @@ class Timeline extends StatelessWidget {
   final bool showStorageIndicator;
   final Widget? appBar;
   final Widget? bottomSheet;
+  final bool withStack;
   final GroupAssetsBy? groupBy;
 
   @override
@@ -58,6 +60,7 @@ class Timeline extends StatelessWidget {
                   settingsProvider.select((s) => s.get(Setting.tilesPerRow)),
                 ),
                 showStorageIndicator: showStorageIndicator,
+                withStack: withStack,
                 groupBy: groupBy,
               ),
             ),

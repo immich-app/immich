@@ -137,6 +137,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             deletedAt: Value(asset.deletedAt),
             visibility: Value(asset.visibility.toAssetVisibility()),
             livePhotoVideoId: Value(asset.livePhotoVideoId),
+            stackId: Value(asset.stackId),
           );
 
           batch.insert(

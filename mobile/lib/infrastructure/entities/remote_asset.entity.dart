@@ -34,6 +34,8 @@ class RemoteAssetEntity extends Table
 
   IntColumn get visibility => intEnum<AssetVisibility>()();
 
+  TextColumn get stackId => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -55,5 +57,6 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
         visibility: visibility,
         livePhotoVideoId: livePhotoVideoId,
         localId: null,
+        stackId: stackId,
       );
 }
