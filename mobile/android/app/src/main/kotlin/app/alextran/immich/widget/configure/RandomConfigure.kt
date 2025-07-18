@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -121,14 +122,14 @@ fun RandomConfiguration(context: Context, appWidgetId: Int, glanceId: GlanceId, 
     topBar = {
       TopAppBar (
         title = { Text("Widget Configuration") },
-        navigationIcon = {
+        actions = {
           IconButton(onClick = {
             scope.launch {
               saveConfiguration()
               onDone()
             }
           }) {
-            Icon(Icons.Default.Close, contentDescription = "Close")
+            Icon(Icons.Default.Check, contentDescription = "Close", tint = MaterialTheme.colorScheme.primary)
           }
         }
       )
