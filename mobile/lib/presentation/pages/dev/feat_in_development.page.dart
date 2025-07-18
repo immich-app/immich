@@ -112,6 +112,7 @@ final _features = [
       await db.memoryEntity.deleteAll();
       await db.memoryAssetEntity.deleteAll();
       await db.stackEntity.deleteAll();
+      await db.personEntity.deleteAll();
     },
   ),
   _Feature(

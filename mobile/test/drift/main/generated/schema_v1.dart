@@ -4645,6 +4645,441 @@ class MemoryAssetEntityCompanion
   }
 }
 
+class PersonEntity extends Table
+    with TableInfo<PersonEntity, PersonEntityData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  PersonEntity(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: const CustomExpression('CURRENT_TIMESTAMP'));
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: const CustomExpression('CURRENT_TIMESTAMP'));
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+      'owner_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES user_entity (id) ON DELETE CASCADE'));
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<String> faceAssetId = GeneratedColumn<String>(
+      'face_asset_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  late final GeneratedColumn<String> thumbnailPath = GeneratedColumn<String>(
+      'thumbnail_path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<bool> isFavorite = GeneratedColumn<bool>(
+      'is_favorite', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_favorite" IN (0, 1))'));
+  late final GeneratedColumn<bool> isHidden = GeneratedColumn<bool>(
+      'is_hidden', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_hidden" IN (0, 1))'));
+  late final GeneratedColumn<String> color = GeneratedColumn<String>(
+      'color', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  late final GeneratedColumn<DateTime> birthDate = GeneratedColumn<DateTime>(
+      'birth_date', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        createdAt,
+        updatedAt,
+        ownerId,
+        name,
+        faceAssetId,
+        thumbnailPath,
+        isFavorite,
+        isHidden,
+        color,
+        birthDate
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'person_entity';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PersonEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PersonEntityData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      ownerId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}owner_id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      faceAssetId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}face_asset_id']),
+      thumbnailPath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}thumbnail_path'])!,
+      isFavorite: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_favorite'])!,
+      isHidden: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_hidden'])!,
+      color: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}color']),
+      birthDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}birth_date']),
+    );
+  }
+
+  @override
+  PersonEntity createAlias(String alias) {
+    return PersonEntity(attachedDatabase, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+  @override
+  bool get isStrict => true;
+}
+
+class PersonEntityData extends DataClass
+    implements Insertable<PersonEntityData> {
+  final String id;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String ownerId;
+  final String name;
+  final String? faceAssetId;
+  final String thumbnailPath;
+  final bool isFavorite;
+  final bool isHidden;
+  final String? color;
+  final DateTime? birthDate;
+  const PersonEntityData(
+      {required this.id,
+      required this.createdAt,
+      required this.updatedAt,
+      required this.ownerId,
+      required this.name,
+      this.faceAssetId,
+      required this.thumbnailPath,
+      required this.isFavorite,
+      required this.isHidden,
+      this.color,
+      this.birthDate});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['owner_id'] = Variable<String>(ownerId);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || faceAssetId != null) {
+      map['face_asset_id'] = Variable<String>(faceAssetId);
+    }
+    map['thumbnail_path'] = Variable<String>(thumbnailPath);
+    map['is_favorite'] = Variable<bool>(isFavorite);
+    map['is_hidden'] = Variable<bool>(isHidden);
+    if (!nullToAbsent || color != null) {
+      map['color'] = Variable<String>(color);
+    }
+    if (!nullToAbsent || birthDate != null) {
+      map['birth_date'] = Variable<DateTime>(birthDate);
+    }
+    return map;
+  }
+
+  factory PersonEntityData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PersonEntityData(
+      id: serializer.fromJson<String>(json['id']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      name: serializer.fromJson<String>(json['name']),
+      faceAssetId: serializer.fromJson<String?>(json['faceAssetId']),
+      thumbnailPath: serializer.fromJson<String>(json['thumbnailPath']),
+      isFavorite: serializer.fromJson<bool>(json['isFavorite']),
+      isHidden: serializer.fromJson<bool>(json['isHidden']),
+      color: serializer.fromJson<String?>(json['color']),
+      birthDate: serializer.fromJson<DateTime?>(json['birthDate']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'name': serializer.toJson<String>(name),
+      'faceAssetId': serializer.toJson<String?>(faceAssetId),
+      'thumbnailPath': serializer.toJson<String>(thumbnailPath),
+      'isFavorite': serializer.toJson<bool>(isFavorite),
+      'isHidden': serializer.toJson<bool>(isHidden),
+      'color': serializer.toJson<String?>(color),
+      'birthDate': serializer.toJson<DateTime?>(birthDate),
+    };
+  }
+
+  PersonEntityData copyWith(
+          {String? id,
+          DateTime? createdAt,
+          DateTime? updatedAt,
+          String? ownerId,
+          String? name,
+          Value<String?> faceAssetId = const Value.absent(),
+          String? thumbnailPath,
+          bool? isFavorite,
+          bool? isHidden,
+          Value<String?> color = const Value.absent(),
+          Value<DateTime?> birthDate = const Value.absent()}) =>
+      PersonEntityData(
+        id: id ?? this.id,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        ownerId: ownerId ?? this.ownerId,
+        name: name ?? this.name,
+        faceAssetId: faceAssetId.present ? faceAssetId.value : this.faceAssetId,
+        thumbnailPath: thumbnailPath ?? this.thumbnailPath,
+        isFavorite: isFavorite ?? this.isFavorite,
+        isHidden: isHidden ?? this.isHidden,
+        color: color.present ? color.value : this.color,
+        birthDate: birthDate.present ? birthDate.value : this.birthDate,
+      );
+  PersonEntityData copyWithCompanion(PersonEntityCompanion data) {
+    return PersonEntityData(
+      id: data.id.present ? data.id.value : this.id,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      name: data.name.present ? data.name.value : this.name,
+      faceAssetId:
+          data.faceAssetId.present ? data.faceAssetId.value : this.faceAssetId,
+      thumbnailPath: data.thumbnailPath.present
+          ? data.thumbnailPath.value
+          : this.thumbnailPath,
+      isFavorite:
+          data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
+      isHidden: data.isHidden.present ? data.isHidden.value : this.isHidden,
+      color: data.color.present ? data.color.value : this.color,
+      birthDate: data.birthDate.present ? data.birthDate.value : this.birthDate,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PersonEntityData(')
+          ..write('id: $id, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('name: $name, ')
+          ..write('faceAssetId: $faceAssetId, ')
+          ..write('thumbnailPath: $thumbnailPath, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('isHidden: $isHidden, ')
+          ..write('color: $color, ')
+          ..write('birthDate: $birthDate')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, createdAt, updatedAt, ownerId, name,
+      faceAssetId, thumbnailPath, isFavorite, isHidden, color, birthDate);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PersonEntityData &&
+          other.id == this.id &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.ownerId == this.ownerId &&
+          other.name == this.name &&
+          other.faceAssetId == this.faceAssetId &&
+          other.thumbnailPath == this.thumbnailPath &&
+          other.isFavorite == this.isFavorite &&
+          other.isHidden == this.isHidden &&
+          other.color == this.color &&
+          other.birthDate == this.birthDate);
+}
+
+class PersonEntityCompanion extends UpdateCompanion<PersonEntityData> {
+  final Value<String> id;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String> ownerId;
+  final Value<String> name;
+  final Value<String?> faceAssetId;
+  final Value<String> thumbnailPath;
+  final Value<bool> isFavorite;
+  final Value<bool> isHidden;
+  final Value<String?> color;
+  final Value<DateTime?> birthDate;
+  const PersonEntityCompanion({
+    this.id = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.faceAssetId = const Value.absent(),
+    this.thumbnailPath = const Value.absent(),
+    this.isFavorite = const Value.absent(),
+    this.isHidden = const Value.absent(),
+    this.color = const Value.absent(),
+    this.birthDate = const Value.absent(),
+  });
+  PersonEntityCompanion.insert({
+    required String id,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    required String ownerId,
+    required String name,
+    this.faceAssetId = const Value.absent(),
+    required String thumbnailPath,
+    required bool isFavorite,
+    required bool isHidden,
+    this.color = const Value.absent(),
+    this.birthDate = const Value.absent(),
+  })  : id = Value(id),
+        ownerId = Value(ownerId),
+        name = Value(name),
+        thumbnailPath = Value(thumbnailPath),
+        isFavorite = Value(isFavorite),
+        isHidden = Value(isHidden);
+  static Insertable<PersonEntityData> custom({
+    Expression<String>? id,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? ownerId,
+    Expression<String>? name,
+    Expression<String>? faceAssetId,
+    Expression<String>? thumbnailPath,
+    Expression<bool>? isFavorite,
+    Expression<bool>? isHidden,
+    Expression<String>? color,
+    Expression<DateTime>? birthDate,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (name != null) 'name': name,
+      if (faceAssetId != null) 'face_asset_id': faceAssetId,
+      if (thumbnailPath != null) 'thumbnail_path': thumbnailPath,
+      if (isFavorite != null) 'is_favorite': isFavorite,
+      if (isHidden != null) 'is_hidden': isHidden,
+      if (color != null) 'color': color,
+      if (birthDate != null) 'birth_date': birthDate,
+    });
+  }
+
+  PersonEntityCompanion copyWith(
+      {Value<String>? id,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt,
+      Value<String>? ownerId,
+      Value<String>? name,
+      Value<String?>? faceAssetId,
+      Value<String>? thumbnailPath,
+      Value<bool>? isFavorite,
+      Value<bool>? isHidden,
+      Value<String?>? color,
+      Value<DateTime?>? birthDate}) {
+    return PersonEntityCompanion(
+      id: id ?? this.id,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      ownerId: ownerId ?? this.ownerId,
+      name: name ?? this.name,
+      faceAssetId: faceAssetId ?? this.faceAssetId,
+      thumbnailPath: thumbnailPath ?? this.thumbnailPath,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isHidden: isHidden ?? this.isHidden,
+      color: color ?? this.color,
+      birthDate: birthDate ?? this.birthDate,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (faceAssetId.present) {
+      map['face_asset_id'] = Variable<String>(faceAssetId.value);
+    }
+    if (thumbnailPath.present) {
+      map['thumbnail_path'] = Variable<String>(thumbnailPath.value);
+    }
+    if (isFavorite.present) {
+      map['is_favorite'] = Variable<bool>(isFavorite.value);
+    }
+    if (isHidden.present) {
+      map['is_hidden'] = Variable<bool>(isHidden.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<String>(color.value);
+    }
+    if (birthDate.present) {
+      map['birth_date'] = Variable<DateTime>(birthDate.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PersonEntityCompanion(')
+          ..write('id: $id, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('name: $name, ')
+          ..write('faceAssetId: $faceAssetId, ')
+          ..write('thumbnailPath: $thumbnailPath, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('isHidden: $isHidden, ')
+          ..write('color: $color, ')
+          ..write('birthDate: $birthDate')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class DatabaseAtV1 extends GeneratedDatabase {
   DatabaseAtV1(QueryExecutor e) : super(e);
   late final UserEntity userEntity = UserEntity(this);
@@ -4671,6 +5106,7 @@ class DatabaseAtV1 extends GeneratedDatabase {
       RemoteAlbumUserEntity(this);
   late final MemoryEntity memoryEntity = MemoryEntity(this);
   late final MemoryAssetEntity memoryAssetEntity = MemoryAssetEntity(this);
+  late final PersonEntity personEntity = PersonEntity(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4692,7 +5128,8 @@ class DatabaseAtV1 extends GeneratedDatabase {
         remoteAlbumAssetEntity,
         remoteAlbumUserEntity,
         memoryEntity,
-        memoryAssetEntity
+        memoryAssetEntity,
+        personEntity
       ];
   @override
   int get schemaVersion => 1;

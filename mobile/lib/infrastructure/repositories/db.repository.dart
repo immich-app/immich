@@ -11,6 +11,7 @@ import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/person.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.dart';
@@ -54,6 +55,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     MemoryEntity,
     MemoryAssetEntity,
     StackEntity,
+    PersonEntity,
   ],
   include: {
     'package:immich_mobile/infrastructure/entities/merged_asset.drift',

@@ -34,6 +34,7 @@ class AuthRepository extends DatabaseRepository {
       _drift.userMetadataEntity.deleteAll(),
       _drift.partnerEntity.deleteAll(),
       _drift.stackEntity.deleteAll(),
+      _drift.personEntity.deleteAll(),
     ]);
     // Drift deletions - parent entities
     await Future.wait([
