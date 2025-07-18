@@ -29,7 +29,8 @@ type UpsertTables =
   | 'memory_asset'
   | 'stack'
   | 'person'
-  | 'user_metadata';
+  | 'user_metadata'
+  | 'asset_face';
 
 @Injectable()
 export class SyncRepository {
@@ -40,6 +41,7 @@ export class SyncRepository {
   albumUser: AlbumUserSync;
   asset: AssetSync;
   assetExif: AssetExifSync;
+  assetFace: AssetFaceSync;
   memory: MemorySync;
   memoryToAsset: MemoryToAssetSync;
   partner: PartnerSync;
@@ -59,6 +61,7 @@ export class SyncRepository {
     this.albumUser = new AlbumUserSync(this.db);
     this.asset = new AssetSync(this.db);
     this.assetExif = new AssetExifSync(this.db);
+    this.assetFace = new AssetFaceSync(this.db);
     this.memory = new MemorySync(this.db);
     this.memoryToAsset = new MemoryToAssetSync(this.db);
     this.partner = new PartnerSync(this.db);
@@ -393,6 +396,42 @@ class PersonSync extends BaseSync {
       ])
       .where('ownerId', '=', userId)
       .$call(this.upsertTableFilters(ack))
+      .stream();
+  }
+}
+
+class AssetFaceSync extends BaseSync {
+  // @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  // getDeletes(userId: string, ack?: SyncAck) {
+  //   return this.db
+  //     .selectFrom('asset_face_audit')
+  //     .leftJoin('')
+  //     .select(['id', 'personId'])
+  //     .where('assetId', '=', userId)
+  //     .$call(this.auditTableFilters(ack))
+  //     .stream();
+  // }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('asset_face')
+      .select([
+        'id',
+        'assetId',
+        'personId',
+        'imageWidth',
+        'imageHeight',
+        'boundingBoxX1',
+        'boundingBoxY1',
+        'boundingBoxX2',
+        'boundingBoxY2',
+        'sourceType',
+        'updateId',
+      ])
+      .$call(this.upsertTableFilters(ack))
+      .leftJoin('asset', 'asset.id', 'asset_face.assetId')
+      .where('asset.ownerId', '=', userId)
       .stream();
   }
 }

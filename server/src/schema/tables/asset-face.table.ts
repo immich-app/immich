@@ -1,3 +1,4 @@
+import { UpdateIdColumn } from 'src/decorators';
 import { SourceType } from 'src/enum';
 import { asset_face_source_type } from 'src/schema/enums';
 import { AssetTable } from 'src/schema/tables/asset.table';
@@ -11,6 +12,7 @@ import {
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
+  UpdateDateColumn,
 } from 'src/sql-tools';
 
 @Table({ name: 'asset_face' })
@@ -61,4 +63,10 @@ export class AssetFaceTable {
 
   @DeleteDateColumn()
   deletedAt!: Timestamp | null;
+
+  @UpdateDateColumn()
+  updatedAt!: Generated<Timestamp>;
+
+  @UpdateIdColumn()
+  updateId!: Generated<string>;
 }
