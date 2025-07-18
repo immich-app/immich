@@ -49,7 +49,7 @@ class ArchiveBottomSheet extends ConsumerWidget {
           const MoveToLockFolderActionButton(
             source: ActionSource.timeline,
           ),
-          const StackActionButton(),
+          const StackActionButton(source: ActionSource.timeline),
         ],
         if (multiselect.hasLocal) ...[
           const DeleteLocalActionButton(source: ActionSource.timeline),

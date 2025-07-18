@@ -1,5 +1,6 @@
 import 'remote_asset.entity.dart';
 import 'local_asset.entity.dart';
+import 'stack.entity.dart';
 
 mergedAsset: SELECT * FROM
 (
@@ -18,13 +19,33 @@ mergedAsset: SELECT * FROM
 		rae.checksum,
 		rae.owner_id,
 		rae.live_photo_video_id,
-		0 as orientation
+		0 as orientation,
+		rae.stack_id,
+		COALESCE(stack_count.total_count, 0) AS stack_count
 	FROM
 		remote_asset_entity rae
 	LEFT JOIN
 		local_asset_entity lae ON rae.checksum  = lae.checksum
+	LEFT JOIN
+        stack_entity se ON rae.stack_id = se.id
+	LEFT JOIN
+        (SELECT 
+            stack_id,
+            COUNT(*) AS total_count
+         FROM remote_asset_entity 
+         WHERE deleted_at IS NULL 
+           AND visibility = 0
+           AND stack_id IS NOT NULL
+         GROUP BY stack_id
+        ) AS stack_count ON rae.stack_id = stack_count.stack_id
 	WHERE
-		rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id in ?
+		rae.deleted_at IS NULL
+		AND rae.visibility = 0
+		AND rae.owner_id in ?
+		AND (
+			rae.stack_id IS NULL
+			OR rae.id = se.primary_asset_id
+		)
 	UNION ALL
 	SELECT
 		NULL as remote_id,
@@ -41,7 +62,9 @@ mergedAsset: SELECT * FROM
 		lae.checksum,
 		NULL as owner_id,
 		NULL as live_photo_video_id,
-		lae.orientation
+		lae.orientation,
+		NULL as stack_id,
+		0 AS stack_count
 	FROM
 		local_asset_entity lae
 	LEFT JOIN
@@ -68,8 +91,16 @@ FROM
 		remote_asset_entity rae
 	LEFT JOIN
 		local_asset_entity lae  ON rae.checksum  = lae.checksum
+	LEFT JOIN
+        stack_entity se ON rae.stack_id = se.id
 	WHERE
-		rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id in ?
+		rae.deleted_at IS NULL
+		AND rae.visibility = 0
+		AND rae.owner_id in ?
+		AND (
+			rae.stack_id IS NULL
+			OR rae.id = se.primary_asset_id
+		)
 	UNION ALL
 	SELECT
 		lae.name,
