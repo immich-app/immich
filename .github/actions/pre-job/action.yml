@@ -44,30 +44,24 @@ runs:
         import os
         import yaml
 
-        # Get the filters input
         filters_yaml = os.environ['FILTERS']
 
         try:
-            # Parse YAML properly using the yaml library
             filters_dict = yaml.safe_load(filters_yaml)
-
-            if not isinstance(filters_dict, dict):
-                raise ValueError("Filters must be a YAML dictionary")
 
             if not filters_dict:
                 raise ValueError("No valid filters found")
 
-            # We only need the filter names (keys), not the actual path arrays
-            filter_names = {name: [] for name in filters_dict.keys()}
+            if not isinstance(filters_dict, dict):
+                raise ValueError("Filters must be a YAML dictionary")
 
-            filters_json = json.dumps(filter_names)
+            # Just pass the filter names as a comma-separated string
+            filter_names = ','.join(filters_dict.keys())
 
-            print("Converted filters to JSON:")
-            print(filters_json)
+            print(f"Filter names: {filter_names}")
 
-            # Set GitHub Actions output
             with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-                f.write(f"filters_json={filters_json}\n")
+                f.write(f"filter_names={filter_names}\n")
 
         except Exception as e:
             print(f"Error converting filters: {e}")
@@ -81,7 +75,7 @@ runs:
         force-branches: ${{ inputs.force-branches }}
         exclude-branches: ${{ inputs.exclude-branches }}
         skip-force-logic: ${{ inputs.skip-force-logic }}
-        filters-json: ${{ steps.convert-filters.outputs.filters_json }}
+        filters-json: ${{ steps.convert-filters.outputs.filter_names }}
         script: |
           const script = require('./.github/actions/pre-job/check-conditions.js')
           script({ core, context })
@@ -160,7 +154,7 @@ runs:
       id: generate-outputs
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
       with:
-        filters-json: ${{ steps.convert-filters.outputs.filters_json }}
+        filters-json: ${{ steps.convert-filters.outputs.filter_names }}
         skip-force-logic: ${{ inputs.skip-force-logic }}
         force-triggered: ${{ steps.check-conditions.outputs.force_triggered }}
         should-skip: ${{ steps.check-conditions.outputs.should_skip }}

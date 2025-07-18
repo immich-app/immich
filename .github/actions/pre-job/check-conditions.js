@@ -20,13 +20,23 @@ module.exports = ({ core, context }) => {
   const skipForceLogic = core.getInput('skip-force-logic') === 'true';
   const filtersJson = core.getInput('filters-json');
 
-  // Parse JSON filters (much more reliable than YAML parsing)
+  // Parse filter names from comma-separated string
   let filterNames = [];
   try {
-    const filters = JSON.parse(filtersJson);
-    filterNames = Object.keys(filters);
+    if (!filtersJson || !filtersJson.trim()) {
+      throw new Error('filters-json input is required and cannot be empty');
+    }
+
+    filterNames = filtersJson
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    if (filterNames.length === 0) {
+      throw new Error('No valid filter names found');
+    }
   } catch (error) {
-    core.setFailed(`Failed to parse filters JSON: ${error.message}`);
+    core.setFailed(`Failed to parse filter names: ${error.message}`);
     return;
   }
 
@@ -51,17 +61,6 @@ module.exports = ({ core, context }) => {
     excludeBranches,
     skipForceLogic,
   });
-
-  // Validate inputs
-  if (!filtersJson || !filtersJson.trim()) {
-    core.setFailed('filters-json input is required and cannot be empty');
-    return;
-  }
-
-  if (filterNames.length === 0) {
-    core.setFailed('No valid filters found in filters-json input');
-    return;
-  }
 
   // Step 1: Check exclusion conditions (fastest short-circuit)
   const shouldSkip = excludeBranches.some(

@@ -34,13 +34,23 @@ module.exports = ({ core }) => {
       console.log('No main path results or parse error:', e.message);
     }
 
-    // Parse JSON filters (much more reliable than YAML parsing)
+    // Parse filter names from comma-separated string
     let filterNames = [];
     try {
-      const filters = JSON.parse(filtersJson);
-      filterNames = Object.keys(filters);
+      if (!filtersJson || !filtersJson.trim()) {
+        throw new Error('filters-json input is required and cannot be empty');
+      }
+
+      filterNames = filtersJson
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      if (filterNames.length === 0) {
+        throw new Error('No valid filter names found');
+      }
     } catch (error) {
-      core.setFailed(`Failed to parse filters JSON: ${error.message}`);
+      core.setFailed(`Failed to parse filter names: ${error.message}`);
       return;
     }
 
