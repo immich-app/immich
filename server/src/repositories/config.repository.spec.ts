@@ -13,6 +13,7 @@ const resetEnv = () => {
     'IMMICH_WORKERS_EXCLUDE',
     'IMMICH_TRUSTED_PROXIES',
     'IMMICH_API_METRICS_PORT',
+    'IMMICH_MEDIA_LOCATION',
     'IMMICH_MICROSERVICES_METRICS_PORT',
     'IMMICH_TELEMETRY_INCLUDE',
     'IMMICH_TELEMETRY_EXCLUDE',
@@ -76,6 +77,13 @@ describe('getEnv', () => {
     });
   });
 
+  describe('IMMICH_MEDIA_LOCATION', () => {
+    it('should throw an error for relative paths', () => {
+      process.env.IMMICH_MEDIA_LOCATION = './relative/path';
+      expect(() => getEnv()).toThrowError('IMMICH_MEDIA_LOCATION must be an absolute path');
+    });
+  });
+
   describe('database', () => {
     it('should use defaults', () => {
       const { database } = getEnv();
@@ -95,7 +103,7 @@ describe('getEnv', () => {
 
     it('should validate DB_SSL_MODE', () => {
       process.env.DB_SSL_MODE = 'invalid';
-      expect(() => getEnv()).toThrowError('Invalid environment variables: DB_SSL_MODE');
+      expect(() => getEnv()).toThrowError('DB_SSL_MODE must be one of the following values:');
     });
 
     it('should accept a valid DB_SSL_MODE', () => {
@@ -239,7 +247,7 @@ describe('getEnv', () => {
 
     it('should reject invalid trusted proxies', () => {
       process.env.IMMICH_TRUSTED_PROXIES = '10.1';
-      expect(() => getEnv()).toThrowError('Invalid environment variables: IMMICH_TRUSTED_PROXIES');
+      expect(() => getEnv()).toThrow('IMMICH_TRUSTED_PROXIES must be an ip address, or ip address range');
     });
   });
 

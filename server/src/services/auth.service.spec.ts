@@ -789,7 +789,7 @@ describe(AuthService.name, () => {
       ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
-        profileImagePath: `upload/profile/${user.id}/${fileId}.jpg`,
+        profileImagePath: expect.stringContaining(`upload/profile/${user.id}/${fileId}.jpg`),
         profileChangedAt: expect.any(Date),
       });
       expect(mocks.oauth.getProfilePicture).toHaveBeenCalledWith(pictureUrl);

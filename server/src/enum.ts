@@ -198,6 +198,7 @@ export enum StorageFolder {
 }
 
 export enum SystemMetadataKey {
+  MediaLocation = 'MediaLocation',
   ReverseGeocodingState = 'reverse-geocoding-state',
   FacialRecognitionState = 'facial-recognition-state',
   MemoriesState = 'memories-state',
@@ -544,6 +545,7 @@ export enum DatabaseLock {
   CLIPDimSize = 512,
   Library = 1337,
   NightlyJobs = 600,
+  MediaLocation = 700,
   GetSystemConfig = 69,
   BackupDatabase = 42,
   MemoryCreation = 777,

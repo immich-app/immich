@@ -235,11 +235,26 @@ describe(UserService.name, () => {
 
       await sut.handleUserDelete({ id: user.id });
 
-      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith('upload/library/deleted-user', options);
-      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith('upload/upload/deleted-user', options);
-      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith('upload/profile/deleted-user', options);
-      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith('upload/thumbs/deleted-user', options);
-      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith('upload/encoded-video/deleted-user', options);
+      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith(
+        expect.stringContaining('upload/library/deleted-user'),
+        options,
+      );
+      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith(
+        expect.stringContaining('upload/upload/deleted-user'),
+        options,
+      );
+      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith(
+        expect.stringContaining('upload/profile/deleted-user'),
+        options,
+      );
+      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith(
+        expect.stringContaining('upload/thumbs/deleted-user'),
+        options,
+      );
+      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith(
+        expect.stringContaining('upload/encoded-video/deleted-user'),
+        options,
+      );
       expect(mocks.album.deleteAll).toHaveBeenCalledWith(user.id);
       expect(mocks.user.delete).toHaveBeenCalledWith(user, true);
     });
@@ -253,7 +268,7 @@ describe(UserService.name, () => {
 
       const options = { force: true, recursive: true };
 
-      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith('upload/library/admin', options);
+      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith(expect.stringContaining('upload/library/admin'), options);
     });
   });
 
