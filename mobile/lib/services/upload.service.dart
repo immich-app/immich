@@ -72,11 +72,8 @@ class UploadService {
 
   Future<void> cancelAllForGroup(String group) async {
     await _uploadRepository.cancelAll(group);
+    await _uploadRepository.reset(group);
     await _uploadRepository.deleteAllTrackingRecords(group);
-  }
-
-  Future<void> pauseAll() {
-    return _uploadRepository.pauseAll(kBackupGroup);
   }
 
   Future<List<TaskRecord>> getRecords() async {

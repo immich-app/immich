@@ -34,6 +34,7 @@ class DriftBackupAlbumSelectionPage extends HookConsumerWidget {
     useEffect(
       () {
         ref.watch(backupProvider.notifier).getBackupInfo();
+        ref.watch(backupAlbumProvider.notifier).getAll();
         return null;
       },
       [],

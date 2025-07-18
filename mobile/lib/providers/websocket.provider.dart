@@ -176,16 +176,14 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
           );
         });
 
-        // socket.on('on_upload_success', _handleOnUploadSuccess);
+        if (!Store.isBetaTimelineEnabled) {
+          startListeningToOldEvents();
+        } else {
+          startListeningToBetaEvents();
+        }
+
         socket.on('on_config_update', _handleOnConfigUpdate);
-        socket.on('on_asset_delete', _handleOnAssetDelete);
-        socket.on('on_asset_trash', _handleOnAssetTrash);
-        socket.on('on_asset_restore', _handleServerUpdates);
-        socket.on('on_asset_update', _handleServerUpdates);
-        socket.on('on_asset_stack_update', _handleServerUpdates);
-        socket.on('on_asset_hidden', _handleOnAssetHidden);
         socket.on('on_new_release', _handleReleaseUpdates);
-        socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
       } catch (e) {
         debugPrint("[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
       }
@@ -211,6 +209,34 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   void stopListenToEvent(String eventName) {
     debugPrint("Stop listening to event $eventName");
     state.socket?.off(eventName);
+  }
+
+  void stopListenToOldEvents() {
+    state.socket?.off('on_upload_success');
+    state.socket?.off('on_asset_delete');
+    state.socket?.off('on_asset_trash');
+    state.socket?.off('on_asset_restore');
+    state.socket?.off('on_asset_update');
+    state.socket?.off('on_asset_stack_update');
+    state.socket?.off('on_asset_hidden');
+  }
+
+  void startListeningToOldEvents() {
+    state.socket?.on('on_upload_success', _handleOnUploadSuccess);
+    state.socket?.on('on_asset_delete', _handleOnAssetDelete);
+    state.socket?.on('on_asset_trash', _handleOnAssetTrash);
+    state.socket?.on('on_asset_restore', _handleServerUpdates);
+    state.socket?.on('on_asset_update', _handleServerUpdates);
+    state.socket?.on('on_asset_stack_update', _handleServerUpdates);
+    state.socket?.on('on_asset_hidden', _handleOnAssetHidden);
+  }
+
+  void stopListeningToBetaEvents() {
+    state.socket?.off('AssetUploadReadyV1');
+  }
+
+  void startListeningToBetaEvents() {
+    state.socket?.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
   }
 
   void listenUploadEvent() {
@@ -306,7 +332,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   Future<void> handlePendingChanges() async {
-    // await _handlePendingUploaded();
+    await _handlePendingUploaded();
     await _handlePendingDeletes();
     await _handlingPendingHidden();
     await _handlePendingTrashes();

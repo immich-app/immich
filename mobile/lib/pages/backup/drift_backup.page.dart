@@ -64,26 +64,6 @@ class DriftBackupPage extends HookConsumerWidget {
                 ),
               ).tr(),
             ),
-            ElevatedButton(
-              onPressed: () => ref.read(driftBackupProvider.notifier).pause(),
-              child: const Text(
-                "Pause",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ).tr(),
-            ),
-            ElevatedButton(
-              onPressed: () => ref.read(driftBackupProvider.notifier).resume(),
-              child: const Text(
-                "Resume",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ).tr(),
-            ),
           ],
         ),
       );

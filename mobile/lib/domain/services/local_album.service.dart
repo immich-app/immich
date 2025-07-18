@@ -16,6 +16,6 @@ class LocalAlbumService {
   }
 
   Future<void> update(LocalAlbum album) {
-    return _repository.update(album);
+    return _repository.upsert(album);
   }
 }

@@ -131,9 +131,11 @@ const getEnv = (): EnvData => {
   const dto = plainToInstance(EnvDto, process.env);
   const errors = validateSync(dto);
   if (errors.length > 0) {
-    throw new Error(
-      `Invalid environment variables: ${errors.map((error) => `${error.property}=${error.value}`).join(', ')}`,
-    );
+    const messages = [`Invalid environment variables: `];
+    for (const error of errors) {
+      messages.push(`  - ${error.property}=${error.value} (${Object.values(error.constraints || {}).join(', ')})`);
+    }
+    throw new Error(messages.join('\n'));
   }
 
   const includedWorkers = asSet(dto.IMMICH_WORKERS_INCLUDE, [ImmichWorker.Api, ImmichWorker.Microservices]);

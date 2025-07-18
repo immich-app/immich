@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202507091427@sha256:733e510024e03bc2450608a1f3622f45bf287b70d89a06e60acbccea4bf4fd8c AS dev
+FROM ghcr.io/immich-app/base-server-dev:202507162011@sha256:85d4230c2208646bd6c528db41b2213d780b11b7a311397ca6a2aaba7cf697c8 AS dev
 
 WORKDIR /usr/src/app
 COPY server/package.json server/package-lock.json ./
@@ -12,7 +12,7 @@ ENV PATH="${PATH}:/usr/src/app/bin" \
     IMMICH_ENV=development \
     NVIDIA_DRIVER_CAPABILITIES=all \
     NVIDIA_VISIBLE_DEVICES=all
-ENTRYPOINT ["tini", "--", "/bin/sh"]
+ENTRYPOINT ["tini", "--", "/bin/sh", "-c"]
 
 FROM dev AS dev-container-server
 
@@ -98,7 +98,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:202507091427@sha256:ad10451acd8eda05a006a2586b6b0425cdaaca97c413fb4c1a10896712528bdc
+FROM ghcr.io/immich-app/base-server-prod:202507162011@sha256:636f3ddb6106628ef851d51c23f3fa2c6e4829390cc315b27b38c288c82b23a7
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
@@ -110,8 +110,6 @@ COPY --from=prod /usr/src/app/bin ./bin
 COPY --from=web /usr/src/app/build /build/www
 COPY server/resources resources
 COPY server/package.json server/package-lock.json ./
-COPY server/start*.sh ./
-COPY "docker/scripts/get-cpus.sh" ./
 RUN npm install -g @immich/cli && npm cache clean --force
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
@@ -134,7 +132,7 @@ ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE
 
 VOLUME /usr/src/app/upload
 EXPOSE 2283
-ENTRYPOINT ["tini", "--", "/bin/bash"]
+ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
 CMD ["start.sh"]
 
 HEALTHCHECK CMD immich-healthcheck

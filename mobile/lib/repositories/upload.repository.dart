@@ -38,8 +38,8 @@ class UploadRepository {
     return FileDownloader().cancelAll(group: group);
   }
 
-  Future<void> pauseAll(String group) {
-    return FileDownloader().pauseAll(group: group);
+  Future<int> reset(String group) {
+    return FileDownloader().reset(group: group);
   }
 
   Future<void> deleteRecordsWithIds(List<String> ids) {
@@ -52,5 +52,9 @@ class UploadRepository {
     }
 
     return FileDownloader().database.allRecordsWithStatus(status);
+  }
+
+  Future<void> resumeUpload() {
+    return FileDownloader().start();
   }
 }

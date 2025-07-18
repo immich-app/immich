@@ -3,9 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
@@ -38,8 +36,7 @@ class ViewerBottomBar extends ConsumerWidget {
     }
 
     final actions = <Widget>[
-      const ShareActionButton(),
-      const _EditActionButton(),
+      const ShareActionButton(source: ActionSource.viewer),
       if (asset.hasRemote && isOwner)
         const ArchiveActionButton(source: ActionSource.viewer),
     ];
@@ -83,18 +80,6 @@ class ViewerBottomBar extends ConsumerWidget {
                 ),
         ),
       ),
-    );
-  }
-}
-
-class _EditActionButton extends ConsumerWidget {
-  const _EditActionButton();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return BaseActionButton(
-      iconData: Icons.tune_outlined,
-      label: 'edit'.t(context: context),
     );
   }
 }

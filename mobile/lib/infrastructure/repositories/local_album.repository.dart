@@ -381,19 +381,4 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
 
     return results.isNotEmpty ? results.first : null;
   }
-
-  Future<void> update(LocalAlbum album) {
-    return (_db.update(_db.localAlbumEntity)
-          ..where(
-            (a) => a.id.equals(album.id),
-          ))
-        .write(
-      LocalAlbumEntityCompanion.insert(
-        id: album.id,
-        name: album.name,
-        updatedAt: Value(album.updatedAt),
-        backupSelection: album.backupSelection,
-      ),
-    );
-  }
 }

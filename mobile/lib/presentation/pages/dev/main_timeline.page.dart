@@ -13,7 +13,7 @@ class MainTimelinePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final memoryLaneProvider = ref.watch(driftMemoryFutureProvider);
 
-    return memoryLaneProvider.when(
+    return memoryLaneProvider.maybeWhen(
       data: (memories) {
         return memories.isEmpty
             ? const Timeline(showStorageIndicator: true)
@@ -26,8 +26,7 @@ class MainTimelinePage extends ConsumerWidget {
                 showStorageIndicator: true,
               );
       },
-      loading: () => const Timeline(showStorageIndicator: true),
-      error: (error, stackTrace) => const Timeline(showStorageIndicator: true),
+      orElse: () => const Timeline(showStorageIndicator: true),
     );
   }
 }

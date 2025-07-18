@@ -222,8 +222,9 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
     return _backupService.backup();
   }
 
-  Future<void> cancel() {
-    return _backupService.cancel();
+  Future<void> cancel() async {
+    await _backupService.cancel();
+    await getDataInfo();
   }
 
   Future<void> getDataInfo() async {
@@ -239,24 +240,6 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
     debugPrint(
       "Enqueued tasks: ${a.length}, All tasks: ${b.length}",
     );
-  }
-
-  Future<void> resume() async {
-    final tasks = await FileDownloader().resumeAll(group: kBackupGroup);
-    if (tasks.isNotEmpty) {
-      debugPrint("Resumed tasks: ${tasks.length}");
-    } else {
-      debugPrint("No tasks to resume");
-    }
-  }
-
-  Future<void> pause() async {
-    final tasks = await FileDownloader().pauseAll(group: kBackupGroup);
-    if (tasks.isNotEmpty) {
-      debugPrint("Paused tasks: ${tasks.length}");
-    } else {
-      debugPrint("No tasks to pause");
-    }
   }
 
   @override

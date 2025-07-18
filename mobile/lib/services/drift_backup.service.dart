@@ -84,7 +84,7 @@ class DriftBackupService {
       if (tasks.isNotEmpty && !shouldCancel) {
         count += tasks.length;
         _uploadService.enqueueTasks(tasks);
-        print(
+        debugPrint(
           "Enqueued $count/${candidates.length} tasks for backup",
         );
       }
@@ -147,6 +147,17 @@ class DriftBackupService {
     }
 
     File? file;
+
+    /// iOS LivePhoto has two files: a photo and a video.
+    /// They are uploaded separately, with video file being upload first, then returned with the assetId
+    /// The assetId is then used as a metadata for the photo file upload task.
+    ///
+    /// We implement two separate upload groups for this, the normal one for the video file
+    /// and the higher priority group for the photo file because the video file is already uploaded.
+    ///
+    /// The cancel operation will only cancel the video group (normal group), the photo group will not
+    /// be touched, as the video file is already uploaded.
+
     if (entity.isLivePhoto) {
       file = await _storageRepository.getMotionFileForAsset(asset);
     } else {

@@ -40,7 +40,7 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
 
     // Load albums when component mounts
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(remoteAlbumProvider.notifier).getAll();
+      ref.read(remoteAlbumProvider.notifier).refresh();
     });
 
     searchController.addListener(() {
@@ -88,10 +88,9 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final albumState = ref.watch(remoteAlbumProvider);
-    final albums = albumState.filteredAlbums;
-    final isLoading = albumState.isLoading;
-    final error = albumState.error;
+    final albums =
+        ref.watch(remoteAlbumProvider.select((s) => s.filteredAlbums));
+
     final userId = ref.watch(currentUserProvider)?.id;
 
     return RefreshIndicator(
@@ -133,14 +132,10 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
               ? _AlbumGrid(
                   albums: albums,
                   userId: userId,
-                  isLoading: isLoading,
-                  error: error,
                 )
               : _AlbumList(
                   albums: albums,
                   userId: userId,
-                  isLoading: isLoading,
-                  error: error,
                 ),
         ],
       ),
@@ -481,46 +476,15 @@ class _QuickSortAndViewMode extends StatelessWidget {
 
 class _AlbumList extends ConsumerWidget {
   const _AlbumList({
-    required this.isLoading,
-    required this.error,
     required this.albums,
     required this.userId,
   });
 
-  final bool isLoading;
-  final String? error;
   final List<RemoteAlbum> albums;
   final String? userId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (isLoading) {
-      return const SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      );
-    }
-
-    if (error != null) {
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Text(
-              'Error loading albums: $error',
-              style: TextStyle(
-                color: context.colorScheme.error,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
     if (albums.isEmpty) {
       return const SliverToBoxAdapter(
         child: Center(
@@ -623,44 +587,13 @@ class _AlbumGrid extends StatelessWidget {
   const _AlbumGrid({
     required this.albums,
     required this.userId,
-    required this.isLoading,
-    required this.error,
   });
 
   final List<RemoteAlbum> albums;
   final String? userId;
-  final bool isLoading;
-  final String? error;
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      );
-    }
-
-    if (error != null) {
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Text(
-              'Error loading albums: $error',
-              style: TextStyle(
-                color: context.colorScheme.error,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
     if (albums.isEmpty) {
       return const SliverToBoxAdapter(
         child: Center(

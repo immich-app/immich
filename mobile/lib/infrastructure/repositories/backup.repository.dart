@@ -16,35 +16,8 @@ class DriftBackupRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftBackupRepository(this._db) : super(_db);
 
-  Future<List<LocalAsset>> getAssets(String albumId) {
-    final query = _db.localAlbumAssetEntity.select().join(
-      [
-        innerJoin(
-          _db.localAssetEntity,
-          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
-        ),
-      ],
-    )
-      ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
-      ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)]);
-    return query
-        .map((row) => row.readTable(_db.localAssetEntity).toDto())
-        .get();
-  }
-
-  Future<List<String>> getAssetIds(String albumId) {
-    final query = _db.localAlbumAssetEntity.selectOnly()
-      ..addColumns([_db.localAlbumAssetEntity.assetId])
-      ..where(_db.localAlbumAssetEntity.albumId.equals(albumId));
-    return query
-        .map((row) => row.read(_db.localAlbumAssetEntity.assetId)!)
-        .get();
-  }
-
-  Future<int> getTotalCount() async {
-    final excludedAssetIds = await _getExcludedAssetIds();
-
-    final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
+  _getExcludedSubquery() {
+    return _db.localAlbumAssetEntity.selectOnly()
       ..addColumns([_db.localAlbumAssetEntity.assetId])
       ..join([
         innerJoin(
@@ -54,18 +27,31 @@ class DriftBackupRepository extends DriftDatabaseRepository {
       ])
       ..where(
         _db.localAlbumEntity.backupSelection
-                .equals(BackupSelection.selected.index) &
-            (excludedAssetIds.isEmpty
-                ? const Constant(true)
-                : _db.localAlbumAssetEntity.assetId.isNotIn(excludedAssetIds)),
+            .equalsValue(BackupSelection.excluded),
+      );
+  }
+
+  Future<int> getTotalCount() async {
+    final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
+      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..join([
+        innerJoin(
+          _db.localAlbumEntity,
+          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+          useColumns: false,
+        ),
+      ])
+      ..where(
+        _db.localAlbumEntity.backupSelection
+                .equalsValue(BackupSelection.selected) &
+            _db.localAlbumAssetEntity.assetId
+                .isNotInQuery(_getExcludedSubquery()),
       );
 
     return query.get().then((rows) => rows.length);
   }
 
   Future<int> getRemainderCount() async {
-    final excludedAssetIds = await _getExcludedAssetIds();
-
     final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
       ..addColumns(
         [_db.localAlbumAssetEntity.assetId],
@@ -88,17 +74,15 @@ class DriftBackupRepository extends DriftDatabaseRepository {
       ..where(
         _db.localAlbumEntity.backupSelection
                 .equals(BackupSelection.selected.index) &
-            _db.remoteAssetEntity.checksum.isNull() &
-            (excludedAssetIds.isEmpty
-                ? const Constant(true)
-                : _db.localAlbumAssetEntity.assetId.isNotIn(excludedAssetIds)),
+            _db.remoteAssetEntity.id.isNull() &
+            _db.localAlbumAssetEntity.assetId
+                .isNotInQuery(_getExcludedSubquery()),
       );
 
     return query.get().then((rows) => rows.length);
   }
 
   Future<int> getBackupCount() async {
-    final excludedAssetIds = await _getExcludedAssetIds();
     final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
       ..addColumns(
         [_db.localAlbumAssetEntity.assetId],
@@ -122,31 +106,11 @@ class DriftBackupRepository extends DriftDatabaseRepository {
         _db.localAlbumEntity.backupSelection
                 .equals(BackupSelection.selected.index) &
             _db.remoteAssetEntity.checksum.isNotNull() &
-            (excludedAssetIds.isEmpty
-                ? const Constant(true)
-                : _db.localAlbumAssetEntity.assetId.isNotIn(excludedAssetIds)),
+            _db.localAlbumAssetEntity.assetId
+                .isNotInQuery(_getExcludedSubquery()),
       );
 
     return query.get().then((rows) => rows.length);
-  }
-
-  Future<List<String>> _getExcludedAssetIds() async {
-    final query = _db.localAlbumAssetEntity.selectOnly()
-      ..addColumns([_db.localAlbumAssetEntity.assetId])
-      ..join([
-        innerJoin(
-          _db.localAlbumEntity,
-          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
-        ),
-      ])
-      ..where(
-        _db.localAlbumEntity.backupSelection
-            .equals(BackupSelection.excluded.index),
-      );
-
-    return query
-        .map((row) => row.read(_db.localAlbumAssetEntity.assetId)!)
-        .get();
   }
 
   Future<List<LocalAlbum>> getBackupAlbums(BackupSelection selectionType) {
@@ -159,7 +123,6 @@ class DriftBackupRepository extends DriftDatabaseRepository {
   }
 
   Future<List<LocalAsset>> getCandidates() async {
-    final excludedAssetIds = await _getExcludedAssetIds();
     final selectedAlbums = await getBackupAlbums(BackupSelection.selected);
     final selectedAlbumIds = selectedAlbums.map((album) => album.id).toList();
 
@@ -182,9 +145,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
                       lae.checksum.isNotNull(),
                 ),
             ) &
-            (excludedAssetIds.isEmpty
-                ? const Constant(true)
-                : lae.id.isNotIn(excludedAssetIds)),
+            lae.id.isNotInQuery(_getExcludedSubquery()),
       );
 
     return query.map((localAsset) => localAsset.toDto()).get();
