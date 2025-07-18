@@ -4,13 +4,24 @@ import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
 import 'package:worker_manager/worker_manager.dart';
 
+typedef SyncCallback = void Function();
+typedef SyncErrorCallback = void Function(String error);
+
 class BackgroundSyncManager {
+  final SyncCallback? onRemoteSyncStart;
+  final SyncCallback? onRemoteSyncComplete;
+  final SyncErrorCallback? onRemoteSyncError;
+
   Cancelable<void>? _syncTask;
   Cancelable<void>? _syncWebsocketTask;
   Cancelable<void>? _deviceAlbumSyncTask;
   Cancelable<void>? _hashTask;
 
-  BackgroundSyncManager();
+  BackgroundSyncManager({
+    this.onRemoteSyncStart,
+    this.onRemoteSyncComplete,
+    this.onRemoteSyncError,
+  });
 
   Future<void> cancel() {
     final futures = <Future>[];
@@ -72,10 +83,16 @@ class BackgroundSyncManager {
       return _syncTask!.future;
     }
 
+    onRemoteSyncStart?.call();
+
     _syncTask = runInIsolateGentle(
       computation: (ref) => ref.read(syncStreamServiceProvider).sync(),
     );
     return _syncTask!.whenComplete(() {
+      onRemoteSyncComplete?.call();
+      _syncTask = null;
+    }).catchError((error) {
+      onRemoteSyncError?.call(error.toString());
       _syncTask = null;
     });
   }

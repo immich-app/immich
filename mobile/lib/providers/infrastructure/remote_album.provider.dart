@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/utils/remote_album.utils.dart';
+import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'album.provider.dart';
@@ -13,33 +14,25 @@ import 'album.provider.dart';
 class RemoteAlbumState {
   final List<RemoteAlbum> albums;
   final List<RemoteAlbum> filteredAlbums;
-  final bool isLoading;
-  final String? error;
 
   const RemoteAlbumState({
     required this.albums,
     List<RemoteAlbum>? filteredAlbums,
-    this.isLoading = false,
-    this.error,
   }) : filteredAlbums = filteredAlbums ?? albums;
 
   RemoteAlbumState copyWith({
     List<RemoteAlbum>? albums,
     List<RemoteAlbum>? filteredAlbums,
-    bool? isLoading,
-    String? error,
   }) {
     return RemoteAlbumState(
       albums: albums ?? this.albums,
       filteredAlbums: filteredAlbums ?? this.filteredAlbums,
-      isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
     );
   }
 
   @override
   String toString() =>
-      'RemoteAlbumState(albums: ${albums.length}, filteredAlbums: ${filteredAlbums.length}, isLoading: $isLoading, error: $error)';
+      'RemoteAlbumState(albums: ${albums.length}, filteredAlbums: ${filteredAlbums.length})';
 
   @override
   bool operator ==(covariant RemoteAlbumState other) {
@@ -47,47 +40,38 @@ class RemoteAlbumState {
     final listEquals = const DeepCollectionEquality().equals;
 
     return listEquals(other.albums, albums) &&
-        listEquals(other.filteredAlbums, filteredAlbums) &&
-        other.isLoading == isLoading &&
-        other.error == error;
+        listEquals(other.filteredAlbums, filteredAlbums);
   }
 
   @override
-  int get hashCode =>
-      albums.hashCode ^
-      filteredAlbums.hashCode ^
-      isLoading.hashCode ^
-      error.hashCode;
+  int get hashCode => albums.hashCode ^ filteredAlbums.hashCode;
 }
 
 class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   late RemoteAlbumService _remoteAlbumService;
-
+  final _logger = Logger('RemoteAlbumNotifier');
   @override
   RemoteAlbumState build() {
     _remoteAlbumService = ref.read(remoteAlbumServiceProvider);
     return const RemoteAlbumState(albums: [], filteredAlbums: []);
   }
 
-  Future<List<RemoteAlbum>> getAll() async {
-    state = state.copyWith(isLoading: true, error: null);
-
+  Future<List<RemoteAlbum>> _getAll() async {
     try {
       final albums = await _remoteAlbumService.getAll();
       state = state.copyWith(
         albums: albums,
         filteredAlbums: albums,
-        isLoading: false,
       );
       return albums;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+    } catch (error, stack) {
+      _logger.severe('Failed to fetch albums', error, stack);
       rethrow;
     }
   }
 
   Future<void> refresh() async {
-    await getAll();
+    await _getAll();
   }
 
   void searchAlbums(
@@ -127,8 +111,6 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     String? description,
     List<String> assetIds = const [],
   }) async {
-    state = state.copyWith(isLoading: true, error: null);
-
     try {
       final album = await _remoteAlbumService.createAlbum(
         title: title,
@@ -141,10 +123,9 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
         filteredAlbums: [...state.filteredAlbums, album],
       );
 
-      state = state.copyWith(isLoading: false);
       return album;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+    } catch (error, stack) {
+      _logger.severe('Failed to create album', error, stack);
       rethrow;
     }
   }
@@ -157,8 +138,6 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     bool? isActivityEnabled,
     AlbumAssetOrder? order,
   }) async {
-    state = state.copyWith(isLoading: true, error: null);
-
     try {
       final updatedAlbum = await _remoteAlbumService.updateAlbum(
         albumId,
@@ -180,12 +159,11 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
       state = state.copyWith(
         albums: updatedAlbums,
         filteredAlbums: updatedFilteredAlbums,
-        isLoading: false,
       );
 
       return updatedAlbum;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+    } catch (error, stack) {
+      _logger.severe('Failed to update album', error, stack);
       rethrow;
     }
   }

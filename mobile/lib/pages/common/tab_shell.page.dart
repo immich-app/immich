@@ -35,42 +35,15 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
   Widget build(BuildContext context) {
     final isScreenLandscape = context.orientation == Orientation.landscape;
 
-    Widget buildIcon({required Widget icon, required bool isProcessing}) {
-      if (!isProcessing) return icon;
-      return Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          icon,
-          Positioned(
-            right: -18,
-            child: SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  context.primaryColor,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
     final navigationDestinations = [
       NavigationDestination(
         label: 'photos'.tr(),
         icon: const Icon(
           Icons.photo_library_outlined,
         ),
-        selectedIcon: buildIcon(
-          isProcessing: false,
-          icon: Icon(
-            Icons.photo_library,
-            color: context.primaryColor,
-          ),
+        selectedIcon: Icon(
+          Icons.photo_library,
+          color: context.primaryColor,
         ),
       ),
       NavigationDestination(
@@ -88,12 +61,9 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         icon: const Icon(
           Icons.photo_album_outlined,
         ),
-        selectedIcon: buildIcon(
-          isProcessing: false,
-          icon: Icon(
-            Icons.photo_album_rounded,
-            color: context.primaryColor,
-          ),
+        selectedIcon: Icon(
+          Icons.photo_album_rounded,
+          color: context.primaryColor,
         ),
       ),
       NavigationDestination(
@@ -101,12 +71,9 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         icon: const Icon(
           Icons.space_dashboard_outlined,
         ),
-        selectedIcon: buildIcon(
-          isProcessing: false,
-          icon: Icon(
-            Icons.space_dashboard_rounded,
-            color: context.primaryColor,
-          ),
+        selectedIcon: Icon(
+          Icons.space_dashboard_rounded,
+          color: context.primaryColor,
         ),
       ),
     ];
@@ -183,7 +150,7 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
 
   // Album page
   if (index == 2) {
-    ref.read(remoteAlbumProvider.notifier).getAll();
+    ref.read(remoteAlbumProvider.notifier).refresh();
   }
 
   ref.read(hapticFeedbackProvider.notifier).selectionClick();
