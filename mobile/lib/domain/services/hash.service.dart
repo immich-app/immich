@@ -48,6 +48,7 @@ class HashService {
       }
     }
 
+    await _storageRepository.clearFileCache();
     stopwatch.stop();
     _log.info("Hashing took - ${stopwatch.elapsedMilliseconds}ms");
     DLog.log("Hashing took - ${stopwatch.elapsedMilliseconds}ms");
