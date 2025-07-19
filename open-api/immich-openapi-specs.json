@@ -5274,6 +5274,14 @@
         "operationId": "getVideoPart",
         "parameters": [
           {
+            "name": "codec",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/Codec"
+            }
+          },
+          {
             "name": "name",
             "required": true,
             "in": "path",
@@ -10356,6 +10364,19 @@
           "existingIds"
         ],
         "type": "object"
+      },
+      "Codec": {
+        "enum": [
+          "h264",
+          "hevc",
+          "vp9",
+          "av1",
+          "mp3",
+          "aac",
+          "libopus",
+          "pcm_s16le"
+        ],
+        "type": "string"
       },
       "Colorspace": {
         "enum": [

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { AudioCodec, VideoCodec } from 'src/enum';
+import { AudioCodec, Codec, VideoCodec } from 'src/enum';
 
 export class PartParamDto {
   @IsNotEmpty()
@@ -10,6 +10,10 @@ export class PartParamDto {
   @IsNotEmpty()
   @IsString()
   quality!: string;
+
+  @IsEnum(Codec)
+  @ApiProperty({ enum: Codec, enumName: 'Codec' })
+  codec!: typeof Codec;
 
   @IsNotEmpty()
   @IsString()

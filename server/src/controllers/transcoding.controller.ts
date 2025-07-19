@@ -89,7 +89,11 @@ export class TranscodingController {
 
   @Get(':secret/:codec/:quality/:name.mp4')
   @FileResponse()
-  async getVideoPart(@Param() { secret, name }: PartParamDto, @Res() res: Response, @Next() next: NextFunction) {
+  async getVideoPart(
+    @Param() { secret, codec, quality, name }: PartParamDto,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+  ) {
     let data;
     try {
       data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as
@@ -109,7 +113,7 @@ export class TranscodingController {
         // eslint-disable-next-line @typescript-eslint/require-await
         async () => {
           return {
-            path: `/tmp/video/${sanitize(data['sessionId'])}/${sanitize(arr[0])}.mp4`,
+            path: `/tmp/video/${sanitize(data['sessionId'])}/${sanitize(codec.toString())}/${sanitize(quality)}/${sanitize(arr[0])}.mp4`,
             cacheControl: CacheControl.PRIVATE_WITH_CACHE,
             contentType: 'video/mp4',
           };

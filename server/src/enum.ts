@@ -303,6 +303,8 @@ export enum AudioCodec {
   PCMS16LE = 'pcm_s16le',
 }
 
+export const Codec = { ...VideoCodec, ...AudioCodec };
+
 export enum VideoContainer {
   MOV = 'mov',
   MP4 = 'mp4',

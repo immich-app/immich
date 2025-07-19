@@ -121,42 +121,88 @@ class HLSConnection {
     ];
     const audioPlaylist = [...videoPlaylist];
 
-    let prevPart = frames[0];
-    let prevSeg = frames[0];
+    let l = 0;
+    let r = 1;
     let partIdx = 0;
-    let prevPartIdx = 0;
+    let possibleParts = [0];
 
-    const original = this.vQuality == 'original';
-    for (let i = 1; i < frames.length - 1; i++) {
-      const isKf = frames[i] <= 0;
-      frames[i] = Math.abs(frames[i]);
-      if (!original && (frames[i] - prevPart > 0.5 || isKf)) {
-        this.partTimes.push(i + 1);
-
-        videoPlaylist.push(
-          `#EXT-X-PART:DURATION=${(frames[i] - prevPart).toFixed(20)},URI="${partIdx++}.mp4"${prevPart === prevSeg ? ',INDEPENDENT=YES' : ''}`,
-        );
-        prevPart = frames[i];
-      }
-
-      if (isKf && frames[i] - prevSeg > 10) {
-        if (original) {
-          this.partTimes.push(i);
-        }
-
-        this.keyTimes.push(frames[i]);
-
-        // TODO: If client decides to request full part, then we have to concat it using concat muxer
-        videoPlaylist.push(
-          `#EXTINF:${(frames[i] - prevSeg).toFixed(20)},`,
-
-          // This is placeholder
-          `${Array.from({ length: partIdx - prevPartIdx }, (_, i) => prevPartIdx + i).join('.')}.mp4`,
-        );
-        prevPart = prevSeg = frames[i];
-        prevPartIdx = partIdx;
-      }
+    if (frames.at(-1)! < 0) {
+      frames.push(-frames.at(-1)!); // This is fake keyframe to finish playlist
     }
+    while (r < frames.length) {
+      const isKf = frames[r] <= 0;
+      frames[r] = Math.abs(frames[r]);
+      if (frames[r] - possibleParts.at(-1)! > 0.5) {
+        possibleParts.push(frames[r]);
+      }
+
+      if (isKf) {
+        // Recommened segment time by RFC is 2 seconds
+        // Otherwise we will split it to parts
+        if (frames[r] - frames[l] > 2) {
+          for (let i = 1; i < possibleParts.length; i++) {
+            videoPlaylist.push(
+              `#EXT-X-PART:DURATION=${(possibleParts[i] - possibleParts[i - 1]).toFixed(20)},URI="${partIdx++}.mp4"`,
+            );
+          }
+          videoPlaylist.push(
+            `#EXTINF:${frames[r] - frames[l]}`,
+            Array.from({ length: possibleParts.length - 1 }, (_, i) => partIdx - possibleParts.length + i + 1).join(
+              '.',
+            ) + '.mp4',
+          );
+        } else {
+          videoPlaylist.push(`#EXTINF:${frames[r] - frames[l]}`, `${partIdx++}.mp4`);
+        }
+        possibleParts = [frames[r]];
+        l = r;
+      }
+      r++;
+    }
+
+    l = 0;
+    r = 1;
+    partIdx = 0;
+
+    if (frames.at(-1)! < 0) {
+      frames.push(-frames.at(-1)!); // This is fake keyframe to finish playlist
+    }
+    while (r < frames.length) {
+      const isKf = frames[r] <= 0;
+      frames[r] = Math.abs(frames[r]);
+      if (frames[r] - possibleParts.at(-1)! > 0.5) {
+        possibleParts.push(frames[r]);
+      }
+
+      if (isKf) {
+        // Recommened segment time by RFC is 2 seconds
+        // Otherwise we will split it to parts
+        if (frames[r] - frames[l] > 2) {
+          for (let i = 1; i < possibleParts.length; i++) {
+            videoPlaylist.push(
+              `#EXT-X-PART:DURATION=${(possibleParts[i] - possibleParts[i - 1]).toFixed(20)},URI="${partIdx++}.mp4"`,
+            );
+          }
+          videoPlaylist.push(
+            `#EXTINF:${frames[r] - frames[l]}`,
+            Array.from({ length: possibleParts.length - 1 }, (_, i) => partIdx - possibleParts.length + i + 1).join(
+              '.',
+            ) + '.mp4',
+          );
+
+          this.keyTimes.push(frames[r]);
+          this.partTimes.push(...possibleParts);
+        } else {
+          this.partTimes.push(frames[r]);
+          this.keyTimes.push(frames[r]);
+          videoPlaylist.push(`#EXTINF:${frames[r] - frames[l]}`, `${partIdx++}.mp4`);
+        }
+        possibleParts = [frames[r]];
+        l = r;
+      }
+      r++;
+    }
+
     this.vPlaylist = videoPlaylist.join('\n');
     this.aPlaylist = audioPlaylist.join('\n');
   }
@@ -269,7 +315,7 @@ class HLSConnection {
       '-segment_list_type', 'csv',
 
       '-break_non_keyframes', '1',
-      '-segment_frames', this.partTimes!.join(','),
+      '-segment_times', this.partTimes!.join(','),
       '-force_key_frames', this.keyTimes!.join(','),
 
       '-segment_header_filename', `/tmp/video/${this.sessionId}/${this.videoCodec}/${this.videoQuality}/init.mp4`,
