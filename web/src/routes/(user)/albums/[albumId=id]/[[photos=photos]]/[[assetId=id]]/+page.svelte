@@ -405,7 +405,8 @@
     const sharedLink = await modalManager.show(SharedLinkCreateModal, { albumId: album.id });
 
     if (sharedLink) {
-      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink.key) });
+      const urlKey = sharedLink.slug ? sharedLink.slug : sharedLink.key;
+      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(urlKey) });
     }
   };
 

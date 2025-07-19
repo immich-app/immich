@@ -53,4 +53,17 @@ export const authStub = {
       userId: '42',
     },
   }),
+  adminSharedLinkWithSlug: Object.freeze({
+    user: authUser.admin,
+    sharedLink: {
+      id: 'test',
+      showExif: true,
+      allowDownload: true,
+      allowUpload: true,
+      expiresAt: null,
+      password: null,
+      userId: '42',
+      slug: 'test'
+    },
+  }),
 };

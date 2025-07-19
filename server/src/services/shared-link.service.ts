@@ -29,7 +29,7 @@ export class SharedLinkService extends BaseService {
       throw new ForbiddenException();
     }
 
-    const sharedLink = await this.findOrFail(auth.user.id, auth.sharedLink.id);
+    const sharedLink = await this.findOrFailWithSlug(auth.user.id, auth.sharedLink.id);
     const response = this.mapToSharedLink(sharedLink, { withExif: sharedLink.showExif });
     if (sharedLink.password) {
       response.token = this.validateAndRefreshToken(sharedLink, dto);
@@ -64,6 +64,13 @@ export class SharedLinkService extends BaseService {
       }
     }
 
+    if ( dto.slug ) {
+      const existing = await this.sharedLinkRepository.validateGetBySlug(dto.slug);
+      if ( existing ) {
+        throw new BadRequestException('Vanity URL already in use')
+      }
+    }
+
     const sharedLink = await this.sharedLinkRepository.create({
       key: this.cryptoRepository.randomBytes(50),
       userId: auth.user.id,
@@ -76,6 +83,7 @@ export class SharedLinkService extends BaseService {
       allowUpload: dto.allowUpload ?? true,
       allowDownload: dto.showMetadata === false ? false : (dto.allowDownload ?? true),
       showExif: dto.showMetadata ?? true,
+      slug: dto.slug || null
     });
 
     return this.mapToSharedLink(sharedLink, { withExif: true });
@@ -83,6 +91,12 @@ export class SharedLinkService extends BaseService {
 
   async update(auth: AuthDto, id: string, dto: SharedLinkEditDto) {
     await this.findOrFail(auth.user.id, id);
+    if ( dto.slug ) {
+      const existing = await this.sharedLinkRepository.validateGetBySlug(dto.slug);
+      if ( existing ) {
+        throw new BadRequestException('Vanity URL already in use')
+      }
+    }
     const sharedLink = await this.sharedLinkRepository.update({
       id,
       userId: auth.user.id,
@@ -92,6 +106,7 @@ export class SharedLinkService extends BaseService {
       allowUpload: dto.allowUpload,
       allowDownload: dto.allowDownload,
       showExif: dto.showMetadata,
+      slug: dto.slug || null
     });
     return this.mapToSharedLink(sharedLink, { withExif: true });
   }
@@ -104,6 +119,20 @@ export class SharedLinkService extends BaseService {
   // TODO: replace `userId` with permissions and access control checks
   private async findOrFail(userId: string, id: string) {
     const sharedLink = await this.sharedLinkRepository.get(userId, id);
+    if (!sharedLink) {
+      throw new BadRequestException('Shared link not found');
+    }
+    return sharedLink;
+  }
+
+  private async findOrFailWithSlug(userId: string, idValue: string) {
+    let sharedLink = await this.sharedLinkRepository.get(userId, idValue);
+    if (!sharedLink) {
+      const slugSharedLink = await this.sharedLinkRepository.lookForSlug(idValue);
+      if ( slugSharedLink ) {
+        sharedLink = await this.sharedLinkRepository.get(userId, slugSharedLink.id);
+      }
+    }
     if (!sharedLink) {
       throw new BadRequestException('Shared link not found');
     }

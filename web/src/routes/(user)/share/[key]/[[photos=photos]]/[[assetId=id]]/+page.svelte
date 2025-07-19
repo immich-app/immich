@@ -27,7 +27,7 @@
   let { title, description } = $state(meta);
   let isOwned = $derived($user ? $user.id === sharedLink?.userId : false);
   let password = $state('');
-
+  console.log("Start of svelete")
   const handlePasswordSubmit = async () => {
     try {
       sharedLink = await getMySharedLink({ password, key });

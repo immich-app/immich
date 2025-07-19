@@ -1,14 +1,14 @@
 <script lang="ts">
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
-  import { locale } from '$lib/stores/preferences.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
-  import { mdiLink } from '@mdi/js';
-  import { DateTime, Duration } from 'luxon';
-  import { t } from 'svelte-i18n';
-  import { NotificationType, notificationController } from '../components/shared-components/notification/notification';
+  import {SettingInputFieldType} from '$lib/constants';
+  import {locale} from '$lib/stores/preferences.store';
+  import {handleError} from '$lib/utils/handle-error';
+  import {SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto} from '@immich/sdk';
+  import {Button, Modal, ModalBody, ModalFooter} from '@immich/ui';
+  import {mdiLink} from '@mdi/js';
+  import {DateTime, Duration} from 'luxon';
+  import {t} from 'svelte-i18n';
+  import {NotificationType, notificationController} from '../components/shared-components/notification/notification';
   import SettingInputField from '../components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '../components/shared-components/settings/setting-switch.svelte';
 
@@ -19,7 +19,7 @@
     editingLink?: SharedLinkResponseDto | undefined;
   }
 
-  let { onClose, albumId = $bindable(undefined), assetIds = $bindable([]), editingLink = undefined }: Props = $props();
+  let {onClose, albumId = $bindable(undefined), assetIds = $bindable([]), editingLink = undefined}: Props = $props();
 
   let sharedLink: string | null = $state(null);
   let description = $state('');
@@ -28,6 +28,8 @@
   let showMetadata = $state(true);
   let expirationOption: number = $state(0);
   let password = $state('');
+  let slug = $state('');
+  let addSlug = $state(false);
   let shouldChangeExpirationTime = $state(false);
   let enablePassword = $state(false);
 
@@ -44,10 +46,10 @@
 
   let relativeTime = $derived(new Intl.RelativeTimeFormat($locale));
   let expiredDateOptions = $derived([
-    { text: $t('never'), value: 0 },
+    {text: $t('never'), value: 0},
     ...expirationOptions.map(([value, unit]) => ({
       text: relativeTime.format(value, unit),
-      value: Duration.fromObject({ [unit]: value }).toMillis(),
+      value: Duration.fromObject({[unit]: value}).toMillis(),
     })),
   ]);
 
@@ -66,14 +68,18 @@
     if (editingLink.password) {
       password = editingLink.password;
     }
+    if ( editingLink.slug ) {
+      slug = editingLink.slug;
+    }
     allowUpload = editingLink.allowUpload;
     allowDownload = editingLink.allowDownload;
     showMetadata = editingLink.showMetadata;
 
     albumId = editingLink.album?.id;
-    assetIds = editingLink.assets.map(({ id }) => id);
+    assetIds = editingLink.assets.map(({id}) => id);
 
     enablePassword = !!editingLink.password;
+    addSlug = !!editingLink.slug;
   }
 
   const handleCreateSharedLink = async () => {
@@ -91,6 +97,7 @@
           password,
           allowDownload,
           showMetadata,
+          slug
         },
       });
       onClose(data);
@@ -98,6 +105,13 @@
       handleError(error, $t('errors.failed_to_create_shared_link'));
     }
   };
+
+  const slugToggle = async () => {
+    console.log('Slug Toggle Fire')
+    if ( slug && !addSlug ) {
+      slug = '';
+    }
+  }
 
   const handleEditLink = async () => {
     if (!editingLink) {
@@ -116,6 +130,7 @@
           allowUpload,
           allowDownload,
           showMetadata,
+          slug
         },
       });
 
@@ -151,6 +166,9 @@
           {$t('public_album')} |
           <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.album?.albumName}</span>
         </div>
+      {/if}
+      {#if addSlug}
+        <div class="text-sm text-warning">{$t('album_with_slug_warning')}</div>
       {/if}
     {/if}
 
@@ -188,11 +206,11 @@
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={enablePassword} title={$t('require_password')} />
+          <SettingSwitch bind:checked={enablePassword} title={$t('require_password')}/>
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={showMetadata} title={$t('show_metadata')} />
+          <SettingSwitch bind:checked={showMetadata} title={$t('show_metadata')}/>
         </div>
 
         <div class="my-3">
@@ -204,12 +222,25 @@
         </div>
 
         <div class="my-3">
-          <SettingSwitch bind:checked={allowUpload} title={$t('allow_public_user_to_upload')} />
+          <SettingSwitch bind:checked={allowUpload} title={$t('allow_public_user_to_upload')}/>
         </div>
 
         {#if editingLink}
           <div class="my-3">
-            <SettingSwitch bind:checked={shouldChangeExpirationTime} title={$t('change_expiration_time')} />
+            <SettingSwitch bind:checked={shouldChangeExpirationTime} title={$t('change_expiration_time')}/>
+          </div>
+        {/if}
+        <div class="my-3">
+          <SettingSwitch bind:checked={addSlug} onToggle={slugToggle} title={$t('public_vanity_url')}/>
+        </div>
+        {#if addSlug }
+          <div class="mb-2">
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label={"URL Slug"}
+              bind:value={slug}
+              disabled={!addSlug}
+            />
           </div>
         {/if}
         <div class="mt-3">

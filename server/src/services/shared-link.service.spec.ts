@@ -46,6 +46,15 @@ describe(SharedLinkService.name, () => {
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
     });
 
+    it('should return the shared link for the public user via slug', async () => {
+      const authDto = authStub.adminSharedLinkWithSlug;
+      //TODO the id for the auth sharedlink passes the ID but when tested it is explictly sent
+      mocks.sharedLink.get.mockResolvedValueOnce(void 0).mockResolvedValue(sharedLinkStub.validWithSlug);
+      mocks.sharedLink.lookForSlug.mockResolvedValue({ userId: authStub.user1.user.id , id: sharedLinkStub.valid.id});
+      await expect(sut.getMine(authDto, {})).resolves.toEqual(sharedLinkResponseStub.validWithSlug);
+      expect(mocks.sharedLink.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
+    });
+
     it('should not return metadata', async () => {
       const authDto = factory.auth({
         sharedLink: {
@@ -118,6 +127,31 @@ describe(SharedLinkService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
+    it('should create an album shared link with a public slug', async () => {
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.oneAsset.id]));
+      mocks.sharedLink.create.mockResolvedValue(sharedLinkStub.validWithSlug);
+      mocks.sharedLink.validateGetBySlug.mockResolvedValue(void 0);
+
+      await sut.create(authStub.admin, { type: SharedLinkType.Album, albumId: albumStub.oneAsset.id , slug: sharedLinkStub.validWithSlug.slug});
+
+      expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([albumStub.oneAsset.id]),
+      );
+      expect(mocks.sharedLink.create).toHaveBeenCalledWith({
+        type: SharedLinkType.Album,
+        userId: authStub.admin.user.id,
+        albumId: albumStub.oneAsset.id,
+        allowDownload: true,
+        allowUpload: true,
+        slug: sharedLinkStub.validWithSlug.slug,
+        description: null,
+        expiresAt: null,
+        showExif: true,
+        key: Buffer.from('random-bytes', 'utf8'),
+      });
+    })
+
     it('should create an album shared link', async () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.oneAsset.id]));
       mocks.sharedLink.create.mockResolvedValue(sharedLinkStub.valid);
@@ -136,6 +170,7 @@ describe(SharedLinkService.name, () => {
         allowUpload: true,
         description: null,
         expiresAt: null,
+        slug: null,
         showExif: true,
         key: Buffer.from('random-bytes', 'utf8'),
       });
@@ -163,6 +198,7 @@ describe(SharedLinkService.name, () => {
         userId: authStub.admin.user.id,
         albumId: null,
         allowDownload: true,
+        slug: null,
         allowUpload: true,
         assetIds: [assetStub.image.id],
         description: null,
@@ -199,6 +235,7 @@ describe(SharedLinkService.name, () => {
         description: null,
         expiresAt: null,
         showExif: false,
+        slug: null,
         key: Buffer.from('random-bytes', 'utf8'),
       });
     });
@@ -216,6 +253,7 @@ describe(SharedLinkService.name, () => {
 
     it('should update a shared link', async () => {
       mocks.sharedLink.get.mockResolvedValue(sharedLinkStub.valid);
+      mocks.sharedLink.validateGetBySlug.mockResolvedValue(void 0);
       mocks.sharedLink.update.mockResolvedValue(sharedLinkStub.valid);
 
       await sut.update(authStub.user1, sharedLinkStub.valid.id, { allowDownload: false });
@@ -223,6 +261,7 @@ describe(SharedLinkService.name, () => {
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authStub.user1.user.id, sharedLinkStub.valid.id);
       expect(mocks.sharedLink.update).toHaveBeenCalledWith({
         id: sharedLinkStub.valid.id,
+        slug: null,
         userId: authStub.user1.user.id,
         allowDownload: false,
       });
@@ -277,6 +316,7 @@ describe(SharedLinkService.name, () => {
       expect(mocks.sharedLink.update).toHaveBeenCalled();
       expect(mocks.sharedLink.update).toHaveBeenCalledWith({
         ...sharedLinkStub.individual,
+        slug: null,
         assetIds: ['asset-3'],
       });
     });

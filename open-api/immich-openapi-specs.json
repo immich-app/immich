@@ -12956,6 +12956,9 @@
             "default": true,
             "type": "boolean"
           },
+          "slug": {
+            "type": "string"
+          },
           "type": {
             "allOf": [
               {
@@ -12994,6 +12997,9 @@
           },
           "showMetadata": {
             "type": "boolean"
+          },
+          "slug": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -13041,6 +13047,10 @@
           "showMetadata": {
             "type": "boolean"
           },
+          "slug": {
+            "nullable": true,
+            "type": "string"
+          },
           "token": {
             "nullable": true,
             "type": "string"
@@ -13067,6 +13077,7 @@
           "key",
           "password",
           "showMetadata",
+          "slug",
           "type",
           "userId"
         ],
