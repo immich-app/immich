@@ -1,12 +1,38 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/services/drift_backup.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
+
+class EnqueueStatus {
+  final int enqueueCount;
+  final int totalCount;
+
+  const EnqueueStatus({
+    required this.enqueueCount,
+    required this.totalCount,
+  });
+
+  EnqueueStatus copyWith({
+    int? enqueueCount,
+    int? totalCount,
+  }) {
+    return EnqueueStatus(
+      enqueueCount: enqueueCount ?? this.enqueueCount,
+      totalCount: totalCount ?? this.totalCount,
+    );
+  }
+
+  @override
+  String toString() =>
+      'EnqueueStatus(enqueueCount: $enqueueCount, totalCount: $totalCount)';
+}
 
 class DriftUploadStatus {
   final String taskId;
@@ -52,12 +78,21 @@ class DriftBackupState {
   final int totalCount;
   final int backupCount;
   final int remainderCount;
+
+  final int enqueueCount;
+  final int enqueueTotalCount;
+
+  final bool isCanceling;
+
   final Map<String, DriftUploadStatus> uploadItems;
 
   const DriftBackupState({
     required this.totalCount,
     required this.backupCount,
     required this.remainderCount,
+    required this.enqueueCount,
+    required this.enqueueTotalCount,
+    required this.isCanceling,
     required this.uploadItems,
   });
 
@@ -65,19 +100,25 @@ class DriftBackupState {
     int? totalCount,
     int? backupCount,
     int? remainderCount,
+    int? enqueueCount,
+    int? enqueueTotalCount,
+    bool? isCanceling,
     Map<String, DriftUploadStatus>? uploadItems,
   }) {
     return DriftBackupState(
       totalCount: totalCount ?? this.totalCount,
       backupCount: backupCount ?? this.backupCount,
       remainderCount: remainderCount ?? this.remainderCount,
+      enqueueCount: enqueueCount ?? this.enqueueCount,
+      enqueueTotalCount: enqueueTotalCount ?? this.enqueueTotalCount,
+      isCanceling: isCanceling ?? this.isCanceling,
       uploadItems: uploadItems ?? this.uploadItems,
     );
   }
 
   @override
   String toString() {
-    return 'ExpBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, uploadItems: $uploadItems)';
+    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, enqueueCount: $enqueueCount, enqueueTotalCount: $enqueueTotalCount, isCanceling: $isCanceling, uploadItems: $uploadItems)';
   }
 
   @override
@@ -88,6 +129,9 @@ class DriftBackupState {
     return other.totalCount == totalCount &&
         other.backupCount == backupCount &&
         other.remainderCount == remainderCount &&
+        other.enqueueCount == enqueueCount &&
+        other.enqueueTotalCount == enqueueTotalCount &&
+        other.isCanceling == isCanceling &&
         mapEquals(other.uploadItems, uploadItems);
   }
 
@@ -96,6 +140,9 @@ class DriftBackupState {
     return totalCount.hashCode ^
         backupCount.hashCode ^
         remainderCount.hashCode ^
+        enqueueCount.hashCode ^
+        enqueueTotalCount.hashCode ^
+        isCanceling.hashCode ^
         uploadItems.hashCode;
   }
 }
@@ -117,6 +164,9 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
             totalCount: 0,
             backupCount: 0,
             remainderCount: 0,
+            enqueueCount: 0,
+            enqueueTotalCount: 0,
+            isCanceling: false,
             uploadItems: {},
           ),
         ) {
@@ -162,12 +212,37 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> backup() {
-    return _backupService.backup();
+    return _backupService.backup(_updateEnqueueCount);
+  }
+
+  void _updateEnqueueCount(EnqueueStatus status) {
+    state = state.copyWith(
+      enqueueCount: status.enqueueCount,
+      enqueueTotalCount: status.totalCount,
+    );
   }
 
   Future<void> cancel() async {
+    state = state.copyWith(
+      enqueueCount: 0,
+      enqueueTotalCount: 0,
+      isCanceling: true,
+    );
+
     await _backupService.cancel();
-    await getDataInfo();
+
+    // Check if there are any tasks left in the queue
+    final tasks = await FileDownloader().allTasks(
+      group: kBackupGroup,
+    );
+
+    debugPrint("Tasks left to cancel: ${tasks.length}");
+
+    if (tasks.isNotEmpty) {
+      await cancel();
+    } else {
+      state = state.copyWith(isCanceling: false);
+    }
   }
 
   Future<void> getDataInfo() async {
