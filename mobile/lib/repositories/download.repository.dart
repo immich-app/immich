@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:background_downloader/background_downloader.dart';
+import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
@@ -17,9 +21,8 @@ class DownloadRepository {
     group: '',
     updates: Updates.statusAndProgress,
   );
-  static final _dummyMetadata =
-      LivePhotosMetadata(part: LivePhotosPart.image, id: '');
-      
+  static final _dummyMetadata = {'part': LivePhotosPart.image, 'id': ''};
+
   void Function(TaskStatusUpdate)? onImageDownloadStatus;
 
   void Function(TaskStatusUpdate)? onVideoDownloadStatus;
@@ -62,9 +65,9 @@ class DownloadRepository {
 
   Future<List<TaskRecord>> getLiveVideoTasks() {
     return _downloader.database.allRecordsWithStatus(
-          TaskStatus.complete,
-          group: downloadGroupLivePhoto,
-        );
+      TaskStatus.complete,
+      group: downloadGroupLivePhoto,
+    );
   }
 
   Future<void> deleteRecordsWithIds(List<String> ids) {
@@ -76,7 +79,8 @@ class DownloadRepository {
       return Future.value(const []);
     }
 
-    final tasks = List.filled(assets.length * 2, _dummyTask, growable: true);
+    final length = Platform.isAndroid ? assets.length : assets.length * 2;
+    final tasks = List.filled(length, _dummyTask);
     int taskIndex = 0;
     final headers = ApiService.getRequestHeaders();
     for (final asset in assets) {
@@ -89,7 +93,7 @@ class DownloadRepository {
       final isVideo = asset.isVideo;
       final url = getOriginalUrlForRemoteId(id);
 
-      if (livePhotoVideoId == null || isVideo) {
+      if (Platform.isAndroid || livePhotoVideoId == null || isVideo) {
         tasks[taskIndex++] = DownloadTask(
           taskId: id,
           url: url,
@@ -101,8 +105,8 @@ class DownloadRepository {
         continue;
       }
 
-      _dummyMetadata.part = LivePhotosPart.image;
-      _dummyMetadata.id = id;
+      _dummyMetadata['part'] = LivePhotosPart.image;
+      _dummyMetadata['id'] = id;
       tasks[taskIndex++] = DownloadTask(
         taskId: id,
         url: url,
@@ -110,10 +114,10 @@ class DownloadRepository {
         filename: asset.name,
         updates: Updates.statusAndProgress,
         group: downloadGroupLivePhoto,
-        metaData: _dummyMetadata.toJson(),
+        metaData: json.encode(_dummyMetadata),
       );
 
-      _dummyMetadata.part = LivePhotosPart.video;
+      _dummyMetadata['part'] = LivePhotosPart.video;
       tasks[taskIndex++] = DownloadTask(
         taskId: livePhotoVideoId,
         url: url,
@@ -123,13 +127,12 @@ class DownloadRepository {
             .replaceAll(RegExp(r"\.(JPG|HEIC)$"), '.MOV'),
         updates: Updates.statusAndProgress,
         group: downloadGroupLivePhoto,
-        metaData: _dummyMetadata.toJson(),
+        metaData: json.encode(_dummyMetadata),
       );
     }
-    tasks.length = taskIndex;
-    if (tasks.isEmpty) {
+    if (taskIndex == 0) {
       return Future.value(const []);
     }
-    return _downloader.enqueueAll(tasks);
+    return _downloader.enqueueAll(tasks.slice(0, taskIndex));
   }
 }
