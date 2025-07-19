@@ -13,6 +13,7 @@ class RemoteAsset extends BaseAsset {
   final String? localId;
   final String? thumbHash;
   final AssetVisibility visibility;
+  final DateTime? localDateTime;
   final String ownerId;
   final String? stackId;
   final int stackCount;
@@ -32,6 +33,7 @@ class RemoteAsset extends BaseAsset {
     super.isFavorite = false,
     this.thumbHash,
     this.visibility = AssetVisibility.timeline,
+    this.localDateTime,
     super.livePhotoVideoId,
     this.stackId,
     this.stackCount = 0,
@@ -60,6 +62,7 @@ class RemoteAsset extends BaseAsset {
     isFavorite: $isFavorite,
     thumbHash: ${thumbHash ?? "<NA>"},
     visibility: $visibility,
+    localDateTime: ${localDateTime ?? "<NA>"},
     stackId: ${stackId ?? "<NA>"},
     stackCount: $stackCount,
     checksum: $checksum,
@@ -77,6 +80,7 @@ class RemoteAsset extends BaseAsset {
         ownerId == other.ownerId &&
         thumbHash == other.thumbHash &&
         visibility == other.visibility &&
+        localDateTime == other.localDateTime &&
         stackId == other.stackId &&
         stackCount == other.stackCount;
   }
@@ -89,6 +93,7 @@ class RemoteAsset extends BaseAsset {
       localId.hashCode ^
       thumbHash.hashCode ^
       visibility.hashCode ^
+      localDateTime.hashCode ^
       stackId.hashCode ^
       stackCount.hashCode;
 
@@ -107,6 +112,7 @@ class RemoteAsset extends BaseAsset {
     bool? isFavorite,
     String? thumbHash,
     AssetVisibility? visibility,
+    DateTime? localDateTime,
     String? livePhotoVideoId,
     String? stackId,
     int? stackCount,
@@ -126,6 +132,7 @@ class RemoteAsset extends BaseAsset {
       isFavorite: isFavorite ?? this.isFavorite,
       thumbHash: thumbHash ?? this.thumbHash,
       visibility: visibility ?? this.visibility,
+      localDateTime: localDateTime ?? this.localDateTime,
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       stackId: stackId ?? this.stackId,
       stackCount: stackCount ?? this.stackCount,
