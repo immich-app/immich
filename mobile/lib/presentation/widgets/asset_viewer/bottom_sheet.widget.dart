@@ -52,7 +52,8 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       if (asset.hasRemote) ...[
         const ShareLinkActionButton(source: ActionSource.viewer),
         const ArchiveActionButton(source: ActionSource.viewer),
-        if (!asset.hasLocal) const DownloadActionButton(),
+        if (!asset.hasLocal)
+          const DownloadActionButton(source: ActionSource.viewer),
         isTrashEnable
             ? const TrashActionButton(source: ActionSource.viewer)
             : const DeletePermanentActionButton(source: ActionSource.viewer),

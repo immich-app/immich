@@ -782,6 +782,7 @@
   "documentation": "Documentation",
   "done": "Done",
   "download": "Download",
+  "download_action_prompt": "Downloading {count} assets",
   "download_canceled": "Download canceled",
   "download_complete": "Download complete",
   "download_enqueue": "Download enqueued",

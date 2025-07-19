@@ -1,3 +1,5 @@
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -23,6 +25,7 @@ final actionServiceProvider = Provider<ActionService>(
     ref.watch(driftAlbumApiRepositoryProvider),
     ref.watch(remoteAlbumRepository),
     ref.watch(assetMediaRepositoryProvider),
+    ref.watch(downloadRepositoryProvider),
   ),
 );
 
@@ -33,6 +36,7 @@ class ActionService {
   final DriftAlbumApiRepository _albumApiRepository;
   final DriftRemoteAlbumRepository _remoteAlbumRepository;
   final AssetMediaRepository _assetMediaRepository;
+  final DownloadRepository _downloadRepository;
 
   const ActionService(
     this._assetApiRepository,
@@ -41,6 +45,7 @@ class ActionService {
     this._albumApiRepository,
     this._remoteAlbumRepository,
     this._assetMediaRepository,
+    this._downloadRepository,
   );
 
   Future<void> shareLink(List<String> remoteIds, BuildContext context) async {
@@ -190,5 +195,9 @@ class ActionService {
 
   Future<int> shareAssets(List<BaseAsset> assets) {
     return _assetMediaRepository.shareAssets(assets);
+  }
+
+  Future<List<bool>> downloadAll(List<RemoteAsset> assets) {
+    return _downloadRepository.downloadAllAssets(assets);
   }
 }

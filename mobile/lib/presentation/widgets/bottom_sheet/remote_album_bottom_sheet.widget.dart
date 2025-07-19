@@ -41,7 +41,7 @@ class RemoteAlbumBottomSheet extends ConsumerWidget {
           const ShareLinkActionButton(source: ActionSource.timeline),
           const ArchiveActionButton(source: ActionSource.timeline),
           const FavoriteActionButton(source: ActionSource.timeline),
-          const DownloadActionButton(),
+          const DownloadActionButton(source: ActionSource.timeline),
           isTrashEnable
               ? const TrashActionButton(source: ActionSource.timeline)
               : const DeletePermanentActionButton(
