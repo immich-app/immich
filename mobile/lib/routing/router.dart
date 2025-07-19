@@ -62,9 +62,6 @@ import 'package:immich_mobile/pages/login/login.page.dart';
 import 'package:immich_mobile/pages/onboarding/permission_onboarding.page.dart';
 import 'package:immich_mobile/pages/photos/memory.page.dart';
 import 'package:immich_mobile/pages/photos/photos.page.dart';
-import 'package:immich_mobile/pages/search/all_motion_videos.page.dart';
-import 'package:immich_mobile/pages/search/all_people.page.dart';
-import 'package:immich_mobile/pages/search/all_places.page.dart';
 import 'package:immich_mobile/pages/search/all_videos.page.dart';
 import 'package:immich_mobile/pages/search/map/map.page.dart';
 import 'package:immich_mobile/pages/search/map/map_location_picker.page.dart';
@@ -94,6 +91,7 @@ import 'package:immich_mobile/presentation/pages/drift_trash.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_video.page.dart';
 import 'package:immich_mobile/presentation/pages/local_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/search/drift_search.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_people.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
@@ -217,10 +215,6 @@ class AppRouter extends RootStackRouter {
       guards: [_authGuard, _duplicateGuard, _backupPermissionGuard],
     ),
     AutoRoute(
-      page: AllPlacesRoute.page,
-      guards: [_authGuard, _duplicateGuard],
-    ),
-    AutoRoute(
       page: CreateAlbumRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
@@ -231,11 +225,6 @@ class AppRouter extends RootStackRouter {
       page: FavoritesRoute.page,
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideLeft,
-    ),
-    AutoRoute(page: AllVideosRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(
-      page: AllMotionPhotosRoute.page,
-      guards: [_authGuard, _duplicateGuard],
     ),
     AutoRoute(
       page: RecentlyTakenRoute.page,
@@ -300,7 +289,6 @@ class AppRouter extends RootStackRouter {
       page: PersonResultRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
-    AutoRoute(page: AllPeopleRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: MemoryRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: MapRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(
@@ -482,6 +470,9 @@ class AppRouter extends RootStackRouter {
 
     AutoRoute(
       page: ChangeExperienceRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),    AutoRoute(
+      page: DriftPeopleRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
     // required to handle all deeplinks in deep_link.service.dart

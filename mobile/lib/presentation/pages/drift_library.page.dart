@@ -182,7 +182,7 @@ class _PeopleCollectionCard extends ConsumerWidget {
         final size = context.width * widthFactor - 20.0;
 
         return GestureDetector(
-          onTap: () => context.pushRoute(const PeopleCollectionRoute()),
+          onTap: () => context.pushRoute(const DriftPeopleRoute()),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

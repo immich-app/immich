@@ -10,6 +10,7 @@ import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
