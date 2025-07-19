@@ -10,26 +10,28 @@
 
   interface Props {
     asset: TimelineAsset;
+    onImageLoad: () => void;
   }
 
-  const { asset }: Props = $props();
+  const { asset, onImageLoad }: Props = $props();
 
   let assetFileUrl: string = $state('');
   let imageLoaded: boolean = $state(false);
   let loader = $state<HTMLImageElement>();
 
-  const onload = () => {
+  const onLoadCallback = () => {
     imageLoaded = true;
     assetFileUrl = imageLoaderUrl;
+    onImageLoad();
   };
 
   onMount(() => {
     if (loader?.complete) {
-      onload();
+      onLoadCallback();
     }
-    loader?.addEventListener('load', onload);
+    loader?.addEventListener('load', onLoadCallback);
     return () => {
-      loader?.removeEventListener('load', onload);
+      loader?.removeEventListener('load', onLoadCallback);
     };
   });
 
