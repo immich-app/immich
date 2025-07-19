@@ -328,6 +328,13 @@
         await handleGetAllAlbums();
         break;
       }
+      case AssetAction.REMOVE_ASSET_FROM_STACK: {
+        stack = action.stack;
+        if (stack) {
+          asset = stack.assets[0];
+        }
+        break;
+      }
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
         stack = action.stack;
         break;

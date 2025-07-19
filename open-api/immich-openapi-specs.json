@@ -6746,6 +6746,50 @@
         ]
       }
     },
+    "/stacks/{id}/assets/{assetId}": {
+      "delete": {
+        "operationId": "removeAssetFromStack",
+        "parameters": [
+          {
+            "name": "assetId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      }
+    },
     "/sync/ack": {
       "delete": {
         "operationId": "deleteSyncAck",

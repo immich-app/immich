@@ -4,6 +4,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { StackCreateDto, StackResponseDto, StackSearchDto, StackUpdateDto, mapStack } from 'src/dtos/stack.dto';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { UUIDAssetIDParamDto } from 'src/validation';
 
 @Injectable()
 export class StackService extends BaseService {
@@ -56,6 +57,26 @@ export class StackService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.StackDelete, ids: dto.ids });
     await this.stackRepository.deleteAll(dto.ids);
     await this.eventRepository.emit('StackDeleteAll', { stackIds: dto.ids, userId: auth.user.id });
+  }
+
+  async removeAsset(auth: AuthDto, dto: UUIDAssetIDParamDto): Promise<void> {
+    const { id: stackId, assetId } = dto;
+    await this.requireAccess({ auth, permission: Permission.StackUpdate, ids: [stackId] });
+
+    const stack = await this.stackRepository.getForAssetRemoval(assetId);
+
+    //Verify the asset exists and is in the stack
+    if (!stack?.id || stack.id !== stackId) {
+      throw new BadRequestException('Asset not in stack');
+    }
+
+    //Verify the asset is not the stack's primary asset
+    if (stack.primaryAssetId === assetId) {
+      throw new BadRequestException("Cannot remove stack's primary asset");
+    }
+
+    await this.assetRepository.update({ id: assetId, stackId: null });
+    await this.eventRepository.emit('StackUpdate', { stackId, userId: auth.user.id });
   }
 
   private async findOrFail(id: string) {

@@ -190,6 +190,51 @@ class StacksApi {
     return null;
   }
 
+  /// Performs an HTTP 'DELETE /stacks/{id}/assets/{assetId}' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] assetId (required):
+  ///
+  /// * [String] id (required):
+  Future<Response> removeAssetFromStackWithHttpInfo(String assetId, String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/stacks/{id}/assets/{assetId}'
+      .replaceAll('{assetId}', assetId)
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] assetId (required):
+  ///
+  /// * [String] id (required):
+  Future<void> removeAssetFromStack(String assetId, String id,) async {
+    final response = await removeAssetFromStackWithHttpInfo(assetId, id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'GET /stacks' operation and returns the [Response].
   /// Parameters:
   ///

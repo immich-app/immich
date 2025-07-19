@@ -188,4 +188,53 @@ describe(StackService.name, () => {
       });
     });
   });
+
+  describe('removeAsset', () => {
+    it('should require stack.update permissions', async () => {
+      await expect(sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: 'asset-id' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(mocks.stack.getForAssetRemoval).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.event.emit).not.toHaveBeenCalled();
+    });
+
+    it('should fail if the asset is not in the stack', async () => {
+      mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.stack.getForAssetRemoval.mockResolvedValue({ id: null, primaryAssetId: null });
+
+      await expect(
+        sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: assetStub.imageFrom2015.id }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.event.emit).not.toHaveBeenCalled();
+    });
+
+    it('should fail if the assetId is the primaryAssetId', async () => {
+      mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.stack.getForAssetRemoval.mockResolvedValue({ id: 'stack-id', primaryAssetId: assetStub.image.id });
+
+      await expect(
+        sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: assetStub.image.id }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.event.emit).not.toHaveBeenCalled();
+    });
+
+    it("should update the asset to nullify it's stack-id", async () => {
+      mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.stack.getForAssetRemoval.mockResolvedValue({ id: 'stack-id', primaryAssetId: assetStub.image.id });
+
+      await sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: assetStub.image1.id });
+
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetStub.image1.id, stackId: null });
+      expect(mocks.event.emit).toHaveBeenCalledWith('StackUpdate', {
+        stackId: 'stack-id',
+        userId: authStub.admin.user.id,
+      });
+    });
+  });
 });

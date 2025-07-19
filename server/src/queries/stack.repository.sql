@@ -143,3 +143,13 @@ from
   "stack"
 where
   "id" = $1::uuid
+
+-- StackRepository.getForAssetRemoval
+select
+  "stackId" as "id",
+  "stack"."primaryAssetId"
+from
+  "asset"
+  left join "stack" on "stack"."id" = "asset"."stackId"
+where
+  "asset"."id" = $1

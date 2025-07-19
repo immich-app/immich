@@ -70,6 +70,18 @@ export class UUIDParamDto {
   id!: string;
 }
 
+export class UUIDAssetIDParamDto {
+  @IsNotEmpty()
+  @IsUUID('4')
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+
+  @IsNotEmpty()
+  @IsUUID('4')
+  @ApiProperty({ format: 'uuid' })
+  assetId!: string;
+}
+
 type PinCodeOptions = { optional?: boolean } & OptionalOptions;
 export const PinCode = (options?: PinCodeOptions & ApiPropertyOptions) => {
   const { optional, nullable, emptyToNull, ...apiPropertyOptions } = {

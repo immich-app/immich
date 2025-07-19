@@ -152,4 +152,14 @@ export class StackRepository {
       .where('id', '=', asUuid(id))
       .executeTakeFirst();
   }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  getForAssetRemoval(assetId: string) {
+    return this.db
+      .selectFrom('asset')
+      .leftJoin('stack', 'stack.id', 'asset.stackId')
+      .select(['stackId as id', 'stack.primaryAssetId'])
+      .where('asset.id', '=', assetId)
+      .executeTakeFirst();
+  }
 }
