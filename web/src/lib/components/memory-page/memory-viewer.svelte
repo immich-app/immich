@@ -646,6 +646,7 @@
         viewport={galleryViewport}
         {assetInteraction}
         slidingWindowOffset={viewerHeight}
+        arrowNavigation={false}
       />
     </div>
   </section>
