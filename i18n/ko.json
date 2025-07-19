@@ -458,7 +458,6 @@
   "assets": "항목",
   "assets_added_count": "{count, plural, one {#개} other {#개}} 항목 추가됨",
   "assets_added_to_album_count": "앨범에 항목 {count, plural, one {#개} other {#개}} 추가됨",
-  "assets_added_to_name_count": "{hasName, select, true {<b>{name}</b>} other {새 앨범}}에 항목 {count, plural, one {#개} other {#개}} 추가됨",
   "assets_count": "{count, plural, one {#개} other {#개}} 항목",
   "assets_deleted_permanently": "{count}개 항목이 영구적으로 삭제됨",
   "assets_deleted_permanently_from_server": "서버에서 항목 {count}개가 영구적으로 삭제됨",
