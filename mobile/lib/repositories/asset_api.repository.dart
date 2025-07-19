@@ -98,6 +98,18 @@ class AssetApiRepository extends ApiRepository {
     );
   }
 
+  Future<void> updateDateTime(
+    List<String> ids,
+    String dateTime,
+  ) async {
+    return _api.updateAssets(
+      AssetBulkUpdateDto(
+        ids: ids,
+        dateTimeOriginal: dateTime,
+      ),
+    );
+  }
+
   Future<StackResponse> stack(List<String> ids) async {
     final responseDto =
         await checkNull(_stacksApi.createStack(StackCreateDto(assetIds: ids)));

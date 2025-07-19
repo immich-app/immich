@@ -100,6 +100,13 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
         .getSingleOrNull();
   }
 
+  Future<RemoteAsset?> getAsset(String id) {
+    return _db.managers.remoteAssetEntity
+        .filter((row) => row.id.equals(id))
+        .map((row) => row.toDto())
+        .getSingleOrNull();
+  }
+
   Future<List<(String, String)>> getPlaces() {
     final asset = Subquery(
       _db.remoteAssetEntity.select()
@@ -196,6 +203,29 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
           RemoteExifEntityCompanion(
             latitude: Value(location.latitude),
             longitude: Value(location.longitude),
+          ),
+          where: (e) => e.assetId.equals(id),
+        );
+      }
+    });
+  }
+
+  Future<void> updateDateTime(List<String> ids, String dateTime) {
+    final localDateTime =
+        dateTime.replaceAll(RegExp(r'[\+|-][0-9]{2}:[0-9]{2}'), '');
+    return _db.batch((batch) async {
+      for (final id in ids) {
+        batch.update(
+          _db.remoteAssetEntity,
+          RemoteAssetEntityCompanion(
+            localDateTime: Value(DateTime.parse(localDateTime).toUtc()),
+          ),
+          where: (e) => e.id.equals(id),
+        );
+        batch.update(
+          _db.remoteExifEntity,
+          RemoteExifEntityCompanion(
+            dateTimeOriginal: Value(DateTime.parse(dateTime)),
           ),
           where: (e) => e.assetId.equals(id),
         );

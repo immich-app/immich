@@ -44,7 +44,7 @@ class FavoriteBottomSheet extends ConsumerWidget {
               : const DeletePermanentActionButton(
                   source: ActionSource.timeline,
                 ),
-          const EditDateTimeActionButton(),
+          const EditDateTimeActionButton(source: ActionSource.timeline),
           const EditLocationActionButton(source: ActionSource.timeline),
           const MoveToLockFolderActionButton(
             source: ActionSource.timeline,

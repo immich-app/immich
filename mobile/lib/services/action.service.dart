@@ -13,9 +13,11 @@ import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:timezone/timezone.dart';
 
 final actionServiceProvider = Provider<ActionService>(
   (ref) => ActionService(
@@ -159,7 +161,7 @@ class ActionService {
   ) async {
     maplibre.LatLng? initialLatLng;
     if (remoteIds.length == 1) {
-      final exif = await _remoteAssetRepository.getExif(remoteIds[0]);
+      final exif = await _remoteAssetRepository.getExif(remoteIds.first);
 
       if (exif?.latitude != null && exif?.longitude != null) {
         initialLatLng = maplibre.LatLng(exif!.latitude!, exif.longitude!);
@@ -182,6 +184,64 @@ class ActionService {
     await _remoteAssetRepository.updateLocation(
       remoteIds,
       location,
+    );
+
+    return true;
+  }
+
+  Future<bool> editDateTime(
+    List<String> remoteIds,
+    BuildContext context,
+  ) async {
+    DateTime? initialDateTime;
+    Duration? initialOffset;
+    String? initialTimeZone;
+    if (remoteIds.length == 1) {
+      final asset = await _remoteAssetRepository.getAsset(remoteIds.first);
+      final exif = await _remoteAssetRepository.getExif(remoteIds.first);
+
+      initialDateTime = asset?.localDateTime;
+      initialTimeZone = exif?.timeZone;
+      if (initialDateTime != null && initialTimeZone != null) {
+        try {
+          final location = getLocation(initialTimeZone);
+          initialOffset =
+              TZDateTime.from(initialDateTime, location).timeZoneOffset;
+        } on LocationNotFoundException {
+          RegExp re = RegExp(
+            r'^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$',
+            caseSensitive: false,
+          );
+          final m = re.firstMatch(initialTimeZone);
+          if (m != null) {
+            final offset = Duration(
+              hours: int.parse(m.group(1) ?? '0'),
+              minutes: int.parse(m.group(2) ?? '0'),
+            );
+            initialOffset = offset;
+          }
+        }
+      }
+    }
+
+    final dateTime = await showDateTimePicker(
+      context: context,
+      initialDateTime: initialDateTime,
+      initialTZ: initialTimeZone,
+      initialTZOffset: initialOffset,
+    );
+
+    if (dateTime == null) {
+      return false;
+    }
+
+    await _assetApiRepository.updateDateTime(
+      remoteIds,
+      dateTime,
+    );
+    await _remoteAssetRepository.updateDateTime(
+      remoteIds,
+      dateTime,
     );
 
     return true;
