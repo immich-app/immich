@@ -4676,9 +4676,6 @@ class PersonEntity extends Table
   late final GeneratedColumn<String> faceAssetId = GeneratedColumn<String>(
       'face_asset_id', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
-  late final GeneratedColumn<String> thumbnailPath = GeneratedColumn<String>(
-      'thumbnail_path', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
   late final GeneratedColumn<bool> isFavorite = GeneratedColumn<bool>(
       'is_favorite', aliasedName, false,
       type: DriftSqlType.bool,
@@ -4705,7 +4702,6 @@ class PersonEntity extends Table
         ownerId,
         name,
         faceAssetId,
-        thumbnailPath,
         isFavorite,
         isHidden,
         color,
@@ -4734,8 +4730,6 @@ class PersonEntity extends Table
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       faceAssetId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}face_asset_id']),
-      thumbnailPath: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}thumbnail_path'])!,
       isFavorite: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_favorite'])!,
       isHidden: attachedDatabase.typeMapping
@@ -4766,7 +4760,6 @@ class PersonEntityData extends DataClass
   final String ownerId;
   final String name;
   final String? faceAssetId;
-  final String thumbnailPath;
   final bool isFavorite;
   final bool isHidden;
   final String? color;
@@ -4778,7 +4771,6 @@ class PersonEntityData extends DataClass
       required this.ownerId,
       required this.name,
       this.faceAssetId,
-      required this.thumbnailPath,
       required this.isFavorite,
       required this.isHidden,
       this.color,
@@ -4794,7 +4786,6 @@ class PersonEntityData extends DataClass
     if (!nullToAbsent || faceAssetId != null) {
       map['face_asset_id'] = Variable<String>(faceAssetId);
     }
-    map['thumbnail_path'] = Variable<String>(thumbnailPath);
     map['is_favorite'] = Variable<bool>(isFavorite);
     map['is_hidden'] = Variable<bool>(isHidden);
     if (!nullToAbsent || color != null) {
@@ -4816,7 +4807,6 @@ class PersonEntityData extends DataClass
       ownerId: serializer.fromJson<String>(json['ownerId']),
       name: serializer.fromJson<String>(json['name']),
       faceAssetId: serializer.fromJson<String?>(json['faceAssetId']),
-      thumbnailPath: serializer.fromJson<String>(json['thumbnailPath']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       isHidden: serializer.fromJson<bool>(json['isHidden']),
       color: serializer.fromJson<String?>(json['color']),
@@ -4833,7 +4823,6 @@ class PersonEntityData extends DataClass
       'ownerId': serializer.toJson<String>(ownerId),
       'name': serializer.toJson<String>(name),
       'faceAssetId': serializer.toJson<String?>(faceAssetId),
-      'thumbnailPath': serializer.toJson<String>(thumbnailPath),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'isHidden': serializer.toJson<bool>(isHidden),
       'color': serializer.toJson<String?>(color),
@@ -4848,7 +4837,6 @@ class PersonEntityData extends DataClass
           String? ownerId,
           String? name,
           Value<String?> faceAssetId = const Value.absent(),
-          String? thumbnailPath,
           bool? isFavorite,
           bool? isHidden,
           Value<String?> color = const Value.absent(),
@@ -4860,7 +4848,6 @@ class PersonEntityData extends DataClass
         ownerId: ownerId ?? this.ownerId,
         name: name ?? this.name,
         faceAssetId: faceAssetId.present ? faceAssetId.value : this.faceAssetId,
-        thumbnailPath: thumbnailPath ?? this.thumbnailPath,
         isFavorite: isFavorite ?? this.isFavorite,
         isHidden: isHidden ?? this.isHidden,
         color: color.present ? color.value : this.color,
@@ -4875,9 +4862,6 @@ class PersonEntityData extends DataClass
       name: data.name.present ? data.name.value : this.name,
       faceAssetId:
           data.faceAssetId.present ? data.faceAssetId.value : this.faceAssetId,
-      thumbnailPath: data.thumbnailPath.present
-          ? data.thumbnailPath.value
-          : this.thumbnailPath,
       isFavorite:
           data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
       isHidden: data.isHidden.present ? data.isHidden.value : this.isHidden,
@@ -4895,7 +4879,6 @@ class PersonEntityData extends DataClass
           ..write('ownerId: $ownerId, ')
           ..write('name: $name, ')
           ..write('faceAssetId: $faceAssetId, ')
-          ..write('thumbnailPath: $thumbnailPath, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('isHidden: $isHidden, ')
           ..write('color: $color, ')
@@ -4906,7 +4889,7 @@ class PersonEntityData extends DataClass
 
   @override
   int get hashCode => Object.hash(id, createdAt, updatedAt, ownerId, name,
-      faceAssetId, thumbnailPath, isFavorite, isHidden, color, birthDate);
+      faceAssetId, isFavorite, isHidden, color, birthDate);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4917,7 +4900,6 @@ class PersonEntityData extends DataClass
           other.ownerId == this.ownerId &&
           other.name == this.name &&
           other.faceAssetId == this.faceAssetId &&
-          other.thumbnailPath == this.thumbnailPath &&
           other.isFavorite == this.isFavorite &&
           other.isHidden == this.isHidden &&
           other.color == this.color &&
@@ -4931,7 +4913,6 @@ class PersonEntityCompanion extends UpdateCompanion<PersonEntityData> {
   final Value<String> ownerId;
   final Value<String> name;
   final Value<String?> faceAssetId;
-  final Value<String> thumbnailPath;
   final Value<bool> isFavorite;
   final Value<bool> isHidden;
   final Value<String?> color;
@@ -4943,7 +4924,6 @@ class PersonEntityCompanion extends UpdateCompanion<PersonEntityData> {
     this.ownerId = const Value.absent(),
     this.name = const Value.absent(),
     this.faceAssetId = const Value.absent(),
-    this.thumbnailPath = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.isHidden = const Value.absent(),
     this.color = const Value.absent(),
@@ -4956,7 +4936,6 @@ class PersonEntityCompanion extends UpdateCompanion<PersonEntityData> {
     required String ownerId,
     required String name,
     this.faceAssetId = const Value.absent(),
-    required String thumbnailPath,
     required bool isFavorite,
     required bool isHidden,
     this.color = const Value.absent(),
@@ -4964,7 +4943,6 @@ class PersonEntityCompanion extends UpdateCompanion<PersonEntityData> {
   })  : id = Value(id),
         ownerId = Value(ownerId),
         name = Value(name),
-        thumbnailPath = Value(thumbnailPath),
         isFavorite = Value(isFavorite),
         isHidden = Value(isHidden);
   static Insertable<PersonEntityData> custom({
@@ -4974,7 +4952,6 @@ class PersonEntityCompanion extends UpdateCompanion<PersonEntityData> {
     Expression<String>? ownerId,
     Expression<String>? name,
     Expression<String>? faceAssetId,
-    Expression<String>? thumbnailPath,
     Expression<bool>? isFavorite,
     Expression<bool>? isHidden,
     Expression<String>? color,
@@ -4987,7 +4964,6 @@ class PersonEntityCompanion extends UpdateCompanion<PersonEntityData> {
       if (ownerId != null) 'owner_id': ownerId,
       if (name != null) 'name': name,
       if (faceAssetId != null) 'face_asset_id': faceAssetId,
-      if (thumbnailPath != null) 'thumbnail_path': thumbnailPath,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (isHidden != null) 'is_hidden': isHidden,
       if (color != null) 'color': color,
@@ -5002,7 +4978,6 @@ class PersonEntityCompanion extends UpdateCompanion<PersonEntityData> {
       Value<String>? ownerId,
       Value<String>? name,
       Value<String?>? faceAssetId,
-      Value<String>? thumbnailPath,
       Value<bool>? isFavorite,
       Value<bool>? isHidden,
       Value<String?>? color,
@@ -5014,7 +4989,6 @@ class PersonEntityCompanion extends UpdateCompanion<PersonEntityData> {
       ownerId: ownerId ?? this.ownerId,
       name: name ?? this.name,
       faceAssetId: faceAssetId ?? this.faceAssetId,
-      thumbnailPath: thumbnailPath ?? this.thumbnailPath,
       isFavorite: isFavorite ?? this.isFavorite,
       isHidden: isHidden ?? this.isHidden,
       color: color ?? this.color,
@@ -5043,9 +5017,6 @@ class PersonEntityCompanion extends UpdateCompanion<PersonEntityData> {
     if (faceAssetId.present) {
       map['face_asset_id'] = Variable<String>(faceAssetId.value);
     }
-    if (thumbnailPath.present) {
-      map['thumbnail_path'] = Variable<String>(thumbnailPath.value);
-    }
     if (isFavorite.present) {
       map['is_favorite'] = Variable<bool>(isFavorite.value);
     }
@@ -5070,11 +5041,426 @@ class PersonEntityCompanion extends UpdateCompanion<PersonEntityData> {
           ..write('ownerId: $ownerId, ')
           ..write('name: $name, ')
           ..write('faceAssetId: $faceAssetId, ')
-          ..write('thumbnailPath: $thumbnailPath, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('isHidden: $isHidden, ')
           ..write('color: $color, ')
           ..write('birthDate: $birthDate')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class AssetFaceEntity extends Table
+    with TableInfo<AssetFaceEntity, AssetFaceEntityData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  AssetFaceEntity(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<String> assetId = GeneratedColumn<String>(
+      'asset_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES remote_asset_entity (id) ON DELETE CASCADE'));
+  late final GeneratedColumn<String> personId = GeneratedColumn<String>(
+      'person_id', aliasedName, true,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES person_entity (id) ON DELETE SET NULL'));
+  late final GeneratedColumn<int> imageWidth = GeneratedColumn<int>(
+      'image_width', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  late final GeneratedColumn<int> imageHeight = GeneratedColumn<int>(
+      'image_height', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  late final GeneratedColumn<int> boundingBoxX1 = GeneratedColumn<int>(
+      'bounding_box_x1', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  late final GeneratedColumn<int> boundingBoxY1 = GeneratedColumn<int>(
+      'bounding_box_y1', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  late final GeneratedColumn<int> boundingBoxX2 = GeneratedColumn<int>(
+      'bounding_box_x2', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  late final GeneratedColumn<int> boundingBoxY2 = GeneratedColumn<int>(
+      'bounding_box_y2', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  late final GeneratedColumn<String> sourceType = GeneratedColumn<String>(
+      'source_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        assetId,
+        personId,
+        imageWidth,
+        imageHeight,
+        boundingBoxX1,
+        boundingBoxY1,
+        boundingBoxX2,
+        boundingBoxY2,
+        sourceType
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'asset_face_entity';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AssetFaceEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AssetFaceEntityData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      assetId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}asset_id'])!,
+      personId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}person_id']),
+      imageWidth: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}image_width'])!,
+      imageHeight: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}image_height'])!,
+      boundingBoxX1: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}bounding_box_x1'])!,
+      boundingBoxY1: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}bounding_box_y1'])!,
+      boundingBoxX2: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}bounding_box_x2'])!,
+      boundingBoxY2: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}bounding_box_y2'])!,
+      sourceType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}source_type'])!,
+    );
+  }
+
+  @override
+  AssetFaceEntity createAlias(String alias) {
+    return AssetFaceEntity(attachedDatabase, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+  @override
+  bool get isStrict => true;
+}
+
+class AssetFaceEntityData extends DataClass
+    implements Insertable<AssetFaceEntityData> {
+  final String id;
+  final String assetId;
+  final String? personId;
+  final int imageWidth;
+  final int imageHeight;
+  final int boundingBoxX1;
+  final int boundingBoxY1;
+  final int boundingBoxX2;
+  final int boundingBoxY2;
+  final String sourceType;
+  const AssetFaceEntityData(
+      {required this.id,
+      required this.assetId,
+      this.personId,
+      required this.imageWidth,
+      required this.imageHeight,
+      required this.boundingBoxX1,
+      required this.boundingBoxY1,
+      required this.boundingBoxX2,
+      required this.boundingBoxY2,
+      required this.sourceType});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['asset_id'] = Variable<String>(assetId);
+    if (!nullToAbsent || personId != null) {
+      map['person_id'] = Variable<String>(personId);
+    }
+    map['image_width'] = Variable<int>(imageWidth);
+    map['image_height'] = Variable<int>(imageHeight);
+    map['bounding_box_x1'] = Variable<int>(boundingBoxX1);
+    map['bounding_box_y1'] = Variable<int>(boundingBoxY1);
+    map['bounding_box_x2'] = Variable<int>(boundingBoxX2);
+    map['bounding_box_y2'] = Variable<int>(boundingBoxY2);
+    map['source_type'] = Variable<String>(sourceType);
+    return map;
+  }
+
+  factory AssetFaceEntityData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AssetFaceEntityData(
+      id: serializer.fromJson<String>(json['id']),
+      assetId: serializer.fromJson<String>(json['assetId']),
+      personId: serializer.fromJson<String?>(json['personId']),
+      imageWidth: serializer.fromJson<int>(json['imageWidth']),
+      imageHeight: serializer.fromJson<int>(json['imageHeight']),
+      boundingBoxX1: serializer.fromJson<int>(json['boundingBoxX1']),
+      boundingBoxY1: serializer.fromJson<int>(json['boundingBoxY1']),
+      boundingBoxX2: serializer.fromJson<int>(json['boundingBoxX2']),
+      boundingBoxY2: serializer.fromJson<int>(json['boundingBoxY2']),
+      sourceType: serializer.fromJson<String>(json['sourceType']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'assetId': serializer.toJson<String>(assetId),
+      'personId': serializer.toJson<String?>(personId),
+      'imageWidth': serializer.toJson<int>(imageWidth),
+      'imageHeight': serializer.toJson<int>(imageHeight),
+      'boundingBoxX1': serializer.toJson<int>(boundingBoxX1),
+      'boundingBoxY1': serializer.toJson<int>(boundingBoxY1),
+      'boundingBoxX2': serializer.toJson<int>(boundingBoxX2),
+      'boundingBoxY2': serializer.toJson<int>(boundingBoxY2),
+      'sourceType': serializer.toJson<String>(sourceType),
+    };
+  }
+
+  AssetFaceEntityData copyWith(
+          {String? id,
+          String? assetId,
+          Value<String?> personId = const Value.absent(),
+          int? imageWidth,
+          int? imageHeight,
+          int? boundingBoxX1,
+          int? boundingBoxY1,
+          int? boundingBoxX2,
+          int? boundingBoxY2,
+          String? sourceType}) =>
+      AssetFaceEntityData(
+        id: id ?? this.id,
+        assetId: assetId ?? this.assetId,
+        personId: personId.present ? personId.value : this.personId,
+        imageWidth: imageWidth ?? this.imageWidth,
+        imageHeight: imageHeight ?? this.imageHeight,
+        boundingBoxX1: boundingBoxX1 ?? this.boundingBoxX1,
+        boundingBoxY1: boundingBoxY1 ?? this.boundingBoxY1,
+        boundingBoxX2: boundingBoxX2 ?? this.boundingBoxX2,
+        boundingBoxY2: boundingBoxY2 ?? this.boundingBoxY2,
+        sourceType: sourceType ?? this.sourceType,
+      );
+  AssetFaceEntityData copyWithCompanion(AssetFaceEntityCompanion data) {
+    return AssetFaceEntityData(
+      id: data.id.present ? data.id.value : this.id,
+      assetId: data.assetId.present ? data.assetId.value : this.assetId,
+      personId: data.personId.present ? data.personId.value : this.personId,
+      imageWidth:
+          data.imageWidth.present ? data.imageWidth.value : this.imageWidth,
+      imageHeight:
+          data.imageHeight.present ? data.imageHeight.value : this.imageHeight,
+      boundingBoxX1: data.boundingBoxX1.present
+          ? data.boundingBoxX1.value
+          : this.boundingBoxX1,
+      boundingBoxY1: data.boundingBoxY1.present
+          ? data.boundingBoxY1.value
+          : this.boundingBoxY1,
+      boundingBoxX2: data.boundingBoxX2.present
+          ? data.boundingBoxX2.value
+          : this.boundingBoxX2,
+      boundingBoxY2: data.boundingBoxY2.present
+          ? data.boundingBoxY2.value
+          : this.boundingBoxY2,
+      sourceType:
+          data.sourceType.present ? data.sourceType.value : this.sourceType,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AssetFaceEntityData(')
+          ..write('id: $id, ')
+          ..write('assetId: $assetId, ')
+          ..write('personId: $personId, ')
+          ..write('imageWidth: $imageWidth, ')
+          ..write('imageHeight: $imageHeight, ')
+          ..write('boundingBoxX1: $boundingBoxX1, ')
+          ..write('boundingBoxY1: $boundingBoxY1, ')
+          ..write('boundingBoxX2: $boundingBoxX2, ')
+          ..write('boundingBoxY2: $boundingBoxY2, ')
+          ..write('sourceType: $sourceType')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      assetId,
+      personId,
+      imageWidth,
+      imageHeight,
+      boundingBoxX1,
+      boundingBoxY1,
+      boundingBoxX2,
+      boundingBoxY2,
+      sourceType);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AssetFaceEntityData &&
+          other.id == this.id &&
+          other.assetId == this.assetId &&
+          other.personId == this.personId &&
+          other.imageWidth == this.imageWidth &&
+          other.imageHeight == this.imageHeight &&
+          other.boundingBoxX1 == this.boundingBoxX1 &&
+          other.boundingBoxY1 == this.boundingBoxY1 &&
+          other.boundingBoxX2 == this.boundingBoxX2 &&
+          other.boundingBoxY2 == this.boundingBoxY2 &&
+          other.sourceType == this.sourceType);
+}
+
+class AssetFaceEntityCompanion extends UpdateCompanion<AssetFaceEntityData> {
+  final Value<String> id;
+  final Value<String> assetId;
+  final Value<String?> personId;
+  final Value<int> imageWidth;
+  final Value<int> imageHeight;
+  final Value<int> boundingBoxX1;
+  final Value<int> boundingBoxY1;
+  final Value<int> boundingBoxX2;
+  final Value<int> boundingBoxY2;
+  final Value<String> sourceType;
+  const AssetFaceEntityCompanion({
+    this.id = const Value.absent(),
+    this.assetId = const Value.absent(),
+    this.personId = const Value.absent(),
+    this.imageWidth = const Value.absent(),
+    this.imageHeight = const Value.absent(),
+    this.boundingBoxX1 = const Value.absent(),
+    this.boundingBoxY1 = const Value.absent(),
+    this.boundingBoxX2 = const Value.absent(),
+    this.boundingBoxY2 = const Value.absent(),
+    this.sourceType = const Value.absent(),
+  });
+  AssetFaceEntityCompanion.insert({
+    required String id,
+    required String assetId,
+    this.personId = const Value.absent(),
+    required int imageWidth,
+    required int imageHeight,
+    required int boundingBoxX1,
+    required int boundingBoxY1,
+    required int boundingBoxX2,
+    required int boundingBoxY2,
+    required String sourceType,
+  })  : id = Value(id),
+        assetId = Value(assetId),
+        imageWidth = Value(imageWidth),
+        imageHeight = Value(imageHeight),
+        boundingBoxX1 = Value(boundingBoxX1),
+        boundingBoxY1 = Value(boundingBoxY1),
+        boundingBoxX2 = Value(boundingBoxX2),
+        boundingBoxY2 = Value(boundingBoxY2),
+        sourceType = Value(sourceType);
+  static Insertable<AssetFaceEntityData> custom({
+    Expression<String>? id,
+    Expression<String>? assetId,
+    Expression<String>? personId,
+    Expression<int>? imageWidth,
+    Expression<int>? imageHeight,
+    Expression<int>? boundingBoxX1,
+    Expression<int>? boundingBoxY1,
+    Expression<int>? boundingBoxX2,
+    Expression<int>? boundingBoxY2,
+    Expression<String>? sourceType,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (assetId != null) 'asset_id': assetId,
+      if (personId != null) 'person_id': personId,
+      if (imageWidth != null) 'image_width': imageWidth,
+      if (imageHeight != null) 'image_height': imageHeight,
+      if (boundingBoxX1 != null) 'bounding_box_x1': boundingBoxX1,
+      if (boundingBoxY1 != null) 'bounding_box_y1': boundingBoxY1,
+      if (boundingBoxX2 != null) 'bounding_box_x2': boundingBoxX2,
+      if (boundingBoxY2 != null) 'bounding_box_y2': boundingBoxY2,
+      if (sourceType != null) 'source_type': sourceType,
+    });
+  }
+
+  AssetFaceEntityCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? assetId,
+      Value<String?>? personId,
+      Value<int>? imageWidth,
+      Value<int>? imageHeight,
+      Value<int>? boundingBoxX1,
+      Value<int>? boundingBoxY1,
+      Value<int>? boundingBoxX2,
+      Value<int>? boundingBoxY2,
+      Value<String>? sourceType}) {
+    return AssetFaceEntityCompanion(
+      id: id ?? this.id,
+      assetId: assetId ?? this.assetId,
+      personId: personId ?? this.personId,
+      imageWidth: imageWidth ?? this.imageWidth,
+      imageHeight: imageHeight ?? this.imageHeight,
+      boundingBoxX1: boundingBoxX1 ?? this.boundingBoxX1,
+      boundingBoxY1: boundingBoxY1 ?? this.boundingBoxY1,
+      boundingBoxX2: boundingBoxX2 ?? this.boundingBoxX2,
+      boundingBoxY2: boundingBoxY2 ?? this.boundingBoxY2,
+      sourceType: sourceType ?? this.sourceType,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (assetId.present) {
+      map['asset_id'] = Variable<String>(assetId.value);
+    }
+    if (personId.present) {
+      map['person_id'] = Variable<String>(personId.value);
+    }
+    if (imageWidth.present) {
+      map['image_width'] = Variable<int>(imageWidth.value);
+    }
+    if (imageHeight.present) {
+      map['image_height'] = Variable<int>(imageHeight.value);
+    }
+    if (boundingBoxX1.present) {
+      map['bounding_box_x1'] = Variable<int>(boundingBoxX1.value);
+    }
+    if (boundingBoxY1.present) {
+      map['bounding_box_y1'] = Variable<int>(boundingBoxY1.value);
+    }
+    if (boundingBoxX2.present) {
+      map['bounding_box_x2'] = Variable<int>(boundingBoxX2.value);
+    }
+    if (boundingBoxY2.present) {
+      map['bounding_box_y2'] = Variable<int>(boundingBoxY2.value);
+    }
+    if (sourceType.present) {
+      map['source_type'] = Variable<String>(sourceType.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AssetFaceEntityCompanion(')
+          ..write('id: $id, ')
+          ..write('assetId: $assetId, ')
+          ..write('personId: $personId, ')
+          ..write('imageWidth: $imageWidth, ')
+          ..write('imageHeight: $imageHeight, ')
+          ..write('boundingBoxX1: $boundingBoxX1, ')
+          ..write('boundingBoxY1: $boundingBoxY1, ')
+          ..write('boundingBoxX2: $boundingBoxX2, ')
+          ..write('boundingBoxY2: $boundingBoxY2, ')
+          ..write('sourceType: $sourceType')
           ..write(')'))
         .toString();
   }
@@ -5107,6 +5493,7 @@ class DatabaseAtV2 extends GeneratedDatabase {
   late final MemoryEntity memoryEntity = MemoryEntity(this);
   late final MemoryAssetEntity memoryAssetEntity = MemoryAssetEntity(this);
   late final PersonEntity personEntity = PersonEntity(this);
+  late final AssetFaceEntity assetFaceEntity = AssetFaceEntity(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5129,7 +5516,8 @@ class DatabaseAtV2 extends GeneratedDatabase {
         remoteAlbumUserEntity,
         memoryEntity,
         memoryAssetEntity,
-        personEntity
+        personEntity,
+        assetFaceEntity
       ];
   @override
   int get schemaVersion => 2;

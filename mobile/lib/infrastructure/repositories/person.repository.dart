@@ -26,7 +26,6 @@ extension on PersonEntityData {
       ownerId: ownerId,
       name: name,
       faceAssetId: faceAssetId,
-      thumbnailPath: thumbnailPath,
       isFavorite: isFavorite,
       isHidden: isHidden,
       color: color,

@@ -27,6 +27,7 @@ final class Schema2 extends i0.VersionedSchema {
     memoryEntity,
     memoryAssetEntity,
     personEntity,
+    assetFaceEntity,
   ];
   late final Shape0 userEntity = Shape0(
       source: i0.VersionedTable(
@@ -341,7 +342,29 @@ final class Schema2 extends i0.VersionedSchema {
           _column_71,
           _column_72,
           _column_73,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape14 assetFaceEntity = Shape14(
+      source: i0.VersionedTable(
+        entityName: 'asset_face_entity',
+        withoutRowId: true,
+        isStrict: true,
+        tableConstraints: [
+          'PRIMARY KEY(id)',
+        ],
+        columns: [
+          _column_0,
+          _column_36,
           _column_74,
+          _column_75,
+          _column_76,
+          _column_77,
+          _column_78,
+          _column_79,
+          _column_80,
+          _column_81,
         ],
         attachedDatabase: database,
       ),
@@ -885,8 +908,6 @@ class Shape13 extends i0.VersionedTable {
       columnsByName['name']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get faceAssetId =>
       columnsByName['face_asset_id']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get thumbnailPath =>
-      columnsByName['thumbnail_path']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<bool> get isFavorite =>
       columnsByName['is_favorite']! as i1.GeneratedColumn<bool>;
   i1.GeneratedColumn<bool> get isHidden =>
@@ -900,25 +921,73 @@ class Shape13 extends i0.VersionedTable {
 i1.GeneratedColumn<String> _column_69(String aliasedName) =>
     i1.GeneratedColumn<String>('face_asset_id', aliasedName, true,
         type: i1.DriftSqlType.string);
-i1.GeneratedColumn<String> _column_70(String aliasedName) =>
-    i1.GeneratedColumn<String>('thumbnail_path', aliasedName, false,
-        type: i1.DriftSqlType.string);
-i1.GeneratedColumn<bool> _column_71(String aliasedName) =>
+i1.GeneratedColumn<bool> _column_70(String aliasedName) =>
     i1.GeneratedColumn<bool>('is_favorite', aliasedName, false,
         type: i1.DriftSqlType.bool,
         defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
             'CHECK ("is_favorite" IN (0, 1))'));
-i1.GeneratedColumn<bool> _column_72(String aliasedName) =>
+i1.GeneratedColumn<bool> _column_71(String aliasedName) =>
     i1.GeneratedColumn<bool>('is_hidden', aliasedName, false,
         type: i1.DriftSqlType.bool,
         defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
             'CHECK ("is_hidden" IN (0, 1))'));
-i1.GeneratedColumn<String> _column_73(String aliasedName) =>
+i1.GeneratedColumn<String> _column_72(String aliasedName) =>
     i1.GeneratedColumn<String>('color', aliasedName, true,
         type: i1.DriftSqlType.string);
-i1.GeneratedColumn<DateTime> _column_74(String aliasedName) =>
+i1.GeneratedColumn<DateTime> _column_73(String aliasedName) =>
     i1.GeneratedColumn<DateTime>('birth_date', aliasedName, true,
         type: i1.DriftSqlType.dateTime);
+
+class Shape14 extends i0.VersionedTable {
+  Shape14({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get assetId =>
+      columnsByName['asset_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get personId =>
+      columnsByName['person_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get imageWidth =>
+      columnsByName['image_width']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get imageHeight =>
+      columnsByName['image_height']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get boundingBoxX1 =>
+      columnsByName['bounding_box_x1']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get boundingBoxY1 =>
+      columnsByName['bounding_box_y1']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get boundingBoxX2 =>
+      columnsByName['bounding_box_x2']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get boundingBoxY2 =>
+      columnsByName['bounding_box_y2']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get sourceType =>
+      columnsByName['source_type']! as i1.GeneratedColumn<String>;
+}
+
+i1.GeneratedColumn<String> _column_74(String aliasedName) =>
+    i1.GeneratedColumn<String>('person_id', aliasedName, true,
+        type: i1.DriftSqlType.string,
+        defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
+            'REFERENCES person_entity (id) ON DELETE SET NULL'));
+i1.GeneratedColumn<int> _column_75(String aliasedName) =>
+    i1.GeneratedColumn<int>('image_width', aliasedName, false,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<int> _column_76(String aliasedName) =>
+    i1.GeneratedColumn<int>('image_height', aliasedName, false,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<int> _column_77(String aliasedName) =>
+    i1.GeneratedColumn<int>('bounding_box_x1', aliasedName, false,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<int> _column_78(String aliasedName) =>
+    i1.GeneratedColumn<int>('bounding_box_y1', aliasedName, false,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<int> _column_79(String aliasedName) =>
+    i1.GeneratedColumn<int>('bounding_box_x2', aliasedName, false,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<int> _column_80(String aliasedName) =>
+    i1.GeneratedColumn<int>('bounding_box_y2', aliasedName, false,
+        type: i1.DriftSqlType.int);
+i1.GeneratedColumn<String> _column_81(String aliasedName) =>
+    i1.GeneratedColumn<String>('source_type', aliasedName, false,
+        type: i1.DriftSqlType.string);
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
 }) {

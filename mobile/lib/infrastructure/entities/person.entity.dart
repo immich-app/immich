@@ -19,8 +19,6 @@ class PersonEntity extends Table with DriftDefaultsMixin {
   // TODO: foreign key refering to asset faces
   TextColumn get faceAssetId => text().nullable()();
 
-  TextColumn get thumbnailPath => text()();
-
   BoolColumn get isFavorite => boolean()();
 
   BoolColumn get isHidden => boolean()();
