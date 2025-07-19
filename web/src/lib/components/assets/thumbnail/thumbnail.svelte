@@ -343,11 +343,12 @@
         <div class="absolute top-0 h-full w-full">
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
+            enablePlayback={mouseOver && $playVideoThumbnailOnHover}
             pauseIcon={mdiMotionPauseOutline}
             playIcon={mdiMotionPlayOutline}
             showTime={false}
             curve={selected}
-            playbackOnIconHover
+            playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
         </div>
       {/if}
