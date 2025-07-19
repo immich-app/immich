@@ -22,6 +22,9 @@ services:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
     build:
+      args:
+        - SERVER_USER=${SERVER_USER:-0}
+        - SERVER_GROUP=${SERVER_GROUP:-0}
       context: ../
       dockerfile: server/Dockerfile
       target: dev
@@ -35,7 +38,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
-    user: ${SERVER_UID:-0}:${SERVER_GID:-0}
     environment:
       IMMICH_REPOSITORY: immich-app/immich
       IMMICH_REPOSITORY_URL: https://github.com/immich-app/immich
@@ -67,9 +69,12 @@ services:
   immich-web:
     container_name: immich_web
     image: immich-web-dev:latest
-    # user: 0:0 needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
-    user: ${WEB_UID:-1000}:${WEB_GID:-1000}
+    # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
+    # user: 0:0
     build:
+      args:
+        - WEB_USER=${WEB_USER:-1000}
+        - WEB_GROUP=${WEB_GROUP:-1000}
       context: ../
       dockerfile: web/Dockerfile
     command: ['immich-web']
