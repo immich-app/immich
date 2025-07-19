@@ -36,6 +36,13 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   flutter_svg: ^2.0.17
   flutter_udid: ^3.0.0
+  # TODO: switch to regular `flutter_user_certificates_android` when this PR is
+  # merged:
+  # <https://github.com/johnstef99/flutter_user_certificates_android/pull/2>.
+  flutter_user_certificates_android:
+    git:
+      url: https://github.com/jfly/flutter_user_certificates_android.git
+      ref: "add-trusting"
   flutter_web_auth_2: ^5.0.0-alpha.0
   fluttertoast: ^8.2.12
   geolocator: ^14.0.0
