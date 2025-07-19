@@ -109,10 +109,10 @@ class DriftBackupPage extends HookConsumerWidget {
             child: ListView(
               children: [
                 const SizedBox(height: 8),
-                const BackupAlbumSelectionCard(),
-                const TotalCard(),
-                const BackupCard(),
-                const RemainderCard(),
+                const _BackupAlbumSelectionCard(),
+                const _TotalCard(),
+                const _BackupCard(),
+                const _RemainderCard(),
                 const Divider(),
                 buildControlButtons(),
               ],
@@ -124,8 +124,8 @@ class DriftBackupPage extends HookConsumerWidget {
   }
 }
 
-class BackupAlbumSelectionCard extends ConsumerWidget {
-  const BackupAlbumSelectionCard({super.key});
+class _BackupAlbumSelectionCard extends ConsumerWidget {
+  const _BackupAlbumSelectionCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -246,8 +246,8 @@ class BackupAlbumSelectionCard extends ConsumerWidget {
   }
 }
 
-class TotalCard extends ConsumerWidget {
-  const TotalCard({super.key});
+class _TotalCard extends ConsumerWidget {
+  const _TotalCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -262,8 +262,8 @@ class TotalCard extends ConsumerWidget {
   }
 }
 
-class BackupCard extends ConsumerWidget {
-  const BackupCard({super.key});
+class _BackupCard extends ConsumerWidget {
+  const _BackupCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -278,8 +278,8 @@ class BackupCard extends ConsumerWidget {
   }
 }
 
-class RemainderCard extends ConsumerWidget {
-  const RemainderCard({super.key});
+class _RemainderCard extends ConsumerWidget {
+  const _RemainderCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

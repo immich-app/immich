@@ -30,31 +30,11 @@ class UploadRepository {
     return FileDownloader().database.deleteAllRecords(group: group);
   }
 
-  Future<bool> cancel(String id) {
-    return FileDownloader().cancelTaskWithId(id);
-  }
-
   Future<bool> cancelAll(String group) {
     return FileDownloader().cancelAll(group: group);
   }
 
   Future<int> reset(String group) {
     return FileDownloader().reset(group: group);
-  }
-
-  Future<void> deleteRecordsWithIds(List<String> ids) {
-    return FileDownloader().database.deleteRecordsWithIds(ids);
-  }
-
-  Future<List<TaskRecord>> getRecords([TaskStatus? status]) {
-    if (status == null) {
-      return FileDownloader().database.allRecords(group: kBackupGroup);
-    }
-
-    return FileDownloader().database.allRecordsWithStatus(status);
-  }
-
-  Future<void> resumeUpload() {
-    return FileDownloader().start();
   }
 }

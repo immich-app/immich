@@ -268,7 +268,7 @@ class UploadStatusIcon extends StatelessWidget {
           color: Colors.red,
           semanticLabel: 'canceled'.tr(),
         ),
-      UploadStatus.waitingtoRetry || UploadStatus.paused => Icon(
+      UploadStatus.waitingToRetry || UploadStatus.paused => Icon(
           Icons.pause_circle_rounded,
           color: context.primaryColor,
           semanticLabel: 'paused'.tr(),

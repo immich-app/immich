@@ -1,13 +1,10 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
-
 import 'package:immich_mobile/services/drift_backup.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 
@@ -33,27 +30,6 @@ class DriftUploadStatus {
       progress: progress ?? this.progress,
     );
   }
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'taskId': taskId,
-      'filename': filename,
-      'progress': progress,
-    };
-  }
-
-  factory DriftUploadStatus.fromMap(Map<String, dynamic> map) {
-    return DriftUploadStatus(
-      taskId: map['taskId'] as String,
-      filename: map['filename'] as String,
-      progress: map['progress'] as double,
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory DriftUploadStatus.fromJson(String source) =>
-      DriftUploadStatus.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() =>
@@ -98,36 +74,6 @@ class DriftBackupState {
       uploadItems: uploadItems ?? this.uploadItems,
     );
   }
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'totalCount': totalCount,
-      'backupCount': backupCount,
-      'remainderCount': remainderCount,
-      'uploadItems': uploadItems,
-    };
-  }
-
-  factory DriftBackupState.fromMap(Map<String, dynamic> map) {
-    return DriftBackupState(
-      totalCount: map['totalCount'] as int,
-      backupCount: map['backupCount'] as int,
-      remainderCount: map['remainderCount'] as int,
-      uploadItems: Map<String, DriftUploadStatus>.from(
-        (map['uploadItems'] as Map<String, dynamic>).map(
-          (key, value) => MapEntry(
-            key,
-            DriftUploadStatus.fromMap(value as Map<String, dynamic>),
-          ),
-        ),
-      ),
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory DriftBackupState.fromJson(String source) =>
-      DriftBackupState.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
@@ -188,9 +134,6 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   void _handleTaskStatusUpdate(TaskStatusUpdate update) {
     switch (update.status) {
       case TaskStatus.complete:
-        // debugPrint(
-        //   "Task completed: ${update.task.displayName} : ${_uploadService.getActiveUploads()}",
-        // );
         state = state.copyWith(
           backupCount: state.backupCount + 1,
           remainderCount: state.remainderCount - 1,

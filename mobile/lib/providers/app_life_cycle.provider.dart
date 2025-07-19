@@ -70,33 +70,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
       await _ref.read(serverInfoProvider.notifier).getServerVersion();
 
-      // final enqueueTasks = await FileDownloader().database.allRecordsWithStatus(
-      //       TaskStatus.enqueued,
-      //       group: kBackupGroup,
-      //     );
-
-      // final completedTasks =
-      //     await FileDownloader().database.allRecordsWithStatus(
-      //           TaskStatus.complete,
-      //           group: kBackupGroup,
-      //         );
-
-      // final runningTasks = await FileDownloader().database.allRecordsWithStatus(
-      //       TaskStatus.running,
-      //       group: kBackupGroup,
-      //     );
-
-      // final failedTasks = await FileDownloader().database.allRecordsWithStatus(
-      //       TaskStatus.failed,
-      //       group: kBackupGroup,
-      //     );
-
-      // debugPrint("""Tasks status
-      //   enqueueTasks: ${enqueueTasks.length}
-      //   completedTasks: ${completedTasks.length}
-      //   runningTasks: ${runningTasks.length}
-      //   failedTasks: ${failedTasks.length}
-      // """);
+      // TODO: Need to decide on how we want to handle uploads once the app is resumed
       // await FileDownloader().start();
     }
 

@@ -1,9 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import "package:immich_mobile/utils/database.utils.dart";
@@ -23,6 +21,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
         innerJoin(
           _db.localAlbumEntity,
           _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+          useColumns: false,
         ),
       ])
       ..where(
@@ -60,20 +59,23 @@ class DriftBackupRepository extends DriftDatabaseRepository {
         innerJoin(
           _db.localAlbumEntity,
           _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+          useColumns: false,
         ),
         innerJoin(
           _db.localAssetEntity,
           _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+          useColumns: false,
         ),
         leftOuterJoin(
           _db.remoteAssetEntity,
           _db.localAssetEntity.checksum
               .equalsExp(_db.remoteAssetEntity.checksum),
+          useColumns: false,
         ),
       ])
       ..where(
         _db.localAlbumEntity.backupSelection
-                .equals(BackupSelection.selected.index) &
+                .equalsValue(BackupSelection.selected) &
             _db.remoteAssetEntity.id.isNull() &
             _db.localAlbumAssetEntity.assetId
                 .isNotInQuery(_getExcludedSubquery()),
@@ -91,21 +93,24 @@ class DriftBackupRepository extends DriftDatabaseRepository {
         innerJoin(
           _db.localAlbumEntity,
           _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+          useColumns: false,
         ),
         innerJoin(
           _db.localAssetEntity,
           _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+          useColumns: false,
         ),
         innerJoin(
           _db.remoteAssetEntity,
           _db.localAssetEntity.checksum
               .equalsExp(_db.remoteAssetEntity.checksum),
+          useColumns: false,
         ),
       ])
       ..where(
         _db.localAlbumEntity.backupSelection
-                .equals(BackupSelection.selected.index) &
-            _db.remoteAssetEntity.checksum.isNotNull() &
+                .equalsValue(BackupSelection.selected) &
+            _db.remoteAssetEntity.id.isNotNull() &
             _db.localAlbumAssetEntity.assetId
                 .isNotInQuery(_getExcludedSubquery()),
       );
@@ -113,18 +118,13 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     return query.get().then((rows) => rows.length);
   }
 
-  Future<List<LocalAlbum>> getBackupAlbums(BackupSelection selectionType) {
-    final query = _db.localAlbumEntity.select()
-      ..where(
-        (tbl) => tbl.backupSelection.equals(selectionType.index),
-      );
-
-    return query.map((localAlbum) => localAlbum.toDto(assetCount: 0)).get();
-  }
-
   Future<List<LocalAsset>> getCandidates() async {
-    final selectedAlbums = await getBackupAlbums(BackupSelection.selected);
-    final selectedAlbumIds = selectedAlbums.map((album) => album.id).toList();
+    final selectedAlbumIds = _db.localAlbumEntity.selectOnly(distinct: true)
+      ..addColumns([_db.localAlbumEntity.id])
+      ..where(
+        _db.localAlbumEntity.backupSelection
+            .equalsValue(BackupSelection.selected),
+      );
 
     final query = _db.localAssetEntity.select()
       ..where(
@@ -133,7 +133,8 @@ class DriftBackupRepository extends DriftDatabaseRepository {
               _db.localAlbumAssetEntity.selectOnly()
                 ..addColumns([_db.localAlbumAssetEntity.assetId])
                 ..where(
-                  _db.localAlbumAssetEntity.albumId.isIn(selectedAlbumIds) &
+                  _db.localAlbumAssetEntity.albumId
+                          .isInQuery(selectedAlbumIds) &
                       _db.localAlbumAssetEntity.assetId.equalsExp(lae.id),
                 ),
             ) &

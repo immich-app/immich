@@ -3,22 +3,20 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:path/path.dart';
 
-final uploadServiceProvider = Provider(
-  (ref) => UploadService(
-    ref.watch(uploadRepositoryProvider),
-  ),
-);
+final uploadServiceProvider = Provider((ref) {
+  final service = UploadService(ref.watch(uploadRepositoryProvider));
+  ref.onDispose(service.dispose);
+  return service;
+});
 
 class UploadService {
   final UploadRepository _uploadRepository;
-  // final Logger _log = Logger("UploadService");
   void Function(TaskStatusUpdate)? onUploadStatus;
   void Function(TaskProgressUpdate)? onTaskProgress;
 
@@ -57,15 +55,6 @@ class UploadService {
     _taskProgressController.close();
   }
 
-  Future<List<Task>> getActiveUploads() async {
-    return await FileDownloader().allTasks(group: kBackupGroup);
-  }
-
-  Future<bool> hasActiveUploads() async {
-    final tasks = await getActiveUploads();
-    return tasks.isNotEmpty;
-  }
-
   Future<bool> cancelUpload(String id) {
     return FileDownloader().cancelTaskWithId(id);
   }
@@ -74,11 +63,6 @@ class UploadService {
     await _uploadRepository.cancelAll(group);
     await _uploadRepository.reset(group);
     await _uploadRepository.deleteAllTrackingRecords(group);
-  }
-
-  Future<List<TaskRecord>> getRecords() async {
-    final all = await _uploadRepository.getRecords();
-    return all;
   }
 
   void enqueueTasks(List<UploadTask> tasks) {
