@@ -16,6 +16,8 @@ import { BaseConfig } from 'src/utils/media';
 type VideoStream = VideoInfo['videoStreams'][0];
 type AudioStream = VideoInfo['audioStreams'][0];
 
+class FFmpegInstance {}
+
 class PartManager {}
 
 // There is actually no persistent "connection"
@@ -133,6 +135,18 @@ class HLSConnection {
     let partIdx = 0;
     let possibleParts = [0];
 
+    const getPartAt = (at: number) => {
+      return Math.abs(possibleParts.at(at)!);
+    };
+
+    const isPartMarked = (at: number) => {
+      return possibleParts[at] < 0;
+    };
+
+    const markPart = (at: number) => {
+      possibleParts[at] = -possibleParts[at];
+    };
+
     this.keyTimes.push(0);
     this.segTimes.push(0);
 
@@ -142,8 +156,13 @@ class HLSConnection {
     while (r < frames.length) {
       const isKf = frames[r] <= 0;
       frames[r] = Math.abs(frames[r]);
-      if (frames[r] - possibleParts.at(-1)! > 0.5) {
+      if (frames[r] - getPartAt(-1)! > 0.5) {
         possibleParts.push(frames[r]);
+        if (frames[r] - this.keyTimes.at(-1)! > this.SEGMENT_TARGET_TIME) {
+          this.keyTimes.push(frames[r]); // Anyway it will be ignored when -c:v copy
+
+          markPart(possibleParts.length - 1);
+        }
       }
 
       if (isKf) {
@@ -151,9 +170,11 @@ class HLSConnection {
         // Otherwise we will split it to parts
         if (frames[r] - frames[l] > 2) {
           for (let i = 1; i < possibleParts.length; i++) {
+            const independent = isPartMarked(i) && i + 2 < possibleParts.length; // There is no necessary to add I-frame for 1 second
             videoPlaylist.push(
-              `#EXT-X-PART:DURATION=${(possibleParts[i] - possibleParts[i - 1]).toFixed(5)},URI="${partIdx++}.mp4"`,
+              `#EXT-X-PART:DURATION=${(getPartAt(i) - getPartAt(i - 1)).toFixed(5)},URI="${partIdx++}.mp4"${independent ? '%independent%' : ''}`,
             );
+            markPart(i);
           }
           videoPlaylist.push(
             `#EXTINF:${(frames[r] - frames[l]).toFixed(5)}`,
@@ -172,10 +193,6 @@ class HLSConnection {
         }
         possibleParts = [frames[r]];
         l = r;
-      }
-
-      if (frames[r] - this.keyTimes.at(-1)! > this.SEGMENT_TARGET_TIME) {
-        this.keyTimes.push(frames[r]); // Anyway it will be ignored when -c:v copy
       }
       r++;
     }
@@ -368,7 +385,7 @@ class HLSConnection {
     if (!this.vPlaylist) {
       throw new Error('Сall generatePlaylists() before videoPlaylist');
     }
-    return this.vPlaylist;
+    return this.vPlaylist.replaceAll('%independent%', this.vQuality == 'original' ? '' : ',INDEPENDENT=YES');
   }
 
   get audioPlaylist() {
