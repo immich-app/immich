@@ -23,7 +23,7 @@ const String kBackupLivePhotoGroup = 'backup_live_photo_group';
 
 // Timeline constants
 const int kTimelineNoneSegmentSize = 120;
-const int kTimelineAssetLoadBatchSize = 256;
+const int kTimelineAssetLoadBatchSize = 1024;
 const int kTimelineAssetLoadOppositeSize = 64;
 
 // Widget keys
