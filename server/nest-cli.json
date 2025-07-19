@@ -5,6 +5,12 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": false,
+    "builder": {
+      "type": "swc",
+      "options": {
+        "extensions": [".js", ".ts", ".jsx", ".tsx"]
+      }
+    },
     "plugins": [
       {
         "name": "@nestjs/swagger",

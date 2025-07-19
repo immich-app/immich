@@ -12,7 +12,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
 import { ApiService } from 'src/services/api.service';
-import { isStartUpError, useSwagger } from 'src/utils/misc';
+import { isStartUpError } from 'src/utils/misc';
 async function bootstrap() {
   process.title = 'immich-api';
 
@@ -37,7 +37,6 @@ async function bootstrap() {
     app.enableCors();
   }
   app.useWebSocketAdapter(new WebSocketAdapter(app));
-  useSwagger(app, { write: configRepository.isDev() });
 
   app.setGlobalPrefix('api', { exclude: excludePaths });
   if (existsSync(resourcePaths.web.root)) {

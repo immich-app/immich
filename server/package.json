@@ -29,7 +29,7 @@
     "migrations:run": "node ./dist/bin/migrations.js run",
     "schema:drop": "node ./dist/bin/migrations.js query 'DROP schema public cascade; CREATE schema public;'",
     "schema:reset": "npm run schema:drop && npm run migrations:run",
-    "sync:open-api": "node ./dist/bin/sync-open-api.js",
+    "sync:open-api": "nest build -b tsc && node ./dist/bin/sync-open-api.js",
     "sync:sql": "node ./dist/bin/sync-sql.js",
     "email:dev": "email dev -p 3050 --dir src/emails"
   },
@@ -119,7 +119,8 @@
     "@nestjs/cli": "^11.0.2",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.4",
-    "@swc/core": "^1.4.14",
+    "@swc/cli": "^0.7.8",
+    "@swc/core": "^1.13.0",
     "@testcontainers/postgresql": "^11.0.0",
     "@testcontainers/redis": "^11.0.0",
     "@types/archiver": "^6.0.0",
