@@ -327,12 +327,16 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
 
     return transaction(() async {
       if (assetsToUnLink.isNotEmpty) {
-        await _db.batch(
-          (batch) => batch.deleteWhere(
-            _db.localAlbumAssetEntity,
-            (f) => f.assetId.isIn(assetsToUnLink) & f.albumId.equals(albumId),
-          ),
-        );
+        await _db.batch((batch) {
+          for (final assetToUnLink in assetsToUnLink) {
+            batch.deleteWhere(
+              _db.localAlbumAssetEntity,
+              (row) =>
+                  row.assetId.equals(assetToUnLink) &
+                  row.albumId.equals(albumId),
+            );
+          }
+        });
       }
 
       await _deleteAssets(assetsToDelete);
@@ -360,7 +364,9 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     }
 
     return _db.batch((batch) {
-      batch.deleteWhere(_db.localAssetEntity, (f) => f.id.isIn(ids));
+      for (final id in ids) {
+        batch.deleteWhere(_db.localAssetEntity, (row) => row.id.equals(id));
+      }
     });
   }
 
