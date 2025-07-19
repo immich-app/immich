@@ -1,6 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/services/local_album.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 
 final backupAlbumProvider =
@@ -18,7 +19,8 @@ class BackupAlbumNotifier extends StateNotifier<List<LocalAlbum>> {
   final LocalAlbumService _localAlbumService;
 
   Future<void> getAll() async {
-    state = await _localAlbumService.getAll();
+    state =
+        await _localAlbumService.getAll(sortBy: {SortLocalAlbumsBy.assetCount});
   }
 
   Future<void> selectAlbum(LocalAlbum album) async {

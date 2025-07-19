@@ -177,9 +177,15 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         });
 
         if (!Store.isBetaTimelineEnabled) {
-          startListeningToOldEvents();
+          socket.on('on_upload_success', _handleOnUploadSuccess);
+          socket.on('on_asset_delete', _handleOnAssetDelete);
+          socket.on('on_asset_trash', _handleOnAssetTrash);
+          socket.on('on_asset_restore', _handleServerUpdates);
+          socket.on('on_asset_update', _handleServerUpdates);
+          socket.on('on_asset_stack_update', _handleServerUpdates);
+          socket.on('on_asset_hidden', _handleOnAssetHidden);
         } else {
-          startListeningToBetaEvents();
+          socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
         }
 
         socket.on('on_config_update', _handleOnConfigUpdate);
@@ -207,7 +213,6 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   void stopListenToEvent(String eventName) {
-    debugPrint("Stop listening to event $eventName");
     state.socket?.off(eventName);
   }
 

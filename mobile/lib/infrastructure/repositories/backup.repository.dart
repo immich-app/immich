@@ -147,6 +147,11 @@ class DriftBackupRepository extends DriftDatabaseRepository {
                 ),
             ) &
             lae.id.isNotInQuery(_getExcludedSubquery()),
+      )
+      ..orderBy(
+        [
+          (localAsset) => OrderingTerm.desc(localAsset.createdAt),
+        ],
       );
 
     return query.map((localAsset) => localAsset.toDto()).get();

@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/services/upload.service.dart';
@@ -55,7 +56,9 @@ class DriftBackupService {
     return _backupRepository.getBackupCount();
   }
 
-  Future<void> backup() async {
+  Future<void> backup(
+    void Function(EnqueueStatus status) onEnqueueTasks,
+  ) async {
     shouldCancel = false;
 
     final candidates = await _backupRepository.getCandidates();
@@ -83,8 +86,12 @@ class DriftBackupService {
       if (tasks.isNotEmpty && !shouldCancel) {
         count += tasks.length;
         _uploadService.enqueueTasks(tasks);
-        debugPrint(
-          "Enqueued $count/${candidates.length} tasks for backup",
+
+        onEnqueueTasks(
+          EnqueueStatus(
+            enqueueCount: count,
+            totalCount: candidates.length,
+          ),
         );
       }
     }
