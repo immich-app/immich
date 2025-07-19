@@ -53,21 +53,24 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version-file: './docs/.nvmrc'
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          node-version-file: './cli/.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
-      - name: Run npm install
-        run: npm ci
+      - name: Run install
+        run: pnpm install
 
       - name: Check formatting
-        run: npm run format
+        run: pnpm format
 
       - name: Run build
-        run: npm run build
+        run: pnpm build
 
       - name: Upload build output
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
