@@ -20,12 +20,15 @@ class PartManager {}
 
 // There is actually no persistent "connection"
 class HLSConnection {
+  private readonly SEGMENT_TARGET_TIME = 2;
+
   private firstSegmentDone?: PromiseWithResolvers<void>;
   private ffmpegTerminated?: PromiseWithResolvers<void>;
   private ffmpegCommand?: ChildProcess;
 
   private keyTimes: number[] = [];
   private partTimes: number[] = [];
+  private segTimes: number[] = [];
 
   private videoInterfaces: VideoInterfaces;
 
@@ -72,6 +75,10 @@ class HLSConnection {
   }
 
   async generatePlaylists() {
+    if (this.vPlaylist) {
+      return;
+    }
+
     // prettier-ignore
     const s = child_process.spawn('ffprobe', [
       '-loglevel', 'error',
@@ -114,7 +121,7 @@ class HLSConnection {
       '#EXTM3U',
       '#EXT-X-VERSION:10',
       '#EXT-X-MEDIA-SEQUENCE:0',
-      '#EXT-X-TARGETDURATION:10',
+      '#EXT-X-TARGETDURATION:2',
       '#EXT-X-PART-INF:PART-TARGET=0.5',
       '#EXT-X-PLAYLIST-TYPE:VOD',
       `#EXT-X-MAP:URI="init.mp4"`,
@@ -126,43 +133,8 @@ class HLSConnection {
     let partIdx = 0;
     let possibleParts = [0];
 
-    if (frames.at(-1)! < 0) {
-      frames.push(-frames.at(-1)!); // This is fake keyframe to finish playlist
-    }
-    while (r < frames.length) {
-      const isKf = frames[r] <= 0;
-      frames[r] = Math.abs(frames[r]);
-      if (frames[r] - possibleParts.at(-1)! > 0.5) {
-        possibleParts.push(frames[r]);
-      }
-
-      if (isKf) {
-        // Recommened segment time by RFC is 2 seconds
-        // Otherwise we will split it to parts
-        if (frames[r] - frames[l] > 2) {
-          for (let i = 1; i < possibleParts.length; i++) {
-            videoPlaylist.push(
-              `#EXT-X-PART:DURATION=${(possibleParts[i] - possibleParts[i - 1]).toFixed(20)},URI="${partIdx++}.mp4"`,
-            );
-          }
-          videoPlaylist.push(
-            `#EXTINF:${frames[r] - frames[l]}`,
-            Array.from({ length: possibleParts.length - 1 }, (_, i) => partIdx - possibleParts.length + i + 1).join(
-              '.',
-            ) + '.mp4',
-          );
-        } else {
-          videoPlaylist.push(`#EXTINF:${frames[r] - frames[l]}`, `${partIdx++}.mp4`);
-        }
-        possibleParts = [frames[r]];
-        l = r;
-      }
-      r++;
-    }
-
-    l = 0;
-    r = 1;
-    partIdx = 0;
+    this.keyTimes.push(0);
+    this.segTimes.push(0);
 
     if (frames.at(-1)! < 0) {
       frames.push(-frames.at(-1)!); // This is fake keyframe to finish playlist
@@ -180,27 +152,37 @@ class HLSConnection {
         if (frames[r] - frames[l] > 2) {
           for (let i = 1; i < possibleParts.length; i++) {
             videoPlaylist.push(
-              `#EXT-X-PART:DURATION=${(possibleParts[i] - possibleParts[i - 1]).toFixed(20)},URI="${partIdx++}.mp4"`,
+              `#EXT-X-PART:DURATION=${(possibleParts[i] - possibleParts[i - 1]).toFixed(5)},URI="${partIdx++}.mp4"`,
             );
           }
           videoPlaylist.push(
-            `#EXTINF:${frames[r] - frames[l]}`,
+            `#EXTINF:${(frames[r] - frames[l]).toFixed(5)}`,
             Array.from({ length: possibleParts.length - 1 }, (_, i) => partIdx - possibleParts.length + i + 1).join(
               '.',
             ) + '.mp4',
           );
-
           this.keyTimes.push(frames[r]);
           this.partTimes.push(...possibleParts);
+          this.segTimes.push(frames[r]);
         } else {
           this.partTimes.push(frames[r]);
           this.keyTimes.push(frames[r]);
-          videoPlaylist.push(`#EXTINF:${frames[r] - frames[l]}`, `${partIdx++}.mp4`);
+          this.segTimes.push(frames[r]);
+          videoPlaylist.push(`#EXTINF:${(frames[r] - frames[l]).toFixed(5)}`, `${partIdx++}.mp4`);
         }
         possibleParts = [frames[r]];
         l = r;
       }
+
+      if (frames[r] - this.keyTimes.at(-1)! > this.SEGMENT_TARGET_TIME) {
+        this.keyTimes.push(frames[r]); // Anyway it will be ignored when -c:v copy
+      }
       r++;
+    }
+
+    let audioSegIdx = 0;
+    for (let i = 1; i < this.segTimes.length; i++) {
+      audioPlaylist.push(`#EXTINF:${(this.segTimes[i] - this.segTimes[i - 1]).toFixed(5)}`, `${audioSegIdx++}.mp4`);
     }
 
     this.vPlaylist = videoPlaylist.join('\n');
