@@ -4,7 +4,7 @@
 
   interface Props {
     query: string | undefined;
-    queryType?: 'smart' | 'metadata' | 'description';
+    queryType?: 'smart' | 'fileName' | 'filePath' | 'description';
   }
 
   let { query = $bindable(), queryType = $bindable('smart') }: Props = $props();
@@ -19,7 +19,14 @@
       id="file-name-radio"
       label={$t('file_name_or_extension')}
       bind:group={queryType}
-      value="metadata"
+      value="fileName"
+    />
+    <RadioButton
+      name="query-type"
+      id="file-path-radio"
+      label={$t('file_path')}
+      bind:group={queryType}
+      value="filePath"
     />
     <RadioButton
       name="query-type"
@@ -41,7 +48,7 @@
     placeholder={$t('sunrise_on_the_beach')}
     bind:value={query}
   />
-{:else if queryType === 'metadata'}
+{:else if queryType === 'fileName'}
   <label for="file-name-input" class="immich-form-label">{$t('search_by_filename')}</label>
   <input
     class="immich-form-input hover:cursor-text w-full mt-1!"
@@ -51,6 +58,17 @@
     placeholder={$t('search_by_filename_example')}
     bind:value={query}
     aria-labelledby="file-name-label"
+  />
+{:else if queryType === 'filePath'}
+  <label for="file-path-input" class="immich-form-label">{$t('search_by_filepath')}</label>
+  <input
+    class="immich-form-input hover:cursor-text w-full mt-1!"
+    type="text"
+    id="file-path-input"
+    name="file-path"
+    placeholder={$t('search_by_filepath_example')}
+    bind:value={query}
+    aria-labelledby="file-path-label"
   />
 {:else if queryType === 'description'}
   <label for="description-input" class="immich-form-label">{$t('search_by_description')}</label>
