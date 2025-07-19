@@ -4,14 +4,8 @@ import { NextFunction, Response } from 'express';
 import { JsonWebTokenError, JwtPayload, verify } from 'jsonwebtoken';
 import fs from 'node:fs';
 import sanitize from 'sanitize-filename';
-import {
-  AudioPlaylistParamDto,
-  MasterPlaylistParamDto,
-  OriginalPlaylistParamDto,
-  PartParamDto,
-  VideoPlaylistParamDto,
-} from 'src/dtos/video.dto';
-import { CacheControl, RouteKey, VideoCodec } from 'src/enum';
+import { AudioPlaylistParamDto, MasterPlaylistParamDto, PartParamDto, VideoPlaylistParamDto } from 'src/dtos/video.dto';
+import { CacheControl, RouteKey } from 'src/enum';
 import { FileResponse } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
@@ -71,22 +65,6 @@ export class TranscodingController {
     return await this.service.getAudioPlaylist(data.id, data.sessionId, codec, quality);
   }
 
-  @Get(':secret/original.m3u8')
-  @Header('Content-Type', 'application/vnd.apple.mpegurl')
-  @FileResponse()
-  async getOriginalPlaylist(@Param() { secret }: OriginalPlaylistParamDto) {
-    let data;
-    try {
-      data = verify(secret, await this.systemMetadataRepository.getSecretKey()) as
-        | JwtPayload
-        | { id: string; sessionId: string };
-    } catch (error: any) {
-      throw error instanceof JsonWebTokenError ? new UnauthorizedException() : error;
-    }
-    // Here H264 doesn't mean anything as "original" quality will trigger -c:v original option
-    return await this.service.getVideoPlaylist(data.id, data.sessionId, VideoCodec.H264, 'original');
-  }
-
   @Get(':secret/:codec/:quality/:name.mp4')
   @FileResponse()
   async getVideoPart(
@@ -126,7 +104,9 @@ export class TranscodingController {
     // Make full segment by joining parts
     for (const name of arr) {
       await new Promise<void>((resolve) => {
-        const buf = fs.createReadStream(`/tmp/video/${sanitize(data['sessionId'])}/${sanitize(name)}.mp4`);
+        const buf = fs.createReadStream(
+          `/tmp/video/${sanitize(data['sessionId'])}/${sanitize(codec.toString())}/${sanitize(quality)}/${sanitize(name)}.mp4`,
+        );
         buf.pipe(res, { end: false });
         buf.on('end', () => {
           resolve();
