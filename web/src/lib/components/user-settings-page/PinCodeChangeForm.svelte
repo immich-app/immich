@@ -59,6 +59,7 @@
     <form autocomplete="off" onsubmit={handleSubmit} class="mt-6">
       <div class="flex flex-col gap-6 place-items-center place-content-center">
         <p class="text-dark">{$t('change_pin_code')}</p>
+        <p class="text-dark">{$t('change_pin_code_forgot')}</p>
         <PinCodeInput label={$t('current_pin_code')} bind:value={currentPinCode} tabindexStart={1} pinLength={6} />
 
         <PinCodeInput label={$t('new_pin_code')} bind:value={newPinCode} tabindexStart={7} pinLength={6} />
