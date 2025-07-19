@@ -540,4 +540,8 @@ export class TimelineManager {
       isMismatched(this.#options.isTrashed, asset.isTrashed)
     );
   }
+
+  getAssetOrder() {
+    return this.#options.order ?? AssetOrder.Desc;
+  }
 }
