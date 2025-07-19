@@ -58,6 +58,7 @@ class SyncApiRepository {
           SyncRequestType.partnerStacksV1,
           SyncRequestType.userMetadataV1,
           SyncRequestType.peopleV1,
+          SyncRequestType.assetFacesV1,
         ],
       ).toJson(),
     );
@@ -176,6 +177,8 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.userMetadataDeleteV1: SyncUserMetadataDeleteV1.fromJson,
   SyncEntityType.personV1: SyncPersonV1.fromJson,
   SyncEntityType.personDeleteV1: SyncPersonDeleteV1.fromJson,
+  SyncEntityType.assetFaceV1: SyncAssetFaceV1.fromJson,
+  SyncEntityType.assetFaceDeleteV1: SyncAssetFaceDeleteV1.fromJson,
 };
 
 class _SyncAckV1 {

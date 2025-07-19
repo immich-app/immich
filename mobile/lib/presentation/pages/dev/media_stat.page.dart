@@ -170,6 +170,10 @@ final _remoteStats = [
     name: 'People',
     load: (db) => db.managers.personEntity.count(),
   ),
+  _Stat(
+    name: 'AssetFaces',
+    load: (db) => db.managers.assetFaceEntity.count(),
+  ),
 ];
 
 @RoutePage()
