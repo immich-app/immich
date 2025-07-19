@@ -56,4 +56,11 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       }
     });
   }
+
+  Future<LocalAsset?> getById(String id) {
+    final query = _db.localAssetEntity.select()
+      ..where((lae) => lae.id.equals(id));
+
+    return query.map((row) => row.toDto()).getSingleOrNull();
+  }
 }

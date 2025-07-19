@@ -8,6 +8,7 @@ import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -42,6 +43,9 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
         albumNotifier.dispose();
       }
 
+      ref.read(websocketProvider.notifier).stopListenToOldEvents();
+      ref.read(websocketProvider.notifier).startListeningToBetaEvents();
+
       final permission = await ref
           .read(galleryPermissionNotifier.notifier)
           .requestGalleryPermission();
@@ -55,6 +59,8 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
       }
     } else {
       await ref.read(backgroundSyncProvider).cancel();
+      ref.read(websocketProvider.notifier).stopListeningToBetaEvents();
+      ref.read(websocketProvider.notifier).startListeningToOldEvents();
     }
 
     if (mounted) {

@@ -727,6 +727,38 @@ class DriftAssetSelectionTimelineRouteArgs {
 }
 
 /// generated route for
+/// [DriftBackupAlbumSelectionPage]
+class DriftBackupAlbumSelectionRoute extends PageRouteInfo<void> {
+  const DriftBackupAlbumSelectionRoute({List<PageRouteInfo>? children})
+      : super(DriftBackupAlbumSelectionRoute.name, initialChildren: children);
+
+  static const String name = 'DriftBackupAlbumSelectionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftBackupAlbumSelectionPage();
+    },
+  );
+}
+
+/// generated route for
+/// [DriftBackupPage]
+class DriftBackupRoute extends PageRouteInfo<void> {
+  const DriftBackupRoute({List<PageRouteInfo>? children})
+      : super(DriftBackupRoute.name, initialChildren: children);
+
+  static const String name = 'DriftBackupRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftBackupPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftCreateAlbumPage]
 class DriftCreateAlbumRoute extends PageRouteInfo<void> {
   const DriftCreateAlbumRoute({List<PageRouteInfo>? children})

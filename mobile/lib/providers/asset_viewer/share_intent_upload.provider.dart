@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
@@ -30,7 +29,7 @@ class ShareIntentUploadStateNotifier
     this._uploadService,
     this._shareIntentService,
   ) : super([]) {
-    _uploadService.onUploadStatus = _uploadStatusCallback;
+    _uploadService.onUploadStatus = _updateUploadStatus;
     _uploadService.onTaskProgress = _taskProgressCallback;
   }
 
@@ -69,8 +68,8 @@ class ShareIntentUploadStateNotifier
     state = [];
   }
 
-  void _updateUploadStatus(TaskStatusUpdate task, TaskStatus status) async {
-    if (status == TaskStatus.canceled) {
+  void _updateUploadStatus(TaskStatusUpdate task) async {
+    if (task.status == TaskStatus.canceled) {
       return;
     }
 
@@ -83,7 +82,7 @@ class ShareIntentUploadStateNotifier
       TaskStatus.running => UploadStatus.running,
       TaskStatus.paused => UploadStatus.paused,
       TaskStatus.notFound => UploadStatus.notFound,
-      TaskStatus.waitingToRetry => UploadStatus.waitingtoRetry
+      TaskStatus.waitingToRetry => UploadStatus.waitingToRetry
     };
 
     state = [
@@ -93,27 +92,6 @@ class ShareIntentUploadStateNotifier
         else
           attachment,
     ];
-  }
-
-  void _uploadStatusCallback(TaskStatusUpdate update) {
-    _updateUploadStatus(update, update.status);
-
-    switch (update.status) {
-      case TaskStatus.complete:
-        if (update.responseStatusCode == 200) {
-          if (kDebugMode) {
-            debugPrint("[COMPLETE] ${update.task.taskId} - DUPLICATE");
-          }
-        } else {
-          if (kDebugMode) {
-            debugPrint("[COMPLETE] ${update.task.taskId}");
-          }
-        }
-        break;
-
-      default:
-        break;
-    }
   }
 
   void _taskProgressCallback(TaskProgressUpdate update) {
@@ -134,10 +112,6 @@ class ShareIntentUploadStateNotifier
   }
 
   Future<void> upload(File file) {
-    return _uploadService.upload(file);
-  }
-
-  Future<bool> cancelUpload(String id) {
-    return _uploadService.cancelUpload(id);
+    return _uploadService.buildUploadTask(file, group: kManualUploadGroup);
   }
 }

@@ -69,6 +69,9 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       }
 
       await _ref.read(serverInfoProvider.notifier).getServerVersion();
+
+      // TODO: Need to decide on how we want to handle uploads once the app is resumed
+      // await FileDownloader().start();
     }
 
     if (!Store.isBetaTimelineEnabled) {

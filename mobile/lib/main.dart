@@ -93,6 +93,13 @@ Future<void> initApp() async {
 
   initializeTimeZones();
 
+  // Initialize the file downloader
+
+  await FileDownloader().configure(
+    // maxConcurrent: 5, maxConcurrentByHost: 2, maxConcurrentByGroup: 3
+    globalConfig: (Config.holdingQueue, (5, 2, 3)),
+  );
+
   await FileDownloader().trackTasksInGroup(
     downloadGroupLivePhoto,
     markDownloadedComplete: false,
@@ -171,7 +178,21 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   }
 
   void _configureFileDownloaderNotifications() {
-    FileDownloader().configureNotification(
+    FileDownloader().configureNotificationForGroup(
+      downloadGroupImage,
+      running: TaskNotification(
+        'downloading_media'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      complete: TaskNotification(
+        'download_finished'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      progressBar: true,
+    );
+
+    FileDownloader().configureNotificationForGroup(
+      downloadGroupVideo,
       running: TaskNotification(
         'downloading_media'.tr(),
         '${'file_name'.tr()}: {filename}',

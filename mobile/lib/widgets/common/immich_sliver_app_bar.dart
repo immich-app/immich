@@ -205,7 +205,7 @@ class _BackupIndicator extends ConsumerWidget {
     final badgeBackground = context.colorScheme.surfaceContainer;
 
     return InkWell(
-      onTap: () => context.pushRoute(const BackupControllerRoute()),
+      onTap: () => context.pushRoute(const DriftBackupRoute()),
       borderRadius: const BorderRadius.all(Radius.circular(12)),
       child: Badge(
         label: Container(
