@@ -556,7 +556,7 @@ describe(`immich upload`, () => {
 
       expect(stdout.split('\n')).toEqual(
         expect.arrayContaining([
-          expect.stringContaining('Found 1 new file and 1 duplicate'),
+          expect.stringContaining('Found 1 new files and 1 duplicate'),
           expect.stringContaining('Successfully uploaded 1 new asset'),
           expect.stringContaining('Deleting assets that have been uploaded'),
         ]),
@@ -599,7 +599,7 @@ describe(`immich upload`, () => {
 
       expect(stdout.split('\n')).toEqual(
         expect.arrayContaining([
-          expect.stringContaining('Found 1 new file and 1 duplicate'),
+          expect.stringContaining('Found 1 new files and 1 duplicate'),
           expect.stringContaining('Successfully uploaded 1 new asset'),
         ]),
       );
