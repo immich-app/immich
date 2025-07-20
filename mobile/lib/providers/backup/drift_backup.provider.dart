@@ -228,7 +228,8 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
 
     final currentItem = state.uploadItems[taskId];
     if (currentItem != null) {
-      if (progress == kUploadStatusCanceled) {
+      if (progress == kUploadStatusCanceled ||
+          progress == kUploadStatusFailed) {
         _handleCanceledTask(update.task.taskId);
         return;
       }
@@ -290,9 +291,7 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
     await _backupService.cancel();
 
     // Check if there are any tasks left in the queue
-    final tasks = await FileDownloader().allTasks(
-      group: kBackupGroup,
-    );
+    final tasks = await FileDownloader().allTasks(group: kBackupGroup);
 
     debugPrint("Tasks left to cancel: ${tasks.length}");
 
@@ -305,6 +304,17 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
         uploadItems: {},
       );
     }
+  }
+
+  Future<void> handleBackupResume() async {
+    final tasks = await FileDownloader().allTasks(group: kBackupGroup);
+    if (tasks.isEmpty) {
+      // Start a new backup queue
+      await backup();
+    }
+
+    debugPrint("Tasks to resume: ${tasks.length}");
+    await FileDownloader().start();
   }
 
   @override

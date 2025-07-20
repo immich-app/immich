@@ -39,4 +39,5 @@ const List<(String, String)> kWidgetNames = [
   ('com.immich.widget.memory', 'app.alextran.immich.widget.MemoryReceiver'),
 ];
 
+const double kUploadStatusFailed = -1.0;
 const double kUploadStatusCanceled = -2.0;
