@@ -13,6 +13,7 @@ import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/remote_album.utils.dart';
@@ -39,7 +40,7 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
 
     // Load albums when component mounts
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(remoteAlbumProvider.notifier).getAll();
+      ref.read(remoteAlbumProvider.notifier).refresh();
     });
 
     searchController.addListener(() {
@@ -87,17 +88,20 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final albumState = ref.watch(remoteAlbumProvider);
-    final albums = albumState.filteredAlbums;
-    final isLoading = albumState.isLoading;
-    final error = albumState.error;
+    final albums =
+        ref.watch(remoteAlbumProvider.select((s) => s.filteredAlbums));
+
     final userId = ref.watch(currentUserProvider)?.id;
 
     return RefreshIndicator(
       onRefresh: onRefresh,
+      edgeOffset: 100,
       child: CustomScrollView(
         slivers: [
           ImmichSliverAppBar(
+            snap: false,
+            floating: false,
+            pinned: true,
             actions: [
               IconButton(
                 icon: const Icon(
@@ -132,14 +136,10 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
               ? _AlbumGrid(
                   albums: albums,
                   userId: userId,
-                  isLoading: isLoading,
-                  error: error,
                 )
               : _AlbumList(
                   albums: albums,
                   userId: userId,
-                  isLoading: isLoading,
-                  error: error,
                 ),
         ],
       ),
@@ -478,48 +478,17 @@ class _QuickSortAndViewMode extends StatelessWidget {
   }
 }
 
-class _AlbumList extends StatelessWidget {
+class _AlbumList extends ConsumerWidget {
   const _AlbumList({
-    required this.isLoading,
-    required this.error,
     required this.albums,
     required this.userId,
   });
 
-  final bool isLoading;
-  final String? error;
   final List<RemoteAlbum> albums;
   final String? userId;
 
   @override
-  Widget build(BuildContext context) {
-    if (isLoading) {
-      return const SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      );
-    }
-
-    if (error != null) {
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Text(
-              'Error loading albums: $error',
-              style: TextStyle(
-                color: context.colorScheme.error,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
+  Widget build(BuildContext context, WidgetRef ref) {
     if (albums.isEmpty) {
       return const SliverToBoxAdapter(
         child: Center(
@@ -567,9 +536,12 @@ class _AlbumList extends StatelessWidget {
                   color: context.colorScheme.onSurfaceSecondary,
                 ),
               ),
-              onTap: () => context.router.push(
-                RemoteTimelineRoute(album: album),
-              ),
+              onTap: () {
+                ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
+                context.router.push(
+                  RemoteAlbumRoute(album: album),
+                );
+              },
               leadingPadding: const EdgeInsets.only(
                 right: 16,
               ),
@@ -619,44 +591,13 @@ class _AlbumGrid extends StatelessWidget {
   const _AlbumGrid({
     required this.albums,
     required this.userId,
-    required this.isLoading,
-    required this.error,
   });
 
   final List<RemoteAlbum> albums;
   final String? userId;
-  final bool isLoading;
-  final String? error;
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      );
-    }
-
-    if (error != null) {
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Text(
-              'Error loading albums: $error',
-              style: TextStyle(
-                color: context.colorScheme.error,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
     if (albums.isEmpty) {
       return const SliverToBoxAdapter(
         child: Center(
@@ -692,7 +633,7 @@ class _AlbumGrid extends StatelessWidget {
   }
 }
 
-class _GridAlbumCard extends StatelessWidget {
+class _GridAlbumCard extends ConsumerWidget {
   const _GridAlbumCard({
     required this.album,
     required this.userId,
@@ -702,11 +643,14 @@ class _GridAlbumCard extends StatelessWidget {
   final String? userId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-      onTap: () => context.router.push(
-        RemoteTimelineRoute(album: album),
-      ),
+      onTap: () {
+        ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
+        context.router.push(
+          RemoteAlbumRoute(album: album),
+        );
+      },
       child: Card(
         elevation: 0,
         color: context.colorScheme.surfaceBright,

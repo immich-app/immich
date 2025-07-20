@@ -30,12 +30,12 @@ describe(SystemMetadataService.name, () => {
   describe('updateAdminOnboarding', () => {
     it('should update isOnboarded to true', async () => {
       await expect(sut.updateAdminOnboarding({ isOnboarded: true })).resolves.toBeUndefined();
-      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.ADMIN_ONBOARDING, { isOnboarded: true });
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.AdminOnboarding, { isOnboarded: true });
     });
 
     it('should update isOnboarded to false', async () => {
       await expect(sut.updateAdminOnboarding({ isOnboarded: false })).resolves.toBeUndefined();
-      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.ADMIN_ONBOARDING, { isOnboarded: false });
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.AdminOnboarding, { isOnboarded: false });
     });
   });
 

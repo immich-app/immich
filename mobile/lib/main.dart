@@ -31,6 +31,7 @@ import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/download.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
@@ -92,12 +93,30 @@ Future<void> initApp() async {
 
   initializeTimeZones();
 
+  // Initialize the file downloader
+
+  await FileDownloader().configure(
+    // maxConcurrent: 5, maxConcurrentByHost: 2, maxConcurrentByGroup: 3
+    globalConfig: (Config.holdingQueue, (5, 2, 3)),
+  );
+
   await FileDownloader().trackTasksInGroup(
     downloadGroupLivePhoto,
     markDownloadedComplete: false,
   );
 
   await FileDownloader().trackTasks();
+
+  LicenseRegistry.addLicense(
+    () async* {
+      for (final license in nonPubLicenses.entries) {
+        yield LicenseEntryWithLineBreaks(
+          [license.key],
+          license.value,
+        );
+      }
+    },
+  );
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
@@ -159,7 +178,21 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   }
 
   void _configureFileDownloaderNotifications() {
-    FileDownloader().configureNotification(
+    FileDownloader().configureNotificationForGroup(
+      downloadGroupImage,
+      running: TaskNotification(
+        'downloading_media'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      complete: TaskNotification(
+        'download_finished'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      progressBar: true,
+    );
+
+    FileDownloader().configureNotificationForGroup(
+      downloadGroupVideo,
       running: TaskNotification(
         'downloading_media'.tr(),
         '${'file_name'.tr()}: {filename}',

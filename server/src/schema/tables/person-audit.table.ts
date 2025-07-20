@@ -6,12 +6,12 @@ export class PersonAuditTable {
   @PrimaryGeneratedUuidV7Column()
   id!: Generated<string>;
 
-  @Column({ type: 'uuid', indexName: 'IDX_person_audit_person_id' })
+  @Column({ type: 'uuid', index: true })
   personId!: string;
 
-  @Column({ type: 'uuid', indexName: 'IDX_person_audit_owner_id' })
+  @Column({ type: 'uuid', index: true })
   ownerId!: string;
 
-  @CreateDateColumn({ default: () => 'clock_timestamp()', indexName: 'IDX_person_audit_deleted_at' })
+  @CreateDateColumn({ default: () => 'clock_timestamp()', index: true })
   deletedAt!: Generated<Timestamp>;
 }

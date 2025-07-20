@@ -75,8 +75,8 @@ export class StorageTemplateService extends BaseService {
     return this._template;
   }
 
-  @OnEvent({ name: 'config.init' })
-  onConfigInit({ newConfig }: ArgOf<'config.init'>) {
+  @OnEvent({ name: 'ConfigInit' })
+  onConfigInit({ newConfig }: ArgOf<'ConfigInit'>) {
     const template = newConfig.storageTemplate.template;
     if (!this._template || template !== this.template.raw) {
       this.logger.debug(`Compiling new storage template: ${template}`);
@@ -84,20 +84,20 @@ export class StorageTemplateService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'config.update', server: true })
-  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+  @OnEvent({ name: 'ConfigUpdate', server: true })
+  onConfigUpdate({ newConfig }: ArgOf<'ConfigUpdate'>) {
     this.onConfigInit({ newConfig });
   }
 
-  @OnEvent({ name: 'config.validate' })
-  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
+  @OnEvent({ name: 'ConfigValidate' })
+  onConfigValidate({ newConfig }: ArgOf<'ConfigValidate'>) {
     try {
       const { compiled } = this.compile(newConfig.storageTemplate.template);
       this.render(compiled, {
         asset: {
           fileCreatedAt: new Date(),
           originalPath: '/upload/test/IMG_123.jpg',
-          type: AssetType.IMAGE,
+          type: AssetType.Image,
           id: 'd587e44b-f8c0-4832-9ba3-43268bbf5d4e',
         } as StorageAsset,
         filename: 'IMG_123',
@@ -116,22 +116,22 @@ export class StorageTemplateService extends BaseService {
     return { ...storageTokens, presetOptions: storagePresets };
   }
 
-  @OnEvent({ name: 'asset.metadataExtracted' })
-  async onAssetMetadataExtracted({ source, assetId }: ArgOf<'asset.metadataExtracted'>) {
-    await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { source, id: assetId } });
+  @OnEvent({ name: 'AssetMetadataExtracted' })
+  async onAssetMetadataExtracted({ source, assetId }: ArgOf<'AssetMetadataExtracted'>) {
+    await this.jobRepository.queue({ name: JobName.StorageTemplateMigrationSingle, data: { source, id: assetId } });
   }
 
-  @OnJob({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, queue: QueueName.STORAGE_TEMPLATE_MIGRATION })
-  async handleMigrationSingle({ id }: JobOf<JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE>): Promise<JobStatus> {
+  @OnJob({ name: JobName.StorageTemplateMigrationSingle, queue: QueueName.StorageTemplateMigration })
+  async handleMigrationSingle({ id }: JobOf<JobName.StorageTemplateMigrationSingle>): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: true });
     const storageTemplateEnabled = config.storageTemplate.enabled;
     if (!storageTemplateEnabled) {
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     const asset = await this.assetJobRepository.getForStorageTemplateJob(id);
     if (!asset) {
-      return JobStatus.FAILED;
+      return JobStatus.Failed;
     }
 
     const user = await this.userRepository.get(asset.ownerId, {});
@@ -143,22 +143,22 @@ export class StorageTemplateService extends BaseService {
     if (asset.livePhotoVideoId) {
       const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
       if (!livePhotoVideo) {
-        return JobStatus.FAILED;
+        return JobStatus.Failed;
       }
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
       await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
     }
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.STORAGE_TEMPLATE_MIGRATION, queue: QueueName.STORAGE_TEMPLATE_MIGRATION })
+  @OnJob({ name: JobName.StorageTemplateMigration, queue: QueueName.StorageTemplateMigration })
   async handleMigration(): Promise<JobStatus> {
     this.logger.log('Starting storage template migration');
     const { storageTemplate } = await this.getConfig({ withCache: true });
     const { enabled } = storageTemplate;
     if (!enabled) {
       this.logger.log('Storage template migration disabled, skipping');
-      return JobStatus.SKIPPED;
+      return JobStatus.Skipped;
     }
 
     await this.moveRepository.cleanMoveHistory();
@@ -174,16 +174,16 @@ export class StorageTemplateService extends BaseService {
     }
 
     this.logger.debug('Cleaning up empty directories...');
-    const libraryFolder = StorageCore.getBaseFolder(StorageFolder.LIBRARY);
+    const libraryFolder = StorageCore.getBaseFolder(StorageFolder.Library);
     await this.storageRepository.removeEmptyDirs(libraryFolder);
 
     this.logger.log('Finished storage template migration');
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
-  @OnEvent({ name: 'asset.delete' })
-  async handleMoveHistoryCleanup({ assetId }: ArgOf<'asset.delete'>) {
+  @OnEvent({ name: 'AssetDelete' })
+  async handleMoveHistoryCleanup({ assetId }: ArgOf<'AssetDelete'>) {
     this.logger.debug(`Cleaning up move history for asset ${assetId}`);
     await this.moveRepository.cleanMoveHistorySingle(assetId);
   }
@@ -208,7 +208,7 @@ export class StorageTemplateService extends BaseService {
       try {
         await this.storageCore.moveFile({
           entityId: id,
-          pathType: AssetPathType.ORIGINAL,
+          pathType: AssetPathType.Original,
           oldPath,
           newPath,
           assetInfo: { sizeInBytes: fileSizeInByte, checksum },
@@ -216,7 +216,7 @@ export class StorageTemplateService extends BaseService {
         if (sidecarPath) {
           await this.storageCore.moveFile({
             entityId: id,
-            pathType: AssetPathType.SIDECAR,
+            pathType: AssetPathType.Sidecar,
             oldPath: sidecarPath,
             newPath: `${newPath}.xmp`,
           });
@@ -357,8 +357,8 @@ export class StorageTemplateService extends BaseService {
     const substitutions: Record<string, string> = {
       filename,
       ext: extension,
-      filetype: asset.type == AssetType.IMAGE ? 'IMG' : 'VID',
-      filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
+      filetype: asset.type == AssetType.Image ? 'IMG' : 'VID',
+      filetypefull: asset.type == AssetType.Image ? 'IMAGE' : 'VIDEO',
       assetId: asset.id,
       assetIdShort: asset.id.slice(-12),
       //just throw into the root if it doesn't belong to an album

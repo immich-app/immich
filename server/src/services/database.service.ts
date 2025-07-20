@@ -57,7 +57,7 @@ const messages = {
 
 @Injectable()
 export class DatabaseService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.DatabaseService })
+  @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.DatabaseService })
   async onBootstrap() {
     const version = await this.databaseRepository.getPostgresVersion();
     const current = semver.coerce(version);
@@ -100,7 +100,7 @@ export class DatabaseService extends BaseService {
       }
 
       try {
-        await this.databaseRepository.reindexVectorsIfNeeded([VectorIndex.CLIP, VectorIndex.FACE]);
+        await this.databaseRepository.reindexVectorsIfNeeded([VectorIndex.Clip, VectorIndex.Face]);
       } catch (error) {
         this.logger.warn(
           'Could not run vector reindexing checks. If the extension was updated, please restart the Postgres instance. If you are upgrading directly from a version below 1.107.2, please upgrade to 1.107.2 first.',
@@ -109,7 +109,7 @@ export class DatabaseService extends BaseService {
       }
 
       for (const { name: dbName, installedVersion } of extensionVersions) {
-        const isDepended = dbName === DatabaseExtension.VECTOR && extension === DatabaseExtension.VECTORCHORD;
+        const isDepended = dbName === DatabaseExtension.Vector && extension === DatabaseExtension.VectorChord;
         if (dbName !== extension && installedVersion && !isDepended) {
           await this.dropExtension(dbName);
         }
@@ -120,8 +120,8 @@ export class DatabaseService extends BaseService {
         await this.databaseRepository.runMigrations();
       }
       await Promise.all([
-        this.databaseRepository.prewarm(VectorIndex.CLIP),
-        this.databaseRepository.prewarm(VectorIndex.FACE),
+        this.databaseRepository.prewarm(VectorIndex.Clip),
+        this.databaseRepository.prewarm(VectorIndex.Face),
       ]);
     });
   }

@@ -53,6 +53,9 @@ class ThumbnailTile extends ConsumerWidget {
               )
             : const BoxDecoration();
 
+    final hasStack =
+        asset is RemoteAsset && (asset as RemoteAsset).stackCount > 0;
+
     return Stack(
       children: [
         AnimatedContainer(
@@ -75,6 +78,19 @@ class ThumbnailTile extends ConsumerWidget {
                     ),
                   ),
                 ),
+                if (hasStack)
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        right: 10.0,
+                        top: asset.isVideo ? 24.0 : 6.0,
+                      ),
+                      child: _StackIndicator(
+                        stackCount: (asset as RemoteAsset).stackCount,
+                      ),
+                    ),
+                  ),
                 if (asset.isVideo)
                   Align(
                     alignment: Alignment.topRight,
@@ -182,6 +198,40 @@ class _SelectionIndicator extends StatelessWidget {
   }
 }
 
+class _StackIndicator extends StatelessWidget {
+  final int stackCount;
+
+  const _StackIndicator({required this.stackCount});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      spacing: 3,
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.end,
+      // CrossAxisAlignment.start looks more centered vertically than CrossAxisAlignment.center
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          stackCount.toString(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            shadows: [
+              Shadow(
+                blurRadius: 5.0,
+                color: Color.fromRGBO(0, 0, 0, 0.6),
+              ),
+            ],
+          ),
+        ),
+        const _TileOverlayIcon(Icons.burst_mode_rounded),
+      ],
+    );
+  }
+}
+
 class _VideoIndicator extends StatelessWidget {
   final Duration duration;
   const _VideoIndicator(this.duration);
@@ -192,8 +242,8 @@ class _VideoIndicator extends StatelessWidget {
       spacing: 3,
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.end,
-      // CrossAxisAlignment.end looks more centered vertically than CrossAxisAlignment.center
-      crossAxisAlignment: CrossAxisAlignment.end,
+      // CrossAxisAlignment.start looks more centered vertically than CrossAxisAlignment.center
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           duration.format(),

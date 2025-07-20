@@ -45,10 +45,10 @@ export class MoveRepository {
         eb(
           'move_history.entityId',
           'not in',
-          eb.selectFrom('assets').select('id').whereRef('assets.id', '=', 'move_history.entityId'),
+          eb.selectFrom('asset').select('id').whereRef('asset.id', '=', 'move_history.entityId'),
         ),
       )
-      .where('move_history.pathType', '=', sql.lit(AssetPathType.ORIGINAL))
+      .where('move_history.pathType', '=', sql.lit(AssetPathType.Original))
       .execute();
   }
 
@@ -56,7 +56,7 @@ export class MoveRepository {
   async cleanMoveHistorySingle(assetId: string): Promise<void> {
     await this.db
       .deleteFrom('move_history')
-      .where('move_history.pathType', '=', sql.lit(AssetPathType.ORIGINAL))
+      .where('move_history.pathType', '=', sql.lit(AssetPathType.Original))
       .where('entityId', '=', assetId)
       .execute();
   }

@@ -14,32 +14,32 @@ export class StackController {
   constructor(private service: StackService) {}
 
   @Get()
-  @Authenticated({ permission: Permission.STACK_READ })
+  @Authenticated({ permission: Permission.StackRead })
   searchStacks(@Auth() auth: AuthDto, @Query() query: StackSearchDto): Promise<StackResponseDto[]> {
     return this.service.search(auth, query);
   }
 
   @Post()
-  @Authenticated({ permission: Permission.STACK_CREATE })
+  @Authenticated({ permission: Permission.StackCreate })
   createStack(@Auth() auth: AuthDto, @Body() dto: StackCreateDto): Promise<StackResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Delete()
-  @Authenticated({ permission: Permission.STACK_DELETE })
+  @Authenticated({ permission: Permission.StackDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteStacks(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
 
   @Get(':id')
-  @Authenticated({ permission: Permission.STACK_READ })
+  @Authenticated({ permission: Permission.StackRead })
   getStack(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<StackResponseDto> {
     return this.service.get(auth, id);
   }
 
   @Put(':id')
-  @Authenticated({ permission: Permission.STACK_UPDATE })
+  @Authenticated({ permission: Permission.StackUpdate })
   updateStack(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -50,7 +50,7 @@ export class StackController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated({ permission: Permission.STACK_DELETE })
+  @Authenticated({ permission: Permission.StackDelete })
   deleteStack(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

@@ -5,6 +5,7 @@ import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.d
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/utils/database.utils.dart';
 import 'package:platform/platform.dart';
 
 enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum }
@@ -379,32 +380,5 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
         .get();
 
     return results.isNotEmpty ? results.first : null;
-  }
-}
-
-extension on LocalAlbumEntityData {
-  LocalAlbum toDto({int assetCount = 0}) {
-    return LocalAlbum(
-      id: id,
-      name: name,
-      updatedAt: updatedAt,
-      assetCount: assetCount,
-      backupSelection: backupSelection,
-    );
-  }
-}
-
-extension on LocalAssetEntityData {
-  LocalAsset toDto() {
-    return LocalAsset(
-      id: id,
-      name: name,
-      checksum: checksum,
-      type: type,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      durationInSeconds: durationInSeconds,
-      isFavorite: isFavorite,
-    );
   }
 }

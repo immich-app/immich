@@ -5,7 +5,7 @@ import { authStub } from 'test/fixtures/auth.stub';
 export const userStub = {
   admin: <UserAdmin>{
     ...authStub.admin.user,
-    status: UserStatus.ACTIVE,
+    status: UserStatus.Active,
     profileChangedAt: new Date('2021-01-01'),
     name: 'admin_name',
     id: 'admin_id',
@@ -23,7 +23,7 @@ export const userStub = {
   },
   user1: <UserAdmin>{
     ...authStub.user1.user,
-    status: UserStatus.ACTIVE,
+    status: UserStatus.Active,
     profileChangedAt: new Date('2021-01-01'),
     name: 'immich_name',
     storageLabel: null,
@@ -40,7 +40,7 @@ export const userStub = {
   },
   user2: <UserAdmin>{
     ...authStub.user2.user,
-    status: UserStatus.ACTIVE,
+    status: UserStatus.Active,
     profileChangedAt: new Date('2021-01-01'),
     metadata: [],
     name: 'immich_name',

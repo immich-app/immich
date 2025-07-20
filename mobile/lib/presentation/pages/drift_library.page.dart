@@ -256,9 +256,7 @@ class _PlacesCollectionCard extends StatelessWidget {
 
         return GestureDetector(
           onTap: () => context.pushRoute(
-            PlacesCollectionRoute(
-              currentLocation: null,
-            ),
+            DriftPlaceRoute(currentLocation: null),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -512,8 +510,9 @@ class _PartnerList extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ).t(context: context, args: {'user': partner.name}),
-          onTap: () =>
-              context.pushRoute(DriftPartnerDetailRoute(partnerId: partner.id)),
+          onTap: () => context.pushRoute(
+            DriftPartnerDetailRoute(partner: partner),
+          ),
         );
       },
     );

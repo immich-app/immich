@@ -6,7 +6,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const vectorExtension = await getVectorExtension(queryRunner);
-    if (vectorExtension === DatabaseExtension.VECTORS) {
+    if (vectorExtension === DatabaseExtension.Vectors) {
       await queryRunner.query(`SET search_path TO "$user", public, vectors`);
     }
 
@@ -52,7 +52,7 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     const vectorExtension = await getVectorExtension(queryRunner);
-    if (vectorExtension === DatabaseExtension.VECTORS) {
+    if (vectorExtension === DatabaseExtension.Vectors) {
       await queryRunner.query(`SET search_path TO "$user", public, vectors`);
     }
 

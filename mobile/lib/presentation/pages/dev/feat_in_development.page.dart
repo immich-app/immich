@@ -23,16 +23,6 @@ final _features = [
     onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
   ),
   _Feature(
-    name: 'Video',
-    icon: Icons.video_collection_outlined,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftVideoRoute()),
-  ),
-  _Feature(
-    name: 'Recently Taken',
-    icon: Icons.schedule_outlined,
-    onTap: (ctx, _) => ctx.pushRoute(const DriftRecentlyTakenRoute()),
-  ),
-  _Feature(
     name: 'Selection Mode Timeline',
     icon: Icons.developer_mode_rounded,
     onTap: (ctx, ref) async {
@@ -101,6 +91,10 @@ final _features = [
   ),
   _Feature(
     name: 'Clear Local Data',
+    style: const TextStyle(
+      color: Colors.orange,
+      fontWeight: FontWeight.bold,
+    ),
     icon: Icons.delete_forever_rounded,
     onTap: (_, ref) async {
       final db = ref.read(driftProvider);
@@ -111,6 +105,10 @@ final _features = [
   ),
   _Feature(
     name: 'Clear Remote Data',
+    style: const TextStyle(
+      color: Colors.orange,
+      fontWeight: FontWeight.bold,
+    ),
     icon: Icons.delete_sweep_rounded,
     onTap: (_, ref) async {
       final db = ref.read(driftProvider);
@@ -122,21 +120,34 @@ final _features = [
       await db.memoryEntity.deleteAll();
       await db.memoryAssetEntity.deleteAll();
       await db.stackEntity.deleteAll();
+      await db.personEntity.deleteAll();
     },
   ),
   _Feature(
     name: 'Local Media Summary',
+    style: const TextStyle(
+      color: Colors.indigo,
+      fontWeight: FontWeight.bold,
+    ),
     icon: Icons.table_chart_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const LocalMediaSummaryRoute()),
   ),
   _Feature(
     name: 'Remote Media Summary',
+    style: const TextStyle(
+      color: Colors.indigo,
+      fontWeight: FontWeight.bold,
+    ),
     icon: Icons.summarize_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const RemoteMediaSummaryRoute()),
   ),
   _Feature(
     name: 'Reset Sqlite',
     icon: Icons.table_view_rounded,
+    style: const TextStyle(
+      color: Colors.red,
+      fontWeight: FontWeight.bold,
+    ),
     onTap: (_, ref) async {
       final drift = ref.read(driftProvider);
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
@@ -169,7 +180,10 @@ class FeatInDevPage extends StatelessWidget {
                 final feat = _features[index];
                 return Consumer(
                   builder: (ctx, ref, _) => ListTile(
-                    title: Text(feat.name),
+                    title: Text(
+                      feat.name,
+                      style: feat.style,
+                    ),
                     trailing: Icon(feat.icon),
                     visualDensity: VisualDensity.compact,
                     onTap: () => unawaited(feat.onTap(ctx, ref)),
@@ -192,10 +206,12 @@ class _Feature {
     required this.name,
     required this.icon,
     required this.onTap,
+    this.style,
   });
 
   final String name;
   final IconData icon;
+  final TextStyle? style;
   final Future<void> Function(BuildContext, WidgetRef _) onTap;
 }
 

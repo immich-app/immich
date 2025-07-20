@@ -31,7 +31,6 @@ import {
 import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
 import sanitize from 'sanitize-filename';
-import { AssetVisibility } from 'src/enum';
 import { isIP, isIPRange } from 'validator';
 
 @Injectable()
@@ -181,23 +180,9 @@ export const ValidateDate = (options?: DateOptions & ApiPropertyOptions) => {
   return applyDecorators(...decorators);
 };
 
-type AssetVisibilityOptions = { optional?: boolean };
-export const ValidateAssetVisibility = (options?: AssetVisibilityOptions & ApiPropertyOptions) => {
-  const { optional, ...apiPropertyOptions } = { optional: false, ...options };
-  const decorators = [
-    IsEnum(AssetVisibility),
-    ApiProperty({ enumName: 'AssetVisibility', enum: AssetVisibility, ...apiPropertyOptions }),
-  ];
-
-  if (optional) {
-    decorators.push(Optional());
-  }
-  return applyDecorators(...decorators);
-};
-
-type BooleanOptions = { optional?: boolean };
+type BooleanOptions = { optional?: boolean; nullable?: boolean };
 export const ValidateBoolean = (options?: BooleanOptions & ApiPropertyOptions) => {
-  const { optional, ...apiPropertyOptions } = { optional: false, ...options };
+  const { optional, nullable, ...apiPropertyOptions } = options || {};
   const decorators = [
     ApiProperty(apiPropertyOptions),
     IsBoolean(),
@@ -209,13 +194,35 @@ export const ValidateBoolean = (options?: BooleanOptions & ApiPropertyOptions) =
       }
       return value;
     }),
+    optional ? Optional({ nullable }) : IsNotEmpty(),
   ];
 
-  if (optional) {
-    decorators.push(Optional());
-  }
-
   return applyDecorators(...decorators);
+};
+
+type EnumOptions<T> = {
+  enum: T;
+  name: string;
+  each?: boolean;
+  optional?: boolean;
+  nullable?: boolean;
+  default?: T[keyof T];
+  description?: string;
+};
+export const ValidateEnum = <T extends object>({
+  name,
+  enum: value,
+  each,
+  optional,
+  nullable,
+  default: defaultValue,
+  description,
+}: EnumOptions<T>) => {
+  return applyDecorators(
+    optional ? Optional({ nullable }) : IsNotEmpty(),
+    IsEnum(value, { each }),
+    ApiProperty({ enumName: name, enum: value, isArray: each, default: defaultValue, description }),
+  );
 };
 
 @ValidatorConstraint({ name: 'cronValidator' })
