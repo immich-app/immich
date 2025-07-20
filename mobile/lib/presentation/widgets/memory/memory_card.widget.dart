@@ -57,30 +57,24 @@ class DriftMemoryCard extends StatelessWidget {
               }
 
               if (asset.isImage) {
-                return Hero(
-                  tag: 'memory-${asset.id}',
-                  child: FullImage(
-                    asset,
-                    fit: fit,
-                    size: const Size(double.infinity, double.infinity),
-                  ),
+                return FullImage(
+                  asset,
+                  fit: fit,
+                  size: const Size(double.infinity, double.infinity),
                 );
               } else {
-                return Hero(
-                  tag: 'memory-${asset.id}',
-                  child: SizedBox(
-                    width: context.width,
-                    height: context.height,
-                    child: NativeVideoViewer(
-                      key: ValueKey(asset.id),
-                      asset: asset,
-                      showControls: false,
-                      playbackDelayFactor: 2,
-                      image: FullImage(
-                        asset,
-                        size: Size(context.width, context.height),
-                        fit: BoxFit.contain,
-                      ),
+                return SizedBox(
+                  width: context.width,
+                  height: context.height,
+                  child: NativeVideoViewer(
+                    key: ValueKey(asset.id),
+                    asset: asset,
+                    showControls: false,
+                    playbackDelayFactor: 2,
+                    image: FullImage(
+                      asset,
+                      size: Size(context.width, context.height),
+                      fit: BoxFit.contain,
                     ),
                   ),
                 );
