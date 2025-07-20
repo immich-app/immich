@@ -271,7 +271,7 @@ describe('startWatch', () => {
     });
   });
 
-  it('should filger out ignored patterns', async () => {
+  it('should filter out ignored patterns', async () => {
     const testFilePath = path.join(testFolder, 'test.jpg');
     const ignoredPattern = 'ignored';
     const ignoredFolder = path.join(testFolder, ignoredPattern);

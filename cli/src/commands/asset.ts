@@ -37,6 +37,7 @@ export interface UploadOptionsDto {
   dryRun?: boolean;
   skipHash?: boolean;
   delete?: boolean;
+  deleteDuplicates?: boolean;
   album?: boolean;
   albumName?: string;
   includeHidden?: boolean;
@@ -70,10 +71,20 @@ const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
     console.log(JSON.stringify({ newFiles, duplicates, newAssets }, undefined, 4));
   }
   await updateAlbums([...newAssets, ...duplicates], options);
+
+  // Delete successfully uploaded files
   await deleteFiles(
     newAssets.map(({ filepath }) => filepath),
     options,
   );
+
+  // Delete duplicate files if --delete-duplicates flag is set
+  if (options.deleteDuplicates) {
+    await deleteFiles(
+      duplicates.map(({ filepath }) => filepath),
+      options,
+    );
+  }
 };
 
 export const startWatch = async (
@@ -407,7 +418,7 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
 };
 
 const deleteFiles = async (files: string[], options: UploadOptionsDto): Promise<void> => {
-  if (!options.delete) {
+  if (!options.delete && !options.deleteDuplicates) {
     return;
   }
 
