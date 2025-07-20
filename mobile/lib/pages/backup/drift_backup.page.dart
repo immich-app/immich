@@ -63,18 +63,6 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
             Icons.arrow_back_ios_rounded,
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: IconButton(
-              onPressed: () => context.pushRoute(const BackupOptionsRoute()),
-              splashRadius: 24,
-              icon: const Icon(
-                Icons.settings_outlined,
-              ),
-            ),
-          ),
-        ],
       ),
       body: Stack(
         children: [
@@ -283,9 +271,15 @@ class _BackupToggleButtonState extends ConsumerState<_BackupToggleButton>
                                 ),
                               ],
                             ),
-                            if (enqueueCount > 0)
+                            if (enqueueCount != enqueueTotalCount)
                               Text(
-                                "Queuing $enqueueCount/$enqueueTotalCount",
+                                "queue_status".t(
+                                  context: context,
+                                  args: {
+                                    'count': enqueueCount.toString(),
+                                    'total': enqueueTotalCount.toString(),
+                                  },
+                                ),
                                 style: context.textTheme.labelLarge?.copyWith(
                                   color: context.colorScheme.onSurfaceSecondary,
                                 ),
