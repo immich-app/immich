@@ -193,10 +193,12 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   void _handleTaskStatusUpdate(TaskStatusUpdate update) {
     switch (update.status) {
       case TaskStatus.complete:
-        state = state.copyWith(
-          backupCount: state.backupCount + 1,
-          remainderCount: state.remainderCount - 1,
-        );
+        if (update.task.group == kBackupGroup) {
+          state = state.copyWith(
+            backupCount: state.backupCount + 1,
+            remainderCount: state.remainderCount - 1,
+          );
+        }
 
         // Remove the completed task from the upload items
         final taskId = update.task.taskId;

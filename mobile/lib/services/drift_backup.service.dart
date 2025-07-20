@@ -220,7 +220,7 @@ class DriftBackupService {
       deviceAssetId: asset.id,
       fields: fields,
       group: kBackupLivePhotoGroup,
-      priority: 0,
+      priority: 0, // Highest priority to get upload immediately
     );
   }
 

@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -215,7 +213,6 @@ class _BackupToggleButtonState extends ConsumerState<_BackupToggleButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _gradientAnimation;
-  late Animation<double> _rotationAnimation;
   bool _isEnabled = false;
 
   @override
@@ -225,21 +222,13 @@ class _BackupToggleButtonState extends ConsumerState<_BackupToggleButton>
       duration: const Duration(seconds: 8),
       vsync: this,
     );
+
     _gradientAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: Curves.easeInOut,
       ),
     );
-
-    _rotationAnimation = Tween<double>(begin: 0, end: 2 * math.pi).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.linear,
-      ),
-    );
-
-    _animationController.repeat(reverse: true);
 
     _isEnabled = ref
         .read(appSettingsServiceProvider)
@@ -282,6 +271,12 @@ class _BackupToggleButtonState extends ConsumerState<_BackupToggleButton>
       driftBackupProvider.select((state) => state.isCanceling),
     );
 
+    final uploadTasks = ref.watch(
+      driftBackupProvider.select((state) => state.uploadItems),
+    );
+
+    final isUploading = uploadTasks.isNotEmpty;
+
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {
@@ -312,7 +307,6 @@ class _BackupToggleButtonState extends ConsumerState<_BackupToggleButton>
               stops: const [0.0, 0.5, 1.0],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              transform: GradientRotation(_rotationAnimation.value),
             ),
             boxShadow: [
               BoxShadow(
@@ -350,11 +344,19 @@ class _BackupToggleButtonState extends ConsumerState<_BackupToggleButton>
                             ],
                           ),
                         ),
-                        child: Icon(
-                          Icons.cloud_upload_outlined,
-                          color: context.primaryColor,
-                          size: 24,
-                        ),
+                        child: isUploading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Icon(
+                                Icons.cloud_upload_outlined,
+                                color: context.primaryColor,
+                                size: 24,
+                              ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -369,6 +371,7 @@ class _BackupToggleButtonState extends ConsumerState<_BackupToggleButton>
                                   style:
                                       context.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w600,
+                                    color: context.primaryColor,
                                   ),
                                 ),
                               ],
