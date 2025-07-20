@@ -72,19 +72,11 @@ const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
   }
   await updateAlbums([...newAssets, ...duplicates], options);
 
-  // Delete successfully uploaded files
   await deleteFiles(
     newAssets.map(({ filepath }) => filepath),
+    duplicates.map(({ filepath }) => filepath),
     options,
   );
-
-  // Delete duplicate files if --delete-duplicates flag is set
-  if (options.deleteDuplicates) {
-    await deleteFiles(
-      duplicates.map(({ filepath }) => filepath),
-      options,
-    );
-  }
 };
 
 export const startWatch = async (
@@ -417,11 +409,14 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
   return response.json();
 };
 
-const deleteFiles = async (files: string[], options: UploadOptionsDto): Promise<void> => {
-  if (!options.delete && !options.deleteDuplicates) {
-    return;
-  }
-
+const deleteFiles = async (
+  uploaded: string[],
+  duplicates: string[],
+  options: UploadOptionsDto): Promise<void> => {
+  const files: string[] = [
+    ...(options.delete ? uploaded : []),
+    ...(options.deleteDuplicates ? duplicates : [])
+  ];
   if (options.dryRun) {
     console.log(`Would have deleted ${files.length} local asset${s(files.length)}`);
     return;
