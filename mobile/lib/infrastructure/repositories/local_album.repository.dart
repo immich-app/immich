@@ -160,7 +160,15 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           batch.insert(
             _db.localAlbumEntity,
             companion,
-            onConflict: DoUpdate((_) => companion),
+            onConflict: DoUpdate(
+              (old) => LocalAlbumEntityCompanion(
+                id: companion.id,
+                name: companion.name,
+                updatedAt: companion.updatedAt,
+                isIosSharedAlbum: companion.isIosSharedAlbum,
+                marker_: companion.marker_,
+              ),
+            ),
           );
         }
       });
