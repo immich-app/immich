@@ -1,12 +1,15 @@
 import 'remote_asset.entity.dart';
-import 'local_asset.entity.dart';
 import 'stack.entity.dart';
+import 'local_asset.entity.dart';
+import 'local_album.entity.dart';
+import 'local_album_asset.entity.dart';
 
-mergedAsset: SELECT * FROM
+mergedAsset: 
+SELECT * FROM
 (
 	SELECT
 		rae.id as remote_id,
-		lae.id as local_id,
+		IIF(la.backup_selection = 0, FIRST_VALUE(lae.id) OVER (partition by lae.checksum), NULL) as local_id,
 		rae.name,
 		rae."type",
 		rae.created_at,
@@ -27,6 +30,10 @@ mergedAsset: SELECT * FROM
 	LEFT JOIN
 		local_asset_entity lae ON rae.checksum  = lae.checksum
 	LEFT JOIN
+		local_album_asset_entity laa ON laa.asset_id = lae.id
+	LEFT JOIN
+		local_album_entity la ON la.id = laa.album_id
+	LEFT JOIN
         stack_entity se ON rae.stack_id = se.id
 	LEFT JOIN
         (SELECT 
@@ -34,19 +41,22 @@ mergedAsset: SELECT * FROM
             COUNT(*) AS total_count
          FROM remote_asset_entity 
          WHERE deleted_at IS NULL 
-           AND visibility = 0
+           AND visibility = 0 -- timeline visibility
            AND stack_id IS NOT NULL
          GROUP BY stack_id
         ) AS stack_count ON rae.stack_id = stack_count.stack_id
 	WHERE
 		rae.deleted_at IS NULL
-		AND rae.visibility = 0
+		AND rae.visibility = 0 -- timeline visibility
 		AND rae.owner_id in ?
 		AND (
 			rae.stack_id IS NULL
 			OR rae.id = se.primary_asset_id
 		)
-	UNION ALL
+	-- UNION instead of UNION ALL to de-dup rows in the following reasons:
+	-- An asset might be part of two different selected albums on iOS
+	-- Remote asset could match with two local asset with the same checksum in two different albums
+	UNION
 	SELECT
 		NULL as remote_id,
 		lae.id as local_id,
@@ -69,8 +79,13 @@ mergedAsset: SELECT * FROM
 		local_asset_entity lae
 	LEFT JOIN
 		remote_asset_entity rae ON rae.checksum = lae.checksum
+	LEFT JOIN
+		local_album_asset_entity laa ON laa.asset_id = lae.id
+	LEFT JOIN
+		local_album_entity la ON la.id = laa.album_id
 	WHERE
 		rae.id IS NULL
+		AND la.backup_selection = 0 -- selected
 )
 ORDER BY created_at DESC
 LIMIT $limit;
@@ -85,17 +100,14 @@ SELECT
 FROM
 (
 	SELECT
-		rae.name,
 		rae.created_at
 	FROM
 		remote_asset_entity rae
 	LEFT JOIN
-		local_asset_entity lae  ON rae.checksum  = lae.checksum
-	LEFT JOIN
         stack_entity se ON rae.stack_id = se.id
 	WHERE
 		rae.deleted_at IS NULL
-		AND rae.visibility = 0
+		AND rae.visibility = 0 -- timeline visibility
 		AND rae.owner_id in ?
 		AND (
 			rae.stack_id IS NULL
@@ -103,14 +115,18 @@ FROM
 		)
 	UNION ALL
 	SELECT
-		lae.name,
 		lae.created_at
 	FROM
 		local_asset_entity lae
 	LEFT JOIN
 		remote_asset_entity rae ON rae.checksum = lae.checksum
+	LEFT JOIN
+		local_album_asset_entity laa ON laa.asset_id = lae.id
+	LEFT JOIN
+		local_album_entity la ON la.id = laa.album_id
 	WHERE
 		rae.id IS NULL
+		AND la.backup_selection = 0 -- selected
 )
 GROUP BY bucket_date
 ORDER BY bucket_date DESC;
