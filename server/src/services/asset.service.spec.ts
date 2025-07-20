@@ -13,10 +13,10 @@ import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
 const stats: AssetStats = {
-  [AssetType.IMAGE]: 10,
-  [AssetType.VIDEO]: 23,
-  [AssetType.AUDIO]: 0,
-  [AssetType.OTHER]: 0,
+  [AssetType.Image]: 10,
+  [AssetType.Video]: 23,
+  [AssetType.Audio]: 0,
+  [AssetType.Other]: 0,
 };
 
 const statResponse: AssetStatsResponseDto = {
@@ -46,21 +46,21 @@ describe(AssetService.name, () => {
   describe('getStatistics', () => {
     it('should get the statistics for a user, excluding archived assets', async () => {
       mocks.asset.getStatistics.mockResolvedValue(stats);
-      await expect(sut.getStatistics(authStub.admin, { visibility: AssetVisibility.TIMELINE })).resolves.toEqual(
+      await expect(sut.getStatistics(authStub.admin, { visibility: AssetVisibility.Timeline })).resolves.toEqual(
         statResponse,
       );
       expect(mocks.asset.getStatistics).toHaveBeenCalledWith(authStub.admin.user.id, {
-        visibility: AssetVisibility.TIMELINE,
+        visibility: AssetVisibility.Timeline,
       });
     });
 
     it('should get the statistics for a user for archived assets', async () => {
       mocks.asset.getStatistics.mockResolvedValue(stats);
-      await expect(sut.getStatistics(authStub.admin, { visibility: AssetVisibility.ARCHIVE })).resolves.toEqual(
+      await expect(sut.getStatistics(authStub.admin, { visibility: AssetVisibility.Archive })).resolves.toEqual(
         statResponse,
       );
       expect(mocks.asset.getStatistics).toHaveBeenCalledWith(authStub.admin.user.id, {
-        visibility: AssetVisibility.ARCHIVE,
+        visibility: AssetVisibility.Archive,
       });
     });
 
@@ -202,7 +202,7 @@ describe(AssetService.name, () => {
   describe('update', () => {
     it('should require asset write access for the id', async () => {
       await expect(
-        sut.update(authStub.admin, 'asset-1', { visibility: AssetVisibility.TIMELINE }),
+        sut.update(authStub.admin, 'asset-1', { visibility: AssetVisibility.Timeline }),
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.asset.update).not.toHaveBeenCalled();
@@ -253,9 +253,9 @@ describe(AssetService.name, () => {
       });
       expect(mocks.asset.update).not.toHaveBeenCalledWith({
         id: assetStub.livePhotoMotionAsset.id,
-        visibility: AssetVisibility.TIMELINE,
+        visibility: AssetVisibility.Timeline,
       });
-      expect(mocks.event.emit).not.toHaveBeenCalledWith('asset.show', {
+      expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetShow', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
       });
@@ -277,9 +277,9 @@ describe(AssetService.name, () => {
       });
       expect(mocks.asset.update).not.toHaveBeenCalledWith({
         id: assetStub.livePhotoMotionAsset.id,
-        visibility: AssetVisibility.TIMELINE,
+        visibility: AssetVisibility.Timeline,
       });
-      expect(mocks.event.emit).not.toHaveBeenCalledWith('asset.show', {
+      expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetShow', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
       });
@@ -301,9 +301,9 @@ describe(AssetService.name, () => {
       });
       expect(mocks.asset.update).not.toHaveBeenCalledWith({
         id: assetStub.livePhotoMotionAsset.id,
-        visibility: AssetVisibility.TIMELINE,
+        visibility: AssetVisibility.Timeline,
       });
-      expect(mocks.event.emit).not.toHaveBeenCalledWith('asset.show', {
+      expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetShow', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
       });
@@ -314,7 +314,7 @@ describe(AssetService.name, () => {
       mocks.asset.getById.mockResolvedValueOnce({
         ...assetStub.livePhotoMotionAsset,
         ownerId: authStub.admin.user.id,
-        visibility: AssetVisibility.TIMELINE,
+        visibility: AssetVisibility.Timeline,
       });
       mocks.asset.getById.mockResolvedValueOnce(assetStub.image);
       mocks.asset.update.mockResolvedValue(assetStub.image);
@@ -325,9 +325,9 @@ describe(AssetService.name, () => {
 
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoMotionAsset.id,
-        visibility: AssetVisibility.HIDDEN,
+        visibility: AssetVisibility.Hidden,
       });
-      expect(mocks.event.emit).toHaveBeenCalledWith('asset.hide', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetHide', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
       });
@@ -360,7 +360,7 @@ describe(AssetService.name, () => {
         id: assetStub.livePhotoMotionAsset.id,
         visibility: assetStub.livePhotoStillAsset.visibility,
       });
-      expect(mocks.event.emit).toHaveBeenCalledWith('asset.show', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetShow', {
         assetId: assetStub.livePhotoMotionAsset.id,
         userId: userStub.admin.id,
       });
@@ -392,10 +392,10 @@ describe(AssetService.name, () => {
     it('should update all assets', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
 
-      await sut.updateAll(authStub.admin, { ids: ['asset-1', 'asset-2'], visibility: AssetVisibility.ARCHIVE });
+      await sut.updateAll(authStub.admin, { ids: ['asset-1', 'asset-2'], visibility: AssetVisibility.Archive });
 
       expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], {
-        visibility: AssetVisibility.ARCHIVE,
+        visibility: AssetVisibility.Archive,
       });
     });
 
@@ -428,7 +428,7 @@ describe(AssetService.name, () => {
       expect(mocks.asset.updateAll).toHaveBeenCalled();
       expect(mocks.asset.updateAllExif).toHaveBeenCalledWith(['asset-1'], { latitude: 0, longitude: 0 });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.SIDECAR_WRITE, data: { id: 'asset-1', latitude: 0, longitude: 0 } },
+        { name: JobName.SidecarWrite, data: { id: 'asset-1', latitude: 0, longitude: 0 } },
       ]);
     });
 
@@ -451,7 +451,7 @@ describe(AssetService.name, () => {
         longitude: 50,
       });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.SIDECAR_WRITE, data: { id: 'asset-1', dateTimeOriginal, latitude: 30, longitude: 50 } },
+        { name: JobName.SidecarWrite, data: { id: 'asset-1', dateTimeOriginal, latitude: 30, longitude: 50 } },
       ]);
     });
 
@@ -484,7 +484,7 @@ describe(AssetService.name, () => {
 
       await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: true });
 
-      expect(mocks.event.emit).toHaveBeenCalledWith('assets.delete', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetDeleteAll', {
         assetIds: ['asset1', 'asset2'],
         userId: 'user-id',
       });
@@ -497,7 +497,7 @@ describe(AssetService.name, () => {
 
       expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset1', 'asset2'], {
         deletedAt: expect.any(Date),
-        status: AssetStatus.TRASHED,
+        status: AssetStatus.Trashed,
       });
       expect(mocks.job.queue.mock.calls).toEqual([]);
     });
@@ -518,11 +518,11 @@ describe(AssetService.name, () => {
       mocks.assetJob.streamForDeletedJob.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: false } });
 
-      await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.Success);
 
       expect(mocks.assetJob.streamForDeletedJob).toHaveBeenCalledWith(new Date());
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.ASSET_DELETION, data: { id: asset.id, deleteOnDisk: true } },
+        { name: JobName.AssetDelete, data: { id: asset.id, deleteOnDisk: true } },
       ]);
     });
 
@@ -532,11 +532,11 @@ describe(AssetService.name, () => {
       mocks.assetJob.streamForDeletedJob.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: true, days: 7 } });
 
-      await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.Success);
 
       expect(mocks.assetJob.streamForDeletedJob).toHaveBeenCalledWith(DateTime.now().minus({ days: 7 }).toJSDate());
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.ASSET_DELETION, data: { id: asset.id, deleteOnDisk: true } },
+        { name: JobName.AssetDelete, data: { id: asset.id, deleteOnDisk: true } },
       ]);
     });
   });
@@ -552,7 +552,7 @@ describe(AssetService.name, () => {
       expect(mocks.job.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.DELETE_FILES,
+            name: JobName.FileDelete,
             data: {
               files: [
                 '/uploads/user-id/webp/path.ext',
@@ -606,7 +606,7 @@ describe(AssetService.name, () => {
       expect(mocks.job.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.ASSET_DELETION,
+            name: JobName.AssetDelete,
             data: {
               id: assetStub.livePhotoMotionAsset.id,
               deleteOnDisk: true,
@@ -615,7 +615,7 @@ describe(AssetService.name, () => {
         ],
         [
           {
-            name: JobName.DELETE_FILES,
+            name: JobName.FileDelete,
             data: {
               files: [
                 '/uploads/user-id/webp/path.ext',
@@ -643,7 +643,7 @@ describe(AssetService.name, () => {
       expect(mocks.job.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.DELETE_FILES,
+            name: JobName.FileDelete,
             data: {
               files: [
                 '/uploads/user-id/webp/path.ext',
@@ -668,7 +668,7 @@ describe(AssetService.name, () => {
     it('should fail if asset could not be found', async () => {
       mocks.assetJob.getForAssetDeletion.mockResolvedValue(void 0);
       await expect(sut.handleAssetDeletion({ id: assetStub.image.id, deleteOnDisk: true })).resolves.toBe(
-        JobStatus.FAILED,
+        JobStatus.Failed,
       );
     });
   });
@@ -679,7 +679,7 @@ describe(AssetService.name, () => {
 
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REFRESH_FACES });
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.FACE_DETECTION, data: { id: 'asset-1' } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetDetectFaces, data: { id: 'asset-1' } }]);
     });
 
     it('should run the refresh metadata job', async () => {
@@ -687,7 +687,9 @@ describe(AssetService.name, () => {
 
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REFRESH_METADATA });
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.AssetExtractMetadata, data: { id: 'asset-1' } },
+      ]);
     });
 
     it('should run the refresh thumbnails job', async () => {
@@ -695,7 +697,9 @@ describe(AssetService.name, () => {
 
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REGENERATE_THUMBNAIL });
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.GENERATE_THUMBNAILS, data: { id: 'asset-1' } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1' } },
+      ]);
     });
 
     it('should run the transcode video', async () => {
@@ -703,7 +707,7 @@ describe(AssetService.name, () => {
 
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.TRANSCODE_VIDEO });
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.VIDEO_CONVERSION, data: { id: 'asset-1' } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetEncodeVideo, data: { id: 'asset-1' } }]);
     });
   });
 

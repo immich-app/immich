@@ -5,11 +5,16 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/cast_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/websocket.provider.dart';
 
 class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const ViewerTopAppBar({super.key});
@@ -23,6 +28,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
+    final isInLockedView = ref.watch(inLockedViewProvider);
 
     final isShowingSheet = ref
         .watch(assetViewerProvider.select((state) => state.showingBottomSheet));
@@ -36,12 +42,31 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
       opacity = 0;
     }
 
+    final isCasting = ref.watch(
+      castProvider.select((c) => c.isCasting),
+    );
+    final websocketConnected =
+        ref.watch(websocketProvider.select((c) => c.isConnected));
+
     final actions = <Widget>[
+      if (isCasting || (asset.hasRemote && websocketConnected))
+        const CastActionButton(
+          menuItem: true,
+        ),
       if (asset.hasRemote && isOwner && !asset.isFavorite)
         const FavoriteActionButton(source: ActionSource.viewer, menuItem: true),
       if (asset.hasRemote && isOwner && asset.isFavorite)
         const UnFavoriteActionButton(
           source: ActionSource.viewer,
+          menuItem: true,
+        ),
+      if (asset.isMotionPhoto) const MotionPhotoActionButton(menuItem: true),
+      const _KebabMenu(),
+    ];
+
+    final lockedViewActions = <Widget>[
+      if (isCasting || (asset.hasRemote && websocketConnected))
+        const CastActionButton(
           menuItem: true,
         ),
       const _KebabMenu(),
@@ -59,7 +84,11 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           iconTheme: const IconThemeData(size: 22, color: Colors.white),
           actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
           shape: const Border(),
-          actions: isShowingSheet ? null : actions,
+          actions: isShowingSheet
+              ? null
+              : isInLockedView
+                  ? lockedViewActions
+                  : actions,
         ),
       ),
     );

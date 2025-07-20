@@ -45,7 +45,7 @@ export class LoginResponseDto {
 
 export function mapLoginResponse(entity: UserAdmin, accessToken: string): LoginResponseDto {
   const onboardingMetadata = entity.metadata.find(
-    (item): item is UserMetadataItem<UserMetadataKey.ONBOARDING> => item.key === UserMetadataKey.ONBOARDING,
+    (item): item is UserMetadataItem<UserMetadataKey.Onboarding> => item.key === UserMetadataKey.Onboarding,
   )?.value;
 
   return {

@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
@@ -75,7 +76,9 @@ class ShareIntentPage extends HookConsumerWidget {
         leading: IconButton(
           onPressed: () {
             context.navigateTo(
-              const TabControllerRoute(),
+              Store.isBetaTimelineEnabled
+                  ? const TabShellRoute()
+                  : const TabControllerRoute(),
             );
           },
           icon: const Icon(Icons.arrow_back),
@@ -265,7 +268,7 @@ class UploadStatusIcon extends StatelessWidget {
           color: Colors.red,
           semanticLabel: 'canceled'.tr(),
         ),
-      UploadStatus.waitingtoRetry || UploadStatus.paused => Icon(
+      UploadStatus.waitingToRetry || UploadStatus.paused => Icon(
           Icons.pause_circle_rounded,
           color: context.primaryColor,
           semanticLabel: 'paused'.tr(),

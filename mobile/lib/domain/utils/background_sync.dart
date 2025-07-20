@@ -4,12 +4,24 @@ import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
 import 'package:worker_manager/worker_manager.dart';
 
+typedef SyncCallback = void Function();
+typedef SyncErrorCallback = void Function(String error);
+
 class BackgroundSyncManager {
+  final SyncCallback? onRemoteSyncStart;
+  final SyncCallback? onRemoteSyncComplete;
+  final SyncErrorCallback? onRemoteSyncError;
+
   Cancelable<void>? _syncTask;
+  Cancelable<void>? _syncWebsocketTask;
   Cancelable<void>? _deviceAlbumSyncTask;
   Cancelable<void>? _hashTask;
 
-  BackgroundSyncManager();
+  BackgroundSyncManager({
+    this.onRemoteSyncStart,
+    this.onRemoteSyncComplete,
+    this.onRemoteSyncError,
+  });
 
   Future<void> cancel() {
     final futures = <Future>[];
@@ -19,6 +31,12 @@ class BackgroundSyncManager {
     }
     _syncTask?.cancel();
     _syncTask = null;
+
+    if (_syncWebsocketTask != null) {
+      futures.add(_syncWebsocketTask!.future);
+    }
+    _syncWebsocketTask?.cancel();
+    _syncWebsocketTask = null;
 
     return Future.wait(futures);
   }
@@ -65,11 +83,32 @@ class BackgroundSyncManager {
       return _syncTask!.future;
     }
 
+    onRemoteSyncStart?.call();
+
     _syncTask = runInIsolateGentle(
       computation: (ref) => ref.read(syncStreamServiceProvider).sync(),
     );
     return _syncTask!.whenComplete(() {
+      onRemoteSyncComplete?.call();
       _syncTask = null;
+    }).catchError((error) {
+      onRemoteSyncError?.call(error.toString());
+      _syncTask = null;
+    });
+  }
+
+  Future<void> syncWebsocketBatch(List<dynamic> batchData) {
+    if (_syncWebsocketTask != null) {
+      return _syncWebsocketTask!.future;
+    }
+
+    _syncWebsocketTask = runInIsolateGentle(
+      computation: (ref) => ref
+          .read(syncStreamServiceProvider)
+          .handleWsAssetUploadReadyV1Batch(batchData),
+    );
+    return _syncWebsocketTask!.whenComplete(() {
+      _syncWebsocketTask = null;
     });
   }
 }

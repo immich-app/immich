@@ -45,7 +45,7 @@ describe(MemoryService.name, () => {
       const { user } = await ctx.newUser();
       const auth = factory.auth({ user });
       const dto = {
-        type: MemoryType.ON_THIS_DAY,
+        type: MemoryType.OnThisDay,
         data: { year: 2021 },
         memoryAt: new Date(2021),
       };
@@ -70,7 +70,7 @@ describe(MemoryService.name, () => {
       const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
       const auth = factory.auth({ user });
       const dto = {
-        type: MemoryType.ON_THIS_DAY,
+        type: MemoryType.OnThisDay,
         data: { year: 2021 },
         memoryAt: new Date(2021),
         assetIds: [asset1.id, asset2.id],
@@ -92,7 +92,7 @@ describe(MemoryService.name, () => {
       const { asset: asset2 } = await ctx.newAsset({ ownerId: user2.id });
       const auth = factory.auth({ user: user1 });
       const dto = {
-        type: MemoryType.ON_THIS_DAY,
+        type: MemoryType.OnThisDay,
         data: { year: 2021 },
         memoryAt: new Date(2021),
         assetIds: [asset1.id, asset2.id],
@@ -124,8 +124,8 @@ describe(MemoryService.name, () => {
         ctx.newExif({ assetId: asset.id, make: 'Canon' }),
         ctx.newJobStatus({ assetId: asset.id }),
         assetRepo.upsertFiles([
-          { assetId: asset.id, type: AssetFileType.PREVIEW, path: '/path/to/preview.jpg' },
-          { assetId: asset.id, type: AssetFileType.THUMBNAIL, path: '/path/to/thumbnail.jpg' },
+          { assetId: asset.id, type: AssetFileType.Preview, path: '/path/to/preview.jpg' },
+          { assetId: asset.id, type: AssetFileType.Thumbnail, path: '/path/to/thumbnail.jpg' },
         ]),
       ]);
 
@@ -178,8 +178,8 @@ describe(MemoryService.name, () => {
           ctx.newExif({ assetId: asset.id, make: 'Canon' }),
           ctx.newJobStatus({ assetId: asset.id }),
           assetRepo.upsertFiles([
-            { assetId: asset.id, type: AssetFileType.PREVIEW, path: '/path/to/preview.jpg' },
-            { assetId: asset.id, type: AssetFileType.THUMBNAIL, path: '/path/to/thumbnail.jpg' },
+            { assetId: asset.id, type: AssetFileType.Preview, path: '/path/to/preview.jpg' },
+            { assetId: asset.id, type: AssetFileType.Thumbnail, path: '/path/to/thumbnail.jpg' },
           ]),
         ]);
       }

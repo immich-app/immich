@@ -23,14 +23,15 @@ import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/background.service.dart';
+import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
-import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/utils/download.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
@@ -92,12 +93,30 @@ Future<void> initApp() async {
 
   initializeTimeZones();
 
+  // Initialize the file downloader
+
+  await FileDownloader().configure(
+    // maxConcurrent: 5, maxConcurrentByHost: 2, maxConcurrentByGroup: 3
+    globalConfig: (Config.holdingQueue, (5, 2, 3)),
+  );
+
   await FileDownloader().trackTasksInGroup(
     downloadGroupLivePhoto,
     markDownloadedComplete: false,
   );
 
   await FileDownloader().trackTasks();
+
+  LicenseRegistry.addLicense(
+    () async* {
+      for (final license in nonPubLicenses.entries) {
+        yield LicenseEntryWithLineBreaks(
+          [license.key],
+          license.value,
+        );
+      }
+    },
+  );
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
@@ -159,7 +178,21 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   }
 
   void _configureFileDownloaderNotifications() {
-    FileDownloader().configureNotification(
+    FileDownloader().configureNotificationForGroup(
+      downloadGroupImage,
+      running: TaskNotification(
+        'downloading_media'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      complete: TaskNotification(
+        'download_finished'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      progressBar: true,
+    );
+
+    FileDownloader().configureNotificationForGroup(
+      downloadGroupVideo,
       running: TaskNotification(
         'downloading_media'.tr(),
         '${'file_name'.tr()}: {filename}',
@@ -176,10 +209,13 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     final deepLinkHandler = ref.read(deepLinkServiceProvider);
     final currentRouteName = ref.read(currentRouteNameProvider.notifier).state;
 
+    final isColdStart =
+        currentRouteName == null || currentRouteName == SplashScreenRoute.name;
+
     if (deepLink.uri.scheme == "immich") {
       final proposedRoute = await deepLinkHandler.handleScheme(
         deepLink,
-        currentRouteName == SplashScreenRoute.name,
+        isColdStart,
       );
 
       return proposedRoute;
@@ -188,7 +224,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     if (deepLink.uri.host == "my.immich.app") {
       final proposedRoute = await deepLinkHandler.handleMyImmichApp(
         deepLink,
-        currentRouteName == SplashScreenRoute.name,
+        isColdStart,
       );
 
       return proposedRoute;
@@ -250,7 +286,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         ),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
-          navigatorObservers: () => [AppNavigationObserver(ref: ref)],
+          navigatorObservers: () =>
+              [AppNavigationObserver(ref: ref), HeroController()],
         ),
       ),
     );

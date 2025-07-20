@@ -221,9 +221,9 @@
     viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
 
-  const handleMergeSuggestion = async () => {
+  const handleMergeSuggestion = async (): Promise<{ merged: boolean }> => {
     if (!personMerge1 || !personMerge2) {
-      return;
+      return { merged: false };
     }
 
     const result = await modalManager.show(PersonMergeSuggestionModal, {
@@ -233,7 +233,7 @@
     });
 
     if (!result) {
-      return;
+      return { merged: false };
     }
 
     const [personToMerge, personToBeMergedInto] = result;
@@ -241,9 +241,10 @@
     people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
     if (personToBeMergedInto.name != personName && person.id === personToBeMergedInto.id) {
       await updateAssetCount();
-      return;
+      return { merged: true };
     }
     await goto(`${AppRoute.PEOPLE}/${personToBeMergedInto.id}`, { replaceState: true });
+    return { merged: true };
   };
 
   const handleSuggestPeople = async (person2: PersonResponseDto) => {
@@ -317,8 +318,10 @@
             !person.isHidden,
         )
         .slice(0, 3);
-      await handleMergeSuggestion();
-      return;
+      const { merged } = await handleMergeSuggestion();
+      if (merged) {
+        return;
+      }
     }
     await changeName();
   };

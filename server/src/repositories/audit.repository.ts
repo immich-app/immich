@@ -18,7 +18,7 @@ export class AuditRepository {
   @GenerateSql({
     params: [
       DummyValue.DATE,
-      { action: DatabaseAction.CREATE, entityType: EntityType.ASSET, userIds: [DummyValue.UUID] },
+      { action: DatabaseAction.Create, entityType: EntityType.Asset, userIds: [DummyValue.UUID] },
     ],
   })
   async getAfter(since: Date, options: AuditSearch): Promise<string[]> {

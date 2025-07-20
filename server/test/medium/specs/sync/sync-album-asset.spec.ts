@@ -36,10 +36,12 @@ describe(SyncRequestType.AlbumAssetsV1, () => {
       localDateTime: date,
       deletedAt: null,
       duration: '0:10:00.00000',
+      livePhotoVideoId: null,
+      stackId: null,
     });
     const { album } = await ctx.newAlbum({ ownerId: user2.id });
     await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
-    await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.EDITOR });
+    await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV1]);
     expect(response).toHaveLength(1);
@@ -60,6 +62,8 @@ describe(SyncRequestType.AlbumAssetsV1, () => {
           type: asset.type,
           visibility: asset.visibility,
           duration: asset.duration,
+          livePhotoVideoId: asset.livePhotoVideoId,
+          stackId: asset.stackId,
         },
         type: SyncEntityType.AlbumAssetV1,
       },
@@ -86,7 +90,7 @@ describe(SyncRequestType.AlbumAssetsV1, () => {
     const { asset } = await ctx.newAsset({ ownerId: user3.id });
     const { album } = await ctx.newAlbum({ ownerId: user2.id });
     await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
-    await ctx.newAlbumUser({ albumId: album.id, userId: user3.id, role: AlbumUserRole.EDITOR });
+    await ctx.newAlbumUser({ albumId: album.id, userId: user3.id, role: AlbumUserRole.Editor });
     const { session } = await ctx.newSession({ userId: user3.id });
     const authUser3 = factory.auth({ session, user: user3 });
 
@@ -107,7 +111,7 @@ describe(SyncRequestType.AlbumAssetsV1, () => {
     await wait(2);
     const { album: album1 } = await ctx.newAlbum({ ownerId: user2.id });
     await ctx.newAlbumAsset({ albumId: album1.id, assetId: asset2User2.id });
-    await ctx.newAlbumUser({ albumId: album1.id, userId: auth.user.id, role: AlbumUserRole.EDITOR });
+    await ctx.newAlbumUser({ albumId: album1.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV1]);
     expect(response).toHaveLength(1);
@@ -131,7 +135,7 @@ describe(SyncRequestType.AlbumAssetsV1, () => {
         ctx.newAlbumAsset({ albumId: album2.id, assetId }),
       ),
     );
-    await ctx.newAlbumUser({ albumId: album2.id, userId: auth.user.id, role: AlbumUserRole.EDITOR });
+    await ctx.newAlbumUser({ albumId: album2.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     // should backfill the album user
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV1]);

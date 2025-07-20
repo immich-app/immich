@@ -20,13 +20,13 @@ export class ActivityController {
   constructor(private service: ActivityService) {}
 
   @Get()
-  @Authenticated({ permission: Permission.ACTIVITY_READ })
+  @Authenticated({ permission: Permission.ActivityRead })
   getActivities(@Auth() auth: AuthDto, @Query() dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
     return this.service.getAll(auth, dto);
   }
 
   @Post()
-  @Authenticated({ permission: Permission.ACTIVITY_CREATE })
+  @Authenticated({ permission: Permission.ActivityCreate })
   async createActivity(
     @Auth() auth: AuthDto,
     @Body() dto: ActivityCreateDto,
@@ -40,14 +40,14 @@ export class ActivityController {
   }
 
   @Get('statistics')
-  @Authenticated({ permission: Permission.ACTIVITY_STATISTICS })
+  @Authenticated({ permission: Permission.ActivityStatistics })
   getActivityStatistics(@Auth() auth: AuthDto, @Query() dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
     return this.service.getStatistics(auth, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated({ permission: Permission.ACTIVITY_DELETE })
+  @Authenticated({ permission: Permission.ActivityDelete })
   deleteActivity(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

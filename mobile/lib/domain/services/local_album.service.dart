@@ -14,4 +14,8 @@ class LocalAlbumService {
   Future<LocalAsset?> getThumbnail(String albumId) {
     return _repository.getThumbnail(albumId);
   }
+
+  Future<void> update(LocalAlbum album) {
+    return _repository.upsert(album);
+  }
 }

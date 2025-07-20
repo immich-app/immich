@@ -1,7 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 import { NotificationLevel, NotificationType } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class TestEmailResponseDto {
   messageId!: string;
@@ -19,9 +18,9 @@ export class NotificationDto {
   id!: string;
   @ValidateDate()
   createdAt!: Date;
-  @ApiProperty({ enum: NotificationLevel, enumName: 'NotificationLevel' })
+  @ValidateEnum({ enum: NotificationLevel, name: 'NotificationLevel' })
   level!: NotificationLevel;
-  @ApiProperty({ enum: NotificationType, enumName: 'NotificationType' })
+  @ValidateEnum({ enum: NotificationType, name: 'NotificationType' })
   type!: NotificationType;
   title!: string;
   description?: string;
@@ -30,18 +29,13 @@ export class NotificationDto {
 }
 
 export class NotificationSearchDto {
-  @Optional()
   @ValidateUUID({ optional: true })
   id?: string;
 
-  @IsEnum(NotificationLevel)
-  @Optional()
-  @ApiProperty({ enum: NotificationLevel, enumName: 'NotificationLevel' })
+  @ValidateEnum({ enum: NotificationLevel, name: 'NotificationLevel', optional: true })
   level?: NotificationLevel;
 
-  @IsEnum(NotificationType)
-  @Optional()
-  @ApiProperty({ enum: NotificationType, enumName: 'NotificationType' })
+  @ValidateEnum({ enum: NotificationType, name: 'NotificationType', optional: true })
   type?: NotificationType;
 
   @ValidateBoolean({ optional: true })
@@ -49,14 +43,10 @@ export class NotificationSearchDto {
 }
 
 export class NotificationCreateDto {
-  @Optional()
-  @IsEnum(NotificationLevel)
-  @ApiProperty({ enum: NotificationLevel, enumName: 'NotificationLevel' })
+  @ValidateEnum({ enum: NotificationLevel, name: 'NotificationLevel', optional: true })
   level?: NotificationLevel;
 
-  @IsEnum(NotificationType)
-  @Optional()
-  @ApiProperty({ enum: NotificationType, enumName: 'NotificationType' })
+  @ValidateEnum({ enum: NotificationType, name: 'NotificationType', optional: true })
   type?: NotificationType;
 
   @IsString()

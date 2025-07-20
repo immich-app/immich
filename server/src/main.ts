@@ -1,5 +1,6 @@
 import { CommandFactory } from 'nest-commander';
 import { ChildProcess, fork } from 'node:child_process';
+import { dirname, join } from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { ImmichAdminModule } from 'src/app.module';
 import { ImmichWorker, LogLevel } from 'src/enum';
@@ -20,7 +21,7 @@ const onExit = (name: string, exitCode: number | null) => {
   if (exitCode !== 0) {
     console.error(`${name} worker exited with code ${exitCode}`);
 
-    if (apiProcess && name !== ImmichWorker.API) {
+    if (apiProcess && name !== ImmichWorker.Api) {
       console.error('Killing api process');
       apiProcess.kill('SIGTERM');
       apiProcess = undefined;
@@ -33,14 +34,18 @@ const onExit = (name: string, exitCode: number | null) => {
 function bootstrapWorker(name: ImmichWorker) {
   console.log(`Starting ${name} worker`);
 
+  // eslint-disable-next-line unicorn/prefer-module
+  const basePath = dirname(__filename);
+  const workerFile = join(basePath, 'workers', `${name}.js`);
+
   let worker: Worker | ChildProcess;
-  if (name === ImmichWorker.API) {
-    worker = fork(`./dist/workers/${name}.js`, [], {
+  if (name === ImmichWorker.Api) {
+    worker = fork(workerFile, [], {
       execArgv: process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg)),
     });
     apiProcess = worker;
   } else {
-    worker = new Worker(`./dist/workers/${name}.js`);
+    worker = new Worker(workerFile);
   }
 
   worker.on('error', (error) => onError(name, error));
@@ -50,7 +55,7 @@ function bootstrapWorker(name: ImmichWorker) {
 function bootstrap() {
   if (immichApp === 'immich-admin') {
     process.title = 'immich_admin_cli';
-    process.env.IMMICH_LOG_LEVEL = LogLevel.WARN;
+    process.env.IMMICH_LOG_LEVEL = LogLevel.Warn;
     return CommandFactory.run(ImmichAdminModule);
   }
 

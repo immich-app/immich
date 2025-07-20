@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { APP_MEDIA_LOCATION } from 'src/constants';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { DownloadService } from 'src/services/download.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -46,7 +47,11 @@ describe(DownloadService.name, () => {
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledTimes(1);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(
+        1,
+        expect.stringContaining('upload/library/IMG_123.jpg'),
+        'IMG_123.jpg',
+      );
     });
 
     it('should log a warning if the original path could not be resolved', async () => {
@@ -279,9 +284,15 @@ describe(DownloadService.name, () => {
       mocks.downloadRepository.downloadAssetIds.mockReturnValue(
         makeStream([{ id: 'asset-1', livePhotoVideoId: 'asset-3', size: 5000 }]),
       );
+
       mocks.downloadRepository.downloadMotionAssetIds.mockReturnValue(
         makeStream([
-          { id: 'asset-2', livePhotoVideoId: null, size: 23_456, originalPath: 'upload/encoded-video/uuid-MP.mp4' },
+          {
+            id: 'asset-2',
+            livePhotoVideoId: null,
+            size: 23_456,
+            originalPath: APP_MEDIA_LOCATION + '/encoded-video/uuid-MP.mp4',
+          },
         ]),
       );
 

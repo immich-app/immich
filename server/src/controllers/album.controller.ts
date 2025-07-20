@@ -23,24 +23,24 @@ export class AlbumController {
   constructor(private service: AlbumService) {}
 
   @Get()
-  @Authenticated({ permission: Permission.ALBUM_READ })
+  @Authenticated({ permission: Permission.AlbumRead })
   getAllAlbums(@Auth() auth: AuthDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     return this.service.getAll(auth, query);
   }
 
   @Post()
-  @Authenticated({ permission: Permission.ALBUM_CREATE })
+  @Authenticated({ permission: Permission.AlbumCreate })
   createAlbum(@Auth() auth: AuthDto, @Body() dto: CreateAlbumDto): Promise<AlbumResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Get('statistics')
-  @Authenticated({ permission: Permission.ALBUM_STATISTICS })
+  @Authenticated({ permission: Permission.AlbumStatistics })
   getAlbumStatistics(@Auth() auth: AuthDto): Promise<AlbumStatisticsResponseDto> {
     return this.service.getStatistics(auth);
   }
 
-  @Authenticated({ permission: Permission.ALBUM_READ, sharedLink: true })
+  @Authenticated({ permission: Permission.AlbumRead, sharedLink: true })
   @Get(':id')
   getAlbumInfo(
     @Auth() auth: AuthDto,
@@ -51,7 +51,7 @@ export class AlbumController {
   }
 
   @Patch(':id')
-  @Authenticated({ permission: Permission.ALBUM_UPDATE })
+  @Authenticated({ permission: Permission.AlbumUpdate })
   updateAlbumInfo(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -61,7 +61,7 @@ export class AlbumController {
   }
 
   @Delete(':id')
-  @Authenticated({ permission: Permission.ALBUM_DELETE })
+  @Authenticated({ permission: Permission.AlbumDelete })
   deleteAlbum(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
     return this.service.delete(auth, id);
   }

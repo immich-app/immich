@@ -8,8 +8,12 @@ export const transformIndexes: SqlTransformer = (ctx, item) => {
       return asIndexCreate(item.index);
     }
 
+    case 'IndexRename': {
+      return `ALTER INDEX "${item.oldName}" RENAME TO "${item.newName}";`;
+    }
+
     case 'IndexDrop': {
-      return asIndexDrop(item.indexName);
+      return `DROP INDEX "${item.indexName}";`;
     }
 
     default: {
@@ -49,8 +53,4 @@ export const asIndexCreate = (index: DatabaseIndex): string => {
   }
 
   return sql + ';';
-};
-
-export const asIndexDrop = (indexName: string): string => {
-  return `DROP INDEX "${indexName}";`;
 };
