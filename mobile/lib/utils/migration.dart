@@ -27,7 +27,7 @@ import 'package:logging/logging.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 14;
+const int targetVersion = 13;
 
 Future<void> migrateDatabaseIfNeeded(Isar db) async {
   final int version = Store.get(StoreKey.version, targetVersion);
@@ -54,18 +54,6 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
 
   if (version < 13) {
     await Store.put(StoreKey.photoManagerCustomFilter, true);
-  }
-
-  if (version < 14) {
-    if (!Store.isBetaTimelineEnabled) {
-      // Try again when beta timeline is enabled and the app is restarted
-      return;
-    }
-    final backgroundSync = BackgroundSyncManager();
-    await backgroundSync.syncLocal();
-    final drift = Drift();
-    await migrateDeviceAssetToSqlite(db, drift);
-    await drift.close();
   }
 
   if (targetVersion >= 12) {
