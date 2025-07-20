@@ -30,6 +30,100 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
     ref.read(driftBackupProvider.notifier).getBackupStatus();
   }
 
+  void _showUploadDetails() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          insetPadding: const EdgeInsets.all(24),
+          shape: RoundedRectangleBorder(
+            borderRadius: const BorderRadius.all(Radius.circular(16)),
+            side: BorderSide(
+              color: context.colorScheme.outline.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.cloud_upload_outlined,
+                color: Theme.of(context).primaryColor,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                "upload_details".t(context: context),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final uploadItems = ref.watch(
+                    driftBackupProvider.select((state) => state.uploadItems),
+                  );
+
+                  return ListView.builder(
+                    itemCount: uploadItems.values.length,
+                    padding: const EdgeInsets.all(0),
+                    itemBuilder: (context, index) {
+                      final item = uploadItems.values.elementAt(index);
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: ListTile(
+                          visualDensity: VisualDensity.compact,
+                          title: Text(
+                            item.filename,
+                          ),
+                          subtitle: Text(
+                            "${(item.progress * 100).toStringAsFixed(0)}%",
+                          ),
+                          trailing: SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: CircularProgressIndicator(
+                              value: item.progress,
+                              strokeWidth: 3,
+                              backgroundColor: context.colorScheme.onSurface
+                                  .withValues(alpha: 0.1),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                context.primaryColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: Text(
+                "close".t(),
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: context.primaryColor,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> startBackup() async {
     await ref.read(driftBackupProvider.notifier).getBackupStatus();
     await ref.read(driftBackupProvider.notifier).backup();
@@ -47,6 +141,9 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
           (album) => album.backupSelection == BackupSelection.selected,
         )
         .toList();
+    final uploadItems = ref.watch(
+      driftBackupProvider.select((state) => state.uploadItems),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -85,6 +182,11 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                     onStart: () async => await startBackup(),
                     onStop: () async => await stopBackup(),
                   ),
+                  if (uploadItems.isNotEmpty)
+                    TextButton(
+                      onPressed: _showUploadDetails,
+                      child: Text("view_details".t(context: context)),
+                    ),
                 ],
               ],
             ),

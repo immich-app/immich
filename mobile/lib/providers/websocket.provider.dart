@@ -11,7 +11,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
+// import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -185,7 +185,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
           socket.on('on_asset_stack_update', _handleServerUpdates);
           socket.on('on_asset_hidden', _handleOnAssetHidden);
         } else {
-          socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
+          // socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
         }
 
         socket.on('on_config_update', _handleOnConfigUpdate);
@@ -237,11 +237,11 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   void stopListeningToBetaEvents() {
-    state.socket?.off('AssetUploadReadyV1');
+    // state.socket?.off('AssetUploadReadyV1');
   }
 
   void startListeningToBetaEvents() {
-    state.socket?.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
+    // state.socket?.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
   }
 
   void listenUploadEvent() {
@@ -396,28 +396,28 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         .handleNewRelease(serverVersion, releaseVersion);
   }
 
-  void _handleSyncAssetUploadReady(dynamic data) {
-    _batchedAssetUploadReady.add(data);
-    _batchDebouncer.run(_processBatchedAssetUploadReady);
-  }
+  // void _handleSyncAssetUploadReady(dynamic data) {
+  //   _batchedAssetUploadReady.add(data);
+  //   _batchDebouncer.run(_processBatchedAssetUploadReady);
+  // }
 
-  void _processBatchedAssetUploadReady() {
-    if (_batchedAssetUploadReady.isEmpty) {
-      return;
-    }
+  // void _processBatchedAssetUploadReady() {
+  //   if (_batchedAssetUploadReady.isEmpty) {
+  //     return;
+  //   }
 
-    try {
-      unawaited(
-        _ref
-            .read(backgroundSyncProvider)
-            .syncWebsocketBatch(_batchedAssetUploadReady.toList()),
-      );
-    } catch (error) {
-      _log.severe("Error processing batched AssetUploadReadyV1 events: $error");
-    }
+  //   try {
+  //     unawaited(
+  //       _ref
+  //           .read(backgroundSyncProvider)
+  //           .syncWebsocketBatch(_batchedAssetUploadReady.toList()),
+  //     );
+  //   } catch (error) {
+  //     _log.severe("Error processing batched AssetUploadReadyV1 events: $error");
+  //   }
 
-    _batchedAssetUploadReady.clear();
-  }
+  //   _batchedAssetUploadReady.clear();
+  // }
 }
 
 final websocketProvider =

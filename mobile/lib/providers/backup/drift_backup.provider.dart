@@ -181,6 +181,15 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   StreamSubscription<TaskStatusUpdate>? _statusSubscription;
   StreamSubscription<TaskProgressUpdate>? _progressSubscription;
 
+  void _handleCanceledTask(String taskId) {
+    if (state.uploadItems.containsKey(taskId)) {
+      final updatedItems =
+          Map<String, DriftUploadStatus>.from(state.uploadItems);
+      updatedItems.remove(taskId);
+      state = state.copyWith(uploadItems: updatedItems);
+    }
+  }
+
   void _handleTaskStatusUpdate(TaskStatusUpdate update) {
     switch (update.status) {
       case TaskStatus.complete:
@@ -188,6 +197,23 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
           backupCount: state.backupCount + 1,
           remainderCount: state.remainderCount - 1,
         );
+
+        // Remove the completed task from the upload items
+        final taskId = update.task.taskId;
+        if (state.uploadItems.containsKey(taskId)) {
+          Future.delayed(const Duration(seconds: 1), () {
+            final updatedItems =
+                Map<String, DriftUploadStatus>.from(state.uploadItems);
+            updatedItems.remove(taskId);
+            state = state.copyWith(uploadItems: updatedItems);
+          });
+        }
+
+      case TaskStatus.failed:
+        break;
+
+      case TaskStatus.canceled:
+        _handleCanceledTask(update.task.taskId);
         break;
 
       default:
@@ -195,7 +221,39 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
     }
   }
 
-  void _handleTaskProgressUpdate(TaskProgressUpdate update) {}
+  void _handleTaskProgressUpdate(TaskProgressUpdate update) {
+    final taskId = update.task.taskId;
+    final filename = update.task.displayName;
+    final progress = update.progress;
+
+    final currentItem = state.uploadItems[taskId];
+    if (currentItem != null) {
+      if (progress == kUploadStatusCanceled) {
+        _handleCanceledTask(update.task.taskId);
+        return;
+      }
+
+      state = state.copyWith(
+        uploadItems: {
+          ...state.uploadItems,
+          taskId: currentItem.copyWith(progress: progress),
+        },
+      );
+
+      return;
+    }
+
+    state = state.copyWith(
+      uploadItems: {
+        ...state.uploadItems,
+        taskId: DriftUploadStatus(
+          taskId: taskId,
+          filename: filename,
+          progress: progress,
+        ),
+      },
+    );
+  }
 
   Future<void> getBackupStatus() async {
     final [totalCount, backupCount, remainderCount] = await Future.wait([
@@ -241,23 +299,12 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
     if (tasks.isNotEmpty) {
       await cancel();
     } else {
-      state = state.copyWith(isCanceling: false);
+      // Clear all upload items when cancellation is complete
+      state = state.copyWith(
+        isCanceling: false,
+        uploadItems: {},
+      );
     }
-  }
-
-  Future<void> getDataInfo() async {
-    final a = await FileDownloader().database.allRecordsWithStatus(
-          TaskStatus.enqueued,
-          group: kBackupGroup,
-        );
-
-    final b = await FileDownloader().allTasks(
-      group: kBackupGroup,
-    );
-
-    debugPrint(
-      "Enqueued tasks: ${a.length}, All tasks: ${b.length}",
-    );
   }
 
   @override
