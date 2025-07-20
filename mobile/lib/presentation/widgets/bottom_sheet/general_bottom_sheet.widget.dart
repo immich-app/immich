@@ -44,7 +44,7 @@ class GeneralBottomSheet extends ConsumerWidget {
               : const DeletePermanentActionButton(
                   source: ActionSource.timeline,
                 ),
-          if (multiselect.hasLocalAndMerged) ...[
+          if (multiselect.hasLocal || multiselect.hasMerged) ...[
             const DeleteLocalActionButton(source: ActionSource.timeline),
           ],
           const EditDateTimeActionButton(),

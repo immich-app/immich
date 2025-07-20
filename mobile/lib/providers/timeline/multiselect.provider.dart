@@ -31,16 +31,12 @@ class MultiSelectState {
             asset.storage == AssetState.merged,
       );
 
-  /// Crossed out cloud
   bool get hasLocal => selectedAssets.any(
         (asset) => asset.storage == AssetState.local,
       );
 
-  /// Cloud with check mark
-  bool get hasLocalAndMerged => selectedAssets.any(
-        (asset) =>
-            asset.storage == AssetState.local ||
-            asset.storage == AssetState.merged,
+  bool get hasMerged => selectedAssets.any(
+        (asset) => asset.storage == AssetState.merged,
       );
 
   MultiSelectState copyWith({
