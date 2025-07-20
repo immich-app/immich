@@ -52,9 +52,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
 
   Future<int> getRemainderCount() async {
     final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
-      ..addColumns(
-        [_db.localAlbumAssetEntity.assetId],
-      )
+      ..addColumns([_db.localAlbumAssetEntity.assetId])
       ..join([
         innerJoin(
           _db.localAlbumEntity,
