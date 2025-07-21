@@ -6,11 +6,10 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 
 @RoutePage()
@@ -26,100 +25,6 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
   void initState() {
     super.initState();
     ref.read(driftBackupProvider.notifier).getBackupStatus();
-  }
-
-  void _showUploadDetails() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          insetPadding: const EdgeInsets.all(24),
-          shape: RoundedRectangleBorder(
-            borderRadius: const BorderRadius.all(Radius.circular(16)),
-            side: BorderSide(
-              color: context.colorScheme.outline.withValues(alpha: 0.2),
-              width: 1,
-            ),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.cloud_upload_outlined,
-                color: Theme.of(context).primaryColor,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                "upload_details".t(context: context),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ],
-          ),
-          content: SizedBox(
-            width: double.maxFinite,
-            height: 400,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              child: Consumer(
-                builder: (context, ref, child) {
-                  final uploadItems = ref.watch(
-                    driftBackupProvider.select((state) => state.uploadItems),
-                  );
-
-                  return ListView.builder(
-                    itemCount: uploadItems.values.length,
-                    padding: const EdgeInsets.all(0),
-                    itemBuilder: (context, index) {
-                      final item = uploadItems.values.elementAt(index);
-
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: ListTile(
-                          visualDensity: VisualDensity.compact,
-                          title: Text(
-                            item.filename,
-                          ),
-                          subtitle: Text(
-                            "${(item.progress * 100).toStringAsFixed(0)}%",
-                          ),
-                          trailing: SizedBox(
-                            width: 32,
-                            height: 32,
-                            child: CircularProgressIndicator(
-                              value: item.progress,
-                              strokeWidth: 3,
-                              backgroundColor: context.colorScheme.onSurface
-                                  .withValues(alpha: 0.1),
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                context.primaryColor,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: Text(
-                "close".t(),
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: context.primaryColor,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<void> startBackup() async {
@@ -176,14 +81,17 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                   const _BackupCard(),
                   const _RemainderCard(),
                   const Divider(),
-                  _BackupToggleButton(
+                  BackupToggleButton(
                     onStart: () async => await startBackup(),
                     onStop: () async => await stopBackup(),
                   ),
                   if (uploadItems.isNotEmpty)
-                    TextButton(
-                      onPressed: _showUploadDetails,
-                      child: Text("view_details".t(context: context)),
+                    TextButton.icon(
+                      icon: const Icon(Icons.info_outline_rounded),
+                      onPressed: () => context.pushRoute(
+                        const DriftUploadDetailRoute(),
+                      ),
+                      label: Text("view_details".t(context: context)),
                     ),
                 ],
               ],
@@ -191,240 +99,6 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _BackupToggleButton extends ConsumerStatefulWidget {
-  final VoidCallback onStart;
-  final VoidCallback onStop;
-
-  const _BackupToggleButton({
-    required this.onStart,
-    required this.onStop,
-  });
-
-  @override
-  ConsumerState<_BackupToggleButton> createState() =>
-      _BackupToggleButtonState();
-}
-
-class _BackupToggleButtonState extends ConsumerState<_BackupToggleButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _gradientAnimation;
-  bool _isEnabled = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 8),
-      vsync: this,
-    );
-
-    _gradientAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _isEnabled = ref
-        .read(appSettingsServiceProvider)
-        .getSetting(AppSettingsEnum.enableBackup);
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _onToggle(bool value) async {
-    await ref
-        .read(appSettingsServiceProvider)
-        .setSetting(AppSettingsEnum.enableBackup, value);
-
-    setState(() {
-      _isEnabled = value;
-    });
-
-    if (value) {
-      widget.onStart.call();
-    } else {
-      widget.onStop.call();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final enqueueCount = ref.watch(
-      driftBackupProvider.select((state) => state.enqueueCount),
-    );
-
-    final enqueueTotalCount = ref.watch(
-      driftBackupProvider.select((state) => state.enqueueTotalCount),
-    );
-
-    final isCanceling = ref.watch(
-      driftBackupProvider.select((state) => state.isCanceling),
-    );
-
-    final uploadTasks = ref.watch(
-      driftBackupProvider.select((state) => state.uploadItems),
-    );
-
-    final isUploading = uploadTasks.isNotEmpty;
-
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        final gradientColors = [
-          Color.lerp(
-            context.primaryColor.withValues(alpha: 0.5),
-            context.primaryColor.withValues(alpha: 0.3),
-            _gradientAnimation.value,
-          )!,
-          Color.lerp(
-            context.primaryColor.withValues(alpha: 0.2),
-            context.primaryColor.withValues(alpha: 0.4),
-            _gradientAnimation.value,
-          )!,
-          Color.lerp(
-            context.primaryColor.withValues(alpha: 0.3),
-            context.primaryColor.withValues(alpha: 0.5),
-            _gradientAnimation.value,
-          )!,
-        ];
-
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(20)),
-            gradient: LinearGradient(
-              colors: gradientColors,
-              stops: const [0.0, 0.5, 1.0],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: context.primaryColor.withValues(alpha: 0.1),
-                blurRadius: 12,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Container(
-            margin: const EdgeInsets.all(1.5),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(18.5)),
-              color: context.colorScheme.surfaceContainerLow,
-            ),
-            child: Material(
-              color: context.colorScheme.surfaceContainerLow,
-              borderRadius: const BorderRadius.all(Radius.circular(20.5)),
-              child: InkWell(
-                borderRadius: const BorderRadius.all(Radius.circular(20.5)),
-                onTap: () => isCanceling ? null : _onToggle(!_isEnabled),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [
-                              context.primaryColor.withValues(alpha: 0.2),
-                              context.primaryColor.withValues(alpha: 0.1),
-                            ],
-                          ),
-                        ),
-                        child: isUploading
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Icon(
-                                Icons.cloud_upload_outlined,
-                                color: context.primaryColor,
-                                size: 24,
-                              ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "enable_backup".t(context: context),
-                                  style:
-                                      context.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: context.primaryColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (enqueueCount != enqueueTotalCount)
-                              Text(
-                                "queue_status".t(
-                                  context: context,
-                                  args: {
-                                    'count': enqueueCount.toString(),
-                                    'total': enqueueTotalCount.toString(),
-                                  },
-                                ),
-                                style: context.textTheme.labelLarge?.copyWith(
-                                  color: context.colorScheme.onSurfaceSecondary,
-                                ),
-                              ),
-                            if (isCanceling)
-                              Row(
-                                children: [
-                                  Text(
-                                    "canceling".t(),
-                                    style: context.textTheme.labelLarge,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      backgroundColor: context
-                                          .colorScheme.onSurface
-                                          .withValues(alpha: 0.2),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                          ],
-                        ),
-                      ),
-                      Switch.adaptive(
-                        value: _isEnabled,
-                        onChanged: (value) =>
-                            isCanceling ? null : _onToggle(value),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

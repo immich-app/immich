@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
@@ -38,28 +39,37 @@ class DriftUploadStatus {
   final String taskId;
   final String filename;
   final double progress;
+  final int fileSize;
+  final String networkSpeedAsString;
 
   const DriftUploadStatus({
     required this.taskId,
     required this.filename,
     required this.progress,
+    required this.fileSize,
+    required this.networkSpeedAsString,
   });
 
   DriftUploadStatus copyWith({
     String? taskId,
     String? filename,
     double? progress,
+    int? fileSize,
+    String? networkSpeedAsString,
   }) {
     return DriftUploadStatus(
       taskId: taskId ?? this.taskId,
       filename: filename ?? this.filename,
       progress: progress ?? this.progress,
+      fileSize: fileSize ?? this.fileSize,
+      networkSpeedAsString: networkSpeedAsString ?? this.networkSpeedAsString,
     );
   }
 
   @override
-  String toString() =>
-      'ExpUploadStatus(taskId: $taskId, filename: $filename, progress: $progress)';
+  String toString() {
+    return 'DriftUploadStatus(taskId: $taskId, filename: $filename, progress: $progress, fileSize: $fileSize, networkSpeedAsString: $networkSpeedAsString)';
+  }
 
   @override
   bool operator ==(covariant DriftUploadStatus other) {
@@ -67,11 +77,44 @@ class DriftUploadStatus {
 
     return other.taskId == taskId &&
         other.filename == filename &&
-        other.progress == progress;
+        other.progress == progress &&
+        other.fileSize == fileSize &&
+        other.networkSpeedAsString == networkSpeedAsString;
   }
 
   @override
-  int get hashCode => taskId.hashCode ^ filename.hashCode ^ progress.hashCode;
+  int get hashCode {
+    return taskId.hashCode ^
+        filename.hashCode ^
+        progress.hashCode ^
+        fileSize.hashCode ^
+        networkSpeedAsString.hashCode;
+  }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'taskId': taskId,
+      'filename': filename,
+      'progress': progress,
+      'fileSize': fileSize,
+      'networkSpeedAsString': networkSpeedAsString,
+    };
+  }
+
+  factory DriftUploadStatus.fromMap(Map<String, dynamic> map) {
+    return DriftUploadStatus(
+      taskId: map['taskId'] as String,
+      filename: map['filename'] as String,
+      progress: map['progress'] as double,
+      fileSize: map['fileSize'] as int,
+      networkSpeedAsString: map['networkSpeedAsString'] as String,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory DriftUploadStatus.fromJson(String source) =>
+      DriftUploadStatus.fromMap(json.decode(source) as Map<String, dynamic>);
 }
 
 class DriftBackupState {
@@ -181,7 +224,8 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   StreamSubscription<TaskStatusUpdate>? _statusSubscription;
   StreamSubscription<TaskProgressUpdate>? _progressSubscription;
 
-  void _handleCanceledTask(String taskId) {
+  /// Remove upload item from state
+  void _removeUploadItem(String taskId) {
     if (state.uploadItems.containsKey(taskId)) {
       final updatedItems =
           Map<String, DriftUploadStatus>.from(state.uploadItems);
@@ -203,11 +247,8 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
         // Remove the completed task from the upload items
         final taskId = update.task.taskId;
         if (state.uploadItems.containsKey(taskId)) {
-          Future.delayed(const Duration(seconds: 1), () {
-            final updatedItems =
-                Map<String, DriftUploadStatus>.from(state.uploadItems);
-            updatedItems.remove(taskId);
-            state = state.copyWith(uploadItems: updatedItems);
+          Future.delayed(const Duration(milliseconds: 500), () {
+            _removeUploadItem(taskId);
           });
         }
 
@@ -215,7 +256,7 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
         break;
 
       case TaskStatus.canceled:
-        _handleCanceledTask(update.task.taskId);
+        _removeUploadItem(update.task.taskId);
         break;
 
       default:
@@ -227,19 +268,25 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
     final taskId = update.task.taskId;
     final filename = update.task.displayName;
     final progress = update.progress;
-
     final currentItem = state.uploadItems[taskId];
     if (currentItem != null) {
-      if (progress == kUploadStatusCanceled ||
-          progress == kUploadStatusFailed) {
-        _handleCanceledTask(update.task.taskId);
+      if (progress == kUploadStatusCanceled) {
+        _removeUploadItem(update.task.taskId);
         return;
       }
 
       state = state.copyWith(
         uploadItems: {
           ...state.uploadItems,
-          taskId: currentItem.copyWith(progress: progress),
+          taskId: update.hasExpectedFileSize
+              ? currentItem.copyWith(
+                  progress: progress,
+                  fileSize: update.expectedFileSize,
+                  networkSpeedAsString: update.networkSpeedAsString,
+                )
+              : currentItem.copyWith(
+                  progress: progress,
+                ),
         },
       );
 
@@ -253,6 +300,8 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
           taskId: taskId,
           filename: filename,
           progress: progress,
+          fileSize: update.expectedFileSize,
+          networkSpeedAsString: update.networkSpeedAsString,
         ),
       },
     );
