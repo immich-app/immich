@@ -98,7 +98,7 @@ fun RandomConfiguration(context: Context, appWidgetId: Int, glanceId: GlanceId, 
       albumItems = listOf(DropdownItem(currentAlbumName, currentAlbumId))
     }
 
-    availableAlbums = listOf(DropdownItem("None", "NONE")) + albumItems
+    availableAlbums = listOf(DropdownItem("None", "NONE"), DropdownItem("Favorites", "FAVORITES")) + albumItems
 
     // load selected configuration
     val albumEntity = availableAlbums.firstOrNull { it.id == currentAlbumId }
