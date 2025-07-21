@@ -31,8 +31,11 @@
       await addAssetsToAlbum(album.id, [asset.id]);
       onAction({ type: AssetAction.ADD_TO_ALBUM, asset: toTimelineAsset(asset), album });
     } else {
-      await addAssetsToAlbums(albums.map(a=>a.id), [asset.id]);
-      onAction({type: AssetAction.ADD_TO_ALBUM, asset: toTimelineAsset(asset), album: albums[0]});
+      await addAssetsToAlbums(
+        albums.map((a) => a.id),
+        [asset.id],
+      );
+      onAction({ type: AssetAction.ADD_TO_ALBUM, asset: toTimelineAsset(asset), album: albums[0] });
     }
   };
 </script>

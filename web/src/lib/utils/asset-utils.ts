@@ -91,10 +91,8 @@ export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], 
     });
     if (result.error) {
       if (result.error === 'duplicate') {
-        const duplicateErrorCount = 0;
-        message = $t('assets_were_part_of_album_count', { values: { count: duplicateErrorCount } });
-      } else if (result.error === 'no_permission') {
-        message = $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } });
+        const duplicateErrorCount = assetIds.length;
+        message = $t('assets_were_part_of_albums_count', { values: { count: duplicateErrorCount } });
       } else {
         message = $t('assets_cannot_be_added_to_albums');
       }
