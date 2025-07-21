@@ -79,6 +79,64 @@ class AlbumsApi {
     return null;
   }
 
+  /// Performs an HTTP 'PUT /albums/assets' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [AlbumsAddAssetsDto] albumsAddAssetsDto (required):
+  ///
+  /// * [String] key:
+  Future<Response> addAssetsToAlbumsWithHttpInfo(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/albums/assets';
+
+    // ignore: prefer_final_locals
+    Object? postBody = albumsAddAssetsDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [AlbumsAddAssetsDto] albumsAddAssetsDto (required):
+  ///
+  /// * [String] key:
+  Future<List<AlbumsAddAssetsResponseDto>?> addAssetsToAlbums(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, }) async {
+    final response = await addAssetsToAlbumsWithHttpInfo(albumsAddAssetsDto,  key: key, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AlbumsAddAssetsResponseDto>') as List)
+        .cast<AlbumsAddAssetsResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'PUT /albums/{id}/users' operation and returns the [Response].
   /// Parameters:
   ///

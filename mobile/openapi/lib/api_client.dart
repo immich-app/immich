@@ -212,6 +212,10 @@ class ApiClient {
           return AlbumUserResponseDto.fromJson(value);
         case 'AlbumUserRole':
           return AlbumUserRoleTypeTransformer().decode(value);
+        case 'AlbumsAddAssetsDto':
+          return AlbumsAddAssetsDto.fromJson(value);
+        case 'AlbumsAddAssetsResponseDto':
+          return AlbumsAddAssetsResponseDto.fromJson(value);
         case 'AlbumsResponse':
           return AlbumsResponse.fromJson(value);
         case 'AlbumsUpdate':

@@ -384,6 +384,18 @@ export type CreateAlbumDto = {
     assetIds?: string[];
     description?: string;
 };
+export type AlbumsAddAssetsDto = {
+    albumIds: string[];
+    assetIds: string[];
+};
+export type BulkIdResponseDto = {
+    error?: Error;
+    id: string;
+    success: boolean;
+};
+export type AlbumsAddAssetsResponseDto = {
+    results: BulkIdResponseDto[];
+};
 export type AlbumStatisticsResponseDto = {
     notShared: number;
     owned: number;
@@ -398,11 +410,6 @@ export type UpdateAlbumDto = {
 };
 export type BulkIdsDto = {
     ids: string[];
-};
-export type BulkIdResponseDto = {
-    error?: Error;
-    id: string;
-    success: boolean;
 };
 export type UpdateAlbumUserDto = {
     role: AlbumUserRole;
@@ -1803,6 +1810,21 @@ export function createAlbum({ createAlbumDto }: {
         ...opts,
         method: "POST",
         body: createAlbumDto
+    })));
+}
+export function addAssetsToAlbums({ key, albumsAddAssetsDto }: {
+    key?: string;
+    albumsAddAssetsDto: AlbumsAddAssetsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumsAddAssetsResponseDto[];
+    }>(`/albums/assets${QS.query(QS.explode({
+        key
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: albumsAddAssetsDto
     })));
 }
 export function getAlbumStatistics(opts?: Oazapfts.RequestOpts) {

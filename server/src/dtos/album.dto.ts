@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsString, ValidateNested } from 'class-validator';
 import _ from 'lodash';
 import { AlbumUser, AuthSharedLink, User } from 'src/database';
+import { BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetResponseDto, MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
@@ -60,6 +61,10 @@ export class AlbumsAddAssetsDto {
 
   @ValidateUUID({ each: true })
   assetIds!: string[];
+}
+
+export class AlbumsAddAssetsResponseDto {
+  results!: BulkIdResponseDto[];
 }
 
 export class UpdateAlbumDto {

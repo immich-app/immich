@@ -5,6 +5,7 @@ import {
   AlbumInfoDto,
   AlbumResponseDto,
   AlbumsAddAssetsDto,
+  AlbumsAddAssetsResponseDto,
   AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
@@ -79,7 +80,7 @@ export class AlbumController {
 
   @Put('assets')
   @Authenticated({ sharedLink: true })
-  addAssetsToAlbums(@Auth() auth: AuthDto, @Body() dto: AlbumsAddAssetsDto): Promise<BulkIdResponseDto[][]> {
+  addAssetsToAlbums(@Auth() auth: AuthDto, @Body() dto: AlbumsAddAssetsDto): Promise<AlbumsAddAssetsResponseDto[]> {
     return this.service.addAssetsToAlbums(auth, dto);
   }
 

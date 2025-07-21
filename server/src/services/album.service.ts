@@ -4,6 +4,7 @@ import {
   AlbumInfoDto,
   AlbumResponseDto,
   AlbumsAddAssetsDto,
+  AlbumsAddAssetsResponseDto,
   AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
@@ -187,14 +188,14 @@ export class AlbumService extends BaseService {
     return results;
   }
 
-  async addAssetsToAlbums(auth: AuthDto, dto: AlbumsAddAssetsDto): Promise<BulkIdResponseDto[][]> {
-    const results: BulkIdResponseDto[][] = [];
+  async addAssetsToAlbums(auth: AuthDto, dto: AlbumsAddAssetsDto): Promise<AlbumsAddAssetsResponseDto[]> {
+    const results: AlbumsAddAssetsResponseDto[] = [];
     for (const albumId in dto.albumIds) {
       try {
         const albumResults = await this.addAssets(auth, albumId, { ids: dto.assetIds });
-        results.push(albumResults);
+        results.push({ results: albumResults });
       } catch {
-        results.push([{ id: albumId, success: false, error: BulkIdErrorReason.NOT_FOUND }]);
+        results.push({ results: [{ id: albumId, success: false, error: BulkIdErrorReason.NOT_FOUND }] });
       }
     }
     return results;
