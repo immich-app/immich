@@ -20,6 +20,8 @@ class ThumbnailApiImpl: ThumbnailApi {
     return requestOptions
   }()
   private static let processingQueue = DispatchQueue(label: "thumbnail.processing", qos: .userInteractive, attributes: .concurrent)
+  private static let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
+  private static let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue).rawValue
   
   func setThumbnailToBuffer(pointer: Int64, assetId: String, width: Int64, height: Int64, completion: @escaping (Result<Void, any Error>) -> Void) {
     guard let bufferPointer = UnsafeMutableRawPointer(bitPattern: Int(pointer))
@@ -35,18 +37,16 @@ class ThumbnailApiImpl: ThumbnailApi {
         resultHandler: { (image, info) -> Void in
           guard let image = image,
                 let cgImage = image.cgImage,
-                let dataProvider = cgImage.dataProvider,
-                let pixelData = dataProvider.data
-          else { completion(.failure(PigeonError(code: "", message: "Could not get pixel data for \(assetId)", details: nil))); return }
-          
-          guard let sourceBuffer = CFDataGetBytePtr(pixelData)
-          else { completion(.failure(PigeonError(code: "", message: "Could not get pixel data buffer for \(assetId)", details: nil))); return }
-          let dataLength = CFDataGetLength(pixelData)
-          let bufferLength = width * height * 4
-          guard dataLength <= bufferLength
-          else { completion(.failure(PigeonError(code: "", message: "Buffer is not large enough (\(bufferLength) vs \(dataLength) for \(assetId)", details: nil))); return }
-          
-          bufferPointer.copyMemory(from: sourceBuffer, byteCount: dataLength)
+                let context = CGContext(
+                  data: bufferPointer,
+                  width: cgImage.width,
+                  height: cgImage.height,
+                  bitsPerComponent: 8,
+                  bytesPerRow: cgImage.width * 4,
+                  space: Self.rgbColorSpace,
+                  bitmapInfo: Self.bitmapInfo
+                ) else { completion(.failure(PigeonError(code: "", message: "Could not get pixel data for \(assetId)", details: nil))); return }
+          context.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
           completion(.success(()))
         }
       )
