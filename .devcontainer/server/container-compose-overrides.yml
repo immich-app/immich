@@ -8,11 +8,16 @@ services:
       - IMMICH_SERVER_URL=http://127.0.0.1:2283/
     volumes: !override
       - ..:/workspaces/immich
-      - cli_node_modules:/workspaces/immich/cli/node_modules
-      - e2e_node_modules:/workspaces/immich/e2e/node_modules
-      - open_api_node_modules:/workspaces/immich/open-api/typescript-sdk/node_modules
-      - server_node_modules:/workspaces/immich/server/node_modules
-      - web_node_modules:/workspaces/immich/web/node_modules
+      - pnpm-store:/workspaces/immich/.pnpm-store
+      - /workspaces/immich/.github/node_modules
+      - /workspaces/immich/cli/node_modules
+      - /workspaces/immich/docs/node_modules
+      - /workspaces/immich/e2e/node_modules
+      - /workspaces/immich/open-api/typescript-sdk/node_modules
+      - /workspaces/immich/web/.svelte-kit
+      - /workspaces/immich/web/coverage
+      - /workspaces/immich/web/node_modules
+      - /workspaces/immich/server/node_modules
       - ${UPLOAD_LOCATION:-upload1-devcontainer-volume}${UPLOAD_LOCATION:+/photos}:/usr/src/app/upload
       - ${UPLOAD_LOCATION:-upload2-devcontainer-volume}${UPLOAD_LOCATION:+/photos/upload}:/usr/src/app/upload/upload
       - /etc/localtime:/etc/localtime:ro
@@ -39,11 +44,7 @@ services:
 
 volumes:
   # Node modules for each service to avoid conflicts and ensure consistent dependencies
-  cli_node_modules:
-  e2e_node_modules:
-  open_api_node_modules:
-  server_node_modules:
-  web_node_modules:
+  pnpm-store:
   upload1-devcontainer-volume:
   upload2-devcontainer-volume:
   postgres-devcontainer-volume:
