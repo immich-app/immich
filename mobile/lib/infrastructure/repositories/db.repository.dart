@@ -84,8 +84,8 @@ class Drift extends $Drift implements IDatabaseRepository {
             from: from,
             to: to,
             steps: migrationSteps(
-              from1To2: (m, _) async {
-                for (final entity in allSchemaEntities) {
+              from1To2: (m, v2) async {
+                for (final entity in v2.entities) {
                   await m.drop(entity);
                   await m.create(entity);
                 }
