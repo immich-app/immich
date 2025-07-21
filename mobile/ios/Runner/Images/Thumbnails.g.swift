@@ -70,7 +70,7 @@ class ThumbnailsPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol ThumbnailApi {
-  func getThumbnail(assetId: String, width: Int64, height: Int64, completion: @escaping (Result<FlutterStandardTypedData, Error>) -> Void)
+  func setThumbnailToBuffer(pointer: Int64, assetId: String, width: Int64, height: Int64, completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -79,24 +79,25 @@ class ThumbnailApiSetup {
   /// Sets up an instance of `ThumbnailApi` to handle messages through the `binaryMessenger`.
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: ThumbnailApi?, messageChannelSuffix: String = "") {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
-    let getThumbnailChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ThumbnailApi.getThumbnail\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let setThumbnailToBufferChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ThumbnailApi.setThumbnailToBuffer\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      getThumbnailChannel.setMessageHandler { message, reply in
+      setThumbnailToBufferChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
-        let assetIdArg = args[0] as! String
-        let widthArg = args[1] as! Int64
-        let heightArg = args[2] as! Int64
-        api.getThumbnail(assetId: assetIdArg, width: widthArg, height: heightArg) { result in
+        let pointerArg = args[0] as! Int64
+        let assetIdArg = args[1] as! String
+        let widthArg = args[2] as! Int64
+        let heightArg = args[3] as! Int64
+        api.setThumbnailToBuffer(pointer: pointerArg, assetId: assetIdArg, width: widthArg, height: heightArg) { result in
           switch result {
-          case .success(let res):
-            reply(wrapResult(res))
+          case .success:
+            reply(wrapResult(nil))
           case .failure(let error):
             reply(wrapError(error))
           }
         }
       }
     } else {
-      getThumbnailChannel.setMessageHandler(nil)
+      setThumbnailToBufferChannel.setMessageHandler(nil)
     }
   }
 }

@@ -59,7 +59,7 @@ private open class ThumbnailsPigeonCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface ThumbnailApi {
-  fun getThumbnail(assetId: String, width: Long, height: Long, callback: (Result<ByteArray>) -> Unit)
+  fun setThumbnailToBuffer(pointer: Long, assetId: String, width: Long, height: Long, callback: (Result<Unit>) -> Unit)
 
   companion object {
     /** The codec used by ThumbnailApi. */
@@ -71,20 +71,20 @@ interface ThumbnailApi {
     fun setUp(binaryMessenger: BinaryMessenger, api: ThumbnailApi?, messageChannelSuffix: String = "") {
       val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ThumbnailApi.getThumbnail$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ThumbnailApi.setThumbnailToBuffer$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val assetIdArg = args[0] as String
-            val widthArg = args[1] as Long
-            val heightArg = args[2] as Long
-            api.getThumbnail(assetIdArg, widthArg, heightArg) { result: Result<ByteArray> ->
+            val pointerArg = args[0] as Long
+            val assetIdArg = args[1] as String
+            val widthArg = args[2] as Long
+            val heightArg = args[3] as Long
+            api.setThumbnailToBuffer(pointerArg, assetIdArg, widthArg, heightArg) { result: Result<Unit> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(ThumbnailsPigeonUtils.wrapError(error))
               } else {
-                val data = result.getOrNull()
-                reply.reply(ThumbnailsPigeonUtils.wrapResult(data))
+                reply.reply(ThumbnailsPigeonUtils.wrapResult(null))
               }
             }
           }

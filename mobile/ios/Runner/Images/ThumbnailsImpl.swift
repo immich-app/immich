@@ -3,64 +3,6 @@ import Flutter
 import MobileCoreServices
 import Photos
 
-// https://stackoverflow.com/a/55839062
-extension UIImage {
-  func toData(options: NSDictionary?, type: ImageType) -> Data? {
-    guard cgImage != nil else { return nil }
-    return toData(options: options, type: type.value)
-  }
-
-  // about properties: https://developer.apple.com/documentation/imageio/1464962-cgimagedestinationaddimage
-  func toData(options: NSDictionary?, type: CFString) -> Data? {
-    guard let cgImage = cgImage else { return nil }
-    return autoreleasepool { () -> Data? in
-      let data = NSMutableData()
-      guard
-        let imageDestination = CGImageDestinationCreateWithData(data as CFMutableData, type, 1, nil)
-      else { return nil }
-      CGImageDestinationAddImage(imageDestination, cgImage, options)
-      CGImageDestinationFinalize(imageDestination)
-      return data as Data
-    }
-  }
-
-  enum ImageType {
-    case image  // abstract image data
-    case jpeg  // JPEG image
-    case jpeg2000  // JPEG-2000 image
-    case tiff  // TIFF image
-    case pict  // Quickdraw PICT format
-    case gif  // GIF image
-    case png  // PNG image
-    case quickTimeImage  // QuickTime image format (OSType 'qtif')
-    case appleICNS  // Apple icon data
-    case bmp  // Windows bitmap
-    case ico  // Windows icon data
-    case rawImage  // base type for raw image data (.raw)
-    case scalableVectorGraphics  // SVG image
-    case livePhoto  // Live Photo
-
-    var value: CFString {
-      switch self {
-      case .image: return kUTTypeImage
-      case .jpeg: return kUTTypeJPEG
-      case .jpeg2000: return kUTTypeJPEG2000
-      case .tiff: return kUTTypeTIFF
-      case .pict: return kUTTypePICT
-      case .gif: return kUTTypeGIF
-      case .png: return kUTTypePNG
-      case .quickTimeImage: return kUTTypeQuickTimeImage
-      case .appleICNS: return kUTTypeAppleICNS
-      case .bmp: return kUTTypeBMP
-      case .ico: return kUTTypeICO
-      case .rawImage: return kUTTypeRawImage
-      case .scalableVectorGraphics: return kUTTypeScalableVectorGraphics
-      case .livePhoto: return kUTTypeLivePhoto
-      }
-    }
-  }
-}
-
 class ThumbnailApiImpl: ThumbnailApi {
   private static let cacheManager = PHImageManager.default()
   private static let fetchOptions = {
@@ -77,36 +19,44 @@ class ThumbnailApiImpl: ThumbnailApi {
     requestOptions.version = .current
     return requestOptions
   }()
-  private static let processingQueue = DispatchQueue(
-    label: "thumbnail.processing", qos: .userInteractive, attributes: .concurrent)
-
-  func getThumbnail(
-    assetId: String,
-    width: Int64,
-    height: Int64,
-    completion: @escaping (Result<FlutterStandardTypedData, Error>) -> Void
-  ) {
+  private static let processingQueue = DispatchQueue(label: "thumbnail.processing", qos: .userInteractive, attributes: .concurrent)
+  
+  func setThumbnailToBuffer(pointer: Int64, assetId: String, width: Int64, height: Int64, completion: @escaping (Result<Void, any Error>) -> Void) {
+    guard let bufferPointer = UnsafeMutableRawPointer(bitPattern: Int(pointer))
+    else { completion(.failure(PigeonError(code: "", message: "Could not get buffer pointer for \(assetId)", details: nil))); return }
     Self.processingQueue.async {
       do {
         let asset = try self.getAsset(assetId: assetId)
-
         Self.cacheManager.requestImage(
           for: asset,
           targetSize: CGSize(width: Double(width), height: Double(height)),
           contentMode: .aspectFill,
           options: Self.requestOptions,
           resultHandler: { (image, info) -> Void in
-            guard let data = image?.toData(options: nil, type: .bmp) else { return }
-            completion(.success(FlutterStandardTypedData(bytes: data)))
+            guard let image = image,
+                  let cgImage = image.cgImage,
+                  let dataProvider = cgImage.dataProvider,
+                  let pixelData = dataProvider.data
+            else { completion(.failure(PigeonError(code: "", message: "Could not get pixel data for \(assetId)", details: nil))); return }
+            
+            guard let sourceBuffer = CFDataGetBytePtr(pixelData)
+            else { completion(.failure(PigeonError(code: "", message: "Could not get pixel data buffer for \(assetId)", details: nil))); return }
+            let dataLength = CFDataGetLength(pixelData)
+            let bufferLength = width * height * 4
+            guard dataLength <= bufferLength
+            else { completion(.failure(PigeonError(code: "", message: "Buffer is not large enough (\(bufferLength) vs \(dataLength) for \(assetId)", details: nil))); return }
+            
+            bufferPointer.copyMemory(from: sourceBuffer, byteCount: dataLength)
+            completion(.success(()))
           }
         )
       } catch {
         completion(
-          .failure(PigeonError(code: "", message: "Could not get asset data", details: nil)))
+          .failure(PigeonError(code: "", message: "Could not get asset data for \(assetId)", details: nil)))
       }
     }
   }
-
+  
   private func getAsset(assetId: String) throws -> PHAsset {
     guard
       let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: Self.fetchOptions)
@@ -116,9 +66,4 @@ class ThumbnailApiImpl: ThumbnailApi {
     }
     return asset
   }
-
-  // func cancel(requestId: Int32) {
-  //   Self.cacheManager.cancelImageRequest(requestId as PHImageRequestID)
-  // }
-
 }

@@ -2,7 +2,8 @@ package app.alextran.immich
 
 import android.os.Build
 import android.os.ext.SdkExtensions
-import androidx.annotation.NonNull
+import app.alextran.immich.images.ThumbnailApi
+import app.alextran.immich.images.ThumbnailsImpl
 import app.alextran.immich.sync.NativeSyncApi
 import app.alextran.immich.sync.NativeSyncApiImpl26
 import app.alextran.immich.sync.NativeSyncApiImpl30
@@ -10,7 +11,7 @@ import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 
 class MainActivity : FlutterFragmentActivity() {
-  override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+  override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
     super.configureFlutterEngine(flutterEngine)
     flutterEngine.plugins.add(BackgroundServicePlugin())
     flutterEngine.plugins.add(HttpSSLOptionsPlugin())
@@ -23,5 +24,6 @@ class MainActivity : FlutterFragmentActivity() {
         NativeSyncApiImpl30(this)
       }
     NativeSyncApi.setUp(flutterEngine.dartExecutor.binaryMessenger, nativeSyncApiImpl)
+    ThumbnailApi.setUp(flutterEngine.dartExecutor.binaryMessenger, ThumbnailsImpl(this))
   }
 }

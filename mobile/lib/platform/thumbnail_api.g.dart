@@ -51,13 +51,14 @@ class ThumbnailApi {
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<Uint8List> getThumbnail(
+  Future<void> setThumbnailToBuffer(
+    int pointer,
     String assetId, {
     required int width,
     required int height,
   }) async {
     final String pigeonVar_channelName =
-        'dev.flutter.pigeon.immich_mobile.ThumbnailApi.getThumbnail$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.immich_mobile.ThumbnailApi.setThumbnailToBuffer$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel =
         BasicMessageChannel<Object?>(
       pigeonVar_channelName,
@@ -65,7 +66,7 @@ class ThumbnailApi {
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[assetId, width, height]);
+        pigeonVar_channel.send(<Object?>[pointer, assetId, width, height]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -76,13 +77,8 @@ class ThumbnailApi {
         message: pigeonVar_replyList[1] as String?,
         details: pigeonVar_replyList[2],
       );
-    } else if (pigeonVar_replyList[0] == null) {
-      throw PlatformException(
-        code: 'null-error',
-        message: 'Host platform returned null value for non-null return value.',
-      );
     } else {
-      return (pigeonVar_replyList[0] as Uint8List?)!;
+      return;
     }
   }
 }
