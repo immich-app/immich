@@ -7,6 +7,10 @@ class ViewerOpenBottomSheetEvent extends Event {
   const ViewerOpenBottomSheetEvent();
 }
 
+class ViewerReloadAssetEvent extends Event {
+  const ViewerReloadAssetEvent();
+}
+
 class AssetViewerState {
   final int backgroundOpacity;
   final bool showingBottomSheet;

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -21,6 +23,10 @@ class MoveToLockFolderActionButton extends ConsumerWidget {
     final result =
         await ref.read(actionProvider.notifier).moveToLockFolder(source);
     ref.read(multiSelectProvider.notifier).reset();
+
+    if (source == ActionSource.viewer) {
+      EventStream.shared.emit(const ViewerReloadAssetEvent());
+    }
 
     final successMessage = 'move_to_lock_folder_action_prompt'.t(
       context: context,
