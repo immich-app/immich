@@ -73,6 +73,17 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
   }
 };
 
+export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], showNotification = true) => {
+  const result = await addAssets({
+    id: albumIds[0],
+    bulkIdsDto: {
+      ids: assetIds,
+    },
+    key: authManager.key,
+  });
+  return result;
+}
+
 export const tagAssets = async ({
   assetIds,
   tagIds,

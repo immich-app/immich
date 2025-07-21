@@ -3,7 +3,7 @@
   import { modalManager } from '$lib/managers/modal-manager.svelte';
   import AlbumPickerModal from '$lib/modals/AlbumPickerModal.svelte';
   import type { OnAddToAlbum } from '$lib/utils/actions';
-  import { addAssetsToAlbum } from '$lib/utils/asset-utils';
+  import { addAssetsToAlbum, addAssetsToAlbums } from '$lib/utils/asset-utils';
   import { mdiImageAlbum, mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
@@ -18,15 +18,21 @@
   const { getAssets } = getAssetControlContext();
 
   const onClick = async () => {
-    const album = await modalManager.show(AlbumPickerModal, { shared });
+    const albums = await modalManager.show(AlbumPickerModal, { shared });
 
-    if (!album) {
+    if (!albums || albums.length === 0) {
       return;
     }
 
     const assetIds = [...getAssets()].map(({ id }) => id);
-    await addAssetsToAlbum(album.id, assetIds);
-    onAddToAlbum(assetIds, album.id);
+    if (albums.length === 1) {
+      const album = albums[0];
+      await addAssetsToAlbum(album.id, assetIds);
+      onAddToAlbum(assetIds, album.id);
+    } else {
+      await addAssetsToAlbums(albums.map(a=>a.id), assetIds);
+      onAddToAlbum(assetIds, albums[0].id);
+    }
   };
 </script>
 
