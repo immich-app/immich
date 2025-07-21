@@ -92,7 +92,7 @@ class _ThumbnailState extends State<Thumbnail> {
     if (oldWidget.blurhash != widget.blurhash ||
         oldWidget.localId != widget.localId ||
         oldWidget.remoteId != widget.remoteId ||
-        oldWidget.thumbhashOnly != widget.thumbhashOnly) {
+        oldWidget.thumbhashOnly && !widget.thumbhashOnly) {
       _decode();
     }
   }
@@ -106,7 +106,7 @@ class _ThumbnailState extends State<Thumbnail> {
     final blurhash = widget.blurhash;
     final imageFuture = thumbhashOnly ? Future.value(null) : _decodeFromFile();
 
-    if (blurhash != null) {
+    if (blurhash != null && _image == null) {
       final image = thumbhash.thumbHashToRGBA(base64.decode(blurhash));
       try {
         await _decodeThumbhash(
