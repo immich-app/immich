@@ -260,7 +260,7 @@ class _ThumbnailState extends State<Thumbnail> {
         log.info(
           'Retrieved local image $localId in ${stopwatch.elapsedMilliseconds.toStringAsFixed(2)} ms',
         );
-        return ImmutableBuffer.fromUint8List(pointer.asTypedList(size));
+        return await ImmutableBuffer.fromUint8List(pointer.asTypedList(size));
       } catch (e) {
         log.warning('Failed to retrieve local image $localId: $e');
       } finally {
