@@ -101,14 +101,18 @@ class BackgroundSyncManager {
     if (_syncWebsocketTask != null) {
       return _syncWebsocketTask!.future;
     }
-
-    _syncWebsocketTask = runInIsolateGentle(
-      computation: (ref) => ref
-          .read(syncStreamServiceProvider)
-          .handleWsAssetUploadReadyV1Batch(batchData),
-    );
+    _syncWebsocketTask = _handleWsAssetUploadReadyV1Batch(batchData);
     return _syncWebsocketTask!.whenComplete(() {
       _syncWebsocketTask = null;
     });
   }
 }
+
+Cancelable<void> _handleWsAssetUploadReadyV1Batch(
+  List<dynamic> batchData,
+) =>
+    runInIsolateGentle(
+      computation: (ref) => ref
+          .read(syncStreamServiceProvider)
+          .handleWsAssetUploadReadyV1Batch(batchData),
+    );

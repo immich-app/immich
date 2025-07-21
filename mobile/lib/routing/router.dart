@@ -27,6 +27,7 @@ import 'package:immich_mobile/pages/backup/drift_backup.page.dart';
 import 'package:immich_mobile/pages/backup/backup_album_selection.page.dart';
 import 'package:immich_mobile/pages/backup/backup_controller.page.dart';
 import 'package:immich_mobile/pages/backup/backup_options.page.dart';
+import 'package:immich_mobile/pages/backup/drift_upload_detail.page.dart';
 import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
 import 'package:immich_mobile/pages/common/activities.page.dart';
 import 'package:immich_mobile/pages/common/app_log.page.dart';
@@ -488,6 +489,10 @@ class AppRouter extends RootStackRouter {
 
     AutoRoute(
       page: DriftPartnerRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: DriftUploadDetailRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
     // required to handle all deeplinks in deep_link.service.dart

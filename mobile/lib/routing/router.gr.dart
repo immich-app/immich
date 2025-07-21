@@ -1095,6 +1095,22 @@ class DriftTrashRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftUploadDetailPage]
+class DriftUploadDetailRoute extends PageRouteInfo<void> {
+  const DriftUploadDetailRoute({List<PageRouteInfo>? children})
+      : super(DriftUploadDetailRoute.name, initialChildren: children);
+
+  static const String name = 'DriftUploadDetailRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftUploadDetailPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftUserSelectionPage]
 class DriftUserSelectionRoute
     extends PageRouteInfo<DriftUserSelectionRouteArgs> {
