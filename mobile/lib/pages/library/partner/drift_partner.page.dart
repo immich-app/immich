@@ -110,7 +110,6 @@ class _SharedToPartnerList extends ConsumerWidget {
 
     return partnerAsync.when(
       data: (partners) {
-        print("Partners: $partners");
         if (partners.isEmpty) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
