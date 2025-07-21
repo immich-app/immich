@@ -6,15 +6,15 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_album_thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/partner_user_avatar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/partner.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/partner.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
-import 'package:immich_mobile/widgets/common/user_avatar.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -391,7 +391,8 @@ class _QuickAccessButtonList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final partners = ref.watch(partnerSharedWithProvider);
+    final partnerSharedWithAsync = ref.watch(driftSharedWithPartnerProvider);
+    final partners = partnerSharedWithAsync.valueOrNull ?? [];
 
     return SliverPadding(
       padding: const EdgeInsets.only(left: 16, top: 12, right: 16, bottom: 32),
@@ -452,7 +453,6 @@ class _QuickAccessButtonList extends ConsumerWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                // TODO: PIN code is needed
                 onTap: () => context.pushRoute(const DriftLockedFolderRoute()),
               ),
               ListTile(
@@ -466,7 +466,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                onTap: () => context.pushRoute(const PartnerRoute()),
+                onTap: () => context.pushRoute(const DriftPartnerRoute()),
               ),
               _PartnerList(partners: partners),
             ],
@@ -480,7 +480,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
 class _PartnerList extends StatelessWidget {
   const _PartnerList({required this.partners});
 
-  final List<UserDto> partners;
+  final List<PartnerUserDto> partners;
 
   @override
   Widget build(BuildContext context) {
@@ -503,7 +503,9 @@ class _PartnerList extends StatelessWidget {
             left: 12.0,
             right: 18.0,
           ),
-          leading: userAvatar(context, partner, radius: 16),
+          leading: PartnerUserAvatar(
+            partner: partner,
+          ),
           title: const Text(
             "partner_list_user_photos",
             style: TextStyle(

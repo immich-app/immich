@@ -896,7 +896,7 @@ class DriftPartnerDetailRoute
     extends PageRouteInfo<DriftPartnerDetailRouteArgs> {
   DriftPartnerDetailRoute({
     Key? key,
-    required UserDto partner,
+    required PartnerUserDto partner,
     List<PageRouteInfo>? children,
   }) : super(
           DriftPartnerDetailRoute.name,
@@ -920,12 +920,28 @@ class DriftPartnerDetailRouteArgs {
 
   final Key? key;
 
-  final UserDto partner;
+  final PartnerUserDto partner;
 
   @override
   String toString() {
     return 'DriftPartnerDetailRouteArgs{key: $key, partner: $partner}';
   }
+}
+
+/// generated route for
+/// [DriftPartnerPage]
+class DriftPartnerRoute extends PageRouteInfo<void> {
+  const DriftPartnerRoute({List<PageRouteInfo>? children})
+      : super(DriftPartnerRoute.name, initialChildren: children);
+
+  static const String name = 'DriftPartnerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftPartnerPage();
+    },
+  );
 }
 
 /// generated route for
