@@ -96,16 +96,25 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
   private fun decodeVideoThumbnail(assetId: String, targetWidth: Int, targetHeight: Int): Bitmap {
     val uri =
       ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, assetId.toLong())
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      contentResolver.loadThumbnail(uri, Size(targetWidth, targetHeight), null)
-    } else {
-      val retriever = MediaMetadataRetriever()
-      try {
-        retriever.setDataSource(ctx, uri)
-        retriever.getFrameAtTime(0L) ?: throw RuntimeException("Failed to extract video frame")
-      } finally {
-        retriever.release()
-      }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      return contentResolver.loadThumbnail(uri, Size(targetWidth, targetHeight), null)
+    }
+
+    val retriever = MediaMetadataRetriever()
+    try {
+      retriever.setDataSource(ctx, uri)
+      return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        retriever.getScaledFrameAtTime(
+          0L,
+          MediaMetadataRetriever.OPTION_NEXT_SYNC,
+          targetWidth,
+          targetHeight
+        )
+      } else {
+        retriever.getFrameAtTime(0L)
+      } ?: throw RuntimeException("Failed to extract video frame")
+    } finally {
+      retriever.release()
     }
   }
 

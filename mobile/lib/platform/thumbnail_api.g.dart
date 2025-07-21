@@ -51,7 +51,7 @@ class ThumbnailApi {
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<void> setThumbnailToBuffer(
+  Future<Map<String, int>> setThumbnailToBuffer(
     int pointer,
     String assetId, {
     required int width,
@@ -77,8 +77,14 @@ class ThumbnailApi {
         message: pigeonVar_replyList[1] as String?,
         details: pigeonVar_replyList[2],
       );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
     } else {
-      return;
+      return (pigeonVar_replyList[0] as Map<Object?, Object?>?)!
+          .cast<String, int>();
     }
   }
 }
