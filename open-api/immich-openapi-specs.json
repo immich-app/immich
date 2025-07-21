@@ -898,10 +898,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AlbumsAddAssetsResponseDto"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/AlbumsAddAssetsResponseDto"
                 }
               }
             },
@@ -9088,15 +9085,29 @@
       },
       "AlbumsAddAssetsResponseDto": {
         "properties": {
-          "results": {
-            "items": {
-              "$ref": "#/components/schemas/BulkIdResponseDto"
-            },
-            "type": "array"
+          "albumSuccessCount": {
+            "type": "integer"
+          },
+          "assetSuccessCount": {
+            "type": "integer"
+          },
+          "error": {
+            "enum": [
+              "duplicate",
+              "no_permission",
+              "not_found",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
           }
         },
         "required": [
-          "results"
+          "albumSuccessCount",
+          "assetSuccessCount",
+          "success"
         ],
         "type": "object"
       },

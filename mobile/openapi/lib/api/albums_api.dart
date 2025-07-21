@@ -119,7 +119,7 @@ class AlbumsApi {
   /// * [AlbumsAddAssetsDto] albumsAddAssetsDto (required):
   ///
   /// * [String] key:
-  Future<List<AlbumsAddAssetsResponseDto>?> addAssetsToAlbums(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, }) async {
+  Future<AlbumsAddAssetsResponseDto?> addAssetsToAlbums(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, }) async {
     final response = await addAssetsToAlbumsWithHttpInfo(albumsAddAssetsDto,  key: key, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -128,11 +128,8 @@ class AlbumsApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AlbumsAddAssetsResponseDto>') as List)
-        .cast<AlbumsAddAssetsResponseDto>()
-        .toList(growable: false);
-
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumsAddAssetsResponseDto',) as AlbumsAddAssetsResponseDto;
+    
     }
     return null;
   }

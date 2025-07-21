@@ -15,11 +15,13 @@ import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
 import {
   addAssetsToAlbum as addAssets,
+  addAssetsToAlbums as addToAlbums,
   AssetVisibility,
   bulkTagAssets,
   createStack,
   deleteAssets,
   deleteStacks,
+  Error,
   getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
@@ -74,15 +76,38 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
 };
 
 export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], showNotification = true) => {
-  const result = await addAssets({
-    id: albumIds[0],
-    bulkIdsDto: {
-      ids: assetIds,
+  const result = await addToAlbums({
+    albumsAddAssetsDto: {
+      albumIds,
+      assetIds,
     },
     key: authManager.key,
   });
+
+  if (showNotification) {
+    const $t = get(t);
+    let message = $t('assets_added_to_albums_count', {
+      values: { albumCount: result.albumSuccessCount, assetCount: result.assetSuccessCount },
+    });
+    if (result.error) {
+      if (result.error === 'duplicate') {
+        const duplicateErrorCount = 0;
+        message = $t('assets_were_part_of_album_count', { values: { count: duplicateErrorCount } });
+      } else if (result.error === 'no_permission') {
+        message = $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } });
+      } else {
+        message = $t('assets_cannot_be_added_to_albums');
+      }
+    }
+    notificationController.show({
+      type: NotificationType.Info,
+      timeout: 5000,
+      message,
+    });
+  }
+
   return result;
-}
+};
 
 export const tagAssets = async ({
   assetIds,
