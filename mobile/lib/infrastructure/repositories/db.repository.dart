@@ -72,7 +72,7 @@ class Drift extends $Drift implements IDatabaseRepository {
         );
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -89,6 +89,10 @@ class Drift extends $Drift implements IDatabaseRepository {
                   await m.drop(entity);
                   await m.create(entity);
                 }
+              },
+              from2To3: (m, v3) async {
+                // Removed foreign key constraint on stack.primaryAssetId
+                await m.alterTable(TableMigration(v3.stackEntity));
               },
             ),
           );
