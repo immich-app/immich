@@ -54,6 +54,14 @@ export class CreateAlbumDto {
   assetIds?: string[];
 }
 
+export class AlbumsAddAssetsDto {
+  @ValidateUUID({ each: true })
+  albumIds!: string[];
+
+  @ValidateUUID({ each: true })
+  assetIds!: string[];
+}
+
 export class UpdateAlbumDto {
   @Optional()
   @IsString()

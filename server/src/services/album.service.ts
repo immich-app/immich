@@ -3,6 +3,7 @@ import {
   AddUsersDto,
   AlbumInfoDto,
   AlbumResponseDto,
+  AlbumsAddAssetsDto,
   AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
@@ -13,7 +14,7 @@ import {
   UpdateAlbumDto,
   UpdateAlbumUserDto,
 } from 'src/dtos/album.dto';
-import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
@@ -183,6 +184,19 @@ export class AlbumService extends BaseService {
       }
     }
 
+    return results;
+  }
+
+  async addAssetsToAlbums(auth: AuthDto, dto: AlbumsAddAssetsDto): Promise<BulkIdResponseDto[][]> {
+    const results: BulkIdResponseDto[][] = [];
+    for (const albumId in dto.albumIds) {
+      try {
+        const albumResults = await this.addAssets(auth, albumId, { ids: dto.assetIds });
+        results.push(albumResults);
+      } catch {
+        results.push([{ id: albumId, success: false, error: BulkIdErrorReason.NOT_FOUND }]);
+      }
+    }
     return results;
   }
 
