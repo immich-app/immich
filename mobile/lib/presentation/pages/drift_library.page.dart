@@ -1,20 +1,23 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_album_thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/partner.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
-import 'package:immich_mobile/widgets/common/user_avatar.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -386,12 +389,29 @@ class _LocalAlbumsCollectionCard extends ConsumerWidget {
   }
 }
 
-class _QuickAccessButtonList extends ConsumerWidget {
+class _QuickAccessButtonList extends ConsumerStatefulWidget {
   const _QuickAccessButtonList();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final partners = ref.watch(partnerSharedWithProvider);
+  ConsumerState<_QuickAccessButtonList> createState() =>
+      _QuickAccessButtonListState();
+}
+
+class _QuickAccessButtonListState
+    extends ConsumerState<_QuickAccessButtonList> {
+  @override
+  void initState() {
+    super.initState();
+
+    final user = ref.read(currentUserProvider);
+    if (user != null) {
+      ref.read(partnerUsersProvider.notifier).getPartners(user.id);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final partners = ref.watch(partnerUsersProvider);
 
     return SliverPadding(
       padding: const EdgeInsets.only(left: 16, top: 12, right: 16, bottom: 32),
@@ -452,7 +472,6 @@ class _QuickAccessButtonList extends ConsumerWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                // TODO: PIN code is needed
                 onTap: () => context.pushRoute(const DriftLockedFolderRoute()),
               ),
               ListTile(
@@ -480,7 +499,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
 class _PartnerList extends StatelessWidget {
   const _PartnerList({required this.partners});
 
-  final List<UserDto> partners;
+  final List<PartnerUserDto> partners;
 
   @override
   Widget build(BuildContext context) {
@@ -503,7 +522,9 @@ class _PartnerList extends StatelessWidget {
             left: 12.0,
             right: 18.0,
           ),
-          leading: userAvatar(context, partner, radius: 16),
+          leading: _PartnerUserAvatar(
+            partner: partner,
+          ),
           title: const Text(
             "partner_list_user_photos",
             style: TextStyle(
@@ -515,6 +536,31 @@ class _PartnerList extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _PartnerUserAvatar extends StatelessWidget {
+  const _PartnerUserAvatar({required this.partner});
+
+  final PartnerUserDto partner;
+
+  @override
+  Widget build(BuildContext context) {
+    final url =
+        "${Store.get(StoreKey.serverEndpoint)}/users/${partner.id}/profile-image";
+    final nameFirstLetter = partner.name.isNotEmpty ? partner.name[0] : "";
+    return CircleAvatar(
+      radius: 16,
+      backgroundColor: context.primaryColor.withAlpha(50),
+      foregroundImage: CachedNetworkImageProvider(
+        url,
+        headers: ApiService.getRequestHeaders(),
+        cacheKey: "user-${partner.id}-profile",
+      ),
+      // silence errors if user has no profile image, use initials as fallback
+      onForegroundImageError: (exception, stackTrace) {},
+      child: Text(nameFirstLetter.toUpperCase()),
     );
   }
 }

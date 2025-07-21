@@ -1,10 +1,15 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/domain/services/partner.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/partner.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/partner.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
+import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'user.provider.g.dart';
@@ -23,3 +28,20 @@ UserService userService(Ref ref) => UserService(
       userApiRepository: ref.watch(userApiRepositoryProvider),
       storeService: ref.watch(storeServiceProvider),
     );
+
+/// Drifts
+final driftUserRepositoryProvider = Provider<DriftPartnerRepository>(
+  (ref) => DriftPartnerRepository(ref.watch(driftProvider)),
+);
+
+final driftUserService = Provider<DriftPartnerService>(
+  (ref) => DriftPartnerService(
+    ref.watch(driftUserRepositoryProvider),
+    ref.watch(partnerApiRepositoryProvider),
+  ),
+);
+
+final partnerUsersProvider =
+    NotifierProvider<PartnerNotifier, List<PartnerUserDto>>(
+  PartnerNotifier.new,
+);
