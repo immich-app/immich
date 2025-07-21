@@ -134,6 +134,7 @@ class UploadService {
       group: group,
       priority: priority ?? 5,
       updates: Updates.statusAndProgress,
+      retries: 3,
     );
   }
 }

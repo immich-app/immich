@@ -56,6 +56,10 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
           ref.read(isarProvider),
           ref.read(driftProvider),
         );
+        await migrateBackupAlbumsToSqlite(
+          ref.read(isarProvider),
+          ref.read(driftProvider),
+        );
       }
     } else {
       await ref.read(backgroundSyncProvider).cancel();

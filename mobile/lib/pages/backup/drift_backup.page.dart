@@ -1,83 +1,61 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
-import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 
 @RoutePage()
-class DriftBackupPage extends HookConsumerWidget {
+class DriftBackupPage extends ConsumerStatefulWidget {
   const DriftBackupPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    useEffect(
-      () {
-        ref.read(driftBackupProvider.notifier).getBackupStatus();
-        return null;
-      },
-      [],
-    );
+  ConsumerState<DriftBackupPage> createState() => _DriftBackupPageState();
+}
 
-    Widget buildControlButtons() {
-      return Padding(
-        padding: const EdgeInsets.only(
-          top: 24,
-        ),
-        child: Column(
-          children: [
-            ElevatedButton(
-              onPressed: () => ref.read(driftBackupProvider.notifier).backup(),
-              child: const Text(
-                "backup_controller_page_start_backup",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ).tr(),
-            ),
-            OutlinedButton(
-              onPressed: () => ref.read(driftBackupProvider.notifier).cancel(),
-              child: const Text(
-                "cancel",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ).tr(),
-            ),
-            OutlinedButton(
-              onPressed: () =>
-                  ref.read(driftBackupProvider.notifier).getDataInfo(),
-              child: const Text(
-                "Get database info",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ).tr(),
-            ),
-          ],
-        ),
-      );
-    }
+class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
+  @override
+  void initState() {
+    super.initState();
+    ref.read(driftBackupProvider.notifier).getBackupStatus();
+  }
+
+  Future<void> startBackup() async {
+    await ref.read(driftBackupProvider.notifier).getBackupStatus();
+    await ref.read(driftBackupProvider.notifier).backup();
+  }
+
+  Future<void> stopBackup() async {
+    await ref.read(driftBackupProvider.notifier).cancel();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedAlbum = ref
+        .watch(backupAlbumProvider)
+        .where(
+          (album) => album.backupSelection == BackupSelection.selected,
+        )
+        .toList();
+    final uploadItems = ref.watch(
+      driftBackupProvider.select((state) => state.uploadItems),
+    );
 
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: const Text(
-          "Backup (Experimental)",
+        title: Text(
+          "backup_controller_page_backup".t(),
         ),
         leading: IconButton(
           onPressed: () {
-            ref.watch(websocketProvider.notifier).listenUploadEvent();
             context.maybePop(true);
           },
           splashRadius: 24,
@@ -85,18 +63,6 @@ class DriftBackupPage extends HookConsumerWidget {
             Icons.arrow_back_ios_rounded,
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: IconButton(
-              onPressed: () => context.pushRoute(const BackupOptionsRoute()),
-              splashRadius: 24,
-              icon: const Icon(
-                Icons.settings_outlined,
-              ),
-            ),
-          ),
-        ],
       ),
       body: Stack(
         children: [
@@ -110,11 +76,24 @@ class DriftBackupPage extends HookConsumerWidget {
               children: [
                 const SizedBox(height: 8),
                 const _BackupAlbumSelectionCard(),
-                const _TotalCard(),
-                const _BackupCard(),
-                const _RemainderCard(),
-                const Divider(),
-                buildControlButtons(),
+                if (selectedAlbum.isNotEmpty) ...[
+                  const _TotalCard(),
+                  const _BackupCard(),
+                  const _RemainderCard(),
+                  const Divider(),
+                  BackupToggleButton(
+                    onStart: () async => await startBackup(),
+                    onStop: () async => await stopBackup(),
+                  ),
+                  if (uploadItems.isNotEmpty)
+                    TextButton.icon(
+                      icon: const Icon(Icons.info_outline_rounded),
+                      onPressed: () => context.pushRoute(
+                        const DriftUploadDetailRoute(),
+                      ),
+                      label: Text("view_details".t(context: context)),
+                    ),
+                ],
               ],
             ),
           ),

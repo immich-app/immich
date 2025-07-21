@@ -90,6 +90,19 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
                       ),
                 actions: [
                   TextButton(
+                    onPressed: () {
+                      context.pop();
+                    },
+                    child: Text(
+                      "cancel".t(context: context),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: context.colorScheme.outline,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
                     onPressed: () async {
                       Navigator.of(context).pop();
                       await ref.read(appSettingsServiceProvider).setSetting(
@@ -101,25 +114,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
                       );
                     },
                     child: Text(
-                      "YES",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: context.primaryColor,
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      context.pop();
-                    },
-                    child: Text(
-                      "NO",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: context.colorScheme.outline,
-                      ),
+                      "ok".t(context: context),
                     ),
                   ),
                 ],
@@ -135,13 +130,13 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
             _gradientAnimation.value,
           )!,
           Color.lerp(
-            context.primaryColor.withValues(alpha: 0.4),
-            context.primaryColor.withValues(alpha: 0.6),
+            context.logoPink.withValues(alpha: 0.2),
+            context.logoPink.withValues(alpha: 0.4),
             _gradientAnimation.value,
           )!,
           Color.lerp(
-            context.primaryColor.withValues(alpha: 0.3),
-            context.primaryColor.withValues(alpha: 0.5),
+            context.logoRed.withValues(alpha: 0.3),
+            context.logoRed.withValues(alpha: 0.5),
             _gradientAnimation.value,
           )!,
         ];
@@ -155,7 +150,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
               stops: const [0.0, 0.5, 1.0],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              transform: GradientRotation(_rotationAnimation.value * 0.1),
+              transform: GradientRotation(_rotationAnimation.value * 0.5),
             ),
             boxShadow: [
               BoxShadow(
@@ -166,13 +161,12 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
             ],
           ),
           child: Container(
-            margin: const EdgeInsets.all(1.5),
+            margin: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.all(Radius.circular(10.5)),
               color: context.scaffoldBackgroundColor,
             ),
             child: Material(
-              color: Colors.transparent,
               borderRadius: const BorderRadius.all(Radius.circular(10.5)),
               child: InkWell(
                 borderRadius: const BorderRadius.all(Radius.circular(10.5)),
@@ -205,7 +199,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 28),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,8 +253,9 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
                                   .t(context: context),
                               style: context.textTheme.labelLarge?.copyWith(
                                 color: context.textTheme.labelLarge?.color
-                                    ?.withValues(alpha: 0.7),
+                                    ?.withValues(alpha: 0.9),
                               ),
+                              maxLines: 2,
                             ),
                           ],
                         ),
