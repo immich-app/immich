@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -15,12 +17,13 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:logging/logging.dart';
 import 'package:thumbhash/thumbhash.dart' as thumbhash;
+import 'package:ffi/ffi.dart';
 
 final log = Logger('ThumbnailWidget');
 
 class Thumbnail extends StatefulWidget {
   final BoxFit fit;
-  final Size size;
+  final ui.Size size;
   final String? blurhash;
   final String? localId;
   final String? remoteId;
@@ -28,7 +31,7 @@ class Thumbnail extends StatefulWidget {
 
   const Thumbnail({
     this.fit = BoxFit.cover,
-    this.size = const Size.square(256),
+    this.size = const ui.Size.square(256),
     this.blurhash,
     this.localId,
     this.remoteId,
@@ -39,7 +42,7 @@ class Thumbnail extends StatefulWidget {
   Thumbnail.fromAsset({
     required Asset asset,
     this.fit = BoxFit.cover,
-    this.size = const Size.square(256),
+    this.size = const ui.Size.square(256),
     this.thumbhashOnly = false,
     super.key,
   })  : blurhash = asset.thumbhash,
@@ -49,7 +52,7 @@ class Thumbnail extends StatefulWidget {
   Thumbnail.fromBaseAsset({
     required BaseAsset? asset,
     this.fit = BoxFit.cover,
-    this.size = const Size.square(256),
+    this.size = const ui.Size.square(256),
     this.thumbhashOnly = false,
     super.key,
   })  : blurhash = switch (asset) {
@@ -188,25 +191,38 @@ class _ThumbnailState extends State<Thumbnail> {
       return null;
     }
     final stopwatch = Stopwatch()..start();
-    final thumb = await _decodeThumbnail(buffer, 256);
+    final thumb = await _decodeThumbnail(buffer, 256, 256);
     stopwatch.stop();
     return thumb;
   }
 
-  Future<ui.Image?> _decodeThumbnail(ImmutableBuffer buffer, int height) async {
+  Future<ui.Image?> _decodeThumbnail(
+    ImmutableBuffer buffer,
+    int width,
+    int height,
+  ) async {
     if (!mounted) {
       buffer.dispose();
       return null;
     }
 
-    final descriptor = await ImageDescriptor.encoded(buffer);
+    final descriptor = ImageDescriptor.raw(
+      buffer,
+      width: width,
+      height: height,
+      pixelFormat: PixelFormat.rgba8888,
+    );
+
     if (!mounted) {
       buffer.dispose();
       descriptor.dispose();
       return null;
     }
 
-    final codec = await descriptor.instantiateCodec(targetHeight: height);
+    final codec = await descriptor.instantiateCodec(
+      targetWidth: width,
+      targetHeight: height,
+    );
 
     if (!mounted) {
       buffer.dispose();
@@ -231,16 +247,24 @@ class _ThumbnailState extends State<Thumbnail> {
     final stopwatch = Stopwatch()..start();
     final localId = widget.localId;
     if (localId != null) {
+      final size = 256 * 256 * 4;
+      final pointer = malloc<Uint8>(size);
       try {
-        final data =
-            await thumbnailApi.getThumbnail(localId, width: 256, height: 256);
+        await thumbnailApi.setThumbnailToBuffer(
+          pointer.address,
+          localId,
+          width: 256,
+          height: 256,
+        );
         stopwatch.stop();
         log.info(
           'Retrieved local image $localId in ${stopwatch.elapsedMilliseconds.toStringAsFixed(2)} ms',
         );
-        return ImmutableBuffer.fromUint8List(data);
+        return ImmutableBuffer.fromUint8List(pointer.asTypedList(size));
       } catch (e) {
         log.warning('Failed to retrieve local image $localId: $e');
+      } finally {
+        malloc.free(pointer);
       }
     }
 

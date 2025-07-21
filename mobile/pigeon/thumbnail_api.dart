@@ -15,23 +15,10 @@ import 'package:pigeon/pigeon.dart';
 @HostApi()
 abstract class ThumbnailApi {
   @async
-  Uint8List getThumbnail(
+  void setThumbnailToBuffer(
+    int pointer,
     String assetId, {
     required int width,
     required int height,
   });
-
-  // @async
-  // int requestThumbnail(
-  //   String assetId, {
-  //   required int width,
-  //   required int height,
-  //   void Function(int requestId) onDone,
-  // });
 }
-
-// @FlutterApi()
-// abstract class PlatformThumbnailApi {
-//   @async
-//   Uint8List? getThumbnail(String assetId, int width, int height);
-// }
