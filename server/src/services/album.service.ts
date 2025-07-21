@@ -190,7 +190,7 @@ export class AlbumService extends BaseService {
 
   async addAssetsToAlbums(auth: AuthDto, dto: AlbumsAddAssetsDto): Promise<AlbumsAddAssetsResponseDto> {
     const fullResults = [];
-    for (const albumId in dto.albumIds) {
+    for (const albumId of dto.albumIds) {
       try {
         const albumResults = await this.addAssets(auth, albumId, { ids: dto.assetIds });
         const successIds = albumResults.filter(({ success }) => success).map((r) => r.id);
@@ -206,16 +206,14 @@ export class AlbumService extends BaseService {
           }
         }
         fullResults.push({ id: albumId, success, successIds, error });
-        // results.push({ results: albumResults });
       } catch {
         fullResults.push({ id: albumId, success: false, error: BulkIdErrorReason.NOT_FOUND });
-        // results.push({ results: [{ id: albumId, success: false, error: BulkIdErrorReason.NOT_FOUND }] });
       }
     }
 
     //Construct final return
     const albumSuccessCount = fullResults.filter(({ success }) => success).length;
-    const successIds: Set<string> = new Set(...fullResults.map((result) => result.successIds));
+    const successIds: Set<string> = new Set(fullResults.flatMap((result) => result.successIds!));
     const success = successIds.size > 0;
     let error;
     if (!success) {

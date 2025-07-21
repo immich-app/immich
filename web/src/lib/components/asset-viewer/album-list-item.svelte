@@ -51,19 +51,9 @@
     ];
   });
 
-  // const handleAlbumClick = () => {
-  //   if (multiSelectActive) {
-  //     onMultiSelectClicked();
-  //   } else {
-  //     onAlbumClick();
-  //   }
-  // }
-
   const handleMultiSelectClicked = (e?: MouseEvent) => {
     e?.stopPropagation();
     e?.preventDefault();
-    console.log('icon click');
-    // multiSelected = !multiSelected;
     onMultiSelect();
   };
 

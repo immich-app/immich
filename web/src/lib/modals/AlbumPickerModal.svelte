@@ -4,7 +4,6 @@
     AlbumModalRowConverter,
     AlbumModalRowType,
     isSelectableRowType,
-    type AlbumModalRow,
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
   import { albumViewSettings } from '$lib/stores/preferences.store';
   import { createAlbum, getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
@@ -55,7 +54,7 @@
         onClose([album]);
       } else {
         onClose();
-      }      
+      }
     }
   };
 
@@ -77,6 +76,15 @@
     }
   };
 
+  const handleMultiSubmit = () => {
+    const albums = new Set(albumModalRows.filter((row) => row.multiSelected).map((row) => row.album!));
+    if (albums.size > 0) {
+      onClose([...albums]);
+    } else {
+      onClose();
+    }
+  };
+
   const onEnter = async () => {
     const item = albumModalRows.find(({ selected }) => selected);
     if (!item) {
@@ -89,7 +97,9 @@
         break;
       }
       case AlbumModalRowType.ALBUM_ITEM: {
-        if (item.album) {
+        if (multiSelectActive) {
+          handleMultiSubmit();
+        } if (item.album) {
           onClose([item.album]);
         }
         break;
@@ -185,7 +195,7 @@
       {/if}
     </div>
     {#if multiSelectActive}
-      <Button size="small" shape="round" fullWidth onclick={() => onClose()}>{$t('add_to_albums')}</Button>
+      <Button size="small" shape="round" fullWidth onclick={handleMultiSubmit}>{$t('add_to_albums')}</Button>
     {/if}
   </ModalBody>
 </Modal>

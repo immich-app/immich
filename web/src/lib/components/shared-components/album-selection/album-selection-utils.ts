@@ -42,7 +42,7 @@ export class AlbumModalRowConverter {
     recentAlbums: AlbumResponseDto[],
     albums: AlbumResponseDto[],
     selectedRowIndex: number,
-    multiSelectedRowIndexes: string[]
+    multiSelectedRowIndexes: string[],
   ): AlbumModalRow[] {
     // only show recent albums if no search was entered, or we're in the normal albums (non-shared) modal.
     const recentAlbumsToShow = !this.shared && search.length === 0 ? recentAlbums : [];

@@ -19,7 +19,6 @@
 
   const onClick = async () => {
     const albums = await modalManager.show(AlbumPickerModal, { shared });
-
     if (!albums || albums.length === 0) {
       return;
     }
@@ -30,7 +29,10 @@
       await addAssetsToAlbum(album.id, assetIds);
       onAddToAlbum(assetIds, album.id);
     } else {
-      await addAssetsToAlbums(albums.map(a=>a.id), assetIds);
+      await addAssetsToAlbums(
+        albums.map((a) => a.id),
+        assetIds,
+      );
       onAddToAlbum(assetIds, albums[0].id);
     }
   };
