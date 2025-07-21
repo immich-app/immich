@@ -7,6 +7,7 @@
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import {
     alwaysLoadOriginalFile,
+    alwaysLoadOriginalVideo,
     autoPlayVideo,
     locale,
     loopVideo,
@@ -119,7 +120,13 @@
       <div class="ms-4">
         <SettingSwitch title={$t('loop_videos')} subtitle={$t('loop_videos_description')} bind:checked={$loopVideo} />
       </div>
-
+      <div class="ms-4">
+        <SettingSwitch
+          title={$t('play_original_video')}
+          subtitle={$t('play_original_video_setting_description')}
+          bind:checked={$alwaysLoadOriginalVideo}
+        />
+      </div>
       <div class="ms-4">
         <SettingSwitch
           title={$t('permanent_deletion_warning')}
