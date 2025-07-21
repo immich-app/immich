@@ -30,13 +30,13 @@ UserService userService(Ref ref) => UserService(
     );
 
 /// Drifts
-final driftUserRepositoryProvider = Provider<DriftPartnerRepository>(
+final driftPartnerRepositoryProvider = Provider<DriftPartnerRepository>(
   (ref) => DriftPartnerRepository(ref.watch(driftProvider)),
 );
 
-final driftUserService = Provider<DriftPartnerService>(
+final driftPartnerServiceProvider = Provider<DriftPartnerService>(
   (ref) => DriftPartnerService(
-    ref.watch(driftUserRepositoryProvider),
+    ref.watch(driftPartnerRepositoryProvider),
     ref.watch(partnerApiRepositoryProvider),
   ),
 );

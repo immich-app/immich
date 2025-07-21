@@ -1,19 +1,16 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_album_thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/partner_user_avatar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/partner.provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
@@ -389,29 +386,13 @@ class _LocalAlbumsCollectionCard extends ConsumerWidget {
   }
 }
 
-class _QuickAccessButtonList extends ConsumerStatefulWidget {
+class _QuickAccessButtonList extends ConsumerWidget {
   const _QuickAccessButtonList();
 
   @override
-  ConsumerState<_QuickAccessButtonList> createState() =>
-      _QuickAccessButtonListState();
-}
-
-class _QuickAccessButtonListState
-    extends ConsumerState<_QuickAccessButtonList> {
-  @override
-  void initState() {
-    super.initState();
-
-    final user = ref.read(currentUserProvider);
-    if (user != null) {
-      ref.read(partnerUsersProvider.notifier).getPartners(user.id);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final partners = ref.watch(partnerUsersProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final partnerSharedWithAsync = ref.watch(driftSharedWithPartnerProvider);
+    final partners = partnerSharedWithAsync.valueOrNull ?? [];
 
     return SliverPadding(
       padding: const EdgeInsets.only(left: 16, top: 12, right: 16, bottom: 32),
@@ -485,7 +466,7 @@ class _QuickAccessButtonListState
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                onTap: () => context.pushRoute(const PartnerRoute()),
+                onTap: () => context.pushRoute(const DriftPartnerRoute()),
               ),
               _PartnerList(partners: partners),
             ],
@@ -522,7 +503,7 @@ class _PartnerList extends StatelessWidget {
             left: 12.0,
             right: 18.0,
           ),
-          leading: _PartnerUserAvatar(
+          leading: PartnerUserAvatar(
             partner: partner,
           ),
           title: const Text(
@@ -536,31 +517,6 @@ class _PartnerList extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _PartnerUserAvatar extends StatelessWidget {
-  const _PartnerUserAvatar({required this.partner});
-
-  final PartnerUserDto partner;
-
-  @override
-  Widget build(BuildContext context) {
-    final url =
-        "${Store.get(StoreKey.serverEndpoint)}/users/${partner.id}/profile-image";
-    final nameFirstLetter = partner.name.isNotEmpty ? partner.name[0] : "";
-    return CircleAvatar(
-      radius: 16,
-      backgroundColor: context.primaryColor.withAlpha(50),
-      foregroundImage: CachedNetworkImageProvider(
-        url,
-        headers: ApiService.getRequestHeaders(),
-        cacheKey: "user-${partner.id}-profile",
-      ),
-      // silence errors if user has no profile image, use initials as fallback
-      onForegroundImageError: (exception, stackTrace) {},
-      child: Text(nameFirstLetter.toUpperCase()),
     );
   }
 }

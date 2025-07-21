@@ -50,6 +50,7 @@ import 'package:immich_mobile/pages/library/library.page.dart';
 import 'package:immich_mobile/pages/library/local_albums.page.dart';
 import 'package:immich_mobile/pages/library/locked/locked.page.dart';
 import 'package:immich_mobile/pages/library/locked/pin_auth.page.dart';
+import 'package:immich_mobile/pages/library/partner/drift_partner.page.dart';
 import 'package:immich_mobile/pages/library/partner/partner.page.dart';
 import 'package:immich_mobile/pages/library/partner/partner_detail.page.dart';
 import 'package:immich_mobile/pages/library/people/people_collection.page.dart';
@@ -482,6 +483,11 @@ class AppRouter extends RootStackRouter {
 
     AutoRoute(
       page: ChangeExperienceRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+
+    AutoRoute(
+      page: DriftPartnerRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
     // required to handle all deeplinks in deep_link.service.dart
