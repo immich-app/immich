@@ -77,7 +77,7 @@ export class AlbumController {
     return this.service.addAssets(auth, id, dto);
   }
 
-  @Put('/assets')
+  @Put('assets')
   @Authenticated({ sharedLink: true })
   addAssetsToAlbums(@Auth() auth: AuthDto, @Body() dto: AlbumsAddAssetsDto): Promise<BulkIdResponseDto[][]> {
     return this.service.addAssetsToAlbums(auth, dto);
