@@ -91,6 +91,7 @@ enum AppSettingsEnum<T> {
     true,
   ),
   betaTimeline<bool>(StoreKey.betaTimeline, null, false),
+  enableBackup<bool>(StoreKey.enableBackup, null, false),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

@@ -6,10 +6,12 @@ import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
@@ -18,6 +20,7 @@ import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
@@ -69,25 +72,18 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       }
 
       await _ref.read(serverInfoProvider.notifier).getServerVersion();
-
-      // TODO: Need to decide on how we want to handle uploads once the app is resumed
-      // await FileDownloader().start();
     }
 
     if (!Store.isBetaTimelineEnabled) {
       switch (_ref.read(tabProvider)) {
         case TabEnum.home:
           await _ref.read(assetProvider.notifier).getAllAsset();
-          break;
-        case TabEnum.search:
-          // nothing to do
-          break;
 
         case TabEnum.albums:
           await _ref.read(albumProvider.notifier).refreshRemoteAlbums();
-          break;
+
         case TabEnum.library:
-          // nothing to do
+        case TabEnum.search:
           break;
       }
     } else {
@@ -108,7 +104,15 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
             },
           ),
           backgroundManager.syncRemote(),
-        ]);
+        ]).then((_) async {
+          final isEnableBackup = _ref
+              .read(appSettingsServiceProvider)
+              .getSetting(AppSettingsEnum.enableBackup);
+
+          if (isEnableBackup) {
+            await _ref.read(driftBackupProvider.notifier).handleBackupResume();
+          }
+        });
       } catch (e, stackTrace) {
         Logger("AppLifeCycleNotifier").severe(
           "Error during background sync",
