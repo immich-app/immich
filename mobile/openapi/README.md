@@ -478,6 +478,8 @@ Class | Method | HTTP request | Description
  - [SyncAlbumV1](doc//SyncAlbumV1.md)
  - [SyncAssetDeleteV1](doc//SyncAssetDeleteV1.md)
  - [SyncAssetExifV1](doc//SyncAssetExifV1.md)
+ - [SyncAssetFaceDeleteV1](doc//SyncAssetFaceDeleteV1.md)
+ - [SyncAssetFaceV1](doc//SyncAssetFaceV1.md)
  - [SyncAssetV1](doc//SyncAssetV1.md)
  - [SyncEntityType](doc//SyncEntityType.md)
  - [SyncMemoryAssetDeleteV1](doc//SyncMemoryAssetDeleteV1.md)
