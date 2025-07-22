@@ -97,21 +97,16 @@ class _DriftBackupAlbumSelectionPageState
               ref.read(driftBackupProvider.select((p) => p.totalCount));
 
           if (currentTotalAssetCount != _initialTotalAssetCount) {
-            debugPrint("requeue backup");
             final isBackupEnabled = ref
                 .read(appSettingsServiceProvider)
                 .getSetting(AppSettingsEnum.enableBackup);
 
             if (!isBackupEnabled) {
-              debugPrint("not enable, abort backup");
-
               return;
             }
-            debugPrint("clear current queue");
             final backupNotifier = ref.read(driftBackupProvider.notifier);
 
             backupNotifier.cancel().then((_) {
-              debugPrint("start new backup");
               backupNotifier.backup();
             });
           }
