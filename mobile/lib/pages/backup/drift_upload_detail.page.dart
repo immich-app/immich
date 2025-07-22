@@ -39,7 +39,7 @@ class DriftUploadDetailPage extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.cloud_upload_outlined,
+            Icons.cloud_off_rounded,
             size: 80,
             color: context.colorScheme.onSurface.withValues(alpha: 0.3),
           ),
@@ -79,7 +79,9 @@ class DriftUploadDetailPage extends ConsumerWidget {
 
     return Card(
       elevation: 0,
-      color: context.colorScheme.surfaceContainer,
+      color: item.isFailed != null
+          ? context.colorScheme.errorContainer
+          : context.colorScheme.surfaceContainer,
       shape: RoundedRectangleBorder(
         borderRadius: const BorderRadius.all(
           Radius.circular(16),

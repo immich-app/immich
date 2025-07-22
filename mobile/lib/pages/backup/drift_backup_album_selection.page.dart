@@ -9,6 +9,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
+import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/widgets/backup/drift_album_info_list_tile.dart';
@@ -28,6 +29,8 @@ class _DriftBackupAlbumSelectionPageState
     extends ConsumerState<DriftBackupAlbumSelectionPage> {
   String _searchQuery = '';
   bool _isSearchMode = false;
+  int _initialTotalAssetCount = 0;
+  bool _hasPopped = false;
   late ValueNotifier<bool> _enableSyncUploadAlbum;
   late TextEditingController _searchController;
   late FocusNode _searchFocusNode;
@@ -43,6 +46,9 @@ class _DriftBackupAlbumSelectionPageState
         .read(appSettingsServiceProvider)
         .getSetting(AppSettingsEnum.syncAlbums);
     ref.read(backupAlbumProvider.notifier).getAll();
+
+    _initialTotalAssetCount =
+        ref.read(driftBackupProvider.select((p) => p.totalCount));
   }
 
   @override
@@ -79,179 +85,207 @@ class _DriftBackupAlbumSelectionPageState
       }
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: () => context.maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-        ),
-        title: _isSearchMode
-            ? SearchField(
-                hintText: 'search_albums'.t(context: context),
-                autofocus: true,
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                onChanged: (value) =>
-                    setState(() => _searchQuery = value.trim()),
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) async {
+        // There is an issue with Flutter where the pop event
+        // can be triggered multiple times, so we guard it with _hasPopped
+        if (didPop && !_hasPopped) {
+          _hasPopped = true;
+
+          await ref.read(driftBackupProvider.notifier).getBackupStatus();
+          final currentTotalAssetCount =
+              ref.read(driftBackupProvider.select((p) => p.totalCount));
+
+          if (currentTotalAssetCount != _initialTotalAssetCount) {
+            final isBackupEnabled = ref
+                .read(appSettingsServiceProvider)
+                .getSetting(AppSettingsEnum.enableBackup);
+
+            if (!isBackupEnabled) {
+              return;
+            }
+            final backupNotifier = ref.read(driftBackupProvider.notifier);
+
+            backupNotifier.cancel().then((_) {
+              backupNotifier.backup();
+            });
+          }
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: () async => await context.maybePop(),
+            icon: const Icon(Icons.arrow_back_ios_rounded),
+          ),
+          title: _isSearchMode
+              ? SearchField(
+                  hintText: 'search_albums'.t(context: context),
+                  autofocus: true,
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  onChanged: (value) =>
+                      setState(() => _searchQuery = value.trim()),
+                )
+              : const Text(
+                  "backup_album_selection_page_select_albums",
+                ).t(context: context),
+          actions: [
+            if (!_isSearchMode)
+              IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: () => setState(() {
+                  _isSearchMode = true;
+                  _searchQuery = '';
+                }),
               )
-            : const Text(
-                "backup_album_selection_page_select_albums",
-              ).t(context: context),
-        actions: [
-          if (!_isSearchMode)
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () => setState(() {
-                _isSearchMode = true;
-                _searchQuery = '';
-              }),
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => setState(() {
-                _isSearchMode = false;
-                _searchQuery = '';
-                _searchController.clear();
-              }),
-            ),
-        ],
-        elevation: 0,
-      ),
-      body: CustomScrollView(
-        physics: const ClampingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 8.0,
-                    horizontal: 16.0,
-                  ),
-                  child: Text(
-                    "backup_album_selection_page_selection_info",
-                    style: context.textTheme.titleSmall,
-                  ).t(context: context),
-                ),
-                // Selected Album Chips
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Wrap(
-                    children: [
-                      _SelectedAlbumNameChips(
-                        selectedBackupAlbums: selectedBackupAlbums,
-                      ),
-                      _ExcludedAlbumNameChips(
-                        excludedBackupAlbums: excludedBackupAlbums,
-                      ),
-                    ],
-                  ),
-                ),
-
-                SettingsSwitchListTile(
-                  valueNotifier: _enableSyncUploadAlbum,
-                  title: "sync_albums".t(context: context),
-                  subtitle:
-                      "sync_upload_album_setting_subtitle".t(context: context),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  titleStyle: context.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  subtitleStyle: context.textTheme.labelLarge?.copyWith(
-                    color: context.colorScheme.primary,
-                  ),
-                  onChanged: handleSyncAlbumToggle,
-                ),
-
-                ListTile(
-                  title: Text(
-                    "albums_on_device_count".t(
-                      context: context,
-                      args: {'count': albumCount.toString()},
+            else
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => setState(() {
+                  _isSearchMode = false;
+                  _searchQuery = '';
+                  _searchController.clear();
+                }),
+              ),
+          ],
+          elevation: 0,
+        ),
+        body: CustomScrollView(
+          physics: const ClampingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 16.0,
                     ),
-                    style: context.textTheme.titleSmall,
-                  ),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Text(
-                      "backup_album_selection_page_albums_tap",
-                      style: context.textTheme.labelLarge?.copyWith(
-                        color: context.primaryColor,
-                      ),
+                      "backup_album_selection_page_selection_info",
+                      style: context.textTheme.titleSmall,
                     ).t(context: context),
                   ),
-                  trailing: IconButton(
-                    splashRadius: 16,
-                    icon: Icon(
-                      Icons.info,
-                      size: 20,
-                      color: context.primaryColor,
-                    ),
-                    onPressed: () {
-                      // show the dialog
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            shape: const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10)),
-                            ),
-                            elevation: 5,
-                            title: Text(
-                              'backup_album_selection_page_selection_info',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: context.primaryColor,
-                              ),
-                            ).t(context: context),
-                            content: SingleChildScrollView(
-                              child: ListBody(
-                                children: [
-                                  const Text(
-                                    'backup_album_selection_page_assets_scatter',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                    ),
-                                  ).t(context: context),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
+                  // Selected Album Chips
 
-                if (Platform.isAndroid)
-                  _SelectAllButton(
-                    filteredAlbums: filteredAlbums,
-                    selectedBackupAlbums: selectedBackupAlbums,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Wrap(
+                      children: [
+                        _SelectedAlbumNameChips(
+                          selectedBackupAlbums: selectedBackupAlbums,
+                        ),
+                        _ExcludedAlbumNameChips(
+                          excludedBackupAlbums: excludedBackupAlbums,
+                        ),
+                      ],
+                    ),
                   ),
-              ],
+
+                  SettingsSwitchListTile(
+                    valueNotifier: _enableSyncUploadAlbum,
+                    title: "sync_albums".t(context: context),
+                    subtitle: "sync_upload_album_setting_subtitle"
+                        .t(context: context),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    titleStyle: context.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    subtitleStyle: context.textTheme.labelLarge?.copyWith(
+                      color: context.colorScheme.primary,
+                    ),
+                    onChanged: handleSyncAlbumToggle,
+                  ),
+
+                  ListTile(
+                    title: Text(
+                      "albums_on_device_count".t(
+                        context: context,
+                        args: {'count': albumCount.toString()},
+                      ),
+                      style: context.textTheme.titleSmall,
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(
+                        "backup_album_selection_page_albums_tap",
+                        style: context.textTheme.labelLarge?.copyWith(
+                          color: context.primaryColor,
+                        ),
+                      ).t(context: context),
+                    ),
+                    trailing: IconButton(
+                      splashRadius: 16,
+                      icon: Icon(
+                        Icons.info,
+                        size: 20,
+                        color: context.primaryColor,
+                      ),
+                      onPressed: () {
+                        // show the dialog
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                              ),
+                              elevation: 5,
+                              title: Text(
+                                'backup_album_selection_page_selection_info',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: context.primaryColor,
+                                ),
+                              ).t(context: context),
+                              content: SingleChildScrollView(
+                                child: ListBody(
+                                  children: [
+                                    const Text(
+                                      'backup_album_selection_page_assets_scatter',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                      ),
+                                    ).t(context: context),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+
+                  if (Platform.isAndroid)
+                    _SelectAllButton(
+                      filteredAlbums: filteredAlbums,
+                      selectedBackupAlbums: selectedBackupAlbums,
+                    ),
+                ],
+              ),
             ),
-          ),
-          SliverLayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.crossAxisExtent > 600) {
-                return _AlbumSelectionGrid(
-                  filteredAlbums: filteredAlbums,
-                  searchQuery: _searchQuery,
-                );
-              } else {
-                return _AlbumSelectionList(
-                  filteredAlbums: filteredAlbums,
-                  searchQuery: _searchQuery,
-                );
-              }
-            },
-          ),
-        ],
+            SliverLayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.crossAxisExtent > 600) {
+                  return _AlbumSelectionGrid(
+                    filteredAlbums: filteredAlbums,
+                    searchQuery: _searchQuery,
+                  );
+                } else {
+                  return _AlbumSelectionList(
+                    filteredAlbums: filteredAlbums,
+                    searchQuery: _searchQuery,
+                  );
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
