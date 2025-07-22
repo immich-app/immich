@@ -21,7 +21,6 @@ import {
   createStack,
   deleteAssets,
   deleteStacks,
-  Error,
   getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
@@ -87,7 +86,12 @@ export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], 
   if (showNotification) {
     const $t = get(t);
     let message = $t('assets_added_to_albums_count', {
-      values: { albumCount: result.albumSuccessCount, albumTotal: albumIds.length, assetCount: result.assetSuccessCount, assetTotal: assetIds.length },
+      values: {
+        albumCount: result.albumSuccessCount,
+        albumTotal: albumIds.length,
+        assetCount: result.assetSuccessCount,
+        assetTotal: assetIds.length,
+      },
     });
     if (result.error) {
       if (result.error === 'duplicate') {
