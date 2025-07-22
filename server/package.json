@@ -134,8 +134,8 @@
     "@types/lodash": "^4.14.197",
     "@types/luxon": "^3.6.2",
     "@types/mock-fs": "^4.13.1",
-    "@types/multer": "^1.4.7",
-    "@types/node": "^22.15.33",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^22.16.4",
     "@types/nodemailer": "^6.4.14",
     "@types/picomatch": "^4.0.0",
     "@types/pngjs": "^6.0.5",
@@ -172,7 +172,7 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.17.0"
+    "node": "22.17.1"
   },
   "overrides": {
     "sharp": "^0.34.2"

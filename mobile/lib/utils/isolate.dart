@@ -63,7 +63,17 @@ Cancelable<T?> runInIsolateGentle<T>({
       try {
         await LogService.I.flushBuffer();
         await ref.read(driftProvider).close();
-        await ref.read(isarProvider).close();
+
+        // Close Isar safely
+        try {
+          final isar = ref.read(isarProvider);
+          if (isar.isOpen) {
+            await isar.close();
+          }
+        } catch (e) {
+          debugPrint("Error closing Isar: $e");
+        }
+
         ref.dispose();
       } catch (error) {
         debugPrint("Error closing resources in isolate: $error");
