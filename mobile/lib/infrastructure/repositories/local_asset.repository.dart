@@ -70,7 +70,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
   Future<int> getHashedCount() {
     return _db.managers.localAssetEntity
-        .filter((e) => e.checksum.isNull())
+        .filter((e) => e.checksum.isNull().not())
         .count();
   }
 }
