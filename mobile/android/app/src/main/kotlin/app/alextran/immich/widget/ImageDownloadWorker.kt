@@ -169,13 +169,16 @@ class ImageDownloadWorker(
   ): WidgetEntry {
     val api = ImmichAPI(serverConfig)
 
-    val filters = SearchFilters(AssetType.IMAGE)
+    val filters = SearchFilters()
     val albumId = widgetConfig[kSelectedAlbum]
     val showSubtitle = widgetConfig[kShowAlbumName]
     val albumName = widgetConfig[kSelectedAlbumName]
     var subtitle: String? = if (showSubtitle == true) albumName else ""
 
-    if (albumId != null) {
+
+    if (albumId == "FAVORITES") {
+      filters.isFavorite = true
+    } else if (albumId != null) {
       filters.albumIds = listOf(albumId)
     }
 
@@ -183,7 +186,7 @@ class ImageDownloadWorker(
 
     // handle an empty album, fallback to random
     if (randomSearch.isEmpty() && albumId != null) {
-      randomSearch = api.fetchSearchResults(SearchFilters(AssetType.IMAGE))
+      randomSearch = api.fetchSearchResults(SearchFilters())
       subtitle = ""
     }
 
@@ -215,7 +218,7 @@ class ImageDownloadWorker(
       val yearDiff = today.year - memory.data.year
       subtitle = "$yearDiff ${if (yearDiff == 1) "year" else "years"} ago"
     } else {
-      val filters = SearchFilters(AssetType.IMAGE, size=1)
+      val filters = SearchFilters(size=1)
       asset = api.fetchSearchResults(filters).first()
     }
 

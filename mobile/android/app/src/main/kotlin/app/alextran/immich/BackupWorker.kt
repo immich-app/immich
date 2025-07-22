@@ -83,6 +83,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
 
     flutterLoader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
       runDart()
+
     }
 
     return resolvableFuture
