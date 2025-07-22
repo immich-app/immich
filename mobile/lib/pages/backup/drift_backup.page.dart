@@ -9,6 +9,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 
@@ -24,12 +25,24 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
   @override
   void initState() {
     super.initState();
-    ref.read(driftBackupProvider.notifier).getBackupStatus();
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) {
+      return;
+    }
+
+    ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
   }
 
   Future<void> startBackup() async {
-    await ref.read(driftBackupProvider.notifier).getBackupStatus();
-    await ref.read(driftBackupProvider.notifier).backup();
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) {
+      return;
+    }
+
+    await ref
+        .read(driftBackupProvider.notifier)
+        .getBackupStatus(currentUser.id);
+    await ref.read(driftBackupProvider.notifier).backup(currentUser.id);
   }
 
   Future<void> stopBackup() async {
@@ -211,7 +224,13 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
         trailing: ElevatedButton(
           onPressed: () async {
             await context.pushRoute(const DriftBackupAlbumSelectionRoute());
-            ref.read(driftBackupProvider.notifier).getBackupStatus();
+            final currentUser = ref.read(currentUserProvider);
+            if (currentUser == null) {
+              return;
+            }
+            ref
+                .read(driftBackupProvider.notifier)
+                .getBackupStatus(currentUser.id);
           },
           child: const Text(
             "select",

@@ -307,11 +307,11 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
-  Future<void> getBackupStatus() async {
+  Future<void> getBackupStatus(String userId) async {
     final [totalCount, backupCount, remainderCount] = await Future.wait([
       _backupService.getTotalCount(),
-      _backupService.getBackupCount(),
-      _backupService.getRemainderCount(),
+      _backupService.getBackupCount(userId),
+      _backupService.getRemainderCount(userId),
     ]);
 
     state = state.copyWith(
@@ -321,8 +321,8 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
-  Future<void> backup() {
-    return _backupService.backup(_updateEnqueueCount);
+  Future<void> backup(String userId) {
+    return _backupService.backup(userId, _updateEnqueueCount);
   }
 
   void _updateEnqueueCount(EnqueueStatus status) {
@@ -357,11 +357,11 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
     }
   }
 
-  Future<void> handleBackupResume() async {
+  Future<void> handleBackupResume(String userId) async {
     final tasks = await FileDownloader().allTasks(group: kBackupGroup);
     if (tasks.isEmpty) {
       // Start a new backup queue
-      await backup();
+      await backup(userId);
     }
 
     debugPrint("Tasks to resume: ${tasks.length}");

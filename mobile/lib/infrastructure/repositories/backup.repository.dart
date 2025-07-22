@@ -50,7 +50,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     return query.get().then((rows) => rows.length);
   }
 
-  Future<int> getRemainderCount() async {
+  Future<int> getRemainderCount(String userId) async {
     final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
       ..addColumns([_db.localAlbumAssetEntity.assetId])
       ..join([
@@ -75,6 +75,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
         _db.localAlbumEntity.backupSelection
                 .equalsValue(BackupSelection.selected) &
             _db.remoteAssetEntity.id.isNull() &
+            _db.remoteAssetEntity.ownerId.equals(userId) &
             _db.localAlbumAssetEntity.assetId
                 .isNotInQuery(_getExcludedSubquery()),
       );
@@ -82,7 +83,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     return query.get().then((rows) => rows.length);
   }
 
-  Future<int> getBackupCount() async {
+  Future<int> getBackupCount(String userId) async {
     final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
       ..addColumns(
         [_db.localAlbumAssetEntity.assetId],
@@ -109,6 +110,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
         _db.localAlbumEntity.backupSelection
                 .equalsValue(BackupSelection.selected) &
             _db.remoteAssetEntity.id.isNotNull() &
+            _db.remoteAssetEntity.ownerId.equals(userId) &
             _db.localAlbumAssetEntity.assetId
                 .isNotInQuery(_getExcludedSubquery()),
       );
@@ -116,7 +118,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     return query.get().then((rows) => rows.length);
   }
 
-  Future<List<LocalAsset>> getCandidates() async {
+  Future<List<LocalAsset>> getCandidates(String userId) async {
     final selectedAlbumIds = _db.localAlbumEntity.selectOnly(distinct: true)
       ..addColumns([_db.localAlbumEntity.id])
       ..where(
@@ -141,6 +143,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
                 ..addColumns([_db.remoteAssetEntity.checksum])
                 ..where(
                   _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) &
+                      _db.remoteAssetEntity.ownerId.equals(userId) &
                       lae.checksum.isNotNull(),
                 ),
             ) &
