@@ -128,7 +128,6 @@ class Person {
     String? ownerId,
     String? name,
     String? faceAssetId,
-    String? thumbnailPath,
     bool? isFavorite,
     bool? isHidden,
     String? color,
