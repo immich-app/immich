@@ -12,6 +12,7 @@
   import { goto } from '$app/navigation';
   import type { Snippet } from 'svelte';
   import { handlePromiseError } from '$lib/utils';
+  import { SvelteURLSearchParams } from 'svelte/reactivity';
 
   const getParamValues = (param: string) => {
     return new Set((page.url.searchParams.get(param) || '').split(' ').filter((x) => x !== ''));
@@ -26,7 +27,7 @@
   let { queryParam, state = writable(getParamValues(queryParam)), children }: Props = $props();
   setAccordionState(state);
 
-  const searchParams = new URLSearchParams(page.url.searchParams);
+  const searchParams = new SvelteURLSearchParams(page.url.searchParams);
 
   $effect(() => {
     if ($state.size > 0) {
