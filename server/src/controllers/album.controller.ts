@@ -29,7 +29,7 @@ export class AlbumController {
   }
 
   @Get('slim')
-  @Authenticated({ permission: Permission.ALBUM_READ })
+  @Authenticated({ permission: Permission.AlbumRead })
   getAllAlbumsSlim(@Auth() auth: AuthDto, @Query() query: GetAlbumsDto): Promise<AlbumResponseDto[]> {
     return this.service.getAll(auth, query, true);
   }
