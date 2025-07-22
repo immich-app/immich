@@ -29,7 +29,7 @@
     "migrations:run": "node ./dist/bin/migrations.js run",
     "schema:drop": "node ./dist/bin/migrations.js query 'DROP schema public cascade; CREATE schema public;'",
     "schema:reset": "npm run schema:drop && npm run migrations:run",
-    "sync:open-api": "node ./dist/bin/sync-open-api.js",
+    "sync:open-api": "nest build -b tsc && node ./dist/bin/sync-open-api.js",
     "sync:sql": "node ./dist/bin/sync-sql.js",
     "email:dev": "email dev -p 3050 --dir src/emails"
   },
@@ -113,13 +113,13 @@
     "validator": "^13.12.0"
   },
   "devDependencies": {
-    "canvas": "^3.1.0",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.8.0",
     "@nestjs/cli": "^11.0.2",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.4",
-    "@swc/core": "^1.4.14",
+    "@swc/cli": "^0.7.8",
+    "@swc/core": "^1.13.0",
     "@testcontainers/postgresql": "^11.0.0",
     "@testcontainers/redis": "^11.0.0",
     "@types/archiver": "^6.0.0",
@@ -146,6 +146,7 @@
     "@types/ua-parser-js": "^0.7.36",
     "@types/validator": "^13.15.2",
     "@vitest/coverage-v8": "^3.0.0",
+    "canvas": "^3.1.0",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-prettier": "^5.1.3",
