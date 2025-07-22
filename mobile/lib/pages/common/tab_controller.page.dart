@@ -11,7 +11,6 @@ import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 
 @RoutePage()
 class TabControllerPage extends HookConsumerWidget {
@@ -145,15 +144,12 @@ class TabControllerPage extends HookConsumerWidget {
     }
 
     final multiselectEnabled = ref.watch(multiselectProvider);
-    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     return AutoTabsRouter(
       routes: [
         const PhotosRoute(),
-        if (!isReadonlyModeEnabled) ...[
-          SearchRoute(),
-          const AlbumsRoute(),
-          const LibraryRoute(),
-        ],
+        SearchRoute(),
+        const AlbumsRoute(),
+        const LibraryRoute(),
       ],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(
@@ -177,10 +173,9 @@ class TabControllerPage extends HookConsumerWidget {
                     ],
                   )
                 : child,
-            bottomNavigationBar:
-                multiselectEnabled || isScreenLandscape || isReadonlyModeEnabled
-                    ? null
-                    : bottomNavigationBar(tabsRouter),
+            bottomNavigationBar: multiselectEnabled || isScreenLandscape
+                ? null
+                : bottomNavigationBar(tabsRouter),
           ),
         );
       },
