@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/readonly_mode.provider.dart';
@@ -118,27 +119,29 @@ class AdvancedSettings extends HookConsumerWidget {
         subtitle:
             "advanced_settings_enable_alternate_media_filter_subtitle".tr(),
       ),
-      SettingsSwitchListTile(
-        valueNotifier: readonlyModeEnabled,
-        title: "advanced_settings_readonly_mode_title".tr(),
-        subtitle: "advanced_settings_readonly_mode_subtitle".tr(),
-        onChanged: (value) {
-          readonlyModeEnabled.value = value;
-          ref.read(readonlyModeProvider.notifier).setReadonlyMode(value);
-          context.scaffoldMessenger.showSnackBar(
-            SnackBar(
-              duration: const Duration(seconds: 2),
-              content: Text(
-                (value ? "readonly_mode_enabled" : "readonly_mode_disabled")
-                    .tr(),
-                style: context.textTheme.bodyLarge?.copyWith(
-                  color: context.primaryColor,
+      // TODO: Remove this check when beta timeline goes stable
+      if (Store.isBetaTimelineEnabled)
+        SettingsSwitchListTile(
+          valueNotifier: readonlyModeEnabled,
+          title: "advanced_settings_readonly_mode_title".tr(),
+          subtitle: "advanced_settings_readonly_mode_subtitle".tr(),
+          onChanged: (value) {
+            readonlyModeEnabled.value = value;
+            ref.read(readonlyModeProvider.notifier).setReadonlyMode(value);
+            context.scaffoldMessenger.showSnackBar(
+              SnackBar(
+                duration: const Duration(seconds: 2),
+                content: Text(
+                  (value ? "readonly_mode_enabled" : "readonly_mode_disabled")
+                      .tr(),
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    color: context.primaryColor,
+                  ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        ),
     ];
 
     return SettingsSubPageScaffold(settings: advancedSettings);
