@@ -62,7 +62,8 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
         _db.remoteAssetEntity.id,
         _db.localAssetEntity.id,
         _db.stackEntity.primaryAssetId,
-      ]);
+      ])
+      ..limit(1);
 
     return query.map((row) {
       final asset = row.readTable(_db.remoteAssetEntity).toDto();
