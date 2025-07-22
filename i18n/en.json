@@ -1575,6 +1575,7 @@
   "resolved_all_duplicates": "Resolved all duplicates",
   "restore": "Restore",
   "restore_all": "Restore all",
+  "restore_trash_action_prompt": "{count} restored from trash",
   "restore_user": "Restore user",
   "restored_asset": "Restored asset",
   "resume": "Resume",
