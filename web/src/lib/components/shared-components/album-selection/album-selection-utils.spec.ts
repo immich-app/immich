@@ -24,6 +24,7 @@ const createAlbumRow = (album: AlbumResponseDto, selected: boolean) => ({
   type: AlbumModalRowType.ALBUM_ITEM,
   album,
   selected,
+  multiSelected: false,
 });
 
 describe('Album Modal', () => {
