@@ -72,8 +72,13 @@ SELECT * FROM
 		local_asset_entity lae
 	LEFT JOIN
 		remote_asset_entity rae ON rae.checksum = lae.checksum
+	LEFT JOIN
+		local_album_asset_entity laa ON laa.asset_id = lae.id
+	LEFT JOIN
+		local_album_entity la ON la.id = laa.album_id
 	WHERE
 		rae.id IS NULL
+		AND la.backup_selection = 0 -- selected
 )
 ORDER BY created_at DESC
 LIMIT $limit;
@@ -108,8 +113,13 @@ FROM
 		local_asset_entity lae
 	LEFT JOIN
 		remote_asset_entity rae ON rae.checksum = lae.checksum
+	LEFT JOIN
+		local_album_asset_entity laa ON laa.asset_id = lae.id
+	LEFT JOIN
+		local_album_entity la ON la.id = laa.album_id
 	WHERE
 		rae.id IS NULL
+		AND la.backup_selection = 0 -- selected
 )
 GROUP BY bucket_date
 ORDER BY bucket_date DESC;
