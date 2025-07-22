@@ -1,18 +1,18 @@
 import 'dart:async';
 
-import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 
 /// Provides access to a persistent key-value store with an in-memory cache.
 /// Listens for repository changes to keep the cache updated.
 class StoreService {
-  final IStoreRepository _storeRepository;
+  final IsarStoreRepository _storeRepository;
 
   /// In-memory cache. Keys are [StoreKey.id]
   final Map<int, Object?> _cache = {};
   late final StreamSubscription<StoreDto> _storeUpdateSubscription;
 
-  StoreService._({required IStoreRepository storeRepository})
+  StoreService._({required IsarStoreRepository storeRepository})
       : _storeRepository = storeRepository;
 
   // TODO: Temporary typedef to make minimal changes. Remove this and make the presentation layer access store through a provider
@@ -26,14 +26,14 @@ class StoreService {
 
   // TODO: Replace the implementation with the one from create after removing the typedef
   static Future<StoreService> init({
-    required IStoreRepository storeRepository,
+    required IsarStoreRepository storeRepository,
   }) async {
     _instance ??= await create(storeRepository: storeRepository);
     return _instance!;
   }
 
   static Future<StoreService> create({
-    required IStoreRepository storeRepository,
+    required IsarStoreRepository storeRepository,
   }) async {
     final instance = StoreService._(storeRepository: storeRepository);
     await instance._populateCache();
@@ -93,6 +93,8 @@ class StoreService {
     await _storeRepository.deleteAll();
     _cache.clear();
   }
+
+  bool get isBetaTimelineEnabled => tryGet(StoreKey.betaTimeline) ?? false;
 }
 
 class StoreKeyNotFoundException implements Exception {

@@ -30,14 +30,14 @@ select
         from
           "user_metadata"
         where
-          "users"."id" = "user_metadata"."userId"
+          "user"."id" = "user_metadata"."userId"
       ) as agg
   ) as "metadata"
 from
-  "users"
+  "user"
 where
-  "users"."id" = $1
-  and "users"."deletedAt" is null
+  "user"."id" = $1
+  and "user"."deletedAt" is null
 
 -- UserRepository.getAdmin
 select
@@ -69,33 +69,54 @@ select
         from
           "user_metadata"
         where
-          "users"."id" = "user_metadata"."userId"
+          "user"."id" = "user_metadata"."userId"
       ) as agg
   ) as "metadata"
 from
-  "users"
+  "user"
 where
-  "users"."isAdmin" = $1
-  and "users"."deletedAt" is null
+  "user"."isAdmin" = $1
+  and "user"."deletedAt" is null
+
+-- UserRepository.getFileSamples
+select
+  "id",
+  "profileImagePath"
+from
+  "user"
+where
+  "profileImagePath" != ''
+limit
+  3
 
 -- UserRepository.hasAdmin
 select
-  "users"."id"
+  "user"."id"
 from
-  "users"
+  "user"
 where
-  "users"."isAdmin" = $1
-  and "users"."deletedAt" is null
+  "user"."isAdmin" = $1
+  and "user"."deletedAt" is null
 
 -- UserRepository.getForPinCode
 select
-  "users"."pinCode",
-  "users"."password"
+  "user"."pinCode",
+  "user"."password"
 from
-  "users"
+  "user"
 where
-  "users"."id" = $1
-  and "users"."deletedAt" is null
+  "user"."id" = $1
+  and "user"."deletedAt" is null
+
+-- UserRepository.getForChangePassword
+select
+  "user"."id",
+  "user"."password"
+from
+  "user"
+where
+  "user"."id" = $1
+  and "user"."deletedAt" is null
 
 -- UserRepository.getByEmail
 select
@@ -127,14 +148,14 @@ select
         from
           "user_metadata"
         where
-          "users"."id" = "user_metadata"."userId"
+          "user"."id" = "user_metadata"."userId"
       ) as agg
   ) as "metadata"
 from
-  "users"
+  "user"
 where
   "email" = $1
-  and "users"."deletedAt" is null
+  and "user"."deletedAt" is null
 
 -- UserRepository.getByStorageLabel
 select
@@ -156,10 +177,10 @@ select
   "quotaSizeInBytes",
   "quotaUsageInBytes"
 from
-  "users"
+  "user"
 where
-  "users"."storageLabel" = $1
-  and "users"."deletedAt" is null
+  "user"."storageLabel" = $1
+  and "user"."deletedAt" is null
 
 -- UserRepository.getByOAuthId
 select
@@ -191,22 +212,22 @@ select
         from
           "user_metadata"
         where
-          "users"."id" = "user_metadata"."userId"
+          "user"."id" = "user_metadata"."userId"
       ) as agg
   ) as "metadata"
 from
-  "users"
+  "user"
 where
-  "users"."oauthId" = $1
-  and "users"."deletedAt" is null
+  "user"."oauthId" = $1
+  and "user"."deletedAt" is null
 
 -- UserRepository.getDeletedAfter
 select
   "id"
 from
-  "users"
+  "user"
 where
-  "users"."deletedAt" < $1
+  "user"."deletedAt" < $1
 
 -- UserRepository.getList (with deleted)
 select
@@ -238,11 +259,11 @@ select
         from
           "user_metadata"
         where
-          "users"."id" = "user_metadata"."userId"
+          "user"."id" = "user_metadata"."userId"
       ) as agg
   ) as "metadata"
 from
-  "users"
+  "user"
 order by
   "createdAt" desc
 
@@ -276,95 +297,95 @@ select
         from
           "user_metadata"
         where
-          "users"."id" = "user_metadata"."userId"
+          "user"."id" = "user_metadata"."userId"
       ) as agg
   ) as "metadata"
 from
-  "users"
+  "user"
 where
-  "users"."deletedAt" is null
+  "user"."deletedAt" is null
 order by
   "createdAt" desc
 
 -- UserRepository.getUserStats
 select
-  "users"."id" as "userId",
-  "users"."name" as "userName",
-  "users"."quotaSizeInBytes",
+  "user"."id" as "userId",
+  "user"."name" as "userName",
+  "user"."quotaSizeInBytes",
   count(*) filter (
     where
       (
-        "assets"."type" = 'IMAGE'
-        and "assets"."visibility" != 'hidden'
+        "asset"."type" = 'IMAGE'
+        and "asset"."visibility" != 'hidden'
       )
   ) as "photos",
   count(*) filter (
     where
       (
-        "assets"."type" = 'VIDEO'
-        and "assets"."visibility" != 'hidden'
+        "asset"."type" = 'VIDEO'
+        and "asset"."visibility" != 'hidden'
       )
   ) as "videos",
   coalesce(
-    sum("exif"."fileSizeInByte") filter (
+    sum("asset_exif"."fileSizeInByte") filter (
       where
-        "assets"."libraryId" is null
+        "asset"."libraryId" is null
     ),
     0
   ) as "usage",
   coalesce(
-    sum("exif"."fileSizeInByte") filter (
+    sum("asset_exif"."fileSizeInByte") filter (
       where
         (
-          "assets"."libraryId" is null
-          and "assets"."type" = 'IMAGE'
+          "asset"."libraryId" is null
+          and "asset"."type" = 'IMAGE'
         )
     ),
     0
   ) as "usagePhotos",
   coalesce(
-    sum("exif"."fileSizeInByte") filter (
+    sum("asset_exif"."fileSizeInByte") filter (
       where
         (
-          "assets"."libraryId" is null
-          and "assets"."type" = 'VIDEO'
+          "asset"."libraryId" is null
+          and "asset"."type" = 'VIDEO'
         )
     ),
     0
   ) as "usageVideos"
 from
-  "users"
-  left join "assets" on "assets"."ownerId" = "users"."id"
-  and "assets"."deletedAt" is null
-  left join "exif" on "exif"."assetId" = "assets"."id"
+  "user"
+  left join "asset" on "asset"."ownerId" = "user"."id"
+  and "asset"."deletedAt" is null
+  left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
 group by
-  "users"."id"
+  "user"."id"
 order by
-  "users"."createdAt" asc
+  "user"."createdAt" asc
 
 -- UserRepository.updateUsage
-update "users"
+update "user"
 set
   "quotaUsageInBytes" = "quotaUsageInBytes" + $1,
   "updatedAt" = $2
 where
   "id" = $3::uuid
-  and "users"."deletedAt" is null
+  and "user"."deletedAt" is null
 
 -- UserRepository.syncUsage
-update "users"
+update "user"
 set
   "quotaUsageInBytes" = (
     select
-      coalesce(sum("exif"."fileSizeInByte"), 0) as "usage"
+      coalesce(sum("asset_exif"."fileSizeInByte"), 0) as "usage"
     from
-      "assets"
-      left join "exif" on "exif"."assetId" = "assets"."id"
+      "asset"
+      left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
     where
-      "assets"."libraryId" is null
-      and "assets"."ownerId" = "users"."id"
+      "asset"."libraryId" is null
+      and "asset"."ownerId" = "user"."id"
   ),
   "updatedAt" = $1
 where
-  "users"."deletedAt" is null
-  and "users"."id" = $2::uuid
+  "user"."deletedAt" is null
+  and "user"."id" = $2::uuid

@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { DB, TagAsset, Tags } from 'src/db';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { DB } from 'src/schema';
+import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
+import { TagTable } from 'src/schema/tables/tag.table';
 
 @Injectable()
 export class TagRepository {
@@ -17,13 +19,13 @@ export class TagRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   get(id: string) {
-    return this.db.selectFrom('tags').select(columns.tag).where('id', '=', id).executeTakeFirst();
+    return this.db.selectFrom('tag').select(columns.tag).where('id', '=', id).executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
   getByValue(userId: string, value: string) {
     return this.db
-      .selectFrom('tags')
+      .selectFrom('tag')
       .select(columns.tag)
       .where('userId', '=', userId)
       .where('value', '=', value)
@@ -35,7 +37,7 @@ export class TagRepository {
     const parentId = _parentId ?? null;
     return this.db.transaction().execute(async (tx) => {
       const tag = await this.db
-        .insertInto('tags')
+        .insertInto('tag')
         .values({ userId, value, parentId })
         .onConflict((oc) => oc.columns(['userId', 'value']).doUpdateSet({ parentId }))
         .returning(columns.tag)
@@ -43,18 +45,18 @@ export class TagRepository {
 
       // update closure table
       await tx
-        .insertInto('tags_closure')
+        .insertInto('tag_closure')
         .values({ id_ancestor: tag.id, id_descendant: tag.id })
         .onConflict((oc) => oc.doNothing())
         .execute();
 
       if (parentId) {
         await tx
-          .insertInto('tags_closure')
+          .insertInto('tag_closure')
           .columns(['id_ancestor', 'id_descendant'])
           .expression(
             this.db
-              .selectFrom('tags_closure')
+              .selectFrom('tag_closure')
               .select(['id_ancestor', sql.raw<string>(`'${tag.id}'`).as('id_descendant')])
               .where('id_descendant', '=', parentId),
           )
@@ -68,22 +70,22 @@ export class TagRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getAll(userId: string) {
-    return this.db.selectFrom('tags').select(columns.tag).where('userId', '=', userId).orderBy('value').execute();
+    return this.db.selectFrom('tag').select(columns.tag).where('userId', '=', userId).orderBy('value').execute();
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, color: DummyValue.STRING, value: DummyValue.STRING }] })
-  create(tag: Insertable<Tags>) {
-    return this.db.insertInto('tags').values(tag).returningAll().executeTakeFirstOrThrow();
+  create(tag: Insertable<TagTable>) {
+    return this.db.insertInto('tag').values(tag).returningAll().executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { color: DummyValue.STRING }] })
-  update(id: string, dto: Updateable<Tags>) {
-    return this.db.updateTable('tags').set(dto).where('id', '=', id).returningAll().executeTakeFirstOrThrow();
+  update(id: string, dto: Updateable<TagTable>) {
+    return this.db.updateTable('tag').set(dto).where('id', '=', id).returningAll().executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string) {
-    await this.db.deleteFrom('tags').where('id', '=', id).execute();
+    await this.db.deleteFrom('tag').where('id', '=', id).execute();
   }
 
   @ChunkedSet({ paramIndex: 1 })
@@ -128,7 +130,7 @@ export class TagRepository {
 
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, tagsIds: [DummyValue.UUID] }]] })
   @Chunked()
-  upsertAssetIds(items: Insertable<TagAsset>[]) {
+  upsertAssetIds(items: Insertable<TagAssetTable>[]) {
     if (items.length === 0) {
       return Promise.resolve([]);
     }
@@ -164,17 +166,17 @@ export class TagRepository {
     // TODO rewrite as a single statement
     await this.db.transaction().execute(async (tx) => {
       const result = await tx
-        .selectFrom('assets')
-        .innerJoin('tag_asset', 'tag_asset.assetsId', 'assets.id')
-        .innerJoin('tags_closure', 'tags_closure.id_descendant', 'tag_asset.tagsId')
-        .innerJoin('tags', 'tags.id', 'tags_closure.id_descendant')
-        .select((eb) => ['tags.id', eb.fn.count<number>('assets.id').as('count')])
-        .groupBy('tags.id')
+        .selectFrom('asset')
+        .innerJoin('tag_asset', 'tag_asset.assetsId', 'asset.id')
+        .innerJoin('tag_closure', 'tag_closure.id_descendant', 'tag_asset.tagsId')
+        .innerJoin('tag', 'tag.id', 'tag_closure.id_descendant')
+        .select((eb) => ['tag.id', eb.fn.count<number>('asset.id').as('count')])
+        .groupBy('tag.id')
         .execute();
 
       const ids = result.filter(({ count }) => count === 0).map(({ id }) => id);
       if (ids.length > 0) {
-        await this.db.deleteFrom('tags').where('id', 'in', ids).execute();
+        await this.db.deleteFrom('tag').where('id', 'in', ids).execute();
         this.logger.log(`Deleted ${ids.length} empty tags`);
       }
     });

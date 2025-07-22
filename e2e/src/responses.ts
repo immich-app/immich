@@ -116,6 +116,7 @@ export const deviceDto = {
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
     current: true,
+    isPendingSyncReset: false,
     deviceOS: '',
     deviceType: '',
   },

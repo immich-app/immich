@@ -19,14 +19,15 @@ typedef $$RemoteExifEntityTableCreateCompanionBuilder
   i0.Value<int?> height,
   i0.Value<int?> width,
   i0.Value<String?> exposureTime,
-  i0.Value<int?> fNumber,
+  i0.Value<double?> fNumber,
   i0.Value<int?> fileSize,
-  i0.Value<int?> focalLength,
-  i0.Value<int?> latitude,
-  i0.Value<int?> longitude,
+  i0.Value<double?> focalLength,
+  i0.Value<double?> latitude,
+  i0.Value<double?> longitude,
   i0.Value<int?> iso,
   i0.Value<String?> make,
   i0.Value<String?> model,
+  i0.Value<String?> lens,
   i0.Value<String?> orientation,
   i0.Value<String?> timeZone,
   i0.Value<int?> rating,
@@ -43,14 +44,15 @@ typedef $$RemoteExifEntityTableUpdateCompanionBuilder
   i0.Value<int?> height,
   i0.Value<int?> width,
   i0.Value<String?> exposureTime,
-  i0.Value<int?> fNumber,
+  i0.Value<double?> fNumber,
   i0.Value<int?> fileSize,
-  i0.Value<int?> focalLength,
-  i0.Value<int?> latitude,
-  i0.Value<int?> longitude,
+  i0.Value<double?> focalLength,
+  i0.Value<double?> latitude,
+  i0.Value<double?> longitude,
   i0.Value<int?> iso,
   i0.Value<String?> make,
   i0.Value<String?> model,
+  i0.Value<String?> lens,
   i0.Value<String?> orientation,
   i0.Value<String?> timeZone,
   i0.Value<int?> rating,
@@ -125,20 +127,20 @@ class $$RemoteExifEntityTableFilterComposer
       column: $table.exposureTime,
       builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<int> get fNumber => $composableBuilder(
+  i0.ColumnFilters<double> get fNumber => $composableBuilder(
       column: $table.fNumber, builder: (column) => i0.ColumnFilters(column));
 
   i0.ColumnFilters<int> get fileSize => $composableBuilder(
       column: $table.fileSize, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<int> get focalLength => $composableBuilder(
+  i0.ColumnFilters<double> get focalLength => $composableBuilder(
       column: $table.focalLength,
       builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<int> get latitude => $composableBuilder(
+  i0.ColumnFilters<double> get latitude => $composableBuilder(
       column: $table.latitude, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<int> get longitude => $composableBuilder(
+  i0.ColumnFilters<double> get longitude => $composableBuilder(
       column: $table.longitude, builder: (column) => i0.ColumnFilters(column));
 
   i0.ColumnFilters<int> get iso => $composableBuilder(
@@ -149,6 +151,9 @@ class $$RemoteExifEntityTableFilterComposer
 
   i0.ColumnFilters<String> get model => $composableBuilder(
       column: $table.model, builder: (column) => i0.ColumnFilters(column));
+
+  i0.ColumnFilters<String> get lens => $composableBuilder(
+      column: $table.lens, builder: (column) => i0.ColumnFilters(column));
 
   i0.ColumnFilters<String> get orientation => $composableBuilder(
       column: $table.orientation,
@@ -223,20 +228,20 @@ class $$RemoteExifEntityTableOrderingComposer
       column: $table.exposureTime,
       builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get fNumber => $composableBuilder(
+  i0.ColumnOrderings<double> get fNumber => $composableBuilder(
       column: $table.fNumber, builder: (column) => i0.ColumnOrderings(column));
 
   i0.ColumnOrderings<int> get fileSize => $composableBuilder(
       column: $table.fileSize, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get focalLength => $composableBuilder(
+  i0.ColumnOrderings<double> get focalLength => $composableBuilder(
       column: $table.focalLength,
       builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get latitude => $composableBuilder(
+  i0.ColumnOrderings<double> get latitude => $composableBuilder(
       column: $table.latitude, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get longitude => $composableBuilder(
+  i0.ColumnOrderings<double> get longitude => $composableBuilder(
       column: $table.longitude,
       builder: (column) => i0.ColumnOrderings(column));
 
@@ -248,6 +253,9 @@ class $$RemoteExifEntityTableOrderingComposer
 
   i0.ColumnOrderings<String> get model => $composableBuilder(
       column: $table.model, builder: (column) => i0.ColumnOrderings(column));
+
+  i0.ColumnOrderings<String> get lens => $composableBuilder(
+      column: $table.lens, builder: (column) => i0.ColumnOrderings(column));
 
   i0.ColumnOrderings<String> get orientation => $composableBuilder(
       column: $table.orientation,
@@ -321,19 +329,19 @@ class $$RemoteExifEntityTableAnnotationComposer
   i0.GeneratedColumn<String> get exposureTime => $composableBuilder(
       column: $table.exposureTime, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get fNumber =>
+  i0.GeneratedColumn<double> get fNumber =>
       $composableBuilder(column: $table.fNumber, builder: (column) => column);
 
   i0.GeneratedColumn<int> get fileSize =>
       $composableBuilder(column: $table.fileSize, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get focalLength => $composableBuilder(
+  i0.GeneratedColumn<double> get focalLength => $composableBuilder(
       column: $table.focalLength, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get latitude =>
+  i0.GeneratedColumn<double> get latitude =>
       $composableBuilder(column: $table.latitude, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get longitude =>
+  i0.GeneratedColumn<double> get longitude =>
       $composableBuilder(column: $table.longitude, builder: (column) => column);
 
   i0.GeneratedColumn<int> get iso =>
@@ -344,6 +352,9 @@ class $$RemoteExifEntityTableAnnotationComposer
 
   i0.GeneratedColumn<String> get model =>
       $composableBuilder(column: $table.model, builder: (column) => column);
+
+  i0.GeneratedColumn<String> get lens =>
+      $composableBuilder(column: $table.lens, builder: (column) => column);
 
   i0.GeneratedColumn<String> get orientation => $composableBuilder(
       column: $table.orientation, builder: (column) => column);
@@ -416,14 +427,15 @@ class $$RemoteExifEntityTableTableManager extends i0.RootTableManager<
             i0.Value<int?> height = const i0.Value.absent(),
             i0.Value<int?> width = const i0.Value.absent(),
             i0.Value<String?> exposureTime = const i0.Value.absent(),
-            i0.Value<int?> fNumber = const i0.Value.absent(),
+            i0.Value<double?> fNumber = const i0.Value.absent(),
             i0.Value<int?> fileSize = const i0.Value.absent(),
-            i0.Value<int?> focalLength = const i0.Value.absent(),
-            i0.Value<int?> latitude = const i0.Value.absent(),
-            i0.Value<int?> longitude = const i0.Value.absent(),
+            i0.Value<double?> focalLength = const i0.Value.absent(),
+            i0.Value<double?> latitude = const i0.Value.absent(),
+            i0.Value<double?> longitude = const i0.Value.absent(),
             i0.Value<int?> iso = const i0.Value.absent(),
             i0.Value<String?> make = const i0.Value.absent(),
             i0.Value<String?> model = const i0.Value.absent(),
+            i0.Value<String?> lens = const i0.Value.absent(),
             i0.Value<String?> orientation = const i0.Value.absent(),
             i0.Value<String?> timeZone = const i0.Value.absent(),
             i0.Value<int?> rating = const i0.Value.absent(),
@@ -447,6 +459,7 @@ class $$RemoteExifEntityTableTableManager extends i0.RootTableManager<
             iso: iso,
             make: make,
             model: model,
+            lens: lens,
             orientation: orientation,
             timeZone: timeZone,
             rating: rating,
@@ -462,14 +475,15 @@ class $$RemoteExifEntityTableTableManager extends i0.RootTableManager<
             i0.Value<int?> height = const i0.Value.absent(),
             i0.Value<int?> width = const i0.Value.absent(),
             i0.Value<String?> exposureTime = const i0.Value.absent(),
-            i0.Value<int?> fNumber = const i0.Value.absent(),
+            i0.Value<double?> fNumber = const i0.Value.absent(),
             i0.Value<int?> fileSize = const i0.Value.absent(),
-            i0.Value<int?> focalLength = const i0.Value.absent(),
-            i0.Value<int?> latitude = const i0.Value.absent(),
-            i0.Value<int?> longitude = const i0.Value.absent(),
+            i0.Value<double?> focalLength = const i0.Value.absent(),
+            i0.Value<double?> latitude = const i0.Value.absent(),
+            i0.Value<double?> longitude = const i0.Value.absent(),
             i0.Value<int?> iso = const i0.Value.absent(),
             i0.Value<String?> make = const i0.Value.absent(),
             i0.Value<String?> model = const i0.Value.absent(),
+            i0.Value<String?> lens = const i0.Value.absent(),
             i0.Value<String?> orientation = const i0.Value.absent(),
             i0.Value<String?> timeZone = const i0.Value.absent(),
             i0.Value<int?> rating = const i0.Value.absent(),
@@ -493,6 +507,7 @@ class $$RemoteExifEntityTableTableManager extends i0.RootTableManager<
             iso: iso,
             make: make,
             model: model,
+            lens: lens,
             orientation: orientation,
             timeZone: timeZone,
             rating: rating,
@@ -622,9 +637,9 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
   static const i0.VerificationMeta _fNumberMeta =
       const i0.VerificationMeta('fNumber');
   @override
-  late final i0.GeneratedColumn<int> fNumber = i0.GeneratedColumn<int>(
+  late final i0.GeneratedColumn<double> fNumber = i0.GeneratedColumn<double>(
       'f_number', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
+      type: i0.DriftSqlType.double, requiredDuringInsert: false);
   static const i0.VerificationMeta _fileSizeMeta =
       const i0.VerificationMeta('fileSize');
   @override
@@ -634,21 +649,21 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
   static const i0.VerificationMeta _focalLengthMeta =
       const i0.VerificationMeta('focalLength');
   @override
-  late final i0.GeneratedColumn<int> focalLength = i0.GeneratedColumn<int>(
-      'focal_length', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
+  late final i0.GeneratedColumn<double> focalLength =
+      i0.GeneratedColumn<double>('focal_length', aliasedName, true,
+          type: i0.DriftSqlType.double, requiredDuringInsert: false);
   static const i0.VerificationMeta _latitudeMeta =
       const i0.VerificationMeta('latitude');
   @override
-  late final i0.GeneratedColumn<int> latitude = i0.GeneratedColumn<int>(
+  late final i0.GeneratedColumn<double> latitude = i0.GeneratedColumn<double>(
       'latitude', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
+      type: i0.DriftSqlType.double, requiredDuringInsert: false);
   static const i0.VerificationMeta _longitudeMeta =
       const i0.VerificationMeta('longitude');
   @override
-  late final i0.GeneratedColumn<int> longitude = i0.GeneratedColumn<int>(
+  late final i0.GeneratedColumn<double> longitude = i0.GeneratedColumn<double>(
       'longitude', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
+      type: i0.DriftSqlType.double, requiredDuringInsert: false);
   static const i0.VerificationMeta _isoMeta = const i0.VerificationMeta('iso');
   @override
   late final i0.GeneratedColumn<int> iso = i0.GeneratedColumn<int>(
@@ -665,6 +680,12 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
   @override
   late final i0.GeneratedColumn<String> model = i0.GeneratedColumn<String>(
       'model', aliasedName, true,
+      type: i0.DriftSqlType.string, requiredDuringInsert: false);
+  static const i0.VerificationMeta _lensMeta =
+      const i0.VerificationMeta('lens');
+  @override
+  late final i0.GeneratedColumn<String> lens = i0.GeneratedColumn<String>(
+      'lens', aliasedName, true,
       type: i0.DriftSqlType.string, requiredDuringInsert: false);
   static const i0.VerificationMeta _orientationMeta =
       const i0.VerificationMeta('orientation');
@@ -709,6 +730,7 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
         iso,
         make,
         model,
+        lens,
         orientation,
         timeZone,
         rating,
@@ -803,6 +825,10 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
       context.handle(
           _modelMeta, model.isAcceptableOrUnknown(data['model']!, _modelMeta));
     }
+    if (data.containsKey('lens')) {
+      context.handle(
+          _lensMeta, lens.isAcceptableOrUnknown(data['lens']!, _lensMeta));
+    }
     if (data.containsKey('orientation')) {
       context.handle(
           _orientationMeta,
@@ -853,21 +879,23 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
       exposureTime: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.string, data['${effectivePrefix}exposure_time']),
       fNumber: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}f_number']),
+          .read(i0.DriftSqlType.double, data['${effectivePrefix}f_number']),
       fileSize: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.int, data['${effectivePrefix}file_size']),
       focalLength: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}focal_length']),
+          .read(i0.DriftSqlType.double, data['${effectivePrefix}focal_length']),
       latitude: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}latitude']),
+          .read(i0.DriftSqlType.double, data['${effectivePrefix}latitude']),
       longitude: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}longitude']),
+          .read(i0.DriftSqlType.double, data['${effectivePrefix}longitude']),
       iso: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.int, data['${effectivePrefix}iso']),
       make: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}make']),
       model: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}model']),
+      lens: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}lens']),
       orientation: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}orientation']),
       timeZone: attachedDatabase.typeMapping
@@ -901,14 +929,15 @@ class RemoteExifEntityData extends i0.DataClass
   final int? height;
   final int? width;
   final String? exposureTime;
-  final int? fNumber;
+  final double? fNumber;
   final int? fileSize;
-  final int? focalLength;
-  final int? latitude;
-  final int? longitude;
+  final double? focalLength;
+  final double? latitude;
+  final double? longitude;
   final int? iso;
   final String? make;
   final String? model;
+  final String? lens;
   final String? orientation;
   final String? timeZone;
   final int? rating;
@@ -931,6 +960,7 @@ class RemoteExifEntityData extends i0.DataClass
       this.iso,
       this.make,
       this.model,
+      this.lens,
       this.orientation,
       this.timeZone,
       this.rating,
@@ -964,19 +994,19 @@ class RemoteExifEntityData extends i0.DataClass
       map['exposure_time'] = i0.Variable<String>(exposureTime);
     }
     if (!nullToAbsent || fNumber != null) {
-      map['f_number'] = i0.Variable<int>(fNumber);
+      map['f_number'] = i0.Variable<double>(fNumber);
     }
     if (!nullToAbsent || fileSize != null) {
       map['file_size'] = i0.Variable<int>(fileSize);
     }
     if (!nullToAbsent || focalLength != null) {
-      map['focal_length'] = i0.Variable<int>(focalLength);
+      map['focal_length'] = i0.Variable<double>(focalLength);
     }
     if (!nullToAbsent || latitude != null) {
-      map['latitude'] = i0.Variable<int>(latitude);
+      map['latitude'] = i0.Variable<double>(latitude);
     }
     if (!nullToAbsent || longitude != null) {
-      map['longitude'] = i0.Variable<int>(longitude);
+      map['longitude'] = i0.Variable<double>(longitude);
     }
     if (!nullToAbsent || iso != null) {
       map['iso'] = i0.Variable<int>(iso);
@@ -986,6 +1016,9 @@ class RemoteExifEntityData extends i0.DataClass
     }
     if (!nullToAbsent || model != null) {
       map['model'] = i0.Variable<String>(model);
+    }
+    if (!nullToAbsent || lens != null) {
+      map['lens'] = i0.Variable<String>(lens);
     }
     if (!nullToAbsent || orientation != null) {
       map['orientation'] = i0.Variable<String>(orientation);
@@ -1016,14 +1049,15 @@ class RemoteExifEntityData extends i0.DataClass
       height: serializer.fromJson<int?>(json['height']),
       width: serializer.fromJson<int?>(json['width']),
       exposureTime: serializer.fromJson<String?>(json['exposureTime']),
-      fNumber: serializer.fromJson<int?>(json['fNumber']),
+      fNumber: serializer.fromJson<double?>(json['fNumber']),
       fileSize: serializer.fromJson<int?>(json['fileSize']),
-      focalLength: serializer.fromJson<int?>(json['focalLength']),
-      latitude: serializer.fromJson<int?>(json['latitude']),
-      longitude: serializer.fromJson<int?>(json['longitude']),
+      focalLength: serializer.fromJson<double?>(json['focalLength']),
+      latitude: serializer.fromJson<double?>(json['latitude']),
+      longitude: serializer.fromJson<double?>(json['longitude']),
       iso: serializer.fromJson<int?>(json['iso']),
       make: serializer.fromJson<String?>(json['make']),
       model: serializer.fromJson<String?>(json['model']),
+      lens: serializer.fromJson<String?>(json['lens']),
       orientation: serializer.fromJson<String?>(json['orientation']),
       timeZone: serializer.fromJson<String?>(json['timeZone']),
       rating: serializer.fromJson<int?>(json['rating']),
@@ -1043,14 +1077,15 @@ class RemoteExifEntityData extends i0.DataClass
       'height': serializer.toJson<int?>(height),
       'width': serializer.toJson<int?>(width),
       'exposureTime': serializer.toJson<String?>(exposureTime),
-      'fNumber': serializer.toJson<int?>(fNumber),
+      'fNumber': serializer.toJson<double?>(fNumber),
       'fileSize': serializer.toJson<int?>(fileSize),
-      'focalLength': serializer.toJson<int?>(focalLength),
-      'latitude': serializer.toJson<int?>(latitude),
-      'longitude': serializer.toJson<int?>(longitude),
+      'focalLength': serializer.toJson<double?>(focalLength),
+      'latitude': serializer.toJson<double?>(latitude),
+      'longitude': serializer.toJson<double?>(longitude),
       'iso': serializer.toJson<int?>(iso),
       'make': serializer.toJson<String?>(make),
       'model': serializer.toJson<String?>(model),
+      'lens': serializer.toJson<String?>(lens),
       'orientation': serializer.toJson<String?>(orientation),
       'timeZone': serializer.toJson<String?>(timeZone),
       'rating': serializer.toJson<int?>(rating),
@@ -1068,14 +1103,15 @@ class RemoteExifEntityData extends i0.DataClass
           i0.Value<int?> height = const i0.Value.absent(),
           i0.Value<int?> width = const i0.Value.absent(),
           i0.Value<String?> exposureTime = const i0.Value.absent(),
-          i0.Value<int?> fNumber = const i0.Value.absent(),
+          i0.Value<double?> fNumber = const i0.Value.absent(),
           i0.Value<int?> fileSize = const i0.Value.absent(),
-          i0.Value<int?> focalLength = const i0.Value.absent(),
-          i0.Value<int?> latitude = const i0.Value.absent(),
-          i0.Value<int?> longitude = const i0.Value.absent(),
+          i0.Value<double?> focalLength = const i0.Value.absent(),
+          i0.Value<double?> latitude = const i0.Value.absent(),
+          i0.Value<double?> longitude = const i0.Value.absent(),
           i0.Value<int?> iso = const i0.Value.absent(),
           i0.Value<String?> make = const i0.Value.absent(),
           i0.Value<String?> model = const i0.Value.absent(),
+          i0.Value<String?> lens = const i0.Value.absent(),
           i0.Value<String?> orientation = const i0.Value.absent(),
           i0.Value<String?> timeZone = const i0.Value.absent(),
           i0.Value<int?> rating = const i0.Value.absent(),
@@ -1101,6 +1137,7 @@ class RemoteExifEntityData extends i0.DataClass
         iso: iso.present ? iso.value : this.iso,
         make: make.present ? make.value : this.make,
         model: model.present ? model.value : this.model,
+        lens: lens.present ? lens.value : this.lens,
         orientation: orientation.present ? orientation.value : this.orientation,
         timeZone: timeZone.present ? timeZone.value : this.timeZone,
         rating: rating.present ? rating.value : this.rating,
@@ -1132,6 +1169,7 @@ class RemoteExifEntityData extends i0.DataClass
       iso: data.iso.present ? data.iso.value : this.iso,
       make: data.make.present ? data.make.value : this.make,
       model: data.model.present ? data.model.value : this.model,
+      lens: data.lens.present ? data.lens.value : this.lens,
       orientation:
           data.orientation.present ? data.orientation.value : this.orientation,
       timeZone: data.timeZone.present ? data.timeZone.value : this.timeZone,
@@ -1162,6 +1200,7 @@ class RemoteExifEntityData extends i0.DataClass
           ..write('iso: $iso, ')
           ..write('make: $make, ')
           ..write('model: $model, ')
+          ..write('lens: $lens, ')
           ..write('orientation: $orientation, ')
           ..write('timeZone: $timeZone, ')
           ..write('rating: $rating, ')
@@ -1189,6 +1228,7 @@ class RemoteExifEntityData extends i0.DataClass
         iso,
         make,
         model,
+        lens,
         orientation,
         timeZone,
         rating,
@@ -1215,6 +1255,7 @@ class RemoteExifEntityData extends i0.DataClass
           other.iso == this.iso &&
           other.make == this.make &&
           other.model == this.model &&
+          other.lens == this.lens &&
           other.orientation == this.orientation &&
           other.timeZone == this.timeZone &&
           other.rating == this.rating &&
@@ -1232,14 +1273,15 @@ class RemoteExifEntityCompanion
   final i0.Value<int?> height;
   final i0.Value<int?> width;
   final i0.Value<String?> exposureTime;
-  final i0.Value<int?> fNumber;
+  final i0.Value<double?> fNumber;
   final i0.Value<int?> fileSize;
-  final i0.Value<int?> focalLength;
-  final i0.Value<int?> latitude;
-  final i0.Value<int?> longitude;
+  final i0.Value<double?> focalLength;
+  final i0.Value<double?> latitude;
+  final i0.Value<double?> longitude;
   final i0.Value<int?> iso;
   final i0.Value<String?> make;
   final i0.Value<String?> model;
+  final i0.Value<String?> lens;
   final i0.Value<String?> orientation;
   final i0.Value<String?> timeZone;
   final i0.Value<int?> rating;
@@ -1262,6 +1304,7 @@ class RemoteExifEntityCompanion
     this.iso = const i0.Value.absent(),
     this.make = const i0.Value.absent(),
     this.model = const i0.Value.absent(),
+    this.lens = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
     this.timeZone = const i0.Value.absent(),
     this.rating = const i0.Value.absent(),
@@ -1285,6 +1328,7 @@ class RemoteExifEntityCompanion
     this.iso = const i0.Value.absent(),
     this.make = const i0.Value.absent(),
     this.model = const i0.Value.absent(),
+    this.lens = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
     this.timeZone = const i0.Value.absent(),
     this.rating = const i0.Value.absent(),
@@ -1300,14 +1344,15 @@ class RemoteExifEntityCompanion
     i0.Expression<int>? height,
     i0.Expression<int>? width,
     i0.Expression<String>? exposureTime,
-    i0.Expression<int>? fNumber,
+    i0.Expression<double>? fNumber,
     i0.Expression<int>? fileSize,
-    i0.Expression<int>? focalLength,
-    i0.Expression<int>? latitude,
-    i0.Expression<int>? longitude,
+    i0.Expression<double>? focalLength,
+    i0.Expression<double>? latitude,
+    i0.Expression<double>? longitude,
     i0.Expression<int>? iso,
     i0.Expression<String>? make,
     i0.Expression<String>? model,
+    i0.Expression<String>? lens,
     i0.Expression<String>? orientation,
     i0.Expression<String>? timeZone,
     i0.Expression<int>? rating,
@@ -1331,6 +1376,7 @@ class RemoteExifEntityCompanion
       if (iso != null) 'iso': iso,
       if (make != null) 'make': make,
       if (model != null) 'model': model,
+      if (lens != null) 'lens': lens,
       if (orientation != null) 'orientation': orientation,
       if (timeZone != null) 'time_zone': timeZone,
       if (rating != null) 'rating': rating,
@@ -1348,14 +1394,15 @@ class RemoteExifEntityCompanion
       i0.Value<int?>? height,
       i0.Value<int?>? width,
       i0.Value<String?>? exposureTime,
-      i0.Value<int?>? fNumber,
+      i0.Value<double?>? fNumber,
       i0.Value<int?>? fileSize,
-      i0.Value<int?>? focalLength,
-      i0.Value<int?>? latitude,
-      i0.Value<int?>? longitude,
+      i0.Value<double?>? focalLength,
+      i0.Value<double?>? latitude,
+      i0.Value<double?>? longitude,
       i0.Value<int?>? iso,
       i0.Value<String?>? make,
       i0.Value<String?>? model,
+      i0.Value<String?>? lens,
       i0.Value<String?>? orientation,
       i0.Value<String?>? timeZone,
       i0.Value<int?>? rating,
@@ -1378,6 +1425,7 @@ class RemoteExifEntityCompanion
       iso: iso ?? this.iso,
       make: make ?? this.make,
       model: model ?? this.model,
+      lens: lens ?? this.lens,
       orientation: orientation ?? this.orientation,
       timeZone: timeZone ?? this.timeZone,
       rating: rating ?? this.rating,
@@ -1416,19 +1464,19 @@ class RemoteExifEntityCompanion
       map['exposure_time'] = i0.Variable<String>(exposureTime.value);
     }
     if (fNumber.present) {
-      map['f_number'] = i0.Variable<int>(fNumber.value);
+      map['f_number'] = i0.Variable<double>(fNumber.value);
     }
     if (fileSize.present) {
       map['file_size'] = i0.Variable<int>(fileSize.value);
     }
     if (focalLength.present) {
-      map['focal_length'] = i0.Variable<int>(focalLength.value);
+      map['focal_length'] = i0.Variable<double>(focalLength.value);
     }
     if (latitude.present) {
-      map['latitude'] = i0.Variable<int>(latitude.value);
+      map['latitude'] = i0.Variable<double>(latitude.value);
     }
     if (longitude.present) {
-      map['longitude'] = i0.Variable<int>(longitude.value);
+      map['longitude'] = i0.Variable<double>(longitude.value);
     }
     if (iso.present) {
       map['iso'] = i0.Variable<int>(iso.value);
@@ -1438,6 +1486,9 @@ class RemoteExifEntityCompanion
     }
     if (model.present) {
       map['model'] = i0.Variable<String>(model.value);
+    }
+    if (lens.present) {
+      map['lens'] = i0.Variable<String>(lens.value);
     }
     if (orientation.present) {
       map['orientation'] = i0.Variable<String>(orientation.value);
@@ -1474,6 +1525,7 @@ class RemoteExifEntityCompanion
           ..write('iso: $iso, ')
           ..write('make: $make, ')
           ..write('model: $model, ')
+          ..write('lens: $lens, ')
           ..write('orientation: $orientation, ')
           ..write('timeZone: $timeZone, ')
           ..write('rating: $rating, ')

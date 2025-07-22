@@ -41,6 +41,7 @@ import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
@@ -52,6 +53,54 @@ import { ViewRepository } from 'src/repositories/view-repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
+
+export const BASE_SERVICE_DEPENDENCIES = [
+  LoggingRepository,
+  AccessRepository,
+  ActivityRepository,
+  AlbumRepository,
+  AlbumUserRepository,
+  ApiKeyRepository,
+  AssetRepository,
+  AssetJobRepository,
+  AuditRepository,
+  ConfigRepository,
+  CronRepository,
+  CryptoRepository,
+  DatabaseRepository,
+  DownloadRepository,
+  DuplicateRepository,
+  EmailRepository,
+  EventRepository,
+  JobRepository,
+  LibraryRepository,
+  MachineLearningRepository,
+  MapRepository,
+  MediaRepository,
+  MemoryRepository,
+  MetadataRepository,
+  MoveRepository,
+  NotificationRepository,
+  OAuthRepository,
+  PartnerRepository,
+  PersonRepository,
+  ProcessRepository,
+  SearchRepository,
+  ServerInfoRepository,
+  SessionRepository,
+  SharedLinkRepository,
+  StackRepository,
+  StorageRepository,
+  SyncRepository,
+  SyncCheckpointRepository,
+  SystemMetadataRepository,
+  TagRepository,
+  TelemetryRepository,
+  TrashRepository,
+  UserRepository,
+  VersionHistoryRepository,
+  ViewRepository,
+];
 
 @Injectable()
 export class BaseService {
@@ -95,6 +144,7 @@ export class BaseService {
     protected stackRepository: StackRepository,
     protected storageRepository: StorageRepository,
     protected syncRepository: SyncRepository,
+    protected syncCheckpointRepository: SyncCheckpointRepository,
     protected systemMetadataRepository: SystemMetadataRepository,
     protected tagRepository: TagRepository,
     protected telemetryRepository: TelemetryRepository,

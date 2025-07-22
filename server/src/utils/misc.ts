@@ -44,7 +44,8 @@ export const getMethodNames = (instance: any) => {
   return methods;
 };
 
-export const getExternalDomain = (server: SystemConfig['server']) => server.externalDomain || `https://my.immich.app`;
+export const getExternalDomain = (server: SystemConfig['server'], defaultDomain = 'https://my.immich.app') =>
+  server.externalDomain || defaultDomain;
 
 /**
  * @returns a list of strings representing the keys of the object in dot notation
@@ -233,14 +234,14 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
       scheme: 'Bearer',
       in: 'header',
     })
-    .addCookieAuth(ImmichCookie.ACCESS_TOKEN)
+    .addCookieAuth(ImmichCookie.AccessToken)
     .addApiKey(
       {
         type: 'apiKey',
         in: 'header',
-        name: ImmichHeader.API_KEY,
+        name: ImmichHeader.ApiKey,
       },
-      MetadataKey.API_KEY_SECURITY,
+      MetadataKey.ApiKeySecurity,
     )
     .addServer('/api')
     .build();

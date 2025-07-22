@@ -90,6 +90,35 @@
         <data android:mimeType="video/*" />
       </intent-filter>
 
+      <!-- immich:// URL scheme handling -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="immich" />
+      </intent-filter>
+
+      <!-- my.immich.app deep link -->
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <data android:scheme="https" />
+
+        <data
+          android:host="my.immich.app"
+          android:path="/" />
+        <data
+          android:host="my.immich.app"
+          android:pathPrefix="/albums/" />
+        <data
+          android:host="my.immich.app"
+          android:pathPrefix="/memories/" />
+        <data
+          android:host="my.immich.app"
+          android:pathPrefix="/photos/" />
+      </intent-filter>
     </activity>
 
 
@@ -112,6 +141,41 @@
       android:name="androidx.startup.InitializationProvider"
       android:authorities="${applicationId}.androidx-startup"
       tools:node="remove" />
+
+
+    <!-- Widgets -->
+    <receiver
+      android:name=".widget.RandomReceiver"
+      android:exported="true"
+      android:label="@string/random_widget_title">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/random_widget" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.MemoryReceiver"
+      android:exported="true"
+      android:label="@string/memory_widget_title">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/memory_widget" />
+    </receiver>
+
+    <activity android:name=".widget.configure.RandomConfigure"
+      android:exported="true"
+      android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+      </intent-filter>
+    </activity>
   </application>
 
 

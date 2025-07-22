@@ -33,6 +33,7 @@
 
   interface Props {
     label: string;
+    disabled?: boolean;
     hideLabel?: boolean;
     options?: ComboBoxOption[];
     selectedOption?: ComboBoxOption | undefined;
@@ -52,6 +53,7 @@
   let {
     label,
     hideLabel = false,
+    disabled = false,
     options = [],
     selectedOption = $bindable(),
     placeholder = '',
@@ -275,6 +277,7 @@
 
     <input
       {placeholder}
+      {disabled}
       aria-activedescendant={selectedIndex || selectedIndex === 0 ? `${listboxId}-${selectedIndex}` : ''}
       aria-autocomplete="list"
       aria-controls={listboxId}

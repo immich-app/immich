@@ -19,28 +19,31 @@ struct ImmichMemoryProvider: TimelineProvider {
     in context: Context,
     completion: @escaping @Sendable (ImageEntry) -> Void
   ) {
+    let cacheKey = "memory_\(context.family.rawValue)"
+
     Task {
       guard let api = try? await ImmichAPI() else {
-        completion(ImageEntry(date: Date(), image: nil, error: .noLogin))
+        completion(
+          ImageEntry.handleError(for: cacheKey, error: .noLogin).entries.first!
+        )
         return
       }
 
       guard let memories = try? await api.fetchMemory(for: Date.now)
       else {
-        completion(ImageEntry(date: Date(), image: nil, error: .fetchFailed))
+        completion(ImageEntry.handleError(for: cacheKey).entries.first!)
         return
       }
 
       for memory in memories {
         if let asset = memory.assets.first(where: { $0.type == .image }),
-          var entry = try? await buildEntry(
+          let entry = try? await ImageEntry.build(
             api: api,
             asset: asset,
             dateOffset: 0,
             subtitle: getYearDifferenceSubtitle(assetYear: memory.data.year)
           )
         {
-          entry.resize()
           completion(entry)
           return
         }
@@ -48,26 +51,17 @@ struct ImmichMemoryProvider: TimelineProvider {
 
       // fallback to random image
       guard
-        let randomImage = try? await api.fetchSearchResults(
-          with: SearchFilters(size: 1)
-        ).first
-      else {
-        completion(ImageEntry(date: Date(), image: nil, error: .fetchFailed))
-        return
-      }
-
-      guard
-        var imageEntry = try? await buildEntry(
+        let randomImage = try? await api.fetchSearchResults().first,
+        let imageEntry = try? await ImageEntry.build(
           api: api,
           asset: randomImage,
           dateOffset: 0
         )
       else {
-        completion(ImageEntry(date: Date(), image: nil, error: .fetchFailed))
+        completion(ImageEntry.handleError(for: cacheKey).entries.first!)
         return
       }
 
-      imageEntry.resize()
       completion(imageEntry)
     }
   }
@@ -80,9 +74,12 @@ struct ImmichMemoryProvider: TimelineProvider {
       var entries: [ImageEntry] = []
       let now = Date()
 
+      let cacheKey = "memory_\(context.family.rawValue)"
+
       guard let api = try? await ImmichAPI() else {
-        entries.append(ImageEntry(date: now, image: nil, error: .noLogin))
-        completion(Timeline(entries: entries, policy: .atEnd))
+        completion(
+          ImageEntry.handleError(for: cacheKey, error: .noLogin)
+        )
         return
       }
 
@@ -95,7 +92,7 @@ struct ImmichMemoryProvider: TimelineProvider {
           for asset in memory.assets {
             if asset.type == .image && totalAssets < 12 {
               group.addTask {
-                try? await buildEntry(
+                try? await ImageEntry.build(
                   api: api,
                   asset: asset,
                   dateOffset: totalAssets,
@@ -120,25 +117,32 @@ struct ImmichMemoryProvider: TimelineProvider {
       // If we didnt add any memory images (some failure occured or no images in memory),
       // default to 12 hours of random photos
       if entries.count == 0 {
-        entries.append(
-          contentsOf: (try? await generateRandomEntries(
+        // this must be a do/catch since we need to
+        // distinguish between a network fail and an empty search
+        do {
+          let search = try await generateRandomEntries(
             api: api,
             now: now,
             count: 12
-          )) ?? []
-        )
+          )
+
+          // Load or save a cached asset for when network conditions are bad
+          if search.count == 0 {
+            completion(
+              ImageEntry.handleError(for: cacheKey, error: .noAssetsAvailable)
+            )
+            return
+          }
+
+          entries.append(contentsOf: search)
+        } catch {
+          completion(ImageEntry.handleError(for: cacheKey))
+          return
+        }
       }
 
-      // If we fail to fetch images, we still want to add an entry
-      // with a nil image and an error
-      if entries.count == 0 {
-        entries.append(ImageEntry(date: now, image: nil, error: .fetchFailed))
-      }
-
-      // Resize all images to something that can be stored by iOS
-      for i in entries.indices {
-        entries[i].resize()
-      }
+      // cache the last image
+      try? entries.last!.cache(for: cacheKey)
 
       completion(Timeline(entries: entries, policy: .atEnd))
     }

@@ -35,8 +35,8 @@
   $effect(() => {
     setTranslations({
       close: $t('close'),
-      showPassword: $t('show_password'),
-      hidePassword: $t('hide_password'),
+      show_password: $t('show_password'),
+      hide_password: $t('hide_password'),
     });
   });
 

@@ -1,7 +1,8 @@
 import 'remote_asset.entity.dart';
 import 'local_asset.entity.dart';
+import 'stack.entity.dart';
 
-mergedAsset: SELECT * FROM 
+mergedAsset: SELECT * FROM
 (
 	SELECT
 		rae.id as remote_id,
@@ -16,13 +17,35 @@ mergedAsset: SELECT * FROM
 		rae.is_favorite,
 		rae.thumb_hash,
 		rae.checksum,
-		rae.owner_id
+		rae.owner_id,
+		rae.live_photo_video_id,
+		0 as orientation,
+		rae.stack_id,
+		COALESCE(stack_count.total_count, 0) AS stack_count
 	FROM
 		remote_asset_entity rae
 	LEFT JOIN
 		local_asset_entity lae ON rae.checksum  = lae.checksum
+	LEFT JOIN
+        stack_entity se ON rae.stack_id = se.id
+	LEFT JOIN
+        (SELECT 
+            stack_id,
+            COUNT(*) AS total_count
+         FROM remote_asset_entity 
+         WHERE deleted_at IS NULL 
+           AND visibility = 0
+           AND stack_id IS NOT NULL
+         GROUP BY stack_id
+        ) AS stack_count ON rae.stack_id = stack_count.stack_id
 	WHERE
-		rae.visibility = 0 AND rae.owner_id in ?
+		rae.deleted_at IS NULL
+		AND rae.visibility = 0
+		AND rae.owner_id in ?
+		AND (
+			rae.stack_id IS NULL
+			OR rae.id = se.primary_asset_id
+		)
 	UNION ALL
 	SELECT
 		NULL as remote_id,
@@ -37,7 +60,11 @@ mergedAsset: SELECT * FROM
 		lae.is_favorite,
 		NULL as thumb_hash,
 		lae.checksum,
-		NULL as owner_id
+		NULL as owner_id,
+		NULL as live_photo_video_id,
+		lae.orientation,
+		NULL as stack_id,
+		0 AS stack_count
 	FROM
 		local_asset_entity lae
 	LEFT JOIN
@@ -48,12 +75,12 @@ mergedAsset: SELECT * FROM
 ORDER BY created_at DESC
 LIMIT $limit;
 
-mergedBucket(:group_by AS INTEGER): 
-SELECT 
+mergedBucket(:group_by AS INTEGER):
+SELECT
 	COUNT(*) as asset_count,
 	 CASE
-        WHEN :group_by = 0 THEN STRFTIME('%Y-%m-%d', created_at) -- day
-        WHEN :group_by = 1 THEN STRFTIME('%Y-%m', created_at) -- month
+        WHEN :group_by = 0 THEN STRFTIME('%Y-%m-%d', created_at, 'localtime') -- day
+        WHEN :group_by = 1 THEN STRFTIME('%Y-%m', created_at, 'localtime') -- month
     END AS bucket_date
 FROM
 (
@@ -64,8 +91,16 @@ FROM
 		remote_asset_entity rae
 	LEFT JOIN
 		local_asset_entity lae  ON rae.checksum  = lae.checksum
+	LEFT JOIN
+        stack_entity se ON rae.stack_id = se.id
 	WHERE
-		rae.visibility = 0 AND rae.owner_id in ?
+		rae.deleted_at IS NULL
+		AND rae.visibility = 0
+		AND rae.owner_id in ?
+		AND (
+			rae.stack_id IS NULL
+			OR rae.id = se.primary_asset_id
+		)
 	UNION ALL
 	SELECT
 		lae.name,

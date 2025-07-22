@@ -1,42 +1,40 @@
 import 'package:background_downloader/background_downloader.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/interfaces/upload.interface.dart';
-import 'package:immich_mobile/utils/upload.dart';
+import 'package:immich_mobile/constants/constants.dart';
 
 final uploadRepositoryProvider = Provider((ref) => UploadRepository());
 
-class UploadRepository implements IUploadRepository {
-  @override
+class UploadRepository {
   void Function(TaskStatusUpdate)? onUploadStatus;
 
-  @override
   void Function(TaskProgressUpdate)? onTaskProgress;
 
   UploadRepository() {
     FileDownloader().registerCallbacks(
-      group: uploadGroup,
+      group: kBackupGroup,
+      taskStatusCallback: (update) => onUploadStatus?.call(update),
+      taskProgressCallback: (update) => onTaskProgress?.call(update),
+    );
+    FileDownloader().registerCallbacks(
+      group: kBackupLivePhotoGroup,
       taskStatusCallback: (update) => onUploadStatus?.call(update),
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
   }
 
-  @override
-  Future<bool> upload(UploadTask task) {
-    return FileDownloader().enqueue(task);
+  void enqueueAll(List<UploadTask> tasks) {
+    FileDownloader().enqueueAll(tasks);
   }
 
-  @override
-  Future<void> deleteAllTrackingRecords() {
-    return FileDownloader().database.deleteAllRecords();
+  Future<void> deleteAllTrackingRecords(String group) {
+    return FileDownloader().database.deleteAllRecords(group: group);
   }
 
-  @override
-  Future<bool> cancel(String id) {
-    return FileDownloader().cancelTaskWithId(id);
+  Future<bool> cancelAll(String group) {
+    return FileDownloader().cancelAll(group: group);
   }
 
-  @override
-  Future<void> deleteRecordsWithIds(List<String> ids) {
-    return FileDownloader().database.deleteRecordsWithIds(ids);
+  Future<int> reset(String group) {
+    return FileDownloader().reset(group: group);
   }
 }

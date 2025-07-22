@@ -2,7 +2,7 @@
 
 -- AlbumUserRepository.create
 insert into
-  "albums_shared_users_users" ("usersId", "albumsId")
+  "album_user" ("usersId", "albumsId")
 values
   ($1, $2)
 returning
@@ -11,7 +11,7 @@ returning
   "role"
 
 -- AlbumUserRepository.update
-update "albums_shared_users_users"
+update "album_user"
 set
   "role" = $1
 where
@@ -21,7 +21,7 @@ returning
   *
 
 -- AlbumUserRepository.delete
-delete from "albums_shared_users_users"
+delete from "album_user"
 where
   "usersId" = $1
   and "albumsId" = $2

@@ -124,7 +124,9 @@ class EditImagePage extends ConsumerWidget {
           ),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(7),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(7),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.2),
@@ -135,7 +137,9 @@ class EditImagePage extends ConsumerWidget {
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(7),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(7),
+              ),
               child: Image(
                 image: image.image,
                 fit: BoxFit.contain,
@@ -149,7 +153,9 @@ class EditImagePage extends ConsumerWidget {
         margin: const EdgeInsets.only(bottom: 60, right: 10, left: 10, top: 10),
         decoration: BoxDecoration(
           color: context.scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(30),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,

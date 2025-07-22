@@ -169,6 +169,8 @@ Class | Method | HTTP request | Description
 *PartnersApi* | [**removePartner**](doc//PartnersApi.md#removepartner) | **DELETE** /partners/{id} | 
 *PartnersApi* | [**updatePartner**](doc//PartnersApi.md#updatepartner) | **PUT** /partners/{id} | 
 *PeopleApi* | [**createPerson**](doc//PeopleApi.md#createperson) | **POST** /people | 
+*PeopleApi* | [**deletePeople**](doc//PeopleApi.md#deletepeople) | **DELETE** /people | 
+*PeopleApi* | [**deletePerson**](doc//PeopleApi.md#deleteperson) | **DELETE** /people/{id} | 
 *PeopleApi* | [**getAllPeople**](doc//PeopleApi.md#getallpeople) | **GET** /people | 
 *PeopleApi* | [**getPerson**](doc//PeopleApi.md#getperson) | **GET** /people/{id} | 
 *PeopleApi* | [**getPersonStatistics**](doc//PeopleApi.md#getpersonstatistics) | **GET** /people/{id}/statistics | 
@@ -206,6 +208,7 @@ Class | Method | HTTP request | Description
 *SessionsApi* | [**deleteSession**](doc//SessionsApi.md#deletesession) | **DELETE** /sessions/{id} | 
 *SessionsApi* | [**getSessions**](doc//SessionsApi.md#getsessions) | **GET** /sessions | 
 *SessionsApi* | [**lockSession**](doc//SessionsApi.md#locksession) | **POST** /sessions/{id}/lock | 
+*SessionsApi* | [**updateSession**](doc//SessionsApi.md#updatesession) | **PUT** /sessions/{id} | 
 *SharedLinksApi* | [**addSharedLinkAssets**](doc//SharedLinksApi.md#addsharedlinkassets) | **PUT** /shared-links/{id}/assets | 
 *SharedLinksApi* | [**createSharedLink**](doc//SharedLinksApi.md#createsharedlink) | **POST** /shared-links | 
 *SharedLinksApi* | [**getAllSharedLinks**](doc//SharedLinksApi.md#getallsharedlinks) | **GET** /shared-links | 
@@ -447,6 +450,7 @@ Class | Method | HTTP request | Description
  - [SessionCreateResponseDto](doc//SessionCreateResponseDto.md)
  - [SessionResponseDto](doc//SessionResponseDto.md)
  - [SessionUnlockDto](doc//SessionUnlockDto.md)
+ - [SessionUpdateDto](doc//SessionUpdateDto.md)
  - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
  - [SharedLinkEditDto](doc//SharedLinkEditDto.md)
  - [SharedLinkResponseDto](doc//SharedLinkResponseDto.md)
@@ -464,18 +468,32 @@ Class | Method | HTTP request | Description
  - [SyncAckDto](doc//SyncAckDto.md)
  - [SyncAckSetDto](doc//SyncAckSetDto.md)
  - [SyncAlbumDeleteV1](doc//SyncAlbumDeleteV1.md)
+ - [SyncAlbumToAssetDeleteV1](doc//SyncAlbumToAssetDeleteV1.md)
+ - [SyncAlbumToAssetV1](doc//SyncAlbumToAssetV1.md)
  - [SyncAlbumUserDeleteV1](doc//SyncAlbumUserDeleteV1.md)
  - [SyncAlbumUserV1](doc//SyncAlbumUserV1.md)
  - [SyncAlbumV1](doc//SyncAlbumV1.md)
  - [SyncAssetDeleteV1](doc//SyncAssetDeleteV1.md)
  - [SyncAssetExifV1](doc//SyncAssetExifV1.md)
+ - [SyncAssetFaceDeleteV1](doc//SyncAssetFaceDeleteV1.md)
+ - [SyncAssetFaceV1](doc//SyncAssetFaceV1.md)
  - [SyncAssetV1](doc//SyncAssetV1.md)
  - [SyncEntityType](doc//SyncEntityType.md)
+ - [SyncMemoryAssetDeleteV1](doc//SyncMemoryAssetDeleteV1.md)
+ - [SyncMemoryAssetV1](doc//SyncMemoryAssetV1.md)
+ - [SyncMemoryDeleteV1](doc//SyncMemoryDeleteV1.md)
+ - [SyncMemoryV1](doc//SyncMemoryV1.md)
  - [SyncPartnerDeleteV1](doc//SyncPartnerDeleteV1.md)
  - [SyncPartnerV1](doc//SyncPartnerV1.md)
+ - [SyncPersonDeleteV1](doc//SyncPersonDeleteV1.md)
+ - [SyncPersonV1](doc//SyncPersonV1.md)
  - [SyncRequestType](doc//SyncRequestType.md)
+ - [SyncStackDeleteV1](doc//SyncStackDeleteV1.md)
+ - [SyncStackV1](doc//SyncStackV1.md)
  - [SyncStreamDto](doc//SyncStreamDto.md)
  - [SyncUserDeleteV1](doc//SyncUserDeleteV1.md)
+ - [SyncUserMetadataDeleteV1](doc//SyncUserMetadataDeleteV1.md)
+ - [SyncUserMetadataV1](doc//SyncUserMetadataV1.md)
  - [SyncUserV1](doc//SyncUserV1.md)
  - [SystemConfigBackupsDto](doc//SystemConfigBackupsDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
@@ -493,6 +511,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigMapDto](doc//SystemConfigMapDto.md)
  - [SystemConfigMetadataDto](doc//SystemConfigMetadataDto.md)
  - [SystemConfigNewVersionCheckDto](doc//SystemConfigNewVersionCheckDto.md)
+ - [SystemConfigNightlyTasksDto](doc//SystemConfigNightlyTasksDto.md)
  - [SystemConfigNotificationsDto](doc//SystemConfigNotificationsDto.md)
  - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
  - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)

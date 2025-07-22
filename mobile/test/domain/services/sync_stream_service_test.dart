@@ -1,11 +1,9 @@
-// ignore_for_file: avoid-declaring-call-method, avoid-unnecessary-futures
-
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -31,7 +29,7 @@ class _MockCancellationWrapper extends Mock implements _CancellationWrapper {}
 void main() {
   late SyncStreamService sut;
   late SyncStreamRepository mockSyncStreamRepo;
-  late ISyncApiRepository mockSyncApiRepo;
+  late SyncApiRepository mockSyncApiRepo;
   late Function(List<SyncEvent>, Function()) handleEventsCallback;
   late _MockAbortCallbackWrapper mockAbortCallbackWrapper;
 
@@ -46,7 +44,6 @@ void main() {
 
     when(() => mockSyncApiRepo.streamChanges(any()))
         .thenAnswer((invocation) async {
-      // ignore: avoid-unsafe-collection-methods
       handleEventsCallback = invocation.positionalArguments.first;
     });
 
@@ -62,15 +59,55 @@ void main() {
         .thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateAssetsV1(any()))
         .thenAnswer(successHandler);
+    when(
+      () => mockSyncStreamRepo.updateAssetsV1(
+        any(),
+        debugLabel: any(named: 'debugLabel'),
+      ),
+    ).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteAssetsV1(any()))
         .thenAnswer(successHandler);
+    when(
+      () => mockSyncStreamRepo.deleteAssetsV1(
+        any(),
+        debugLabel: any(named: 'debugLabel'),
+      ),
+    ).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateAssetsExifV1(any()))
         .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updatePartnerAssetsV1(any()))
+    when(
+      () => mockSyncStreamRepo.updateAssetsExifV1(
+        any(),
+        debugLabel: any(named: 'debugLabel'),
+      ),
+    ).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateMemoriesV1(any()))
         .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.deletePartnerAssetsV1(any()))
+    when(() => mockSyncStreamRepo.deleteMemoriesV1(any()))
         .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updatePartnerAssetsExifV1(any()))
+    when(() => mockSyncStreamRepo.updateMemoryAssetsV1(any()))
+        .thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.deleteMemoryAssetsV1(any()))
+        .thenAnswer(successHandler);
+    when(
+      () => mockSyncStreamRepo.updateStacksV1(
+        any(),
+        debugLabel: any(named: 'debugLabel'),
+      ),
+    ).thenAnswer(successHandler);
+    when(
+      () => mockSyncStreamRepo.deleteStacksV1(
+        any(),
+        debugLabel: any(named: 'debugLabel'),
+      ),
+    ).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateUserMetadatasV1(any()))
+        .thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.deleteUserMetadatasV1(any()))
+        .thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updatePeopleV1(any()))
+        .thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.deletePeopleV1(any()))
         .thenAnswer(successHandler);
 
     sut = SyncStreamService(
@@ -218,5 +255,94 @@ void main() {
         verify(() => mockSyncApiRepo.ack(["2"])).called(1);
       },
     );
+
+    test("processes memory sync events successfully", () async {
+      final events = [
+        SyncStreamStub.memoryV1,
+        SyncStreamStub.memoryDeleteV1,
+        SyncStreamStub.memoryToAssetV1,
+        SyncStreamStub.memoryToAssetDeleteV1,
+      ];
+
+      await simulateEvents(events);
+
+      verifyInOrder([
+        () => mockSyncStreamRepo.updateMemoriesV1(any()),
+        () => mockSyncApiRepo.ack(["5"]),
+        () => mockSyncStreamRepo.deleteMemoriesV1(any()),
+        () => mockSyncApiRepo.ack(["6"]),
+        () => mockSyncStreamRepo.updateMemoryAssetsV1(any()),
+        () => mockSyncApiRepo.ack(["7"]),
+        () => mockSyncStreamRepo.deleteMemoryAssetsV1(any()),
+        () => mockSyncApiRepo.ack(["8"]),
+      ]);
+      verifyNever(() => mockAbortCallbackWrapper());
+    });
+
+    test("processes mixed memory and user events in correct order", () async {
+      final events = [
+        SyncStreamStub.memoryDeleteV1,
+        SyncStreamStub.userV1Admin,
+        SyncStreamStub.memoryToAssetV1,
+        SyncStreamStub.memoryV1,
+      ];
+
+      await simulateEvents(events);
+
+      verifyInOrder([
+        () => mockSyncStreamRepo.deleteMemoriesV1(any()),
+        () => mockSyncApiRepo.ack(["6"]),
+        () => mockSyncStreamRepo.updateUsersV1(any()),
+        () => mockSyncApiRepo.ack(["1"]),
+        () => mockSyncStreamRepo.updateMemoryAssetsV1(any()),
+        () => mockSyncApiRepo.ack(["7"]),
+        () => mockSyncStreamRepo.updateMemoriesV1(any()),
+        () => mockSyncApiRepo.ack(["5"]),
+      ]);
+      verifyNever(() => mockAbortCallbackWrapper());
+    });
+
+    test("handles memory sync failure gracefully", () async {
+      when(() => mockSyncStreamRepo.updateMemoriesV1(any()))
+          .thenThrow(Exception("Memory sync failed"));
+
+      final events = [
+        SyncStreamStub.memoryV1,
+        SyncStreamStub.userV1Admin,
+      ];
+
+      expect(
+        () async => await simulateEvents(events),
+        throwsA(isA<Exception>()),
+      );
+    });
+
+    test("processes memory asset events with correct data types", () async {
+      final events = [SyncStreamStub.memoryToAssetV1];
+
+      await simulateEvents(events);
+
+      verify(() => mockSyncStreamRepo.updateMemoryAssetsV1(any())).called(1);
+      verify(() => mockSyncApiRepo.ack(["7"])).called(1);
+    });
+
+    test("processes memory delete events with correct data types", () async {
+      final events = [SyncStreamStub.memoryDeleteV1];
+
+      await simulateEvents(events);
+
+      verify(() => mockSyncStreamRepo.deleteMemoriesV1(any())).called(1);
+      verify(() => mockSyncApiRepo.ack(["6"])).called(1);
+    });
+
+    test("processes memory create/update events with correct data types",
+        () async {
+      final events = [SyncStreamStub.memoryV1];
+
+      await simulateEvents(events);
+
+      verify(() => mockSyncStreamRepo.updateMemoriesV1(any())).called(1);
+      verify(() => mockSyncApiRepo.ack(["5"])).called(1);
+    });
   });
 }

@@ -1,6 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/interfaces/widget.interface.dart';
 import 'package:immich_mobile/repositories/widget.repository.dart';
 
 final widgetServiceProvider = Provider((ref) {
@@ -10,9 +9,9 @@ final widgetServiceProvider = Provider((ref) {
 });
 
 class WidgetService {
-  final IWidgetRepository _repository;
+  final WidgetRepository _repository;
 
-  WidgetService(this._repository);
+  const WidgetService(this._repository);
 
   Future<void> writeCredentials(String serverURL, String sessionKey) async {
     await _repository.setAppGroupId(appShareGroupId);
@@ -33,8 +32,8 @@ class WidgetService {
   }
 
   Future<void> refreshWidgets() async {
-    for (final name in kWidgetNames) {
-      await _repository.refresh(name);
+    for (final (iOSName, androidName) in kWidgetNames) {
+      await _repository.refresh(iOSName, androidName);
     }
   }
 }
