@@ -272,6 +272,8 @@ export type AssetFace = {
   personId: string | null;
   sourceType: SourceType;
   person?: Person | null;
+  updatedAt: Date;
+  updateId: string;
 };
 
 const userColumns = ['id', 'name', 'email', 'avatarColor', 'profileImagePath', 'profileChangedAt'] as const;

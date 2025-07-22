@@ -523,7 +523,6 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             ownerId: Value(person.ownerId),
             name: Value(person.name),
             faceAssetId: Value(person.faceAssetId),
-            thumbnailPath: Value(person.thumbnailPath),
             isFavorite: Value(person.isFavorite),
             isHidden: Value(person.isHidden),
             color: Value(person.color),
