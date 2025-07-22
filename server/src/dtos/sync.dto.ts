@@ -261,11 +261,17 @@ export class SyncAssetFaceV1 {
   id!: string;
   assetId!: string;
   personId!: string | null;
+  @ApiProperty({ type: 'integer' })
   imageWidth!: number;
+  @ApiProperty({ type: 'integer' })
   imageHeight!: number;
+  @ApiProperty({ type: 'integer' })
   boundingBoxX1!: number;
+  @ApiProperty({ type: 'integer' })
   boundingBoxY1!: number;
+  @ApiProperty({ type: 'integer' })
   boundingBoxX2!: number;
+  @ApiProperty({ type: 'integer' })
   boundingBoxY2!: number;
   sourceType!: string;
 }

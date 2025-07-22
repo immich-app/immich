@@ -27,19 +27,19 @@ class SyncAssetFaceV1 {
 
   String assetId;
 
-  num boundingBoxX1;
+  int boundingBoxX1;
 
-  num boundingBoxX2;
+  int boundingBoxX2;
 
-  num boundingBoxY1;
+  int boundingBoxY1;
 
-  num boundingBoxY2;
+  int boundingBoxY2;
 
   String id;
 
-  num imageHeight;
+  int imageHeight;
 
-  num imageWidth;
+  int imageWidth;
 
   String? personId;
 
@@ -104,13 +104,13 @@ class SyncAssetFaceV1 {
 
       return SyncAssetFaceV1(
         assetId: mapValueOfType<String>(json, r'assetId')!,
-        boundingBoxX1: num.parse('${json[r'boundingBoxX1']}'),
-        boundingBoxX2: num.parse('${json[r'boundingBoxX2']}'),
-        boundingBoxY1: num.parse('${json[r'boundingBoxY1']}'),
-        boundingBoxY2: num.parse('${json[r'boundingBoxY2']}'),
+        boundingBoxX1: mapValueOfType<int>(json, r'boundingBoxX1')!,
+        boundingBoxX2: mapValueOfType<int>(json, r'boundingBoxX2')!,
+        boundingBoxY1: mapValueOfType<int>(json, r'boundingBoxY1')!,
+        boundingBoxY2: mapValueOfType<int>(json, r'boundingBoxY2')!,
         id: mapValueOfType<String>(json, r'id')!,
-        imageHeight: num.parse('${json[r'imageHeight']}'),
-        imageWidth: num.parse('${json[r'imageWidth']}'),
+        imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
+        imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
         personId: mapValueOfType<String>(json, r'personId'),
         sourceType: mapValueOfType<String>(json, r'sourceType')!,
       );
