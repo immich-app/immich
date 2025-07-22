@@ -5,6 +5,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
@@ -56,6 +57,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     MemoryAssetEntity,
     StackEntity,
     PersonEntity,
+    AssetFaceEntity,
   ],
   include: {
     'package:immich_mobile/infrastructure/entities/merged_asset.drift',
@@ -72,7 +74,7 @@ class Drift extends $Drift implements IDatabaseRepository {
         );
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -93,6 +95,10 @@ class Drift extends $Drift implements IDatabaseRepository {
               from2To3: (m, v3) async {
                 // Removed foreign key constraint on stack.primaryAssetId
                 await m.alterTable(TableMigration(v3.stackEntity));
+              },
+              from3To4: (m, v4) async {
+                await m.alterTable(TableMigration(v4.personEntity));
+                await m.create(v4.assetFaceEntity);
               },
             ),
           );

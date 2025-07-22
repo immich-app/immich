@@ -17,7 +17,6 @@ typedef $$PersonEntityTableCreateCompanionBuilder = i1.PersonEntityCompanion
   required String ownerId,
   required String name,
   i0.Value<String?> faceAssetId,
-  required String thumbnailPath,
   required bool isFavorite,
   required bool isHidden,
   i0.Value<String?> color,
@@ -31,7 +30,6 @@ typedef $$PersonEntityTableUpdateCompanionBuilder = i1.PersonEntityCompanion
   i0.Value<String> ownerId,
   i0.Value<String> name,
   i0.Value<String?> faceAssetId,
-  i0.Value<String> thumbnailPath,
   i0.Value<bool> isFavorite,
   i0.Value<bool> isHidden,
   i0.Value<String?> color,
@@ -92,10 +90,6 @@ class $$PersonEntityTableFilterComposer
 
   i0.ColumnFilters<String> get faceAssetId => $composableBuilder(
       column: $table.faceAssetId,
-      builder: (column) => i0.ColumnFilters(column));
-
-  i0.ColumnFilters<String> get thumbnailPath => $composableBuilder(
-      column: $table.thumbnailPath,
       builder: (column) => i0.ColumnFilters(column));
 
   i0.ColumnFilters<bool> get isFavorite => $composableBuilder(
@@ -160,10 +154,6 @@ class $$PersonEntityTableOrderingComposer
       column: $table.faceAssetId,
       builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<String> get thumbnailPath => $composableBuilder(
-      column: $table.thumbnailPath,
-      builder: (column) => i0.ColumnOrderings(column));
-
   i0.ColumnOrderings<bool> get isFavorite => $composableBuilder(
       column: $table.isFavorite,
       builder: (column) => i0.ColumnOrderings(column));
@@ -224,9 +214,6 @@ class $$PersonEntityTableAnnotationComposer
 
   i0.GeneratedColumn<String> get faceAssetId => $composableBuilder(
       column: $table.faceAssetId, builder: (column) => column);
-
-  i0.GeneratedColumn<String> get thumbnailPath => $composableBuilder(
-      column: $table.thumbnailPath, builder: (column) => column);
 
   i0.GeneratedColumn<bool> get isFavorite => $composableBuilder(
       column: $table.isFavorite, builder: (column) => column);
@@ -293,7 +280,6 @@ class $$PersonEntityTableTableManager extends i0.RootTableManager<
             i0.Value<String> ownerId = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
             i0.Value<String?> faceAssetId = const i0.Value.absent(),
-            i0.Value<String> thumbnailPath = const i0.Value.absent(),
             i0.Value<bool> isFavorite = const i0.Value.absent(),
             i0.Value<bool> isHidden = const i0.Value.absent(),
             i0.Value<String?> color = const i0.Value.absent(),
@@ -306,7 +292,6 @@ class $$PersonEntityTableTableManager extends i0.RootTableManager<
             ownerId: ownerId,
             name: name,
             faceAssetId: faceAssetId,
-            thumbnailPath: thumbnailPath,
             isFavorite: isFavorite,
             isHidden: isHidden,
             color: color,
@@ -319,7 +304,6 @@ class $$PersonEntityTableTableManager extends i0.RootTableManager<
             required String ownerId,
             required String name,
             i0.Value<String?> faceAssetId = const i0.Value.absent(),
-            required String thumbnailPath,
             required bool isFavorite,
             required bool isHidden,
             i0.Value<String?> color = const i0.Value.absent(),
@@ -332,7 +316,6 @@ class $$PersonEntityTableTableManager extends i0.RootTableManager<
             ownerId: ownerId,
             name: name,
             faceAssetId: faceAssetId,
-            thumbnailPath: thumbnailPath,
             isFavorite: isFavorite,
             isHidden: isHidden,
             color: color,
@@ -443,12 +426,6 @@ class $PersonEntityTable extends i2.PersonEntity
   late final i0.GeneratedColumn<String> faceAssetId =
       i0.GeneratedColumn<String>('face_asset_id', aliasedName, true,
           type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _thumbnailPathMeta =
-      const i0.VerificationMeta('thumbnailPath');
-  @override
-  late final i0.GeneratedColumn<String> thumbnailPath =
-      i0.GeneratedColumn<String>('thumbnail_path', aliasedName, false,
-          type: i0.DriftSqlType.string, requiredDuringInsert: true);
   static const i0.VerificationMeta _isFavoriteMeta =
       const i0.VerificationMeta('isFavorite');
   @override
@@ -487,7 +464,6 @@ class $PersonEntityTable extends i2.PersonEntity
         ownerId,
         name,
         faceAssetId,
-        thumbnailPath,
         isFavorite,
         isHidden,
         color,
@@ -535,14 +511,6 @@ class $PersonEntityTable extends i2.PersonEntity
           faceAssetId.isAcceptableOrUnknown(
               data['face_asset_id']!, _faceAssetIdMeta));
     }
-    if (data.containsKey('thumbnail_path')) {
-      context.handle(
-          _thumbnailPathMeta,
-          thumbnailPath.isAcceptableOrUnknown(
-              data['thumbnail_path']!, _thumbnailPathMeta));
-    } else if (isInserting) {
-      context.missing(_thumbnailPathMeta);
-    }
     if (data.containsKey('is_favorite')) {
       context.handle(
           _isFavoriteMeta,
@@ -586,8 +554,6 @@ class $PersonEntityTable extends i2.PersonEntity
           .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
       faceAssetId: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.string, data['${effectivePrefix}face_asset_id']),
-      thumbnailPath: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.string, data['${effectivePrefix}thumbnail_path'])!,
       isFavorite: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.bool, data['${effectivePrefix}is_favorite'])!,
       isHidden: attachedDatabase.typeMapping
@@ -618,7 +584,6 @@ class PersonEntityData extends i0.DataClass
   final String ownerId;
   final String name;
   final String? faceAssetId;
-  final String thumbnailPath;
   final bool isFavorite;
   final bool isHidden;
   final String? color;
@@ -630,7 +595,6 @@ class PersonEntityData extends i0.DataClass
       required this.ownerId,
       required this.name,
       this.faceAssetId,
-      required this.thumbnailPath,
       required this.isFavorite,
       required this.isHidden,
       this.color,
@@ -646,7 +610,6 @@ class PersonEntityData extends i0.DataClass
     if (!nullToAbsent || faceAssetId != null) {
       map['face_asset_id'] = i0.Variable<String>(faceAssetId);
     }
-    map['thumbnail_path'] = i0.Variable<String>(thumbnailPath);
     map['is_favorite'] = i0.Variable<bool>(isFavorite);
     map['is_hidden'] = i0.Variable<bool>(isHidden);
     if (!nullToAbsent || color != null) {
@@ -668,7 +631,6 @@ class PersonEntityData extends i0.DataClass
       ownerId: serializer.fromJson<String>(json['ownerId']),
       name: serializer.fromJson<String>(json['name']),
       faceAssetId: serializer.fromJson<String?>(json['faceAssetId']),
-      thumbnailPath: serializer.fromJson<String>(json['thumbnailPath']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       isHidden: serializer.fromJson<bool>(json['isHidden']),
       color: serializer.fromJson<String?>(json['color']),
@@ -685,7 +647,6 @@ class PersonEntityData extends i0.DataClass
       'ownerId': serializer.toJson<String>(ownerId),
       'name': serializer.toJson<String>(name),
       'faceAssetId': serializer.toJson<String?>(faceAssetId),
-      'thumbnailPath': serializer.toJson<String>(thumbnailPath),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'isHidden': serializer.toJson<bool>(isHidden),
       'color': serializer.toJson<String?>(color),
@@ -700,7 +661,6 @@ class PersonEntityData extends i0.DataClass
           String? ownerId,
           String? name,
           i0.Value<String?> faceAssetId = const i0.Value.absent(),
-          String? thumbnailPath,
           bool? isFavorite,
           bool? isHidden,
           i0.Value<String?> color = const i0.Value.absent(),
@@ -712,7 +672,6 @@ class PersonEntityData extends i0.DataClass
         ownerId: ownerId ?? this.ownerId,
         name: name ?? this.name,
         faceAssetId: faceAssetId.present ? faceAssetId.value : this.faceAssetId,
-        thumbnailPath: thumbnailPath ?? this.thumbnailPath,
         isFavorite: isFavorite ?? this.isFavorite,
         isHidden: isHidden ?? this.isHidden,
         color: color.present ? color.value : this.color,
@@ -727,9 +686,6 @@ class PersonEntityData extends i0.DataClass
       name: data.name.present ? data.name.value : this.name,
       faceAssetId:
           data.faceAssetId.present ? data.faceAssetId.value : this.faceAssetId,
-      thumbnailPath: data.thumbnailPath.present
-          ? data.thumbnailPath.value
-          : this.thumbnailPath,
       isFavorite:
           data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
       isHidden: data.isHidden.present ? data.isHidden.value : this.isHidden,
@@ -747,7 +703,6 @@ class PersonEntityData extends i0.DataClass
           ..write('ownerId: $ownerId, ')
           ..write('name: $name, ')
           ..write('faceAssetId: $faceAssetId, ')
-          ..write('thumbnailPath: $thumbnailPath, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('isHidden: $isHidden, ')
           ..write('color: $color, ')
@@ -758,7 +713,7 @@ class PersonEntityData extends i0.DataClass
 
   @override
   int get hashCode => Object.hash(id, createdAt, updatedAt, ownerId, name,
-      faceAssetId, thumbnailPath, isFavorite, isHidden, color, birthDate);
+      faceAssetId, isFavorite, isHidden, color, birthDate);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -769,7 +724,6 @@ class PersonEntityData extends i0.DataClass
           other.ownerId == this.ownerId &&
           other.name == this.name &&
           other.faceAssetId == this.faceAssetId &&
-          other.thumbnailPath == this.thumbnailPath &&
           other.isFavorite == this.isFavorite &&
           other.isHidden == this.isHidden &&
           other.color == this.color &&
@@ -783,7 +737,6 @@ class PersonEntityCompanion extends i0.UpdateCompanion<i1.PersonEntityData> {
   final i0.Value<String> ownerId;
   final i0.Value<String> name;
   final i0.Value<String?> faceAssetId;
-  final i0.Value<String> thumbnailPath;
   final i0.Value<bool> isFavorite;
   final i0.Value<bool> isHidden;
   final i0.Value<String?> color;
@@ -795,7 +748,6 @@ class PersonEntityCompanion extends i0.UpdateCompanion<i1.PersonEntityData> {
     this.ownerId = const i0.Value.absent(),
     this.name = const i0.Value.absent(),
     this.faceAssetId = const i0.Value.absent(),
-    this.thumbnailPath = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
     this.isHidden = const i0.Value.absent(),
     this.color = const i0.Value.absent(),
@@ -808,7 +760,6 @@ class PersonEntityCompanion extends i0.UpdateCompanion<i1.PersonEntityData> {
     required String ownerId,
     required String name,
     this.faceAssetId = const i0.Value.absent(),
-    required String thumbnailPath,
     required bool isFavorite,
     required bool isHidden,
     this.color = const i0.Value.absent(),
@@ -816,7 +767,6 @@ class PersonEntityCompanion extends i0.UpdateCompanion<i1.PersonEntityData> {
   })  : id = i0.Value(id),
         ownerId = i0.Value(ownerId),
         name = i0.Value(name),
-        thumbnailPath = i0.Value(thumbnailPath),
         isFavorite = i0.Value(isFavorite),
         isHidden = i0.Value(isHidden);
   static i0.Insertable<i1.PersonEntityData> custom({
@@ -826,7 +776,6 @@ class PersonEntityCompanion extends i0.UpdateCompanion<i1.PersonEntityData> {
     i0.Expression<String>? ownerId,
     i0.Expression<String>? name,
     i0.Expression<String>? faceAssetId,
-    i0.Expression<String>? thumbnailPath,
     i0.Expression<bool>? isFavorite,
     i0.Expression<bool>? isHidden,
     i0.Expression<String>? color,
@@ -839,7 +788,6 @@ class PersonEntityCompanion extends i0.UpdateCompanion<i1.PersonEntityData> {
       if (ownerId != null) 'owner_id': ownerId,
       if (name != null) 'name': name,
       if (faceAssetId != null) 'face_asset_id': faceAssetId,
-      if (thumbnailPath != null) 'thumbnail_path': thumbnailPath,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (isHidden != null) 'is_hidden': isHidden,
       if (color != null) 'color': color,
@@ -854,7 +802,6 @@ class PersonEntityCompanion extends i0.UpdateCompanion<i1.PersonEntityData> {
       i0.Value<String>? ownerId,
       i0.Value<String>? name,
       i0.Value<String?>? faceAssetId,
-      i0.Value<String>? thumbnailPath,
       i0.Value<bool>? isFavorite,
       i0.Value<bool>? isHidden,
       i0.Value<String?>? color,
@@ -866,7 +813,6 @@ class PersonEntityCompanion extends i0.UpdateCompanion<i1.PersonEntityData> {
       ownerId: ownerId ?? this.ownerId,
       name: name ?? this.name,
       faceAssetId: faceAssetId ?? this.faceAssetId,
-      thumbnailPath: thumbnailPath ?? this.thumbnailPath,
       isFavorite: isFavorite ?? this.isFavorite,
       isHidden: isHidden ?? this.isHidden,
       color: color ?? this.color,
@@ -895,9 +841,6 @@ class PersonEntityCompanion extends i0.UpdateCompanion<i1.PersonEntityData> {
     if (faceAssetId.present) {
       map['face_asset_id'] = i0.Variable<String>(faceAssetId.value);
     }
-    if (thumbnailPath.present) {
-      map['thumbnail_path'] = i0.Variable<String>(thumbnailPath.value);
-    }
     if (isFavorite.present) {
       map['is_favorite'] = i0.Variable<bool>(isFavorite.value);
     }
@@ -922,7 +865,6 @@ class PersonEntityCompanion extends i0.UpdateCompanion<i1.PersonEntityData> {
           ..write('ownerId: $ownerId, ')
           ..write('name: $name, ')
           ..write('faceAssetId: $faceAssetId, ')
-          ..write('thumbnailPath: $thumbnailPath, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('isHidden: $isHidden, ')
           ..write('color: $color, ')
