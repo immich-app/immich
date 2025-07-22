@@ -7,9 +7,10 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
-class TimelineHeader extends StatelessWidget {
+class TimelineHeader extends HookConsumerWidget {
   final Bucket bucket;
   final HeaderType header;
   final double height;
@@ -36,12 +37,13 @@ class TimelineHeader extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (bucket is! TimeBucket || header == HeaderType.none) {
       return const SizedBox.shrink();
     }
 
     final date = (bucket as TimeBucket).date;
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final isMonthHeader =
         header == HeaderType.month || header == HeaderType.monthAndDay;
@@ -68,7 +70,8 @@ class TimelineHeader extends StatelessWidget {
                     style: context.textTheme.labelLarge?.copyWith(fontSize: 24),
                   ),
                   const Spacer(),
-                  if (header != HeaderType.monthAndDay)
+                  if (header != HeaderType.monthAndDay &&
+                      !isReadonlyModeEnabled)
                     _BulkSelectIconButton(
                       bucket: bucket,
                       assetOffset: assetOffset,
@@ -85,10 +88,11 @@ class TimelineHeader extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  _BulkSelectIconButton(
-                    bucket: bucket,
-                    assetOffset: assetOffset,
-                  ),
+                  if (!isReadonlyModeEnabled)
+                    _BulkSelectIconButton(
+                      bucket: bucket,
+                      assetOffset: assetOffset,
+                    ),
                 ],
               ),
           ],

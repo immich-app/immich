@@ -8,6 +8,7 @@ import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.da
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -55,6 +56,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
   @override
   Widget build(BuildContext context) {
     final isScreenLandscape = context.orientation == Orientation.landscape;
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final navigationDestinations = [
       NavigationDestination(
@@ -147,10 +149,12 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
                     ],
                   )
                 : child,
-            bottomNavigationBar: _BottomNavigationBar(
-              tabsRouter: tabsRouter,
-              destinations: navigationDestinations,
-            ),
+            bottomNavigationBar: isReadonlyModeEnabled
+                ? null
+                : _BottomNavigationBar(
+                    tabsRouter: tabsRouter,
+                    destinations: navigationDestinations,
+                  ),
           ),
         );
       },
