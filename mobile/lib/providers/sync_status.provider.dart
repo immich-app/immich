@@ -61,7 +61,11 @@ class SyncStatusState {
 
   @override
   int get hashCode => Object.hash(
-      remoteSyncStatus, localSyncStatus, hashJobStatus, errorMessage);
+        remoteSyncStatus,
+        localSyncStatus,
+        hashJobStatus,
+        errorMessage,
+      );
 }
 
 class SyncStatusNotifier extends Notifier<SyncStatusState> {

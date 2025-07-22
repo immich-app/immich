@@ -13,8 +13,7 @@ import 'package:immich_mobile/widgets/settings/language_settings.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/networking_settings.dart';
 import 'package:immich_mobile/widgets/settings/notification_setting.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/preference_setting.dart';
-import 'package:immich_mobile/widgets/settings/beta_sync_settings/beta_sync_settings.dart';
-import 'package:immich_mobile/entities/store.entity.dart' as AppStore;
+import 'package:immich_mobile/entities/store.entity.dart' as app_store;
 import 'package:immich_mobile/widgets/settings/settings_card.dart';
 
 enum SettingSection {
@@ -113,7 +112,7 @@ class _MobileLayout extends StatelessWidget {
       padding: const EdgeInsets.only(top: 10.0, bottom: 56),
       children: [
         const BetaTimelineListTile(),
-        if (AppStore.Store.isBetaTimelineEnabled)
+        if (app_store.Store.isBetaTimelineEnabled)
           SettingsCard(
             icon: Icons.sync_outlined,
             title: 'beta_sync'.tr(),
