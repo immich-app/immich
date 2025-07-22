@@ -3,7 +3,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
+import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
@@ -11,6 +13,7 @@ import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/migration.dart';
 
 @RoutePage()
@@ -25,9 +28,19 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref.read(websocketProvider.notifier).connect();
-      runNewSync(ref, full: true);
+
+      final isEnableBackup = ref
+          .read(appSettingsServiceProvider)
+          .getSetting(AppSettingsEnum.enableBackup);
+
+      await runNewSync(ref, full: true).then((_) async {
+        if (isEnableBackup) {
+          await ref.read(driftBackupProvider.notifier).handleBackupResume();
+        }
+      });
     });
   }
 

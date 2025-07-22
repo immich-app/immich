@@ -172,6 +172,18 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     });
   }
 
+  Future<void> restoreTrash(List<String> ids) {
+    return _db.batch((batch) async {
+      for (final id in ids) {
+        batch.update(
+          _db.remoteAssetEntity,
+          const RemoteAssetEntityCompanion(deletedAt: Value(null)),
+          where: (e) => e.id.equals(id),
+        );
+      }
+    });
+  }
+
   Future<void> delete(List<String> ids) {
     return _db.remoteAssetEntity.deleteWhere((row) => row.id.isIn(ids));
   }
@@ -194,7 +206,7 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
   Future<void> stack(String userId, StackResponse stack) {
     return _db.transaction(() async {
       final stackIds = await _db.managers.stackEntity
-          .filter((row) => row.primaryAssetId.id.isIn(stack.assetIds))
+          .filter((row) => row.primaryAssetId.isIn(stack.assetIds))
           .map((row) => row.id)
           .get();
 
@@ -238,5 +250,9 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
         );
       });
     });
+  }
+
+  Future<int> getCount() {
+    return _db.managers.remoteAssetEntity.count();
   }
 }

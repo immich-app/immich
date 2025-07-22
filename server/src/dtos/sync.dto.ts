@@ -245,7 +245,6 @@ export class SyncPersonV1 {
   ownerId!: string;
   name!: string;
   birthDate!: Date | null;
-  thumbnailPath!: string;
   isHidden!: boolean;
   isFavorite!: boolean;
   color!: string | null;
@@ -255,6 +254,31 @@ export class SyncPersonV1 {
 @ExtraModel()
 export class SyncPersonDeleteV1 {
   personId!: string;
+}
+
+@ExtraModel()
+export class SyncAssetFaceV1 {
+  id!: string;
+  assetId!: string;
+  personId!: string | null;
+  @ApiProperty({ type: 'integer' })
+  imageWidth!: number;
+  @ApiProperty({ type: 'integer' })
+  imageHeight!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX1!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY1!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX2!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY2!: number;
+  sourceType!: string;
+}
+
+@ExtraModel()
+export class SyncAssetFaceDeleteV1 {
+  assetFaceId!: string;
 }
 
 @ExtraModel()
@@ -312,6 +336,8 @@ export type SyncItem = {
   [SyncEntityType.PartnerStackV1]: SyncStackV1;
   [SyncEntityType.PersonV1]: SyncPersonV1;
   [SyncEntityType.PersonDeleteV1]: SyncPersonDeleteV1;
+  [SyncEntityType.AssetFaceV1]: SyncAssetFaceV1;
+  [SyncEntityType.AssetFaceDeleteV1]: SyncAssetFaceDeleteV1;
   [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
   [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;
   [SyncEntityType.SyncAckV1]: SyncAckV1;

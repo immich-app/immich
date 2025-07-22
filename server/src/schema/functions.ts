@@ -229,3 +229,16 @@ export const user_metadata_audit = registerFunction({
       RETURN NULL;
     END`,
 });
+
+export const asset_face_audit = registerFunction({
+  name: 'asset_face_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO asset_face_audit ("assetFaceId", "assetId")
+      SELECT "id", "assetId"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+});

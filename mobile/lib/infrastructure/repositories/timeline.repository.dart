@@ -332,6 +332,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       _remoteQueryBuilder(
         filter: (row) => row.deletedAt.isNotNull() & row.ownerId.equals(userId),
         groupBy: groupBy,
+        joinLocal: true,
       );
 
   TimelineQuery archived(String userId, GroupAssetsBy groupBy) =>
@@ -443,11 +444,16 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   TimelineQuery _remoteQueryBuilder({
     required Expression<bool> Function($RemoteAssetEntityTable row) filter,
     GroupAssetsBy groupBy = GroupAssetsBy.day,
+    bool joinLocal = false,
   }) {
     return (
       bucketSource: () => _watchRemoteBucket(filter: filter, groupBy: groupBy),
-      assetSource: (offset, count) =>
-          _getRemoteAssets(filter: filter, offset: offset, count: count),
+      assetSource: (offset, count) => _getRemoteAssets(
+            filter: filter,
+            offset: offset,
+            count: count,
+            joinLocal: joinLocal,
+          ),
     );
   }
 
@@ -480,13 +486,35 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     required Expression<bool> Function($RemoteAssetEntityTable row) filter,
     required int offset,
     required int count,
+    bool joinLocal = false,
   }) {
-    final query = _db.remoteAssetEntity.select()
-      ..where(filter)
-      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
-      ..limit(count, offset: offset);
+    if (joinLocal) {
+      final query = _db.remoteAssetEntity.select().join([
+        leftOuterJoin(
+          _db.localAssetEntity,
+          _db.remoteAssetEntity.checksum
+              .equalsExp(_db.localAssetEntity.checksum),
+          useColumns: false,
+        ),
+      ])
+        ..addColumns([_db.localAssetEntity.id])
+        ..where(filter(_db.remoteAssetEntity))
+        ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+        ..limit(count, offset: offset);
 
-    return query.map((row) => row.toDto()).get();
+      return query.map((row) {
+        final asset = row.readTable(_db.remoteAssetEntity).toDto();
+        final localId = row.read(_db.localAssetEntity.id);
+        return asset.copyWith(localId: localId);
+      }).get();
+    } else {
+      final query = _db.remoteAssetEntity.select()
+        ..where(filter)
+        ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+        ..limit(count, offset: offset);
+
+      return query.map((row) => row.toDto()).get();
+    }
   }
 }
 

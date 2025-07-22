@@ -1,8 +1,11 @@
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { SourceType } from 'src/enum';
 import { asset_face_source_type } from 'src/schema/enums';
+import { asset_face_audit } from 'src/schema/functions';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import {
+  AfterDeleteTrigger,
   Column,
   DeleteDateColumn,
   ForeignKeyColumn,
@@ -11,9 +14,17 @@ import {
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
+  UpdateDateColumn,
 } from 'src/sql-tools';
 
 @Table({ name: 'asset_face' })
+@UpdatedAtTrigger('asset_face_updatedAt')
+@AfterDeleteTrigger({
+  scope: 'statement',
+  function: asset_face_audit,
+  referencingOldTableAs: 'old',
+  when: 'pg_trigger_depth() = 0',
+})
 // schemaFromDatabase does not preserve column order
 @Index({ name: 'asset_face_assetId_personId_idx', columns: ['assetId', 'personId'] })
 @Index({ columns: ['personId', 'assetId'] })
@@ -61,4 +72,10 @@ export class AssetFaceTable {
 
   @DeleteDateColumn()
   deletedAt!: Timestamp | null;
+
+  @UpdateDateColumn()
+  updatedAt!: Generated<Timestamp>;
+
+  @UpdateIdColumn()
+  updateId!: Generated<string>;
 }

@@ -570,6 +570,10 @@ class ApiClient {
           return SyncAssetDeleteV1.fromJson(value);
         case 'SyncAssetExifV1':
           return SyncAssetExifV1.fromJson(value);
+        case 'SyncAssetFaceDeleteV1':
+          return SyncAssetFaceDeleteV1.fromJson(value);
+        case 'SyncAssetFaceV1':
+          return SyncAssetFaceV1.fromJson(value);
         case 'SyncAssetV1':
           return SyncAssetV1.fromJson(value);
         case 'SyncEntityType':

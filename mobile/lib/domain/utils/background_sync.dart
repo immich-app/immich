@@ -12,6 +12,14 @@ class BackgroundSyncManager {
   final SyncCallback? onRemoteSyncComplete;
   final SyncErrorCallback? onRemoteSyncError;
 
+  final SyncCallback? onLocalSyncStart;
+  final SyncCallback? onLocalSyncComplete;
+  final SyncErrorCallback? onLocalSyncError;
+
+  final SyncCallback? onHashingStart;
+  final SyncCallback? onHashingComplete;
+  final SyncErrorCallback? onHashingError;
+
   Cancelable<void>? _syncTask;
   Cancelable<void>? _syncWebsocketTask;
   Cancelable<void>? _deviceAlbumSyncTask;
@@ -21,6 +29,12 @@ class BackgroundSyncManager {
     this.onRemoteSyncStart,
     this.onRemoteSyncComplete,
     this.onRemoteSyncError,
+    this.onLocalSyncStart,
+    this.onLocalSyncComplete,
+    this.onLocalSyncError,
+    this.onHashingStart,
+    this.onHashingComplete,
+    this.onHashingError,
   });
 
   Future<void> cancel() {
@@ -47,6 +61,8 @@ class BackgroundSyncManager {
       return _deviceAlbumSyncTask!.future;
     }
 
+    onLocalSyncStart?.call();
+
     // We use a ternary operator to avoid [_deviceAlbumSyncTask] from being
     // captured by the closure passed to [runInIsolateGentle].
     _deviceAlbumSyncTask = full
@@ -61,6 +77,10 @@ class BackgroundSyncManager {
 
     return _deviceAlbumSyncTask!.whenComplete(() {
       _deviceAlbumSyncTask = null;
+      onLocalSyncComplete?.call();
+    }).catchError((error) {
+      onLocalSyncError?.call(error.toString());
+      _deviceAlbumSyncTask = null;
     });
   }
 
@@ -70,10 +90,17 @@ class BackgroundSyncManager {
       return _hashTask!.future;
     }
 
+    onHashingStart?.call();
+
     _hashTask = runInIsolateGentle(
       computation: (ref) => ref.read(hashServiceProvider).hashAssets(),
     );
+
     return _hashTask!.whenComplete(() {
+      onHashingComplete?.call();
+      _hashTask = null;
+    }).catchError((error) {
+      onHashingError?.call(error.toString());
       _hashTask = null;
     });
   }
@@ -101,14 +128,18 @@ class BackgroundSyncManager {
     if (_syncWebsocketTask != null) {
       return _syncWebsocketTask!.future;
     }
-
-    _syncWebsocketTask = runInIsolateGentle(
-      computation: (ref) => ref
-          .read(syncStreamServiceProvider)
-          .handleWsAssetUploadReadyV1Batch(batchData),
-    );
+    _syncWebsocketTask = _handleWsAssetUploadReadyV1Batch(batchData);
     return _syncWebsocketTask!.whenComplete(() {
       _syncWebsocketTask = null;
     });
   }
 }
+
+Cancelable<void> _handleWsAssetUploadReadyV1Batch(
+  List<dynamic> batchData,
+) =>
+    runInIsolateGentle(
+      computation: (ref) => ref
+          .read(syncStreamServiceProvider)
+          .handleWsAssetUploadReadyV1Batch(batchData),
+    );

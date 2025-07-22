@@ -2,32 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class DeletePermanentActionButton extends ConsumerWidget {
+class RestoreTrashActionButton extends ConsumerWidget {
   final ActionSource source;
 
-  const DeletePermanentActionButton({super.key, required this.source});
+  const RestoreTrashActionButton({super.key, required this.source});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
 
-    final result = await ref.read(actionProvider.notifier).delete(source);
+    final result = await ref.read(actionProvider.notifier).restoreTrash(source);
     ref.read(multiSelectProvider.notifier).reset();
 
-    if (source == ActionSource.viewer) {
-      EventStream.shared.emit(const ViewerReloadAssetEvent());
-    }
-
-    final successMessage = 'delete_action_prompt'.t(
+    final successMessage = 'restore_trash_action_prompt'.t(
       context: context,
       args: {'count': result.count.toString()},
     );
@@ -46,10 +39,17 @@ class DeletePermanentActionButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return BaseActionButton(
-      maxWidth: 110.0,
-      iconData: Icons.delete_forever,
-      label: "delete_dialog_title".t(context: context),
+    return TextButton.icon(
+      icon: const Icon(
+        Icons.history_rounded,
+      ),
+      label: Text(
+        'restore'.t(),
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       onPressed: () => _onTap(context, ref),
     );
   }

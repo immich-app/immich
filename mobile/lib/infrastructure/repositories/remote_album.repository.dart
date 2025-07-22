@@ -268,6 +268,10 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       return album;
     }).watchSingleOrNull();
   }
+
+  Future<int> getCount() {
+    return _db.managers.remoteAlbumEntity.count();
+  }
 }
 
 extension on RemoteAlbumEntityData {

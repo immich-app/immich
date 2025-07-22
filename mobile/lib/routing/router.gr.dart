@@ -504,6 +504,22 @@ class BackupOptionsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [BetaSyncSettingsPage]
+class BetaSyncSettingsRoute extends PageRouteInfo<void> {
+  const BetaSyncSettingsRoute({List<PageRouteInfo>? children})
+      : super(BetaSyncSettingsRoute.name, initialChildren: children);
+
+  static const String name = 'BetaSyncSettingsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const BetaSyncSettingsPage();
+    },
+  );
+}
+
+/// generated route for
 /// [ChangeExperiencePage]
 class ChangeExperienceRoute extends PageRouteInfo<ChangeExperienceRouteArgs> {
   ChangeExperienceRoute({
@@ -896,7 +912,7 @@ class DriftPartnerDetailRoute
     extends PageRouteInfo<DriftPartnerDetailRouteArgs> {
   DriftPartnerDetailRoute({
     Key? key,
-    required UserDto partner,
+    required PartnerUserDto partner,
     List<PageRouteInfo>? children,
   }) : super(
           DriftPartnerDetailRoute.name,
@@ -920,12 +936,28 @@ class DriftPartnerDetailRouteArgs {
 
   final Key? key;
 
-  final UserDto partner;
+  final PartnerUserDto partner;
 
   @override
   String toString() {
     return 'DriftPartnerDetailRouteArgs{key: $key, partner: $partner}';
   }
+}
+
+/// generated route for
+/// [DriftPartnerPage]
+class DriftPartnerRoute extends PageRouteInfo<void> {
+  const DriftPartnerRoute({List<PageRouteInfo>? children})
+      : super(DriftPartnerRoute.name, initialChildren: children);
+
+  static const String name = 'DriftPartnerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftPartnerPage();
+    },
+  );
 }
 
 /// generated route for
@@ -1074,6 +1106,22 @@ class DriftTrashRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const DriftTrashPage();
+    },
+  );
+}
+
+/// generated route for
+/// [DriftUploadDetailPage]
+class DriftUploadDetailRoute extends PageRouteInfo<void> {
+  const DriftUploadDetailRoute({List<PageRouteInfo>? children})
+      : super(DriftUploadDetailRoute.name, initialChildren: children);
+
+  static const String name = 'DriftUploadDetailRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftUploadDetailPage();
     },
   );
 }

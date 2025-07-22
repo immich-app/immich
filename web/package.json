@@ -83,7 +83,7 @@
     "@types/qrcode": "^1.5.5",
     "@vitest/coverage-v8": "^3.0.0",
     "autoprefixer": "^10.4.17",
-    "dotenv": "^16.4.7",
+    "dotenv": "^17.0.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-p": "^0.25.0",
@@ -109,6 +109,6 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.17.0"
+    "node": "22.17.1"
   }
 }
