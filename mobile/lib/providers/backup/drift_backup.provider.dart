@@ -41,6 +41,7 @@ class DriftUploadStatus {
   final double progress;
   final int fileSize;
   final String networkSpeedAsString;
+  final bool? isFailed;
 
   const DriftUploadStatus({
     required this.taskId,
@@ -48,6 +49,7 @@ class DriftUploadStatus {
     required this.progress,
     required this.fileSize,
     required this.networkSpeedAsString,
+    this.isFailed,
   });
 
   DriftUploadStatus copyWith({
@@ -56,6 +58,7 @@ class DriftUploadStatus {
     double? progress,
     int? fileSize,
     String? networkSpeedAsString,
+    bool? isFailed,
   }) {
     return DriftUploadStatus(
       taskId: taskId ?? this.taskId,
@@ -63,12 +66,13 @@ class DriftUploadStatus {
       progress: progress ?? this.progress,
       fileSize: fileSize ?? this.fileSize,
       networkSpeedAsString: networkSpeedAsString ?? this.networkSpeedAsString,
+      isFailed: isFailed ?? this.isFailed,
     );
   }
 
   @override
   String toString() {
-    return 'DriftUploadStatus(taskId: $taskId, filename: $filename, progress: $progress, fileSize: $fileSize, networkSpeedAsString: $networkSpeedAsString)';
+    return 'DriftUploadStatus(taskId: $taskId, filename: $filename, progress: $progress, fileSize: $fileSize, networkSpeedAsString: $networkSpeedAsString, isFailed: $isFailed)';
   }
 
   @override
@@ -79,7 +83,8 @@ class DriftUploadStatus {
         other.filename == filename &&
         other.progress == progress &&
         other.fileSize == fileSize &&
-        other.networkSpeedAsString == networkSpeedAsString;
+        other.networkSpeedAsString == networkSpeedAsString &&
+        other.isFailed == isFailed;
   }
 
   @override
@@ -88,7 +93,8 @@ class DriftUploadStatus {
         filename.hashCode ^
         progress.hashCode ^
         fileSize.hashCode ^
-        networkSpeedAsString.hashCode;
+        networkSpeedAsString.hashCode ^
+        isFailed.hashCode;
   }
 
   Map<String, dynamic> toMap() {
@@ -98,6 +104,7 @@ class DriftUploadStatus {
       'progress': progress,
       'fileSize': fileSize,
       'networkSpeedAsString': networkSpeedAsString,
+      'isFailed': isFailed,
     };
   }
 
@@ -108,6 +115,7 @@ class DriftUploadStatus {
       progress: map['progress'] as double,
       fileSize: map['fileSize'] as int,
       networkSpeedAsString: map['networkSpeedAsString'] as String,
+      isFailed: map['isFailed'] != null ? map['isFailed'] as bool : null,
     );
   }
 
@@ -235,6 +243,8 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void _handleTaskStatusUpdate(TaskStatusUpdate update) {
+    final taskId = update.task.taskId;
+
     switch (update.status) {
       case TaskStatus.complete:
         if (update.task.group == kBackupGroup) {
@@ -245,14 +255,26 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
         }
 
         // Remove the completed task from the upload items
-        final taskId = update.task.taskId;
         if (state.uploadItems.containsKey(taskId)) {
-          Future.delayed(const Duration(milliseconds: 500), () {
+          Future.delayed(const Duration(milliseconds: 1000), () {
             _removeUploadItem(taskId);
           });
         }
 
       case TaskStatus.failed:
+        final currentItem = state.uploadItems[taskId];
+        if (currentItem == null) {
+          return;
+        }
+
+        state = state.copyWith(
+          uploadItems: {
+            ...state.uploadItems,
+            taskId: currentItem.copyWith(
+              isFailed: true,
+            ),
+          },
+        );
         break;
 
       case TaskStatus.canceled:
