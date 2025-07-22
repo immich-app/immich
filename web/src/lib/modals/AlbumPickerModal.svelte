@@ -32,12 +32,12 @@
     loading = false;
   });
 
-  const multiSelectedRowIndexes: string[] = $state([]);
-  const multiSelectActive = $derived(multiSelectedRowIndexes.length > 0);
+  const multiSelectedAlbumIds: string[] = $state([]);
+  const multiSelectActive = $derived(multiSelectedAlbumIds.length > 0);
 
   const rowConverter = new AlbumModalRowConverter(shared, $albumViewSettings.sortBy, $albumViewSettings.sortOrder);
   const albumModalRows = $derived(
-    rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex, multiSelectedRowIndexes),
+    rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex, multiSelectedAlbumIds),
   );
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
@@ -67,11 +67,11 @@
       }
     }
     if (album) {
-      const indexOf = multiSelectedRowIndexes.indexOf(album.id);
+      const indexOf = multiSelectedAlbumIds.indexOf(album.id);
       if (indexOf === -1) {
-        multiSelectedRowIndexes.push(album.id);
+        multiSelectedAlbumIds.push(album.id);
       } else {
-        multiSelectedRowIndexes.splice(indexOf, 1);
+        multiSelectedAlbumIds.splice(indexOf, 1);
       }
     }
   };
