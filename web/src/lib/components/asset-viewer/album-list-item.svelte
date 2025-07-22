@@ -86,7 +86,7 @@
   };
   function longPress(element: HTMLElement, { onLongPress }: { onLongPress: () => void }) {
     let didPress = false;
-    const start = (evt: PointerEvent) => {
+    const start = () => {
       didPress = false;
       // 350ms for longpress. For reference: iOS uses 500ms for default long press, or 200ms for fast long press.
       timer = setTimeout(() => {

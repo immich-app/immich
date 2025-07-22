@@ -38,10 +38,6 @@
     spin = false,
     onClick = undefined,
   }: Props = $props();
-
-  const handleClick = () => {
-    console.log('click');
-  };
 </script>
 
 <svg
