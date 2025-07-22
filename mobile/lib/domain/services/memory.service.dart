@@ -12,4 +12,8 @@ class DriftMemoryService {
   Future<List<DriftMemory>> getMemoryLane(String ownerId) {
     return _repository.getAll(ownerId);
   }
+
+  Future<int> getCount() {
+    return _repository.getCount();
+  }
 }
