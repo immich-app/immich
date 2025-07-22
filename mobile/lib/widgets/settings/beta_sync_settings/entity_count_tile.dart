@@ -14,71 +14,85 @@ class EntitiyCountTile extends StatelessWidget {
     required this.icon,
   });
 
-  String zeroPadding(int number) {
-    return number.toString().length < 12
-        ? "0" * (12 - number.toString().length)
+  String zeroPadding(int number, int targetWidth) {
+    final numStr = number.toString();
+    return numStr.length < targetWidth
+        ? "0" * (targetWidth - numStr.length)
         : "";
+  }
+
+  int calculateMaxDigits(double availableWidth) {
+    const double charWidth = 11.0;
+    return (availableWidth / charWidth).floor().clamp(1, 20);
   }
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicWidth(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: context.colorScheme.surfaceContainer,
-          borderRadius: const BorderRadius.all(Radius.circular(16)),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surfaceContainerLow,
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
+        border: Border.all(
+          width: 0.5,
+          color: context.colorScheme.outline.withAlpha(25),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Icon and Label
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Icon(
-                  icon,
-                  color: context.primaryColor,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: context.primaryColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // Number
-            RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontFamily: 'Courier',
-                ),
-                children: [
-                  TextSpan(
-                    text: zeroPadding(count),
-                    style: TextStyle(
-                      color: context.colorScheme.onSurfaceSecondary,
-                    ),
-                  ),
-                  TextSpan(
-                    text: count.toString(),
-                    style: TextStyle(
-                      color: context.primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Icon and Label
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(
+                icon,
+                color: context.primaryColor,
               ),
-            ),
-          ],
-        ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: context.primaryColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Number
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final maxDigits = calculateMaxDigits(constraints.maxWidth);
+              return RichText(
+                text: TextSpan(
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontFamily: 'OverpassMono',
+                    fontWeight: FontWeight.w600,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: zeroPadding(count, maxDigits),
+                      style: TextStyle(
+                        color: context.colorScheme.onSurfaceSecondary
+                            .withAlpha(75),
+                      ),
+                    ),
+                    TextSpan(
+                      text: count.toString(),
+                      style: TextStyle(
+                        color: context.primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

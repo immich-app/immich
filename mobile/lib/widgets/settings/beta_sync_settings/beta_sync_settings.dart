@@ -1,7 +1,8 @@
 import 'package:drift/drift.dart' as drift_db;
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -9,7 +10,6 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
-import 'package:immich_mobile/widgets/settings/settings_sub_title.dart';
 
 class BetaSyncSettings extends HookConsumerWidget {
   const BetaSyncSettings({
@@ -39,6 +39,36 @@ class BetaSyncSettings extends HookConsumerWidget {
       ]);
     }
 
+    Future<void> resetDatabase() async {
+// https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
+      final drift = ref.read(driftProvider);
+      final database = drift.attachedDatabase;
+      await database.exclusively(() async {
+        // https://stackoverflow.com/a/65743498/25690041
+        await database.customStatement('PRAGMA writable_schema = 1;');
+        await database.customStatement('DELETE FROM sqlite_master;');
+        await database.customStatement('VACUUM;');
+        await database.customStatement('PRAGMA writable_schema = 0;');
+        await database.customStatement('PRAGMA integrity_check');
+
+        await database.customStatement('PRAGMA user_version = 0');
+        await database.beforeOpen(
+          // ignore: invalid_use_of_internal_member
+          database.resolvedEngine.executor,
+          drift_db.OpeningDetails(null, database.schemaVersion),
+        );
+        await database.customStatement(
+          'PRAGMA user_version = ${database.schemaVersion}',
+        );
+
+        // Refresh all stream queries
+        database.notifyUpdates({
+          for (final table in database.allTables)
+            drift_db.TableUpdate.onTable(table),
+        });
+      });
+    }
+
     return FutureBuilder<List<dynamic>>(
       future: loadCounts(),
       builder: (context, snapshot) {
@@ -56,142 +86,263 @@ class BetaSyncSettings extends HookConsumerWidget {
         final localHashedCount = snapshot.data![4]! as int;
 
         return Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.only(top: 16, bottom: 32),
+          child: ListView(
             children: [
-              SettingsSubTitle(title: "assets".tr()),
+              _SectionHeaderText(text: "assets".t(context: context)),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                child: Wrap(
-                  spacing: 16.0,
-                  runSpacing: 16.0,
+                child: Flex(
+                  direction: Axis.horizontal,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  spacing: 8.0,
                   children: [
-                    EntitiyCountTile(
-                      label: "local".tr(),
-                      count: localAssetCount,
-                      icon: Icons.smartphone,
+                    Expanded(
+                      child: EntitiyCountTile(
+                        label: "local".t(context: context),
+                        count: localAssetCount,
+                        icon: Icons.smartphone,
+                      ),
                     ),
-                    EntitiyCountTile(
-                      label: "remote".tr(),
-                      count: remoteAssetCount,
-                      icon: Icons.cloud,
+                    Expanded(
+                      child: EntitiyCountTile(
+                        label: "remote".t(context: context),
+                        count: remoteAssetCount,
+                        icon: Icons.cloud,
+                      ),
                     ),
                   ],
                 ),
               ),
-              SettingsSubTitle(title: "albums".tr()),
+              _SectionHeaderText(text: "albums".t(context: context)),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                child: Wrap(
-                  spacing: 16.0,
-                  runSpacing: 16.0,
+                child: Flex(
+                  direction: Axis.horizontal,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  spacing: 8.0,
                   children: [
-                    EntitiyCountTile(
-                      label: "local".tr(),
-                      count: localAlbumCount,
-                      icon: Icons.smartphone,
+                    Expanded(
+                      child: EntitiyCountTile(
+                        label: "local".t(context: context),
+                        count: localAlbumCount,
+                        icon: Icons.smartphone,
+                      ),
                     ),
-                    EntitiyCountTile(
-                      label: "remote".tr(),
-                      count: remoteAlbumCount,
-                      icon: Icons.cloud,
+                    Expanded(
+                      child: EntitiyCountTile(
+                        label: "remote".t(context: context),
+                        count: remoteAlbumCount,
+                        icon: Icons.cloud,
+                      ),
                     ),
                   ],
                 ),
               ),
-              SettingsSubTitle(title: "other".tr()),
+              _SectionHeaderText(text: "other".t(context: context)),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                child: Wrap(
-                  spacing: 16.0,
-                  runSpacing: 16.0,
+                child: Flex(
+                  direction: Axis.horizontal,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  spacing: 8.0,
                   children: [
-                    EntitiyCountTile(
-                      label: "memories".tr(),
-                      count: memoryCount,
-                      icon: Icons.calendar_today,
+                    Expanded(
+                      child: EntitiyCountTile(
+                        label: "memories".t(context: context),
+                        count: memoryCount,
+                        icon: Icons.calendar_today,
+                      ),
                     ),
-                    EntitiyCountTile(
-                      label: "hashed_assets".tr(),
-                      count: localHashedCount,
-                      icon: Icons.tag,
+                    Expanded(
+                      child: EntitiyCountTile(
+                        label: "hashed_assets".t(context: context),
+                        count: localHashedCount,
+                        icon: Icons.tag,
+                      ),
                     ),
                   ],
                 ),
               ),
-              SettingsSubTitle(title: "jobs".tr()),
+              const Divider(
+                height: 1,
+                indent: 16,
+                endIndent: 16,
+              ),
+              const SizedBox(height: 24),
+              _SectionHeaderText(text: "jobs".t(context: context)),
               ListTile(
-                title: Text("sync_local".tr()),
+                title: Text(
+                  "sync_local".t(context: context),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                subtitle: Text(
+                  "tap_to_run_job".t(context: context),
+                ),
                 leading: const Icon(Icons.sync),
-                trailing: Text(
-                  ref.watch(syncStatusProvider).localSyncStatus.localized(),
+                trailing: _SyncStatusIcon(
+                  status: ref.watch(syncStatusProvider).localSyncStatus,
                 ),
                 onTap: () {
                   ref.read(backgroundSyncProvider).syncLocal(full: true);
                 },
               ),
               ListTile(
-                title: Text("sync_remote".tr()),
+                title: Text(
+                  "sync_remote".t(context: context),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                subtitle: Text(
+                  "tap_to_run_job".t(context: context),
+                ),
                 leading: const Icon(Icons.cloud_sync),
-                trailing: Text(
-                  ref.watch(syncStatusProvider).remoteSyncStatus.localized(),
+                trailing: _SyncStatusIcon(
+                  status: ref.watch(syncStatusProvider).remoteSyncStatus,
                 ),
                 onTap: () {
                   ref.read(backgroundSyncProvider).syncRemote();
                 },
               ),
               ListTile(
-                title: Text("hashing".tr()),
+                title: Text(
+                  "hash_asset".t(context: context),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 leading: const Icon(Icons.tag),
-                trailing: Text(
-                  ref.watch(syncStatusProvider).hashJobStatus.localized(),
+                subtitle: Text(
+                  "tap_to_run_job".t(context: context),
+                ),
+                trailing: _SyncStatusIcon(
+                  status: ref.watch(syncStatusProvider).hashJobStatus,
                 ),
                 onTap: () {
                   ref.read(backgroundSyncProvider).hashAssets();
                 },
               ),
-              SettingsSubTitle(title: "actions".tr()),
+              const Divider(
+                height: 1,
+                indent: 16,
+                endIndent: 16,
+              ),
+              const SizedBox(height: 24),
+              _SectionHeaderText(text: "actions".t(context: context)),
               ListTile(
-                title: Text("reset_sqlite".tr()),
-                leading: const Icon(Icons.storage),
+                title: Text(
+                  "reset_sqlite".t(context: context),
+                  style: TextStyle(
+                    color: context.colorScheme.error,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                leading: Icon(
+                  Icons.settings_backup_restore_rounded,
+                  color: context.colorScheme.error,
+                ),
                 onTap: () async {
-                  // https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
-                  final drift = ref.read(driftProvider);
-                  final database = drift.attachedDatabase;
-                  await database.exclusively(() async {
-                    // https://stackoverflow.com/a/65743498/25690041
-                    await database
-                        .customStatement('PRAGMA writable_schema = 1;');
-                    await database
-                        .customStatement('DELETE FROM sqlite_master;');
-                    await database.customStatement('VACUUM;');
-                    await database
-                        .customStatement('PRAGMA writable_schema = 0;');
-                    await database.customStatement('PRAGMA integrity_check');
-
-                    await database.customStatement('PRAGMA user_version = 0');
-                    await database.beforeOpen(
-                      // ignore: invalid_use_of_internal_member
-                      database.resolvedEngine.executor,
-                      drift_db.OpeningDetails(null, database.schemaVersion),
-                    );
-                    await database.customStatement(
-                      'PRAGMA user_version = ${database.schemaVersion}',
-                    );
-
-                    // Refresh all stream queries
-                    database.notifyUpdates({
-                      for (final table in database.allTables)
-                        drift_db.TableUpdate.onTable(table),
-                    });
-                  });
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text(
+                          "reset_sqlite".t(context: context),
+                        ),
+                        content: Text(
+                          "reset_sqlite_confirmation".t(context: context),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => context.pop(),
+                            child: Text("cancel".t(context: context)),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              await resetDatabase();
+                              context.pop();
+                              context.scaffoldMessenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    "reset_sqlite_success".t(context: context),
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              "confirm".t(context: context),
+                              style: TextStyle(
+                                color: context.colorScheme.error,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 },
               ),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+class _SyncStatusIcon extends StatelessWidget {
+  final SyncStatus status;
+
+  const _SyncStatusIcon({
+    required this.status,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return switch (status) {
+      SyncStatus.idle => const Icon(
+          Icons.pause_circle_outline_rounded,
+        ),
+      SyncStatus.syncing => const SizedBox(
+          height: 24,
+          width: 24,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+          ),
+        ),
+      SyncStatus.success => const Icon(
+          Icons.check_circle_outline,
+          color: Colors.green,
+        ),
+      SyncStatus.error => Icon(
+          Icons.error_outline,
+          color: context.colorScheme.error,
+        ),
+    };
+  }
+}
+
+class _SectionHeaderText extends StatelessWidget {
+  final String text;
+
+  const _SectionHeaderText({
+    required this.text,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0),
+      child: Text(
+        text.toUpperCase(),
+        style: context.textTheme.labelLarge?.copyWith(
+          fontWeight: FontWeight.w500,
+          color: context.colorScheme.onSurface.withAlpha(200),
+        ),
+      ),
     );
   }
 }

@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/beta_sync_settings.dart';
 
 @RoutePage()
@@ -14,7 +14,7 @@ class BetaSyncSettingsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: const Text("backup_options_page_title").tr(),
+        title: const Text("beta_sync").t(context: context),
         leading: IconButton(
           onPressed: () => context.maybePop(true),
           splashRadius: 24,
