@@ -26,7 +26,7 @@ export class BackupService extends BaseService {
       this.cronRepository.create({
         name: 'backupDatabase',
         expression: database.cronExpression,
-        onTick: () => handlePromiseError(this.jobRepository.queue({ name: JobName.BackupDatabase }), this.logger),
+        onTick: () => handlePromiseError(this.jobRepository.queue({ name: JobName.DatabaseBackup }), this.logger),
         start: database.enabled,
       });
     }
@@ -68,7 +68,7 @@ export class BackupService extends BaseService {
     this.logger.debug(`Database Backup Cleanup Finished, deleted ${toDelete.length} backups`);
   }
 
-  @OnJob({ name: JobName.BackupDatabase, queue: QueueName.BackupDatabase })
+  @OnJob({ name: JobName.DatabaseBackup, queue: QueueName.BackupDatabase })
   async handleBackupDatabase(): Promise<JobStatus> {
     this.logger.debug(`Database Backup Started`);
     const { database } = this.configRepository.getEnv();

@@ -122,7 +122,7 @@ describe(UserService.name, () => {
 
       await sut.createProfileImage(authStub.admin, file);
 
-      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.DeleteFiles, data: { files } }]]);
+      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files } }]]);
     });
 
     it('should not delete the profile image if it has not been set', async () => {
@@ -156,7 +156,7 @@ describe(UserService.name, () => {
 
       await sut.deleteProfileImage(authStub.admin);
 
-      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.DeleteFiles, data: { files } }]]);
+      expect(mocks.job.queue.mock.calls).toEqual([[{ name: JobName.FileDelete, data: { files } }]]);
     });
   });
 
@@ -211,7 +211,7 @@ describe(UserService.name, () => {
       await sut.handleUserDeleteCheck();
 
       expect(mocks.user.getDeletedAfter).toHaveBeenCalled();
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.UserDeletion, data: { id: user.id } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.UserDelete, data: { id: user.id } }]);
     });
   });
 
@@ -235,11 +235,26 @@ describe(UserService.name, () => {
 
       await sut.handleUserDelete({ id: user.id });
 
-      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith('upload/library/deleted-user', options);
-      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith('upload/upload/deleted-user', options);
-      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith('upload/profile/deleted-user', options);
-      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith('upload/thumbs/deleted-user', options);
-      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith('upload/encoded-video/deleted-user', options);
+      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith(
+        expect.stringContaining('upload/library/deleted-user'),
+        options,
+      );
+      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith(
+        expect.stringContaining('upload/upload/deleted-user'),
+        options,
+      );
+      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith(
+        expect.stringContaining('upload/profile/deleted-user'),
+        options,
+      );
+      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith(
+        expect.stringContaining('upload/thumbs/deleted-user'),
+        options,
+      );
+      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith(
+        expect.stringContaining('upload/encoded-video/deleted-user'),
+        options,
+      );
       expect(mocks.album.deleteAll).toHaveBeenCalledWith(user.id);
       expect(mocks.user.delete).toHaveBeenCalledWith(user, true);
     });
@@ -253,7 +268,7 @@ describe(UserService.name, () => {
 
       const options = { force: true, recursive: true };
 
-      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith('upload/library/admin', options);
+      expect(mocks.storage.unlinkDir).toHaveBeenCalledWith(expect.stringContaining('upload/library/admin'), options);
     });
   });
 

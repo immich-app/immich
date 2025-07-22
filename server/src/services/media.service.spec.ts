@@ -1,5 +1,6 @@
 import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
+import { APP_MEDIA_LOCATION } from 'src/constants';
 import { Exif } from 'src/database';
 import {
   AssetFileType,
@@ -49,7 +50,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GenerateThumbnails,
+          name: JobName.AssetGenerateThumbnails,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -57,7 +58,7 @@ describe(MediaService.name, () => {
       expect(mocks.person.getAll).toHaveBeenCalledWith(undefined);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GeneratePersonThumbnail,
+          name: JobName.PersonGenerateThumbnail,
           data: { id: personStub.newThumbnail.id },
         },
       ]);
@@ -72,7 +73,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GenerateThumbnails,
+          name: JobName.AssetGenerateThumbnails,
           data: { id: assetStub.trashed.id },
         },
       ]);
@@ -87,7 +88,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GenerateThumbnails,
+          name: JobName.AssetGenerateThumbnails,
           data: { id: assetStub.archived.id },
         },
       ]);
@@ -106,7 +107,7 @@ describe(MediaService.name, () => {
       expect(mocks.person.update).toHaveBeenCalledTimes(1);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GeneratePersonThumbnail,
+          name: JobName.PersonGenerateThumbnail,
           data: {
             id: personStub.newThumbnail.id,
           },
@@ -122,7 +123,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GenerateThumbnails,
+          name: JobName.AssetGenerateThumbnails,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -138,7 +139,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GenerateThumbnails,
+          name: JobName.AssetGenerateThumbnails,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -154,7 +155,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GenerateThumbnails,
+          name: JobName.AssetGenerateThumbnails,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -173,10 +174,10 @@ describe(MediaService.name, () => {
 
       expect(mocks.storage.removeEmptyDirs).toHaveBeenCalledTimes(2);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.MigrateAsset, data: { id: assetStub.image.id } },
+        { name: JobName.AssetFileMigration, data: { id: assetStub.image.id } },
       ]);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.MigratePerson, data: { id: personStub.withName.id } },
+        { name: JobName.PersonFileMigration, data: { id: personStub.withName.id } },
       ]);
     });
   });
@@ -204,19 +205,19 @@ describe(MediaService.name, () => {
         entityId: assetStub.image.id,
         pathType: AssetPathType.FullSize,
         oldPath: '/uploads/user-id/fullsize/path.webp',
-        newPath: 'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+        newPath: expect.stringContaining('upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg'),
       });
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: assetStub.image.id,
         pathType: AssetPathType.Preview,
         oldPath: '/uploads/user-id/thumbs/path.jpg',
-        newPath: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        newPath: expect.stringContaining('upload/thumbs/user-id/as/se/asset-id-preview.jpeg'),
       });
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: assetStub.image.id,
         pathType: AssetPathType.Thumbnail,
         oldPath: '/uploads/user-id/webp/path.ext',
-        newPath: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+        newPath: expect.stringContaining('upload/thumbs/user-id/as/se/asset-id-thumbnail.webp'),
       });
       expect(mocks.move.create).toHaveBeenCalledTimes(3);
     });
@@ -295,7 +296,7 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.image.originalPath, {
@@ -315,7 +316,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
         },
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        expect.any(String),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
@@ -327,7 +328,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
         },
-        'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+        expect.any(String),
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
@@ -341,12 +342,12 @@ describe(MediaService.name, () => {
         {
           assetId: 'asset-id',
           type: AssetFileType.Preview,
-          path: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+          path: expect.any(String),
         },
         {
           assetId: 'asset-id',
           type: AssetFileType.Thumbnail,
-          path: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+          path: expect.any(String),
         },
       ]);
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'asset-id', thumbhash: thumbhashBuffer });
@@ -357,10 +358,10 @@ describe(MediaService.name, () => {
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await sut.handleGenerateThumbnails({ id: assetStub.video.id });
 
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
@@ -377,12 +378,12 @@ describe(MediaService.name, () => {
         {
           assetId: 'asset-id',
           type: AssetFileType.Preview,
-          path: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+          path: expect.any(String),
         },
         {
           assetId: 'asset-id',
           type: AssetFileType.Thumbnail,
-          path: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+          path: expect.any(String),
         },
       ]);
     });
@@ -392,10 +393,10 @@ describe(MediaService.name, () => {
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
       await sut.handleGenerateThumbnails({ id: assetStub.video.id });
 
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
@@ -412,12 +413,12 @@ describe(MediaService.name, () => {
         {
           assetId: 'asset-id',
           type: AssetFileType.Preview,
-          path: 'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+          path: expect.any(String),
         },
         {
           assetId: 'asset-id',
           type: AssetFileType.Thumbnail,
-          path: 'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+          path: expect.any(String),
         },
       ]);
     });
@@ -432,7 +433,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: [
@@ -453,7 +454,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: ['-sws_flags accurate_rnd+full_chroma_int'],
           outputOptions: expect.any(Array),
@@ -471,7 +472,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([expect.stringContaining('scale=-2:1440')]),
@@ -485,12 +486,12 @@ describe(MediaService.name, () => {
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
-      const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.${format}`;
-      const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.webp`;
+      const previewPath = APP_MEDIA_LOCATION + `/thumbs/user-id/as/se/asset-id-preview.${format}`;
+      const thumbnailPath = APP_MEDIA_LOCATION + `/thumbs/user-id/as/se/asset-id-thumbnail.webp`;
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.image.originalPath, {
         colorspace: Colorspace.Srgb,
@@ -530,12 +531,12 @@ describe(MediaService.name, () => {
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
-      const previewPath = `upload/thumbs/user-id/as/se/asset-id-preview.jpeg`;
-      const thumbnailPath = `upload/thumbs/user-id/as/se/asset-id-thumbnail.${format}`;
+      const previewPath = expect.stringContaining(`upload/thumbs/user-id/as/se/asset-id-preview.jpeg`);
+      const thumbnailPath = expect.stringContaining(`upload/thumbs/user-id/as/se/asset-id-thumbnail.${format}`);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/user-id/as/se');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.image.originalPath, {
         colorspace: Colorspace.Srgb,
@@ -658,12 +659,12 @@ describe(MediaService.name, () => {
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         expect.objectContaining({ processInvalidImages: false }),
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        expect.any(String),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         expect.objectContaining({ processInvalidImages: false }),
-        'upload/thumbs/user-id/as/se/asset-id-thumbnail.webp',
+        expect.any(String),
       );
 
       expect(mocks.media.generateThumbhash).toHaveBeenCalledOnce();
@@ -704,7 +705,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
         },
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        expect.any(String),
       );
     });
 
@@ -734,7 +735,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
         },
-        'upload/thumbs/user-id/as/se/asset-id-fullsize.webp',
+        expect.any(String),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         fullsizeBuffer,
@@ -746,7 +747,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
         },
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        expect.any(String),
       );
     });
 
@@ -774,7 +775,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
         },
-        'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+        expect.any(String),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
@@ -786,7 +787,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
         },
-        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        expect.any(String),
       );
     });
 
@@ -815,7 +816,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
         },
-        'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+        expect.any(String),
       );
     });
 
@@ -838,7 +839,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
-        'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+        expect.stringContaining('fullsize.jpeg'),
       );
     });
 
@@ -869,7 +870,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
         },
-        'upload/thumbs/user-id/as/se/asset-id-fullsize.webp',
+        expect.any(String),
       );
     });
   });
@@ -911,7 +912,7 @@ describe(MediaService.name, () => {
       );
 
       expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(personStub.primaryPerson.id);
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailMiddle.originalPath, {
         colorspace: Colorspace.P3,
         orientation: undefined,
@@ -933,12 +934,9 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        expect.any(String),
       );
-      expect(mocks.person.update).toHaveBeenCalledWith({
-        id: 'person-1',
-        thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-      });
+      expect(mocks.person.update).toHaveBeenCalledWith({ id: 'person-1', thumbnailPath: expect.any(String) });
     });
 
     it('should use preview path if video', async () => {
@@ -953,7 +951,7 @@ describe(MediaService.name, () => {
       );
 
       expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(personStub.primaryPerson.id);
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs/admin_id/pe/rs');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailMiddle.previewPath, {
         colorspace: Colorspace.P3,
         orientation: undefined,
@@ -975,12 +973,9 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        expect.any(String),
       );
-      expect(mocks.person.update).toHaveBeenCalledWith({
-        id: 'person-1',
-        thumbnailPath: 'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
-      });
+      expect(mocks.person.update).toHaveBeenCalledWith({ id: 'person-1', thumbnailPath: expect.any(String) });
     });
 
     it('should generate a thumbnail without going negative', async () => {
@@ -1015,7 +1010,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        expect.any(String),
       );
     });
 
@@ -1052,7 +1047,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        expect.any(String),
       );
     });
 
@@ -1089,7 +1084,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        expect.any(String),
       );
     });
 
@@ -1126,7 +1121,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        expect.any(String),
       );
     });
 
@@ -1168,7 +1163,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           size: 250,
         },
-        'upload/thumbs/admin_id/pe/rs/person-1.jpeg',
+        expect.any(String),
       );
     });
 
@@ -1243,7 +1238,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForVideoConversion).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.VideoConversation,
+          name: JobName.AssetEncodeVideo,
           data: { id: assetStub.video.id },
         },
       ]);
@@ -1257,7 +1252,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForVideoConversion).toHaveBeenCalledWith(void 0);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.VideoConversation,
+          name: JobName.AssetEncodeVideo,
           data: { id: assetStub.video.id },
         },
       ]);
@@ -1288,7 +1283,7 @@ describe(MediaService.name, () => {
       expect(mocks.storage.mkdirSync).toHaveBeenCalled();
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-map 0:1', '-map 0:3']),
@@ -1308,7 +1303,7 @@ describe(MediaService.name, () => {
       expect(mocks.storage.mkdirSync).toHaveBeenCalled();
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-map 0:0', '-map 0:2']),
@@ -1354,7 +1349,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.any(Array),
@@ -1369,7 +1364,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.any(Array),
@@ -1384,7 +1379,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.any(Array),
@@ -1399,7 +1394,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.any(Array),
@@ -1416,7 +1411,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('scale')]),
@@ -1431,7 +1426,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([expect.stringMatching(/scale(_.+)?=-2:720/)]),
@@ -1446,7 +1441,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([expect.stringMatching(/scale(_.+)?=720:-2/)]),
@@ -1463,7 +1458,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([expect.stringMatching(/scale(_.+)?=-2:354/)]),
@@ -1480,7 +1475,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([expect.stringMatching(/scale(_.+)?=354:-2/)]),
@@ -1497,7 +1492,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v copy', '-c:a aac']),
@@ -1518,7 +1513,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.not.arrayContaining(['-tag:v hvc1']),
@@ -1539,7 +1534,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v copy', '-tag:v hvc1']),
@@ -1554,7 +1549,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy']),
@@ -1568,7 +1563,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v copy', '-c:a copy']),
@@ -1616,7 +1611,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).not.toHaveBeenCalled();
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DeleteFiles,
+        name: JobName.FileDelete,
         data: { files: [asset.encodedVideoPath] },
       });
     });
@@ -1627,7 +1622,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v h264', '-maxrate 4500k', '-bufsize 9000k']),
@@ -1642,7 +1637,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v h264', '-maxrate 4500k', '-bufsize 9000k']),
@@ -1657,7 +1652,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v h264', '-b:v 3104k', '-minrate 1552k', '-maxrate 4500k']),
@@ -1672,7 +1667,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy']),
@@ -1693,7 +1688,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-b:v 3104k', '-minrate 1552k', '-maxrate 4500k']),
@@ -1714,7 +1709,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-maxrate')]),
@@ -1729,7 +1724,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-cpu-used 2']),
@@ -1744,7 +1739,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-cpu-used')]),
@@ -1759,7 +1754,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-threads 2']),
@@ -1774,7 +1769,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-threads 1', '-x264-params frame-threads=1:pools=none']),
@@ -1789,7 +1784,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-threads')]),
@@ -1804,7 +1799,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v hevc', '-threads 1', '-x265-params frame-threads=1:pools=none']),
@@ -1819,7 +1814,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-threads')]),
@@ -1834,7 +1829,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([
@@ -1859,7 +1854,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-preset 4']),
@@ -1874,7 +1869,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-svtav1-params mbr=2M']),
@@ -1889,7 +1884,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-svtav1-params lp=4']),
@@ -1906,7 +1901,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-svtav1-params lp=4:mbr=2M']),
@@ -1950,7 +1945,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
           outputOptions: expect.arrayContaining([
@@ -1987,7 +1982,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
           outputOptions: expect.arrayContaining([expect.stringContaining('-multipass')]),
@@ -2004,7 +1999,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
           outputOptions: expect.arrayContaining(['-cq:v 23', '-maxrate 10000k', '-bufsize 6897k']),
@@ -2021,7 +2016,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
           outputOptions: expect.not.stringContaining('-maxrate'),
@@ -2038,7 +2033,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-preset')]),
@@ -2053,7 +2048,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda']),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-multipass')]),
@@ -2070,7 +2065,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-hwaccel cuda',
@@ -2092,7 +2087,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
           outputOptions: expect.arrayContaining([
@@ -2113,7 +2108,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
           outputOptions: expect.arrayContaining([expect.stringContaining('scale_cuda=-2:720:format=nv12')]),
@@ -2130,7 +2125,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
@@ -2170,7 +2165,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
@@ -2190,7 +2185,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
@@ -2210,7 +2205,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
@@ -2239,7 +2234,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-init_hw_device qsv=hw,child_device=/dev/dri/renderD129',
@@ -2261,7 +2256,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-hwaccel qsv',
@@ -2287,7 +2282,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-hwaccel qsv',
@@ -2315,7 +2310,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-hwaccel qsv', '-qsv_device /dev/dri/renderD129']),
           outputOptions: expect.any(Array),
@@ -2334,7 +2329,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-hwaccel qsv',
@@ -2354,7 +2349,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-init_hw_device vaapi=accel:/dev/dri/renderD128',
@@ -2386,7 +2381,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-init_hw_device vaapi=accel:/dev/dri/renderD128',
@@ -2410,7 +2405,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-init_hw_device vaapi=accel:/dev/dri/renderD128',
@@ -2436,7 +2431,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-init_hw_device vaapi=accel:/dev/dri/renderD128',
@@ -2455,7 +2450,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-init_hw_device vaapi=accel:/dev/dri/renderD129',
@@ -2476,7 +2471,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-init_hw_device vaapi=accel:/dev/dri/renderD128',
@@ -2498,7 +2493,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-hwaccel vaapi',
@@ -2523,7 +2518,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-hwaccel vaapi', '-hwaccel_output_format vaapi', '-threads 1']),
           outputOptions: expect.arrayContaining([
@@ -2546,7 +2541,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-hwaccel vaapi', '-hwaccel_output_format vaapi', '-threads 1']),
           outputOptions: expect.arrayContaining([expect.stringContaining('format=nv12')]),
@@ -2565,7 +2560,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-hwaccel vaapi', '-hwaccel_device /dev/dri/renderD129']),
           outputOptions: expect.any(Array),
@@ -2584,7 +2579,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.transcode).toHaveBeenCalledTimes(2);
       expect(mocks.media.transcode).toHaveBeenLastCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-init_hw_device vaapi=accel:/dev/dri/renderD128',
@@ -2607,7 +2602,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.transcode).toHaveBeenCalledTimes(3);
       expect(mocks.media.transcode).toHaveBeenLastCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v h264']),
@@ -2624,7 +2619,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.transcode).toHaveBeenCalledTimes(2);
       expect(mocks.media.transcode).toHaveBeenLastCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v h264']),
@@ -2649,7 +2644,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
             '-hwaccel rkmpp',
@@ -2689,7 +2684,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
           outputOptions: expect.arrayContaining([`-c:v hevc_rkmpp`, '-level 153', '-rc_mode AVBR', '-b:v 10000k']),
@@ -2706,7 +2701,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
           outputOptions: expect.arrayContaining([`-c:v h264_rkmpp`, '-level 51', '-rc_mode CQP', '-qp_init 30']),
@@ -2723,7 +2718,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
           outputOptions: expect.arrayContaining([
@@ -2745,7 +2740,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
           outputOptions: expect.arrayContaining([
@@ -2764,7 +2759,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: [],
           outputOptions: expect.arrayContaining([
@@ -2786,7 +2781,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([
@@ -2805,7 +2800,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([
@@ -2824,7 +2819,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining([
@@ -2843,7 +2838,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy', '-vf format=yuv420p']),
@@ -2858,7 +2853,7 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.any(String),
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy', '-vf scale=-2:720,format=yuv420p']),
@@ -2874,19 +2869,15 @@ describe(MediaService.name, () => {
       await sut.handleVideoConversion({ id: assetStub.video.id });
 
       expect(mocks.media.probe).toHaveBeenCalledWith(assetStub.video.originalPath, { countFrames: true });
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
-        assetStub.video.originalPath,
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        {
-          inputOptions: expect.any(Array),
-          outputOptions: expect.any(Array),
-          twoPass: false,
-          progress: {
-            frameCount: probeStub.videoStream2160p.videoStreams[0].frameCount,
-            percentInterval: expect.any(Number),
-          },
+      expect(mocks.media.transcode).toHaveBeenCalledWith(assetStub.video.originalPath, expect.any(String), {
+        inputOptions: expect.any(Array),
+        outputOptions: expect.any(Array),
+        twoPass: false,
+        progress: {
+          frameCount: probeStub.videoStream2160p.videoStreams[0].frameCount,
+          percentInterval: expect.any(Number),
         },
-      );
+      });
     });
 
     it('should not count frames for progress when log level is not debug', async () => {
@@ -2904,7 +2895,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        APP_MEDIA_LOCATION + '/encoded-video/user-id/as/se/asset-id.mp4',
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:a copy']),

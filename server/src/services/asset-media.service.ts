@@ -121,7 +121,7 @@ export class AssetMediaService extends BaseService {
     const uploadFolder = this.getUploadFolder(asRequest(request, file));
     const uploadPath = `${uploadFolder}/${uploadFilename}`;
 
-    await this.jobRepository.queue({ name: JobName.DeleteFiles, data: { files: [uploadPath] } });
+    await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [uploadPath] } });
   }
 
   async uploadAsset(
@@ -197,6 +197,7 @@ export class AssetMediaService extends BaseService {
 
     return new ImmichFileResponse({
       path: asset.originalPath,
+      fileName: asset.originalFileName,
       contentType: mimeTypes.lookup(asset.originalPath),
       cacheControl: CacheControl.PrivateWithCache,
     });
@@ -312,7 +313,7 @@ export class AssetMediaService extends BaseService {
   ): Promise<AssetMediaResponseDto> {
     // clean up files
     await this.jobRepository.queue({
-      name: JobName.DeleteFiles,
+      name: JobName.FileDelete,
       data: { files: [file.originalPath, sidecarFile?.originalPath] },
     });
 
@@ -365,7 +366,7 @@ export class AssetMediaService extends BaseService {
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
     await this.assetRepository.upsertExif({ assetId, fileSizeInByte: file.size });
     await this.jobRepository.queue({
-      name: JobName.MetadataExtraction,
+      name: JobName.AssetExtractMetadata,
       data: { id: assetId, source: 'upload' },
     });
   }
@@ -394,7 +395,7 @@ export class AssetMediaService extends BaseService {
 
     const { size } = await this.storageRepository.stat(created.originalPath);
     await this.assetRepository.upsertExif({ assetId: created.id, fileSizeInByte: size });
-    await this.jobRepository.queue({ name: JobName.MetadataExtraction, data: { id: created.id, source: 'copy' } });
+    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: created.id, source: 'copy' } });
     return created;
   }
 
@@ -427,7 +428,7 @@ export class AssetMediaService extends BaseService {
     }
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
     await this.assetRepository.upsertExif({ assetId: asset.id, fileSizeInByte: file.size });
-    await this.jobRepository.queue({ name: JobName.MetadataExtraction, data: { id: asset.id, source: 'upload' } });
+    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } });
 
     return asset;
   }

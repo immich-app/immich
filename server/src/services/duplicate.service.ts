@@ -29,8 +29,8 @@ export class DuplicateService extends BaseService {
     await this.duplicateRepository.deleteAll(auth.user.id, dto.ids);
   }
 
-  @OnJob({ name: JobName.QueueDuplicateDetection, queue: QueueName.DuplicateDetection })
-  async handleQueueSearchDuplicates({ force }: JobOf<JobName.QueueDuplicateDetection>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetDetectDuplicatesQueueAll, queue: QueueName.DuplicateDetection })
+  async handleQueueSearchDuplicates({ force }: JobOf<JobName.AssetDetectDuplicatesQueueAll>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isDuplicateDetectionEnabled(machineLearning)) {
       return JobStatus.Skipped;
@@ -44,7 +44,7 @@ export class DuplicateService extends BaseService {
 
     const assets = this.assetJobRepository.streamForSearchDuplicates(force);
     for await (const asset of assets) {
-      jobs.push({ name: JobName.DuplicateDetection, data: { id: asset.id } });
+      jobs.push({ name: JobName.AssetDetectDuplicates, data: { id: asset.id } });
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await queueAll();
       }
@@ -55,8 +55,8 @@ export class DuplicateService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.DuplicateDetection, queue: QueueName.DuplicateDetection })
-  async handleSearchDuplicates({ id }: JobOf<JobName.DuplicateDetection>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetDetectDuplicates, queue: QueueName.DuplicateDetection })
+  async handleSearchDuplicates({ id }: JobOf<JobName.AssetDetectDuplicates>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isDuplicateDetectionEnabled(machineLearning)) {
       return JobStatus.Skipped;

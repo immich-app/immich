@@ -158,7 +158,7 @@ describe(UserAdminService.name, () => {
         deletedAt: expect.any(Date),
       });
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.UserDeletion,
+        name: JobName.UserDelete,
         data: { id: userStub.user1.id, force: true },
       });
     });

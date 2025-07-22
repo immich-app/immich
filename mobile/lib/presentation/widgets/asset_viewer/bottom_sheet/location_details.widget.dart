@@ -72,7 +72,7 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
 
     // Guard no lat/lng
     if (!hasCoordinates ||
-        (asset is LocalAsset && !(asset as LocalAsset).hasRemote)) {
+        (asset != null && asset is LocalAsset && asset!.hasRemote)) {
       return const SizedBox.shrink();
     }
 
@@ -95,7 +95,10 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
             padding: const EdgeInsets.only(bottom: 16),
             child: Text(
               "exif_bottom_sheet_location".t(context: context),
-              style: context.textTheme.labelLarge,
+              style: context.textTheme.labelMedium?.copyWith(
+                color: context.textTheme.labelMedium?.color?.withAlpha(200),
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           ExifMap(
@@ -109,15 +112,13 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
               padding: const EdgeInsets.only(bottom: 4.0),
               child: Text(
                 locationName,
-                style: context.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: context.textTheme.labelLarge,
               ),
             ),
           Text(
             coordinates,
-            style: context.textTheme.labelLarge?.copyWith(
-              color: context.textTheme.labelLarge?.color?.withAlpha(150),
+            style: context.textTheme.labelMedium?.copyWith(
+              color: context.textTheme.labelMedium?.color?.withAlpha(150),
             ),
           ),
         ],

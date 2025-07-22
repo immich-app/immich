@@ -37,16 +37,16 @@ describe(JobService.name, () => {
       await sut.handleNightlyJobs();
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.AssetDeletionCheck },
+        { name: JobName.AssetDeleteCheck },
         { name: JobName.UserDeleteCheck },
         { name: JobName.PersonCleanup },
-        { name: JobName.MemoriesCleanup },
-        { name: JobName.CleanOldSessionTokens },
-        { name: JobName.CleanOldAuditLogs },
-        { name: JobName.MemoriesCreate },
-        { name: JobName.userSyncUsage },
-        { name: JobName.QueueGenerateThumbnails, data: { force: false } },
-        { name: JobName.QueueFacialRecognition, data: { force: false, nightly: true } },
+        { name: JobName.MemoryCleanup },
+        { name: JobName.SessionCleanup },
+        { name: JobName.AuditLogCleanup },
+        { name: JobName.MemoryGenerate },
+        { name: JobName.UserSyncUsage },
+        { name: JobName.AssetGenerateThumbnailsQueueAll, data: { force: false } },
+        { name: JobName.FacialRecognitionQueueAll, data: { force: false, nightly: true } },
       ]);
     });
   });
@@ -136,7 +136,7 @@ describe(JobService.name, () => {
 
       await sut.handleCommand(QueueName.VideoConversion, { command: JobCommand.Start, force: false });
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.QueueVideoConversion, data: { force: false } });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.AssetEncodeVideoQueueAll, data: { force: false } });
     });
 
     it('should handle a start storage template migration command', async () => {
@@ -152,7 +152,7 @@ describe(JobService.name, () => {
 
       await sut.handleCommand(QueueName.SmartSearch, { command: JobCommand.Start, force: false });
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.QueueSmartSearch, data: { force: false } });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.SmartSearchQueueAll, data: { force: false } });
     });
 
     it('should handle a start metadata extraction command', async () => {
@@ -160,7 +160,10 @@ describe(JobService.name, () => {
 
       await sut.handleCommand(QueueName.MetadataExtraction, { command: JobCommand.Start, force: false });
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.QueueMetadataExtraction, data: { force: false } });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetExtractMetadataQueueAll,
+        data: { force: false },
+      });
     });
 
     it('should handle a start sidecar command', async () => {
@@ -168,7 +171,7 @@ describe(JobService.name, () => {
 
       await sut.handleCommand(QueueName.Sidecar, { command: JobCommand.Start, force: false });
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.QueueSidecar, data: { force: false } });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.SidecarQueueAll, data: { force: false } });
     });
 
     it('should handle a start thumbnail generation command', async () => {
@@ -176,7 +179,10 @@ describe(JobService.name, () => {
 
       await sut.handleCommand(QueueName.ThumbnailGeneration, { command: JobCommand.Start, force: false });
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.QueueGenerateThumbnails, data: { force: false } });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetGenerateThumbnailsQueueAll,
+        data: { force: false },
+      });
     });
 
     it('should handle a start face detection command', async () => {
@@ -184,7 +190,7 @@ describe(JobService.name, () => {
 
       await sut.handleCommand(QueueName.FaceDetection, { command: JobCommand.Start, force: false });
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.QueueFaceDetection, data: { force: false } });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.AssetDetectFacesQueueAll, data: { force: false } });
     });
 
     it('should handle a start facial recognition command', async () => {
@@ -192,7 +198,7 @@ describe(JobService.name, () => {
 
       await sut.handleCommand(QueueName.FacialRecognition, { command: JobCommand.Start, force: false });
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.QueueFacialRecognition, data: { force: false } });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.FacialRecognitionQueueAll, data: { force: false } });
     });
 
     it('should handle a start backup database command', async () => {
@@ -200,7 +206,7 @@ describe(JobService.name, () => {
 
       await sut.handleCommand(QueueName.BackupDatabase, { command: JobCommand.Start, force: false });
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.BackupDatabase, data: { force: false } });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.DatabaseBackup, data: { force: false } });
     });
 
     it('should throw a bad request when an invalid queue is used', async () => {
@@ -220,55 +226,55 @@ describe(JobService.name, () => {
       mocks.job.run.mockResolvedValue(JobStatus.Success);
 
       await sut.onJobStart(QueueName.BackgroundTask, {
-        name: JobName.DeleteFiles,
+        name: JobName.FileDelete,
         data: { files: ['path/to/file'] },
       });
 
       expect(mocks.telemetry.jobs.addToGauge).toHaveBeenCalledWith('immich.queues.background_task.active', 1);
       expect(mocks.telemetry.jobs.addToGauge).toHaveBeenCalledWith('immich.queues.background_task.active', -1);
-      expect(mocks.telemetry.jobs.addToCounter).toHaveBeenCalledWith('immich.jobs.delete_files.success', 1);
+      expect(mocks.telemetry.jobs.addToCounter).toHaveBeenCalledWith('immich.jobs.file_delete.success', 1);
       expect(mocks.logger.error).not.toHaveBeenCalled();
     });
 
     const tests: Array<{ item: JobItem; jobs: JobName[]; stub?: any }> = [
       {
         item: { name: JobName.SidecarSync, data: { id: 'asset-1' } },
-        jobs: [JobName.MetadataExtraction],
+        jobs: [JobName.AssetExtractMetadata],
       },
       {
         item: { name: JobName.SidecarDiscovery, data: { id: 'asset-1' } },
-        jobs: [JobName.MetadataExtraction],
+        jobs: [JobName.AssetExtractMetadata],
       },
       {
         item: { name: JobName.StorageTemplateMigrationSingle, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [JobName.GenerateThumbnails],
+        jobs: [JobName.AssetGenerateThumbnails],
       },
       {
         item: { name: JobName.StorageTemplateMigrationSingle, data: { id: 'asset-1' } },
         jobs: [],
       },
       {
-        item: { name: JobName.GeneratePersonThumbnail, data: { id: 'asset-1' } },
+        item: { name: JobName.PersonGenerateThumbnail, data: { id: 'asset-1' } },
         jobs: [],
       },
       {
-        item: { name: JobName.GenerateThumbnails, data: { id: 'asset-1' } },
+        item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1' } },
         jobs: [],
         stub: [assetStub.image],
       },
       {
-        item: { name: JobName.GenerateThumbnails, data: { id: 'asset-1' } },
+        item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1' } },
         jobs: [],
         stub: [assetStub.video],
       },
       {
-        item: { name: JobName.GenerateThumbnails, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [JobName.SmartSearch, JobName.FaceDetection],
+        item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1', source: 'upload' } },
+        jobs: [JobName.SmartSearch, JobName.AssetDetectFaces],
         stub: [assetStub.livePhotoStillAsset],
       },
       {
-        item: { name: JobName.GenerateThumbnails, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [JobName.SmartSearch, JobName.FaceDetection, JobName.VideoConversation],
+        item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1', source: 'upload' } },
+        jobs: [JobName.SmartSearch, JobName.AssetDetectFaces, JobName.AssetEncodeVideo],
         stub: [assetStub.video],
       },
       {
@@ -276,7 +282,7 @@ describe(JobService.name, () => {
         jobs: [],
       },
       {
-        item: { name: JobName.FaceDetection, data: { id: 'asset-1' } },
+        item: { name: JobName.AssetDetectFaces, data: { id: 'asset-1' } },
         jobs: [],
       },
       {

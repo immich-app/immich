@@ -193,13 +193,13 @@ export class MetadataService extends BaseService {
     await this.eventRepository.emit('AssetHide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
   }
 
-  @OnJob({ name: JobName.QueueMetadataExtraction, queue: QueueName.MetadataExtraction })
-  async handleQueueMetadataExtraction(job: JobOf<JobName.QueueMetadataExtraction>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetExtractMetadataQueueAll, queue: QueueName.MetadataExtraction })
+  async handleQueueMetadataExtraction(job: JobOf<JobName.AssetExtractMetadataQueueAll>): Promise<JobStatus> {
     const { force } = job;
 
-    let queue: { name: JobName.MetadataExtraction; data: { id: string } }[] = [];
+    let queue: { name: JobName.AssetExtractMetadata; data: { id: string } }[] = [];
     for await (const asset of this.assetJobRepository.streamForMetadataExtraction(force)) {
-      queue.push({ name: JobName.MetadataExtraction, data: { id: asset.id } });
+      queue.push({ name: JobName.AssetExtractMetadata, data: { id: asset.id } });
 
       if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await this.jobRepository.queueAll(queue);
@@ -211,8 +211,8 @@ export class MetadataService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.MetadataExtraction, queue: QueueName.MetadataExtraction })
-  async handleMetadataExtraction(data: JobOf<JobName.MetadataExtraction>) {
+  @OnJob({ name: JobName.AssetExtractMetadata, queue: QueueName.MetadataExtraction })
+  async handleMetadataExtraction(data: JobOf<JobName.AssetExtractMetadata>) {
     const [{ metadata, reverseGeocoding }, asset] = await Promise.all([
       this.getConfig({ withCache: true }),
       this.assetJobRepository.getForMetadataExtraction(data.id),
@@ -320,8 +320,8 @@ export class MetadataService extends BaseService {
     });
   }
 
-  @OnJob({ name: JobName.QueueSidecar, queue: QueueName.Sidecar })
-  async handleQueueSidecar({ force }: JobOf<JobName.QueueSidecar>): Promise<JobStatus> {
+  @OnJob({ name: JobName.SidecarQueueAll, queue: QueueName.Sidecar })
+  async handleQueueSidecar({ force }: JobOf<JobName.SidecarQueueAll>): Promise<JobStatus> {
     let jobs: JobItem[] = [];
     const queueAll = async () => {
       await this.jobRepository.queueAll(jobs);
@@ -597,7 +597,7 @@ export class MetadataService extends BaseService {
         // note asset.livePhotoVideoId is not motionAsset.id yet
         if (asset.livePhotoVideoId) {
           await this.jobRepository.queue({
-            name: JobName.AssetDeletion,
+            name: JobName.AssetDelete,
             data: { id: asset.livePhotoVideoId, deleteOnDisk: true },
           });
           this.logger.log(`Removed old motion photo video asset (${asset.livePhotoVideoId})`);
@@ -612,7 +612,7 @@ export class MetadataService extends BaseService {
         this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
 
         await this.handleMetadataExtraction({ id: motionAsset.id });
-        await this.jobRepository.queue({ name: JobName.VideoConversation, data: { id: motionAsset.id } });
+        await this.jobRepository.queue({ name: JobName.AssetEncodeVideo, data: { id: motionAsset.id } });
       }
 
       this.logger.debug(`Finished motion photo video extraction for asset ${asset.id}: ${asset.originalPath}`);
@@ -753,7 +753,7 @@ export class MetadataService extends BaseService {
     if (missing.length > 0) {
       this.logger.debugFn(() => `Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
       const newPersonIds = await this.personRepository.createAll(missing);
-      const jobs = newPersonIds.map((id) => ({ name: JobName.GeneratePersonThumbnail, data: { id } }) as const);
+      const jobs = newPersonIds.map((id) => ({ name: JobName.PersonGenerateThumbnail, data: { id } }) as const);
       await this.jobRepository.queueAll(jobs);
     }
 

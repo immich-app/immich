@@ -294,16 +294,16 @@ describe(AssetMediaService.name, () => {
 
     it('should return profile for profile uploads', () => {
       expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
-        'upload/profile/admin_id',
+        expect.stringContaining('upload/profile/admin_id'),
       );
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/profile/admin_id');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/profile/admin_id'));
     });
 
     it('should return upload for everything else', () => {
       expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
-        'upload/upload/admin_id/ra/nd',
+        expect.stringContaining('upload/upload/admin_id/ra/nd'),
       );
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id/ra/nd');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/upload/admin_id/ra/nd'));
     });
   });
 
@@ -384,7 +384,7 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DeleteFiles,
+        name: JobName.FileDelete,
         data: { files: ['fake_path/asset_1.jpeg', undefined] },
       });
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
@@ -409,7 +409,7 @@ describe(AssetMediaService.name, () => {
       );
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DeleteFiles,
+        name: JobName.FileDelete,
         data: { files: ['fake_path/asset_1.jpeg', undefined] },
       });
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
@@ -505,6 +505,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).resolves.toEqual(
         new ImmichFileResponse({
           path: '/original/path.jpg',
+          fileName: 'asset-id.jpg',
           contentType: 'image/jpeg',
           cacheControl: CacheControl.PrivateWithCache,
         }),
@@ -815,7 +816,7 @@ describe(AssetMediaService.name, () => {
       expect(mocks.asset.create).not.toHaveBeenCalled();
       expect(mocks.asset.updateAll).not.toHaveBeenCalled();
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DeleteFiles,
+        name: JobName.FileDelete,
         data: { files: [updatedFile.originalPath, undefined] },
       });
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
@@ -912,8 +913,8 @@ describe(AssetMediaService.name, () => {
       await sut.onUploadError(request, file);
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DeleteFiles,
-        data: { files: ['upload/upload/user-id/ra/nd/random-uuid.jpg'] },
+        name: JobName.FileDelete,
+        data: { files: [expect.stringContaining('upload/upload/user-id/ra/nd/random-uuid.jpg')] },
       });
     });
   });

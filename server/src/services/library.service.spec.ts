@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Stats } from 'node:fs';
 import { defaults, SystemConfig } from 'src/config';
-import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
+import { APP_MEDIA_LOCATION, JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { mapLibrary } from 'src/dtos/library.dto';
 import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
@@ -1010,7 +1010,7 @@ describe(LibraryService.name, () => {
         await sut.watchAll();
 
         expect(mocks.job.queue).toHaveBeenCalledWith({
-          name: JobName.LibraryAssetRemoval,
+          name: JobName.LibraryRemoveAsset,
           data: {
             libraryId: library.id,
             paths: [assetStub.image.originalPath],
@@ -1131,11 +1131,11 @@ describe(LibraryService.name, () => {
 
       expect(mocks.job.queue).toHaveBeenCalledTimes(2);
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LibraryQueueSyncFiles,
+        name: JobName.LibrarySyncFilesQueueAll,
         data: { id: library.id },
       });
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LibraryQueueSyncAssets,
+        name: JobName.LibrarySyncAssetsQueueAll,
         data: { id: library.id },
       });
     });
@@ -1150,11 +1150,11 @@ describe(LibraryService.name, () => {
       await expect(sut.handleQueueScanAll()).resolves.toBe(JobStatus.Success);
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LibraryQueueCleanup,
+        name: JobName.LibraryDeleteCheck,
         data: {},
       });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.LibraryQueueSyncFiles, data: { id: library.id } },
+        { name: JobName.LibrarySyncFilesQueueAll, data: { id: library.id } },
       ]);
     });
   });
@@ -1264,7 +1264,7 @@ describe(LibraryService.name, () => {
     });
 
     it('should detect when import path is in immich media folder', async () => {
-      const importPaths = ['upload/thumbs', `${process.cwd()}/xyz`, 'upload/library'];
+      const importPaths = [APP_MEDIA_LOCATION + '/thumbs', `${process.cwd()}/xyz`, APP_MEDIA_LOCATION + '/library'];
       const library = factory.library({ importPaths });
 
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);

@@ -45,6 +45,7 @@ class LocalAsset extends BaseAsset {
  }''';
   }
 
+  // Not checking for remoteId here
   @override
   bool operator ==(Object other) {
     if (other is! LocalAsset) return false;

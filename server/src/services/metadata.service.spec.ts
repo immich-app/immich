@@ -106,7 +106,7 @@ describe(MetadataService.name, () => {
       expect(mocks.assetJob.streamForMetadataExtraction).toHaveBeenCalledWith(false);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.MetadataExtraction,
+          name: JobName.AssetExtractMetadata,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -119,7 +119,7 @@ describe(MetadataService.name, () => {
       expect(mocks.assetJob.streamForMetadataExtraction).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.MetadataExtraction,
+          name: JobName.AssetExtractMetadata,
           data: { id: assetStub.image.id },
         },
       ]);
@@ -587,7 +587,7 @@ describe(MetadataService.name, () => {
         libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
         localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         originalFileName: 'asset_1.mp4',
-        originalPath: 'upload/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4',
+        originalPath: expect.stringContaining('upload/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4'),
         ownerId: assetStub.livePhotoWithOriginalFileName.ownerId,
         type: AssetType.Video,
       });
@@ -599,7 +599,7 @@ describe(MetadataService.name, () => {
       });
       expect(mocks.asset.update).toHaveBeenCalledTimes(3);
       expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
-        name: JobName.VideoConversation,
+        name: JobName.AssetEncodeVideo,
         data: { id: assetStub.livePhotoMotionAsset.id },
       });
     });
@@ -645,7 +645,7 @@ describe(MetadataService.name, () => {
         libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
         localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         originalFileName: 'asset_1.mp4',
-        originalPath: 'upload/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4',
+        originalPath: expect.stringContaining('upload/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4'),
         ownerId: assetStub.livePhotoWithOriginalFileName.ownerId,
         type: AssetType.Video,
       });
@@ -657,7 +657,7 @@ describe(MetadataService.name, () => {
       });
       expect(mocks.asset.update).toHaveBeenCalledTimes(3);
       expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
-        name: JobName.VideoConversation,
+        name: JobName.AssetEncodeVideo,
         data: { id: assetStub.livePhotoMotionAsset.id },
       });
     });
@@ -703,7 +703,7 @@ describe(MetadataService.name, () => {
         libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
         localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         originalFileName: 'asset_1.mp4',
-        originalPath: 'upload/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4',
+        originalPath: expect.stringContaining('upload/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4'),
         ownerId: assetStub.livePhotoWithOriginalFileName.ownerId,
         type: AssetType.Video,
       });
@@ -715,7 +715,7 @@ describe(MetadataService.name, () => {
       });
       expect(mocks.asset.update).toHaveBeenCalledTimes(3);
       expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
-        name: JobName.VideoConversation,
+        name: JobName.AssetEncodeVideo,
         data: { id: assetStub.livePhotoMotionAsset.id },
       });
     });
@@ -737,7 +737,7 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoWithOriginalFileName.id });
       expect(mocks.job.queue).toHaveBeenNthCalledWith(1, {
-        name: JobName.AssetDeletion,
+        name: JobName.AssetDelete,
         data: { id: assetStub.livePhotoWithOriginalFileName.livePhotoVideoId, deleteOnDisk: true },
       });
     });
@@ -1116,7 +1116,7 @@ describe(MetadataService.name, () => {
       ]);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.GeneratePersonThumbnail,
+          name: JobName.PersonGenerateThumbnail,
           data: { id: personStub.withName.id },
         },
       ]);
@@ -1244,7 +1244,7 @@ describe(MetadataService.name, () => {
           ]);
           expect(mocks.job.queueAll).toHaveBeenCalledWith([
             {
-              name: JobName.GeneratePersonThumbnail,
+              name: JobName.PersonGenerateThumbnail,
               data: { id: personStub.withName.id },
             },
           ]);

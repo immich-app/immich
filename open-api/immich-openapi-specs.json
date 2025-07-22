@@ -13832,6 +13832,65 @@
         ],
         "type": "object"
       },
+      "SyncAssetFaceDeleteV1": {
+        "properties": {
+          "assetFaceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetFaceId"
+        ],
+        "type": "object"
+      },
+      "SyncAssetFaceV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "boundingBoxX1": {
+            "type": "number"
+          },
+          "boundingBoxX2": {
+            "type": "number"
+          },
+          "boundingBoxY1": {
+            "type": "number"
+          },
+          "boundingBoxY2": {
+            "type": "number"
+          },
+          "id": {
+            "type": "string"
+          },
+          "imageHeight": {
+            "type": "number"
+          },
+          "imageWidth": {
+            "type": "number"
+          },
+          "personId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "sourceType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "boundingBoxX1",
+          "boundingBoxX2",
+          "boundingBoxY1",
+          "boundingBoxY2",
+          "id",
+          "imageHeight",
+          "imageWidth",
+          "personId",
+          "sourceType"
+        ],
+        "type": "object"
+      },
       "SyncAssetV1": {
         "properties": {
           "checksum": {
@@ -13956,6 +14015,8 @@
           "StackDeleteV1",
           "PersonV1",
           "PersonDeleteV1",
+          "AssetFaceV1",
+          "AssetFaceDeleteV1",
           "UserMetadataV1",
           "UserMetadataDeleteV1",
           "SyncAckV1",
@@ -14153,9 +14214,6 @@
           "ownerId": {
             "type": "string"
           },
-          "thumbnailPath": {
-            "type": "string"
-          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -14171,7 +14229,6 @@
           "isHidden",
           "name",
           "ownerId",
-          "thumbnailPath",
           "updatedAt"
         ],
         "type": "object"
@@ -14194,6 +14251,7 @@
           "StacksV1",
           "UsersV1",
           "PeopleV1",
+          "AssetFacesV1",
           "UserMetadataV1"
         ],
         "type": "string"

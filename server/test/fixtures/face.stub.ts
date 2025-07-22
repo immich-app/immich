@@ -23,6 +23,8 @@ export const faceStub = {
     sourceType: SourceType.MachineLearning,
     faceSearch: { faceId: 'assetFaceId1', embedding: '[1, 2, 3, 4]' },
     deletedAt: new Date(),
+    updatedAt: new Date('2023-01-01T00:00:00Z'),
+    updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
   }),
   primaryFace1: Object.freeze({
     id: 'assetFaceId2',
@@ -39,6 +41,8 @@ export const faceStub = {
     sourceType: SourceType.MachineLearning,
     faceSearch: { faceId: 'assetFaceId2', embedding: '[1, 2, 3, 4]' },
     deletedAt: null,
+    updatedAt: new Date('2023-01-01T00:00:00Z'),
+    updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
   }),
   mergeFace1: Object.freeze({
     id: 'assetFaceId3',
@@ -55,6 +59,8 @@ export const faceStub = {
     sourceType: SourceType.MachineLearning,
     faceSearch: { faceId: 'assetFaceId3', embedding: '[1, 2, 3, 4]' },
     deletedAt: null,
+    updatedAt: new Date('2023-01-01T00:00:00Z'),
+    updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
   }),
   noPerson1: Object.freeze({
     id: 'assetFaceId8',
@@ -71,6 +77,8 @@ export const faceStub = {
     sourceType: SourceType.MachineLearning,
     faceSearch: { faceId: 'assetFaceId8', embedding: '[1, 2, 3, 4]' },
     deletedAt: null,
+    updatedAt: new Date('2023-01-01T00:00:00Z'),
+    updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
   }),
   noPerson2: Object.freeze({
     id: 'assetFaceId9',
@@ -87,6 +95,8 @@ export const faceStub = {
     sourceType: SourceType.MachineLearning,
     faceSearch: { faceId: 'assetFaceId9', embedding: '[1, 2, 3, 4]' },
     deletedAt: null,
+    updatedAt: new Date('2023-01-01T00:00:00Z'),
+    updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
   }),
   fromExif1: Object.freeze({
     id: 'assetFaceId9',
@@ -102,6 +112,8 @@ export const faceStub = {
     imageWidth: 400,
     sourceType: SourceType.Exif,
     deletedAt: null,
+    updatedAt: new Date('2023-01-01T00:00:00Z'),
+    updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
   }),
   fromExif2: Object.freeze({
     id: 'assetFaceId9',
@@ -117,6 +129,8 @@ export const faceStub = {
     imageWidth: 1024,
     sourceType: SourceType.Exif,
     deletedAt: null,
+    updatedAt: new Date('2023-01-01T00:00:00Z'),
+    updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
   }),
   withBirthDate: Object.freeze({
     id: 'assetFaceId10',
@@ -132,5 +146,7 @@ export const faceStub = {
     imageWidth: 1024,
     sourceType: SourceType.MachineLearning,
     deletedAt: null,
+    updatedAt: new Date('2023-01-01T00:00:00Z'),
+    updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
   }),
 };
