@@ -94,7 +94,7 @@ export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], 
         const duplicateErrorCount = assetIds.length;
         message = $t('assets_were_part_of_albums_count', { values: { count: duplicateErrorCount } });
       } else {
-        message = $t('assets_cannot_be_added_to_albums');
+        message = $t('assets_cannot_be_added_to_albums', { values: { count: assetIds.length } });
       }
     }
     notificationController.show({

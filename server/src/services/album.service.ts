@@ -210,10 +210,10 @@ export class AlbumService extends BaseService {
         fullResults.push({ id: albumId, success: false, error: BulkIdErrorReason.NOT_FOUND });
       }
     }
-
     //Construct final return
-    const albumSuccessCount = fullResults.filter(({ success }) => success).length;
-    const successIds: Set<string> = new Set(fullResults.flatMap((result) => result.successIds!));
+    const successfulResults = fullResults.filter(({ success }) => success);
+    const albumSuccessCount = successfulResults.length;
+    const successIds: Set<string> = new Set(successfulResults.flatMap((result) => result.successIds!));
     const success = successIds.size > 0;
     let error;
     if (!success) {
