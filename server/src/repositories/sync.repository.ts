@@ -43,6 +43,7 @@ export class SyncRepository {
   asset: AssetSync;
   assetExif: AssetExifSync;
   assetFace: AssetFaceSync;
+  authUser: AuthUserSync;
   memory: MemorySync;
   memoryToAsset: MemoryToAssetSync;
   partner: PartnerSync;
@@ -63,6 +64,7 @@ export class SyncRepository {
     this.asset = new AssetSync(this.db);
     this.assetExif = new AssetExifSync(this.db);
     this.assetFace = new AssetFaceSync(this.db);
+    this.authUser = new AuthUserSync(this.db);
     this.memory = new MemorySync(this.db);
     this.memoryToAsset = new MemoryToAssetSync(this.db);
     this.partner = new PartnerSync(this.db);
@@ -362,6 +364,27 @@ class AssetSync extends BaseSync {
       .select(columns.syncAsset)
       .select('asset.updateId')
       .where('ownerId', '=', userId)
+      .$call(this.upsertTableFilters(ack))
+      .stream();
+  }
+}
+
+class AuthUserSync extends BaseSync {
+  @GenerateSql({ params: [], stream: true })
+  getUpserts(ack?: SyncAck) {
+    return this.db
+      .selectFrom('user')
+      .select(columns.syncUser)
+      .select([
+        'isAdmin',
+        'pinCode',
+        'oauthId',
+        'storageLabel',
+        'quotaSizeInBytes',
+        'quotaUsageInBytes',
+        'profileImagePath',
+        'profileChangedAt',
+      ])
       .$call(this.upsertTableFilters(ack))
       .stream();
   }
@@ -693,11 +716,7 @@ class UserSync extends BaseSync {
 
   @GenerateSql({ params: [], stream: true })
   getUpserts(ack?: SyncAck) {
-    return this.db
-      .selectFrom('user')
-      .select(['id', 'name', 'email', 'deletedAt', 'updateId'])
-      .$call(this.upsertTableFilters(ack))
-      .stream();
+    return this.db.selectFrom('user').select(columns.syncUser).$call(this.upsertTableFilters(ack)).stream();
   }
 }
 

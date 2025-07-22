@@ -444,6 +444,29 @@ where
 order by
   "asset_face"."updateId" asc
 
+-- SyncRepository.authUser.getUpserts
+select
+  "id",
+  "name",
+  "email",
+  "avatarColor",
+  "deletedAt",
+  "updateId",
+  "isAdmin",
+  "pinCode",
+  "oauthId",
+  "storageLabel",
+  "quotaSizeInBytes",
+  "quotaUsageInBytes",
+  "profileImagePath",
+  "profileChangedAt"
+from
+  "user"
+where
+  "updatedAt" < now() - interval '1 millisecond'
+order by
+  "updateId" asc
+
 -- SyncRepository.memory.getDeletes
 select
   "id",
@@ -871,6 +894,7 @@ select
   "id",
   "name",
   "email",
+  "avatarColor",
   "deletedAt",
   "updateId"
 from
