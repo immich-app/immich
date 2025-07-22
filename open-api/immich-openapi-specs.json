@@ -13805,25 +13805,25 @@
             "type": "string"
           },
           "boundingBoxX1": {
-            "type": "number"
+            "type": "integer"
           },
           "boundingBoxX2": {
-            "type": "number"
+            "type": "integer"
           },
           "boundingBoxY1": {
-            "type": "number"
+            "type": "integer"
           },
           "boundingBoxY2": {
-            "type": "number"
+            "type": "integer"
           },
           "id": {
             "type": "string"
           },
           "imageHeight": {
-            "type": "number"
+            "type": "integer"
           },
           "imageWidth": {
-            "type": "number"
+            "type": "integer"
           },
           "personId": {
             "nullable": true,
