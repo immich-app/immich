@@ -80,6 +80,16 @@ export class UserRepository {
   }
 
   @GenerateSql()
+  getFileSamples() {
+    return this.db
+      .selectFrom('user')
+      .select(['id', 'profileImagePath'])
+      .where('profileImagePath', '!=', sql.lit(''))
+      .limit(sql.lit(3))
+      .execute();
+  }
+
+  @GenerateSql()
   async hasAdmin(): Promise<boolean> {
     const admin = await this.db
       .selectFrom('user')
@@ -187,7 +197,7 @@ export class UserRepository {
   restore(id: string) {
     return this.db
       .updateTable('user')
-      .set({ status: UserStatus.ACTIVE, deletedAt: null })
+      .set({ status: UserStatus.Active, deletedAt: null })
       .where('user.id', '=', asUuid(id))
       .returning(columns.userAdmin)
       .returning(withMetadata)
@@ -229,8 +239,8 @@ export class UserRepository {
           .countAll<number>()
           .filterWhere((eb) =>
             eb.and([
-              eb('asset.type', '=', sql.lit(AssetType.IMAGE)),
-              eb('asset.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
+              eb('asset.type', '=', sql.lit(AssetType.Image)),
+              eb('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
             ]),
           )
           .as('photos'),
@@ -238,8 +248,8 @@ export class UserRepository {
           .countAll<number>()
           .filterWhere((eb) =>
             eb.and([
-              eb('asset.type', '=', sql.lit(AssetType.VIDEO)),
-              eb('asset.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
+              eb('asset.type', '=', sql.lit(AssetType.Video)),
+              eb('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
             ]),
           )
           .as('videos'),
@@ -254,7 +264,7 @@ export class UserRepository {
             eb.fn
               .sum<number>('asset_exif.fileSizeInByte')
               .filterWhere((eb) =>
-                eb.and([eb('asset.libraryId', 'is', null), eb('asset.type', '=', sql.lit(AssetType.IMAGE))]),
+                eb.and([eb('asset.libraryId', 'is', null), eb('asset.type', '=', sql.lit(AssetType.Image))]),
               ),
             eb.lit(0),
           )
@@ -264,7 +274,7 @@ export class UserRepository {
             eb.fn
               .sum<number>('asset_exif.fileSizeInByte')
               .filterWhere((eb) =>
-                eb.and([eb('asset.libraryId', 'is', null), eb('asset.type', '=', sql.lit(AssetType.VIDEO))]),
+                eb.and([eb('asset.libraryId', 'is', null), eb('asset.type', '=', sql.lit(AssetType.Video))]),
               ),
             eb.lit(0),
           )

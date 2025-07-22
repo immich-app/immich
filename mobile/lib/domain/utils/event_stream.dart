@@ -1,15 +1,7 @@
 import 'dart:async';
 
-sealed class Event {
+class Event {
   const Event();
-}
-
-class TimelineReloadEvent extends Event {
-  const TimelineReloadEvent();
-}
-
-class ViewerOpenBottomSheetEvent extends Event {
-  const ViewerOpenBottomSheetEvent();
 }
 
 class EventStream {

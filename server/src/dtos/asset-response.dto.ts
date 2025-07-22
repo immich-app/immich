@@ -205,7 +205,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     localDateTime: entity.localDateTime,
     updatedAt: entity.updatedAt,
     isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
-    isArchived: entity.visibility === AssetVisibility.ARCHIVE,
+    isArchived: entity.visibility === AssetVisibility.Archive,
     isTrashed: !!entity.deletedAt,
     visibility: entity.visibility,
     duration: entity.duration ?? '0:00:00.00000',

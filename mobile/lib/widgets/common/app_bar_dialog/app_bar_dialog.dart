@@ -17,6 +17,8 @@ import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_profile_info.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_server_info.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
+import 'package:immich_mobile/widgets/common/immich_logo.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ImmichAppBarDialog extends HookConsumerWidget {
@@ -254,6 +256,28 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 "profile_drawer_github",
                 style: context.textTheme.bodySmall,
               ).tr(),
+            ),
+            const SizedBox(
+              width: 20,
+              child: Text(
+                "•",
+                textAlign: TextAlign.center,
+              ),
+            ),
+            InkWell(
+              onTap: () async {
+                context.pop();
+                final packageInfo = await PackageInfo.fromPlatform();
+                showLicensePage(
+                  context: context,
+                  applicationIcon: const Padding(
+                    padding: EdgeInsetsGeometry.symmetric(vertical: 10),
+                    child: ImmichLogo(size: 40),
+                  ),
+                  applicationVersion: packageInfo.version,
+                );
+              },
+              child: Text("licenses", style: context.textTheme.bodySmall).tr(),
             ),
           ],
         ),

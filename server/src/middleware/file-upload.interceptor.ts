@@ -154,11 +154,11 @@ export class FileUploadInterceptor implements NestInterceptor {
 
   private getHandler(route: RouteKey) {
     switch (route) {
-      case RouteKey.ASSET: {
+      case RouteKey.Asset: {
         return this.handlers.assetUpload;
       }
 
-      case RouteKey.USER: {
+      case RouteKey.User: {
         return this.handlers.userProfile;
       }
 

@@ -2,16 +2,17 @@
 
 The `immich-server` docker image comes preinstalled with an administrative CLI (`immich-admin`) that supports the following commands:
 
-| Command                  | Description                           |
-| ------------------------ | ------------------------------------- |
-| `help`                   | Display help                          |
-| `reset-admin-password`   | Reset the password for the admin user |
-| `disable-password-login` | Disable password login                |
-| `enable-password-login`  | Enable password login                 |
-| `enable-oauth-login`     | Enable OAuth login                    |
-| `disable-oauth-login`    | Disable OAuth login                   |
-| `list-users`             | List Immich users                     |
-| `version`                | Print Immich version                  |
+| Command                  | Description                                                   |
+| ------------------------ | ------------------------------------------------------------- |
+| `help`                   | Display help                                                  |
+| `reset-admin-password`   | Reset the password for the admin user                         |
+| `disable-password-login` | Disable password login                                        |
+| `enable-password-login`  | Enable password login                                         |
+| `enable-oauth-login`     | Enable OAuth login                                            |
+| `disable-oauth-login`    | Disable OAuth login                                           |
+| `list-users`             | List Immich users                                             |
+| `version`                | Print Immich version                                          |
+| `change-media-location`  | Change database file paths to align with a new media location |
 
 ## How to run a command
 
@@ -87,4 +88,25 @@ Print Immich Version
 ```
 immich-admin version
 v1.129.0
+```
+
+Change media location
+
+```
+immich-admin change-media-location
+? Enter the previous value of IMMICH_MEDIA_LOCATION: /usr/src/app/upload
+? Enter the new value of IMMICH_MEDIA_LOCATION: /data
+
+  Previous value: /usr/src/app/upload
+  Current value:  /data
+
+  Changing database paths from "/usr/src/app/upload/*" to "/data/*"
+
+? Do you want to proceed? [Y/n] y
+
+Database file paths updated successfully! 🎉
+
+You may now set IMMICH_MEDIA_LOCATION=/data and restart!
+
+(please remember to update applicable volume mounts e.g. ${UPLOAD_LOCATION}:/data)
 ```

@@ -240,6 +240,10 @@ class SyncStreamService {
         return _syncStreamRepository.deleteUserMetadatasV1(
           data.cast(),
         );
+      case SyncEntityType.personV1:
+        return _syncStreamRepository.updatePeopleV1(data.cast());
+      case SyncEntityType.personDeleteV1:
+        return _syncStreamRepository.deletePeopleV1(data.cast());
       default:
         _logger.warning("Unknown sync data type: $type");
     }

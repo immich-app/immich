@@ -23,5 +23,6 @@ export const newDatabaseRepositoryMock = (): Mocked<RepositoryInterface<Database
     tryLock: vitest.fn(),
     isBusy: vitest.fn(),
     wait: vitest.fn(),
+    migrateFilePaths: vitest.fn(),
   };
 };

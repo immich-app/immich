@@ -103,7 +103,7 @@ export class SharedLinkRepository {
       .select((eb) => eb.fn.toJson('album').$castTo<Album | null>().as('album'))
       .where('shared_link.id', '=', id)
       .where('shared_link.userId', '=', userId)
-      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.INDIVIDUAL), eb('album.id', 'is not', null)]))
+      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]))
       .orderBy('shared_link.createdAt', 'desc')
       .executeTakeFirst();
   }
@@ -165,7 +165,7 @@ export class SharedLinkRepository {
         (join) => join.onTrue(),
       )
       .select((eb) => eb.fn.toJson('album').$castTo<Album | null>().as('album'))
-      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.INDIVIDUAL), eb('album.id', 'is not', null)]))
+      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]))
       .$if(!!albumId, (eb) => eb.where('shared_link.albumId', '=', albumId!))
       .orderBy('shared_link.createdAt', 'desc')
       .distinctOn(['shared_link.createdAt'])
@@ -185,7 +185,7 @@ export class SharedLinkRepository {
           eb.selectFrom('user').select(columns.authUser).whereRef('user.id', '=', 'shared_link.userId'),
         ).as('user'),
       ])
-      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.INDIVIDUAL), eb('album.id', 'is not', null)]))
+      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]))
       .executeTakeFirst();
   }
 

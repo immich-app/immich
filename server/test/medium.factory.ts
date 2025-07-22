@@ -154,6 +154,12 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { asset, result };
   }
 
+  async newAssetFace(dto: Partial<Insertable<AssetFace>> & { assetId: string }) {
+    const assetFace = mediumFactory.assetFaceInsert(dto);
+    const result = await this.get(PersonRepository).createAssetFace(assetFace);
+    return { assetFace, result };
+  }
+
   async newMemory(dto: Partial<Insertable<MemoryTable>> = {}) {
     const memory = mediumFactory.memoryInsert(dto);
     const result = await this.get(MemoryRepository).create(memory, new Set<string>());
@@ -182,7 +188,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   }
 
   async newAlbumUser(dto: { albumId: string; userId: string; role?: AlbumUserRole }) {
-    const { albumId, userId, role = AlbumUserRole.EDITOR } = dto;
+    const { albumId, userId, role = AlbumUserRole.Editor } = dto;
     const result = await this.get(AlbumUserRepository).create({ albumsId: albumId, usersId: userId, role });
     return { albumUser: { albumId, userId, role }, result };
   }
@@ -370,14 +376,14 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
     deviceId: '',
     originalFileName: '',
     checksum: randomBytes(32),
-    type: AssetType.IMAGE,
+    type: AssetType.Image,
     originalPath: '/path/to/something.jpg',
     ownerId: '@immich.cloud',
     isFavorite: false,
     fileCreatedAt: now,
     fileModifiedAt: now,
     localDateTime: now,
-    visibility: AssetVisibility.TIMELINE,
+    visibility: AssetVisibility.Timeline,
   };
 
   return {
@@ -423,7 +429,7 @@ const assetFaceInsert = (assetFace: Partial<AssetFace> & { assetId: string }) =>
     imageHeight: assetFace.imageHeight ?? 10,
     imageWidth: assetFace.imageWidth ?? 10,
     personId: assetFace.personId ?? null,
-    sourceType: assetFace.sourceType ?? SourceType.MACHINE_LEARNING,
+    sourceType: assetFace.sourceType ?? SourceType.MachineLearning,
   };
 
   return {
@@ -516,7 +522,7 @@ const memoryInsert = (memory: Partial<Insertable<MemoryTable>> = {}) => {
     createdAt: date,
     updatedAt: date,
     deletedAt: null,
-    type: MemoryType.ON_THIS_DAY,
+    type: MemoryType.OnThisDay,
     data: { year: 2025 },
     showAt: null,
     hideAt: null,

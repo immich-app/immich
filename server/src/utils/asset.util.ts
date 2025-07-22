@@ -18,9 +18,9 @@ export const getAssetFile = (files: AssetFile[], type: AssetFileType | Generated
 };
 
 export const getAssetFiles = (files: AssetFile[]) => ({
-  fullsizeFile: getAssetFile(files, AssetFileType.FULLSIZE),
-  previewFile: getAssetFile(files, AssetFileType.PREVIEW),
-  thumbnailFile: getAssetFile(files, AssetFileType.THUMBNAIL),
+  fullsizeFile: getAssetFile(files, AssetFileType.FullSize),
+  previewFile: getAssetFile(files, AssetFileType.Preview),
+  thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail),
 });
 
 export const addAssets = async (
@@ -33,7 +33,7 @@ export const addAssets = async (
   const notPresentAssetIds = dto.assetIds.filter((id) => !existingAssetIds.has(id));
   const allowedAssetIds = await checkAccess(access, {
     auth,
-    permission: Permission.ASSET_SHARE,
+    permission: Permission.AssetShare,
     ids: notPresentAssetIds,
   });
 
@@ -75,7 +75,7 @@ export const removeAssets = async (
   const existingAssetIds = await bulk.getAssetIds(dto.parentId, dto.assetIds);
   const allowedAssetIds = canAlwaysRemove.has(dto.parentId)
     ? existingAssetIds
-    : await checkAccess(access, { auth, permission: Permission.ASSET_SHARE, ids: existingAssetIds });
+    : await checkAccess(access, { auth, permission: Permission.AssetShare, ids: existingAssetIds });
 
   const results: BulkIdResponseDto[] = [];
   for (const assetId of dto.assetIds) {
@@ -143,15 +143,15 @@ export const onBeforeLink = async (
   if (!motionAsset) {
     throw new BadRequestException('Live photo video not found');
   }
-  if (motionAsset.type !== AssetType.VIDEO) {
+  if (motionAsset.type !== AssetType.Video) {
     throw new BadRequestException('Live photo video must be a video');
   }
   if (motionAsset.ownerId !== userId) {
     throw new BadRequestException('Live photo video does not belong to the user');
   }
 
-  if (motionAsset && motionAsset.visibility === AssetVisibility.TIMELINE) {
-    await assetRepository.update({ id: livePhotoVideoId, visibility: AssetVisibility.HIDDEN });
+  if (motionAsset && motionAsset.visibility === AssetVisibility.Timeline) {
+    await assetRepository.update({ id: livePhotoVideoId, visibility: AssetVisibility.Hidden });
     await eventRepository.emit('AssetHide', { assetId: motionAsset.id, userId });
   }
 };

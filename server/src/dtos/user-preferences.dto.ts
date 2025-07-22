@@ -157,7 +157,7 @@ export class UserPreferencesUpdateDto {
 
 class AlbumsResponse {
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder' })
-  defaultAssetOrder: AssetOrder = AssetOrder.DESC;
+  defaultAssetOrder: AssetOrder = AssetOrder.Desc;
 }
 
 class RatingsResponse {

@@ -61,14 +61,14 @@ export class MapRepository {
     const geodataDate = await readFile(resourcePaths.geodata.dateFile, 'utf8');
 
     // TODO move to service init
-    const geocodingMetadata = await this.metadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
+    const geocodingMetadata = await this.metadataRepository.get(SystemMetadataKey.ReverseGeocodingState);
     if (geocodingMetadata?.lastUpdate === geodataDate) {
       return;
     }
 
     await Promise.all([this.importGeodata(), this.importNaturalEarthCountries()]);
 
-    await this.metadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
+    await this.metadataRepository.set(SystemMetadataKey.ReverseGeocodingState, {
       lastUpdate: geodataDate,
       lastImportFileName: citiesFile,
     });
@@ -102,13 +102,13 @@ export class MapRepository {
       .$if(isArchived === true, (qb) =>
         qb.where((eb) =>
           eb.or([
-            eb('asset.visibility', '=', AssetVisibility.TIMELINE),
-            eb('asset.visibility', '=', AssetVisibility.ARCHIVE),
+            eb('asset.visibility', '=', AssetVisibility.Timeline),
+            eb('asset.visibility', '=', AssetVisibility.Archive),
           ]),
         ),
       )
       .$if(isArchived === false || isArchived === undefined, (qb) =>
-        qb.where('asset.visibility', '=', AssetVisibility.TIMELINE),
+        qb.where('asset.visibility', '=', AssetVisibility.Timeline),
       )
       .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
       .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))

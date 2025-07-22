@@ -26,7 +26,7 @@ import {
   OAuthTokenEndpointAuthMethod,
   QueueName,
   ToneMapping,
-  TranscodeHWAccel,
+  TranscodeHardwareAcceleration,
   TranscodePolicy,
   VideoCodec,
   VideoContainer,
@@ -136,8 +136,8 @@ export class SystemConfigFFmpegDto {
   @ValidateEnum({ enum: TranscodePolicy, name: 'TranscodePolicy' })
   transcode!: TranscodePolicy;
 
-  @ValidateEnum({ enum: TranscodeHWAccel, name: 'TranscodeHWAccel' })
-  accel!: TranscodeHWAccel;
+  @ValidateEnum({ enum: TranscodeHardwareAcceleration, name: 'TranscodeHWAccel' })
+  accel!: TranscodeHardwareAcceleration;
 
   @ValidateBoolean()
   accelDecode!: boolean;
@@ -158,67 +158,67 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.THUMBNAIL_GENERATION]!: JobSettingsDto;
+  [QueueName.ThumbnailGeneration]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.METADATA_EXTRACTION]!: JobSettingsDto;
+  [QueueName.MetadataExtraction]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.VIDEO_CONVERSION]!: JobSettingsDto;
+  [QueueName.VideoConversion]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.SMART_SEARCH]!: JobSettingsDto;
+  [QueueName.SmartSearch]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.MIGRATION]!: JobSettingsDto;
+  [QueueName.Migration]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.BACKGROUND_TASK]!: JobSettingsDto;
+  [QueueName.BackgroundTask]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.SEARCH]!: JobSettingsDto;
+  [QueueName.Search]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.FACE_DETECTION]!: JobSettingsDto;
+  [QueueName.FaceDetection]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.SIDECAR]!: JobSettingsDto;
+  [QueueName.Sidecar]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.LIBRARY]!: JobSettingsDto;
+  [QueueName.Library]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.NOTIFICATION]!: JobSettingsDto;
+  [QueueName.Notification]!: JobSettingsDto;
 }
 
 class SystemConfigLibraryScanDto {

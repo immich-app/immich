@@ -5,9 +5,16 @@ import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.d
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/utils/database.utils.dart';
 import 'package:platform/platform.dart';
 
-enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum }
+enum SortLocalAlbumsBy {
+  id,
+  backupSelection,
+  isIosSharedAlbum,
+  name,
+  assetCount
+}
 
 class DriftLocalAlbumRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -40,6 +47,9 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
               OrderingTerm.asc(_db.localAlbumEntity.backupSelection),
             SortLocalAlbumsBy.isIosSharedAlbum =>
               OrderingTerm.asc(_db.localAlbumEntity.isIosSharedAlbum),
+            SortLocalAlbumsBy.name =>
+              OrderingTerm.asc(_db.localAlbumEntity.name),
+            SortLocalAlbumsBy.assetCount => OrderingTerm.desc(assetCount),
           },
         );
       }
@@ -150,7 +160,15 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           batch.insert(
             _db.localAlbumEntity,
             companion,
-            onConflict: DoUpdate((_) => companion),
+            onConflict: DoUpdate(
+              (old) => LocalAlbumEntityCompanion(
+                id: companion.id,
+                name: companion.name,
+                updatedAt: companion.updatedAt,
+                isIosSharedAlbum: companion.isIosSharedAlbum,
+                marker_: companion.marker_,
+              ),
+            ),
           );
         }
       });
@@ -379,32 +397,5 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
         .get();
 
     return results.isNotEmpty ? results.first : null;
-  }
-}
-
-extension on LocalAlbumEntityData {
-  LocalAlbum toDto({int assetCount = 0}) {
-    return LocalAlbum(
-      id: id,
-      name: name,
-      updatedAt: updatedAt,
-      assetCount: assetCount,
-      backupSelection: backupSelection,
-    );
-  }
-}
-
-extension on LocalAssetEntityData {
-  LocalAsset toDto() {
-    return LocalAsset(
-      id: id,
-      name: name,
-      checksum: checksum,
-      type: type,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      durationInSeconds: durationInSeconds,
-      isFavorite: isFavorite,
-    );
   }
 }

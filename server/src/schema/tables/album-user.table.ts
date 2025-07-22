@@ -47,7 +47,7 @@ export class AlbumUserTable {
   })
   usersId!: string;
 
-  @Column({ type: 'character varying', default: AlbumUserRole.EDITOR })
+  @Column({ type: 'character varying', default: AlbumUserRole.Editor })
   role!: Generated<AlbumUserRole>;
 
   @CreateIdColumn({ index: true })

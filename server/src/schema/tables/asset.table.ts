@@ -132,12 +132,12 @@ export class AssetTable {
   @Column({ type: 'uuid', nullable: true, index: true })
   duplicateId!: string | null;
 
-  @Column({ enum: assets_status_enum, default: AssetStatus.ACTIVE })
+  @Column({ enum: assets_status_enum, default: AssetStatus.Active })
   status!: Generated<AssetStatus>;
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 
-  @Column({ enum: asset_visibility_enum, default: AssetVisibility.TIMELINE })
+  @Column({ enum: asset_visibility_enum, default: AssetVisibility.Timeline })
   visibility!: Generated<AssetVisibility>;
 }

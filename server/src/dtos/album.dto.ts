@@ -18,7 +18,7 @@ export class AlbumUserAddDto {
   @ValidateUUID()
   userId!: string;
 
-  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole', default: AlbumUserRole.EDITOR })
+  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole', default: AlbumUserRole.Editor })
   role?: AlbumUserRole;
 }
 

@@ -70,6 +70,7 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.MemoriesV1,
   SyncRequestType.MemoryToAssetsV1,
   SyncRequestType.PeopleV1,
+  SyncRequestType.AssetFacesV1,
   SyncRequestType.UserMetadataV1,
 ];
 
@@ -156,6 +157,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.StacksV1]: () => this.syncStackV1(response, checkpointMap, auth),
       [SyncRequestType.PartnerStacksV1]: () => this.syncPartnerStackV1(response, checkpointMap, auth, session.id),
       [SyncRequestType.PeopleV1]: () => this.syncPeopleV1(response, checkpointMap, auth),
+      [SyncRequestType.AssetFacesV1]: async () => this.syncAssetFacesV1(response, checkpointMap, auth),
       [SyncRequestType.UserMetadataV1]: () => this.syncUserMetadataV1(response, checkpointMap, auth),
     };
 
@@ -606,6 +608,20 @@ export class SyncService extends BaseService {
     }
   }
 
+  private async syncAssetFacesV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto) {
+    const deleteType = SyncEntityType.AssetFaceDeleteV1;
+    const deletes = this.syncRepository.assetFace.getDeletes(auth.user.id, checkpointMap[deleteType]);
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.AssetFaceV1;
+    const upserts = this.syncRepository.assetFace.getUpserts(auth.user.id, checkpointMap[upsertType]);
+    for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
+
   private async syncUserMetadataV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto) {
     const deleteType = SyncEntityType.UserMetadataDeleteV1;
     const deletes = this.syncRepository.userMetadata.getDeletes(auth.user.id, checkpointMap[deleteType]);
@@ -640,7 +656,7 @@ export class SyncService extends BaseService {
   async getFullSync(auth: AuthDto, dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
     // mobile implementation is faster if this is a single id
     const userId = dto.userId || auth.user.id;
-    await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: [userId] });
+    await this.requireAccess({ auth, permission: Permission.TimelineRead, ids: [userId] });
     const assets = await this.assetRepository.getAllForUserFullSync({
       ownerId: userId,
       updatedUntil: dto.updatedUntil,
@@ -664,7 +680,7 @@ export class SyncService extends BaseService {
       return FULL_SYNC;
     }
 
-    await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: dto.userIds });
+    await this.requireAccess({ auth, permission: Permission.TimelineRead, ids: dto.userIds });
 
     const limit = 10_000;
     const upserted = await this.assetRepository.getChangedDeltaSync({ limit, updatedAfter: dto.updatedAfter, userIds });
@@ -676,8 +692,8 @@ export class SyncService extends BaseService {
 
     const deleted = await this.auditRepository.getAfter(dto.updatedAfter, {
       userIds,
-      entityType: EntityType.ASSET,
-      action: DatabaseAction.DELETE,
+      entityType: EntityType.Asset,
+      action: DatabaseAction.Delete,
     });
 
     const result = {
@@ -686,7 +702,7 @@ export class SyncService extends BaseService {
         // do not return archived assets for partner users
         .filter(
           (a) =>
-            a.ownerId === auth.user.id || (a.ownerId !== auth.user.id && a.visibility === AssetVisibility.TIMELINE),
+            a.ownerId === auth.user.id || (a.ownerId !== auth.user.id && a.visibility === AssetVisibility.Timeline),
         )
         .map((a) =>
           mapAsset(a, {
