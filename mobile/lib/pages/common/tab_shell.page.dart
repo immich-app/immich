@@ -3,44 +3,50 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
+import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/migration.dart';
 
 @RoutePage()
-class TabShellPage extends ConsumerWidget {
+class TabShellPage extends ConsumerStatefulWidget {
   const TabShellPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isScreenLandscape = context.orientation == Orientation.landscape;
+  ConsumerState<TabShellPage> createState() => _TabShellPageState();
+}
 
-    Widget buildIcon({required Widget icon, required bool isProcessing}) {
-      if (!isProcessing) return icon;
-      return Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          icon,
-          Positioned(
-            right: -18,
-            child: SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  context.primaryColor,
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
+class _TabShellPageState extends ConsumerState<TabShellPage> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      ref.read(websocketProvider.notifier).connect();
+
+      final isEnableBackup = ref
+          .read(appSettingsServiceProvider)
+          .getSetting(AppSettingsEnum.enableBackup);
+
+      await runNewSync(ref, full: true).then((_) async {
+        if (isEnableBackup) {
+          await ref.read(driftBackupProvider.notifier).handleBackupResume();
+        }
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isScreenLandscape = context.orientation == Orientation.landscape;
 
     final navigationDestinations = [
       NavigationDestination(
@@ -48,12 +54,9 @@ class TabShellPage extends ConsumerWidget {
         icon: const Icon(
           Icons.photo_library_outlined,
         ),
-        selectedIcon: buildIcon(
-          isProcessing: false,
-          icon: Icon(
-            Icons.photo_library,
-            color: context.primaryColor,
-          ),
+        selectedIcon: Icon(
+          Icons.photo_library,
+          color: context.primaryColor,
         ),
       ),
       NavigationDestination(
@@ -71,12 +74,9 @@ class TabShellPage extends ConsumerWidget {
         icon: const Icon(
           Icons.photo_album_outlined,
         ),
-        selectedIcon: buildIcon(
-          isProcessing: false,
-          icon: Icon(
-            Icons.photo_album_rounded,
-            color: context.primaryColor,
-          ),
+        selectedIcon: Icon(
+          Icons.photo_album_rounded,
+          color: context.primaryColor,
         ),
       ),
       NavigationDestination(
@@ -84,12 +84,9 @@ class TabShellPage extends ConsumerWidget {
         icon: const Icon(
           Icons.space_dashboard_outlined,
         ),
-        selectedIcon: buildIcon(
-          isProcessing: false,
-          icon: Icon(
-            Icons.space_dashboard_rounded,
-            color: context.primaryColor,
-          ),
+        selectedIcon: Icon(
+          Icons.space_dashboard_rounded,
+          color: context.primaryColor,
         ),
       ),
     ];
@@ -116,7 +113,7 @@ class TabShellPage extends ConsumerWidget {
     return AutoTabsRouter(
       routes: [
         const MainTimelineRoute(),
-        SearchRoute(),
+        DriftSearchRoute(),
         const DriftAlbumsRoute(),
         const DriftLibraryRoute(),
       ],
@@ -127,10 +124,6 @@ class TabShellPage extends ConsumerWidget {
       ),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
-        final heroedChild = HeroControllerScope(
-          controller: HeroController(),
-          child: child,
-        );
         return PopScope(
           canPop: tabsRouter.activeIndex == 0,
           onPopInvokedWithResult: (didPop, _) =>
@@ -142,10 +135,10 @@ class TabShellPage extends ConsumerWidget {
                     children: [
                       navigationRail(tabsRouter),
                       const VerticalDivider(),
-                      Expanded(child: heroedChild),
+                      Expanded(child: child),
                     ],
                   )
-                : heroedChild,
+                : child,
             bottomNavigationBar: _BottomNavigationBar(
               tabsRouter: tabsRouter,
               destinations: navigationDestinations,
@@ -166,6 +159,11 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
   // On Search page tapped
   if (router.activeIndex == 1 && index == 1) {
     ref.read(searchInputFocusProvider).requestFocus();
+  }
+
+  // Album page
+  if (index == 2) {
+    ref.read(remoteAlbumProvider.notifier).refresh();
   }
 
   ref.read(hapticFeedbackProvider.notifier).selectionClick();

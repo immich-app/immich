@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
@@ -42,5 +43,34 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
         );
       }
     });
+  }
+
+  Future<void> delete(List<String> ids) {
+    if (ids.isEmpty) {
+      return Future.value();
+    }
+
+    return _db.batch((batch) {
+      for (final slice in ids.slices(32000)) {
+        batch.deleteWhere(_db.localAssetEntity, (e) => e.id.isIn(slice));
+      }
+    });
+  }
+
+  Future<LocalAsset?> getById(String id) {
+    final query = _db.localAssetEntity.select()
+      ..where((lae) => lae.id.equals(id));
+
+    return query.map((row) => row.toDto()).getSingleOrNull();
+  }
+
+  Future<int> getCount() {
+    return _db.managers.localAssetEntity.count();
+  }
+
+  Future<int> getHashedCount() {
+    return _db.managers.localAssetEntity
+        .filter((e) => e.checksum.isNull().not())
+        .count();
   }
 }

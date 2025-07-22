@@ -29,20 +29,20 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 
 ## General
 
-| Variable                            | Description                                                                               |           Default            | Containers               | Workers            |
-| :---------------------------------- | :---------------------------------------------------------------------------------------- | :--------------------------: | :----------------------- | :----------------- |
-| `TZ`                                | Timezone                                                                                  |        <sup>\*1</sup>        | server                   | microservices      |
-| `IMMICH_ENV`                        | Environment (production, development)                                                     |         `production`         | server, machine learning | api, microservices |
-| `IMMICH_LOG_LEVEL`                  | Log level (verbose, debug, log, warn, error)                                              |            `log`             | server, machine learning | api, microservices |
-| `IMMICH_MEDIA_LOCATION`             | Media location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ |   `./upload`<sup>\*3</sup>   | server                   | api, microservices |
-| `IMMICH_CONFIG_FILE`                | Path to config file                                                                       |                              | server                   | api, microservices |
-| `NO_COLOR`                          | Set to `true` to disable color-coded log output                                           |           `false`            | server, machine learning |                    |
-| `CPU_CORES`                         | Number of cores available to the Immich server                                            | auto-detected CPU core count | server                   |                    |
-| `IMMICH_API_METRICS_PORT`           | Port for the OTEL metrics                                                                 |            `8081`            | server                   | api                |
-| `IMMICH_MICROSERVICES_METRICS_PORT` | Port for the OTEL metrics                                                                 |            `8082`            | server                   | microservices      |
-| `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images                                       |                              | server                   | microservices      |
-| `IMMICH_TRUSTED_PROXIES`            | List of comma-separated IPs set as trusted proxies                                        |                              | server                   | api                |
-| `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](/docs/administration/system-integrity)                             |                              | server                   | api, microservices |
+| Variable                            | Description                                                                               |               Default               | Containers               | Workers            |
+| :---------------------------------- | :---------------------------------------------------------------------------------------- | :---------------------------------: | :----------------------- | :----------------- |
+| `TZ`                                | Timezone                                                                                  |           <sup>\*1</sup>            | server                   | microservices      |
+| `IMMICH_ENV`                        | Environment (production, development)                                                     |            `production`             | server, machine learning | api, microservices |
+| `IMMICH_LOG_LEVEL`                  | Log level (verbose, debug, log, warn, error)                                              |                `log`                | server, machine learning | api, microservices |
+| `IMMICH_MEDIA_LOCATION`             | Media location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ | `/usr/src/app/upload`<sup>\*3</sup> | server                   | api, microservices |
+| `IMMICH_CONFIG_FILE`                | Path to config file                                                                       |                                     | server                   | api, microservices |
+| `NO_COLOR`                          | Set to `true` to disable color-coded log output                                           |               `false`               | server, machine learning |                    |
+| `CPU_CORES`                         | Number of cores available to the Immich server                                            |    auto-detected CPU core count     | server                   |                    |
+| `IMMICH_API_METRICS_PORT`           | Port for the OTEL metrics                                                                 |               `8081`                | server                   | api                |
+| `IMMICH_MICROSERVICES_METRICS_PORT` | Port for the OTEL metrics                                                                 |               `8082`                | server                   | microservices      |
+| `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images                                       |                                     | server                   | microservices      |
+| `IMMICH_TRUSTED_PROXIES`            | List of comma-separated IPs set as trusted proxies                                        |                                     | server                   | api                |
+| `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](/docs/administration/system-integrity)                             |                                     | server                   | api, microservices |
 
 \*1: `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 `TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata. It is also used for logfile timestamps and cron job execution.

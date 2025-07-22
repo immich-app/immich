@@ -138,11 +138,11 @@ export class OAuthRepository {
     }
 
     switch (tokenEndpointAuthMethod) {
-      case OAuthTokenEndpointAuthMethod.CLIENT_SECRET_POST: {
+      case OAuthTokenEndpointAuthMethod.ClientSecretPost: {
         return ClientSecretPost(clientSecret);
       }
 
-      case OAuthTokenEndpointAuthMethod.CLIENT_SECRET_BASIC: {
+      case OAuthTokenEndpointAuthMethod.ClientSecretBasic: {
         return ClientSecretBasic(clientSecret);
       }
 

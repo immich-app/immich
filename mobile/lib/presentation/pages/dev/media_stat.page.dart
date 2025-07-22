@@ -166,6 +166,14 @@ final _remoteStats = [
     name: 'Stacks',
     load: (db) => db.managers.stackEntity.count(),
   ),
+  _Stat(
+    name: 'People',
+    load: (db) => db.managers.personEntity.count(),
+  ),
+  _Stat(
+    name: 'AssetFaces',
+    load: (db) => db.managers.assetFaceEntity.count(),
+  ),
 ];
 
 @RoutePage()
@@ -226,7 +234,7 @@ class RemoteMediaSummaryPage extends StatelessWidget {
                         name: album.name,
                         countFuture: countFuture,
                         onTap: () => context.router.push(
-                          RemoteTimelineRoute(album: album),
+                          RemoteAlbumRoute(album: album),
                         ),
                       );
                     },

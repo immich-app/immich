@@ -4,16 +4,20 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
+import 'package:immich_mobile/domain/models/user_metadata.model.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart' as api show AssetVisibility, AlbumUserRole;
@@ -134,6 +138,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             thumbHash: Value(asset.thumbhash),
             deletedAt: Value(asset.deletedAt),
             visibility: Value(asset.visibility.toAssetVisibility()),
+            livePhotoVideoId: Value(asset.livePhotoVideoId),
+            stackId: Value(asset.stackId),
           );
 
           batch.insert(
@@ -460,6 +466,145 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       rethrow;
     }
   }
+
+  Future<void> updateUserMetadatasV1(
+    Iterable<SyncUserMetadataV1> data,
+  ) async {
+    try {
+      await _db.batch((batch) {
+        for (final userMetadata in data) {
+          final companion = UserMetadataEntityCompanion(
+            value: Value(userMetadata.value as Map<String, Object?>),
+          );
+
+          batch.insert(
+            _db.userMetadataEntity,
+            companion.copyWith(
+              userId: Value(userMetadata.userId),
+              key: Value(userMetadata.key.toUserMetadataKey()),
+            ),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteUserMetadatasV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteUserMetadatasV1(
+    Iterable<SyncUserMetadataDeleteV1> data,
+  ) async {
+    try {
+      await _db.batch((batch) {
+        for (final userMetadata in data) {
+          batch.delete(
+            _db.userMetadataEntity,
+            UserMetadataEntityCompanion(
+              userId: Value(userMetadata.userId),
+              key: Value(userMetadata.key.toUserMetadataKey()),
+            ),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteUserMetadatasV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updatePeopleV1(Iterable<SyncPersonV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final person in data) {
+          final companion = PersonEntityCompanion(
+            createdAt: Value(person.createdAt),
+            updatedAt: Value(person.updatedAt),
+            ownerId: Value(person.ownerId),
+            name: Value(person.name),
+            faceAssetId: Value(person.faceAssetId),
+            isFavorite: Value(person.isFavorite),
+            isHidden: Value(person.isHidden),
+            color: Value(person.color),
+            birthDate: Value(person.birthDate),
+          );
+
+          batch.insert(
+            _db.personEntity,
+            companion.copyWith(id: Value(person.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updatePeopleV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deletePeopleV1(
+    Iterable<SyncPersonDeleteV1> data,
+  ) async {
+    try {
+      await _db.batch((batch) {
+        for (final person in data) {
+          batch.deleteWhere(
+            _db.personEntity,
+            (row) => row.id.equals(person.personId),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deletePeopleV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAssetFacesV1(Iterable<SyncAssetFaceV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final assetFace in data) {
+          final companion = AssetFaceEntityCompanion(
+            assetId: Value(assetFace.assetId),
+            personId: Value(assetFace.personId),
+            imageWidth: Value(assetFace.imageWidth),
+            imageHeight: Value(assetFace.imageHeight),
+            boundingBoxX1: Value(assetFace.boundingBoxX1),
+            boundingBoxY1: Value(assetFace.boundingBoxY1),
+            boundingBoxX2: Value(assetFace.boundingBoxX2),
+            boundingBoxY2: Value(assetFace.boundingBoxY2),
+            sourceType: Value(assetFace.sourceType),
+          );
+
+          batch.insert(
+            _db.assetFaceEntity,
+            companion.copyWith(id: Value(assetFace.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetFacesV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAssetFacesV1(Iterable<SyncAssetFaceDeleteV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final assetFace in data) {
+          batch.deleteWhere(
+            _db.assetFaceEntity,
+            (row) => row.id.equals(assetFace.assetFaceId),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAssetFacesV1', error, stack);
+      rethrow;
+    }
+  }
 }
 
 extension on AssetTypeEnum {
@@ -502,6 +647,15 @@ extension on api.AssetVisibility {
         api.AssetVisibility.archive => AssetVisibility.archive,
         api.AssetVisibility.locked => AssetVisibility.locked,
         _ => throw Exception('Unknown AssetVisibility value: $this'),
+      };
+}
+
+extension on String {
+  UserMetadataKey toUserMetadataKey() => switch (this) {
+        "onboarding" => UserMetadataKey.onboarding,
+        "preferences" => UserMetadataKey.preferences,
+        "license" => UserMetadataKey.license,
+        _ => throw Exception('Unknown UserMetadataKey value: $this'),
       };
 }
 

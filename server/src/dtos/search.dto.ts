@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { Place } from 'src/database';
 import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
-import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
   @ValidateUUID({ optional: true, nullable: true })
@@ -17,9 +17,7 @@ class BaseSearchDto {
   @Optional()
   deviceId?: string;
 
-  @IsEnum(AssetType)
-  @Optional()
-  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
+  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum', optional: true })
   type?: AssetType;
 
   @ValidateBoolean({ optional: true })
@@ -34,7 +32,7 @@ class BaseSearchDto {
   @ValidateBoolean({ optional: true })
   isOffline?: boolean;
 
-  @ValidateAssetVisibility({ optional: true })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
   visibility?: AssetVisibility;
 
   @ValidateDate({ optional: true })
@@ -172,9 +170,7 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Optional()
   encodedVideoPath?: string;
 
-  @IsEnum(AssetOrder)
-  @Optional()
-  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder, default: AssetOrder.DESC })
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true, default: AssetOrder.Desc })
   order?: AssetOrder;
 
   @IsInt()
@@ -250,9 +246,7 @@ export enum SearchSuggestionType {
 }
 
 export class SearchSuggestionRequestDto {
-  @IsEnum(SearchSuggestionType)
-  @IsNotEmpty()
-  @ApiProperty({ enumName: 'SearchSuggestionType', enum: SearchSuggestionType })
+  @ValidateEnum({ enum: SearchSuggestionType, name: 'SearchSuggestionType' })
   type!: SearchSuggestionType;
 
   @IsString()

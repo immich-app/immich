@@ -24,6 +24,17 @@ class AssetService {
         : _remoteAssetRepository.watchAsset(id);
   }
 
+  Future<List<RemoteAsset>> getStack(RemoteAsset asset) async {
+    if (asset.stackId == null) {
+      return [];
+    }
+
+    return _remoteAssetRepository.getStackChildren(asset).then((assets) {
+      // Include the primary asset in the stack as the first item
+      return [asset, ...assets];
+    });
+  }
+
   Future<ExifInfo?> getExif(BaseAsset asset) async {
     if (!asset.hasRemote) {
       return null;
@@ -60,5 +71,20 @@ class AssetService {
     }
 
     return 1.0;
+  }
+
+  Future<List<(String, String)>> getPlaces() {
+    return _remoteAssetRepository.getPlaces();
+  }
+
+  Future<(int local, int remote)> getAssetCounts() async {
+    return (
+      await _localAssetRepository.getCount(),
+      await _remoteAssetRepository.getCount()
+    );
+  }
+
+  Future<int> getLocalHashedCount() {
+    return _localAssetRepository.getHashedCount();
   }
 }

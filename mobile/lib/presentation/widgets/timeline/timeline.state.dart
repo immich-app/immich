@@ -14,12 +14,18 @@ class TimelineArgs {
   final double maxHeight;
   final double spacing;
   final int columnCount;
+  final bool showStorageIndicator;
+  final bool withStack;
+  final GroupAssetsBy? groupBy;
 
   const TimelineArgs({
     required this.maxWidth,
     required this.maxHeight,
     this.spacing = kTimelineSpacing,
     this.columnCount = kTimelineColumnCount,
+    this.showStorageIndicator = false,
+    this.withStack = false,
+    this.groupBy,
   });
 
   @override
@@ -27,7 +33,10 @@ class TimelineArgs {
     return spacing == other.spacing &&
         maxWidth == other.maxWidth &&
         maxHeight == other.maxHeight &&
-        columnCount == other.columnCount;
+        columnCount == other.columnCount &&
+        showStorageIndicator == other.showStorageIndicator &&
+        withStack == other.withStack &&
+        groupBy == other.groupBy;
   }
 
   @override
@@ -35,7 +44,10 @@ class TimelineArgs {
       maxWidth.hashCode ^
       maxHeight.hashCode ^
       spacing.hashCode ^
-      columnCount.hashCode;
+      columnCount.hashCode ^
+      showStorageIndicator.hashCode ^
+      withStack.hashCode ^
+      groupBy.hashCode;
 }
 
 class TimelineState {
@@ -93,8 +105,9 @@ final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>(
     final availableTileWidth = args.maxWidth - (spacing * (columnCount - 1));
     final tileExtent = math.max(0, availableTileWidth) / columnCount;
 
-    final groupBy = GroupAssetsBy
-        .values[ref.watch(settingsProvider).get(Setting.groupAssetsBy)];
+    final groupBy = args.groupBy ??
+        GroupAssetsBy
+            .values[ref.watch(settingsProvider).get(Setting.groupAssetsBy)];
 
     final timelineService = ref.watch(timelineServiceProvider);
     yield* timelineService.watchBuckets().map((buckets) {

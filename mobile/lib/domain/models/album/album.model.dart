@@ -86,4 +86,32 @@ class RemoteAlbum {
         assetCount.hashCode ^
         ownerName.hashCode;
   }
+
+  RemoteAlbum copyWith({
+    String? id,
+    String? name,
+    String? ownerId,
+    String? description,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? thumbnailAssetId,
+    bool? isActivityEnabled,
+    AlbumAssetOrder? order,
+    int? assetCount,
+    String? ownerName,
+  }) {
+    return RemoteAlbum(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      ownerId: ownerId ?? this.ownerId,
+      description: description ?? this.description,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      thumbnailAssetId: thumbnailAssetId ?? this.thumbnailAssetId,
+      isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
+      order: order ?? this.order,
+      assetCount: assetCount ?? this.assetCount,
+      ownerName: ownerName ?? this.ownerName,
+    );
+  }
 }

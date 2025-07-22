@@ -10,6 +10,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment_builder.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
+import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -159,17 +160,19 @@ class _AssetTileWidget extends ConsumerWidget {
     required this.assetIndex,
   });
 
-  void _handleOnTap(
+  Future _handleOnTap(
     BuildContext ctx,
     WidgetRef ref,
     int assetIndex,
     BaseAsset asset,
-  ) {
+  ) async {
     final multiSelectState = ref.read(multiSelectProvider);
 
     if (multiSelectState.forceEnable || multiSelectState.isEnabled) {
       ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
     } else {
+      await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
+      ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
       ctx.pushRoute(
         AssetViewerRoute(
           initialIndex: assetIndex,
@@ -206,6 +209,9 @@ class _AssetTileWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lockSelection = _getLockSelectionStatus(ref);
+    final showStorageIndicator = ref.watch(
+      timelineArgsProvider.select((args) => args.showStorageIndicator),
+    );
 
     return RepaintBoundary(
       child: GestureDetector(
@@ -217,6 +223,7 @@ class _AssetTileWidget extends ConsumerWidget {
         child: ThumbnailTile(
           asset,
           lockSelection: lockSelection,
+          showStorageIndicator: showStorageIndicator,
         ),
       ),
     );

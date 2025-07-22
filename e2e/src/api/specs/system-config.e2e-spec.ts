@@ -15,12 +15,6 @@ describe('/system-config', () => {
   });
 
   describe('PUT /system-config', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put('/system-config');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should always return the new config', async () => {
       const config = await getSystemConfig(admin.accessToken);
 

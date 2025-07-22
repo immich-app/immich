@@ -5,11 +5,15 @@ import { ActionType, ConstraintType, DatabaseConstraint } from 'src/sql-tools/ty
 export const transformConstraints: SqlTransformer = (ctx, item) => {
   switch (item.type) {
     case 'ConstraintAdd': {
-      return asConstraintAdd(item.constraint);
+      return `ALTER TABLE "${item.constraint.tableName}" ADD ${asConstraintBody(item.constraint)};`;
+    }
+
+    case 'ConstraintRename': {
+      return `ALTER TABLE "${item.tableName}" RENAME CONSTRAINT "${item.oldName}" TO "${item.newName}";`;
     }
 
     case 'ConstraintDrop': {
-      return asConstraintDrop(item.tableName, item.constraintName);
+      return `ALTER TABLE "${item.tableName}" DROP CONSTRAINT "${item.constraintName}";`;
     }
     default: {
       return false;
@@ -51,12 +55,4 @@ export const asConstraintBody = (constraint: DatabaseConstraint): string => {
       throw new Error(`Unknown constraint type: ${(constraint as any).type}`);
     }
   }
-};
-
-export const asConstraintAdd = (constraint: DatabaseConstraint): string | string[] => {
-  return `ALTER TABLE "${constraint.tableName}" ADD ${asConstraintBody(constraint)};`;
-};
-
-export const asConstraintDrop = (tableName: string, constraintName: string): string => {
-  return `ALTER TABLE "${tableName}" DROP CONSTRAINT "${constraintName}";`;
 };
