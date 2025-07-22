@@ -113,13 +113,14 @@ class MapThumbnail extends HookConsumerWidget {
               ),
               ValueListenableBuilder(
                 valueListenable: position,
-                builder: (_, value, __) => value != null
-                    ? PositionedAssetMarkerIcon(
-                        size: height / 2,
-                        point: value,
-                        assetRemoteId: assetMarkerRemoteId!,
-                      )
-                    : const SizedBox.shrink(),
+                builder: (_, value, __) =>
+                    value != null && assetMarkerRemoteId != null
+                        ? PositionedAssetMarkerIcon(
+                            size: height / 2,
+                            point: value,
+                            assetRemoteId: assetMarkerRemoteId!,
+                          )
+                        : const SizedBox.shrink(),
               ),
             ],
           ),
