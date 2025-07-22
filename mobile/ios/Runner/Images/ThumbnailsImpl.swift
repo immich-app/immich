@@ -23,7 +23,7 @@ class ThumbnailApiImpl: ThumbnailApi {
   private static let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
   private static let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue).rawValue
   
-  func setThumbnailToBuffer(pointer: Int64, assetId: String, width: Int64, height: Int64, completion: @escaping (Result<Void, any Error>) -> Void) {
+  func setThumbnailToBuffer(pointer: Int64, assetId: String, width: Int64, height: Int64, completion: @escaping (Result<[String: Int64], any Error>) -> Void) {
     guard let bufferPointer = UnsafeMutableRawPointer(bitPattern: Int(pointer))
     else { completion(.failure(PigeonError(code: "", message: "Could not get buffer pointer for \(assetId)", details: nil))); return }
     Self.processingQueue.async {
@@ -47,7 +47,7 @@ class ThumbnailApiImpl: ThumbnailApi {
                   bitmapInfo: Self.bitmapInfo
                 ) else { completion(.failure(PigeonError(code: "", message: "Could not get pixel data for \(assetId)", details: nil))); return }
           context.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
-          completion(.success(()))
+          completion(.success(["width": Int64(cgImage.width), "height": Int64(cgImage.height)]))
         }
       )
     }

@@ -92,7 +92,7 @@ class _ThumbnailState extends State<Thumbnail> {
     if (oldWidget.blurhash != widget.blurhash ||
         oldWidget.localId != widget.localId ||
         oldWidget.remoteId != widget.remoteId ||
-        oldWidget.thumbhashOnly && !widget.thumbhashOnly) {
+        (oldWidget.thumbhashOnly && !widget.thumbhashOnly)) {
       _decode();
     }
   }
@@ -104,18 +104,13 @@ class _ThumbnailState extends State<Thumbnail> {
 
     final thumbhashOnly = widget.thumbhashOnly;
     final blurhash = widget.blurhash;
-    final imageFuture = thumbhashOnly ? Future.value(null) : _decodeFromFile();
+    final imageFuture = thumbhashOnly ? Future.value(null) : _decodeThumbnail();
 
     if (blurhash != null && _image == null) {
-      final image = thumbhash.thumbHashToRGBA(base64.decode(blurhash));
       try {
-        await _decodeThumbhash(
-          await ImmutableBuffer.fromUint8List(image.rgba),
-          image.width,
-          image.height,
-        );
+        await _decodeThumbhash();
       } catch (e) {
-        log.info('Error decoding thumbhash for ${widget.remoteId}: $e');
+        log.severe('Error decoding thumbhash for ${widget.remoteId}: $e');
       }
     }
 
@@ -134,38 +129,32 @@ class _ThumbnailState extends State<Thumbnail> {
         _image = image;
       });
     } catch (e) {
-      log.info('Error decoding thumbnail: $e');
+      log.severe('Error decoding thumbnail: $e');
     }
   }
 
-  Future<void> _decodeThumbhash(
-    ImmutableBuffer buffer,
-    int width,
-    int height,
-  ) async {
-    if (!mounted) {
+  Future<void> _decodeThumbhash() async {
+    final blurhash = widget.blurhash;
+    if (blurhash == null || !mounted || _image != null) {
+      return;
+    }
+    final image = thumbhash.thumbHashToRGBA(base64.decode(blurhash));
+    final buffer = await ImmutableBuffer.fromUint8List(image.rgba);
+    if (!mounted || _image != null) {
       buffer.dispose();
       return;
     }
 
     final descriptor = ImageDescriptor.raw(
       buffer,
-      width: width,
-      height: height,
+      width: image.width,
+      height: image.height,
       pixelFormat: PixelFormat.rgba8888,
     );
-    if (!mounted) {
-      buffer.dispose();
-      descriptor.dispose();
-      return;
-    }
 
-    final codec = await descriptor.instantiateCodec(
-      targetWidth: width,
-      targetHeight: height,
-    );
+    final codec = await descriptor.instantiateCodec();
 
-    if (!mounted) {
+    if (!mounted || _image != null) {
       buffer.dispose();
       descriptor.dispose();
       codec.dispose();
@@ -176,7 +165,7 @@ class _ThumbnailState extends State<Thumbnail> {
     buffer.dispose();
     descriptor.dispose();
     codec.dispose();
-    if (!mounted) {
+    if (!mounted || _image != null) {
       frame.dispose();
       return;
     }
@@ -185,112 +174,110 @@ class _ThumbnailState extends State<Thumbnail> {
     });
   }
 
-  Future<ui.Image?> _decodeFromFile() async {
-    final buffer = await _getFile();
-    if (buffer == null) {
+  Future<ui.Image?> _decodeThumbnail() async {
+    if (!mounted) {
       return null;
     }
+
     final stopwatch = Stopwatch()..start();
-    final thumb = await _decodeThumbnail(buffer, 256, 256);
+    final codec = await _decodeThumb();
+    if (codec == null || !mounted) {
+      codec?.dispose();
+      return null;
+    }
+    final image = (await codec.getNextFrame()).image;
     stopwatch.stop();
-    return thumb;
+    log.info(
+      'Decoded thumbnail for ${widget.remoteId ?? widget.localId} in ${stopwatch.elapsedMilliseconds} ms',
+    );
+    return image;
   }
 
-  Future<ui.Image?> _decodeThumbnail(
-    ImmutableBuffer buffer,
-    int width,
-    int height,
-  ) async {
-    if (!mounted) {
-      buffer.dispose();
-      return null;
-    }
-
-    final descriptor = ImageDescriptor.raw(
-      buffer,
-      width: width,
-      height: height,
-      pixelFormat: PixelFormat.rgba8888,
-    );
-
-    if (!mounted) {
-      buffer.dispose();
-      descriptor.dispose();
-      return null;
-    }
-
-    final codec = await descriptor.instantiateCodec(
-      targetWidth: width,
-      targetHeight: height,
-    );
-
-    if (!mounted) {
-      buffer.dispose();
-      descriptor.dispose();
-      codec.dispose();
-      return null;
-    }
-
-    final frame = (await codec.getNextFrame()).image;
-    buffer.dispose();
-    descriptor.dispose();
-    codec.dispose();
-    if (!mounted) {
-      frame.dispose();
-      return null;
-    }
-
-    return frame;
-  }
-
-  Future<ImmutableBuffer?> _getFile() async {
-    final stopwatch = Stopwatch()..start();
+  Future<ui.Codec?> _decodeThumb() {
     final localId = widget.localId;
+    if (!mounted) {
+      return Future.value(null);
+    }
+    
     if (localId != null) {
-      final size = 256 * 256 * 4;
-      final pointer = malloc<Uint8>(size);
-      try {
-        await thumbnailApi.setThumbnailToBuffer(
-          pointer.address,
-          localId,
-          width: 256,
-          height: 256,
-        );
-        stopwatch.stop();
-        log.info(
-          'Retrieved local image $localId in ${stopwatch.elapsedMilliseconds.toStringAsFixed(2)} ms',
-        );
-        return await ImmutableBuffer.fromUint8List(pointer.asTypedList(size));
-      } catch (e) {
-        log.warning('Failed to retrieve local image $localId: $e');
-      } finally {
-        malloc.free(pointer);
-      }
+      final size = widget.size;
+      final width = size.width.toInt();
+      final height = size.height.toInt();
+      return _decodeLocal(localId, width, height);
     }
 
     final remoteId = widget.remoteId;
     if (remoteId != null) {
-      final uri = getThumbnailUrlForRemoteId(remoteId);
-      final headers = ApiService.getRequestHeaders();
-      final stream = _imageCache.getFileStream(
-        uri,
-        key: uri,
-        withProgress: true,
-        headers: headers,
-      );
+      return _decodeRemote(remoteId);
+    }
 
-      await for (final result in stream) {
+    return Future.value(null);
+  }
+
+  Future<ui.Codec?> _decodeLocal(String localId, int width, int height) async {
+    final pointer = malloc<Uint8>(width * height * 4);
+
+    try {
+      final info = await thumbnailApi.setThumbnailToBuffer(
+        pointer.address,
+        localId,
+        width: width,
+        height: height,
+      );
+      if (!mounted) {
+        return null;
+      }
+      final actualWidth = info['width']!;
+      final actualHeight = info['height']!;
+      final actualSize = actualWidth * actualHeight * 4;
+      final buffer =
+          await ImmutableBuffer.fromUint8List(pointer.asTypedList(actualSize));
+      if (!mounted) {
+        buffer.dispose();
+        return null;
+      }
+      final descriptor = ui.ImageDescriptor.raw(
+        buffer,
+        width: actualWidth,
+        height: actualHeight,
+        pixelFormat: ui.PixelFormat.rgba8888,
+      );
+      return await descriptor.instantiateCodec();
+    } catch (e) {
+      return null;
+    } finally {
+      malloc.free(pointer);
+    }
+  }
+
+  Future<ui.Codec?> _decodeRemote(String remoteId) async {
+    final uri = getThumbnailUrlForRemoteId(remoteId);
+    final headers = ApiService.getRequestHeaders();
+    final stream = _imageCache.getFileStream(
+      uri,
+      key: uri,
+      withProgress: true,
+      headers: headers,
+    );
+
+    await for (final result in stream) {
+      if (!mounted) {
+        return null;
+      }
+
+      if (result is FileInfo) {
+        final buffer = await ImmutableBuffer.fromFilePath(result.file.path);
         if (!mounted) {
+          buffer.dispose();
           return null;
         }
-
-        if (result is FileInfo) {
-          stopwatch.stop();
-          log.info(
-            'Retrieved remote image $remoteId in ${stopwatch.elapsedMilliseconds.toStringAsFixed(2)} ms',
-          );
-          return ImmutableBuffer.fromFilePath(result.file.path);
+        final descriptor = await ImageDescriptor.encoded(buffer);
+        if (!mounted) {
+          buffer.dispose();
+          descriptor.dispose();
+          return null;
         }
+        return await descriptor.instantiateCodec();
       }
     }
 
