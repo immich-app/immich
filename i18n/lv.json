@@ -485,6 +485,7 @@
     "cant_get_faces": "Nevar iegūt sejas",
     "cant_search_people": "Neizdevās veikt peronu meklēšanu",
     "failed_to_create_album": "Neizdevās izveidot albumu",
+    "profile_picture_transparent_pixels": "Profila attēlos nevar būt caurspīdīgi pikseļi. Lūdzu, palielini un/vai pārvieto attēlu.",
     "unable_to_change_description": "Neizdevās nomainīt aprakstu",
     "unable_to_create_user": "Neizdevās izveidot lietotāju",
     "unable_to_delete_user": "Neizdevās dzēst lietotāju",
