@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
@@ -44,6 +44,9 @@ class GeneralBottomSheet extends ConsumerWidget {
               : const DeletePermanentActionButton(
                   source: ActionSource.timeline,
                 ),
+          if (multiselect.hasLocal || multiselect.hasMerged) ...[
+            const DeleteLocalActionButton(source: ActionSource.timeline),
+          ],
           const EditDateTimeActionButton(),
           const EditLocationActionButton(source: ActionSource.timeline),
           const MoveToLockFolderActionButton(

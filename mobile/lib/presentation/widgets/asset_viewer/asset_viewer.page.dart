@@ -85,6 +85,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   bool blockGestures = false;
   bool dragInProgress = false;
   bool shouldPopOnDrag = false;
+  bool assetReloadRequested = false;
   double? initialScale;
   double previousExtent = _kBottomSheetMinimumExtent;
   Offset dragDownPosition = Offset.zero;
@@ -404,7 +405,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onEvent(Event event) {
     if (event is TimelineReloadEvent) {
-      _onTimelineReload(event);
+      _onTimelineReloadEvent();
+      return;
+    }
+
+    if (event is ViewerReloadAssetEvent) {
+      assetReloadRequested = true;
       return;
     }
 
@@ -417,14 +423,22 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  void _onTimelineReload(_) {
-    setState(() {
-      totalAssets = ref.read(timelineServiceProvider).totalAssets;
-      if (totalAssets == 0) {
-        context.maybePop();
-        return;
-      }
+  void _onTimelineReloadEvent() {
+    totalAssets = ref.read(timelineServiceProvider).totalAssets;
+    if (totalAssets == 0) {
+      context.maybePop();
+      return;
+    }
 
+    if (assetReloadRequested) {
+      assetReloadRequested = false;
+      _onAssetReloadEvent();
+      return;
+    }
+  }
+
+  void _onAssetReloadEvent() {
+    setState(() {
       final index = pageController.page?.round() ?? 0;
       final newAsset = ref.read(timelineServiceProvider).getAsset(index);
       final currentAsset = ref.read(currentAssetNotifier);

@@ -10,24 +10,25 @@ import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class ArchiveActionButton extends ConsumerWidget {
+class DeletePermanentActionButton extends ConsumerWidget {
   final ActionSource source;
 
-  const ArchiveActionButton({super.key, required this.source});
+  const DeletePermanentActionButton({super.key, required this.source});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
 
-    final result = await ref.read(actionProvider.notifier).archive(source);
+    final result =
+        await ref.read(actionProvider.notifier).deleteRemoteAndLocal(source);
     ref.read(multiSelectProvider.notifier).reset();
 
     if (source == ActionSource.viewer) {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
 
-    final successMessage = 'archive_action_prompt'.t(
+    final successMessage = 'delete_action_prompt'.t(
       context: context,
       args: {'count': result.count.toString()},
     );
@@ -47,8 +48,9 @@ class ArchiveActionButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
-      iconData: Icons.archive_outlined,
-      label: "archive".t(context: context),
+      maxWidth: 110.0,
+      iconData: Icons.delete_forever,
+      label: "delete_dialog_title".t(context: context),
       onPressed: () => _onTap(context, ref),
     );
   }
