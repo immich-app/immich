@@ -9,7 +9,7 @@ SELECT * FROM
 (
 	SELECT
 		rae.id as remote_id,
-		IIF(la.backup_selection = 0, FIRST_VALUE(lae.id) OVER (partition by lae.checksum), NULL) as local_id,
+		FIRST_VALUE(lae.id) OVER (partition by lae.checksum) as local_id,
 		rae.name,
 		rae."type",
 		rae.created_at,
@@ -30,10 +30,6 @@ SELECT * FROM
 	LEFT JOIN
 		local_asset_entity lae ON rae.checksum  = lae.checksum
 	LEFT JOIN
-		local_album_asset_entity laa ON laa.asset_id = lae.id
-	LEFT JOIN
-		local_album_entity la ON la.id = laa.album_id
-	LEFT JOIN
         stack_entity se ON rae.stack_id = se.id
 	LEFT JOIN
         (SELECT 
@@ -53,9 +49,6 @@ SELECT * FROM
 			rae.stack_id IS NULL
 			OR rae.id = se.primary_asset_id
 		)
-	-- UNION instead of UNION ALL to de-dup rows in the following reasons:
-	-- An asset might be part of two different selected albums on iOS
-	-- Remote asset could match with two local asset with the same checksum in two different albums
 	UNION
 	SELECT
 		NULL as remote_id,
@@ -79,13 +72,8 @@ SELECT * FROM
 		local_asset_entity lae
 	LEFT JOIN
 		remote_asset_entity rae ON rae.checksum = lae.checksum
-	LEFT JOIN
-		local_album_asset_entity laa ON laa.asset_id = lae.id
-	LEFT JOIN
-		local_album_entity la ON la.id = laa.album_id
 	WHERE
 		rae.id IS NULL
-		AND la.backup_selection = 0 -- selected
 )
 ORDER BY created_at DESC
 LIMIT $limit;
@@ -120,13 +108,8 @@ FROM
 		local_asset_entity lae
 	LEFT JOIN
 		remote_asset_entity rae ON rae.checksum = lae.checksum
-	LEFT JOIN
-		local_album_asset_entity laa ON laa.asset_id = lae.id
-	LEFT JOIN
-		local_album_entity la ON la.id = laa.album_id
 	WHERE
 		rae.id IS NULL
-		AND la.backup_selection = 0 -- selected
 )
 GROUP BY bucket_date
 ORDER BY bucket_date DESC;
