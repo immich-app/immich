@@ -961,6 +961,43 @@ class DriftPartnerRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftPersonDetailPage]
+class DriftPersonDetailRoute extends PageRouteInfo<DriftPersonDetailRouteArgs> {
+  DriftPersonDetailRoute({
+    Key? key,
+    required Person person,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftPersonDetailRoute.name,
+          args: DriftPersonDetailRouteArgs(key: key, person: person),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftPersonDetailRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftPersonDetailRouteArgs>();
+      return DriftPersonDetailPage(key: args.key, person: args.person);
+    },
+  );
+}
+
+class DriftPersonDetailRouteArgs {
+  const DriftPersonDetailRouteArgs({this.key, required this.person});
+
+  final Key? key;
+
+  final Person person;
+
+  @override
+  String toString() {
+    return 'DriftPersonDetailRouteArgs{key: $key, person: $person}';
+  }
+}
+
+/// generated route for
 /// [DriftPlaceDetailPage]
 class DriftPlaceDetailRoute extends PageRouteInfo<DriftPlaceDetailRouteArgs> {
   DriftPlaceDetailRoute({

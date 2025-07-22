@@ -68,6 +68,9 @@ class TimelineFactory {
 
   TimelineService fromAssets(List<BaseAsset> assets) =>
       TimelineService(_timelineRepository.fromAssets(assets));
+
+  TimelineService person(String personId) =>
+      TimelineService(_timelineRepository.person(personId, groupBy));
 }
 
 class TimelineService {
