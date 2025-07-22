@@ -43,8 +43,6 @@ class TimelineHeader extends HookConsumerWidget {
     }
 
     final date = (bucket as TimeBucket).date;
-    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
-
     final isMonthHeader =
         header == HeaderType.month || header == HeaderType.monthAndDay;
     final isDayHeader =
@@ -70,8 +68,7 @@ class TimelineHeader extends HookConsumerWidget {
                     style: context.textTheme.labelLarge?.copyWith(fontSize: 24),
                   ),
                   const Spacer(),
-                  if (header != HeaderType.monthAndDay &&
-                      !isReadonlyModeEnabled)
+                  if (header != HeaderType.monthAndDay)
                     _BulkSelectIconButton(
                       bucket: bucket,
                       assetOffset: assetOffset,
@@ -88,11 +85,10 @@ class TimelineHeader extends HookConsumerWidget {
                     ),
                   ),
                   const Spacer(),
-                  if (!isReadonlyModeEnabled)
-                    _BulkSelectIconButton(
-                      bucket: bucket,
-                      assetOffset: assetOffset,
-                    ),
+                  _BulkSelectIconButton(
+                    bucket: bucket,
+                    assetOffset: assetOffset,
+                  ),
                 ],
               ),
           ],
@@ -122,27 +118,30 @@ class _BulkSelectIconButton extends ConsumerWidget {
       bucketAssets = <BaseAsset>[];
     }
 
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final isAllSelected = ref.watch(bucketSelectionProvider(bucketAssets));
 
-    return IconButton(
-      onPressed: () {
-        ref.read(multiSelectProvider.notifier).toggleBucketSelection(
-              assetOffset,
-              bucket.assetCount,
-            );
-        ref.read(hapticFeedbackProvider.notifier).heavyImpact();
-      },
-      icon: isAllSelected
-          ? Icon(
-              Icons.check_circle_rounded,
-              size: 26,
-              color: context.primaryColor,
-            )
-          : Icon(
-              Icons.check_circle_outline_rounded,
-              size: 26,
-              color: context.colorScheme.onSurfaceSecondary,
-            ),
-    );
+    return isReadonlyModeEnabled
+        ? const SizedBox.shrink()
+        : IconButton(
+            onPressed: () {
+              ref.read(multiSelectProvider.notifier).toggleBucketSelection(
+                    assetOffset,
+                    bucket.assetCount,
+                  );
+              ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+            },
+            icon: isAllSelected
+                ? Icon(
+                    Icons.check_circle_rounded,
+                    size: 26,
+                    color: context.primaryColor,
+                  )
+                : Icon(
+                    Icons.check_circle_outline_rounded,
+                    size: 26,
+                    color: context.colorScheme.onSurfaceSecondary,
+                  ),
+          );
   }
 }
