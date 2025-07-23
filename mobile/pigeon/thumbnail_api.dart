@@ -16,7 +16,6 @@ import 'package:pigeon/pigeon.dart';
 abstract class ThumbnailApi {
   @async
   Map<String, int> setThumbnailToBuffer(
-    int pointer,
     String assetId, {
     required int width,
     required int height,

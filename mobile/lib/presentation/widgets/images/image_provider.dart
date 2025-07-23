@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
@@ -11,7 +12,7 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
   final ImageProvider provider;
   if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    provider = LocalFullImageProvider(id: id, size: size, type: asset.type, updatedAt: asset.updatedAt);
+    provider = LocalFullImageProvider(id: id, size: size);
   } else {
     final String assetId;
     if (asset is LocalAsset && asset.hasRemote) {

@@ -113,10 +113,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     super.dispose();
   }
 
-  bool get showingBottomSheet => ref.read(assetViewerProvider.select((s) => s.showingBottomSheet));
+  bool get showingBottomSheet => ref.read(assetViewerProvider).showingBottomSheet;
 
   Color get backgroundColor {
-    final opacity = ref.read(assetViewerProvider.select((s) => s.backgroundOpacity));
+    final opacity = ref.read(assetViewerProvider).backgroundOpacity;
     return Colors.black.withAlpha(opacity);
   }
 
@@ -172,9 +172,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       // Check if widget is still mounted before proceeding
       if (!mounted) return;
 
-      for (final offset in [-1, 1]) {
-        unawaited(_precacheImage(index + offset));
-      }
+      unawaited(_precacheImage(index - 1));
+      unawaited(_precacheImage(index + 1));
     });
     _delayedOperations.add(timer);
 
@@ -496,7 +495,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     BaseAsset asset = ref.read(timelineServiceProvider).getAsset(index);
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
     if (stackChildren != null && stackChildren.isNotEmpty) {
-      asset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
+      asset = stackChildren.elementAt(ref.read(assetViewerProvider).stackIndex);
     }
 
     final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
@@ -515,8 +514,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       tightMode: true,
-      initialScale: PhotoViewComputedScale.contained * 0.999,
-      minScale: PhotoViewComputedScale.contained * 0.999,
+      initialScale: PhotoViewComputedScale.contained,
+      minScale: PhotoViewComputedScale.contained,
       disableScaleGestures: showingBottomSheet,
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
@@ -545,9 +544,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       onTapDown: _onTapDown,
       heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
-      initialScale: PhotoViewComputedScale.contained * 0.99,
+      initialScale: PhotoViewComputedScale.contained,
       maxScale: 1.0,
-      minScale: PhotoViewComputedScale.contained * 0.99,
+      minScale: PhotoViewComputedScale.contained,
       basePosition: Alignment.center,
       child: SizedBox(
         width: ctx.width,
@@ -576,9 +575,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   Widget build(BuildContext context) {
     // Rebuild the widget when the asset viewer state changes
     // Using multiple selectors to avoid unnecessary rebuilds for other state changes
-    ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
-    ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
-    ref.watch(assetViewerProvider.select((s) => s.stackIndex));
+    ref.watch(
+      assetViewerProvider.select(
+        (s) =>
+            s.showingBottomSheet.hashCode ^
+            s.backgroundOpacity.hashCode ^
+            s.stackIndex.hashCode,
+      ),
+    );
     ref.watch(isPlayingMotionVideoProvider);
 
     // Listen for casting changes and send initial asset to the cast provider
