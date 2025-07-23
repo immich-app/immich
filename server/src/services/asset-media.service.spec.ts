@@ -157,7 +157,7 @@ const assetEntity = Object.freeze({
   ownerId: 'user_id_1',
   deviceAssetId: 'device_asset_id_1',
   deviceId: 'device_id_1',
-  type: AssetType.VIDEO,
+  type: AssetType.Video,
   originalPath: 'fake_path/asset_1.jpeg',
   fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
@@ -177,7 +177,7 @@ const assetEntity = Object.freeze({
 const existingAsset = Object.freeze({
   ...assetEntity,
   duration: null,
-  type: AssetType.IMAGE,
+  type: AssetType.Image,
   checksum: Buffer.from('_getExistingAsset', 'utf8'),
   libraryId: 'libraryId',
   originalFileName: 'existing-filename.jpeg',
@@ -294,16 +294,16 @@ describe(AssetMediaService.name, () => {
 
     it('should return profile for profile uploads', () => {
       expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
-        'upload/profile/admin_id',
+        expect.stringContaining('upload/profile/admin_id'),
       );
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/profile/admin_id');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/profile/admin_id'));
     });
 
     it('should return upload for everything else', () => {
       expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
-        'upload/upload/admin_id/ra/nd',
+        expect.stringContaining('upload/upload/admin_id/ra/nd'),
       );
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id/ra/nd');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/upload/admin_id/ra/nd'));
     });
   });
 
@@ -384,7 +384,7 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DELETE_FILES,
+        name: JobName.FileDelete,
         data: { files: ['fake_path/asset_1.jpeg', undefined] },
       });
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
@@ -409,7 +409,7 @@ describe(AssetMediaService.name, () => {
       );
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DELETE_FILES,
+        name: JobName.FileDelete,
         data: { files: ['fake_path/asset_1.jpeg', undefined] },
       });
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
@@ -437,7 +437,7 @@ describe(AssetMediaService.name, () => {
     it('should hide the linked motion asset', async () => {
       mocks.asset.getById.mockResolvedValueOnce({
         ...assetStub.livePhotoMotionAsset,
-        visibility: AssetVisibility.TIMELINE,
+        visibility: AssetVisibility.Timeline,
       });
       mocks.asset.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
 
@@ -455,7 +455,7 @@ describe(AssetMediaService.name, () => {
       expect(mocks.asset.getById).toHaveBeenCalledWith('live-photo-motion-asset');
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: 'live-photo-motion-asset',
-        visibility: AssetVisibility.HIDDEN,
+        visibility: AssetVisibility.Hidden,
       });
     });
 
@@ -505,8 +505,9 @@ describe(AssetMediaService.name, () => {
       await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).resolves.toEqual(
         new ImmichFileResponse({
           path: '/original/path.jpg',
+          fileName: 'asset-id.jpg',
           contentType: 'image/jpeg',
-          cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+          cacheControl: CacheControl.PrivateWithCache,
         }),
       );
     });
@@ -546,7 +547,7 @@ describe(AssetMediaService.name, () => {
           {
             id: '42',
             path: '/path/to/preview',
-            type: AssetFileType.THUMBNAIL,
+            type: AssetFileType.Thumbnail,
           },
         ],
       });
@@ -563,7 +564,7 @@ describe(AssetMediaService.name, () => {
           {
             id: '42',
             path: '/path/to/preview.jpg',
-            type: AssetFileType.PREVIEW,
+            type: AssetFileType.Preview,
           },
         ],
       });
@@ -573,7 +574,7 @@ describe(AssetMediaService.name, () => {
       ).resolves.toEqual(
         new ImmichFileResponse({
           path: '/path/to/preview.jpg',
-          cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+          cacheControl: CacheControl.PrivateWithCache,
           contentType: 'image/jpeg',
           fileName: 'asset-id_thumbnail.jpg',
         }),
@@ -588,7 +589,7 @@ describe(AssetMediaService.name, () => {
       ).resolves.toEqual(
         new ImmichFileResponse({
           path: '/uploads/user-id/thumbs/path.jpg',
-          cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+          cacheControl: CacheControl.PrivateWithCache,
           contentType: 'image/jpeg',
           fileName: 'asset-id_preview.jpg',
         }),
@@ -603,7 +604,7 @@ describe(AssetMediaService.name, () => {
       ).resolves.toEqual(
         new ImmichFileResponse({
           path: '/uploads/user-id/webp/path.ext',
-          cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+          cacheControl: CacheControl.PrivateWithCache,
           contentType: 'application/octet-stream',
           fileName: 'asset-id_thumbnail.ext',
         }),
@@ -640,7 +641,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.playbackVideo(authStub.admin, assetStub.hasEncodedVideo.id)).resolves.toEqual(
         new ImmichFileResponse({
           path: assetStub.hasEncodedVideo.encodedVideoPath!,
-          cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+          cacheControl: CacheControl.PrivateWithCache,
           contentType: 'video/mp4',
         }),
       );
@@ -653,7 +654,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.playbackVideo(authStub.admin, assetStub.video.id)).resolves.toEqual(
         new ImmichFileResponse({
           path: assetStub.video.originalPath,
-          cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+          cacheControl: CacheControl.PrivateWithCache,
           contentType: 'application/octet-stream',
         }),
       );
@@ -723,7 +724,7 @@ describe(AssetMediaService.name, () => {
 
       expect(mocks.asset.updateAll).toHaveBeenCalledWith([copiedAsset.id], {
         deletedAt: expect.any(Date),
-        status: AssetStatus.TRASHED,
+        status: AssetStatus.Trashed,
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(mocks.storage.utimes).toHaveBeenCalledWith(
@@ -754,7 +755,7 @@ describe(AssetMediaService.name, () => {
 
       expect(mocks.asset.updateAll).toHaveBeenCalledWith([copiedAsset.id], {
         deletedAt: expect.any(Date),
-        status: AssetStatus.TRASHED,
+        status: AssetStatus.Trashed,
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(mocks.storage.utimes).toHaveBeenCalledWith(
@@ -783,7 +784,7 @@ describe(AssetMediaService.name, () => {
 
       expect(mocks.asset.updateAll).toHaveBeenCalledWith([copiedAsset.id], {
         deletedAt: expect.any(Date),
-        status: AssetStatus.TRASHED,
+        status: AssetStatus.Trashed,
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
       expect(mocks.storage.utimes).toHaveBeenCalledWith(
@@ -815,7 +816,7 @@ describe(AssetMediaService.name, () => {
       expect(mocks.asset.create).not.toHaveBeenCalled();
       expect(mocks.asset.updateAll).not.toHaveBeenCalled();
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DELETE_FILES,
+        name: JobName.FileDelete,
         data: { files: [updatedFile.originalPath, undefined] },
       });
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
@@ -912,8 +913,8 @@ describe(AssetMediaService.name, () => {
       await sut.onUploadError(request, file);
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.DELETE_FILES,
-        data: { files: ['upload/upload/user-id/ra/nd/random-uuid.jpg'] },
+        name: JobName.FileDelete,
+        data: { files: [expect.stringContaining('upload/upload/user-id/ra/nd/random-uuid.jpg')] },
       });
     });
   });

@@ -23,13 +23,20 @@ class MultiSelectState {
   });
 
   bool get isEnabled => selectedAssets.isNotEmpty;
+
+  /// Cloud only
   bool get hasRemote => selectedAssets.any(
         (asset) =>
             asset.storage == AssetState.remote ||
             asset.storage == AssetState.merged,
       );
+
   bool get hasLocal => selectedAssets.any(
         (asset) => asset.storage == AssetState.local,
+      );
+
+  bool get hasMerged => selectedAssets.any(
+        (asset) => asset.storage == AssetState.merged,
       );
 
   MultiSelectState copyWith({

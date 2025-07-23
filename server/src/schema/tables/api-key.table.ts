@@ -12,8 +12,8 @@ import {
   UpdateDateColumn,
 } from 'src/sql-tools';
 
-@Table('api_keys')
-@UpdatedAtTrigger('api_keys_updated_at')
+@Table('api_key')
+@UpdatedAtTrigger('api_key_updatedAt')
 export class ApiKeyTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
@@ -36,6 +36,6 @@ export class ApiKeyTable {
   @Column({ array: true, type: 'character varying' })
   permissions!: Permission[];
 
-  @UpdateIdColumn({ indexName: 'IDX_api_keys_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

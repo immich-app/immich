@@ -11,7 +11,7 @@ enum AlbumUserRole {
 }
 
 // Model for an album stored in the server
-class Album {
+class RemoteAlbum {
   final String id;
   final String name;
   final String ownerId;
@@ -24,7 +24,7 @@ class Album {
   final int assetCount;
   final String ownerName;
 
-  const Album({
+  const RemoteAlbum({
     required this.id,
     required this.name,
     required this.ownerId,
@@ -57,7 +57,7 @@ class Album {
 
   @override
   bool operator ==(Object other) {
-    if (other is! Album) return false;
+    if (other is! RemoteAlbum) return false;
     if (identical(this, other)) return true;
     return id == other.id &&
         name == other.name &&
@@ -85,5 +85,33 @@ class Album {
         order.hashCode ^
         assetCount.hashCode ^
         ownerName.hashCode;
+  }
+
+  RemoteAlbum copyWith({
+    String? id,
+    String? name,
+    String? ownerId,
+    String? description,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? thumbnailAssetId,
+    bool? isActivityEnabled,
+    AlbumAssetOrder? order,
+    int? assetCount,
+    String? ownerName,
+  }) {
+    return RemoteAlbum(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      ownerId: ownerId ?? this.ownerId,
+      description: description ?? this.description,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      thumbnailAssetId: thumbnailAssetId ?? this.thumbnailAssetId,
+      isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
+      order: order ?? this.order,
+      assetCount: assetCount ?? this.assetCount,
+      ownerName: ownerName ?? this.ownerName,
+    );
   }
 }

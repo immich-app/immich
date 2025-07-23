@@ -1,14 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDateString, IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
+import { IsDateString, IsInt, IsPositive, ValidateNested } from 'class-validator';
 import { AssetOrder, UserAvatarColor } from 'src/enum';
 import { UserPreferences } from 'src/types';
-import { Optional, ValidateBoolean } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
 
 class AvatarUpdate {
-  @Optional()
-  @IsEnum(UserAvatarColor)
-  @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
+  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true })
   color?: UserAvatarColor;
 }
 
@@ -23,8 +21,7 @@ class RatingsUpdate {
 }
 
 class AlbumsUpdate {
-  @IsEnum(AssetOrder)
-  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
   defaultAssetOrder?: AssetOrder;
 }
 
@@ -159,9 +156,8 @@ export class UserPreferencesUpdateDto {
 }
 
 class AlbumsResponse {
-  @IsEnum(AssetOrder)
-  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
-  defaultAssetOrder: AssetOrder = AssetOrder.DESC;
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder' })
+  defaultAssetOrder: AssetOrder = AssetOrder.Desc;
 }
 
 class RatingsResponse {

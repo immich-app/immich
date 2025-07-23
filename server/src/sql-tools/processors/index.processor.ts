@@ -10,8 +10,17 @@ export const processIndexes: Processor = (ctx, items) => {
       continue;
     }
 
+    const indexName =
+      options.name ||
+      ctx.getNameFor({
+        type: 'index',
+        tableName: table.name,
+        columnNames: options.columns,
+        where: options.where,
+      });
+
     table.indexes.push({
-      name: options.name || ctx.asIndexName(table.name, options.columns, options.where),
+      name: indexName,
       tableName: table.name,
       unique: options.unique ?? false,
       expression: options.expression,
@@ -50,7 +59,13 @@ export const processIndexes: Processor = (ctx, items) => {
       continue;
     }
 
-    const indexName = options.indexName || ctx.asIndexName(table.name, [column.name]);
+    const indexName =
+      options.indexName ||
+      ctx.getNameFor({
+        type: 'index',
+        tableName: table.name,
+        columnNames: [column.name],
+      });
 
     const isIndexPresent = table.indexes.some((index) => index.name === indexName);
     if (isIndexPresent) {

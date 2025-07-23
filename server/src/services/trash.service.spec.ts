@@ -77,24 +77,24 @@ describe(TrashService.name, () => {
       mocks.trash.empty.mockResolvedValue(1);
       await expect(sut.empty(authStub.user1)).resolves.toEqual({ count: 1 });
       expect(mocks.trash.empty).toHaveBeenCalledWith('user-id');
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_TRASH_EMPTY, data: {} });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.AssetEmptyTrash, data: {} });
     });
   });
 
   describe('onAssetsDelete', () => {
     it('should queue the empty trash job', async () => {
       await expect(sut.onAssetsDelete()).resolves.toBeUndefined();
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_TRASH_EMPTY, data: {} });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.AssetEmptyTrash, data: {} });
     });
   });
 
   describe('handleQueueEmptyTrash', () => {
     it('should queue asset delete jobs', async () => {
       mocks.trash.getDeletedIds.mockReturnValue(makeAssetIdStream(1));
-      await expect(sut.handleQueueEmptyTrash()).resolves.toEqual(JobStatus.SUCCESS);
+      await expect(sut.handleEmptyTrash()).resolves.toEqual(JobStatus.Success);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.ASSET_DELETION,
+          name: JobName.AssetDelete,
           data: { id: 'asset-1', deleteOnDisk: true },
         },
       ]);

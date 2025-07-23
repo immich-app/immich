@@ -19,7 +19,7 @@ describe('SessionService', () => {
   describe('handleCleanup', () => {
     it('should clean sessions', async () => {
       mocks.session.cleanup.mockResolvedValue([]);
-      await expect(sut.handleCleanup()).resolves.toEqual(JobStatus.SUCCESS);
+      await expect(sut.handleCleanup()).resolves.toEqual(JobStatus.Success);
     });
   });
 

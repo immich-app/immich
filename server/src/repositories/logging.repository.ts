@@ -8,7 +8,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 type LogDetails = any;
 type LogFunction = () => string;
 
-const LOG_LEVELS = [LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
+const LOG_LEVELS = [LogLevel.Verbose, LogLevel.Debug, LogLevel.Log, LogLevel.Warn, LogLevel.Error, LogLevel.Fatal];
 
 enum LogColor {
   RED = 31,
@@ -20,7 +20,7 @@ enum LogColor {
 }
 
 let appName: string | undefined;
-let logLevels: LogLevel[] = [LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
+let logLevels: LogLevel[] = [LogLevel.Log, LogLevel.Warn, LogLevel.Error, LogLevel.Fatal];
 
 export class MyConsoleLogger extends ConsoleLogger {
   private isColorEnabled: boolean;
@@ -106,35 +106,35 @@ export class LoggingRepository {
   }
 
   verbose(message: string, ...details: LogDetails) {
-    this.handleMessage(LogLevel.VERBOSE, message, details);
+    this.handleMessage(LogLevel.Verbose, message, details);
   }
 
   verboseFn(message: LogFunction, ...details: LogDetails) {
-    this.handleFunction(LogLevel.VERBOSE, message, details);
+    this.handleFunction(LogLevel.Verbose, message, details);
   }
 
   debug(message: string, ...details: LogDetails) {
-    this.handleMessage(LogLevel.DEBUG, message, details);
+    this.handleMessage(LogLevel.Debug, message, details);
   }
 
   debugFn(message: LogFunction, ...details: LogDetails) {
-    this.handleFunction(LogLevel.DEBUG, message, details);
+    this.handleFunction(LogLevel.Debug, message, details);
   }
 
   log(message: string, ...details: LogDetails) {
-    this.handleMessage(LogLevel.LOG, message, details);
+    this.handleMessage(LogLevel.Log, message, details);
   }
 
   warn(message: string, ...details: LogDetails) {
-    this.handleMessage(LogLevel.WARN, message, details);
+    this.handleMessage(LogLevel.Warn, message, details);
   }
 
   error(message: string | Error, ...details: LogDetails) {
-    this.handleMessage(LogLevel.ERROR, message, details);
+    this.handleMessage(LogLevel.Error, message, details);
   }
 
   fatal(message: string, ...details: LogDetails) {
-    this.handleMessage(LogLevel.FATAL, message, details);
+    this.handleMessage(LogLevel.Fatal, message, details);
   }
 
   private handleFunction(level: LogLevel, message: LogFunction, details: LogDetails[]) {
@@ -145,32 +145,32 @@ export class LoggingRepository {
 
   private handleMessage(level: LogLevel, message: string | Error, details: LogDetails[]) {
     switch (level) {
-      case LogLevel.VERBOSE: {
+      case LogLevel.Verbose: {
         this.logger.verbose(message, ...details);
         break;
       }
 
-      case LogLevel.DEBUG: {
+      case LogLevel.Debug: {
         this.logger.debug(message, ...details);
         break;
       }
 
-      case LogLevel.LOG: {
+      case LogLevel.Log: {
         this.logger.log(message, ...details);
         break;
       }
 
-      case LogLevel.WARN: {
+      case LogLevel.Warn: {
         this.logger.warn(message, ...details);
         break;
       }
 
-      case LogLevel.ERROR: {
+      case LogLevel.Error: {
         this.logger.error(message, ...details);
         break;
       }
 
-      case LogLevel.FATAL: {
+      case LogLevel.Fatal: {
         this.logger.fatal(message, ...details);
         break;
       }

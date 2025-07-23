@@ -14,6 +14,7 @@ import {
   MaxDateString,
   Optional,
   ValidateBoolean,
+  ValidateEnum,
   ValidateHexColor,
   ValidateUUID,
 } from 'src/validation';
@@ -137,7 +138,7 @@ export class AssetFaceWithoutPersonResponseDto {
   boundingBoxY1!: number;
   @ApiProperty({ type: 'integer' })
   boundingBoxY2!: number;
-  @ApiProperty({ enum: SourceType, enumName: 'SourceType' })
+  @ValidateEnum({ enum: SourceType, name: 'SourceType' })
   sourceType?: SourceType;
 }
 

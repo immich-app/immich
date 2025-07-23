@@ -8,8 +8,6 @@ import 'package:drift/src/runtime/query_builder/query_builder.dart' as i3;
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart'
     as i4;
 import 'package:drift/internal/modular.dart' as i5;
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
-    as i6;
 
 typedef $$StackEntityTableCreateCompanionBuilder = i1.StackEntityCompanion
     Function({
@@ -57,33 +55,6 @@ final class $$StackEntityTableReferences extends i0.BaseReferences<
     return i0.ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: [item]));
   }
-
-  static i6.$RemoteAssetEntityTable _primaryAssetIdTable(
-          i0.GeneratedDatabase db) =>
-      i5.ReadDatabaseContainer(db)
-          .resultSet<i6.$RemoteAssetEntityTable>('remote_asset_entity')
-          .createAlias(i0.$_aliasNameGenerator(
-              i5.ReadDatabaseContainer(db)
-                  .resultSet<i1.$StackEntityTable>('stack_entity')
-                  .primaryAssetId,
-              i5.ReadDatabaseContainer(db)
-                  .resultSet<i6.$RemoteAssetEntityTable>('remote_asset_entity')
-                  .id));
-
-  i6.$$RemoteAssetEntityTableProcessedTableManager get primaryAssetId {
-    final $_column = $_itemColumn<String>('primary_asset_id')!;
-
-    final manager = i6
-        .$$RemoteAssetEntityTableTableManager(
-            $_db,
-            i5.ReadDatabaseContainer($_db)
-                .resultSet<i6.$RemoteAssetEntityTable>('remote_asset_entity'))
-        .filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_primaryAssetIdTable($_db));
-    if (item == null) return manager;
-    return i0.ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
-  }
 }
 
 class $$StackEntityTableFilterComposer
@@ -104,6 +75,10 @@ class $$StackEntityTableFilterComposer
   i0.ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => i0.ColumnFilters(column));
 
+  i0.ColumnFilters<String> get primaryAssetId => $composableBuilder(
+      column: $table.primaryAssetId,
+      builder: (column) => i0.ColumnFilters(column));
+
   i4.$$UserEntityTableFilterComposer get ownerId {
     final i4.$$UserEntityTableFilterComposer composer = $composerBuilder(
         composer: this,
@@ -118,28 +93,6 @@ class $$StackEntityTableFilterComposer
               $db: $db,
               $table: i5.ReadDatabaseContainer($db)
                   .resultSet<i4.$UserEntityTable>('user_entity'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return composer;
-  }
-
-  i6.$$RemoteAssetEntityTableFilterComposer get primaryAssetId {
-    final i6.$$RemoteAssetEntityTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.primaryAssetId,
-        referencedTable: i5.ReadDatabaseContainer($db)
-            .resultSet<i6.$RemoteAssetEntityTable>('remote_asset_entity'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i6.$$RemoteAssetEntityTableFilterComposer(
-              $db: $db,
-              $table: i5.ReadDatabaseContainer($db)
-                  .resultSet<i6.$RemoteAssetEntityTable>('remote_asset_entity'),
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -169,6 +122,10 @@ class $$StackEntityTableOrderingComposer
       column: $table.updatedAt,
       builder: (column) => i0.ColumnOrderings(column));
 
+  i0.ColumnOrderings<String> get primaryAssetId => $composableBuilder(
+      column: $table.primaryAssetId,
+      builder: (column) => i0.ColumnOrderings(column));
+
   i4.$$UserEntityTableOrderingComposer get ownerId {
     final i4.$$UserEntityTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -188,30 +145,6 @@ class $$StackEntityTableOrderingComposer
               $removeJoinBuilderFromRootComposer:
                   $removeJoinBuilderFromRootComposer,
             ));
-    return composer;
-  }
-
-  i6.$$RemoteAssetEntityTableOrderingComposer get primaryAssetId {
-    final i6.$$RemoteAssetEntityTableOrderingComposer composer =
-        $composerBuilder(
-            composer: this,
-            getCurrentColumn: (t) => t.primaryAssetId,
-            referencedTable: i5.ReadDatabaseContainer($db)
-                .resultSet<i6.$RemoteAssetEntityTable>('remote_asset_entity'),
-            getReferencedColumn: (t) => t.id,
-            builder: (joinBuilder,
-                    {$addJoinBuilderToRootComposer,
-                    $removeJoinBuilderFromRootComposer}) =>
-                i6.$$RemoteAssetEntityTableOrderingComposer(
-                  $db: $db,
-                  $table: i5.ReadDatabaseContainer($db)
-                      .resultSet<i6.$RemoteAssetEntityTable>(
-                          'remote_asset_entity'),
-                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                  joinBuilder: joinBuilder,
-                  $removeJoinBuilderFromRootComposer:
-                      $removeJoinBuilderFromRootComposer,
-                ));
     return composer;
   }
 }
@@ -234,6 +167,9 @@ class $$StackEntityTableAnnotationComposer
   i0.GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
+  i0.GeneratedColumn<String> get primaryAssetId => $composableBuilder(
+      column: $table.primaryAssetId, builder: (column) => column);
+
   i4.$$UserEntityTableAnnotationComposer get ownerId {
     final i4.$$UserEntityTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -255,30 +191,6 @@ class $$StackEntityTableAnnotationComposer
             ));
     return composer;
   }
-
-  i6.$$RemoteAssetEntityTableAnnotationComposer get primaryAssetId {
-    final i6.$$RemoteAssetEntityTableAnnotationComposer composer =
-        $composerBuilder(
-            composer: this,
-            getCurrentColumn: (t) => t.primaryAssetId,
-            referencedTable: i5.ReadDatabaseContainer($db)
-                .resultSet<i6.$RemoteAssetEntityTable>('remote_asset_entity'),
-            getReferencedColumn: (t) => t.id,
-            builder: (joinBuilder,
-                    {$addJoinBuilderToRootComposer,
-                    $removeJoinBuilderFromRootComposer}) =>
-                i6.$$RemoteAssetEntityTableAnnotationComposer(
-                  $db: $db,
-                  $table: i5.ReadDatabaseContainer($db)
-                      .resultSet<i6.$RemoteAssetEntityTable>(
-                          'remote_asset_entity'),
-                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                  joinBuilder: joinBuilder,
-                  $removeJoinBuilderFromRootComposer:
-                      $removeJoinBuilderFromRootComposer,
-                ));
-    return composer;
-  }
 }
 
 class $$StackEntityTableTableManager extends i0.RootTableManager<
@@ -292,7 +204,7 @@ class $$StackEntityTableTableManager extends i0.RootTableManager<
     $$StackEntityTableUpdateCompanionBuilder,
     (i1.StackEntityData, i1.$$StackEntityTableReferences),
     i1.StackEntityData,
-    i0.PrefetchHooks Function({bool ownerId, bool primaryAssetId})> {
+    i0.PrefetchHooks Function({bool ownerId})> {
   $$StackEntityTableTableManager(
       i0.GeneratedDatabase db, i1.$StackEntityTable table)
       : super(i0.TableManagerState(
@@ -338,7 +250,7 @@ class $$StackEntityTableTableManager extends i0.RootTableManager<
                     i1.$$StackEntityTableReferences(db, table, e)
                   ))
               .toList(),
-          prefetchHooksCallback: ({ownerId = false, primaryAssetId = false}) {
+          prefetchHooksCallback: ({ownerId = false}) {
             return i0.PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -365,17 +277,6 @@ class $$StackEntityTableTableManager extends i0.RootTableManager<
                         i1.$$StackEntityTableReferences._ownerIdTable(db).id,
                   ) as T;
                 }
-                if (primaryAssetId) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.primaryAssetId,
-                    referencedTable: i1.$$StackEntityTableReferences
-                        ._primaryAssetIdTable(db),
-                    referencedColumn: i1.$$StackEntityTableReferences
-                        ._primaryAssetIdTable(db)
-                        .id,
-                  ) as T;
-                }
 
                 return state;
               },
@@ -398,7 +299,7 @@ typedef $$StackEntityTableProcessedTableManager = i0.ProcessedTableManager<
     $$StackEntityTableUpdateCompanionBuilder,
     (i1.StackEntityData, i1.$$StackEntityTableReferences),
     i1.StackEntityData,
-    i0.PrefetchHooks Function({bool ownerId, bool primaryAssetId})>;
+    i0.PrefetchHooks Function({bool ownerId})>;
 
 class $StackEntityTable extends i2.StackEntity
     with i0.TableInfo<$StackEntityTable, i1.StackEntityData> {
@@ -440,12 +341,8 @@ class $StackEntityTable extends i2.StackEntity
       const i0.VerificationMeta('primaryAssetId');
   @override
   late final i0.GeneratedColumn<String> primaryAssetId =
-      i0.GeneratedColumn<String>(
-          'primary_asset_id', aliasedName, false,
-          type: i0.DriftSqlType.string,
-          requiredDuringInsert: true,
-          defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-              'REFERENCES remote_asset_entity (id)'));
+      i0.GeneratedColumn<String>('primary_asset_id', aliasedName, false,
+          type: i0.DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<i0.GeneratedColumn> get $columns =>
       [id, createdAt, updatedAt, ownerId, primaryAssetId];

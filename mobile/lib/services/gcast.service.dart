@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:cast/session.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/models/sessions/session_create_response.model.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
@@ -156,12 +156,10 @@ class GCastService {
     return bufferedExpiration.isAfter(DateTime.now());
   }
 
-  void loadMedia(Asset asset, bool reload) async {
+  void loadMedia(RemoteAsset asset, bool reload) async {
     if (!isConnected) {
       return;
-    } else if (asset.remoteId == null) {
-      return;
-    } else if (asset.remoteId == currentAssetId && !reload) {
+    } else if (asset.id == currentAssetId && !reload) {
       return;
     }
 
@@ -176,10 +174,10 @@ class GCastService {
 
     final unauthenticatedUrl = asset.isVideo
         ? getPlaybackUrlForRemoteId(
-            asset.remoteId!,
+            asset.id,
           )
         : getThumbnailUrlForRemoteId(
-            asset.remoteId!,
+            asset.id,
             type: AssetMediaSize.fullsize,
           );
 
@@ -187,8 +185,7 @@ class GCastService {
         "$unauthenticatedUrl&sessionKey=${sessionKey?.token}";
 
     // get image mime type
-    final mimeType =
-        await _assetApiRepository.getAssetMIMEType(asset.remoteId!);
+    final mimeType = await _assetApiRepository.getAssetMIMEType(asset.id);
 
     if (mimeType == null) {
       return;
@@ -205,7 +202,7 @@ class GCastService {
       "autoplay": true,
     });
 
-    currentAssetId = asset.remoteId;
+    currentAssetId = asset.id;
 
     // we need to poll for media status since the cast device does not
     // send a message when the media is loaded for whatever reason

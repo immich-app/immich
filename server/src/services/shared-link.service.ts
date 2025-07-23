@@ -45,20 +45,20 @@ export class SharedLinkService extends BaseService {
 
   async create(auth: AuthDto, dto: SharedLinkCreateDto): Promise<SharedLinkResponseDto> {
     switch (dto.type) {
-      case SharedLinkType.ALBUM: {
+      case SharedLinkType.Album: {
         if (!dto.albumId) {
           throw new BadRequestException('Invalid albumId');
         }
-        await this.requireAccess({ auth, permission: Permission.ALBUM_SHARE, ids: [dto.albumId] });
+        await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [dto.albumId] });
         break;
       }
 
-      case SharedLinkType.INDIVIDUAL: {
+      case SharedLinkType.Individual: {
         if (!dto.assetIds || dto.assetIds.length === 0) {
           throw new BadRequestException('Invalid assetIds');
         }
 
-        await this.requireAccess({ auth, permission: Permission.ASSET_SHARE, ids: dto.assetIds });
+        await this.requireAccess({ auth, permission: Permission.AssetShare, ids: dto.assetIds });
 
         break;
       }
@@ -113,7 +113,7 @@ export class SharedLinkService extends BaseService {
   async addAssets(auth: AuthDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
     const sharedLink = await this.findOrFail(auth.user.id, id);
 
-    if (sharedLink.type !== SharedLinkType.INDIVIDUAL) {
+    if (sharedLink.type !== SharedLinkType.Individual) {
       throw new BadRequestException('Invalid shared link type');
     }
 
@@ -121,7 +121,7 @@ export class SharedLinkService extends BaseService {
     const notPresentAssetIds = dto.assetIds.filter((assetId) => !existingAssetIds.has(assetId));
     const allowedAssetIds = await this.checkAccess({
       auth,
-      permission: Permission.ASSET_SHARE,
+      permission: Permission.AssetShare,
       ids: notPresentAssetIds,
     });
 
@@ -153,7 +153,7 @@ export class SharedLinkService extends BaseService {
   async removeAssets(auth: AuthDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
     const sharedLink = await this.findOrFail(auth.user.id, id);
 
-    if (sharedLink.type !== SharedLinkType.INDIVIDUAL) {
+    if (sharedLink.type !== SharedLinkType.Individual) {
       throw new BadRequestException('Invalid shared link type');
     }
 

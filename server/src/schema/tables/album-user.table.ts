@@ -1,6 +1,6 @@
 import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AlbumUserRole } from 'src/enum';
-import { album_user_after_insert, album_users_delete_audit } from 'src/schema/functions';
+import { album_user_after_insert, album_user_delete_audit } from 'src/schema/functions';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
@@ -10,17 +10,14 @@ import {
   CreateDateColumn,
   ForeignKeyColumn,
   Generated,
-  Index,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from 'src/sql-tools';
 
-@Table({ name: 'albums_shared_users_users', primaryConstraintName: 'PK_7df55657e0b2e8b626330a0ebc8' })
+@Table({ name: 'album_user' })
 // Pre-existing indices from original album <--> user ManyToMany mapping
-@Index({ name: 'IDX_427c350ad49bd3935a50baab73', columns: ['albumsId'] })
-@Index({ name: 'IDX_f48513bf9bccefd6ff3ad30bd0', columns: ['usersId'] })
-@UpdatedAtTrigger('album_users_updated_at')
+@UpdatedAtTrigger('album_user_updatedAt')
 @AfterInsertTrigger({
   name: 'album_user_after_insert',
   scope: 'statement',
@@ -29,7 +26,7 @@ import {
 })
 @AfterDeleteTrigger({
   scope: 'statement',
-  function: album_users_delete_audit,
+  function: album_user_delete_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() <= 1',
 })
@@ -50,16 +47,16 @@ export class AlbumUserTable {
   })
   usersId!: string;
 
-  @Column({ type: 'character varying', default: AlbumUserRole.EDITOR })
+  @Column({ type: 'character varying', default: AlbumUserRole.Editor })
   role!: Generated<AlbumUserRole>;
 
-  @CreateIdColumn({ indexName: 'IDX_album_users_create_id' })
+  @CreateIdColumn({ index: true })
   createId!: Generated<string>;
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 
-  @UpdateIdColumn({ indexName: 'IDX_album_users_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 
   @UpdateDateColumn()
