@@ -4,7 +4,7 @@
   import { deleteStack } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { StackResponseDto } from '@immich/sdk';
-  import { mdiImageMinusOutline } from '@mdi/js';
+  import { mdiImageOffOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
 
@@ -23,4 +23,4 @@
   };
 </script>
 
-<MenuOption icon={mdiImageMinusOutline} onClick={handleUnstack} text={$t('unstack')} />
+<MenuOption icon={mdiImageOffOutline} onClick={handleUnstack} text={$t('unstack')} />

@@ -221,6 +221,7 @@ Class | Method | HTTP request | Description
 *StacksApi* | [**deleteStack**](doc//StacksApi.md#deletestack) | **DELETE** /stacks/{id} | 
 *StacksApi* | [**deleteStacks**](doc//StacksApi.md#deletestacks) | **DELETE** /stacks | 
 *StacksApi* | [**getStack**](doc//StacksApi.md#getstack) | **GET** /stacks/{id} | 
+*StacksApi* | [**removeAssetFromStack**](doc//StacksApi.md#removeassetfromstack) | **DELETE** /stacks/{id}/assets/{assetId} | 
 *StacksApi* | [**searchStacks**](doc//StacksApi.md#searchstacks) | **GET** /stacks | 
 *StacksApi* | [**updateStack**](doc//StacksApi.md#updatestack) | **PUT** /stacks/{id} | 
 *SyncApi* | [**deleteSyncAck**](doc//SyncApi.md#deletesyncack) | **DELETE** /sync/ack | 
