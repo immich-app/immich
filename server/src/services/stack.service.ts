@@ -65,12 +65,10 @@ export class StackService extends BaseService {
 
     const stack = await this.stackRepository.getForAssetRemoval(assetId);
 
-    //Verify the asset exists and is in the stack
     if (!stack?.id || stack.id !== stackId) {
       throw new BadRequestException('Asset not in stack');
     }
 
-    //Verify the asset is not the stack's primary asset
     if (stack.primaryAssetId === assetId) {
       throw new BadRequestException("Cannot remove stack's primary asset");
     }

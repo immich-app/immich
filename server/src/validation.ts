@@ -63,6 +63,22 @@ export class FileNotEmptyValidator extends FileValidator {
   }
 }
 
+type UUIDOptions = { optional?: boolean; each?: boolean; nullable?: boolean };
+export const ValidateUUID = (options?: UUIDOptions & ApiPropertyOptions) => {
+  const { optional, each, nullable, ...apiPropertyOptions } = {
+    optional: false,
+    each: false,
+    nullable: false,
+    ...options,
+  };
+  return applyDecorators(
+    IsUUID('4', { each }),
+    ApiProperty({ format: 'uuid', ...apiPropertyOptions }),
+    optional ? Optional({ nullable }) : IsNotEmpty(),
+    each ? IsArray() : IsString(),
+  );
+};
+
 export class UUIDParamDto {
   @IsNotEmpty()
   @IsUUID('4')
@@ -71,14 +87,10 @@ export class UUIDParamDto {
 }
 
 export class UUIDAssetIDParamDto {
-  @IsNotEmpty()
-  @IsUUID('4')
-  @ApiProperty({ format: 'uuid' })
+  @ValidateUUID()
   id!: string;
 
-  @IsNotEmpty()
-  @IsUUID('4')
-  @ApiProperty({ format: 'uuid' })
+  @ValidateUUID()
   assetId!: string;
 }
 
@@ -141,22 +153,6 @@ export const ValidateHexColor = () => {
   ];
 
   return applyDecorators(...decorators);
-};
-
-type UUIDOptions = { optional?: boolean; each?: boolean; nullable?: boolean };
-export const ValidateUUID = (options?: UUIDOptions & ApiPropertyOptions) => {
-  const { optional, each, nullable, ...apiPropertyOptions } = {
-    optional: false,
-    each: false,
-    nullable: false,
-    ...options,
-  };
-  return applyDecorators(
-    IsUUID('4', { each }),
-    ApiProperty({ format: 'uuid', ...apiPropertyOptions }),
-    optional ? Optional({ nullable }) : IsNotEmpty(),
-    each ? IsArray() : IsString(),
-  );
 };
 
 type DateOptions = { optional?: boolean; nullable?: boolean; format?: 'date' | 'date-time' };
