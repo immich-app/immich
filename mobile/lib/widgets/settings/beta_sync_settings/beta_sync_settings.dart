@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' as drift_db;
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -10,6 +12,9 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class BetaSyncSettings extends HookConsumerWidget {
   const BetaSyncSettings({
@@ -67,6 +72,67 @@ class BetaSyncSettings extends HookConsumerWidget {
             drift_db.TableUpdate.onTable(table),
         });
       });
+    }
+
+    Future<void> exportDatabase() async {
+      try {
+        // WAL Checkpoint to ensure all changes are written to the database
+        await ref
+            .read(driftProvider)
+            .customStatement("pragma wal_checkpoint(truncate)");
+        final documentsDir = await getApplicationDocumentsDirectory();
+        final dbFile = File(path.join(documentsDir.path, 'immich.sqlite'));
+
+        if (!await dbFile.exists()) {
+          if (context.mounted) {
+            context.scaffoldMessenger.showSnackBar(
+              SnackBar(
+                content: Text("Database file not found".t(context: context)),
+              ),
+            );
+          }
+          return;
+        }
+
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final exportFile = File(
+          path.join(
+            documentsDir.path,
+            'immich_export_$timestamp.sqlite',
+          ),
+        );
+
+        await dbFile.copy(exportFile.path);
+
+        await Share.shareXFiles(
+          [XFile(exportFile.path)],
+          text: 'Immich Database Export',
+        );
+
+        Future.delayed(const Duration(seconds: 30), () async {
+          if (await exportFile.exists()) {
+            await exportFile.delete();
+          }
+        });
+
+        if (context.mounted) {
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content:
+                  Text("Database exported successfully".t(context: context)),
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content:
+                  Text("Failed to export database: $e".t(context: context)),
+            ),
+          );
+        }
+      }
     }
 
     return FutureBuilder<List<dynamic>>(
@@ -232,6 +298,19 @@ class BetaSyncSettings extends HookConsumerWidget {
               ),
               const SizedBox(height: 24),
               _SectionHeaderText(text: "actions".t(context: context)),
+              ListTile(
+                title: Text(
+                  "export_database".t(context: context),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                subtitle: Text(
+                  "export_database_description".t(context: context),
+                ),
+                leading: const Icon(Icons.download),
+                onTap: exportDatabase,
+              ),
               ListTile(
                 title: Text(
                   "reset_sqlite".t(context: context),
