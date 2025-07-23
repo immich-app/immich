@@ -1294,7 +1294,3 @@ class RemoteAssetEntityCompanion
 
 i0.Index get idxRemoteAssetChecksum => i0.Index('idx_remote_asset_checksum',
     'CREATE INDEX idx_remote_asset_checksum ON remote_asset_entity (checksum)');
-i0.Index get idxRemoteAssetVisibility => i0.Index('idx_remote_asset_visibility',
-    'CREATE INDEX idx_remote_asset_visibility ON remote_asset_entity (visibility)');
-i0.Index get idxRemoteAssetStackId => i0.Index('idx_remote_asset_stack_id',
-    'CREATE INDEX idx_remote_asset_stack_id ON remote_asset_entity (stack_id)');

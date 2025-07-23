@@ -1273,15 +1273,15 @@ final class Schema4 extends i0.VersionedSchema {
   late final List<i1.DatabaseSchemaEntity> entities = [
     userEntity,
     remoteAssetEntity,
-    localAssetEntity,
     stackEntity,
+    localAssetEntity,
+    localAlbumEntity,
+    localAlbumAssetEntity,
     idxLocalAssetChecksum,
     uQRemoteAssetOwnerChecksum,
     idxRemoteAssetChecksum,
     userMetadataEntity,
     partnerEntity,
-    localAlbumEntity,
-    localAlbumAssetEntity,
     remoteExifEntity,
     remoteAlbumEntity,
     remoteAlbumAssetEntity,
@@ -1342,6 +1342,24 @@ final class Schema4 extends i0.VersionedSchema {
         attachedDatabase: database,
       ),
       alias: null);
+  late final Shape3 stackEntity = Shape3(
+      source: i0.VersionedTable(
+        entityName: 'stack_entity',
+        withoutRowId: true,
+        isStrict: true,
+        tableConstraints: [
+          'PRIMARY KEY(id)',
+        ],
+        columns: [
+          _column_0,
+          _column_9,
+          _column_5,
+          _column_15,
+          _column_75,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
   late final Shape2 localAssetEntity = Shape2(
       source: i0.VersionedTable(
         entityName: 'local_asset_entity',
@@ -1366,9 +1384,9 @@ final class Schema4 extends i0.VersionedSchema {
         attachedDatabase: database,
       ),
       alias: null);
-  late final Shape3 stackEntity = Shape3(
+  late final Shape6 localAlbumEntity = Shape6(
       source: i0.VersionedTable(
-        entityName: 'stack_entity',
+        entityName: 'local_album_entity',
         withoutRowId: true,
         isStrict: true,
         tableConstraints: [
@@ -1376,10 +1394,26 @@ final class Schema4 extends i0.VersionedSchema {
         ],
         columns: [
           _column_0,
-          _column_9,
+          _column_1,
           _column_5,
-          _column_15,
-          _column_75,
+          _column_31,
+          _column_32,
+          _column_33,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape7 localAlbumAssetEntity = Shape7(
+      source: i0.VersionedTable(
+        entityName: 'local_album_asset_entity',
+        withoutRowId: true,
+        isStrict: true,
+        tableConstraints: [
+          'PRIMARY KEY(asset_id, album_id)',
+        ],
+        columns: [
+          _column_34,
+          _column_35,
         ],
         attachedDatabase: database,
       ),
@@ -1419,40 +1453,6 @@ final class Schema4 extends i0.VersionedSchema {
           _column_28,
           _column_29,
           _column_30,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape6 localAlbumEntity = Shape6(
-      source: i0.VersionedTable(
-        entityName: 'local_album_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(id)',
-        ],
-        columns: [
-          _column_0,
-          _column_1,
-          _column_5,
-          _column_31,
-          _column_32,
-          _column_33,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape7 localAlbumAssetEntity = Shape7(
-      source: i0.VersionedTable(
-        entityName: 'local_album_asset_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(asset_id, album_id)',
-        ],
-        columns: [
-          _column_34,
-          _column_35,
         ],
         attachedDatabase: database,
       ),
@@ -1707,389 +1707,10 @@ i1.GeneratedColumn<int> _column_82(String aliasedName) =>
 i1.GeneratedColumn<String> _column_83(String aliasedName) =>
     i1.GeneratedColumn<String>('source_type', aliasedName, false,
         type: i1.DriftSqlType.string);
-
-final class Schema5 extends i0.VersionedSchema {
-  Schema5({required super.database}) : super(version: 5);
-  @override
-  late final List<i1.DatabaseSchemaEntity> entities = [
-    userEntity,
-    remoteAssetEntity,
-    stackEntity,
-    localAssetEntity,
-    localAlbumEntity,
-    localAlbumAssetEntity,
-    idxLocalAlbumBackupSelection,
-    idxLocalAssetChecksum,
-    uQRemoteAssetOwnerChecksum,
-    idxRemoteAssetChecksum,
-    idxRemoteAssetVisibility,
-    idxRemoteAssetStackId,
-    userMetadataEntity,
-    partnerEntity,
-    remoteExifEntity,
-    remoteAlbumEntity,
-    remoteAlbumAssetEntity,
-    remoteAlbumUserEntity,
-    memoryEntity,
-    memoryAssetEntity,
-    personEntity,
-    assetFaceEntity,
-  ];
-  late final Shape0 userEntity = Shape0(
-      source: i0.VersionedTable(
-        entityName: 'user_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(id)',
-        ],
-        columns: [
-          _column_0,
-          _column_1,
-          _column_2,
-          _column_3,
-          _column_4,
-          _column_5,
-          _column_6,
-          _column_7,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape1 remoteAssetEntity = Shape1(
-      source: i0.VersionedTable(
-        entityName: 'remote_asset_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(id)',
-        ],
-        columns: [
-          _column_1,
-          _column_8,
-          _column_9,
-          _column_5,
-          _column_10,
-          _column_11,
-          _column_12,
-          _column_0,
-          _column_13,
-          _column_14,
-          _column_15,
-          _column_16,
-          _column_17,
-          _column_18,
-          _column_19,
-          _column_20,
-          _column_21,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape3 stackEntity = Shape3(
-      source: i0.VersionedTable(
-        entityName: 'stack_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(id)',
-        ],
-        columns: [
-          _column_0,
-          _column_9,
-          _column_5,
-          _column_15,
-          _column_75,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape2 localAssetEntity = Shape2(
-      source: i0.VersionedTable(
-        entityName: 'local_asset_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(id)',
-        ],
-        columns: [
-          _column_1,
-          _column_8,
-          _column_9,
-          _column_5,
-          _column_10,
-          _column_11,
-          _column_12,
-          _column_0,
-          _column_22,
-          _column_14,
-          _column_23,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape6 localAlbumEntity = Shape6(
-      source: i0.VersionedTable(
-        entityName: 'local_album_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(id)',
-        ],
-        columns: [
-          _column_0,
-          _column_1,
-          _column_5,
-          _column_31,
-          _column_32,
-          _column_33,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape7 localAlbumAssetEntity = Shape7(
-      source: i0.VersionedTable(
-        entityName: 'local_album_asset_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(asset_id, album_id)',
-        ],
-        columns: [
-          _column_34,
-          _column_35,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  final i1.Index idxLocalAlbumBackupSelection = i1.Index(
-      'idx_local_album_backup_selection',
-      'CREATE INDEX idx_local_album_backup_selection ON local_album_entity (backup_selection)');
-  final i1.Index idxLocalAssetChecksum = i1.Index('idx_local_asset_checksum',
-      'CREATE INDEX idx_local_asset_checksum ON local_asset_entity (checksum)');
-  final i1.Index uQRemoteAssetOwnerChecksum = i1.Index(
-      'UQ_remote_asset_owner_checksum',
-      'CREATE UNIQUE INDEX UQ_remote_asset_owner_checksum ON remote_asset_entity (checksum, owner_id)');
-  final i1.Index idxRemoteAssetChecksum = i1.Index('idx_remote_asset_checksum',
-      'CREATE INDEX idx_remote_asset_checksum ON remote_asset_entity (checksum)');
-  final i1.Index idxRemoteAssetVisibility = i1.Index(
-      'idx_remote_asset_visibility',
-      'CREATE INDEX idx_remote_asset_visibility ON remote_asset_entity (visibility)');
-  final i1.Index idxRemoteAssetStackId = i1.Index('idx_remote_asset_stack_id',
-      'CREATE INDEX idx_remote_asset_stack_id ON remote_asset_entity (stack_id)');
-  late final Shape4 userMetadataEntity = Shape4(
-      source: i0.VersionedTable(
-        entityName: 'user_metadata_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(user_id, "key")',
-        ],
-        columns: [
-          _column_25,
-          _column_26,
-          _column_27,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape5 partnerEntity = Shape5(
-      source: i0.VersionedTable(
-        entityName: 'partner_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(shared_by_id, shared_with_id)',
-        ],
-        columns: [
-          _column_28,
-          _column_29,
-          _column_30,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape8 remoteExifEntity = Shape8(
-      source: i0.VersionedTable(
-        entityName: 'remote_exif_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(asset_id)',
-        ],
-        columns: [
-          _column_36,
-          _column_37,
-          _column_38,
-          _column_39,
-          _column_40,
-          _column_41,
-          _column_11,
-          _column_10,
-          _column_42,
-          _column_43,
-          _column_44,
-          _column_45,
-          _column_46,
-          _column_47,
-          _column_48,
-          _column_49,
-          _column_50,
-          _column_51,
-          _column_52,
-          _column_53,
-          _column_54,
-          _column_55,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape9 remoteAlbumEntity = Shape9(
-      source: i0.VersionedTable(
-        entityName: 'remote_album_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(id)',
-        ],
-        columns: [
-          _column_0,
-          _column_1,
-          _column_56,
-          _column_9,
-          _column_5,
-          _column_15,
-          _column_57,
-          _column_58,
-          _column_59,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape7 remoteAlbumAssetEntity = Shape7(
-      source: i0.VersionedTable(
-        entityName: 'remote_album_asset_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(asset_id, album_id)',
-        ],
-        columns: [
-          _column_36,
-          _column_60,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape10 remoteAlbumUserEntity = Shape10(
-      source: i0.VersionedTable(
-        entityName: 'remote_album_user_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(album_id, user_id)',
-        ],
-        columns: [
-          _column_60,
-          _column_25,
-          _column_61,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape11 memoryEntity = Shape11(
-      source: i0.VersionedTable(
-        entityName: 'memory_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(id)',
-        ],
-        columns: [
-          _column_0,
-          _column_9,
-          _column_5,
-          _column_18,
-          _column_15,
-          _column_8,
-          _column_62,
-          _column_63,
-          _column_64,
-          _column_65,
-          _column_66,
-          _column_67,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape12 memoryAssetEntity = Shape12(
-      source: i0.VersionedTable(
-        entityName: 'memory_asset_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(asset_id, memory_id)',
-        ],
-        columns: [
-          _column_36,
-          _column_68,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape14 personEntity = Shape14(
-      source: i0.VersionedTable(
-        entityName: 'person_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(id)',
-        ],
-        columns: [
-          _column_0,
-          _column_9,
-          _column_5,
-          _column_15,
-          _column_1,
-          _column_69,
-          _column_71,
-          _column_72,
-          _column_73,
-          _column_74,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape15 assetFaceEntity = Shape15(
-      source: i0.VersionedTable(
-        entityName: 'asset_face_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(id)',
-        ],
-        columns: [
-          _column_0,
-          _column_36,
-          _column_76,
-          _column_77,
-          _column_78,
-          _column_79,
-          _column_80,
-          _column_81,
-          _column_82,
-          _column_83,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-}
-
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
   required Future<void> Function(i1.Migrator m, Schema4 schema) from3To4,
-  required Future<void> Function(i1.Migrator m, Schema5 schema) from4To5,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -2108,11 +1729,6 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from3To4(migrator, schema);
         return 4;
-      case 4:
-        final schema = Schema5(database: database);
-        final migrator = i1.Migrator(database, schema);
-        await from4To5(migrator, schema);
-        return 5;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -2123,12 +1739,10 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
   required Future<void> Function(i1.Migrator m, Schema4 schema) from3To4,
-  required Future<void> Function(i1.Migrator m, Schema5 schema) from4To5,
 }) =>
     i0.VersionedSchema.stepByStepHelper(
         step: migrationSteps(
       from1To2: from1To2,
       from2To3: from2To3,
       from3To4: from3To4,
-      from4To5: from4To5,
     ));

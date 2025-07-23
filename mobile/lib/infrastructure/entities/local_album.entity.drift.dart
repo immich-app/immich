@@ -202,9 +202,6 @@ typedef $$LocalAlbumEntityTableProcessedTableManager = i0.ProcessedTableManager<
     ),
     i1.LocalAlbumEntityData,
     i0.PrefetchHooks Function()>;
-i0.Index get idxLocalAlbumBackupSelection => i0.Index(
-    'idx_local_album_backup_selection',
-    'CREATE INDEX idx_local_album_backup_selection ON local_album_entity (backup_selection)');
 
 class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
     with i0.TableInfo<$LocalAlbumEntityTable, i1.LocalAlbumEntityData> {

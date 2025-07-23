@@ -3,11 +3,11 @@
 import 'package:drift/drift.dart' as i0;
 import 'package:drift/internal/modular.dart' as i1;
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as i2;
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
-    as i3;
-import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart'
-    as i4;
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart'
+    as i3;
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
+    as i4;
+import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart'
     as i5;
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart'
     as i6;
@@ -17,14 +17,15 @@ import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.d
 class MergedAssetDrift extends i1.ModularAccessor {
   MergedAssetDrift(i0.GeneratedDatabase db) : super(db);
   i0.Selectable<MergedAssetResult> mergedAsset(List<String> var1,
-      {required i0.Limit limit}) {
+      {required MergedAsset$limit limit}) {
     var $arrayStartIndex = 1;
     final expandedvar1 = $expandVar($arrayStartIndex, var1.length);
     $arrayStartIndex += var1.length;
-    final generatedlimit = $write(limit, startIndex: $arrayStartIndex);
+    final generatedlimit = $write(limit(alias(this.localAssetEntity, 'lae')),
+        startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedlimit.amountOfVariables;
     return customSelect(
-        'WITH remote_asset_with_stack AS (SELECT *, COUNT(IIF(visibility = 0 AND deleted_at IS NULL AND stack_id IS NOT NULL, 1, NULL))OVER (PARTITION BY stack_id RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW EXCLUDE NO OTHERS) AS stack_total_count FROM remote_asset_entity) SELECT * FROM (SELECT rae.id AS remote_id, (SELECT lae.id FROM local_asset_entity AS lae WHERE lae.checksum = rae.checksum LIMIT 1) AS local_id, rae.name, rae.type, rae.created_at, rae.updated_at, rae.width, rae.height, rae.duration_in_seconds, rae.is_favorite, rae.thumb_hash, rae.checksum, rae.owner_id, rae.live_photo_video_id, 0 AS orientation, rae.stack_id, COALESCE(rae.stack_total_count, 0) AS stack_count FROM remote_asset_with_stack AS rae LEFT JOIN stack_entity AS se ON rae.stack_id = se.id WHERE rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id IN ($expandedvar1) AND(rae.stack_id IS NULL OR rae.id = se.primary_asset_id)UNION ALL SELECT NULL AS remote_id, lae.id AS local_id, lae.name, lae.type, lae.created_at, lae.updated_at, lae.width, lae.height, lae.duration_in_seconds, lae.is_favorite, NULL AS thumb_hash, lae.checksum, NULL AS owner_id, NULL AS live_photo_video_id, lae.orientation, NULL AS stack_id, 0 AS stack_count FROM local_asset_entity AS lae LEFT JOIN remote_asset_entity AS rae ON rae.checksum = lae.checksum LEFT JOIN local_album_asset_entity AS laa ON laa.asset_id = lae.id LEFT JOIN local_album_entity AS la ON la.id = laa.album_id WHERE rae.id IS NULL AND la.backup_selection = 0) ORDER BY created_at DESC ${generatedlimit.sql}',
+        'SELECT rae.id AS remote_id, (SELECT lae.id FROM local_asset_entity AS lae WHERE lae.checksum = rae.checksum LIMIT 1) AS local_id, rae.name, rae.type, rae.created_at AS created_at, rae.updated_at, rae.width, rae.height, rae.duration_in_seconds, rae.is_favorite, rae.thumb_hash, rae.checksum, rae.owner_id, rae.live_photo_video_id, 0 AS orientation, rae.stack_id FROM remote_asset_entity AS rae LEFT JOIN stack_entity AS se ON rae.stack_id = se.id WHERE rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id IN ($expandedvar1) AND(rae.stack_id IS NULL OR rae.id = se.primary_asset_id)UNION ALL SELECT NULL AS remote_id, lae.id AS local_id, lae.name, lae.type, lae.created_at AS created_at, lae.updated_at, lae.width, lae.height, lae.duration_in_seconds, lae.is_favorite, NULL AS thumb_hash, lae.checksum, NULL AS owner_id, NULL AS live_photo_video_id, lae.orientation, NULL AS stack_id FROM local_asset_entity AS lae WHERE NOT EXISTS (SELECT 1 FROM remote_asset_entity AS rae WHERE rae.checksum = lae.checksum) AND EXISTS (SELECT 1 FROM local_album_asset_entity AS laa INNER JOIN local_album_entity AS la ON laa.album_id = la.id WHERE laa.asset_id = lae.id AND la.backup_selection = 0) ORDER BY created_at DESC ${generatedlimit.sql}',
         variables: [
           for (var $ in var1) i0.Variable<String>($),
           ...generatedlimit.introducedVariables
@@ -40,7 +41,7 @@ class MergedAssetDrift extends i1.ModularAccessor {
           remoteId: row.readNullable<String>('remote_id'),
           localId: row.readNullable<String>('local_id'),
           name: row.read<String>('name'),
-          type: i3.$RemoteAssetEntityTable.$convertertype
+          type: i4.$RemoteAssetEntityTable.$convertertype
               .fromSql(row.read<int>('type')),
           createdAt: row.read<DateTime>('created_at'),
           updatedAt: row.read<DateTime>('updated_at'),
@@ -54,7 +55,6 @@ class MergedAssetDrift extends i1.ModularAccessor {
           livePhotoVideoId: row.readNullable<String>('live_photo_video_id'),
           orientation: row.read<int>('orientation'),
           stackId: row.readNullable<String>('stack_id'),
-          stackCount: row.read<int>('stack_count'),
         ));
   }
 
@@ -81,15 +81,15 @@ class MergedAssetDrift extends i1.ModularAccessor {
         ));
   }
 
-  i3.$RemoteAssetEntityTable get remoteAssetEntity =>
+  i4.$RemoteAssetEntityTable get remoteAssetEntity =>
       i1.ReadDatabaseContainer(attachedDatabase)
-          .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity');
-  i4.$StackEntityTable get stackEntity =>
+          .resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity');
+  i5.$StackEntityTable get stackEntity =>
       i1.ReadDatabaseContainer(attachedDatabase)
-          .resultSet<i4.$StackEntityTable>('stack_entity');
-  i5.$LocalAssetEntityTable get localAssetEntity =>
+          .resultSet<i5.$StackEntityTable>('stack_entity');
+  i3.$LocalAssetEntityTable get localAssetEntity =>
       i1.ReadDatabaseContainer(attachedDatabase)
-          .resultSet<i5.$LocalAssetEntityTable>('local_asset_entity');
+          .resultSet<i3.$LocalAssetEntityTable>('local_asset_entity');
   i6.$LocalAlbumAssetEntityTable get localAlbumAssetEntity =>
       i1.ReadDatabaseContainer(attachedDatabase)
           .resultSet<i6.$LocalAlbumAssetEntityTable>(
@@ -116,7 +116,6 @@ class MergedAssetResult {
   final String? livePhotoVideoId;
   final int orientation;
   final String? stackId;
-  final int stackCount;
   MergedAssetResult({
     this.remoteId,
     this.localId,
@@ -134,9 +133,10 @@ class MergedAssetResult {
     this.livePhotoVideoId,
     required this.orientation,
     this.stackId,
-    required this.stackCount,
   });
 }
+
+typedef MergedAsset$limit = i0.Limit Function(i3.$LocalAssetEntityTable lae);
 
 class MergedBucketResult {
   final int assetCount;
