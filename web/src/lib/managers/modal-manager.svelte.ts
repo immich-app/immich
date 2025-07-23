@@ -1,4 +1,4 @@
-import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
+import { ConfirmModal } from '@immich/ui';
 import { mount, unmount, type Component, type ComponentProps } from 'svelte';
 
 type OnCloseData<T> = T extends { onClose: (data?: infer R) => void }

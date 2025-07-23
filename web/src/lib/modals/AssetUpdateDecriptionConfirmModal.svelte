@@ -1,6 +1,5 @@
 <script lang="ts">
-  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
-  import { Input } from '@immich/ui';
+  import { ConfirmModal, Input } from '@immich/ui';
   import { mdiText } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
