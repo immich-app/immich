@@ -12,8 +12,8 @@ describe('ChangeDate component', () => {
 
   const getDateInput = () => screen.getByLabelText('date_and_time') as HTMLInputElement;
   const getTimeZoneInput = () => screen.getByLabelText('timezone') as HTMLInputElement;
-  const getCancelButton = () => screen.getByText('cancel');
-  const getConfirmButton = () => screen.getByText('confirm');
+  const getCancelButton = () => screen.getByText('Cancel');
+  const getConfirmButton = () => screen.getByText('Confirm');
 
   beforeEach(() => {
     vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());

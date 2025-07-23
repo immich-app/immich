@@ -1,10 +1,9 @@
 <script lang="ts">
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteUserAdmin, type UserAdminResponseDto, type UserResponseDto } from '@immich/sdk';
-  import { Checkbox, Label } from '@immich/ui';
+  import { Checkbox, ConfirmModal, Label } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
