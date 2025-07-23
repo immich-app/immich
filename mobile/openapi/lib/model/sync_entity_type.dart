@@ -23,6 +23,7 @@ class SyncEntityType {
 
   String toJson() => value;
 
+  static const authUserV1 = SyncEntityType._(r'AuthUserV1');
   static const userV1 = SyncEntityType._(r'UserV1');
   static const userDeleteV1 = SyncEntityType._(r'UserDeleteV1');
   static const assetV1 = SyncEntityType._(r'AssetV1');
@@ -67,6 +68,7 @@ class SyncEntityType {
 
   /// List of all possible values in this [enum][SyncEntityType].
   static const values = <SyncEntityType>[
+    authUserV1,
     userV1,
     userDeleteV1,
     assetV1,
@@ -146,6 +148,7 @@ class SyncEntityTypeTypeTransformer {
   SyncEntityType? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
+        case r'AuthUserV1': return SyncEntityType.authUserV1;
         case r'UserV1': return SyncEntityType.userV1;
         case r'UserDeleteV1': return SyncEntityType.userDeleteV1;
         case r'AssetV1': return SyncEntityType.assetV1;

@@ -479,6 +479,7 @@ Class | Method | HTTP request | Description
  - [SyncAssetFaceDeleteV1](doc//SyncAssetFaceDeleteV1.md)
  - [SyncAssetFaceV1](doc//SyncAssetFaceV1.md)
  - [SyncAssetV1](doc//SyncAssetV1.md)
+ - [SyncAuthUserV1](doc//SyncAuthUserV1.md)
  - [SyncEntityType](doc//SyncEntityType.md)
  - [SyncMemoryAssetDeleteV1](doc//SyncMemoryAssetDeleteV1.md)
  - [SyncMemoryAssetV1](doc//SyncMemoryAssetV1.md)
