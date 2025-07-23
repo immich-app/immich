@@ -5,9 +5,9 @@ import 'package:drift/internal/modular.dart' as i1;
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as i2;
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
     as i3;
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart'
-    as i4;
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart'
+    as i4;
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart'
     as i5;
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart'
     as i6;
@@ -24,7 +24,7 @@ class MergedAssetDrift extends i1.ModularAccessor {
     final generatedlimit = $write(limit, startIndex: $arrayStartIndex);
     $arrayStartIndex += generatedlimit.amountOfVariables;
     return customSelect(
-        'SELECT * FROM (SELECT rae.id AS remote_id, FIRST_VALUE(lae.id)OVER (PARTITION BY lae.checksum RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW EXCLUDE NO OTHERS) AS local_id, rae.name, rae.type, rae.created_at, rae.updated_at, rae.width, rae.height, rae.duration_in_seconds, rae.is_favorite, rae.thumb_hash, rae.checksum, rae.owner_id, rae.live_photo_video_id, 0 AS orientation, rae.stack_id, COALESCE(stack_count.total_count, 0) AS stack_count FROM remote_asset_entity AS rae LEFT JOIN local_asset_entity AS lae ON rae.checksum = lae.checksum LEFT JOIN stack_entity AS se ON rae.stack_id = se.id LEFT JOIN (SELECT stack_id, COUNT(*) AS total_count FROM remote_asset_entity WHERE deleted_at IS NULL AND visibility = 0 AND stack_id IS NOT NULL GROUP BY stack_id) AS stack_count ON rae.stack_id = stack_count.stack_id WHERE rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id IN ($expandedvar1) AND(rae.stack_id IS NULL OR rae.id = se.primary_asset_id)UNION ALL SELECT NULL AS remote_id, lae.id AS local_id, lae.name, lae.type, lae.created_at, lae.updated_at, lae.width, lae.height, lae.duration_in_seconds, lae.is_favorite, NULL AS thumb_hash, lae.checksum, NULL AS owner_id, NULL AS live_photo_video_id, lae.orientation, NULL AS stack_id, 0 AS stack_count FROM local_asset_entity AS lae LEFT JOIN remote_asset_entity AS rae ON rae.checksum = lae.checksum LEFT JOIN local_album_asset_entity AS laa ON laa.asset_id = lae.id LEFT JOIN local_album_entity AS la ON la.id = laa.album_id WHERE rae.id IS NULL AND la.backup_selection = 0) ORDER BY created_at DESC ${generatedlimit.sql}',
+        'WITH remote_asset_with_stack AS (SELECT *, COUNT(IIF(visibility = 0 AND deleted_at IS NULL AND stack_id IS NOT NULL, 1, NULL))OVER (PARTITION BY stack_id RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW EXCLUDE NO OTHERS) AS stack_total_count FROM remote_asset_entity) SELECT * FROM (SELECT rae.id AS remote_id, (SELECT lae.id FROM local_asset_entity AS lae WHERE lae.checksum = rae.checksum LIMIT 1) AS local_id, rae.name, rae.type, rae.created_at, rae.updated_at, rae.width, rae.height, rae.duration_in_seconds, rae.is_favorite, rae.thumb_hash, rae.checksum, rae.owner_id, rae.live_photo_video_id, 0 AS orientation, rae.stack_id, COALESCE(rae.stack_total_count, 0) AS stack_count FROM remote_asset_with_stack AS rae LEFT JOIN stack_entity AS se ON rae.stack_id = se.id WHERE rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id IN ($expandedvar1) AND(rae.stack_id IS NULL OR rae.id = se.primary_asset_id)UNION ALL SELECT NULL AS remote_id, lae.id AS local_id, lae.name, lae.type, lae.created_at, lae.updated_at, lae.width, lae.height, lae.duration_in_seconds, lae.is_favorite, NULL AS thumb_hash, lae.checksum, NULL AS owner_id, NULL AS live_photo_video_id, lae.orientation, NULL AS stack_id, 0 AS stack_count FROM local_asset_entity AS lae LEFT JOIN remote_asset_entity AS rae ON rae.checksum = lae.checksum LEFT JOIN local_album_asset_entity AS laa ON laa.asset_id = lae.id LEFT JOIN local_album_entity AS la ON la.id = laa.album_id WHERE rae.id IS NULL AND la.backup_selection = 0) ORDER BY created_at DESC ${generatedlimit.sql}',
         variables: [
           for (var $ in var1) i0.Variable<String>($),
           ...generatedlimit.introducedVariables
@@ -84,12 +84,12 @@ class MergedAssetDrift extends i1.ModularAccessor {
   i3.$RemoteAssetEntityTable get remoteAssetEntity =>
       i1.ReadDatabaseContainer(attachedDatabase)
           .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity');
-  i4.$LocalAssetEntityTable get localAssetEntity =>
+  i4.$StackEntityTable get stackEntity =>
       i1.ReadDatabaseContainer(attachedDatabase)
-          .resultSet<i4.$LocalAssetEntityTable>('local_asset_entity');
-  i5.$StackEntityTable get stackEntity =>
+          .resultSet<i4.$StackEntityTable>('stack_entity');
+  i5.$LocalAssetEntityTable get localAssetEntity =>
       i1.ReadDatabaseContainer(attachedDatabase)
-          .resultSet<i5.$StackEntityTable>('stack_entity');
+          .resultSet<i5.$LocalAssetEntityTable>('local_asset_entity');
   i6.$LocalAlbumAssetEntityTable get localAlbumAssetEntity =>
       i1.ReadDatabaseContainer(attachedDatabase)
           .resultSet<i6.$LocalAlbumAssetEntityTable>(

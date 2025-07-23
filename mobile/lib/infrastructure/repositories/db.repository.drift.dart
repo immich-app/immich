@@ -5,9 +5,9 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart'
     as i1;
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
     as i2;
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart'
-    as i3;
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart'
+    as i3;
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart'
     as i4;
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart'
     as i5;
@@ -43,9 +43,9 @@ abstract class $Drift extends i0.GeneratedDatabase {
   late final i1.$UserEntityTable userEntity = i1.$UserEntityTable(this);
   late final i2.$RemoteAssetEntityTable remoteAssetEntity =
       i2.$RemoteAssetEntityTable(this);
-  late final i3.$LocalAssetEntityTable localAssetEntity =
-      i3.$LocalAssetEntityTable(this);
-  late final i4.$StackEntityTable stackEntity = i4.$StackEntityTable(this);
+  late final i3.$StackEntityTable stackEntity = i3.$StackEntityTable(this);
+  late final i4.$LocalAssetEntityTable localAssetEntity =
+      i4.$LocalAssetEntityTable(this);
   late final i5.$LocalAlbumEntityTable localAlbumEntity =
       i5.$LocalAlbumEntityTable(this);
   late final i6.$LocalAlbumAssetEntityTable localAlbumAssetEntity =
@@ -77,15 +77,16 @@ abstract class $Drift extends i0.GeneratedDatabase {
   List<i0.DatabaseSchemaEntity> get allSchemaEntities => [
         userEntity,
         remoteAssetEntity,
-        localAssetEntity,
         stackEntity,
+        localAssetEntity,
         localAlbumEntity,
         localAlbumAssetEntity,
         i5.idxLocalAlbumBackupSelection,
-        i3.idxLocalAssetChecksum,
+        i4.idxLocalAssetChecksum,
         i2.uQRemoteAssetOwnerChecksum,
         i2.idxRemoteAssetChecksum,
         i2.idxRemoteAssetVisibility,
+        i2.idxRemoteAssetStackId,
         userMetadataEntity,
         partnerEntity,
         remoteExifEntity,
@@ -262,10 +263,10 @@ class $DriftManager {
       i1.$$UserEntityTableTableManager(_db, _db.userEntity);
   i2.$$RemoteAssetEntityTableTableManager get remoteAssetEntity =>
       i2.$$RemoteAssetEntityTableTableManager(_db, _db.remoteAssetEntity);
-  i3.$$LocalAssetEntityTableTableManager get localAssetEntity =>
-      i3.$$LocalAssetEntityTableTableManager(_db, _db.localAssetEntity);
-  i4.$$StackEntityTableTableManager get stackEntity =>
-      i4.$$StackEntityTableTableManager(_db, _db.stackEntity);
+  i3.$$StackEntityTableTableManager get stackEntity =>
+      i3.$$StackEntityTableTableManager(_db, _db.stackEntity);
+  i4.$$LocalAssetEntityTableTableManager get localAssetEntity =>
+      i4.$$LocalAssetEntityTableTableManager(_db, _db.localAssetEntity);
   i5.$$LocalAlbumEntityTableTableManager get localAlbumEntity =>
       i5.$$LocalAlbumEntityTableTableManager(_db, _db.localAlbumEntity);
   i6.$$LocalAlbumAssetEntityTableTableManager get localAlbumAssetEntity => i6

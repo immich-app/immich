@@ -105,6 +105,7 @@ class Drift extends $Drift implements IDatabaseRepository {
               from4To5: (m, v5) async {
                 // New indexes
                 await m.create(v5.idxRemoteAssetVisibility);
+                await m.create(v5.idxRemoteAssetStackId);
                 await m.create(v5.idxLocalAlbumBackupSelection);
               },
             ),

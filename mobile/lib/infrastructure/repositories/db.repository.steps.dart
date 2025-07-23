@@ -1714,8 +1714,8 @@ final class Schema5 extends i0.VersionedSchema {
   late final List<i1.DatabaseSchemaEntity> entities = [
     userEntity,
     remoteAssetEntity,
-    localAssetEntity,
     stackEntity,
+    localAssetEntity,
     localAlbumEntity,
     localAlbumAssetEntity,
     idxLocalAlbumBackupSelection,
@@ -1723,6 +1723,7 @@ final class Schema5 extends i0.VersionedSchema {
     uQRemoteAssetOwnerChecksum,
     idxRemoteAssetChecksum,
     idxRemoteAssetVisibility,
+    idxRemoteAssetStackId,
     userMetadataEntity,
     partnerEntity,
     remoteExifEntity,
@@ -1785,6 +1786,24 @@ final class Schema5 extends i0.VersionedSchema {
         attachedDatabase: database,
       ),
       alias: null);
+  late final Shape3 stackEntity = Shape3(
+      source: i0.VersionedTable(
+        entityName: 'stack_entity',
+        withoutRowId: true,
+        isStrict: true,
+        tableConstraints: [
+          'PRIMARY KEY(id)',
+        ],
+        columns: [
+          _column_0,
+          _column_9,
+          _column_5,
+          _column_15,
+          _column_75,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
   late final Shape2 localAssetEntity = Shape2(
       source: i0.VersionedTable(
         entityName: 'local_asset_entity',
@@ -1805,24 +1824,6 @@ final class Schema5 extends i0.VersionedSchema {
           _column_22,
           _column_14,
           _column_23,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape3 stackEntity = Shape3(
-      source: i0.VersionedTable(
-        entityName: 'stack_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(id)',
-        ],
-        columns: [
-          _column_0,
-          _column_9,
-          _column_5,
-          _column_15,
-          _column_75,
         ],
         attachedDatabase: database,
       ),
@@ -1874,6 +1875,8 @@ final class Schema5 extends i0.VersionedSchema {
   final i1.Index idxRemoteAssetVisibility = i1.Index(
       'idx_remote_asset_visibility',
       'CREATE INDEX idx_remote_asset_visibility ON remote_asset_entity (visibility)');
+  final i1.Index idxRemoteAssetStackId = i1.Index('idx_remote_asset_stack_id',
+      'CREATE INDEX idx_remote_asset_stack_id ON remote_asset_entity (stack_id)');
   late final Shape4 userMetadataEntity = Shape4(
       source: i0.VersionedTable(
         entityName: 'user_metadata_entity',
