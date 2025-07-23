@@ -31,7 +31,7 @@ SELECT * FROM (
         rae.live_photo_video_id,
         0 as orientation,
         rae.stack_id,
-        COALESCE(rae.stack_total_count, 0) AS stack_count
+        rae.stack_total_count AS stack_count
     FROM
         remote_asset_with_stack rae
     LEFT JOIN
