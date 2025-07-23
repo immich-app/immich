@@ -17,6 +17,7 @@
   import { mdiClose, mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import { SvelteDate } from 'svelte/reactivity';
 
   let showMessage = $state(false);
   let hoverMessage = $state(false);
@@ -37,7 +38,7 @@
   };
 
   const hideButton = async (always: boolean) => {
-    const hideBuyButtonUntil = new Date();
+    const hideBuyButtonUntil = new SvelteDate();
 
     if (always) {
       hideBuyButtonUntil.setFullYear(2124); // see ya in 100 years

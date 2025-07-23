@@ -18,4 +18,8 @@ class LocalAlbumService {
   Future<void> update(LocalAlbum album) {
     return _repository.upsert(album);
   }
+
+  Future<int> getCount() {
+    return _repository.getCount();
+  }
 }

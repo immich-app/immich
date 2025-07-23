@@ -260,6 +260,7 @@ part 'model/sync_asset_exif_v1.dart';
 part 'model/sync_asset_face_delete_v1.dart';
 part 'model/sync_asset_face_v1.dart';
 part 'model/sync_asset_v1.dart';
+part 'model/sync_auth_user_v1.dart';
 part 'model/sync_entity_type.dart';
 part 'model/sync_memory_asset_delete_v1.dart';
 part 'model/sync_memory_asset_v1.dart';

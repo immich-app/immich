@@ -6,4 +6,4 @@ if [ "$IMMICH_ENV" != "development" ]; then
 fi
 
 cd /usr/src/app/server || exit 1
-npm exec nest start --debug "0.0.0.0:9230" --watch -- "$@"
+npm exec nest -- start --debug "0.0.0.0:9230" --watch -- "$@"

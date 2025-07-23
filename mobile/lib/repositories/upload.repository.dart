@@ -20,6 +20,11 @@ class UploadRepository {
       taskStatusCallback: (update) => onUploadStatus?.call(update),
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
+    FileDownloader().registerCallbacks(
+      group: kManualUploadGroup,
+      taskStatusCallback: (_) => {},
+      taskProgressCallback: (_) => {},
+    );
   }
 
   void enqueueAll(List<UploadTask> tasks) {

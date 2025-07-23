@@ -10,7 +10,7 @@ const int kSyncEventBatchSize = 5000;
 const int kFetchLocalAssetsBatchSize = 40000;
 
 // Hash batch limits
-const int kBatchHashFileLimit = 128;
+const int kBatchHashFileLimit = 256;
 const int kBatchHashSizeLimit = 1024 * 1024 * 1024; // 1GB
 
 // Secure storage keys
@@ -20,6 +20,9 @@ const String kSecuredPinCode = "secured_pin_code";
 const String kManualUploadGroup = 'manual_upload_group';
 const String kBackupGroup = 'backup_group';
 const String kBackupLivePhotoGroup = 'backup_live_photo_group';
+const String kDownloadGroupImage = 'group_image';
+const String kDownloadGroupVideo = 'group_video';
+const String kDownloadGroupLivePhoto = 'group_livephoto';
 
 // Timeline constants
 const int kTimelineNoneSegmentSize = 120;

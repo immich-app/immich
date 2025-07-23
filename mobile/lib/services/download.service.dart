@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -10,7 +11,6 @@ import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/download.dart';
 import 'package:logging/logging.dart';
 
 final downloadServiceProvider = Provider(
@@ -173,7 +173,7 @@ class DownloadService {
         _buildDownloadTask(
           asset.remoteId!,
           asset.fileName,
-          group: downloadGroupLivePhoto,
+          group: kDownloadGroupLivePhoto,
           metadata: LivePhotosMetadata(
             part: LivePhotosPart.image,
             id: asset.remoteId!,
@@ -184,7 +184,7 @@ class DownloadService {
           asset.fileName
               .toUpperCase()
               .replaceAll(RegExp(r"\.(JPG|HEIC)$"), '.MOV'),
-          group: downloadGroupLivePhoto,
+          group: kDownloadGroupLivePhoto,
           metadata: LivePhotosMetadata(
             part: LivePhotosPart.video,
             id: asset.remoteId!,
@@ -201,7 +201,7 @@ class DownloadService {
       _buildDownloadTask(
         asset.remoteId!,
         asset.fileName,
-        group: asset.isImage ? downloadGroupImage : downloadGroupVideo,
+        group: asset.isImage ? kDownloadGroupImage : kDownloadGroupVideo,
       ),
     ];
   }

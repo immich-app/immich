@@ -9,6 +9,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 
@@ -24,12 +25,24 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
   @override
   void initState() {
     super.initState();
-    ref.read(driftBackupProvider.notifier).getBackupStatus();
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) {
+      return;
+    }
+
+    ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
   }
 
   Future<void> startBackup() async {
-    await ref.read(driftBackupProvider.notifier).getBackupStatus();
-    await ref.read(driftBackupProvider.notifier).backup();
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) {
+      return;
+    }
+
+    await ref
+        .read(driftBackupProvider.notifier)
+        .getBackupStatus(currentUser.id);
+    await ref.read(driftBackupProvider.notifier).backup(currentUser.id);
   }
 
   Future<void> stopBackup() async {
@@ -44,9 +57,6 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
           (album) => album.backupSelection == BackupSelection.selected,
         )
         .toList();
-    final uploadItems = ref.watch(
-      driftBackupProvider.select((state) => state.uploadItems),
-    );
 
     return Scaffold(
       appBar: AppBar(
@@ -85,14 +95,13 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                     onStart: () async => await startBackup(),
                     onStop: () async => await stopBackup(),
                   ),
-                  if (uploadItems.isNotEmpty)
-                    TextButton.icon(
-                      icon: const Icon(Icons.info_outline_rounded),
-                      onPressed: () => context.pushRoute(
-                        const DriftUploadDetailRoute(),
-                      ),
-                      label: Text("view_details".t(context: context)),
+                  TextButton.icon(
+                    icon: const Icon(Icons.info_outline_rounded),
+                    onPressed: () => context.pushRoute(
+                      const DriftUploadDetailRoute(),
                     ),
+                    label: Text("view_details".t(context: context)),
+                  ),
                 ],
               ],
             ),
@@ -211,7 +220,13 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
         trailing: ElevatedButton(
           onPressed: () async {
             await context.pushRoute(const DriftBackupAlbumSelectionRoute());
-            ref.read(driftBackupProvider.notifier).getBackupStatus();
+            final currentUser = ref.read(currentUserProvider);
+            if (currentUser == null) {
+              return;
+            }
+            ref
+                .read(driftBackupProvider.notifier)
+                .getBackupStatus(currentUser.id);
           },
           child: const Text(
             "select",

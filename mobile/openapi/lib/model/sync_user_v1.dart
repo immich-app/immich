@@ -13,11 +13,14 @@ part of openapi.api;
 class SyncUserV1 {
   /// Returns a new [SyncUserV1] instance.
   SyncUserV1({
+    required this.avatarColor,
     required this.deletedAt,
     required this.email,
     required this.id,
     required this.name,
   });
+
+  UserAvatarColor? avatarColor;
 
   DateTime? deletedAt;
 
@@ -29,6 +32,7 @@ class SyncUserV1 {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncUserV1 &&
+    other.avatarColor == avatarColor &&
     other.deletedAt == deletedAt &&
     other.email == email &&
     other.id == id &&
@@ -37,16 +41,22 @@ class SyncUserV1 {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (email.hashCode) +
     (id.hashCode) +
     (name.hashCode);
 
   @override
-  String toString() => 'SyncUserV1[deletedAt=$deletedAt, email=$email, id=$id, name=$name]';
+  String toString() => 'SyncUserV1[avatarColor=$avatarColor, deletedAt=$deletedAt, email=$email, id=$id, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.avatarColor != null) {
+      json[r'avatarColor'] = this.avatarColor;
+    } else {
+    //  json[r'avatarColor'] = null;
+    }
     if (this.deletedAt != null) {
       json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
     } else {
@@ -67,6 +77,7 @@ class SyncUserV1 {
       final json = value.cast<String, dynamic>();
 
       return SyncUserV1(
+        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
         deletedAt: mapDateTime(json, r'deletedAt', r''),
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
@@ -118,6 +129,7 @@ class SyncUserV1 {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'avatarColor',
     'deletedAt',
     'email',
     'id',
