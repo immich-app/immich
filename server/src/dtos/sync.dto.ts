@@ -58,6 +58,7 @@ export class SyncUserV1 {
   id!: string;
   name!: string;
   email!: string;
+  avatarColor!: string | null;
   deletedAt!: Date | null;
 }
 

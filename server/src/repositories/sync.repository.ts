@@ -695,7 +695,7 @@ class UserSync extends BaseSync {
   getUpserts(ack?: SyncAck) {
     return this.db
       .selectFrom('user')
-      .select(['id', 'name', 'email', 'deletedAt', 'updateId'])
+      .select(['id', 'name', 'email', 'avatarColor', 'deletedAt', 'updateId'])
       .$call(this.upsertTableFilters(ack))
       .stream();
   }

@@ -871,6 +871,7 @@ select
   "id",
   "name",
   "email",
+  "avatarColor",
   "deletedAt",
   "updateId"
 from

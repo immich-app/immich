@@ -14364,6 +14364,10 @@
       },
       "SyncUserV1": {
         "properties": {
+          "avatarColor": {
+            "nullable": true,
+            "type": "string"
+          },
           "deletedAt": {
             "format": "date-time",
             "nullable": true,
@@ -14380,6 +14384,7 @@
           }
         },
         "required": [
+          "avatarColor",
           "deletedAt",
           "email",
           "id",
