@@ -459,18 +459,34 @@ describe(AuthService.name, () => {
 
       mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
 
-      await expect(
-        sut.authenticate({
-          headers: { 'x-api-key': 'auth_token' },
-          queryParams: {},
-          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test', permission: Permission.AssetRead },
-        }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      const result = sut.authenticate({
+        headers: { 'x-api-key': 'auth_token' },
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test', permission: Permission.AssetRead },
+      });
+
+      await expect(result).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(result).rejects.toThrow('Missing required permission: asset.read');
+    });
+
+    it('should default to requiring the all permission when omitted', async () => {
+      const authUser = factory.authUser();
+      const authApiKey = factory.authApiKey({ permissions: [Permission.AssetRead] });
+
+      mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
+
+      const result = sut.authenticate({
+        headers: { 'x-api-key': 'auth_token' },
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+      });
+      await expect(result).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(result).rejects.toThrow('Missing required permission: all');
     });
 
     it('should return an auth dto', async () => {
       const authUser = factory.authUser();
-      const authApiKey = factory.authApiKey({ permissions: [] });
+      const authApiKey = factory.authApiKey({ permissions: [Permission.All] });
 
       mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
 
