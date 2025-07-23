@@ -11,6 +11,7 @@ import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
   unique: true,
 )
 @TableIndex(name: 'idx_remote_asset_checksum', columns: {#checksum})
+@TableIndex(name: 'idx_remote_asset_visibility', columns: {#visibility})
 class RemoteAssetEntity extends Table
     with DriftDefaultsMixin, AssetEntityMixin {
   const RemoteAssetEntity();

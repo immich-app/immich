@@ -49,7 +49,7 @@ SELECT * FROM
 			rae.stack_id IS NULL
 			OR rae.id = se.primary_asset_id
 		)
-	UNION
+	UNION ALL
 	SELECT
 		NULL as remote_id,
 		lae.id as local_id,
