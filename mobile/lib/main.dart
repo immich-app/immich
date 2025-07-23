@@ -203,6 +203,19 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       ),
       progressBar: true,
     );
+
+    FileDownloader().configureNotificationForGroup(
+      kManualUploadGroup,
+      running: TaskNotification(
+        'uploading_media'.tr(),
+        '${'file_name'.tr()}: {displayName}',
+      ),
+      complete: TaskNotification(
+        'upload_finished'.tr(),
+        '${'file_name'.tr()}: {displayName}',
+      ),
+      progressBar: true,
+    );
   }
 
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
