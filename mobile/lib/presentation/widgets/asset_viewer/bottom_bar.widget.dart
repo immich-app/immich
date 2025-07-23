@@ -50,30 +50,31 @@ class ViewerBottomBar extends ConsumerWidget {
           duration: Durations.short4,
           child: isSheetOpen
               ? const SizedBox.shrink()
-              : Theme(
-                  data: context.themeData.copyWith(
-                    iconTheme:
-                        const IconThemeData(size: 22, color: Colors.white),
-                    textTheme: context.themeData.textTheme.copyWith(
-                      labelLarge:
-                          context.themeData.textTheme.labelLarge?.copyWith(
-                        color: Colors.white,
+              : SafeArea(
+                  child: Theme(
+                    data: context.themeData.copyWith(
+                      iconTheme:
+                          const IconThemeData(size: 22, color: Colors.white),
+                      textTheme: context.themeData.textTheme.copyWith(
+                        labelLarge:
+                            context.themeData.textTheme.labelLarge?.copyWith(
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ),
-                  child: Container(
-                    height: context.padding.bottom + (asset.isVideo ? 160 : 80),
-                    color: Colors.black.withAlpha(125),
-                    padding: EdgeInsets.only(bottom: context.padding.bottom),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (asset.isVideo) const VideoControls(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: actions,
-                        ),
-                      ],
+                    child: Container(
+                      height: asset.isVideo ? 160 : 80,
+                      color: Colors.black.withAlpha(125),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (asset.isVideo) const VideoControls(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: actions,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

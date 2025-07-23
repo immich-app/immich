@@ -3,7 +3,9 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 @TableIndex(
-    name: 'idx_local_album_backup_selection', columns: {#backupSelection})
+  name: 'idx_local_album_backup_selection',
+  columns: {#backupSelection},
+)
 class LocalAlbumEntity extends Table with DriftDefaultsMixin {
   const LocalAlbumEntity();
 

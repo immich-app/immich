@@ -27,26 +27,6 @@ import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-bool _isCurrentAsset(
-  BaseAsset asset,
-  BaseAsset? currentAsset,
-) {
-  if (asset is RemoteAsset) {
-    return switch (currentAsset) {
-      RemoteAsset remoteAsset => remoteAsset.id == asset.id,
-      LocalAsset localAsset => localAsset.remoteId == asset.id,
-      _ => false,
-    };
-  } else if (asset is LocalAsset) {
-    return switch (currentAsset) {
-      RemoteAsset remoteAsset => remoteAsset.localId == asset.id,
-      LocalAsset localAsset => localAsset.id == asset.id,
-      _ => false,
-    };
-  }
-  return false;
-}
-
 class NativeVideoViewer extends HookConsumerWidget {
   final BaseAsset asset;
   final bool showControls;
@@ -76,7 +56,7 @@ class NativeVideoViewer extends HookConsumerWidget {
     // If the swipe is completed, `isCurrent` will be true for video B after a delay.
     // If the swipe is canceled, `currentAsset` will not have changed and video A will continue to play.
     final currentAsset = useState(ref.read(currentAssetNotifier));
-    final isCurrent = _isCurrentAsset(asset, currentAsset.value);
+    final isCurrent = currentAsset.value == asset;
 
     // Used to show the placeholder during hero animations for remote videos to avoid a stutter
     final isVisible = useState(Platform.isIOS && asset.hasLocal);
