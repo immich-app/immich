@@ -29,7 +29,7 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     return query.map((row) => row.toDto()).get();
   }
 
-  Future<RemoteAsset?> get(String id) {
+  SingleOrNullSelectable<RemoteAsset?> _assetSelectable(String id) {
     final query = _db.remoteAssetEntity.select().addColumns([
       _db.localAssetEntity.id,
     ]).join([
@@ -45,7 +45,15 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     return query.map((row) {
       final asset = row.readTable(_db.remoteAssetEntity).toDto();
       return asset.copyWith(localId: row.read(_db.localAssetEntity.id));
-    }).getSingleOrNull();
+    });
+  }
+
+  Stream<RemoteAsset?> watch(String id) {
+    return _assetSelectable(id).watchSingleOrNull();
+  }
+
+  Future<RemoteAsset?> get(String id) {
+    return _assetSelectable(id).getSingleOrNull();
   }
 
   Stream<RemoteAsset?> watchAsset(String id) {
