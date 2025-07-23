@@ -559,6 +559,7 @@ export enum SyncRequestType {
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
   AssetsV1 = 'AssetsV1',
   AssetExifsV1 = 'AssetExifsV1',
+  AuthUsersV1 = 'AuthUsersV1',
   MemoriesV1 = 'MemoriesV1',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
   PartnersV1 = 'PartnersV1',
@@ -573,6 +574,8 @@ export enum SyncRequestType {
 }
 
 export enum SyncEntityType {
+  AuthUserV1 = 'AuthUserV1',
+
   UserV1 = 'UserV1',
   UserDeleteV1 = 'UserDeleteV1',
 

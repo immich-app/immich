@@ -16,7 +16,6 @@ class RemoteAsset extends BaseAsset {
   final DateTime? localDateTime;
   final String ownerId;
   final String? stackId;
-  final int stackCount;
 
   const RemoteAsset({
     required this.id,
@@ -36,7 +35,6 @@ class RemoteAsset extends BaseAsset {
     this.localDateTime,
     super.livePhotoVideoId,
     this.stackId,
-    this.stackCount = 0,
   });
 
   @override
@@ -64,7 +62,6 @@ class RemoteAsset extends BaseAsset {
     visibility: $visibility,
     localDateTime: ${localDateTime ?? "<NA>"},
     stackId: ${stackId ?? "<NA>"},
-    stackCount: $stackCount,
     checksum: $checksum,
     livePhotoVideoId: ${livePhotoVideoId ?? "<NA>"},
  }''';
@@ -81,8 +78,7 @@ class RemoteAsset extends BaseAsset {
         thumbHash == other.thumbHash &&
         visibility == other.visibility &&
         localDateTime == other.localDateTime &&
-        stackId == other.stackId &&
-        stackCount == other.stackCount;
+        stackId == other.stackId;
   }
 
   @override
@@ -94,8 +90,7 @@ class RemoteAsset extends BaseAsset {
       thumbHash.hashCode ^
       visibility.hashCode ^
       localDateTime.hashCode ^
-      stackId.hashCode ^
-      stackCount.hashCode;
+      stackId.hashCode;
 
   RemoteAsset copyWith({
     String? id,
@@ -115,7 +110,6 @@ class RemoteAsset extends BaseAsset {
     DateTime? localDateTime,
     String? livePhotoVideoId,
     String? stackId,
-    int? stackCount,
   }) {
     return RemoteAsset(
       id: id ?? this.id,
@@ -135,7 +129,6 @@ class RemoteAsset extends BaseAsset {
       localDateTime: localDateTime ?? this.localDateTime,
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       stackId: stackId ?? this.stackId,
-      stackCount: stackCount ?? this.stackCount,
     );
   }
 }

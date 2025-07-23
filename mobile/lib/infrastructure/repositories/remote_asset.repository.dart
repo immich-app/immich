@@ -32,49 +32,21 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
   }
 
   Stream<RemoteAsset?> watchAsset(String id) {
-    final stackCountRef = _db.stackEntity.id.count();
-
     final query = _db.remoteAssetEntity.select().addColumns([
       _db.localAssetEntity.id,
-      _db.stackEntity.primaryAssetId,
-      stackCountRef,
     ]).join([
       leftOuterJoin(
         _db.localAssetEntity,
         _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
         useColumns: false,
       ),
-      leftOuterJoin(
-        _db.stackEntity,
-        _db.stackEntity.primaryAssetId.equalsExp(_db.remoteAssetEntity.id),
-        useColumns: false,
-      ),
-      leftOuterJoin(
-        _db.remoteAssetEntity.createAlias('stacked_assets'),
-        _db.stackEntity.id.equalsExp(
-          _db.remoteAssetEntity.createAlias('stacked_assets').stackId,
-        ),
-        useColumns: false,
-      ),
     ])
       ..where(_db.remoteAssetEntity.id.equals(id))
-      ..groupBy([
-        _db.remoteAssetEntity.id,
-        _db.localAssetEntity.id,
-        _db.stackEntity.primaryAssetId,
-      ])
       ..limit(1);
 
     return query.map((row) {
       final asset = row.readTable(_db.remoteAssetEntity).toDto();
-      final primaryAssetId = row.read(_db.stackEntity.primaryAssetId);
-      final stackCount =
-          primaryAssetId == id ? (row.read(stackCountRef) ?? 0) : 0;
-
-      return asset.copyWith(
-        localId: row.read(_db.localAssetEntity.id),
-        stackCount: stackCount,
-      );
+      return asset.copyWith(localId: row.read(_db.localAssetEntity.id));
     }).watchSingleOrNull();
   }
 

@@ -10,6 +10,7 @@ import {
   MemoryType,
   SyncEntityType,
   SyncRequestType,
+  UserAvatarColor,
   UserMetadataKey,
 } from 'src/enum';
 import { UserMetadata } from 'src/types';
@@ -58,7 +59,23 @@ export class SyncUserV1 {
   id!: string;
   name!: string;
   email!: string;
+  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', nullable: true })
+  avatarColor!: UserAvatarColor | null;
   deletedAt!: Date | null;
+}
+
+@ExtraModel()
+export class SyncAuthUserV1 extends SyncUserV1 {
+  isAdmin!: boolean;
+  pinCode!: string | null;
+  oauthId!: string;
+  storageLabel!: string | null;
+  @ApiProperty({ type: 'integer' })
+  quotaSizeInBytes!: number | null;
+  @ApiProperty({ type: 'integer' })
+  quotaUsageInBytes!: number;
+  hasProfileImage!: boolean;
+  profileChangedAt!: Date;
 }
 
 @ExtraModel()
@@ -301,6 +318,7 @@ export class SyncAckV1 {}
 export class SyncResetV1 {}
 
 export type SyncItem = {
+  [SyncEntityType.AuthUserV1]: SyncAuthUserV1;
   [SyncEntityType.UserV1]: SyncUserV1;
   [SyncEntityType.UserDeleteV1]: SyncUserDeleteV1;
   [SyncEntityType.PartnerV1]: SyncPartnerV1;

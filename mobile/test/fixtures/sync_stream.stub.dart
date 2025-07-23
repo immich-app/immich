@@ -9,6 +9,7 @@ abstract final class SyncStreamStub {
       email: "admin@admin",
       id: "1",
       name: "Admin",
+      avatarColor: null,
     ),
     ack: "1",
   );
@@ -19,6 +20,7 @@ abstract final class SyncStreamStub {
       email: "user@user",
       id: "5",
       name: "User",
+      avatarColor: null,
     ),
     ack: "5",
   );

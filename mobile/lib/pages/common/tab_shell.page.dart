@@ -11,6 +11,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -38,7 +39,14 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
 
       await runNewSync(ref, full: true).then((_) async {
         if (isEnableBackup) {
-          await ref.read(driftBackupProvider.notifier).handleBackupResume();
+          final currentUser = ref.read(currentUserProvider);
+          if (currentUser == null) {
+            return;
+          }
+
+          await ref
+              .read(driftBackupProvider.notifier)
+              .handleBackupResume(currentUser.id);
         }
       });
     });

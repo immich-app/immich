@@ -982,6 +982,255 @@ class RemoteAssetEntityCompanion
   }
 }
 
+class StackEntity extends Table with TableInfo<StackEntity, StackEntityData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  StackEntity(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: const CustomExpression('CURRENT_TIMESTAMP'));
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: const CustomExpression('CURRENT_TIMESTAMP'));
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+      'owner_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES user_entity (id) ON DELETE CASCADE'));
+  late final GeneratedColumn<String> primaryAssetId = GeneratedColumn<String>(
+      'primary_asset_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, createdAt, updatedAt, ownerId, primaryAssetId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'stack_entity';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  StackEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return StackEntityData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      ownerId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}owner_id'])!,
+      primaryAssetId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}primary_asset_id'])!,
+    );
+  }
+
+  @override
+  StackEntity createAlias(String alias) {
+    return StackEntity(attachedDatabase, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+  @override
+  bool get isStrict => true;
+}
+
+class StackEntityData extends DataClass implements Insertable<StackEntityData> {
+  final String id;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String ownerId;
+  final String primaryAssetId;
+  const StackEntityData(
+      {required this.id,
+      required this.createdAt,
+      required this.updatedAt,
+      required this.ownerId,
+      required this.primaryAssetId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['owner_id'] = Variable<String>(ownerId);
+    map['primary_asset_id'] = Variable<String>(primaryAssetId);
+    return map;
+  }
+
+  factory StackEntityData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return StackEntityData(
+      id: serializer.fromJson<String>(json['id']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      primaryAssetId: serializer.fromJson<String>(json['primaryAssetId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'primaryAssetId': serializer.toJson<String>(primaryAssetId),
+    };
+  }
+
+  StackEntityData copyWith(
+          {String? id,
+          DateTime? createdAt,
+          DateTime? updatedAt,
+          String? ownerId,
+          String? primaryAssetId}) =>
+      StackEntityData(
+        id: id ?? this.id,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        ownerId: ownerId ?? this.ownerId,
+        primaryAssetId: primaryAssetId ?? this.primaryAssetId,
+      );
+  StackEntityData copyWithCompanion(StackEntityCompanion data) {
+    return StackEntityData(
+      id: data.id.present ? data.id.value : this.id,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      primaryAssetId: data.primaryAssetId.present
+          ? data.primaryAssetId.value
+          : this.primaryAssetId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StackEntityData(')
+          ..write('id: $id, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('primaryAssetId: $primaryAssetId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, createdAt, updatedAt, ownerId, primaryAssetId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is StackEntityData &&
+          other.id == this.id &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.ownerId == this.ownerId &&
+          other.primaryAssetId == this.primaryAssetId);
+}
+
+class StackEntityCompanion extends UpdateCompanion<StackEntityData> {
+  final Value<String> id;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String> ownerId;
+  final Value<String> primaryAssetId;
+  const StackEntityCompanion({
+    this.id = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.primaryAssetId = const Value.absent(),
+  });
+  StackEntityCompanion.insert({
+    required String id,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    required String ownerId,
+    required String primaryAssetId,
+  })  : id = Value(id),
+        ownerId = Value(ownerId),
+        primaryAssetId = Value(primaryAssetId);
+  static Insertable<StackEntityData> custom({
+    Expression<String>? id,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? ownerId,
+    Expression<String>? primaryAssetId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (primaryAssetId != null) 'primary_asset_id': primaryAssetId,
+    });
+  }
+
+  StackEntityCompanion copyWith(
+      {Value<String>? id,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt,
+      Value<String>? ownerId,
+      Value<String>? primaryAssetId}) {
+    return StackEntityCompanion(
+      id: id ?? this.id,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      ownerId: ownerId ?? this.ownerId,
+      primaryAssetId: primaryAssetId ?? this.primaryAssetId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (primaryAssetId.present) {
+      map['primary_asset_id'] = Variable<String>(primaryAssetId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StackEntityCompanion(')
+          ..write('id: $id, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('primaryAssetId: $primaryAssetId')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class LocalAssetEntity extends Table
     with TableInfo<LocalAssetEntity, LocalAssetEntityData> {
   @override
@@ -1410,640 +1659,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class StackEntity extends Table with TableInfo<StackEntity, StackEntityData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  StackEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-      'id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-      'created_at', aliasedName, false,
-      type: DriftSqlType.dateTime,
-      requiredDuringInsert: false,
-      defaultValue: const CustomExpression('CURRENT_TIMESTAMP'));
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-      'updated_at', aliasedName, false,
-      type: DriftSqlType.dateTime,
-      requiredDuringInsert: false,
-      defaultValue: const CustomExpression('CURRENT_TIMESTAMP'));
-  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
-      'owner_id', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES user_entity (id) ON DELETE CASCADE'));
-  late final GeneratedColumn<String> primaryAssetId = GeneratedColumn<String>(
-      'primary_asset_id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
-  @override
-  List<GeneratedColumn> get $columns =>
-      [id, createdAt, updatedAt, ownerId, primaryAssetId];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'stack_entity';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  StackEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return StackEntityData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
-      createdAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
-      updatedAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      ownerId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}owner_id'])!,
-      primaryAssetId: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}primary_asset_id'])!,
-    );
-  }
-
-  @override
-  StackEntity createAlias(String alias) {
-    return StackEntity(attachedDatabase, alias);
-  }
-
-  @override
-  bool get withoutRowId => true;
-  @override
-  bool get isStrict => true;
-}
-
-class StackEntityData extends DataClass implements Insertable<StackEntityData> {
-  final String id;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String ownerId;
-  final String primaryAssetId;
-  const StackEntityData(
-      {required this.id,
-      required this.createdAt,
-      required this.updatedAt,
-      required this.ownerId,
-      required this.primaryAssetId});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['owner_id'] = Variable<String>(ownerId);
-    map['primary_asset_id'] = Variable<String>(primaryAssetId);
-    return map;
-  }
-
-  factory StackEntityData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return StackEntityData(
-      id: serializer.fromJson<String>(json['id']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      ownerId: serializer.fromJson<String>(json['ownerId']),
-      primaryAssetId: serializer.fromJson<String>(json['primaryAssetId']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'ownerId': serializer.toJson<String>(ownerId),
-      'primaryAssetId': serializer.toJson<String>(primaryAssetId),
-    };
-  }
-
-  StackEntityData copyWith(
-          {String? id,
-          DateTime? createdAt,
-          DateTime? updatedAt,
-          String? ownerId,
-          String? primaryAssetId}) =>
-      StackEntityData(
-        id: id ?? this.id,
-        createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-        ownerId: ownerId ?? this.ownerId,
-        primaryAssetId: primaryAssetId ?? this.primaryAssetId,
-      );
-  StackEntityData copyWithCompanion(StackEntityCompanion data) {
-    return StackEntityData(
-      id: data.id.present ? data.id.value : this.id,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
-      primaryAssetId: data.primaryAssetId.present
-          ? data.primaryAssetId.value
-          : this.primaryAssetId,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('StackEntityData(')
-          ..write('id: $id, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('ownerId: $ownerId, ')
-          ..write('primaryAssetId: $primaryAssetId')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(id, createdAt, updatedAt, ownerId, primaryAssetId);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is StackEntityData &&
-          other.id == this.id &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.ownerId == this.ownerId &&
-          other.primaryAssetId == this.primaryAssetId);
-}
-
-class StackEntityCompanion extends UpdateCompanion<StackEntityData> {
-  final Value<String> id;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<String> ownerId;
-  final Value<String> primaryAssetId;
-  const StackEntityCompanion({
-    this.id = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.ownerId = const Value.absent(),
-    this.primaryAssetId = const Value.absent(),
-  });
-  StackEntityCompanion.insert({
-    required String id,
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    required String ownerId,
-    required String primaryAssetId,
-  })  : id = Value(id),
-        ownerId = Value(ownerId),
-        primaryAssetId = Value(primaryAssetId);
-  static Insertable<StackEntityData> custom({
-    Expression<String>? id,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<String>? ownerId,
-    Expression<String>? primaryAssetId,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (ownerId != null) 'owner_id': ownerId,
-      if (primaryAssetId != null) 'primary_asset_id': primaryAssetId,
-    });
-  }
-
-  StackEntityCompanion copyWith(
-      {Value<String>? id,
-      Value<DateTime>? createdAt,
-      Value<DateTime>? updatedAt,
-      Value<String>? ownerId,
-      Value<String>? primaryAssetId}) {
-    return StackEntityCompanion(
-      id: id ?? this.id,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      ownerId: ownerId ?? this.ownerId,
-      primaryAssetId: primaryAssetId ?? this.primaryAssetId,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (ownerId.present) {
-      map['owner_id'] = Variable<String>(ownerId.value);
-    }
-    if (primaryAssetId.present) {
-      map['primary_asset_id'] = Variable<String>(primaryAssetId.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('StackEntityCompanion(')
-          ..write('id: $id, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('ownerId: $ownerId, ')
-          ..write('primaryAssetId: $primaryAssetId')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class UserMetadataEntity extends Table
-    with TableInfo<UserMetadataEntity, UserMetadataEntityData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  UserMetadataEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-      'user_id', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES user_entity (id) ON DELETE CASCADE'));
-  late final GeneratedColumn<int> key = GeneratedColumn<int>(
-      'key', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
-  late final GeneratedColumn<Uint8List> value = GeneratedColumn<Uint8List>(
-      'value', aliasedName, false,
-      type: DriftSqlType.blob, requiredDuringInsert: true);
-  @override
-  List<GeneratedColumn> get $columns => [userId, key, value];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'user_metadata_entity';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {userId, key};
-  @override
-  UserMetadataEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return UserMetadataEntityData(
-      userId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}user_id'])!,
-      key: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}key'])!,
-      value: attachedDatabase.typeMapping
-          .read(DriftSqlType.blob, data['${effectivePrefix}value'])!,
-    );
-  }
-
-  @override
-  UserMetadataEntity createAlias(String alias) {
-    return UserMetadataEntity(attachedDatabase, alias);
-  }
-
-  @override
-  bool get withoutRowId => true;
-  @override
-  bool get isStrict => true;
-}
-
-class UserMetadataEntityData extends DataClass
-    implements Insertable<UserMetadataEntityData> {
-  final String userId;
-  final int key;
-  final Uint8List value;
-  const UserMetadataEntityData(
-      {required this.userId, required this.key, required this.value});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['user_id'] = Variable<String>(userId);
-    map['key'] = Variable<int>(key);
-    map['value'] = Variable<Uint8List>(value);
-    return map;
-  }
-
-  factory UserMetadataEntityData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return UserMetadataEntityData(
-      userId: serializer.fromJson<String>(json['userId']),
-      key: serializer.fromJson<int>(json['key']),
-      value: serializer.fromJson<Uint8List>(json['value']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'userId': serializer.toJson<String>(userId),
-      'key': serializer.toJson<int>(key),
-      'value': serializer.toJson<Uint8List>(value),
-    };
-  }
-
-  UserMetadataEntityData copyWith(
-          {String? userId, int? key, Uint8List? value}) =>
-      UserMetadataEntityData(
-        userId: userId ?? this.userId,
-        key: key ?? this.key,
-        value: value ?? this.value,
-      );
-  UserMetadataEntityData copyWithCompanion(UserMetadataEntityCompanion data) {
-    return UserMetadataEntityData(
-      userId: data.userId.present ? data.userId.value : this.userId,
-      key: data.key.present ? data.key.value : this.key,
-      value: data.value.present ? data.value.value : this.value,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('UserMetadataEntityData(')
-          ..write('userId: $userId, ')
-          ..write('key: $key, ')
-          ..write('value: $value')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(userId, key, $driftBlobEquality.hash(value));
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is UserMetadataEntityData &&
-          other.userId == this.userId &&
-          other.key == this.key &&
-          $driftBlobEquality.equals(other.value, this.value));
-}
-
-class UserMetadataEntityCompanion
-    extends UpdateCompanion<UserMetadataEntityData> {
-  final Value<String> userId;
-  final Value<int> key;
-  final Value<Uint8List> value;
-  const UserMetadataEntityCompanion({
-    this.userId = const Value.absent(),
-    this.key = const Value.absent(),
-    this.value = const Value.absent(),
-  });
-  UserMetadataEntityCompanion.insert({
-    required String userId,
-    required int key,
-    required Uint8List value,
-  })  : userId = Value(userId),
-        key = Value(key),
-        value = Value(value);
-  static Insertable<UserMetadataEntityData> custom({
-    Expression<String>? userId,
-    Expression<int>? key,
-    Expression<Uint8List>? value,
-  }) {
-    return RawValuesInsertable({
-      if (userId != null) 'user_id': userId,
-      if (key != null) 'key': key,
-      if (value != null) 'value': value,
-    });
-  }
-
-  UserMetadataEntityCompanion copyWith(
-      {Value<String>? userId, Value<int>? key, Value<Uint8List>? value}) {
-    return UserMetadataEntityCompanion(
-      userId: userId ?? this.userId,
-      key: key ?? this.key,
-      value: value ?? this.value,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (userId.present) {
-      map['user_id'] = Variable<String>(userId.value);
-    }
-    if (key.present) {
-      map['key'] = Variable<int>(key.value);
-    }
-    if (value.present) {
-      map['value'] = Variable<Uint8List>(value.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('UserMetadataEntityCompanion(')
-          ..write('userId: $userId, ')
-          ..write('key: $key, ')
-          ..write('value: $value')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class PartnerEntity extends Table
-    with TableInfo<PartnerEntity, PartnerEntityData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  PartnerEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> sharedById = GeneratedColumn<String>(
-      'shared_by_id', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES user_entity (id) ON DELETE CASCADE'));
-  late final GeneratedColumn<String> sharedWithId = GeneratedColumn<String>(
-      'shared_with_id', aliasedName, false,
-      type: DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES user_entity (id) ON DELETE CASCADE'));
-  late final GeneratedColumn<bool> inTimeline = GeneratedColumn<bool>(
-      'in_timeline', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("in_timeline" IN (0, 1))'),
-      defaultValue: const CustomExpression('0'));
-  @override
-  List<GeneratedColumn> get $columns => [sharedById, sharedWithId, inTimeline];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'partner_entity';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {sharedById, sharedWithId};
-  @override
-  PartnerEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return PartnerEntityData(
-      sharedById: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}shared_by_id'])!,
-      sharedWithId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}shared_with_id'])!,
-      inTimeline: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}in_timeline'])!,
-    );
-  }
-
-  @override
-  PartnerEntity createAlias(String alias) {
-    return PartnerEntity(attachedDatabase, alias);
-  }
-
-  @override
-  bool get withoutRowId => true;
-  @override
-  bool get isStrict => true;
-}
-
-class PartnerEntityData extends DataClass
-    implements Insertable<PartnerEntityData> {
-  final String sharedById;
-  final String sharedWithId;
-  final bool inTimeline;
-  const PartnerEntityData(
-      {required this.sharedById,
-      required this.sharedWithId,
-      required this.inTimeline});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['shared_by_id'] = Variable<String>(sharedById);
-    map['shared_with_id'] = Variable<String>(sharedWithId);
-    map['in_timeline'] = Variable<bool>(inTimeline);
-    return map;
-  }
-
-  factory PartnerEntityData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return PartnerEntityData(
-      sharedById: serializer.fromJson<String>(json['sharedById']),
-      sharedWithId: serializer.fromJson<String>(json['sharedWithId']),
-      inTimeline: serializer.fromJson<bool>(json['inTimeline']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'sharedById': serializer.toJson<String>(sharedById),
-      'sharedWithId': serializer.toJson<String>(sharedWithId),
-      'inTimeline': serializer.toJson<bool>(inTimeline),
-    };
-  }
-
-  PartnerEntityData copyWith(
-          {String? sharedById, String? sharedWithId, bool? inTimeline}) =>
-      PartnerEntityData(
-        sharedById: sharedById ?? this.sharedById,
-        sharedWithId: sharedWithId ?? this.sharedWithId,
-        inTimeline: inTimeline ?? this.inTimeline,
-      );
-  PartnerEntityData copyWithCompanion(PartnerEntityCompanion data) {
-    return PartnerEntityData(
-      sharedById:
-          data.sharedById.present ? data.sharedById.value : this.sharedById,
-      sharedWithId: data.sharedWithId.present
-          ? data.sharedWithId.value
-          : this.sharedWithId,
-      inTimeline:
-          data.inTimeline.present ? data.inTimeline.value : this.inTimeline,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('PartnerEntityData(')
-          ..write('sharedById: $sharedById, ')
-          ..write('sharedWithId: $sharedWithId, ')
-          ..write('inTimeline: $inTimeline')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(sharedById, sharedWithId, inTimeline);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is PartnerEntityData &&
-          other.sharedById == this.sharedById &&
-          other.sharedWithId == this.sharedWithId &&
-          other.inTimeline == this.inTimeline);
-}
-
-class PartnerEntityCompanion extends UpdateCompanion<PartnerEntityData> {
-  final Value<String> sharedById;
-  final Value<String> sharedWithId;
-  final Value<bool> inTimeline;
-  const PartnerEntityCompanion({
-    this.sharedById = const Value.absent(),
-    this.sharedWithId = const Value.absent(),
-    this.inTimeline = const Value.absent(),
-  });
-  PartnerEntityCompanion.insert({
-    required String sharedById,
-    required String sharedWithId,
-    this.inTimeline = const Value.absent(),
-  })  : sharedById = Value(sharedById),
-        sharedWithId = Value(sharedWithId);
-  static Insertable<PartnerEntityData> custom({
-    Expression<String>? sharedById,
-    Expression<String>? sharedWithId,
-    Expression<bool>? inTimeline,
-  }) {
-    return RawValuesInsertable({
-      if (sharedById != null) 'shared_by_id': sharedById,
-      if (sharedWithId != null) 'shared_with_id': sharedWithId,
-      if (inTimeline != null) 'in_timeline': inTimeline,
-    });
-  }
-
-  PartnerEntityCompanion copyWith(
-      {Value<String>? sharedById,
-      Value<String>? sharedWithId,
-      Value<bool>? inTimeline}) {
-    return PartnerEntityCompanion(
-      sharedById: sharedById ?? this.sharedById,
-      sharedWithId: sharedWithId ?? this.sharedWithId,
-      inTimeline: inTimeline ?? this.inTimeline,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (sharedById.present) {
-      map['shared_by_id'] = Variable<String>(sharedById.value);
-    }
-    if (sharedWithId.present) {
-      map['shared_with_id'] = Variable<String>(sharedWithId.value);
-    }
-    if (inTimeline.present) {
-      map['in_timeline'] = Variable<bool>(inTimeline.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('PartnerEntityCompanion(')
-          ..write('sharedById: $sharedById, ')
-          ..write('sharedWithId: $sharedWithId, ')
-          ..write('inTimeline: $inTimeline')
           ..write(')'))
         .toString();
   }
@@ -2493,6 +2108,391 @@ class LocalAlbumAssetEntityCompanion
     return (StringBuffer('LocalAlbumAssetEntityCompanion(')
           ..write('assetId: $assetId, ')
           ..write('albumId: $albumId')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class UserMetadataEntity extends Table
+    with TableInfo<UserMetadataEntity, UserMetadataEntityData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  UserMetadataEntity(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+      'user_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES user_entity (id) ON DELETE CASCADE'));
+  late final GeneratedColumn<int> key = GeneratedColumn<int>(
+      'key', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  late final GeneratedColumn<Uint8List> value = GeneratedColumn<Uint8List>(
+      'value', aliasedName, false,
+      type: DriftSqlType.blob, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [userId, key, value];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'user_metadata_entity';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {userId, key};
+  @override
+  UserMetadataEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UserMetadataEntityData(
+      userId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}user_id'])!,
+      key: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}key'])!,
+      value: attachedDatabase.typeMapping
+          .read(DriftSqlType.blob, data['${effectivePrefix}value'])!,
+    );
+  }
+
+  @override
+  UserMetadataEntity createAlias(String alias) {
+    return UserMetadataEntity(attachedDatabase, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+  @override
+  bool get isStrict => true;
+}
+
+class UserMetadataEntityData extends DataClass
+    implements Insertable<UserMetadataEntityData> {
+  final String userId;
+  final int key;
+  final Uint8List value;
+  const UserMetadataEntityData(
+      {required this.userId, required this.key, required this.value});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['user_id'] = Variable<String>(userId);
+    map['key'] = Variable<int>(key);
+    map['value'] = Variable<Uint8List>(value);
+    return map;
+  }
+
+  factory UserMetadataEntityData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UserMetadataEntityData(
+      userId: serializer.fromJson<String>(json['userId']),
+      key: serializer.fromJson<int>(json['key']),
+      value: serializer.fromJson<Uint8List>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'userId': serializer.toJson<String>(userId),
+      'key': serializer.toJson<int>(key),
+      'value': serializer.toJson<Uint8List>(value),
+    };
+  }
+
+  UserMetadataEntityData copyWith(
+          {String? userId, int? key, Uint8List? value}) =>
+      UserMetadataEntityData(
+        userId: userId ?? this.userId,
+        key: key ?? this.key,
+        value: value ?? this.value,
+      );
+  UserMetadataEntityData copyWithCompanion(UserMetadataEntityCompanion data) {
+    return UserMetadataEntityData(
+      userId: data.userId.present ? data.userId.value : this.userId,
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserMetadataEntityData(')
+          ..write('userId: $userId, ')
+          ..write('key: $key, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(userId, key, $driftBlobEquality.hash(value));
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UserMetadataEntityData &&
+          other.userId == this.userId &&
+          other.key == this.key &&
+          $driftBlobEquality.equals(other.value, this.value));
+}
+
+class UserMetadataEntityCompanion
+    extends UpdateCompanion<UserMetadataEntityData> {
+  final Value<String> userId;
+  final Value<int> key;
+  final Value<Uint8List> value;
+  const UserMetadataEntityCompanion({
+    this.userId = const Value.absent(),
+    this.key = const Value.absent(),
+    this.value = const Value.absent(),
+  });
+  UserMetadataEntityCompanion.insert({
+    required String userId,
+    required int key,
+    required Uint8List value,
+  })  : userId = Value(userId),
+        key = Value(key),
+        value = Value(value);
+  static Insertable<UserMetadataEntityData> custom({
+    Expression<String>? userId,
+    Expression<int>? key,
+    Expression<Uint8List>? value,
+  }) {
+    return RawValuesInsertable({
+      if (userId != null) 'user_id': userId,
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
+    });
+  }
+
+  UserMetadataEntityCompanion copyWith(
+      {Value<String>? userId, Value<int>? key, Value<Uint8List>? value}) {
+    return UserMetadataEntityCompanion(
+      userId: userId ?? this.userId,
+      key: key ?? this.key,
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (key.present) {
+      map['key'] = Variable<int>(key.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<Uint8List>(value.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserMetadataEntityCompanion(')
+          ..write('userId: $userId, ')
+          ..write('key: $key, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class PartnerEntity extends Table
+    with TableInfo<PartnerEntity, PartnerEntityData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  PartnerEntity(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> sharedById = GeneratedColumn<String>(
+      'shared_by_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES user_entity (id) ON DELETE CASCADE'));
+  late final GeneratedColumn<String> sharedWithId = GeneratedColumn<String>(
+      'shared_with_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES user_entity (id) ON DELETE CASCADE'));
+  late final GeneratedColumn<bool> inTimeline = GeneratedColumn<bool>(
+      'in_timeline', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("in_timeline" IN (0, 1))'),
+      defaultValue: const CustomExpression('0'));
+  @override
+  List<GeneratedColumn> get $columns => [sharedById, sharedWithId, inTimeline];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'partner_entity';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {sharedById, sharedWithId};
+  @override
+  PartnerEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PartnerEntityData(
+      sharedById: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}shared_by_id'])!,
+      sharedWithId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}shared_with_id'])!,
+      inTimeline: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}in_timeline'])!,
+    );
+  }
+
+  @override
+  PartnerEntity createAlias(String alias) {
+    return PartnerEntity(attachedDatabase, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+  @override
+  bool get isStrict => true;
+}
+
+class PartnerEntityData extends DataClass
+    implements Insertable<PartnerEntityData> {
+  final String sharedById;
+  final String sharedWithId;
+  final bool inTimeline;
+  const PartnerEntityData(
+      {required this.sharedById,
+      required this.sharedWithId,
+      required this.inTimeline});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['shared_by_id'] = Variable<String>(sharedById);
+    map['shared_with_id'] = Variable<String>(sharedWithId);
+    map['in_timeline'] = Variable<bool>(inTimeline);
+    return map;
+  }
+
+  factory PartnerEntityData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PartnerEntityData(
+      sharedById: serializer.fromJson<String>(json['sharedById']),
+      sharedWithId: serializer.fromJson<String>(json['sharedWithId']),
+      inTimeline: serializer.fromJson<bool>(json['inTimeline']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'sharedById': serializer.toJson<String>(sharedById),
+      'sharedWithId': serializer.toJson<String>(sharedWithId),
+      'inTimeline': serializer.toJson<bool>(inTimeline),
+    };
+  }
+
+  PartnerEntityData copyWith(
+          {String? sharedById, String? sharedWithId, bool? inTimeline}) =>
+      PartnerEntityData(
+        sharedById: sharedById ?? this.sharedById,
+        sharedWithId: sharedWithId ?? this.sharedWithId,
+        inTimeline: inTimeline ?? this.inTimeline,
+      );
+  PartnerEntityData copyWithCompanion(PartnerEntityCompanion data) {
+    return PartnerEntityData(
+      sharedById:
+          data.sharedById.present ? data.sharedById.value : this.sharedById,
+      sharedWithId: data.sharedWithId.present
+          ? data.sharedWithId.value
+          : this.sharedWithId,
+      inTimeline:
+          data.inTimeline.present ? data.inTimeline.value : this.inTimeline,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PartnerEntityData(')
+          ..write('sharedById: $sharedById, ')
+          ..write('sharedWithId: $sharedWithId, ')
+          ..write('inTimeline: $inTimeline')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(sharedById, sharedWithId, inTimeline);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PartnerEntityData &&
+          other.sharedById == this.sharedById &&
+          other.sharedWithId == this.sharedWithId &&
+          other.inTimeline == this.inTimeline);
+}
+
+class PartnerEntityCompanion extends UpdateCompanion<PartnerEntityData> {
+  final Value<String> sharedById;
+  final Value<String> sharedWithId;
+  final Value<bool> inTimeline;
+  const PartnerEntityCompanion({
+    this.sharedById = const Value.absent(),
+    this.sharedWithId = const Value.absent(),
+    this.inTimeline = const Value.absent(),
+  });
+  PartnerEntityCompanion.insert({
+    required String sharedById,
+    required String sharedWithId,
+    this.inTimeline = const Value.absent(),
+  })  : sharedById = Value(sharedById),
+        sharedWithId = Value(sharedWithId);
+  static Insertable<PartnerEntityData> custom({
+    Expression<String>? sharedById,
+    Expression<String>? sharedWithId,
+    Expression<bool>? inTimeline,
+  }) {
+    return RawValuesInsertable({
+      if (sharedById != null) 'shared_by_id': sharedById,
+      if (sharedWithId != null) 'shared_with_id': sharedWithId,
+      if (inTimeline != null) 'in_timeline': inTimeline,
+    });
+  }
+
+  PartnerEntityCompanion copyWith(
+      {Value<String>? sharedById,
+      Value<String>? sharedWithId,
+      Value<bool>? inTimeline}) {
+    return PartnerEntityCompanion(
+      sharedById: sharedById ?? this.sharedById,
+      sharedWithId: sharedWithId ?? this.sharedWithId,
+      inTimeline: inTimeline ?? this.inTimeline,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (sharedById.present) {
+      map['shared_by_id'] = Variable<String>(sharedById.value);
+    }
+    if (sharedWithId.present) {
+      map['shared_with_id'] = Variable<String>(sharedWithId.value);
+    }
+    if (inTimeline.present) {
+      map['in_timeline'] = Variable<bool>(inTimeline.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PartnerEntityCompanion(')
+          ..write('sharedById: $sharedById, ')
+          ..write('sharedWithId: $sharedWithId, ')
+          ..write('inTimeline: $inTimeline')
           ..write(')'))
         .toString();
   }
@@ -5467,8 +5467,11 @@ class DatabaseAtV4 extends GeneratedDatabase {
   DatabaseAtV4(QueryExecutor e) : super(e);
   late final UserEntity userEntity = UserEntity(this);
   late final RemoteAssetEntity remoteAssetEntity = RemoteAssetEntity(this);
-  late final LocalAssetEntity localAssetEntity = LocalAssetEntity(this);
   late final StackEntity stackEntity = StackEntity(this);
+  late final LocalAssetEntity localAssetEntity = LocalAssetEntity(this);
+  late final LocalAlbumEntity localAlbumEntity = LocalAlbumEntity(this);
+  late final LocalAlbumAssetEntity localAlbumAssetEntity =
+      LocalAlbumAssetEntity(this);
   late final Index idxLocalAssetChecksum = Index('idx_local_asset_checksum',
       'CREATE INDEX idx_local_asset_checksum ON local_asset_entity (checksum)');
   late final Index uQRemoteAssetOwnerChecksum = Index(
@@ -5478,9 +5481,6 @@ class DatabaseAtV4 extends GeneratedDatabase {
       'CREATE INDEX idx_remote_asset_checksum ON remote_asset_entity (checksum)');
   late final UserMetadataEntity userMetadataEntity = UserMetadataEntity(this);
   late final PartnerEntity partnerEntity = PartnerEntity(this);
-  late final LocalAlbumEntity localAlbumEntity = LocalAlbumEntity(this);
-  late final LocalAlbumAssetEntity localAlbumAssetEntity =
-      LocalAlbumAssetEntity(this);
   late final RemoteExifEntity remoteExifEntity = RemoteExifEntity(this);
   late final RemoteAlbumEntity remoteAlbumEntity = RemoteAlbumEntity(this);
   late final RemoteAlbumAssetEntity remoteAlbumAssetEntity =
@@ -5498,15 +5498,15 @@ class DatabaseAtV4 extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
         userEntity,
         remoteAssetEntity,
-        localAssetEntity,
         stackEntity,
+        localAssetEntity,
+        localAlbumEntity,
+        localAlbumAssetEntity,
         idxLocalAssetChecksum,
         uQRemoteAssetOwnerChecksum,
         idxRemoteAssetChecksum,
         userMetadataEntity,
         partnerEntity,
-        localAlbumEntity,
-        localAlbumAssetEntity,
         remoteExifEntity,
         remoteAlbumEntity,
         remoteAlbumAssetEntity,
