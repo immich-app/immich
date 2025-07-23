@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
@@ -12,7 +13,7 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 class ThumbnailTile extends ConsumerWidget {
   const ThumbnailTile(
     this.asset, {
-    this.size = const Size.square(256),
+    this.size = const Size.square(kTimelineThumbnailTileSize),
     this.fit = BoxFit.cover,
     this.showStorageIndicator = true,
     this.lockSelection = false,
@@ -73,9 +74,9 @@ class ThumbnailTile extends ConsumerWidget {
                     tag: '${asset?.heroTag ?? ''}_$heroIndex',
                     child: Thumbnail.fromBaseAsset(
                       asset: asset,
-                      fit: fit,
-                      size: size,
-                      thumbhashOnly: isScrubbing,
+                      thumbhashMode: isScrubbing
+                          ? ThumbhashMode.only
+                          : ThumbhashMode.enabled,
                     ),
                   ),
                 ),

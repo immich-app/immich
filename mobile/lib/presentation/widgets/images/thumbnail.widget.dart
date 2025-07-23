@@ -1,287 +1,212 @@
-import 'dart:ffi';
-
-import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui' as ui;
 import 'dart:ui';
 
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter/material.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/providers/image/cache/thumbnail_image_cache_manager.dart';
-import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:logging/logging.dart';
 import 'package:thumbhash/thumbhash.dart' as thumbhash;
-import 'package:ffi/ffi.dart';
 
 final log = Logger('ThumbnailWidget');
 
+enum ThumbhashMode { enabled, disabled, only }
+
 class Thumbnail extends StatefulWidget {
+  final ImageProvider? imageProvider;
   final BoxFit fit;
   final ui.Size size;
   final String? blurhash;
-  final String? localId;
-  final String? remoteId;
-  final bool thumbhashOnly;
+  final ThumbhashMode thumbhashMode;
 
   const Thumbnail({
+    this.imageProvider,
     this.fit = BoxFit.cover,
-    this.size = const ui.Size.square(256),
+    this.size = const ui.Size.square(kTimelineThumbnailSize),
     this.blurhash,
-    this.localId,
-    this.remoteId,
-    this.thumbhashOnly = false,
+    this.thumbhashMode = ThumbhashMode.enabled,
     super.key,
   });
 
   Thumbnail.fromAsset({
     required Asset asset,
     this.fit = BoxFit.cover,
-    this.size = const ui.Size.square(256),
-    this.thumbhashOnly = false,
+    this.size = const ui.Size.square(kTimelineThumbnailSize),
+    this.thumbhashMode = ThumbhashMode.enabled,
     super.key,
   })  : blurhash = asset.thumbhash,
-        localId = asset.localId,
-        remoteId = asset.remoteId;
+        imageProvider = _getImageProviderFromAsset(asset, size);
 
   Thumbnail.fromBaseAsset({
     required BaseAsset? asset,
     this.fit = BoxFit.cover,
-    this.size = const ui.Size.square(256),
-    this.thumbhashOnly = false,
+    this.size = const ui.Size.square(kTimelineThumbnailSize),
+    this.thumbhashMode = ThumbhashMode.enabled,
     super.key,
   })  : blurhash = switch (asset) {
           RemoteAsset() => asset.thumbHash,
           _ => null,
         },
-        localId = switch (asset) {
-          RemoteAsset() => asset.localId,
-          LocalAsset() => asset.id,
-          _ => null,
-        },
-        remoteId = switch (asset) {
-          RemoteAsset() => asset.id,
-          LocalAsset() => asset.remoteId,
-          _ => null,
-        };
+        imageProvider = _getImageProviderFromBaseAsset(asset, size);
+
+  static ImageProvider? _getImageProviderFromAsset(Asset asset, ui.Size size) {
+    if (asset.localId != null) {
+      return LocalThumbProvider(id: asset.localId!, size: size);
+    } else if (asset.remoteId != null) {
+      return RemoteThumbProvider(assetId: asset.remoteId!);
+    }
+    return null;
+  }
+
+  static ImageProvider? _getImageProviderFromBaseAsset(
+    BaseAsset? asset,
+    ui.Size size,
+  ) {
+    switch (asset) {
+      case RemoteAsset():
+        if (asset.localId != null) {
+          return LocalThumbProvider(id: asset.localId!, size: size);
+        } else {
+          return RemoteThumbProvider(assetId: asset.id);
+        }
+      case LocalAsset():
+        return LocalThumbProvider(id: asset.id, size: size);
+      case null:
+        return null;
+    }
+  }
 
   @override
   State<Thumbnail> createState() => _ThumbnailState();
 }
 
 class _ThumbnailState extends State<Thumbnail> {
-  ui.Image? _image;
+  ui.Image? _thumbhashImage;
+  ui.Image? _providerImage;
+  ImageStream? _imageStream;
+  ImageStreamListener? _imageStreamListener;
 
   static final _gradientCache = <ColorScheme, Gradient>{};
-  static final _imageCache = ThumbnailImageCacheManager();
 
   @override
   void initState() {
     super.initState();
-    _decode();
+    _loadImage();
   }
 
   @override
   void didUpdateWidget(Thumbnail oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.blurhash != widget.blurhash ||
-        oldWidget.localId != widget.localId ||
-        oldWidget.remoteId != widget.remoteId ||
-        (oldWidget.thumbhashOnly && !widget.thumbhashOnly)) {
-      _decode();
+    if (oldWidget.imageProvider != widget.imageProvider ||
+        oldWidget.blurhash != widget.blurhash ||
+        (oldWidget.thumbhashMode == ThumbhashMode.disabled &&
+            oldWidget.thumbhashMode != ThumbhashMode.disabled)) {
+      _loadImage();
     }
   }
 
-  Future<void> _decode() async {
-    if (!mounted) {
-      return;
+  @override
+  void reassemble() {
+    super.reassemble();
+    _loadImage();
+  }
+
+  void _loadImage() {
+    _stopListeningToStream();
+    if (widget.thumbhashMode != ThumbhashMode.disabled &&
+        widget.blurhash != null) {
+      _decodeThumbhash();
     }
-
-    final thumbhashOnly = widget.thumbhashOnly;
-    final blurhash = widget.blurhash;
-    final imageFuture = thumbhashOnly ? Future.value(null) : _decodeThumbnail();
-
-    if (blurhash != null && _image == null) {
-      try {
-        await _decodeThumbhash();
-      } catch (e) {
-        log.severe('Error decoding thumbhash for ${widget.remoteId}: $e');
-      }
+    
+    if (widget.thumbhashMode != ThumbhashMode.only &&
+        widget.imageProvider != null) {
+      _loadFromProvider();
     }
+  }
 
-    if (!mounted || thumbhashOnly) {
-      return;
+  void _loadFromProvider() {
+    final imageProvider = widget.imageProvider;
+    if (imageProvider == null) return;
+
+    _imageStream = imageProvider.resolve(ImageConfiguration.empty);
+    _imageStreamListener = ImageStreamListener(
+      (ImageInfo imageInfo, bool synchronousCall) {
+        if (!mounted) return;
+
+        _thumbhashImage?.dispose();
+        if (_providerImage != imageInfo.image) {
+          setState(() {
+            _providerImage = imageInfo.image;
+          });
+        }
+      },
+      onError: (exception, stackTrace) {
+        log.severe('Error loading image: $exception', exception, stackTrace);
+      },
+    );
+    _imageStream?.addListener(_imageStreamListener!);
+  }
+
+  void _stopListeningToStream() {
+    if (_imageStreamListener != null && _imageStream != null) {
+      _imageStream!.removeListener(_imageStreamListener!);
     }
-
-    try {
-      final image = await imageFuture;
-      if (!mounted || image == null) {
-        return;
-      }
-
-      _image?.dispose();
-      setState(() {
-        _image = image;
-      });
-    } catch (e) {
-      log.severe('Error decoding thumbnail: $e');
-    }
+    _imageStream = null;
+    _imageStreamListener = null;
   }
 
   Future<void> _decodeThumbhash() async {
     final blurhash = widget.blurhash;
-    if (blurhash == null || !mounted || _image != null) {
-      return;
-    }
-    final image = thumbhash.thumbHashToRGBA(base64.decode(blurhash));
-    final buffer = await ImmutableBuffer.fromUint8List(image.rgba);
-    if (!mounted || _image != null) {
-      buffer.dispose();
+    if (blurhash == null || !mounted || _providerImage != null) {
       return;
     }
 
-    final descriptor = ImageDescriptor.raw(
-      buffer,
-      width: image.width,
-      height: image.height,
-      pixelFormat: PixelFormat.rgba8888,
-    );
+    try {
+      final image = thumbhash.thumbHashToRGBA(base64.decode(blurhash));
+      final buffer = await ImmutableBuffer.fromUint8List(image.rgba);
+      if (!mounted || _providerImage != null) {
+        buffer.dispose();
+        return;
+      }
 
-    final codec = await descriptor.instantiateCodec();
+      final descriptor = ImageDescriptor.raw(
+        buffer,
+        width: image.width,
+        height: image.height,
+        pixelFormat: PixelFormat.rgba8888,
+      );
 
-    if (!mounted || _image != null) {
+      final codec = await descriptor.instantiateCodec();
+
+      if (!mounted || _providerImage != null) {
+        buffer.dispose();
+        descriptor.dispose();
+        codec.dispose();
+        return;
+      }
+
+      final frame = (await codec.getNextFrame()).image;
       buffer.dispose();
       descriptor.dispose();
       codec.dispose();
-      return;
-    }
 
-    final frame = (await codec.getNextFrame()).image;
-    buffer.dispose();
-    descriptor.dispose();
-    codec.dispose();
-    if (!mounted || _image != null) {
-      frame.dispose();
-      return;
-    }
-    setState(() {
-      _image = frame;
-    });
-  }
-
-  Future<ui.Image?> _decodeThumbnail() async {
-    if (!mounted) {
-      return null;
-    }
-
-    final stopwatch = Stopwatch()..start();
-    final codec = await _decodeThumb();
-    if (codec == null || !mounted) {
-      codec?.dispose();
-      return null;
-    }
-    final image = (await codec.getNextFrame()).image;
-    stopwatch.stop();
-    log.info(
-      'Decoded thumbnail for ${widget.remoteId ?? widget.localId} in ${stopwatch.elapsedMilliseconds} ms',
-    );
-    return image;
-  }
-
-  Future<ui.Codec?> _decodeThumb() {
-    final localId = widget.localId;
-    if (!mounted) {
-      return Future.value(null);
-    }
-    
-    if (localId != null) {
-      final size = widget.size;
-      final width = size.width.toInt();
-      final height = size.height.toInt();
-      return _decodeLocal(localId, width, height);
-    }
-
-    final remoteId = widget.remoteId;
-    if (remoteId != null) {
-      return _decodeRemote(remoteId);
-    }
-
-    return Future.value(null);
-  }
-
-  Future<ui.Codec?> _decodeLocal(String localId, int width, int height) async {
-    final pointer = malloc<Uint8>(width * height * 4);
-
-    try {
-      final info = await thumbnailApi.setThumbnailToBuffer(
-        pointer.address,
-        localId,
-        width: width,
-        height: height,
-      );
-      if (!mounted) {
-        return null;
+      if (!mounted || _providerImage != null) {
+        frame.dispose();
+        return;
       }
-      final actualWidth = info['width']!;
-      final actualHeight = info['height']!;
-      final actualSize = actualWidth * actualHeight * 4;
-      final buffer =
-          await ImmutableBuffer.fromUint8List(pointer.asTypedList(actualSize));
-      if (!mounted) {
-        buffer.dispose();
-        return null;
-      }
-      final descriptor = ui.ImageDescriptor.raw(
-        buffer,
-        width: actualWidth,
-        height: actualHeight,
-        pixelFormat: ui.PixelFormat.rgba8888,
-      );
-      return await descriptor.instantiateCodec();
+
+      setState(() {
+        _providerImage = frame;
+      });
     } catch (e) {
-      return null;
-    } finally {
-      malloc.free(pointer);
+      log.severe('Error decoding thumbhash: $e');
     }
-  }
-
-  Future<ui.Codec?> _decodeRemote(String remoteId) async {
-    final uri = getThumbnailUrlForRemoteId(remoteId);
-    final headers = ApiService.getRequestHeaders();
-    final stream = _imageCache.getFileStream(
-      uri,
-      key: uri,
-      withProgress: true,
-      headers: headers,
-    );
-
-    await for (final result in stream) {
-      if (!mounted) {
-        return null;
-      }
-
-      if (result is FileInfo) {
-        final buffer = await ImmutableBuffer.fromFilePath(result.file.path);
-        if (!mounted) {
-          buffer.dispose();
-          return null;
-        }
-        final descriptor = await ImageDescriptor.encoded(buffer);
-        if (!mounted) {
-          buffer.dispose();
-          descriptor.dispose();
-          return null;
-        }
-        return await descriptor.instantiateCodec();
-      }
-    }
-
-    return null;
   }
 
   @override
@@ -296,8 +221,8 @@ class _ThumbnailState extends State<Thumbnail> {
       end: Alignment.bottomCenter,
     );
 
-    return _ThumbhashLeaf(
-      image: _image,
+    return _ThumbnailLeaf(
+      image: _providerImage ?? _thumbhashImage,
       fit: widget.fit,
       placeholderGradient: gradient,
     );
@@ -305,17 +230,18 @@ class _ThumbnailState extends State<Thumbnail> {
 
   @override
   void dispose() {
-    _image?.dispose();
+    _stopListeningToStream();
+    _thumbhashImage?.dispose();
     super.dispose();
   }
 }
 
-class _ThumbhashLeaf extends LeafRenderObjectWidget {
+class _ThumbnailLeaf extends LeafRenderObjectWidget {
   final ui.Image? image;
   final BoxFit fit;
   final Gradient placeholderGradient;
 
-  const _ThumbhashLeaf({
+  const _ThumbnailLeaf({
     required this.image,
     required this.fit,
     required this.placeholderGradient,
@@ -323,7 +249,7 @@ class _ThumbhashLeaf extends LeafRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _ThumbhashRenderBox(
+    return _ThumbnailRenderBox(
       image: image,
       fit: fit,
       placeholderGradient: placeholderGradient,
@@ -333,7 +259,7 @@ class _ThumbhashLeaf extends LeafRenderObjectWidget {
   @override
   void updateRenderObject(
     BuildContext context,
-    _ThumbhashRenderBox renderObject,
+    _ThumbnailRenderBox renderObject,
   ) {
     renderObject.fit = fit;
     renderObject.image = image;
@@ -341,7 +267,7 @@ class _ThumbhashLeaf extends LeafRenderObjectWidget {
   }
 }
 
-class _ThumbhashRenderBox extends RenderBox {
+class _ThumbnailRenderBox extends RenderBox {
   ui.Image? _image;
   BoxFit _fit;
   Gradient _placeholderGradient;
@@ -349,7 +275,7 @@ class _ThumbhashRenderBox extends RenderBox {
   @override
   bool isRepaintBoundary = true;
 
-  _ThumbhashRenderBox({
+  _ThumbnailRenderBox({
     required ui.Image? image,
     required BoxFit fit,
     required Gradient placeholderGradient,

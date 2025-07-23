@@ -52,7 +52,6 @@ class ThumbnailApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<Map<String, int>> setThumbnailToBuffer(
-    int pointer,
     String assetId, {
     required int width,
     required int height,
@@ -66,7 +65,7 @@ class ThumbnailApi {
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[pointer, assetId, width, height]);
+        pigeonVar_channel.send(<Object?>[assetId, width, height]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
