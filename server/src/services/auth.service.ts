@@ -174,7 +174,8 @@ export class AuthService extends BaseService {
 
   async authenticate({ headers, queryParams, metadata }: ValidateRequest): Promise<AuthDto> {
     const authDto = await this.validate({ headers, queryParams });
-    const { adminRoute, sharedLinkRoute, permission, uri } = metadata;
+    const { adminRoute, sharedLinkRoute, uri } = metadata;
+    const requestedPermission = metadata.permission ?? Permission.All;
 
     if (!authDto.user.isAdmin && adminRoute) {
       this.logger.warn(`Denied access to admin only route: ${uri}`);
@@ -186,8 +187,8 @@ export class AuthService extends BaseService {
       throw new ForbiddenException('Forbidden');
     }
 
-    if (authDto.apiKey && permission && !isGranted({ requested: [permission], current: authDto.apiKey.permissions })) {
-      throw new ForbiddenException(`Missing required permission: ${permission}`);
+    if (authDto.apiKey && !isGranted({ requested: [requestedPermission], current: authDto.apiKey.permissions })) {
+      throw new ForbiddenException(`Missing required permission: ${requestedPermission}`);
     }
 
     return authDto;
