@@ -1,8 +1,7 @@
 import { Kysely, sql } from 'kysely';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
-const logger = LoggingRepository.create();
-logger.setContext('Migrations');
+const logger = LoggingRepository.create('Migrations');
 
 export async function up(db: Kysely<any>): Promise<void> {
   if (process.env.IMMICH_MEDIA_LOCATION) {
