@@ -2,10 +2,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -43,6 +47,17 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
         albumNotifier.dispose();
       }
 
+      // Cancel uploads
+      await Store.put(StoreKey.backgroundBackup, false);
+      ref.read(backupProvider.notifier).configureBackgroundBackup(
+            enabled: false,
+            onBatteryInfo: () {},
+            onError: (_) {},
+          );
+      ref.read(backupProvider.notifier).setAutoBackup(false);
+      ref.read(backupProvider.notifier).cancelBackup();
+      ref.read(manualUploadProvider.notifier).cancelBackup();
+      // Start listening to new websocket events
       ref.read(websocketProvider.notifier).stopListenToOldEvents();
       ref.read(websocketProvider.notifier).startListeningToBetaEvents();
 
