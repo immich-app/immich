@@ -31,7 +31,6 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
@@ -51,6 +50,7 @@
     updatePerson,
     type PersonResponseDto,
   } from '@immich/sdk';
+  import { modalManager } from '@immich/ui';
   import {
     mdiAccountBoxOutline,
     mdiAccountMultipleCheckOutline,

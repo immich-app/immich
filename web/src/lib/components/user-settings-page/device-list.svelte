@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { deleteAllSessions, deleteSession, getSessions, type SessionResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, modalManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { handleError } from '../../utils/handle-error';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
