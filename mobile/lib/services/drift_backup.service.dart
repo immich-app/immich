@@ -26,6 +26,7 @@ final driftBackupServiceProvider = Provider<DriftBackupService>(
   ),
 );
 
+// TODO: Rename to UploadService after removing Isar
 class DriftBackupService {
   DriftBackupService(
     this._backupRepository,
@@ -54,6 +55,24 @@ class DriftBackupService {
 
   Future<int> getBackupCount(String userId) {
     return _backupRepository.getBackupCount(userId);
+  }
+
+  Future<void> manualBackup(List<LocalAsset> localAssets) async {
+    List<UploadTask> tasks = [];
+    for (final asset in localAssets) {
+      final task = await _getUploadTask(
+        asset,
+        group: kManualUploadGroup,
+        priority: 1, // High priority after upload motion photo part
+      );
+      if (task != null) {
+        tasks.add(task);
+      }
+    }
+
+    if (tasks.isNotEmpty) {
+      _uploadService.enqueueTasks(tasks);
+    }
   }
 
   Future<void> backup(
@@ -147,7 +166,11 @@ class DriftBackupService {
     }
   }
 
-  Future<UploadTask?> _getUploadTask(LocalAsset asset) async {
+  Future<UploadTask?> _getUploadTask(
+    LocalAsset asset, {
+    String group = kBackupGroup,
+    int? priority,
+  }) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
       return null;
@@ -193,7 +216,8 @@ class DriftBackupService {
       originalFileName: originalFileName,
       deviceAssetId: asset.id,
       metadata: metadata,
-      group: kBackupGroup,
+      group: group,
+      priority: priority,
     );
   }
 

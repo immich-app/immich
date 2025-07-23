@@ -63,7 +63,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       ],
       if (asset.storage == AssetState.local) ...[
         const DeleteLocalActionButton(source: ActionSource.viewer),
-        const UploadActionButton(),
+        const UploadActionButton(source: ActionSource.timeline),
       ],
     ];
 
