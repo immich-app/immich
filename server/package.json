@@ -79,7 +79,7 @@
     "i18n-iso-countries": "^7.6.0",
     "ioredis": "^5.3.2",
     "js-yaml": "^4.1.0",
-    "kysely": "^0.28.0",
+    "kysely": "^0.28.2",
     "kysely-postgres-js": "^2.0.0",
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
@@ -113,7 +113,6 @@
     "validator": "^13.12.0"
   },
   "devDependencies": {
-    "canvas": "^3.1.0",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.8.0",
     "@nestjs/cli": "^11.0.2",
@@ -146,6 +145,7 @@
     "@types/ua-parser-js": "^0.7.36",
     "@types/validator": "^13.15.2",
     "@vitest/coverage-v8": "^3.0.0",
+    "canvas": "^3.1.0",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-prettier": "^5.1.3",
