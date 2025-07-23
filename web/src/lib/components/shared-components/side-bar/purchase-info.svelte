@@ -5,7 +5,6 @@
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
   import { AppRoute } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import PurchaseModal from '$lib/modals/PurchaseModal.svelte';
   import { purchaseStore } from '$lib/stores/purchase.store';
   import { preferences } from '$lib/stores/user.store';
@@ -13,11 +12,11 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getButtonVisibility } from '$lib/utils/purchase-utils';
   import { updateMyPreferences } from '@immich/sdk';
-  import { Button, IconButton } from '@immich/ui';
+  import { Button, IconButton, modalManager } from '@immich/ui';
   import { mdiClose, mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { fade } from 'svelte/transition';
   import { SvelteDate } from 'svelte/reactivity';
+  import { fade } from 'svelte/transition';
 
   let showMessage = $state(false);
   let hoverMessage = $state(false);

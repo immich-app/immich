@@ -13,7 +13,6 @@
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -37,6 +36,7 @@
     type TimelinePlainYearMonth,
   } from '$lib/utils/timeline-util';
   import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { modalManager } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
@@ -729,7 +729,7 @@
     }
 
     isShortcutModalOpen = true;
-    await modalManager.show(ShortcutsModal);
+    await modalManager.show(ShortcutsModal, {});
     isShortcutModalOpen = false;
   };
 
