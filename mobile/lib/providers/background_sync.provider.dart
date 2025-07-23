@@ -8,6 +8,12 @@ final backgroundSyncProvider = Provider<BackgroundSyncManager>((ref) {
     onRemoteSyncStart: syncStatusNotifier.startRemoteSync,
     onRemoteSyncComplete: syncStatusNotifier.completeRemoteSync,
     onRemoteSyncError: syncStatusNotifier.errorRemoteSync,
+    onLocalSyncStart: syncStatusNotifier.startLocalSync,
+    onLocalSyncComplete: syncStatusNotifier.completeLocalSync,
+    onLocalSyncError: syncStatusNotifier.errorLocalSync,
+    onHashingStart: syncStatusNotifier.startHashJob,
+    onHashingComplete: syncStatusNotifier.completeHashJob,
+    onHashingError: syncStatusNotifier.errorHashJob,
   );
   ref.onDispose(manager.cancel);
   return manager;

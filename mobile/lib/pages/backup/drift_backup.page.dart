@@ -44,9 +44,6 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
           (album) => album.backupSelection == BackupSelection.selected,
         )
         .toList();
-    final uploadItems = ref.watch(
-      driftBackupProvider.select((state) => state.uploadItems),
-    );
 
     return Scaffold(
       appBar: AppBar(
@@ -85,14 +82,13 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                     onStart: () async => await startBackup(),
                     onStop: () async => await stopBackup(),
                   ),
-                  if (uploadItems.isNotEmpty)
-                    TextButton.icon(
-                      icon: const Icon(Icons.info_outline_rounded),
-                      onPressed: () => context.pushRoute(
-                        const DriftUploadDetailRoute(),
-                      ),
-                      label: Text("view_details".t(context: context)),
+                  TextButton.icon(
+                    icon: const Icon(Icons.info_outline_rounded),
+                    onPressed: () => context.pushRoute(
+                      const DriftUploadDetailRoute(),
                     ),
+                    label: Text("view_details".t(context: context)),
+                  ),
                 ],
               ],
             ),

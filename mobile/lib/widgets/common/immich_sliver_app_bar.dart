@@ -364,7 +364,10 @@ class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator>
             child: Opacity(
               opacity: isSyncing ? 1.0 : _dismissalAnimation.value,
               child: Transform.rotate(
-                angle: _rotationAnimation.value * 2 * 3.14159,
+                angle: _rotationAnimation.value *
+                    2 *
+                    3.14159 *
+                    -1, // Rotate counter-clockwise
                 child: Icon(
                   Icons.sync,
                   size: 24,

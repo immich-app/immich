@@ -10,7 +10,7 @@ const int kSyncEventBatchSize = 5000;
 const int kFetchLocalAssetsBatchSize = 40000;
 
 // Hash batch limits
-const int kBatchHashFileLimit = 128;
+const int kBatchHashFileLimit = 256;
 const int kBatchHashSizeLimit = 1024 * 1024 * 1024; // 1GB
 
 // Secure storage keys

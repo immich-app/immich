@@ -4,6 +4,7 @@ import type { CommonLayoutOptions } from '$lib/utils/layout-utils';
 import { getJustifiedLayoutFromAssets, getPosition } from '$lib/utils/layout-utils';
 import { plainDateTimeCompare } from '$lib/utils/timeline-util';
 
+import { SvelteSet } from 'svelte/reactivity';
 import type { MonthGroup } from './month-group.svelte';
 import type { AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
@@ -109,13 +110,13 @@ export class DayGroup {
     if (ids.size === 0) {
       return {
         moveAssets: [] as MoveAsset[],
-        processedIds: new Set<string>(),
+        processedIds: new SvelteSet<string>(),
         unprocessedIds: ids,
         changedGeometry: false,
       };
     }
-    const unprocessedIds = new Set<string>(ids);
-    const processedIds = new Set<string>();
+    const unprocessedIds = new SvelteSet<string>(ids);
+    const processedIds = new SvelteSet<string>();
     const moveAssets: MoveAsset[] = [];
     let changedGeometry = false;
     for (const assetId of unprocessedIds) {
