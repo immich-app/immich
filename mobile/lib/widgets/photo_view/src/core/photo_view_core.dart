@@ -421,6 +421,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             filterQuality: widget.filterQuality,
             width: scaleBoundaries.childSize.width * scale,
             fit: BoxFit.cover,
+            isAntiAlias: widget.filterQuality == FilterQuality.high,
           );
   }
 }

@@ -75,22 +75,37 @@ class AssetViewerStateNotifier extends AutoDisposeNotifier<AssetViewerState> {
   }
 
   void setAsset(BaseAsset? asset) {
-    state = state.copyWith(currentAsset: asset, stackIndex: 0);
+    if (asset != state.currentAsset) {
+      state = state.copyWith(currentAsset: asset, stackIndex: 0);
+    } 
   }
 
   void setOpacity(int opacity) {
-    state = state.copyWith(backgroundOpacity: opacity, showingControls: opacity == 255 ? true : state.showingControls);
+    if (opacity != state.backgroundOpacity) {
+      state = state.copyWith(
+        backgroundOpacity: opacity,
+        showingControls: opacity == 255 ? true : state.showingControls,
+      );
+    }
   }
 
   void setBottomSheet(bool showing) {
-    state = state.copyWith(showingBottomSheet: showing, showingControls: showing ? true : state.showingControls);
+    if (showing == state.showingBottomSheet) {
+      return;
+    }
+    state = state.copyWith(
+      showingBottomSheet: showing,
+      showingControls: showing || state.showingControls,
+    );
     if (showing) {
       ref.read(videoPlayerControlsProvider.notifier).pause();
     }
   }
 
   void setControls(bool isShowing) {
-    state = state.copyWith(showingControls: isShowing);
+    if (isShowing != state.showingControls) {
+      state = state.copyWith(showingControls: isShowing);
+    }
   }
 
   void toggleControls() {
@@ -98,7 +113,9 @@ class AssetViewerStateNotifier extends AutoDisposeNotifier<AssetViewerState> {
   }
 
   void setStackIndex(int index) {
-    state = state.copyWith(stackIndex: index);
+    if (index != state.stackIndex) {
+      state = state.copyWith(stackIndex: index);
+    }
   }
 }
 

@@ -59,7 +59,7 @@ private open class ThumbnailsPigeonCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface ThumbnailApi {
-  fun setThumbnailToBuffer(pointer: Long, assetId: String, width: Long, height: Long, callback: (Result<Map<String, Long>>) -> Unit)
+  fun setThumbnailToBuffer(assetId: String, width: Long, height: Long, callback: (Result<Map<String, Long>>) -> Unit)
 
   companion object {
     /** The codec used by ThumbnailApi. */
@@ -75,11 +75,10 @@ interface ThumbnailApi {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val pointerArg = args[0] as Long
-            val assetIdArg = args[1] as String
-            val widthArg = args[2] as Long
-            val heightArg = args[3] as Long
-            api.setThumbnailToBuffer(pointerArg, assetIdArg, widthArg, heightArg) { result: Result<Map<String, Long>> ->
+            val assetIdArg = args[0] as String
+            val widthArg = args[1] as Long
+            val heightArg = args[2] as Long
+            api.setThumbnailToBuffer(assetIdArg, widthArg, heightArg) { result: Result<Map<String, Long>> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(ThumbnailsPigeonUtils.wrapError(error))

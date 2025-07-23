@@ -70,7 +70,7 @@ class ThumbnailsPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol ThumbnailApi {
-  func setThumbnailToBuffer(pointer: Int64, assetId: String, width: Int64, height: Int64, completion: @escaping (Result<[String: Int64], Error>) -> Void)
+  func setThumbnailToBuffer(assetId: String, width: Int64, height: Int64, completion: @escaping (Result<[String: Int64], Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -83,11 +83,10 @@ class ThumbnailApiSetup {
     if let api = api {
       setThumbnailToBufferChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
-        let pointerArg = args[0] as! Int64
-        let assetIdArg = args[1] as! String
-        let widthArg = args[2] as! Int64
-        let heightArg = args[3] as! Int64
-        api.setThumbnailToBuffer(pointer: pointerArg, assetId: assetIdArg, width: widthArg, height: heightArg) { result in
+        let assetIdArg = args[0] as! String
+        let widthArg = args[1] as! Int64
+        let heightArg = args[2] as! Int64
+        api.setThumbnailToBuffer(assetId: assetIdArg, width: widthArg, height: heightArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
