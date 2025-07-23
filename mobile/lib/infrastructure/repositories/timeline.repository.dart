@@ -71,7 +71,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     required int count,
   }) {
     return _db.mergedAssetDrift
-        .mergedAsset(userIds, limit: Limit(count, offset))
+        .mergedAsset(userIds, limit: (_) => Limit(count, offset))
         .map(
           (row) => row.remoteId != null && row.ownerId != null
               ? RemoteAsset(
@@ -90,7 +90,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                   durationInSeconds: row.durationInSeconds,
                   livePhotoVideoId: row.livePhotoVideoId,
                   stackId: row.stackId,
-                  stackCount: row.stackCount,
                 )
               : LocalAsset(
                   id: row.localId!,

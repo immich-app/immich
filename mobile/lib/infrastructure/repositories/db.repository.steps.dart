@@ -1273,15 +1273,15 @@ final class Schema4 extends i0.VersionedSchema {
   late final List<i1.DatabaseSchemaEntity> entities = [
     userEntity,
     remoteAssetEntity,
-    localAssetEntity,
     stackEntity,
+    localAssetEntity,
+    localAlbumEntity,
+    localAlbumAssetEntity,
     idxLocalAssetChecksum,
     uQRemoteAssetOwnerChecksum,
     idxRemoteAssetChecksum,
     userMetadataEntity,
     partnerEntity,
-    localAlbumEntity,
-    localAlbumAssetEntity,
     remoteExifEntity,
     remoteAlbumEntity,
     remoteAlbumAssetEntity,
@@ -1342,6 +1342,24 @@ final class Schema4 extends i0.VersionedSchema {
         attachedDatabase: database,
       ),
       alias: null);
+  late final Shape3 stackEntity = Shape3(
+      source: i0.VersionedTable(
+        entityName: 'stack_entity',
+        withoutRowId: true,
+        isStrict: true,
+        tableConstraints: [
+          'PRIMARY KEY(id)',
+        ],
+        columns: [
+          _column_0,
+          _column_9,
+          _column_5,
+          _column_15,
+          _column_75,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
   late final Shape2 localAssetEntity = Shape2(
       source: i0.VersionedTable(
         entityName: 'local_asset_entity',
@@ -1366,9 +1384,9 @@ final class Schema4 extends i0.VersionedSchema {
         attachedDatabase: database,
       ),
       alias: null);
-  late final Shape3 stackEntity = Shape3(
+  late final Shape6 localAlbumEntity = Shape6(
       source: i0.VersionedTable(
-        entityName: 'stack_entity',
+        entityName: 'local_album_entity',
         withoutRowId: true,
         isStrict: true,
         tableConstraints: [
@@ -1376,10 +1394,26 @@ final class Schema4 extends i0.VersionedSchema {
         ],
         columns: [
           _column_0,
-          _column_9,
+          _column_1,
           _column_5,
-          _column_15,
-          _column_75,
+          _column_31,
+          _column_32,
+          _column_33,
+        ],
+        attachedDatabase: database,
+      ),
+      alias: null);
+  late final Shape7 localAlbumAssetEntity = Shape7(
+      source: i0.VersionedTable(
+        entityName: 'local_album_asset_entity',
+        withoutRowId: true,
+        isStrict: true,
+        tableConstraints: [
+          'PRIMARY KEY(asset_id, album_id)',
+        ],
+        columns: [
+          _column_34,
+          _column_35,
         ],
         attachedDatabase: database,
       ),
@@ -1419,40 +1453,6 @@ final class Schema4 extends i0.VersionedSchema {
           _column_28,
           _column_29,
           _column_30,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape6 localAlbumEntity = Shape6(
-      source: i0.VersionedTable(
-        entityName: 'local_album_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(id)',
-        ],
-        columns: [
-          _column_0,
-          _column_1,
-          _column_5,
-          _column_31,
-          _column_32,
-          _column_33,
-        ],
-        attachedDatabase: database,
-      ),
-      alias: null);
-  late final Shape7 localAlbumAssetEntity = Shape7(
-      source: i0.VersionedTable(
-        entityName: 'local_album_asset_entity',
-        withoutRowId: true,
-        isStrict: true,
-        tableConstraints: [
-          'PRIMARY KEY(asset_id, album_id)',
-        ],
-        columns: [
-          _column_34,
-          _column_35,
         ],
         attachedDatabase: database,
       ),

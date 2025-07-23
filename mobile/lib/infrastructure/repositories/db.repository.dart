@@ -4,8 +4,8 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
-import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
@@ -97,7 +97,9 @@ class Drift extends $Drift implements IDatabaseRepository {
                 await m.alterTable(TableMigration(v3.stackEntity));
               },
               from3To4: (m, v4) async {
+                // Thumbnail path column got removed from person_entity
                 await m.alterTable(TableMigration(v4.personEntity));
+                // asset_face_entity is added
                 await m.create(v4.assetFaceEntity);
               },
             ),

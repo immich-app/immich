@@ -4,17 +4,17 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
-
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/widgets/backup/drift_album_info_list_tile.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
+import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
 @RoutePage()
 class DriftBackupAlbumSelectionPage extends ConsumerStatefulWidget {
@@ -92,7 +92,15 @@ class _DriftBackupAlbumSelectionPageState
         if (didPop && !_hasPopped) {
           _hasPopped = true;
 
-          await ref.read(driftBackupProvider.notifier).getBackupStatus();
+          super.initState();
+          final currentUser = ref.read(currentUserProvider);
+          if (currentUser == null) {
+            return;
+          }
+
+          await ref
+              .read(driftBackupProvider.notifier)
+              .getBackupStatus(currentUser.id);
           final currentTotalAssetCount =
               ref.read(driftBackupProvider.select((p) => p.totalCount));
 
@@ -107,7 +115,7 @@ class _DriftBackupAlbumSelectionPageState
             final backupNotifier = ref.read(driftBackupProvider.notifier);
 
             backupNotifier.cancel().then((_) {
-              backupNotifier.backup();
+              backupNotifier.backup(currentUser.id);
             });
           }
         }

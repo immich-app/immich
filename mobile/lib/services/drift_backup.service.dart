@@ -48,20 +48,21 @@ class DriftBackupService {
     return _backupRepository.getTotalCount();
   }
 
-  Future<int> getRemainderCount() {
-    return _backupRepository.getRemainderCount();
+  Future<int> getRemainderCount(String userId) {
+    return _backupRepository.getRemainderCount(userId);
   }
 
-  Future<int> getBackupCount() {
-    return _backupRepository.getBackupCount();
+  Future<int> getBackupCount(String userId) {
+    return _backupRepository.getBackupCount(userId);
   }
 
   Future<void> backup(
+    String userId,
     void Function(EnqueueStatus status) onEnqueueTasks,
   ) async {
     shouldCancel = false;
 
-    final candidates = await _backupRepository.getCandidates();
+    final candidates = await _backupRepository.getCandidates(userId);
     if (candidates.isEmpty) {
       return;
     }

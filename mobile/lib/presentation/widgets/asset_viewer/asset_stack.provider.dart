@@ -6,11 +6,7 @@ class StackChildrenNotifier
     extends AutoDisposeFamilyAsyncNotifier<List<RemoteAsset>, BaseAsset?> {
   @override
   Future<List<RemoteAsset>> build(BaseAsset? asset) async {
-    if (asset == null ||
-        asset is! RemoteAsset ||
-        asset.stackId == null ||
-        // The stackCount check is to ensure we only fetch stacks for timelines that have stacks
-        asset.stackCount == 0) {
+    if (asset == null || asset is! RemoteAsset || asset.stackId == null) {
       return const [];
     }
 
