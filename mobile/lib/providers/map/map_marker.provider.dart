@@ -24,8 +24,8 @@ Future<List<MapMarker>> mapMarkers(Ref ref) async {
     isFavorite = true;
   }
 
-  if (!mapState.includeArchived) {
-    isIncludeArchived = false;
+  if (mapState.includeArchived) {
+    isIncludeArchived = true;
   }
 
   if (mapState.withPartners) {
