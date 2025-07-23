@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
@@ -13,7 +13,7 @@ import 'package:immich_mobile/widgets/settings/language_settings.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/networking_settings.dart';
 import 'package:immich_mobile/widgets/settings/notification_setting.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/preference_setting.dart';
-import 'package:immich_mobile/entities/store.entity.dart' as app_store;
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/widgets/settings/settings_card.dart';
 
 enum SettingSection {
@@ -112,7 +112,7 @@ class _MobileLayout extends StatelessWidget {
       padding: const EdgeInsets.only(top: 10.0, bottom: 56),
       children: [
         const BetaTimelineListTile(),
-        if (app_store.Store.isBetaTimelineEnabled)
+        if (Store.isBetaTimelineEnabled)
           SettingsCard(
             icon: Icons.sync_outlined,
             title: 'beta_sync'.tr(),
