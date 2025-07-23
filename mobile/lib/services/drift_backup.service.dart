@@ -57,23 +57,9 @@ class DriftBackupService {
     return _backupRepository.getBackupCount();
   }
 
-  Future<void> manualBackup(List<String> localIds) async {
-    if (localIds.isEmpty) {
-      return;
-    }
-
-    List<LocalAsset> assets = [];
-    for (final id in localIds) {
-      final asset = await _localAssetRepository.getById(id);
-      if (asset != null) {
-        assets.add(asset);
-      } else {
-        _log.warning("Asset with id $id not found for manual backup");
-      }
-    }
-
+  Future<void> manualBackup(List<LocalAsset> localAssets) async {
     List<UploadTask> tasks = [];
-    for (final asset in assets) {
+    for (final asset in localAssets) {
       final task = await _getUploadTask(
         asset,
         group: kManualUploadGroup,

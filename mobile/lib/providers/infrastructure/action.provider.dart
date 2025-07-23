@@ -373,14 +373,14 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> upload(ActionSource source) async {
-    final localIds = _getLocalIdsForSource(source);
+    final assets = _getAssets(source).whereType<LocalAsset>().toList();
     try {
-      await _backupService.manualBackup(localIds);
-      return ActionResult(count: localIds.length, success: true);
+      await _backupService.manualBackup(assets);
+      return ActionResult(count: assets.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed manually upload assets', error, stack);
       return ActionResult(
-        count: localIds.length,
+        count: assets.length,
         success: false,
         error: error.toString(),
       );

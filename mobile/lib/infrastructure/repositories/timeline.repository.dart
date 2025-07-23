@@ -142,6 +142,11 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
         useColumns: false,
       ),
+      leftOuterJoin(
+        _db.remoteAssetEntity,
+        _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+        useColumns: false,
+      ),
     ])
       ..addColumns([assetCountExp, dateExp])
       ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
