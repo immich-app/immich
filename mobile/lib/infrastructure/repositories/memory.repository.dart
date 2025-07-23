@@ -58,6 +58,44 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
     return memoriesMap.values.toList();
   }
 
+  Future<DriftMemory?> get(String memoryId) async {
+    final query = _db.select(_db.memoryEntity).join([
+      leftOuterJoin(
+        _db.memoryAssetEntity,
+        _db.memoryAssetEntity.memoryId.equalsExp(_db.memoryEntity.id),
+      ),
+      leftOuterJoin(
+        _db.remoteAssetEntity,
+        _db.remoteAssetEntity.id.equalsExp(_db.memoryAssetEntity.assetId) &
+            _db.remoteAssetEntity.deletedAt.isNull() &
+            _db.remoteAssetEntity.visibility
+                .equalsValue(AssetVisibility.timeline),
+      ),
+    ])
+      ..where(_db.memoryEntity.id.equals(memoryId))
+      ..where(_db.memoryEntity.deletedAt.isNull())
+      ..orderBy([
+        OrderingTerm.desc(_db.memoryEntity.memoryAt),
+        OrderingTerm.asc(_db.remoteAssetEntity.createdAt),
+      ]);
+
+    final rows = await query.get();
+
+    if (rows.isEmpty) {
+      return null;
+    }
+
+    final memory = rows.first.readTable(_db.memoryEntity);
+    final assets = <RemoteAsset>[];
+
+    for (final row in rows) {
+      final asset = row.readTable(_db.remoteAssetEntity);
+      assets.add(asset.toDto());
+    }
+
+    return memory.toDto().copyWith(assets: assets);
+  }
+
   Future<int> getCount() {
     return _db.managers.memoryEntity.count();
   }
