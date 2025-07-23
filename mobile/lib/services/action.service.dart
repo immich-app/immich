@@ -203,24 +203,7 @@ class ActionService {
       initialDateTime = asset?.localDateTime;
       initialTimeZone = exif?.timeZone;
       if (initialDateTime != null && initialTimeZone != null) {
-        try {
-          final location = getLocation(initialTimeZone);
-          initialOffset =
-              TZDateTime.from(initialDateTime, location).timeZoneOffset;
-        } on LocationNotFoundException {
-          RegExp re = RegExp(
-            r'^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$',
-            caseSensitive: false,
-          );
-          final m = re.firstMatch(initialTimeZone);
-          if (m != null) {
-            final offset = Duration(
-              hours: int.parse(m.group(1) ?? '0'),
-              minutes: int.parse(m.group(2) ?? '0'),
-            );
-            initialOffset = offset;
-          }
-        }
+        initialOffset = getTimeZoneOffset(initialDateTime, initialTimeZone);
       }
     }
 
@@ -275,5 +258,26 @@ class ActionService {
 
   Future<List<bool>> downloadAll(List<RemoteAsset> assets) {
     return _downloadRepository.downloadAllAssets(assets);
+  }
+
+  static Duration? getTimeZoneOffset(DateTime dateTime, String timeZone) {
+    try {
+      final location = getLocation(timeZone);
+      return TZDateTime.from(dateTime, location).timeZoneOffset;
+    } on LocationNotFoundException {
+      final re = RegExp(
+        r'^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$',
+        caseSensitive: false,
+      );
+      final m = re.firstMatch(timeZone);
+      if (m != null) {
+        final offset = Duration(
+          hours: int.parse(m.group(1) ?? '0'),
+          minutes: int.parse(m.group(2) ?? '0'),
+        );
+        return offset;
+      }
+      return null;
+    }
   }
 }
