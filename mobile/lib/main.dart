@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
@@ -29,7 +30,6 @@ import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
-import 'package:immich_mobile/utils/download.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
@@ -101,7 +101,7 @@ Future<void> initApp() async {
   );
 
   await FileDownloader().trackTasksInGroup(
-    downloadGroupLivePhoto,
+    kDownloadGroupLivePhoto,
     markDownloadedComplete: false,
   );
 
@@ -179,7 +179,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
 
   void _configureFileDownloaderNotifications() {
     FileDownloader().configureNotificationForGroup(
-      downloadGroupImage,
+      kDownloadGroupImage,
       running: TaskNotification(
         'downloading_media'.tr(),
         '${'file_name'.tr()}: {filename}',
@@ -192,7 +192,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     );
 
     FileDownloader().configureNotificationForGroup(
-      downloadGroupVideo,
+      kDownloadGroupVideo,
       running: TaskNotification(
         'downloading_media'.tr(),
         '${'file_name'.tr()}: {filename}',
