@@ -22,7 +22,12 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     final enableSyncUploadAlbum =
         useAppSettingsState(AppSettingsEnum.syncAlbums);
     final isDarkTheme = context.isDarkTheme;
-    final albums = ref.watch(backupProvider).availableAlbums;
+    final allAlbums = ref.watch(backupProvider).availableAlbums;
+
+    // Albums which are displayed to the user
+    // by filtering out based on search
+    final filteredAlbums = useState(allAlbums);
+    final albums = filteredAlbums.value;
 
     useEffect(
       () {
@@ -146,6 +151,48 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           ),
         );
       }).toSet();
+    }
+
+    buildSearchBar() {
+      return Padding(
+        padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 8.0),
+        child: TextFormField(
+          onChanged: (searchValue) {
+            if (searchValue.isEmpty) {
+              filteredAlbums.value = allAlbums;
+            } else {
+              filteredAlbums.value = allAlbums
+                  .where(
+                    (album) => album.name
+                        .toLowerCase()
+                        .contains(searchValue.toLowerCase()),
+                  )
+                  .toList();
+            }
+          },
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8.0,
+              vertical: 8.0,
+            ),
+            hintText: "Search",
+            hintStyle: TextStyle(
+              color: isDarkTheme ? Colors.white : Colors.grey,
+              fontSize: 14.0,
+            ),
+            prefixIcon: const Icon(
+              Icons.search,
+              color: Colors.grey,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+            filled: true,
+            fillColor: isDarkTheme ? Colors.white30 : Colors.grey[200],
+          ),
+        ),
+      );
     }
 
     handleSyncAlbumToggle(bool isEnable) async {
@@ -279,7 +326,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   ),
                 ),
 
-                // buildSearchBar(),
+                buildSearchBar(),
               ],
             ),
           ),
