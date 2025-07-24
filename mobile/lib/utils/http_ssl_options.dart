@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -21,7 +22,7 @@ class HttpSSLOptions {
     _apply(newValue);
   }
 
-  static void _apply(bool allowSelfSignedSSLCert) {
+  static void _apply(bool allowSelfSignedSSLCert) async {
     String? serverHost;
     if (allowSelfSignedSSLCert && Store.tryGet(StoreKey.currentUser) != null) {
       serverHost = Uri.parse(Store.tryGet(StoreKey.serverEndpoint) ?? "").host;
@@ -42,6 +43,23 @@ class HttpSSLOptions {
         final log = Logger("HttpSSLOptions");
         log.severe('Failed to set SSL options', e.message);
       });
+
+      final res = await _channel
+          .invokeMethod("getUserCertificates")
+          .onError<PlatformException>((e, _) {
+        final log = Logger("HttpSSLOptions");
+        log.severe('Failed to load user certificates', e.message);
+      });
+      final certs = res?.cast<String, Uint8List>();
+      if (certs == null) {
+        return;
+      }
+      for (var entry in certs.entries) {
+        final pemData =
+            '-----BEGIN CERTIFICATE-----\n${base64Encode(entry.value)}\n-----END CERTIFICATE-----';
+        SecurityContext.defaultContext
+            .setTrustedCertificatesBytes(utf8.encode(pemData));
+      }
     }
   }
 }

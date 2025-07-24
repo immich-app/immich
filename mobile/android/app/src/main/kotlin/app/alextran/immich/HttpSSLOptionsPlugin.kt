@@ -78,6 +78,19 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
           result.success(true)
         }
 
+        "getUserCertificates" -> {
+          val userInstalledCaCertificates: List<X509Certificate> = try {
+            val keyStore = KeyStore.getInstance("AndroidCAStore")
+            keyStore.load(null, null)
+            val aliasList = keyStore.aliases().toList().filter { it.startsWith("user") }
+            aliasList.map { keyStore.getCertificate(it) as X509Certificate }
+          } catch (e: Exception) {
+            emptyList()
+          }
+          val mapOfBytes = userInstalledCaCertificates.associate { it.issuerX500Principal.name to it.encoded }
+          result.success(mapOfBytes)
+        }
+
         else -> result.notImplemented()
       }
     } catch (e: Throwable) {
