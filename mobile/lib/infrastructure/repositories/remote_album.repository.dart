@@ -67,7 +67,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         .get();
   }
 
-  Future<RemoteAlbum> get(String albumId) {
+  Future<RemoteAlbum?> get(String albumId) {
     final assetCount = _db.remoteAlbumAssetEntity.assetId.count();
 
     final query = _db.remoteAlbumEntity.select().join([
@@ -99,7 +99,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
                 ownerName: row.read(_db.userEntity.name)!,
               ),
         )
-        .getSingle();
+        .getSingleOrNull();
   }
 
   Future<void> create(
