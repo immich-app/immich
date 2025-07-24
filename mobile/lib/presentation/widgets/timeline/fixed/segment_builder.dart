@@ -35,7 +35,8 @@ class FixedSegmentBuilder extends SegmentBuilder {
 
       final timelineHeader = switch (groupBy) {
         GroupAssetsBy.month => HeaderType.month,
-        GroupAssetsBy.day =>
+        GroupAssetsBy.day ||
+        GroupAssetsBy.auto =>
           bucket is TimeBucket && bucket.date.month != previousDate?.month
               ? HeaderType.monthAndDay
               : HeaderType.day,

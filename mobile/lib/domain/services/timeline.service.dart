@@ -33,8 +33,12 @@ class TimelineFactory {
   })  : _timelineRepository = timelineRepository,
         _settingsService = settingsService;
 
-  GroupAssetsBy get groupBy =>
-      GroupAssetsBy.values[_settingsService.get(Setting.groupAssetsBy)];
+  GroupAssetsBy get groupBy {
+    final group =
+        GroupAssetsBy.values[_settingsService.get(Setting.groupAssetsBy)];
+    // We do not support auto grouping in the new timeline yet, fallback to day grouping
+    return group == GroupAssetsBy.auto ? GroupAssetsBy.day : group;
+  }
 
   TimelineService main(List<String> timelineUsers) =>
       TimelineService(_timelineRepository.main(timelineUsers, groupBy));

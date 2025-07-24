@@ -539,7 +539,7 @@ extension on Expression<DateTime> {
     // to create the correct time bucket
     final localTimeExp = modify(const DateTimeModifier.localTime());
     return switch (groupBy) {
-      GroupAssetsBy.day => localTimeExp.date,
+      GroupAssetsBy.day || GroupAssetsBy.auto => localTimeExp.date,
       GroupAssetsBy.month => localTimeExp.strftime("%Y-%m"),
       GroupAssetsBy.none => throw ArgumentError(
           "GroupAssetsBy.none is not supported for date formatting",
@@ -551,7 +551,7 @@ extension on Expression<DateTime> {
 extension on String {
   DateTime dateFmt(GroupAssetsBy groupBy) {
     final format = switch (groupBy) {
-      GroupAssetsBy.day => "y-M-d",
+      GroupAssetsBy.day || GroupAssetsBy.auto => "y-M-d",
       GroupAssetsBy.month => "y-M",
       GroupAssetsBy.none => throw ArgumentError(
           "GroupAssetsBy.none is not supported for date formatting",
