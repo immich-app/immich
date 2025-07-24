@@ -115,7 +115,7 @@ class _DriftBackupAlbumSelectionPageState
             final backupNotifier = ref.read(driftBackupProvider.notifier);
 
             backupNotifier.cancel().then((_) {
-              backupNotifier.backup(currentUser.id);
+              backupNotifier.startBackup(currentUser.id);
             });
           }
         }

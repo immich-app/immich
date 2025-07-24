@@ -28,6 +28,7 @@ void main() {
     apiService = MockApiService();
     networkService = MockNetworkService();
     backgroundSyncManager = MockBackgroundSyncManager();
+    final appSettingsService = MockAppSettingsService();
 
     sut = AuthService(
       authApiRepository,
@@ -35,6 +36,7 @@ void main() {
       apiService,
       networkService,
       backgroundSyncManager,
+      appSettingsService,
     );
 
     registerFallbackValue(Uri());

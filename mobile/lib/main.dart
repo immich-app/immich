@@ -97,7 +97,7 @@ Future<void> initApp() async {
 
   await FileDownloader().configure(
     // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
-    globalConfig: (Config.holdingQueue, (6, 6, 3)),
+    globalConfig: (Config.holdingQueue, (1000, 1000, 1000)),
   );
 
   await FileDownloader().trackTasksInGroup(
