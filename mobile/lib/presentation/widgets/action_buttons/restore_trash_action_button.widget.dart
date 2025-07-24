@@ -20,7 +20,7 @@ class RestoreTrashActionButton extends ConsumerWidget {
     final result = await ref.read(actionProvider.notifier).restoreTrash(source);
     ref.read(multiSelectProvider.notifier).reset();
 
-    final successMessage = 'restore_trash_action_prompt'.t(
+    final successMessage = 'assets_restored_count'.t(
       context: context,
       args: {'count': result.count.toString()},
     );

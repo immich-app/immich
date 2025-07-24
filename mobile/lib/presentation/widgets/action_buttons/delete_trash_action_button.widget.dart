@@ -21,7 +21,7 @@ class DeleteTrashActionButton extends ConsumerWidget {
         await ref.read(actionProvider.notifier).deleteRemoteAndLocal(source);
     ref.read(multiSelectProvider.notifier).reset();
 
-    final successMessage = 'restore_trash_action_prompt'.t(
+    final successMessage = 'assets_permanently_deleted_count'.t(
       context: context,
       args: {'count': result.count.toString()},
     );
