@@ -31,15 +31,6 @@ class ActivityTextField extends HookConsumerWidget {
     final inputFocusNode = useFocusNode();
     final liked = likeId != null;
 
-    // Show keyboard immediately on activities open
-    useEffect(
-      () {
-        inputFocusNode.requestFocus();
-        return null;
-      },
-      [],
-    );
-
     // Pass text to callback and reset controller
     void onEditingComplete() {
       onSubmit(inputController.text);
