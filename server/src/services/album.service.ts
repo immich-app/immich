@@ -193,7 +193,7 @@ export class AlbumService extends BaseService {
     for (const albumId of dto.albumIds) {
       try {
         const albumResults = await this.addAssets(auth, albumId, { ids: dto.assetIds });
-        const successIds = albumResults.filter(({ success }) => success).map((r) => r.id);
+        const successIds = albumResults.filter(({ success }) => success).map(({ id }) => id);
         const success = successIds.length > 0;
         let error;
         if (!success) {

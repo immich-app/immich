@@ -788,7 +788,6 @@ describe(AlbumService.name, () => {
       mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
 
       await expect(
-        // sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
         sut.addAssetsToAlbums(authStub.admin, {
           albumIds: ['album-123', 'album-321'],
           assetIds: ['asset-1', 'asset-2', 'asset-3'],
@@ -821,7 +820,6 @@ describe(AlbumService.name, () => {
       mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
 
       await expect(
-        // sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
         sut.addAssetsToAlbums(authStub.admin, {
           albumIds: ['album-123', 'album-321'],
           assetIds: ['asset-1', 'asset-2', 'asset-3'],
@@ -854,7 +852,6 @@ describe(AlbumService.name, () => {
       mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
 
       await expect(
-        // sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
         sut.addAssetsToAlbums(authStub.user1, {
           albumIds: ['album-123', 'album-321'],
           assetIds: ['asset-1', 'asset-2', 'asset-3'],
@@ -893,7 +890,6 @@ describe(AlbumService.name, () => {
       mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
 
       await expect(
-        // sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
         sut.addAssetsToAlbums(authStub.user2, {
           albumIds: ['album-123', 'album-321'],
           assetIds: ['asset-1', 'asset-2', 'asset-3'],
@@ -919,7 +915,6 @@ describe(AlbumService.name, () => {
       mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
 
       await expect(
-        // sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
         sut.addAssetsToAlbums(authStub.adminSharedLink, {
           albumIds: ['album-123', 'album-321'],
           assetIds: ['asset-1', 'asset-2', 'asset-3'],
@@ -955,7 +950,6 @@ describe(AlbumService.name, () => {
       mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
 
       await expect(
-        // sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
         sut.addAssetsToAlbums(authStub.admin, {
           albumIds: ['album-123', 'album-321'],
           assetIds: ['asset-1', 'asset-2', 'asset-3'],
@@ -994,7 +988,6 @@ describe(AlbumService.name, () => {
         .mockResolvedValueOnce(new Set());
 
       await expect(
-        // sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
         sut.addAssetsToAlbums(authStub.admin, {
           albumIds: ['album-123', 'album-321'],
           assetIds: ['asset-1', 'asset-2', 'asset-3'],
@@ -1022,7 +1015,6 @@ describe(AlbumService.name, () => {
       mocks.album.getAssetIds.mockResolvedValue(new Set(['asset-1', 'asset-2']));
 
       await expect(
-        // sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
         sut.addAssetsToAlbums(authStub.admin, {
           albumIds: ['album-123', 'album-321'],
           assetIds: ['asset-1', 'asset-2'],
@@ -1048,7 +1040,6 @@ describe(AlbumService.name, () => {
       mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
 
       await expect(
-        // sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
         sut.addAssetsToAlbums(authStub.admin, {
           albumIds: ['album-123', 'album-321'],
           assetIds: ['asset-1', 'asset-2', 'asset-3'],
@@ -1079,7 +1070,6 @@ describe(AlbumService.name, () => {
         .mockResolvedValueOnce(_.cloneDeep(albumStub.sharedWithMultiple));
 
       await expect(
-        // sut.addAssets(authStub.admin, 'album-123', { ids: ['asset-1', 'asset-2', 'asset-3'] }),
         sut.addAssetsToAlbums(authStub.admin, {
           albumIds: ['album-123', 'album-321'],
           assetIds: ['asset-1', 'asset-2', 'asset-3'],

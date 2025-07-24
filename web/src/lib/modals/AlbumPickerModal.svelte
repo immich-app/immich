@@ -49,35 +49,32 @@
   const handleAlbumClick = (album?: AlbumResponseDto) => {
     if (multiSelectActive) {
       handleMultiSelect(album);
-    } else {
-      if (album) {
-        onClose([album]);
-      } else {
-        onClose();
-      }
+      return;
     }
+    if (album) {
+      onClose([album]);
+      return;
+    }
+    onClose();
   };
 
   const handleMultiSelect = (album?: AlbumResponseDto) => {
-    if (!album) {
-      //Attempt to grab the album from the keyboard select
-      const item = albumModalRows.find(({ selected }) => selected);
-      if (item) {
-        album = item.album;
-      }
+    const selectedAlbum = album ?? albumModalRows.find(({ selected }) => selected)?.album;
+
+    if (!selectedAlbum) {
+      return;
     }
-    if (album) {
-      const indexOf = multiSelectedAlbumIds.indexOf(album.id);
-      if (indexOf === -1) {
-        multiSelectedAlbumIds.push(album.id);
-      } else {
-        multiSelectedAlbumIds.splice(indexOf, 1);
-      }
+
+    const index = multiSelectedAlbumIds.indexOf(selectedAlbum.id);
+    if (index === -1) {
+      multiSelectedAlbumIds.push(selectedAlbum.id);
+      return;
     }
+    multiSelectedAlbumIds.splice(index, 1);
   };
 
   const handleMultiSubmit = () => {
-    const albums = new Set(albumModalRows.filter((row) => row.multiSelected).map((row) => row.album!));
+    const albums = new Set(albumModalRows.filter((row) => row.multiSelected).map(({ album }) => album!));
     if (albums.size > 0) {
       onClose([...albums]);
     } else {

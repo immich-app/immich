@@ -9136,13 +9136,11 @@
             "type": "integer"
           },
           "error": {
-            "enum": [
-              "duplicate",
-              "no_permission",
-              "not_found",
-              "unknown"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BulkIdErrorReason"
+              }
+            ]
           },
           "success": {
             "type": "boolean"
@@ -10104,6 +10102,15 @@
           }
         },
         "type": "object"
+      },
+      "BulkIdErrorReason": {
+        "enum": [
+          "duplicate",
+          "no_permission",
+          "not_found",
+          "unknown"
+        ],
+        "type": "string"
       },
       "BulkIdResponseDto": {
         "properties": {
