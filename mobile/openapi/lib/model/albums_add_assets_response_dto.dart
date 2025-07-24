@@ -23,7 +23,13 @@ class AlbumsAddAssetsResponseDto {
 
   int assetSuccessCount;
 
-  AlbumsAddAssetsResponseDtoErrorEnum? error;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  BulkIdErrorReason? error;
 
   bool success;
 
@@ -69,7 +75,7 @@ class AlbumsAddAssetsResponseDto {
       return AlbumsAddAssetsResponseDto(
         albumSuccessCount: mapValueOfType<int>(json, r'albumSuccessCount')!,
         assetSuccessCount: mapValueOfType<int>(json, r'assetSuccessCount')!,
-        error: AlbumsAddAssetsResponseDtoErrorEnum.fromJson(json[r'error']),
+        error: BulkIdErrorReason.fromJson(json[r'error']),
         success: mapValueOfType<bool>(json, r'success')!,
       );
     }
@@ -123,84 +129,4 @@ class AlbumsAddAssetsResponseDto {
     'success',
   };
 }
-
-
-class AlbumsAddAssetsResponseDtoErrorEnum {
-  /// Instantiate a new enum with the provided [value].
-  const AlbumsAddAssetsResponseDtoErrorEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const duplicate = AlbumsAddAssetsResponseDtoErrorEnum._(r'duplicate');
-  static const noPermission = AlbumsAddAssetsResponseDtoErrorEnum._(r'no_permission');
-  static const notFound = AlbumsAddAssetsResponseDtoErrorEnum._(r'not_found');
-  static const unknown = AlbumsAddAssetsResponseDtoErrorEnum._(r'unknown');
-
-  /// List of all possible values in this [enum][AlbumsAddAssetsResponseDtoErrorEnum].
-  static const values = <AlbumsAddAssetsResponseDtoErrorEnum>[
-    duplicate,
-    noPermission,
-    notFound,
-    unknown,
-  ];
-
-  static AlbumsAddAssetsResponseDtoErrorEnum? fromJson(dynamic value) => AlbumsAddAssetsResponseDtoErrorEnumTypeTransformer().decode(value);
-
-  static List<AlbumsAddAssetsResponseDtoErrorEnum> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AlbumsAddAssetsResponseDtoErrorEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AlbumsAddAssetsResponseDtoErrorEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [AlbumsAddAssetsResponseDtoErrorEnum] to String,
-/// and [decode] dynamic data back to [AlbumsAddAssetsResponseDtoErrorEnum].
-class AlbumsAddAssetsResponseDtoErrorEnumTypeTransformer {
-  factory AlbumsAddAssetsResponseDtoErrorEnumTypeTransformer() => _instance ??= const AlbumsAddAssetsResponseDtoErrorEnumTypeTransformer._();
-
-  const AlbumsAddAssetsResponseDtoErrorEnumTypeTransformer._();
-
-  String encode(AlbumsAddAssetsResponseDtoErrorEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a AlbumsAddAssetsResponseDtoErrorEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  AlbumsAddAssetsResponseDtoErrorEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'duplicate': return AlbumsAddAssetsResponseDtoErrorEnum.duplicate;
-        case r'no_permission': return AlbumsAddAssetsResponseDtoErrorEnum.noPermission;
-        case r'not_found': return AlbumsAddAssetsResponseDtoErrorEnum.notFound;
-        case r'unknown': return AlbumsAddAssetsResponseDtoErrorEnum.unknown;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [AlbumsAddAssetsResponseDtoErrorEnumTypeTransformer] instance.
-  static AlbumsAddAssetsResponseDtoErrorEnumTypeTransformer? _instance;
-}
-
 

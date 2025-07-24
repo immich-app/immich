@@ -17,6 +17,7 @@ import {
   addAssetsToAlbum as addAssets,
   addAssetsToAlbums as addToAlbums,
   AssetVisibility,
+  BulkIdErrorReason,
   bulkTagAssets,
   createStack,
   deleteAssets,
@@ -90,7 +91,7 @@ export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], 
   if (showNotification) {
     const $t = get(t);
 
-    if (result.error === 'duplicate') {
+    if (result.error === BulkIdErrorReason.Duplicate) {
       notificationController.show({
         type: NotificationType.Info,
         timeout: 5000,

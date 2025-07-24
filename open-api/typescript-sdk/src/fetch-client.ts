@@ -391,7 +391,7 @@ export type AlbumsAddAssetsDto = {
 export type AlbumsAddAssetsResponseDto = {
     albumSuccessCount: number;
     assetSuccessCount: number;
-    error?: Error;
+    error?: BulkIdErrorReason;
     success: boolean;
 };
 export type AlbumStatisticsResponseDto = {
@@ -3951,6 +3951,12 @@ export enum AssetTypeEnum {
     Video = "VIDEO",
     Audio = "AUDIO",
     Other = "OTHER"
+}
+export enum BulkIdErrorReason {
+    Duplicate = "duplicate",
+    NoPermission = "no_permission",
+    NotFound = "not_found",
+    Unknown = "unknown"
 }
 export enum Error {
     Duplicate = "duplicate",

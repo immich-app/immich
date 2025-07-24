@@ -284,6 +284,8 @@ class ApiClient {
           return AuthStatusResponseDto.fromJson(value);
         case 'AvatarUpdate':
           return AvatarUpdate.fromJson(value);
+        case 'BulkIdErrorReason':
+          return BulkIdErrorReasonTypeTransformer().decode(value);
         case 'BulkIdResponseDto':
           return BulkIdResponseDto.fromJson(value);
         case 'BulkIdsDto':
@@ -580,6 +582,8 @@ class ApiClient {
           return SyncAssetFaceV1.fromJson(value);
         case 'SyncAssetV1':
           return SyncAssetV1.fromJson(value);
+        case 'SyncAuthUserV1':
+          return SyncAuthUserV1.fromJson(value);
         case 'SyncEntityType':
           return SyncEntityTypeTypeTransformer().decode(value);
         case 'SyncMemoryAssetDeleteV1':
