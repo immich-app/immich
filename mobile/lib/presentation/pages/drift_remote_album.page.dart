@@ -164,7 +164,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
         ImmichToast.show(
           context: context,
-          msg: 'album_deleted'.tr(),
+          msg: 'album_deleted'.t(context: context),
           toastType: ToastType.success,
         );
 
