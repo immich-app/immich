@@ -10,18 +10,18 @@ import 'package:logging/logging.dart';
 class HttpSSLOptions {
   static const MethodChannel _channel = MethodChannel('immich/httpSSLOptions');
 
-  static void apply() {
+  static void apply({bool applyNative = true}) {
     AppSettingsEnum setting = AppSettingsEnum.allowSelfSignedSSLCert;
     bool allowSelfSignedSSLCert =
         Store.get(setting.storeKey as StoreKey<bool>, setting.defaultValue);
-    _apply(allowSelfSignedSSLCert);
+    _apply(allowSelfSignedSSLCert, applyNative: applyNative);
   }
 
   static void applyFromSettings(bool newValue) {
     _apply(newValue);
   }
 
-  static void _apply(bool allowSelfSignedSSLCert) {
+  static void _apply(bool allowSelfSignedSSLCert, {bool applyNative = true}) {
     String? serverHost;
     if (allowSelfSignedSSLCert && Store.tryGet(StoreKey.currentUser) != null) {
       serverHost = Uri.parse(Store.tryGet(StoreKey.serverEndpoint) ?? "").host;
@@ -32,7 +32,7 @@ class HttpSSLOptions {
     HttpOverrides.global =
         HttpSSLCertOverride(allowSelfSignedSSLCert, serverHost, clientCert);
 
-    if (Platform.isAndroid) {
+    if (applyNative && Platform.isAndroid) {
       _channel.invokeMethod("apply", [
         allowSelfSignedSSLCert,
         serverHost,
