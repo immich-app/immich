@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ValidateEnum } from 'src/validation';
 
 export enum AssetMediaStatus {
   CREATED = 'created',
@@ -6,7 +6,7 @@ export enum AssetMediaStatus {
   DUPLICATE = 'duplicate',
 }
 export class AssetMediaResponseDto {
-  @ApiProperty({ enum: AssetMediaStatus, enumName: 'AssetMediaStatus' })
+  @ValidateEnum({ enum: AssetMediaStatus, name: 'AssetMediaStatus' })
   status!: AssetMediaStatus;
   id!: string;
 }

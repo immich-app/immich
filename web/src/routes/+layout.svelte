@@ -9,7 +9,6 @@
   import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
@@ -22,7 +21,7 @@
   import { copyToClipboard } from '$lib/utils';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import type { ServerVersionResponseDto } from '@immich/sdk';
-  import { setTranslations } from '@immich/ui';
+  import { modalManager, setTranslations } from '@immich/ui';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { run } from 'svelte/legacy';
@@ -35,8 +34,8 @@
   $effect(() => {
     setTranslations({
       close: $t('close'),
-      showPassword: $t('show_password'),
-      hidePassword: $t('hide_password'),
+      show_password: $t('show_password'),
+      hide_password: $t('hide_password'),
     });
   });
 

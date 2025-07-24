@@ -1,17 +1,17 @@
 import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
-import { Column, CreateDateColumn, Table } from 'src/sql-tools';
+import { Column, CreateDateColumn, Generated, Table, Timestamp } from 'src/sql-tools';
 
-@Table('album_users_audit')
+@Table('album_user_audit')
 export class AlbumUserAuditTable {
   @PrimaryGeneratedUuidV7Column()
-  id!: string;
+  id!: Generated<string>;
 
-  @Column({ type: 'uuid', indexName: 'IDX_album_users_audit_album_id' })
+  @Column({ type: 'uuid', index: true })
   albumId!: string;
 
-  @Column({ type: 'uuid', indexName: 'IDX_album_users_audit_user_id' })
+  @Column({ type: 'uuid', index: true })
   userId!: string;
 
-  @CreateDateColumn({ default: () => 'clock_timestamp()', indexName: 'IDX_album_users_audit_deleted_at' })
-  deletedAt!: Date;
+  @CreateDateColumn({ default: () => 'clock_timestamp()', index: true })
+  deletedAt!: Generated<Timestamp>;
 }

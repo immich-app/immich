@@ -97,7 +97,7 @@ describe(`immich upload`, () => {
   });
 
   beforeEach(async () => {
-    await utils.resetDatabase(['assets', 'albums']);
+    await utils.resetDatabase(['asset', 'album']);
   });
 
   describe(`immich upload /path/to/file.jpg`, () => {

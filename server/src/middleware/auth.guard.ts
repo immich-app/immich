@@ -23,12 +23,12 @@ export const Authenticated = (options?: AuthenticatedOptions): MethodDecorator =
   const decorators: MethodDecorator[] = [
     ApiBearerAuth(),
     ApiCookieAuth(),
-    ApiSecurity(MetadataKey.API_KEY_SECURITY),
-    SetMetadata(MetadataKey.AUTH_ROUTE, options || {}),
+    ApiSecurity(MetadataKey.ApiKeySecurity),
+    SetMetadata(MetadataKey.AuthRoute, options || {}),
   ];
 
   if ((options as SharedLinkRoute)?.sharedLink) {
-    decorators.push(ApiQuery({ name: ImmichQuery.SHARED_LINK_KEY, type: String, required: false }));
+    decorators.push(ApiQuery({ name: ImmichQuery.SharedLinkKey, type: String, required: false }));
   }
 
   return applyDecorators(...decorators);
@@ -76,7 +76,7 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const targets = [context.getHandler()];
 
-    const options = this.reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AUTH_ROUTE, targets);
+    const options = this.reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, targets);
     if (!options) {
       return true;
     }

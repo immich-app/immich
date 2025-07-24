@@ -1,10 +1,9 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { editTypes, showCancelConfirmDialog } from '$lib/stores/asset-editor.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { ConfirmModal, IconButton } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';

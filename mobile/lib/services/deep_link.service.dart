@@ -106,7 +106,6 @@ class DeepLinkService {
 
   Future<PageRouteInfo?> _buildAssetDeepLink(String assetId) async {
     final asset = await _assetService.getAssetByRemoteId(assetId);
-
     if (asset == null) {
       return null;
     }

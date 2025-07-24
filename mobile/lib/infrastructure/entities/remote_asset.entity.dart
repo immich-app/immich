@@ -30,16 +30,21 @@ class RemoteAssetEntity extends Table
 
   DateTimeColumn get deletedAt => dateTime().nullable()();
 
+  TextColumn get livePhotoVideoId => text().nullable()();
+
   IntColumn get visibility => intEnum<AssetVisibility>()();
+
+  TextColumn get stackId => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
 }
 
 extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
-  Asset toDto() => Asset(
+  RemoteAsset toDto() => RemoteAsset(
         id: id,
         name: name,
+        ownerId: ownerId,
         checksum: checksum,
         type: type,
         createdAt: createdAt,
@@ -50,6 +55,8 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
         width: width,
         thumbHash: thumbHash,
         visibility: visibility,
+        livePhotoVideoId: livePhotoVideoId,
         localId: null,
+        stackId: stackId,
       );
 }

@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { Kysely, OrderByDirection, Selectable, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
-import { DB, Exif } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
+import { DB } from 'src/schema';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { anyUuid, searchAssetBuilder } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
@@ -88,7 +89,7 @@ export interface SearchPeopleOptions {
 }
 
 export interface SearchTagOptions {
-  tagIds?: string[];
+  tagIds?: string[] | null;
 }
 
 export interface SearchAlbumOptions {
@@ -182,8 +183,8 @@ export class SearchRepository {
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
     const items = await searchAssetBuilder(this.db, options)
-      .selectAll('assets')
-      .orderBy('assets.fileCreatedAt', orderDirection)
+      .selectAll('asset')
+      .orderBy('asset.fileCreatedAt', orderDirection)
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
       .execute();
@@ -223,13 +224,13 @@ export class SearchRepository {
     const uuid = randomUUID();
     const builder = searchAssetBuilder(this.db, options);
     const lessThan = builder
-      .selectAll('assets')
-      .where('assets.id', '<', uuid)
+      .selectAll('asset')
+      .where('asset.id', '<', uuid)
       .orderBy(sql`random()`)
       .limit(size);
     const greaterThan = builder
-      .selectAll('assets')
-      .where('assets.id', '>', uuid)
+      .selectAll('asset')
+      .where('asset.id', '>', uuid)
       .orderBy(sql`random()`)
       .limit(size);
     const { rows } = await sql<MapAsset>`${lessThan} union all ${greaterThan} limit ${size}`.execute(this.db);
@@ -255,10 +256,10 @@ export class SearchRepository {
     }
 
     return this.db.transaction().execute(async (trx) => {
-      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
       const items = await searchAssetBuilder(trx, options)
-        .selectAll('assets')
-        .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
+        .selectAll('asset')
+        .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
         .limit(pagination.size + 1)
         .offset((pagination.page - 1) * pagination.size)
@@ -283,22 +284,22 @@ export class SearchRepository {
     }
 
     return this.db.transaction().execute(async (trx) => {
-      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.FACE])}`.execute(trx);
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Face])}`.execute(trx);
       return await trx
         .with('cte', (qb) =>
           qb
-            .selectFrom('asset_faces')
+            .selectFrom('asset_face')
             .select([
-              'asset_faces.id',
-              'asset_faces.personId',
+              'asset_face.id',
+              'asset_face.personId',
               sql<number>`face_search.embedding <=> ${embedding}`.as('distance'),
             ])
-            .innerJoin('assets', 'assets.id', 'asset_faces.assetId')
-            .innerJoin('face_search', 'face_search.faceId', 'asset_faces.id')
-            .leftJoin('person', 'person.id', 'asset_faces.personId')
-            .where('assets.ownerId', '=', anyUuid(userIds))
-            .where('assets.deletedAt', 'is', null)
-            .$if(!!hasPerson, (qb) => qb.where('asset_faces.personId', 'is not', null))
+            .innerJoin('asset', 'asset.id', 'asset_face.assetId')
+            .innerJoin('face_search', 'face_search.faceId', 'asset_face.id')
+            .leftJoin('person', 'person.id', 'asset_face.personId')
+            .where('asset.ownerId', '=', anyUuid(userIds))
+            .where('asset.deletedAt', 'is', null)
+            .$if(!!hasPerson, (qb) => qb.where('asset_face.personId', 'is not', null))
             .$if(!!minBirthDate, (qb) =>
               qb.where((eb) =>
                 eb.or([eb('person.birthDate', 'is', null), eb('person.birthDate', '<=', minBirthDate!)]),
@@ -346,13 +347,13 @@ export class SearchRepository {
     return this.db
       .withRecursive('cte', (qb) => {
         const base = qb
-          .selectFrom('exif')
+          .selectFrom('asset_exif')
           .select(['city', 'assetId'])
-          .innerJoin('assets', 'assets.id', 'exif.assetId')
-          .where('assets.ownerId', '=', anyUuid(userIds))
-          .where('assets.visibility', '=', AssetVisibility.TIMELINE)
-          .where('assets.type', '=', AssetType.IMAGE)
-          .where('assets.deletedAt', 'is', null)
+          .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
+          .where('asset.ownerId', '=', anyUuid(userIds))
+          .where('asset.visibility', '=', AssetVisibility.Timeline)
+          .where('asset.type', '=', AssetType.Image)
+          .where('asset.deletedAt', 'is', null)
           .orderBy('city')
           .limit(1);
 
@@ -362,14 +363,14 @@ export class SearchRepository {
           .innerJoinLateral(
             (qb) =>
               qb
-                .selectFrom('exif')
+                .selectFrom('asset_exif')
                 .select(['city', 'assetId'])
-                .innerJoin('assets', 'assets.id', 'exif.assetId')
-                .where('assets.ownerId', '=', anyUuid(userIds))
-                .where('assets.visibility', '=', AssetVisibility.TIMELINE)
-                .where('assets.type', '=', AssetType.IMAGE)
-                .where('assets.deletedAt', 'is', null)
-                .whereRef('exif.city', '>', 'cte.city')
+                .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
+                .where('asset.ownerId', '=', anyUuid(userIds))
+                .where('asset.visibility', '=', AssetVisibility.Timeline)
+                .where('asset.type', '=', AssetType.Image)
+                .where('asset.deletedAt', 'is', null)
+                .whereRef('asset_exif.city', '>', 'cte.city')
                 .orderBy('city')
                 .limit(1)
                 .as('l'),
@@ -378,17 +379,17 @@ export class SearchRepository {
 
         return sql<{ city: string; assetId: string }>`(${base} union all ${recursive})`;
       })
-      .selectFrom('assets')
-      .innerJoin('exif', 'assets.id', 'exif.assetId')
-      .innerJoin('cte', 'assets.id', 'cte.assetId')
-      .selectAll('assets')
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .innerJoin('cte', 'asset.id', 'cte.assetId')
+      .selectAll('asset')
       .select((eb) =>
         eb
-          .fn('to_jsonb', [eb.table('exif')])
-          .$castTo<Selectable<Exif>>()
+          .fn('to_jsonb', [eb.table('asset_exif')])
+          .$castTo<Selectable<AssetExifTable>>()
           .as('exifInfo'),
       )
-      .orderBy('exif.city')
+      .orderBy('asset_exif.city')
       .execute();
   }
 
@@ -444,12 +445,12 @@ export class SearchRepository {
 
   private getExifField<K extends 'city' | 'state' | 'country' | 'make' | 'model'>(field: K, userIds: string[]) {
     return this.db
-      .selectFrom('exif')
+      .selectFrom('asset_exif')
       .select(field)
       .distinctOn(field)
-      .innerJoin('assets', 'assets.id', 'exif.assetId')
+      .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
       .where('ownerId', '=', anyUuid(userIds))
-      .where('visibility', '=', AssetVisibility.TIMELINE)
+      .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null);
   }

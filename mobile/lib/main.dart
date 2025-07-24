@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
@@ -23,14 +24,14 @@ import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/background.service.dart';
+import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
-import 'package:immich_mobile/services/deep_link.service.dart';
-import 'package:immich_mobile/utils/download.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
@@ -92,12 +93,30 @@ Future<void> initApp() async {
 
   initializeTimeZones();
 
+  // Initialize the file downloader
+
+  await FileDownloader().configure(
+    // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
+    globalConfig: (Config.holdingQueue, (6, 6, 3)),
+  );
+
   await FileDownloader().trackTasksInGroup(
-    downloadGroupLivePhoto,
+    kDownloadGroupLivePhoto,
     markDownloadedComplete: false,
   );
 
   await FileDownloader().trackTasks();
+
+  LicenseRegistry.addLicense(
+    () async* {
+      for (final license in nonPubLicenses.entries) {
+        yield LicenseEntryWithLineBreaks(
+          [license.key],
+          license.value,
+        );
+      }
+    },
+  );
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
@@ -159,7 +178,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   }
 
   void _configureFileDownloaderNotifications() {
-    FileDownloader().configureNotification(
+    FileDownloader().configureNotificationForGroup(
+      kDownloadGroupImage,
       running: TaskNotification(
         'downloading_media'.tr(),
         '${'file_name'.tr()}: {filename}',
@@ -170,16 +190,45 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       ),
       progressBar: true,
     );
+
+    FileDownloader().configureNotificationForGroup(
+      kDownloadGroupVideo,
+      running: TaskNotification(
+        'downloading_media'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      complete: TaskNotification(
+        'download_finished'.tr(),
+        '${'file_name'.tr()}: {filename}',
+      ),
+      progressBar: true,
+    );
+
+    FileDownloader().configureNotificationForGroup(
+      kManualUploadGroup,
+      running: TaskNotification(
+        'uploading_media'.tr(),
+        '${'file_name'.tr()}: {displayName}',
+      ),
+      complete: TaskNotification(
+        'upload_finished'.tr(),
+        '${'file_name'.tr()}: {displayName}',
+      ),
+      progressBar: true,
+    );
   }
 
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
     final deepLinkHandler = ref.read(deepLinkServiceProvider);
     final currentRouteName = ref.read(currentRouteNameProvider.notifier).state;
 
+    final isColdStart =
+        currentRouteName == null || currentRouteName == SplashScreenRoute.name;
+
     if (deepLink.uri.scheme == "immich") {
       final proposedRoute = await deepLinkHandler.handleScheme(
         deepLink,
-        currentRouteName == SplashScreenRoute.name,
+        isColdStart,
       );
 
       return proposedRoute;
@@ -188,7 +237,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     if (deepLink.uri.host == "my.immich.app") {
       final proposedRoute = await deepLinkHandler.handleMyImmichApp(
         deepLink,
-        currentRouteName == SplashScreenRoute.name,
+        isColdStart,
       );
 
       return proposedRoute;
@@ -250,7 +299,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         ),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
-          navigatorObservers: () => [AppNavigationObserver(ref: ref)],
+          navigatorObservers: () =>
+              [AppNavigationObserver(ref: ref), HeroController()],
         ),
       ),
     );

@@ -458,7 +458,6 @@
   "assets": "Записи",
   "assets_added_count": "Додато {count, plural, one {# датотека} other {# датотека}}",
   "assets_added_to_album_count": "Додато је {count, plural, one {# датотека} other {# датотека}} у албум",
-  "assets_added_to_name_count": "Додато {count, plural, one {# датотека} other {# датотеке}} у {hasName, select, true {<b>{name}</b>} other {нови албум}}",
   "assets_count": "{count, plural, one {# датотека} few {# датотеке} other {# датотека}}",
   "assets_deleted_permanently": "{count} елемената трајно обрисано",
   "assets_deleted_permanently_from_server": "{count} ресурс(а) трајно обрисан(а) са Immich сервера",

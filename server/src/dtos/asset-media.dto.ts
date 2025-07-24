@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { AssetVisibility } from 'src/enum';
-import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export enum AssetMediaSize {
   /**
@@ -15,9 +15,7 @@ export enum AssetMediaSize {
 }
 
 export class AssetMediaOptionsDto {
-  @Optional()
-  @IsEnum(AssetMediaSize)
-  @ApiProperty({ enumName: 'AssetMediaSize', enum: AssetMediaSize })
+  @ValidateEnum({ enum: AssetMediaSize, name: 'AssetMediaSize', optional: true })
   size?: AssetMediaSize;
 }
 
@@ -60,7 +58,7 @@ export class AssetMediaCreateDto extends AssetMediaBase {
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
-  @ValidateAssetVisibility({ optional: true })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
   visibility?: AssetVisibility;
 
   @ValidateUUID({ optional: true })

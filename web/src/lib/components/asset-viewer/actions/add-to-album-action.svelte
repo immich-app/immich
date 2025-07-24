@@ -3,11 +3,11 @@
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AssetAction } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import AlbumPickerModal from '$lib/modals/AlbumPickerModal.svelte';
   import { addAssetsToAlbum } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
+  import { modalManager } from '@immich/ui';
   import { mdiImageAlbum, mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 

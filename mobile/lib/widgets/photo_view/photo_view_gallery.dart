@@ -4,13 +4,14 @@ import 'package:immich_mobile/widgets/photo_view/photo_view.dart'
     show
         LoadingBuilder,
         PhotoView,
+        PhotoViewControllerCallback,
+        PhotoViewImageDragEndCallback,
+        PhotoViewImageDragStartCallback,
+        PhotoViewImageDragUpdateCallback,
+        PhotoViewImageLongPressStartCallback,
+        PhotoViewImageScaleEndCallback,
         PhotoViewImageTapDownCallback,
         PhotoViewImageTapUpCallback,
-        PhotoViewImageDragStartCallback,
-        PhotoViewImageDragEndCallback,
-        PhotoViewImageDragUpdateCallback,
-        PhotoViewImageScaleEndCallback,
-        PhotoViewImageLongPressStartCallback,
         ScaleStateCycle;
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_controller.dart';
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_scalestate_controller.dart';
@@ -19,7 +20,10 @@ import 'package:immich_mobile/widgets/photo_view/src/photo_view_scale_state.dart
 import 'package:immich_mobile/widgets/photo_view/src/utils/photo_view_hero_attributes.dart';
 
 /// A type definition for a [Function] that receives a index after a page change in [PhotoViewGallery]
-typedef PhotoViewGalleryPageChangedCallback = void Function(int index);
+typedef PhotoViewGalleryPageChangedCallback = void Function(
+  int index,
+  PhotoViewControllerBase? controller,
+);
 
 /// A type definition for a [Function] that defines a page in [PhotoViewGallery.build]
 typedef PhotoViewGalleryBuilder = PhotoViewGalleryPageOptions Function(
@@ -114,12 +118,14 @@ class PhotoViewGallery extends StatefulWidget {
     this.reverse = false,
     this.pageController,
     this.onPageChanged,
+    this.onPageBuild,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.scrollPhysics,
     this.scrollDirection = Axis.horizontal,
     this.customSize,
     this.allowImplicitScrolling = false,
+    this.enablePanAlways = false,
   })  : itemCount = null,
         builder = null;
 
@@ -137,12 +143,14 @@ class PhotoViewGallery extends StatefulWidget {
     this.reverse = false,
     this.pageController,
     this.onPageChanged,
+    this.onPageBuild,
     this.scaleStateChangedCallback,
     this.enableRotation = false,
     this.scrollPhysics,
     this.scrollDirection = Axis.horizontal,
     this.customSize,
     this.allowImplicitScrolling = false,
+    this.enablePanAlways = false,
   })  : pageOptions = null,
         assert(itemCount != null),
         assert(builder != null);
@@ -168,6 +176,9 @@ class PhotoViewGallery extends StatefulWidget {
   /// Mirror to [PhotoView.wantKeepAlive]
   final bool wantKeepAlive;
 
+  /// Mirror to [PhotoView.enablePanAlways]
+  final bool enablePanAlways;
+
   /// Mirror to [PhotoView.gaplessPlayback]
   final bool gaplessPlayback;
 
@@ -179,6 +190,9 @@ class PhotoViewGallery extends StatefulWidget {
 
   /// An callback to be called on a page change
   final PhotoViewGalleryPageChangedCallback? onPageChanged;
+
+  /// Mirror to [PhotoView.onPageBuild]
+  final ValueChanged<PhotoViewControllerBase>? onPageBuild;
 
   /// Mirror to [PhotoView.scaleStateChangedCallback]
   final ValueChanged<PhotoViewScaleState>? scaleStateChangedCallback;
@@ -206,6 +220,7 @@ class PhotoViewGallery extends StatefulWidget {
 class _PhotoViewGalleryState extends State<PhotoViewGallery> {
   late final PageController _controller =
       widget.pageController ?? PageController();
+  PhotoViewControllerCallback? _getController;
 
   void scaleStateChangedCallback(PhotoViewScaleState scaleState) {
     if (widget.scaleStateChangedCallback != null) {
@@ -224,6 +239,14 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
     return widget.pageOptions!.length;
   }
 
+  void _getControllerCallbackBuilder(PhotoViewControllerCallback method) {
+    _getController = method;
+  }
+
+  void _onPageChange(int page) {
+    widget.onPageChanged?.call(page, _getController?.call());
+  }
+
   @override
   Widget build(BuildContext context) {
     // Enable corner hit test
@@ -232,7 +255,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
       child: PageView.builder(
         reverse: widget.reverse,
         controller: _controller,
-        onPageChanged: widget.onPageChanged,
+        onPageChanged: _onPageChange,
         itemCount: itemCount,
         itemBuilder: _buildItem,
         scrollDirection: widget.scrollDirection,
@@ -248,13 +271,15 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
 
     final PhotoView photoView = isCustomChild
         ? PhotoView.customChild(
-            key: ObjectKey(index),
+            key: pageOption.key ?? ObjectKey(index),
             childSize: pageOption.childSize,
             backgroundDecoration: widget.backgroundDecoration,
             wantKeepAlive: widget.wantKeepAlive,
             controller: pageOption.controller,
             scaleStateController: pageOption.scaleStateController,
             customSize: widget.customSize,
+            onPageBuild: widget.onPageBuild,
+            controllerCallbackBuilder: _getControllerCallbackBuilder,
             scaleStateChangedCallback: scaleStateChangedCallback,
             enableRotation: widget.enableRotation,
             initialScale: pageOption.initialScale,
@@ -273,17 +298,22 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             filterQuality: pageOption.filterQuality,
             basePosition: pageOption.basePosition,
             disableGestures: pageOption.disableGestures,
+            disableScaleGestures: pageOption.disableScaleGestures,
             heroAttributes: pageOption.heroAttributes,
+            enablePanAlways: widget.enablePanAlways,
             child: pageOption.child,
           )
         : PhotoView(
-            key: ObjectKey(index),
+            key: pageOption.key ?? ObjectKey(index),
             index: index,
             imageProvider: pageOption.imageProvider,
             loadingBuilder: widget.loadingBuilder,
             backgroundDecoration: widget.backgroundDecoration,
+            semanticLabel: pageOption.semanticLabel,
             wantKeepAlive: widget.wantKeepAlive,
             controller: pageOption.controller,
+            onPageBuild: widget.onPageBuild,
+            controllerCallbackBuilder: _getControllerCallbackBuilder,
             scaleStateController: pageOption.scaleStateController,
             customSize: widget.customSize,
             gaplessPlayback: widget.gaplessPlayback,
@@ -305,6 +335,8 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             filterQuality: pageOption.filterQuality,
             basePosition: pageOption.basePosition,
             disableGestures: pageOption.disableGestures,
+            disableScaleGestures: pageOption.disableScaleGestures,
+            enablePanAlways: widget.enablePanAlways,
             errorBuilder: pageOption.errorBuilder,
             heroAttributes: pageOption.heroAttributes,
           );
@@ -331,9 +363,10 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
 ///
 class PhotoViewGalleryPageOptions {
   PhotoViewGalleryPageOptions({
-    Key? key,
+    this.key,
     required this.imageProvider,
     this.heroAttributes,
+    this.semanticLabel,
     this.minScale,
     this.maxScale,
     this.initialScale,
@@ -351,6 +384,7 @@ class PhotoViewGalleryPageOptions {
     this.gestureDetectorBehavior,
     this.tightMode,
     this.filterQuality,
+    this.disableScaleGestures,
     this.disableGestures,
     this.errorBuilder,
   })  : child = null,
@@ -358,8 +392,10 @@ class PhotoViewGalleryPageOptions {
         assert(imageProvider != null);
 
   const PhotoViewGalleryPageOptions.customChild({
+    this.key,
     required this.child,
     this.childSize,
+    this.semanticLabel,
     this.heroAttributes,
     this.minScale,
     this.maxScale,
@@ -378,15 +414,21 @@ class PhotoViewGalleryPageOptions {
     this.gestureDetectorBehavior,
     this.tightMode,
     this.filterQuality,
+    this.disableScaleGestures,
     this.disableGestures,
   })  : errorBuilder = null,
         imageProvider = null;
+
+  final Key? key;
 
   /// Mirror to [PhotoView.imageProvider]
   final ImageProvider? imageProvider;
 
   /// Mirror to [PhotoView.heroAttributes]
   final PhotoViewHeroAttributes? heroAttributes;
+
+  /// Mirror to [PhotoView.semanticLabel]
+  final String? semanticLabel;
 
   /// Mirror to [PhotoView.minScale]
   final dynamic minScale;
@@ -444,6 +486,9 @@ class PhotoViewGalleryPageOptions {
 
   /// Mirror to [PhotoView.disableGestures]
   final bool? disableGestures;
+
+  /// Mirror to [PhotoView.disableGestures]
+  final bool? disableScaleGestures;
 
   /// Quality levels for image filters.
   final FilterQuality? filterQuality;

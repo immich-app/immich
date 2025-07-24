@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
@@ -10,6 +11,8 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
+// import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -106,6 +109,18 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   final Debouncer _debounce =
       Debouncer(interval: const Duration(milliseconds: 500));
 
+  final Debouncer _batchDebouncer = Debouncer(
+    interval: const Duration(seconds: 5),
+    maxWaitTime: const Duration(seconds: 10),
+  );
+  final List<dynamic> _batchedAssetUploadReady = [];
+
+  @override
+  void dispose() {
+    _batchDebouncer.dispose();
+    super.dispose();
+  }
+
   /// Connects websocket to server unless already connected
   void connect() {
     if (state.isConnected) return;
@@ -162,14 +177,19 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
           );
         });
 
-        socket.on('on_upload_success', _handleOnUploadSuccess);
+        if (!Store.isBetaTimelineEnabled) {
+          socket.on('on_upload_success', _handleOnUploadSuccess);
+          socket.on('on_asset_delete', _handleOnAssetDelete);
+          socket.on('on_asset_trash', _handleOnAssetTrash);
+          socket.on('on_asset_restore', _handleServerUpdates);
+          socket.on('on_asset_update', _handleServerUpdates);
+          socket.on('on_asset_stack_update', _handleServerUpdates);
+          socket.on('on_asset_hidden', _handleOnAssetHidden);
+        } else {
+          socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
+        }
+
         socket.on('on_config_update', _handleOnConfigUpdate);
-        socket.on('on_asset_delete', _handleOnAssetDelete);
-        socket.on('on_asset_trash', _handleOnAssetTrash);
-        socket.on('on_asset_restore', _handleServerUpdates);
-        socket.on('on_asset_update', _handleServerUpdates);
-        socket.on('on_asset_stack_update', _handleServerUpdates);
-        socket.on('on_asset_hidden', _handleOnAssetHidden);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
         debugPrint("[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
@@ -179,6 +199,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   void disconnect() {
     debugPrint("Attempting to disconnect from websocket");
+
+    _batchedAssetUploadReady.clear();
 
     var socket = state.socket?.disconnect();
 
@@ -192,8 +214,35 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   void stopListenToEvent(String eventName) {
-    debugPrint("Stop listening to event $eventName");
     state.socket?.off(eventName);
+  }
+
+  void stopListenToOldEvents() {
+    state.socket?.off('on_upload_success');
+    state.socket?.off('on_asset_delete');
+    state.socket?.off('on_asset_trash');
+    state.socket?.off('on_asset_restore');
+    state.socket?.off('on_asset_update');
+    state.socket?.off('on_asset_stack_update');
+    state.socket?.off('on_asset_hidden');
+  }
+
+  void startListeningToOldEvents() {
+    state.socket?.on('on_upload_success', _handleOnUploadSuccess);
+    state.socket?.on('on_asset_delete', _handleOnAssetDelete);
+    state.socket?.on('on_asset_trash', _handleOnAssetTrash);
+    state.socket?.on('on_asset_restore', _handleServerUpdates);
+    state.socket?.on('on_asset_update', _handleServerUpdates);
+    state.socket?.on('on_asset_stack_update', _handleServerUpdates);
+    state.socket?.on('on_asset_hidden', _handleOnAssetHidden);
+  }
+
+  void stopListeningToBetaEvents() {
+    state.socket?.off('AssetUploadReadyV1');
+  }
+
+  void startListeningToBetaEvents() {
+    state.socket?.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
   }
 
   void listenUploadEvent() {
@@ -288,7 +337,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     }
   }
 
-  void handlePendingChanges() async {
+  Future<void> handlePendingChanges() async {
     await _handlePendingUploaded();
     await _handlePendingDeletes();
     await _handlingPendingHidden();
@@ -346,6 +395,29 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     _ref
         .read(serverInfoProvider.notifier)
         .handleNewRelease(serverVersion, releaseVersion);
+  }
+
+  void _handleSyncAssetUploadReady(dynamic data) {
+    _batchedAssetUploadReady.add(data);
+    _batchDebouncer.run(_processBatchedAssetUploadReady);
+  }
+
+  void _processBatchedAssetUploadReady() {
+    if (_batchedAssetUploadReady.isEmpty) {
+      return;
+    }
+
+    try {
+      unawaited(
+        _ref
+            .read(backgroundSyncProvider)
+            .syncWebsocketBatch(_batchedAssetUploadReady.toList()),
+      );
+    } catch (error) {
+      _log.severe("Error processing batched AssetUploadReadyV1 events: $error");
+    }
+
+    _batchedAssetUploadReady.clear();
   }
 }
 

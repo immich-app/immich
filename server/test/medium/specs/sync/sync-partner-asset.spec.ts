@@ -1,9 +1,9 @@
 import { Kysely } from 'kysely';
-import { DB } from 'src/db';
 import { SyncEntityType, SyncRequestType } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { UserRepository } from 'src/repositories/user.repository';
+import { DB } from 'src/schema';
 import { SyncTestContext } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
 import { getKyselyDB, wait } from 'test/utils';
@@ -63,6 +63,8 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
           type: asset.type,
           visibility: asset.visibility,
           duration: asset.duration,
+          stackId: null,
+          livePhotoVideoId: null,
         },
         type: SyncEntityType.PartnerAssetV1,
       },

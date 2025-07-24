@@ -8,12 +8,13 @@ export class Table1 {
 
 export const description = 'should register a table with a column with a default value (boolean)';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [],
   enums: [],
   extensions: [],
   parameters: [],
+  overrides: [],
   tables: [
     {
       name: 'table1',

@@ -1,23 +1,21 @@
 import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
 import { AlbumTable } from 'src/schema/tables/album.table';
-import { Column, CreateDateColumn, ForeignKeyColumn, Table } from 'src/sql-tools';
+import { Column, CreateDateColumn, ForeignKeyColumn, Generated, Table, Timestamp } from 'src/sql-tools';
 
-@Table('album_assets_audit')
+@Table('album_asset_audit')
 export class AlbumAssetAuditTable {
   @PrimaryGeneratedUuidV7Column()
-  id!: string;
+  id!: Generated<string>;
 
   @ForeignKeyColumn(() => AlbumTable, {
-    type: 'uuid',
-    indexName: 'IDX_album_assets_audit_album_id',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
   albumId!: string;
 
-  @Column({ type: 'uuid', indexName: 'IDX_album_assets_audit_asset_id' })
+  @Column({ type: 'uuid', index: true })
   assetId!: string;
 
-  @CreateDateColumn({ default: () => 'clock_timestamp()', indexName: 'IDX_album_assets_audit_deleted_at' })
-  deletedAt!: Date;
+  @CreateDateColumn({ default: () => 'clock_timestamp()', index: true })
+  deletedAt!: Generated<Timestamp>;
 }

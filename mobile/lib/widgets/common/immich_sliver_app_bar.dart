@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -9,6 +10,8 @@ import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/sync_status.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
@@ -38,58 +41,65 @@ class ImmichSliverAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
+    final isMultiSelectEnabled =
+        ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
-    return SliverAppBar(
-      floating: floating,
-      pinned: pinned,
-      snap: snap,
-      expandedHeight: expandedHeight,
-      backgroundColor: context.colorScheme.surfaceContainer,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(5),
-        ),
-      ),
-      automaticallyImplyLeading: false,
-      centerTitle: false,
-      title: title ?? const _ImmichLogoWithText(),
-      actions: [
-        if (actions != null)
-          ...actions!.map(
-            (action) => Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: action,
-            ),
+    return SliverAnimatedOpacity(
+      duration: Durations.medium1,
+      opacity: isMultiSelectEnabled ? 0 : 1,
+      sliver: SliverAppBar(
+        floating: floating,
+        pinned: pinned,
+        snap: snap,
+        expandedHeight: expandedHeight,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(5),
           ),
-        IconButton(
-          icon: const Icon(Icons.science_rounded),
-          onPressed: () => context.pushRoute(const FeatInDevRoute()),
         ),
-        if (isCasting)
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: IconButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => const CastDialog(),
-                );
-              },
-              icon: Icon(
-                isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        title: title ?? const _ImmichLogoWithText(),
+        actions: [
+          if (isCasting)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: IconButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const CastDialog(),
+                  );
+                },
+                icon: Icon(
+                  isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
+                ),
               ),
             ),
-          ),
-        if (showUploadButton)
+          const _SyncStatusIndicator(),
+          if (actions != null)
+            ...actions!.map(
+              (action) => Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: action,
+              ),
+            ),
+          if (kDebugMode || kProfileMode)
+            IconButton(
+              icon: const Icon(Icons.science_rounded),
+              onPressed: () => context.pushRoute(const FeatInDevRoute()),
+            ),
+          if (showUploadButton)
+            const Padding(
+              padding: EdgeInsets.only(right: 20),
+              child: _BackupIndicator(),
+            ),
           const Padding(
             padding: EdgeInsets.only(right: 20),
-            child: _BackupIndicator(),
+            child: _ProfileIndicator(),
           ),
-        const Padding(
-          padding: EdgeInsets.only(right: 20),
-          child: _ProfileIndicator(),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -105,13 +115,30 @@ class _ImmichLogoWithText extends StatelessWidget {
           children: [
             Builder(
               builder: (context) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 3.0),
-                  child: SvgPicture.asset(
-                    context.isDarkTheme
-                        ? 'assets/immich-logo-inline-dark.svg'
-                        : 'assets/immich-logo-inline-light.svg',
-                    height: 40,
+                return Badge(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  backgroundColor: context.primaryColor,
+                  alignment: Alignment.centerRight,
+                  offset: const Offset(16, -8),
+                  label: Text(
+                    'β',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: context.colorScheme.onPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'OverpassMono',
+                      height: 1.2,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 3.0),
+                    child: SvgPicture.asset(
+                      context.isDarkTheme
+                          ? 'assets/immich-logo-inline-dark.svg'
+                          : 'assets/immich-logo-inline-light.svg',
+                      height: 40,
+                    ),
                   ),
                 );
               },
@@ -184,7 +211,7 @@ class _BackupIndicator extends ConsumerWidget {
     final badgeBackground = context.colorScheme.surfaceContainer;
 
     return InkWell(
-      onTap: () => context.pushRoute(const BackupControllerRoute()),
+      onTap: () => context.pushRoute(const DriftBackupRoute()),
       borderRadius: const BorderRadius.all(Radius.circular(12)),
       child: Badge(
         label: Container(
@@ -252,5 +279,105 @@ class _BackupIndicator extends ConsumerWidget {
     }
 
     return null;
+  }
+}
+
+class _SyncStatusIndicator extends ConsumerStatefulWidget {
+  const _SyncStatusIndicator();
+
+  @override
+  ConsumerState<_SyncStatusIndicator> createState() =>
+      _SyncStatusIndicatorState();
+}
+
+class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator>
+    with TickerProviderStateMixin {
+  late AnimationController _rotationController;
+  late AnimationController _dismissalController;
+  late Animation<double> _rotationAnimation;
+  late Animation<double> _dismissalAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _rotationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    _dismissalController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _rotationAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(_rotationController);
+    _dismissalAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _dismissalController,
+        curve: Curves.easeOutQuart,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    _dismissalController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final syncStatus = ref.watch(syncStatusProvider);
+    final isSyncing = syncStatus.isRemoteSyncing;
+
+    // Control animations based on sync status
+    if (isSyncing) {
+      if (!_rotationController.isAnimating) {
+        _rotationController.repeat();
+      }
+      _dismissalController.reset();
+    } else {
+      _rotationController.stop();
+      if (_dismissalController.status == AnimationStatus.dismissed) {
+        _dismissalController.forward();
+      }
+    }
+
+    // Don't show anything if not syncing and dismissal animation is complete
+    if (!isSyncing &&
+        _dismissalController.status == AnimationStatus.completed) {
+      return const SizedBox.shrink();
+    }
+
+    return AnimatedBuilder(
+      animation: Listenable.merge([_rotationAnimation, _dismissalAnimation]),
+      builder: (context, child) {
+        return Padding(
+          padding: EdgeInsets.only(right: isSyncing ? 16 : 0),
+          child: Transform.scale(
+            scale: isSyncing ? 1.0 : _dismissalAnimation.value,
+            child: Opacity(
+              opacity: isSyncing ? 1.0 : _dismissalAnimation.value,
+              child: Transform.rotate(
+                angle: _rotationAnimation.value *
+                    2 *
+                    3.14159 *
+                    -1, // Rotate counter-clockwise
+                child: Icon(
+                  Icons.sync,
+                  size: 24,
+                  color: context.primaryColor,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }

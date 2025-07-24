@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { AlbumsSharedUsersUsers, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserRole } from 'src/enum';
+import { DB } from 'src/schema';
+import { AlbumUserTable } from 'src/schema/tables/album-user.table';
 
 export type AlbumPermissionId = {
   albumsId: string;
@@ -15,18 +16,18 @@ export class AlbumUserRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }] })
-  create(albumUser: Insertable<AlbumsSharedUsersUsers>) {
+  create(albumUser: Insertable<AlbumUserTable>) {
     return this.db
-      .insertInto('albums_shared_users_users')
+      .insertInto('album_user')
       .values(albumUser)
       .returning(['usersId', 'albumsId', 'role'])
       .executeTakeFirstOrThrow();
   }
 
-  @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }, { role: AlbumUserRole.VIEWER }] })
-  update({ usersId, albumsId }: AlbumPermissionId, dto: Updateable<AlbumsSharedUsersUsers>) {
+  @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }, { role: AlbumUserRole.Viewer }] })
+  update({ usersId, albumsId }: AlbumPermissionId, dto: Updateable<AlbumUserTable>) {
     return this.db
-      .updateTable('albums_shared_users_users')
+      .updateTable('album_user')
       .set(dto)
       .where('usersId', '=', usersId)
       .where('albumsId', '=', albumsId)
@@ -36,10 +37,6 @@ export class AlbumUserRepository {
 
   @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }] })
   async delete({ usersId, albumsId }: AlbumPermissionId): Promise<void> {
-    await this.db
-      .deleteFrom('albums_shared_users_users')
-      .where('usersId', '=', usersId)
-      .where('albumsId', '=', albumsId)
-      .execute();
+    await this.db.deleteFrom('album_user').where('usersId', '=', usersId).where('albumsId', '=', albumsId).execute();
   }
 }

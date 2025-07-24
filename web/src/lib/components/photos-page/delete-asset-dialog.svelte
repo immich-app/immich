@@ -1,8 +1,8 @@
 <script lang="ts">
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { Checkbox, Label } from '@immich/ui';
+  import { Checkbox, ConfirmModal, Label } from '@immich/ui';
+  import { mdiDeleteForeverOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -26,6 +26,7 @@
 <ConfirmModal
   title={$t('permanently_delete_assets_count', { values: { count: size } })}
   confirmText={$t('delete')}
+  icon={mdiDeleteForeverOutline}
   onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
 >
   {#snippet promptSnippet()}

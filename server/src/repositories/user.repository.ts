@@ -4,14 +4,15 @@ import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { DB, UserMetadata as DbUserMetadata } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetType, AssetVisibility, UserStatus } from 'src/enum';
+import { DB } from 'src/schema';
+import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { UserMetadata, UserMetadataItem } from 'src/types';
 import { asUuid } from 'src/utils/database';
 
-type Upsert = Insertable<DbUserMetadata>;
+type Upsert = Insertable<UserMetadataTable>;
 
 export interface UserListFilter {
   id?: string;
@@ -33,12 +34,12 @@ export interface UserFindOptions {
   withDeleted?: boolean;
 }
 
-const withMetadata = (eb: ExpressionBuilder<DB, 'users'>) => {
+const withMetadata = (eb: ExpressionBuilder<DB, 'user'>) => {
   return jsonArrayFrom(
     eb
       .selectFrom('user_metadata')
       .select(['user_metadata.key', 'user_metadata.value'])
-      .whereRef('users.id', '=', 'user_metadata.userId'),
+      .whereRef('user.id', '=', 'user_metadata.userId'),
   ).as('metadata');
 };
 
@@ -51,11 +52,11 @@ export class UserRepository {
     options = options || {};
 
     return this.db
-      .selectFrom('users')
+      .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
-      .where('users.id', '=', userId)
-      .$if(!options.withDeleted, (eb) => eb.where('users.deletedAt', 'is', null))
+      .where('user.id', '=', userId)
+      .$if(!options.withDeleted, (eb) => eb.where('user.deletedAt', 'is', null))
       .executeTakeFirst();
   }
 
@@ -70,21 +71,31 @@ export class UserRepository {
   @GenerateSql()
   getAdmin() {
     return this.db
-      .selectFrom('users')
+      .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
-      .where('users.isAdmin', '=', true)
-      .where('users.deletedAt', 'is', null)
+      .where('user.isAdmin', '=', true)
+      .where('user.deletedAt', 'is', null)
       .executeTakeFirst();
+  }
+
+  @GenerateSql()
+  getFileSamples() {
+    return this.db
+      .selectFrom('user')
+      .select(['id', 'profileImagePath'])
+      .where('profileImagePath', '!=', sql.lit(''))
+      .limit(sql.lit(3))
+      .execute();
   }
 
   @GenerateSql()
   async hasAdmin(): Promise<boolean> {
     const admin = await this.db
-      .selectFrom('users')
-      .select('users.id')
-      .where('users.isAdmin', '=', true)
-      .where('users.deletedAt', 'is', null)
+      .selectFrom('user')
+      .select('user.id')
+      .where('user.isAdmin', '=', true)
+      .where('user.deletedAt', 'is', null)
       .executeTakeFirst();
 
     return !!admin;
@@ -93,49 +104,59 @@ export class UserRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getForPinCode(id: string) {
     return this.db
-      .selectFrom('users')
-      .select(['users.pinCode', 'users.password'])
-      .where('users.id', '=', id)
-      .where('users.deletedAt', 'is', null)
+      .selectFrom('user')
+      .select(['user.pinCode', 'user.password'])
+      .where('user.id', '=', id)
+      .where('user.deletedAt', 'is', null)
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForChangePassword(id: string) {
+    return this.db
+      .selectFrom('user')
+      .select(['user.id', 'user.password'])
+      .where('user.id', '=', id)
+      .where('user.deletedAt', 'is', null)
       .executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [DummyValue.EMAIL] })
   getByEmail(email: string, options?: { withPassword?: boolean }) {
     return this.db
-      .selectFrom('users')
+      .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
       .$if(!!options?.withPassword, (eb) => eb.select('password'))
       .where('email', '=', email)
-      .where('users.deletedAt', 'is', null)
+      .where('user.deletedAt', 'is', null)
       .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
   getByStorageLabel(storageLabel: string) {
     return this.db
-      .selectFrom('users')
+      .selectFrom('user')
       .select(columns.userAdmin)
-      .where('users.storageLabel', '=', storageLabel)
-      .where('users.deletedAt', 'is', null)
+      .where('user.storageLabel', '=', storageLabel)
+      .where('user.deletedAt', 'is', null)
       .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
   getByOAuthId(oauthId: string) {
     return this.db
-      .selectFrom('users')
+      .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
-      .where('users.oauthId', '=', oauthId)
-      .where('users.deletedAt', 'is', null)
+      .where('user.oauthId', '=', oauthId)
+      .where('user.deletedAt', 'is', null)
       .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DateTime.now().minus({ years: 1 })] })
   getDeletedAfter(target: DateTime) {
-    return this.db.selectFrom('users').select(['id']).where('users.deletedAt', '<', target.toJSDate()).execute();
+    return this.db.selectFrom('user').select(['id']).where('user.deletedAt', '<', target.toJSDate()).execute();
   }
 
   @GenerateSql(
@@ -144,18 +165,18 @@ export class UserRepository {
   )
   getList({ id, withDeleted }: UserListFilter = {}) {
     return this.db
-      .selectFrom('users')
+      .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
-      .$if(!withDeleted, (eb) => eb.where('users.deletedAt', 'is', null))
-      .$if(!!id, (eb) => eb.where('users.id', '=', id!))
+      .$if(!withDeleted, (eb) => eb.where('user.deletedAt', 'is', null))
+      .$if(!!id, (eb) => eb.where('user.id', '=', id!))
       .orderBy('createdAt', 'desc')
       .execute();
   }
 
   async create(dto: Insertable<UserTable>) {
     return this.db
-      .insertInto('users')
+      .insertInto('user')
       .values(dto)
       .returning(columns.userAdmin)
       .returning(withMetadata)
@@ -164,10 +185,10 @@ export class UserRepository {
 
   update(id: string, dto: Updateable<UserTable>) {
     return this.db
-      .updateTable('users')
+      .updateTable('user')
       .set(dto)
-      .where('users.id', '=', asUuid(id))
-      .where('users.deletedAt', 'is', null)
+      .where('user.id', '=', asUuid(id))
+      .where('user.deletedAt', 'is', null)
       .returning(columns.userAdmin)
       .returning(withMetadata)
       .executeTakeFirstOrThrow();
@@ -175,9 +196,9 @@ export class UserRepository {
 
   restore(id: string) {
     return this.db
-      .updateTable('users')
-      .set({ status: UserStatus.ACTIVE, deletedAt: null })
-      .where('users.id', '=', asUuid(id))
+      .updateTable('user')
+      .set({ status: UserStatus.Active, deletedAt: null })
+      .where('user.id', '=', asUuid(id))
       .returning(columns.userAdmin)
       .returning(withMetadata)
       .executeTakeFirstOrThrow();
@@ -202,24 +223,24 @@ export class UserRepository {
 
   delete(user: { id: string }, hard?: boolean) {
     return hard
-      ? this.db.deleteFrom('users').where('id', '=', user.id).execute()
-      : this.db.updateTable('users').set({ deletedAt: new Date() }).where('id', '=', user.id).execute();
+      ? this.db.deleteFrom('user').where('id', '=', user.id).execute()
+      : this.db.updateTable('user').set({ deletedAt: new Date() }).where('id', '=', user.id).execute();
   }
 
   @GenerateSql()
   getUserStats() {
     return this.db
-      .selectFrom('users')
-      .leftJoin('assets', (join) => join.onRef('assets.ownerId', '=', 'users.id').on('assets.deletedAt', 'is', null))
-      .leftJoin('exif', 'exif.assetId', 'assets.id')
-      .select(['users.id as userId', 'users.name as userName', 'users.quotaSizeInBytes'])
+      .selectFrom('user')
+      .leftJoin('asset', (join) => join.onRef('asset.ownerId', '=', 'user.id').on('asset.deletedAt', 'is', null))
+      .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+      .select(['user.id as userId', 'user.name as userName', 'user.quotaSizeInBytes'])
       .select((eb) => [
         eb.fn
           .countAll<number>()
           .filterWhere((eb) =>
             eb.and([
-              eb('assets.type', '=', sql.lit(AssetType.IMAGE)),
-              eb('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
+              eb('asset.type', '=', sql.lit(AssetType.Image)),
+              eb('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
             ]),
           )
           .as('photos'),
@@ -227,20 +248,23 @@ export class UserRepository {
           .countAll<number>()
           .filterWhere((eb) =>
             eb.and([
-              eb('assets.type', '=', sql.lit(AssetType.VIDEO)),
-              eb('assets.visibility', '!=', sql.lit(AssetVisibility.HIDDEN)),
+              eb('asset.type', '=', sql.lit(AssetType.Video)),
+              eb('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
             ]),
           )
           .as('videos'),
         eb.fn
-          .coalesce(eb.fn.sum<number>('exif.fileSizeInByte').filterWhere('assets.libraryId', 'is', null), eb.lit(0))
+          .coalesce(
+            eb.fn.sum<number>('asset_exif.fileSizeInByte').filterWhere('asset.libraryId', 'is', null),
+            eb.lit(0),
+          )
           .as('usage'),
         eb.fn
           .coalesce(
             eb.fn
-              .sum<number>('exif.fileSizeInByte')
+              .sum<number>('asset_exif.fileSizeInByte')
               .filterWhere((eb) =>
-                eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', sql.lit(AssetType.IMAGE))]),
+                eb.and([eb('asset.libraryId', 'is', null), eb('asset.type', '=', sql.lit(AssetType.Image))]),
               ),
             eb.lit(0),
           )
@@ -248,45 +272,45 @@ export class UserRepository {
         eb.fn
           .coalesce(
             eb.fn
-              .sum<number>('exif.fileSizeInByte')
+              .sum<number>('asset_exif.fileSizeInByte')
               .filterWhere((eb) =>
-                eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', sql.lit(AssetType.VIDEO))]),
+                eb.and([eb('asset.libraryId', 'is', null), eb('asset.type', '=', sql.lit(AssetType.Video))]),
               ),
             eb.lit(0),
           )
           .as('usageVideos'),
       ])
-      .groupBy('users.id')
-      .orderBy('users.createdAt', 'asc')
+      .groupBy('user.id')
+      .orderBy('user.createdAt', 'asc')
       .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })
   async updateUsage(id: string, delta: number): Promise<void> {
     await this.db
-      .updateTable('users')
+      .updateTable('user')
       .set({ quotaUsageInBytes: sql`"quotaUsageInBytes" + ${delta}`, updatedAt: new Date() })
       .where('id', '=', asUuid(id))
-      .where('users.deletedAt', 'is', null)
+      .where('user.deletedAt', 'is', null)
       .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async syncUsage(id?: string) {
     const query = this.db
-      .updateTable('users')
+      .updateTable('user')
       .set({
         quotaUsageInBytes: (eb) =>
           eb
-            .selectFrom('assets')
-            .leftJoin('exif', 'exif.assetId', 'assets.id')
-            .select((eb) => eb.fn.coalesce(eb.fn.sum<number>('exif.fileSizeInByte'), eb.lit(0)).as('usage'))
-            .where('assets.libraryId', 'is', null)
-            .where('assets.ownerId', '=', eb.ref('users.id')),
+            .selectFrom('asset')
+            .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+            .select((eb) => eb.fn.coalesce(eb.fn.sum<number>('asset_exif.fileSizeInByte'), eb.lit(0)).as('usage'))
+            .where('asset.libraryId', 'is', null)
+            .where('asset.ownerId', '=', eb.ref('user.id')),
         updatedAt: new Date(),
       })
-      .where('users.deletedAt', 'is', null)
-      .$if(id != undefined, (eb) => eb.where('users.id', '=', asUuid(id!)));
+      .where('user.deletedAt', 'is', null)
+      .$if(id != undefined, (eb) => eb.where('user.id', '=', asUuid(id!)));
 
     await query.execute();
   }

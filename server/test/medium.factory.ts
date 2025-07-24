@@ -4,9 +4,8 @@ import { DateTime } from 'luxon';
 import { createHash, randomBytes } from 'node:crypto';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
-import { Albums, AssetJobStatus, Assets, DB, Exif, FaceSearch, Person, Sessions } from 'src/db';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { AlbumUserRole, AssetType, AssetVisibility, SourceType, SyncRequestType } from 'src/enum';
+import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
+import { AlbumUserRole, AssetType, AssetVisibility, MemoryType, SourceType, SyncRequestType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -17,6 +16,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
@@ -25,11 +25,23 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { DB } from 'src/schema';
+import { AlbumTable } from 'src/schema/tables/album.table';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
+import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
+import { AssetTable } from 'src/schema/tables/asset.table';
+import { FaceSearchTable } from 'src/schema/tables/face-search.table';
+import { MemoryTable } from 'src/schema/tables/memory.table';
+import { PersonTable } from 'src/schema/tables/person.table';
+import { SessionTable } from 'src/schema/tables/session.table';
+import { StackTable } from 'src/schema/tables/stack.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service';
 import { SyncService } from 'src/services/sync.service';
@@ -123,18 +135,48 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { partner, result };
   }
 
-  async newAsset(dto: Partial<Insertable<Assets>> = {}) {
+  async newStack(dto: Omit<Insertable<StackTable>, 'primaryAssetId'>, assetIds: string[]) {
+    const date = factory.date();
+    const stack = {
+      id: factory.uuid(),
+      createdAt: date,
+      updatedAt: date,
+      ...dto,
+    };
+
+    const result = await this.get(StackRepository).create(stack, assetIds);
+    return { stack: { ...stack, primaryAssetId: assetIds[0] }, result };
+  }
+
+  async newAsset(dto: Partial<Insertable<AssetTable>> = {}) {
     const asset = mediumFactory.assetInsert(dto);
     const result = await this.get(AssetRepository).create(asset);
     return { asset, result };
   }
 
-  async newExif(dto: Insertable<Exif>) {
+  async newAssetFace(dto: Partial<Insertable<AssetFace>> & { assetId: string }) {
+    const assetFace = mediumFactory.assetFaceInsert(dto);
+    const result = await this.get(PersonRepository).createAssetFace(assetFace);
+    return { assetFace, result };
+  }
+
+  async newMemory(dto: Partial<Insertable<MemoryTable>> = {}) {
+    const memory = mediumFactory.memoryInsert(dto);
+    const result = await this.get(MemoryRepository).create(memory, new Set<string>());
+    return { memory, result };
+  }
+
+  async newMemoryAsset(dto: { memoryId: string; assetId: string }) {
+    const result = await this.get(MemoryRepository).addAssetIds(dto.memoryId, [dto.assetId]);
+    return { memoryAsset: dto, result };
+  }
+
+  async newExif(dto: Insertable<AssetExifTable>) {
     const result = await this.get(AssetRepository).upsertExif(dto);
     return { result };
   }
 
-  async newAlbum(dto: Insertable<Albums>) {
+  async newAlbum(dto: Insertable<AlbumTable>) {
     const album = mediumFactory.albumInsert(dto);
     const result = await this.get(AlbumRepository).create(album, [], []);
     return { album, result };
@@ -146,24 +188,24 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   }
 
   async newAlbumUser(dto: { albumId: string; userId: string; role?: AlbumUserRole }) {
-    const { albumId, userId, role = AlbumUserRole.EDITOR } = dto;
+    const { albumId, userId, role = AlbumUserRole.Editor } = dto;
     const result = await this.get(AlbumUserRepository).create({ albumsId: albumId, usersId: userId, role });
     return { albumUser: { albumId, userId, role }, result };
   }
 
-  async newJobStatus(dto: Partial<Insertable<AssetJobStatus>> & { assetId: string }) {
+  async newJobStatus(dto: Partial<Insertable<AssetJobStatusTable>> & { assetId: string }) {
     const jobStatus = mediumFactory.assetJobStatusInsert({ assetId: dto.assetId });
     const result = await this.get(AssetRepository).upsertJobStatus(jobStatus);
     return { jobStatus, result };
   }
 
-  async newPerson(dto: Partial<Insertable<Person>> & { ownerId: string }) {
+  async newPerson(dto: Partial<Insertable<PersonTable>> & { ownerId: string }) {
     const person = mediumFactory.personInsert(dto);
     const result = await this.get(PersonRepository).create(person);
     return { person, result };
   }
 
-  async newSession(dto: Partial<Insertable<Sessions>> & { userId: string }) {
+  async newSession(dto: Partial<Insertable<SessionTable>> & { userId: string }) {
     const session = mediumFactory.sessionInsert(dto);
     const result = await this.get(SessionRepository).create(session);
     return { session, result };
@@ -191,14 +233,18 @@ export class MediumTestContext<S extends BaseService = BaseService> {
 
 export class SyncTestContext extends MediumTestContext<SyncService> {
   constructor(database: Kysely<DB>) {
-    super(SyncService, { database, real: [SyncRepository, SessionRepository], mock: [LoggingRepository] });
+    super(SyncService, {
+      database,
+      real: [SyncRepository, SyncCheckpointRepository, SessionRepository],
+      mock: [LoggingRepository],
+    });
   }
 
-  async syncStream(auth: AuthDto, types: SyncRequestType[]) {
+  async syncStream(auth: AuthDto, types: SyncRequestType[], reset?: boolean) {
     const stream = mediumFactory.syncStream();
     // Wait for 2ms to ensure all updates are available and account for setTimeout inaccuracy
     await wait(2);
-    await this.sut.stream(auth, stream, { types });
+    await this.sut.stream(auth, stream, { types, reset });
 
     return stream.getResponse();
   }
@@ -227,7 +273,9 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case PersonRepository:
     case SearchRepository:
     case SessionRepository:
+    case StackRepository:
     case SyncRepository:
+    case SyncCheckpointRepository:
     case SystemMetadataRepository:
     case UserRepository:
     case VersionHistoryRepository: {
@@ -271,6 +319,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case PersonRepository:
     case SessionRepository:
     case SyncRepository:
+    case SyncCheckpointRepository:
     case SystemMetadataRepository:
     case UserRepository:
     case VersionHistoryRepository: {
@@ -285,6 +334,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
 
     case EmailRepository: {
       return automock(EmailRepository, { args: [{ setContext: () => {} }] });
+    }
+
+    case EventRepository: {
+      return automock(EventRepository, { args: [undefined, undefined, { setContext: () => {} }] });
     }
 
     case JobRepository: {
@@ -315,22 +368,22 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
   }
 };
 
-const assetInsert = (asset: Partial<Insertable<Assets>> = {}) => {
+const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
   const id = asset.id || newUuid();
   const now = newDate();
-  const defaults: Insertable<Assets> = {
+  const defaults: Insertable<AssetTable> = {
     deviceAssetId: '',
     deviceId: '',
     originalFileName: '',
     checksum: randomBytes(32),
-    type: AssetType.IMAGE,
+    type: AssetType.Image,
     originalPath: '/path/to/something.jpg',
     ownerId: '@immich.cloud',
     isFavorite: false,
     fileCreatedAt: now,
     fileModifiedAt: now,
     localDateTime: now,
-    visibility: AssetVisibility.TIMELINE,
+    visibility: AssetVisibility.Timeline,
   };
 
   return {
@@ -340,9 +393,9 @@ const assetInsert = (asset: Partial<Insertable<Assets>> = {}) => {
   };
 };
 
-const albumInsert = (album: Partial<Insertable<Albums>> & { ownerId: string }) => {
+const albumInsert = (album: Partial<Insertable<AlbumTable>> & { ownerId: string }) => {
   const id = album.id || newUuid();
-  const defaults: Omit<Insertable<Albums>, 'ownerId'> = {
+  const defaults: Omit<Insertable<AlbumTable>, 'ownerId'> = {
     albumName: 'Album',
   };
 
@@ -353,7 +406,7 @@ const albumInsert = (album: Partial<Insertable<Albums>> & { ownerId: string }) =
   };
 };
 
-const faceInsert = (face: Partial<Insertable<FaceSearch>> & { faceId: string }) => {
+const faceInsert = (face: Partial<Insertable<FaceSearchTable>> & { faceId: string }) => {
   const defaults = {
     faceId: face.faceId,
     embedding: face.embedding || newEmbedding(),
@@ -376,7 +429,7 @@ const assetFaceInsert = (assetFace: Partial<AssetFace> & { assetId: string }) =>
     imageHeight: assetFace.imageHeight ?? 10,
     imageWidth: assetFace.imageWidth ?? 10,
     personId: assetFace.personId ?? null,
-    sourceType: assetFace.sourceType ?? SourceType.MACHINE_LEARNING,
+    sourceType: assetFace.sourceType ?? SourceType.MachineLearning,
   };
 
   return {
@@ -386,10 +439,10 @@ const assetFaceInsert = (assetFace: Partial<AssetFace> & { assetId: string }) =>
 };
 
 const assetJobStatusInsert = (
-  job: Partial<Insertable<AssetJobStatus>> & { assetId: string },
-): Insertable<AssetJobStatus> => {
+  job: Partial<Insertable<AssetJobStatusTable>> & { assetId: string },
+): Insertable<AssetJobStatusTable> => {
   const date = DateTime.now().minus({ days: 15 }).toISO();
-  const defaults: Omit<Insertable<AssetJobStatus>, 'assetId'> = {
+  const defaults: Omit<Insertable<AssetJobStatusTable>, 'assetId'> = {
     duplicatesDetectedAt: date,
     facesRecognizedAt: date,
     metadataExtractedAt: date,
@@ -403,7 +456,7 @@ const assetJobStatusInsert = (
   };
 };
 
-const personInsert = (person: Partial<Insertable<Person>> & { ownerId: string }) => {
+const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: string }) => {
   const defaults = {
     birthDate: person.birthDate || null,
     color: person.color || null,
@@ -426,10 +479,15 @@ const personInsert = (person: Partial<Insertable<Person>> & { ownerId: string })
 
 const sha256 = (value: string) => createHash('sha256').update(value).digest('base64');
 
-const sessionInsert = ({ id = newUuid(), userId, ...session }: Partial<Insertable<Sessions>> & { userId: string }) => {
-  const defaults: Insertable<Sessions> = {
+const sessionInsert = ({
+  id = newUuid(),
+  userId,
+  ...session
+}: Partial<Insertable<SessionTable>> & { userId: string }) => {
+  const defaults: Insertable<SessionTable> = {
     id,
     userId,
+    isPendingSyncReset: false,
     token: sha256(id),
   };
 
@@ -443,13 +501,45 @@ const sessionInsert = ({ id = newUuid(), userId, ...session }: Partial<Insertabl
 const userInsert = (user: Partial<Insertable<UserTable>> = {}) => {
   const id = user.id || newUuid();
 
-  const defaults: Insertable<UserTable> = {
+  const defaults = {
     email: `${id}@immich.cloud`,
     name: `User ${id}`,
     deletedAt: null,
+    isAdmin: false,
+    profileImagePath: '',
+    profileChangedAt: newDate(),
+    shouldChangePassword: true,
+    storageLabel: null,
+    pinCode: null,
+    oauthId: '',
+    avatarColor: null,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   };
 
   return { ...defaults, ...user, id };
+};
+
+const memoryInsert = (memory: Partial<Insertable<MemoryTable>> = {}) => {
+  const id = memory.id || newUuid();
+  const date = newDate();
+
+  const defaults: Insertable<MemoryTable> = {
+    id,
+    createdAt: date,
+    updatedAt: date,
+    deletedAt: null,
+    type: MemoryType.OnThisDay,
+    data: { year: 2025 },
+    showAt: null,
+    hideAt: null,
+    seenAt: null,
+    isSaved: false,
+    memoryAt: date,
+    ownerId: memory.ownerId || newUuid(),
+  };
+
+  return { ...defaults, ...memory, id };
 };
 
 class CustomWritable extends Writable {
@@ -473,6 +563,24 @@ const syncStream = () => {
   return new CustomWritable();
 };
 
+const loginDetails = () => {
+  return { isSecure: false, clientIp: '', deviceType: '', deviceOS: '' };
+};
+
+const loginResponse = (): LoginResponseDto => {
+  const user = userInsert({});
+  return {
+    accessToken: 'access-token',
+    userId: user.id,
+    userEmail: user.email,
+    name: user.name,
+    profileImagePath: user.profileImagePath,
+    isAdmin: user.isAdmin,
+    shouldChangePassword: user.shouldChangePassword,
+    isOnboarded: false,
+  };
+};
+
 export const mediumFactory = {
   assetInsert,
   assetFaceInsert,
@@ -483,4 +591,7 @@ export const mediumFactory = {
   sessionInsert,
   syncStream,
   userInsert,
+  memoryInsert,
+  loginDetails,
+  loginResponse,
 };

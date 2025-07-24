@@ -1,6 +1,7 @@
 <script lang="ts">
   import NumberRangeInput from '$lib/components/shared-components/number-range-input.svelte';
   import { generateId } from '$lib/utils/generate-id';
+  import { convert } from 'geo-coordinates-parser';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -20,22 +21,22 @@
   };
 
   const onPaste = (event: ClipboardEvent) => {
-    const coords = event.clipboardData?.getData('text/plain')?.split(',');
-    if (!coords || coords.length !== 2) {
+    const pastedText = event.clipboardData?.getData('text/plain');
+    if (!pastedText) {
       return;
     }
 
-    const [latitude, longitude] = coords.map((coord) => Number.parseFloat(coord));
-    if (Number.isNaN(latitude) || latitude < -90 || latitude > 90) {
-      return;
+    try {
+      const parsed = convert(pastedText);
+      if (parsed) {
+        event.preventDefault();
+        lat = parsed.decimalLatitude;
+        lng = parsed.decimalLongitude;
+        onInput();
+      }
+    } catch {
+      // Invalid coordinate format, do nothing (let the default paste behavior occur)
     }
-    if (Number.isNaN(longitude) || longitude < -180 || longitude > 180) {
-      return;
-    }
-
-    event.preventDefault();
-    [lat, lng] = [latitude, longitude];
-    onInput();
   };
 </script>
 

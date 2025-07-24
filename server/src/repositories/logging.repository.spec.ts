@@ -22,7 +22,7 @@ describe(LoggingRepository.name, () => {
     describe('formatContext', () => {
       it('should use colors', () => {
         sut = new LoggingRepository(clsMock, configMock);
-        sut.setAppName(ImmichWorker.API);
+        sut.setAppName(ImmichWorker.Api);
 
         const logger = new MyConsoleLogger(clsMock, { color: true });
 
@@ -31,7 +31,7 @@ describe(LoggingRepository.name, () => {
 
       it('should not use colors when color is false', () => {
         sut = new LoggingRepository(clsMock, configMock);
-        sut.setAppName(ImmichWorker.API);
+        sut.setAppName(ImmichWorker.Api);
 
         const logger = new MyConsoleLogger(clsMock, { color: false });
 

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.135.3
+ * 1.136.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -889,7 +889,7 @@ export type MetadataSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     thumbnailPath?: string;
@@ -956,7 +956,7 @@ export type RandomSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -993,7 +993,7 @@ export type SmartSearchDto = {
     rating?: number;
     size?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -1025,7 +1025,7 @@ export type StatisticsSearchDto = {
     personIds?: string[];
     rating?: number;
     state?: string | null;
-    tagIds?: string[];
+    tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -1164,6 +1164,7 @@ export type SessionResponseDto = {
     deviceType: string;
     expiresAt?: string;
     id: string;
+    isPendingSyncReset: boolean;
     updatedAt: string;
 };
 export type SessionCreateDto = {
@@ -1179,8 +1180,12 @@ export type SessionCreateResponseDto = {
     deviceType: string;
     expiresAt?: string;
     id: string;
+    isPendingSyncReset: boolean;
     token: string;
     updatedAt: string;
+};
+export type SessionUpdateDto = {
+    isPendingSyncReset?: boolean;
 };
 export type SharedLinkResponseDto = {
     album?: AlbumResponseDto;
@@ -1264,6 +1269,7 @@ export type AssetFullSyncDto = {
     userId?: string;
 };
 export type SyncStreamDto = {
+    reset?: boolean;
     types: SyncRequestType[];
 };
 export type DatabaseBackupConfig = {
@@ -1383,6 +1389,14 @@ export type SystemConfigMetadataDto = {
 export type SystemConfigNewVersionCheckDto = {
     enabled: boolean;
 };
+export type SystemConfigNightlyTasksDto = {
+    clusterNewFaces: boolean;
+    databaseCleanup: boolean;
+    generateMemories: boolean;
+    missingThumbnails: boolean;
+    startTime: string;
+    syncQuotaUsage: boolean;
+};
 export type SystemConfigNotificationsDto = {
     smtp: SystemConfigSmtpDto;
 };
@@ -1398,6 +1412,7 @@ export type SystemConfigOAuthDto = {
     mobileOverrideEnabled: boolean;
     mobileRedirectUri: string;
     profileSigningAlgorithm: string;
+    roleClaim: string;
     scope: string;
     signingAlgorithm: string;
     storageLabelClaim: string;
@@ -1450,6 +1465,7 @@ export type SystemConfigDto = {
     map: SystemConfigMapDto;
     metadata: SystemConfigMetadataDto;
     newVersionCheck: SystemConfigNewVersionCheckDto;
+    nightlyTasks: SystemConfigNightlyTasksDto;
     notifications: SystemConfigNotificationsDto;
     oauth: SystemConfigOAuthDto;
     passwordLogin: SystemConfigPasswordLoginDto;
@@ -3169,6 +3185,19 @@ export function deleteSession({ id }: {
         method: "DELETE"
     }));
 }
+export function updateSession({ id, sessionUpdateDto }: {
+    id: string;
+    sessionUpdateDto: SessionUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SessionResponseDto;
+    }>(`/sessions/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: sessionUpdateDto
+    })));
+}
 export function lockSession({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -3343,6 +3372,15 @@ export function updateStack({ id, stackUpdateDto }: {
         method: "PUT",
         body: stackUpdateDto
     })));
+}
+export function removeAssetFromStack({ assetId, id }: {
+    assetId: string;
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/stacks/${encodeURIComponent(id)}/assets/${encodeURIComponent(assetId)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
 }
 export function deleteSyncAck({ syncAckDeleteDto }: {
     syncAckDeleteDto: SyncAckDeleteDto;
@@ -4061,18 +4099,22 @@ export enum Error2 {
     NotFound = "not_found"
 }
 export enum SyncEntityType {
+    AuthUserV1 = "AuthUserV1",
     UserV1 = "UserV1",
     UserDeleteV1 = "UserDeleteV1",
-    PartnerV1 = "PartnerV1",
-    PartnerDeleteV1 = "PartnerDeleteV1",
     AssetV1 = "AssetV1",
     AssetDeleteV1 = "AssetDeleteV1",
     AssetExifV1 = "AssetExifV1",
+    PartnerV1 = "PartnerV1",
+    PartnerDeleteV1 = "PartnerDeleteV1",
     PartnerAssetV1 = "PartnerAssetV1",
     PartnerAssetBackfillV1 = "PartnerAssetBackfillV1",
     PartnerAssetDeleteV1 = "PartnerAssetDeleteV1",
     PartnerAssetExifV1 = "PartnerAssetExifV1",
     PartnerAssetExifBackfillV1 = "PartnerAssetExifBackfillV1",
+    PartnerStackBackfillV1 = "PartnerStackBackfillV1",
+    PartnerStackDeleteV1 = "PartnerStackDeleteV1",
+    PartnerStackV1 = "PartnerStackV1",
     AlbumV1 = "AlbumV1",
     AlbumDeleteV1 = "AlbumDeleteV1",
     AlbumUserV1 = "AlbumUserV1",
@@ -4085,20 +4127,41 @@ export enum SyncEntityType {
     AlbumToAssetV1 = "AlbumToAssetV1",
     AlbumToAssetDeleteV1 = "AlbumToAssetDeleteV1",
     AlbumToAssetBackfillV1 = "AlbumToAssetBackfillV1",
-    SyncAckV1 = "SyncAckV1"
+    MemoryV1 = "MemoryV1",
+    MemoryDeleteV1 = "MemoryDeleteV1",
+    MemoryToAssetV1 = "MemoryToAssetV1",
+    MemoryToAssetDeleteV1 = "MemoryToAssetDeleteV1",
+    StackV1 = "StackV1",
+    StackDeleteV1 = "StackDeleteV1",
+    PersonV1 = "PersonV1",
+    PersonDeleteV1 = "PersonDeleteV1",
+    AssetFaceV1 = "AssetFaceV1",
+    AssetFaceDeleteV1 = "AssetFaceDeleteV1",
+    UserMetadataV1 = "UserMetadataV1",
+    UserMetadataDeleteV1 = "UserMetadataDeleteV1",
+    SyncAckV1 = "SyncAckV1",
+    SyncResetV1 = "SyncResetV1"
 }
 export enum SyncRequestType {
-    UsersV1 = "UsersV1",
-    PartnersV1 = "PartnersV1",
-    AssetsV1 = "AssetsV1",
-    AssetExifsV1 = "AssetExifsV1",
-    PartnerAssetsV1 = "PartnerAssetsV1",
-    PartnerAssetExifsV1 = "PartnerAssetExifsV1",
     AlbumsV1 = "AlbumsV1",
     AlbumUsersV1 = "AlbumUsersV1",
     AlbumToAssetsV1 = "AlbumToAssetsV1",
     AlbumAssetsV1 = "AlbumAssetsV1",
-    AlbumAssetExifsV1 = "AlbumAssetExifsV1"
+    AlbumAssetExifsV1 = "AlbumAssetExifsV1",
+    AssetsV1 = "AssetsV1",
+    AssetExifsV1 = "AssetExifsV1",
+    AuthUsersV1 = "AuthUsersV1",
+    MemoriesV1 = "MemoriesV1",
+    MemoryToAssetsV1 = "MemoryToAssetsV1",
+    PartnersV1 = "PartnersV1",
+    PartnerAssetsV1 = "PartnerAssetsV1",
+    PartnerAssetExifsV1 = "PartnerAssetExifsV1",
+    PartnerStacksV1 = "PartnerStacksV1",
+    StacksV1 = "StacksV1",
+    UsersV1 = "UsersV1",
+    PeopleV1 = "PeopleV1",
+    AssetFacesV1 = "AssetFacesV1",
+    UserMetadataV1 = "UserMetadataV1"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",
