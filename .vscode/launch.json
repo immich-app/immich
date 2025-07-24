@@ -18,25 +18,6 @@
       "name": "Immich Workers",
       "remoteRoot": "/usr/src/app",
       "localRoot": "${workspaceFolder}/server"
-    },
-    {
-      "name": "Flavor - Production",
-      "request": "launch",
-      "type": "dart",
-      "codeLens": {
-        "for": [
-          "run-test",
-          "run-test-file",
-          "run-file",
-          "debug-test",
-          "debug-test-file",
-          "debug-file",
-        ],
-        "title": "${debugType}",
-      },
-      "args": [
-        "--flavor", "production"
-      ],
     }
   ]
 }
