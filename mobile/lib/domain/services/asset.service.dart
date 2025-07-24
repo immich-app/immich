@@ -22,8 +22,8 @@ class AssetService {
     return asset is LocalAsset ? _localAssetRepository.watchAsset(id) : _remoteAssetRepository.watchAsset(id);
   }
 
-  Future<RemoteAsset?> getRemoteAsset(String id) async {
-    return await _remoteAssetRepository.get(id);
+  Future<RemoteAsset?> getRemoteAsset(String id) {
+    return _remoteAssetRepository.get(id);
   }
 
   Future<List<RemoteAsset>> getStack(RemoteAsset asset) async {
