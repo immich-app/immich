@@ -189,46 +189,31 @@ export class AlbumService extends BaseService {
   }
 
   async addAssetsToAlbums(auth: AuthDto, dto: AlbumsAddAssetsDto): Promise<AlbumsAddAssetsResponseDto> {
-    const fullResults = [];
+    const fullResults: BulkIdResponseDto[][] = []; //:{[albumId: string]: BulkIdResponseDto[]} = {};
     for (const albumId of dto.albumIds) {
       try {
         const albumResults = await this.addAssets(auth, albumId, { ids: dto.assetIds });
-        const successIds = albumResults.filter(({ success }) => success).map(({ id }) => id);
-        const success = successIds.length > 0;
-        let error;
-        if (!success) {
-          if (albumResults.every(({ error }) => error === BulkIdErrorReason.DUPLICATE)) {
-            error = BulkIdErrorReason.DUPLICATE;
-          } else if (albumResults.every(({ error }) => error === BulkIdErrorReason.NO_PERMISSION)) {
-            error = BulkIdErrorReason.NO_PERMISSION;
-          } else {
-            error = BulkIdErrorReason.UNKNOWN;
-          }
-        }
-        fullResults.push({ id: albumId, success, successIds, error });
+        fullResults.push(albumResults);
       } catch {
-        fullResults.push({ id: albumId, success: false, error: BulkIdErrorReason.NOT_FOUND });
+        fullResults.push([{ id: albumId, success: false, error: BulkIdErrorReason.NO_PERMISSION }]);
       }
     }
-    //Construct final return
-    const successfulResults = fullResults.filter(({ success }) => success);
-    const albumSuccessCount = successfulResults.length;
-    const successIds: Set<string> = new Set(successfulResults.flatMap((result) => result.successIds!));
-    const success = successIds.size > 0;
-    let error;
-    if (!success) {
-      if (fullResults.every(({ error }) => error === BulkIdErrorReason.DUPLICATE)) {
-        error = BulkIdErrorReason.DUPLICATE;
-      } else if (fullResults.every(({ error }) => error === BulkIdErrorReason.NO_PERMISSION)) {
-        error = BulkIdErrorReason.NO_PERMISSION;
-      } else if (fullResults.every(({ error }) => error === BulkIdErrorReason.NOT_FOUND)) {
-        error = BulkIdErrorReason.NOT_FOUND;
-      } else {
-        error = BulkIdErrorReason.UNKNOWN;
-      }
-    }
+    const successfulResults = fullResults.filter((r) => r.some(({ success }) => success));
+    if (successfulResults.length > 0) {
+      const albumSuccessCount = successfulResults.length;
+      const successFulAssetIds = new Set(
+        successfulResults.flatMap((result) => result.filter(({ success }) => success).flatMap(({ id }) => id)),
+      );
+      const assetSuccessCount = successFulAssetIds.size;
 
-    return { success, albumSuccessCount, assetSuccessCount: successIds.size, error };
+      return { success: true, albumSuccessCount, assetSuccessCount };
+    }
+    const error =
+      fullResults.flat().filter(({ error }) => error === BulkIdErrorReason.DUPLICATE).length ===
+      dto.albumIds.length * dto.assetIds.length
+        ? BulkIdErrorReason.DUPLICATE
+        : BulkIdErrorReason.UNKNOWN;
+    return { success: false, albumSuccessCount: 0, assetSuccessCount: 0, error };
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
