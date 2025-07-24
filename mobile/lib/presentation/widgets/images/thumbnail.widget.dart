@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -123,7 +124,7 @@ class _ThumbnailState extends State<Thumbnail> {
         widget.blurhash != null) {
       _decodeThumbhash();
     }
-    
+
     if (widget.thumbhashMode != ThumbhashMode.only &&
         widget.imageProvider != null) {
       _loadFromProvider();
@@ -269,8 +270,14 @@ class _ThumbnailLeaf extends LeafRenderObjectWidget {
 
 class _ThumbnailRenderBox extends RenderBox {
   ui.Image? _image;
+  ui.Image? _previousImage;
   BoxFit _fit;
   Gradient _placeholderGradient;
+  DateTime _lastImageRequest;
+
+  double _crossFadeProgress = 1.0;
+  static const _fadeDuration = Duration(milliseconds: 100);
+  DateTime? _fadeStartTime;
 
   @override
   bool isRepaintBoundary = true;
@@ -281,26 +288,56 @@ class _ThumbnailRenderBox extends RenderBox {
     required Gradient placeholderGradient,
   })  : _image = image,
         _fit = fit,
-        _placeholderGradient = placeholderGradient;
+        _placeholderGradient = placeholderGradient,
+        _lastImageRequest = DateTime.now();
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    final image = _image;
     final rect = offset & size;
-    if (image == null) {
-      final paint = Paint();
-      paint.shader = _placeholderGradient.createShader(rect);
-      context.canvas.drawRect(rect, paint);
-      return;
+    final canvas = context.canvas;
+
+    if (_fadeStartTime != null) {
+      final elapsed = DateTime.now().difference(_fadeStartTime!);
+      _crossFadeProgress =
+          (elapsed.inMilliseconds / _fadeDuration.inMilliseconds)
+              .clamp(0.0, 1.0);
+
+      if (_crossFadeProgress < 1.0) {
+        SchedulerBinding.instance.scheduleFrameCallback((_) {
+          markNeedsPaint();
+        });
+      } else {
+        // _previousImage?.dispose();
+        _previousImage = null;
+        _fadeStartTime = null;
+      }
     }
 
-    paintImage(
-      canvas: context.canvas,
-      rect: rect,
-      image: image,
-      fit: _fit,
-      filterQuality: FilterQuality.low,
-    );
+    if (_previousImage != null && _crossFadeProgress < 1.0) {
+      paintImage(
+        canvas: canvas,
+        rect: rect,
+        image: _previousImage!,
+        fit: _fit,
+        filterQuality: FilterQuality.low,
+        opacity: 1.0 - _crossFadeProgress,
+      );
+    } else if (_image == null) {
+      final paint = Paint();
+      paint.shader = _placeholderGradient.createShader(rect);
+      canvas.drawRect(rect, paint);
+    }
+
+    if (_image != null) {
+      paintImage(
+        canvas: canvas,
+        rect: rect,
+        image: _image!,
+        fit: _fit,
+        filterQuality: FilterQuality.low,
+        opacity: _crossFadeProgress,
+      );
+    }
   }
 
   @override
@@ -309,10 +346,18 @@ class _ThumbnailRenderBox extends RenderBox {
   }
 
   set image(ui.Image? value) {
-    if (_image != value) {
-      _image = value;
-      markNeedsPaint();
+    if (_image == value) {
+      return;
     }
+
+    final time = DateTime.now();
+    if (time.difference(_lastImageRequest).inMilliseconds >= 16) {
+      _fadeStartTime = DateTime.now();
+      _previousImage = _image;
+    }
+    _image = value;
+    _lastImageRequest = time;
+    markNeedsPaint();
   }
 
   set fit(BoxFit value) {
