@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -164,8 +163,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
         ImmichToast.show(
           context: context,
-          msg: 'library_deleted'
-              .t(context: context), // Using existing success message
+          msg: 'album_deleted'.t(context: context),
           toastType: ToastType.success,
         );
 
