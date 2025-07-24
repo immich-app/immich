@@ -9,6 +9,7 @@ import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
+import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:logging/logging.dart';
 import 'package:worker_manager/worker_manager.dart';
 
@@ -48,6 +49,7 @@ Cancelable<T?> runInIsolateGentle<T>({
     Logger log = Logger("IsolateLogger");
 
     try {
+      HttpSSLOptions.apply(applyNative: false);
       return await computation(ref);
     } on CanceledError {
       log.warning(
