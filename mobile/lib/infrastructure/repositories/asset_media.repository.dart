@@ -23,8 +23,7 @@ class AssetMediaRepository {
     final actualSize = actualWidth * actualHeight * 4;
 
     try {
-      final buffer =
-          await ImmutableBuffer.fromUint8List(pointer.asTypedList(actualSize));
+      final buffer = await ImmutableBuffer.fromUint8List(pointer.asTypedList(actualSize));
       final descriptor = ui.ImageDescriptor.raw(
         buffer,
         width: actualWidth,

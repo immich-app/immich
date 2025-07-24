@@ -61,11 +61,11 @@ class DriftMemoryCard extends ConsumerWidget {
               Colors.black.withValues(alpha: 0.2),
               BlendMode.darken,
             ),
-            child:  SizedBox(
-                width: 205,
-                height: 200,
-                child: Thumbnail.fromBaseAsset(asset: memory.assets[0]),
-              ),
+            child: SizedBox(
+              width: 205,
+              height: 200,
+              child: Thumbnail.fromBaseAsset(asset: memory.assets[0]),
+            ),
           ),
           Positioned(
             bottom: 16,

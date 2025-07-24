@@ -24,7 +24,6 @@
 		FAC6F89B2D287C890078CB2F /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FAC6F8902D287C890078CB2F /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FAC6F8B72D287F120078CB2F /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC6F8B52D287F120078CB2F /* ShareViewController.swift */; };
 		FAC6F8B92D287F120078CB2F /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FAC6F8B32D287F120078CB2F /* MainInterface.storyboard */; };
-		FE1BEAC92E264F8400D7F138 /* Thumbhash.swift in Resources */ = {isa = PBXBuildFile; fileRef = FE1BEAC82E264F8400D7F138 /* Thumbhash.swift */; };
 		FED3B1962E253E9B0030FD97 /* ThumbnailsImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED3B1942E253E9B0030FD97 /* ThumbnailsImpl.swift */; };
 		FED3B1972E253E9B0030FD97 /* Thumbnails.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED3B1932E253E9B0030FD97 /* Thumbnails.g.swift */; };
 /* End PBXBuildFile section */
@@ -47,6 +46,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FAC6F89A2D287C890078CB2F /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -95,8 +104,6 @@
 		FAC6F8B42D287F120078CB2F /* ShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShareExtension.entitlements; sourceTree = "<group>"; };
 		FAC6F8B52D287F120078CB2F /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		FAC7416727DB9F5500C668D8 /* RunnerProfile.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RunnerProfile.entitlements; sourceTree = "<group>"; };
-		FE1BEAC82E264F8400D7F138 /* Thumbhash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Thumbhash.swift; sourceTree = "<group>"; };
-		FED3B1472E253B110030FD97 /* Flutter.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:S8QB4VV633:FLUTTER.IO LLC"; lastKnownFileType = wrapper.xcframework; name = Flutter.xcframework; path = ../../../Flutter/bin/cache/artifacts/engine/ios/Flutter.xcframework; sourceTree = "<group>"; };
 		FED3B1932E253E9B0030FD97 /* Thumbnails.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Thumbnails.g.swift; sourceTree = "<group>"; };
 		FED3B1942E253E9B0030FD97 /* ThumbnailsImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailsImpl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -114,6 +121,8 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B2CF7F8C2DDE4EBB00744BF6 /* Sync */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = Sync;
 			sourceTree = "<group>";
 		};
@@ -172,7 +181,6 @@
 		1754452DD81DA6620E279E51 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				FED3B1472E253B110030FD97 /* Flutter.xcframework */,
 				886774DBDDE6B35BF2B4F2CD /* Pods_Runner.framework */,
 				357FC57E54FD0F51795CF28A /* Pods_ShareExtension.framework */,
 				F0B57D392DF764BD00DC5BCC /* WidgetKit.framework */,
@@ -258,7 +266,6 @@
 		FED3B1952E253E9B0030FD97 /* Images */ = {
 			isa = PBXGroup;
 			children = (
-				FE1BEAC82E264F8400D7F138 /* Thumbhash.swift */,
 				FED3B1932E253E9B0030FD97 /* Thumbnails.g.swift */,
 				FED3B1942E253E9B0030FD97 /* ThumbnailsImpl.swift */,
 			);
@@ -277,6 +284,7 @@
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
+				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				FAC6F89A2D287C890078CB2F /* Embed Foundation Extensions */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				D218A34AEE62BC1EF119F5B0 /* [CP] Embed Pods Frameworks */,
@@ -385,7 +393,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE1BEAC92E264F8400D7F138 /* Thumbhash.swift in Resources */,
 				97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */,
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
@@ -660,7 +667,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 213;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 33MF3D8ZGA;
+				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -669,7 +676,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.121.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.profile;
+				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.profile;
 				PRODUCT_NAME = "Immich-Profile";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -804,7 +811,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 213;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 33MF3D8ZGA;
+				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -813,7 +820,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.121.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.vdebug;
+				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.vdebug;
 				PRODUCT_NAME = "Immich-Debug";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -834,7 +841,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 213;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 33MF3D8ZGA;
+				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -843,7 +850,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.121.0;
-				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich;
+				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich;
 				PRODUCT_NAME = Immich;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -867,7 +874,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 213;
-				DEVELOPMENT_TEAM = 33MF3D8ZGA;
+				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -884,7 +891,7 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.vdebug.Widget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.vdebug.Widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -910,7 +917,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 213;
-				DEVELOPMENT_TEAM = 33MF3D8ZGA;
+				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -926,7 +933,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.Widget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.Widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -950,7 +957,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 213;
-				DEVELOPMENT_TEAM = 33MF3D8ZGA;
+				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -966,7 +973,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.profile.Widget;
+				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.profile.Widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -990,7 +997,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 213;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 33MF3D8ZGA;
+				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1007,7 +1014,7 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.vdebug.ShareExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.vdebug.ShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1034,7 +1041,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 213;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 33MF3D8ZGA;
+				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1050,7 +1057,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.ShareExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.ShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1075,7 +1082,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 213;
 				CUSTOM_GROUP_ID = group.app.immich.share;
-				DEVELOPMENT_TEAM = 33MF3D8ZGA;
+				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1091,7 +1098,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = app.mertalev.immich.profile.ShareExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = app.alextran.immich.profile.ShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;

@@ -77,7 +77,7 @@ class AssetViewerStateNotifier extends AutoDisposeNotifier<AssetViewerState> {
   void setAsset(BaseAsset? asset) {
     if (asset != state.currentAsset) {
       state = state.copyWith(currentAsset: asset, stackIndex: 0);
-    } 
+    }
   }
 
   void setOpacity(int opacity) {

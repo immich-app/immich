@@ -106,8 +106,7 @@ class _ThumbnailState extends State<Thumbnail> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.imageProvider != widget.imageProvider ||
         oldWidget.blurhash != widget.blurhash ||
-        (oldWidget.thumbhashMode == ThumbhashMode.disabled &&
-            oldWidget.thumbhashMode != ThumbhashMode.disabled)) {
+        (oldWidget.thumbhashMode == ThumbhashMode.disabled && oldWidget.thumbhashMode != ThumbhashMode.disabled)) {
       _loadImage();
     }
   }
@@ -120,13 +119,11 @@ class _ThumbnailState extends State<Thumbnail> {
 
   void _loadImage() {
     _stopListeningToStream();
-    if (widget.thumbhashMode != ThumbhashMode.disabled &&
-        widget.blurhash != null) {
+    if (widget.thumbhashMode != ThumbhashMode.disabled && widget.blurhash != null) {
       _decodeThumbhash();
     }
 
-    if (widget.thumbhashMode != ThumbhashMode.only &&
-        widget.imageProvider != null) {
+    if (widget.thumbhashMode != ThumbhashMode.only && widget.imageProvider != null) {
       _loadFromProvider();
     }
   }
@@ -298,9 +295,7 @@ class _ThumbnailRenderBox extends RenderBox {
 
     if (_fadeStartTime != null) {
       final elapsed = DateTime.now().difference(_fadeStartTime!);
-      _crossFadeProgress =
-          (elapsed.inMilliseconds / _fadeDuration.inMilliseconds)
-              .clamp(0.0, 1.0);
+      _crossFadeProgress = (elapsed.inMilliseconds / _fadeDuration.inMilliseconds).clamp(0.0, 1.0);
 
       if (_crossFadeProgress < 1.0) {
         SchedulerBinding.instance.scheduleFrameCallback((_) {

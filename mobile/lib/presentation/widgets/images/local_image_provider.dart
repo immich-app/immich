@@ -39,8 +39,7 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
   }
 
   Future<ImageInfo> _codec(LocalThumbProvider key) async {
-    final codec =
-        await _assetMediaRepository.getLocalThumbnail(key.id, key.size);
+    final codec = await _assetMediaRepository.getLocalThumbnail(key.id, key.size);
     return ImageInfo(image: (await codec.getNextFrame()).image, scale: 1.0);
   }
 
@@ -48,9 +47,7 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is LocalThumbProvider) {
-      return id == other.id &&
-          size == other.size &&
-          updatedAt == other.updatedAt;
+      return id == other.id && size == other.size && updatedAt == other.updatedAt;
     }
     return false;
   }
@@ -81,8 +78,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   }
 
   Future<ImageInfo> _codec(LocalFullImageProvider key) async {
-    final devicePixelRatio =
-        PlatformDispatcher.instance.views.first.devicePixelRatio;
+    final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
     final codec = await _assetMediaRepository.getLocalThumbnail(
       key.id,
       Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
