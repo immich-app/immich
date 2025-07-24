@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -13,10 +14,11 @@ import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/remote_album.utils.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
@@ -718,11 +720,33 @@ class _GridAlbumCard extends ConsumerWidget {
   }
 }
 
-class AddToAlbumHeader extends StatelessWidget {
+class AddToAlbumHeader extends ConsumerWidget {
   const AddToAlbumHeader({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    Future<void> onCreateAlbum() async {
+      final newAlbum = await ref.read(remoteAlbumProvider.notifier).createAlbum(
+            title: "Untitled Album",
+            assetIds: ref
+                .read(multiSelectProvider)
+                .selectedAssets
+                .map((e) => (e as RemoteAsset).id)
+                .toList(),
+          );
+
+      if (newAlbum == null) {
+        ImmichToast.show(
+          context: context,
+          toastType: ToastType.error,
+          msg: 'errors.failed_to_create_album'.tr(),
+        );
+        return;
+      }
+
+      context.pushRoute(RemoteAlbumRoute(album: newAlbum));
+    }
+
     return SliverPadding(
       padding: const EdgeInsets.symmetric(
         horizontal: 16,
@@ -745,9 +769,7 @@ class AddToAlbumHeader extends StatelessWidget {
                 tapTargetSize:
                     MaterialTapTargetSize.shrinkWrap, // remove extra height
               ),
-              onPressed: () => context.pushRoute(
-                const DriftCreateAlbumRoute(),
-              ),
+              onPressed: onCreateAlbum,
               icon: Icon(
                 Icons.add,
                 color: context.primaryColor,
