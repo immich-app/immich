@@ -3,6 +3,7 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 enum GroupAssetsBy {
   day,
   month,
+  auto,
   none;
 }
 
