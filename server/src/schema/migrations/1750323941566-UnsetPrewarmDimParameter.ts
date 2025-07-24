@@ -1,25 +1,22 @@
 import { Kysely, sql } from 'kysely';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 
-export async function up(qb: Kysely<any>): Promise<void> {
-  type Conf = { db: string; guc: string[] };
-  const res = await sql<Conf>`
-    select current_database() db, to_json(setconfig) guc
-    from pg_db_role_setting
-    where setdatabase = (select oid from pg_database where datname = current_database())
-      and setrole = 0;`.execute(qb);
-  if (res.rows.length === 0) {
-    return;
-  }
+const logger = LoggingRepository.create('Migrations');
 
-  const { db, guc } = res.rows[0];
-  await sql.raw(`alter database "${db}" reset all;`).execute(qb);
-  for (const parameter of guc) {
-    const [key, value] = parameter.split('=');
-    if (key === 'vchordrq.prewarm_dim') {
-      continue;
-    }
-    await sql.raw(`alter database "${db}" set ${key} to ${value};`).execute(qb);
+export async function up(db: Kysely<any>): Promise<void> {
+  const { rows } = await sql<{ db: string }>`SELECT current_database() as db;`.execute(db);
+  const databaseName = rows[0].db;
+  try {
+    await sql.raw(`ALTER DATABASE "${databaseName}" RESET vchordrq.prewarm_dim;`).execute(db);
+  } catch {
+    logger.warn('Failed to reset vchordrq.prewarm_dim, skipping');
   }
 }
 
-export async function down(): Promise<void> {}
+export async function down(db: Kysely<any>): Promise<void> {
+  const { rows } = await sql<{ db: string }>`SELECT current_database() as db;`.execute(db);
+  const databaseName = rows[0].db;
+  await sql
+    .raw(`ALTER DATABASE "${databaseName}" SET vchordrq.prewarm_dim = '512,640,768,1024,1152,1536';`)
+    .execute(db);
+}

@@ -9,6 +9,7 @@
   import { mdiKeyVariant } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { SvelteMap } from 'svelte/reactivity';
 
   interface Props {
     apiKey: { name: string; permissions: Permission[] };
@@ -23,7 +24,7 @@
   let selectedItems: Permission[] = $state(apiKey.permissions);
   let selectAllItems = $derived(selectedItems.length === Object.keys(Permission).length - 1);
 
-  const permissions: Map<string, Permission[]> = new Map();
+  const permissions: Map<string, Permission[]> = new SvelteMap();
 
   permissions.set('activity', [
     Permission.ActivityCreate,

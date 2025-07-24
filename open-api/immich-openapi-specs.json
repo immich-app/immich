@@ -6797,6 +6797,50 @@
         ]
       }
     },
+    "/stacks/{id}/assets/{assetId}": {
+      "delete": {
+        "operationId": "removeAssetFromStack",
+        "parameters": [
+          {
+            "name": "assetId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      }
+    },
     "/sync/ack": {
       "delete": {
         "operationId": "deleteSyncAck",
@@ -13907,25 +13951,25 @@
             "type": "string"
           },
           "boundingBoxX1": {
-            "type": "number"
+            "type": "integer"
           },
           "boundingBoxX2": {
-            "type": "number"
+            "type": "integer"
           },
           "boundingBoxY1": {
-            "type": "number"
+            "type": "integer"
           },
           "boundingBoxY2": {
-            "type": "number"
+            "type": "integer"
           },
           "id": {
             "type": "string"
           },
           "imageHeight": {
-            "type": "number"
+            "type": "integer"
           },
           "imageWidth": {
-            "type": "number"
+            "type": "integer"
           },
           "personId": {
             "nullable": true,
@@ -14036,8 +14080,79 @@
         ],
         "type": "object"
       },
+      "SyncAuthUserV1": {
+        "properties": {
+          "avatarColor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "nullable": true
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "hasProfileImage": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "oauthId": {
+            "type": "string"
+          },
+          "pinCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "quotaSizeInBytes": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "quotaUsageInBytes": {
+            "type": "integer"
+          },
+          "storageLabel": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "avatarColor",
+          "deletedAt",
+          "email",
+          "hasProfileImage",
+          "id",
+          "isAdmin",
+          "name",
+          "oauthId",
+          "pinCode",
+          "profileChangedAt",
+          "quotaSizeInBytes",
+          "quotaUsageInBytes",
+          "storageLabel"
+        ],
+        "type": "object"
+      },
       "SyncEntityType": {
         "enum": [
+          "AuthUserV1",
           "UserV1",
           "UserDeleteV1",
           "AssetV1",
@@ -14300,6 +14415,7 @@
           "AlbumAssetExifsV1",
           "AssetsV1",
           "AssetExifsV1",
+          "AuthUsersV1",
           "MemoriesV1",
           "MemoryToAssetsV1",
           "PartnersV1",
@@ -14422,6 +14538,14 @@
       },
       "SyncUserV1": {
         "properties": {
+          "avatarColor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "nullable": true
+          },
           "deletedAt": {
             "format": "date-time",
             "nullable": true,
@@ -14438,6 +14562,7 @@
           }
         },
         "required": [
+          "avatarColor",
           "deletedAt",
           "email",
           "id",

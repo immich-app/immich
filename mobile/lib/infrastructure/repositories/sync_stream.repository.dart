@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
@@ -546,11 +547,62 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     Iterable<SyncPersonDeleteV1> data,
   ) async {
     try {
-      await _db.personEntity.deleteWhere(
-        (row) => row.id.isIn(data.map((e) => e.personId)),
-      );
+      await _db.batch((batch) {
+        for (final person in data) {
+          batch.deleteWhere(
+            _db.personEntity,
+            (row) => row.id.equals(person.personId),
+          );
+        }
+      });
     } catch (error, stack) {
       _logger.severe('Error: deletePeopleV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAssetFacesV1(Iterable<SyncAssetFaceV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final assetFace in data) {
+          final companion = AssetFaceEntityCompanion(
+            assetId: Value(assetFace.assetId),
+            personId: Value(assetFace.personId),
+            imageWidth: Value(assetFace.imageWidth),
+            imageHeight: Value(assetFace.imageHeight),
+            boundingBoxX1: Value(assetFace.boundingBoxX1),
+            boundingBoxY1: Value(assetFace.boundingBoxY1),
+            boundingBoxX2: Value(assetFace.boundingBoxX2),
+            boundingBoxY2: Value(assetFace.boundingBoxY2),
+            sourceType: Value(assetFace.sourceType),
+          );
+
+          batch.insert(
+            _db.assetFaceEntity,
+            companion.copyWith(id: Value(assetFace.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetFacesV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAssetFacesV1(Iterable<SyncAssetFaceDeleteV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final assetFace in data) {
+          batch.deleteWhere(
+            _db.assetFaceEntity,
+            (row) => row.id.equals(assetFace.assetFaceId),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAssetFacesV1', error, stack);
+      rethrow;
     }
   }
 }

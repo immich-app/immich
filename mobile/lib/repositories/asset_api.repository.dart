@@ -13,6 +13,7 @@ final assetApiRepositoryProvider = Provider(
     ref.watch(apiServiceProvider).assetsApi,
     ref.watch(apiServiceProvider).searchApi,
     ref.watch(apiServiceProvider).stacksApi,
+    ref.watch(apiServiceProvider).trashApi,
   ),
 );
 
@@ -20,8 +21,14 @@ class AssetApiRepository extends ApiRepository {
   final AssetsApi _api;
   final SearchApi _searchApi;
   final StacksApi _stacksApi;
+  final TrashApi _trashApi;
 
-  AssetApiRepository(this._api, this._searchApi, this._stacksApi);
+  AssetApiRepository(
+    this._api,
+    this._searchApi,
+    this._stacksApi,
+    this._trashApi,
+  );
 
   Future<Asset> update(String id, {String? description}) async {
     final response = await checkNull(
@@ -54,6 +61,10 @@ class AssetApiRepository extends ApiRepository {
 
   Future<void> delete(List<String> ids, bool force) async {
     return _api.deleteAssets(AssetBulkDeleteDto(ids: ids, force: force));
+  }
+
+  Future<void> restoreTrash(List<String> ids) async {
+    await _trashApi.restoreAssets(BulkIdsDto(ids: ids));
   }
 
   Future<void> updateVisibility(

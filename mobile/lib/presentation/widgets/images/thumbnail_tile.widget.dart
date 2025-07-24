@@ -54,7 +54,7 @@ class ThumbnailTile extends ConsumerWidget {
             : const BoxDecoration();
 
     final hasStack =
-        asset is RemoteAsset && (asset as RemoteAsset).stackCount > 0;
+        asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
 
     return Stack(
       children: [
@@ -86,9 +86,7 @@ class ThumbnailTile extends ConsumerWidget {
                         right: 10.0,
                         top: asset.isVideo ? 24.0 : 6.0,
                       ),
-                      child: _StackIndicator(
-                        stackCount: (asset as RemoteAsset).stackCount,
-                      ),
+                      child: const _TileOverlayIcon(Icons.burst_mode_rounded),
                     ),
                   ),
                 if (asset.isVideo)
@@ -195,40 +193,6 @@ class _SelectionIndicator extends StatelessWidget {
         color: Colors.white,
       );
     }
-  }
-}
-
-class _StackIndicator extends StatelessWidget {
-  final int stackCount;
-
-  const _StackIndicator({required this.stackCount});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      spacing: 3,
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.end,
-      // CrossAxisAlignment.start looks more centered vertically than CrossAxisAlignment.center
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          stackCount.toString(),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            shadows: [
-              Shadow(
-                blurRadius: 5.0,
-                color: Color.fromRGBO(0, 0, 0, 0.6),
-              ),
-            ],
-          ),
-        ),
-        const _TileOverlayIcon(Icons.burst_mode_rounded),
-      ],
-    );
   }
 }
 
