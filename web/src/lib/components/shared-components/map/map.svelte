@@ -189,7 +189,7 @@
 
     return await getMapMarkers(
       {
-        isArchived: includeArchived && undefined,
+        isArchived: includeArchived || undefined,
         isFavorite: onlyFavorites || undefined,
         fileCreatedAfter: fileCreatedAfter || undefined,
         fileCreatedBefore,
