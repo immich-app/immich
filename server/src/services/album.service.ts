@@ -190,7 +190,7 @@ export class AlbumService extends BaseService {
 
   async addAssetsToAlbums(auth: AuthDto, dto: AlbumsAddAssetsDto): Promise<AlbumsAddAssetsResponseDto> {
     const results: AlbumsAddAssetsResponseDto = {
-      success: true,
+      success: false,
       albumSuccessCount: 0,
       assetSuccessCount: 0,
       error: BulkIdErrorReason.DUPLICATE,
@@ -207,6 +207,8 @@ export class AlbumService extends BaseService {
             results.success = true;
             results.error = undefined;
             successFulAssetIds.add(res.id);
+          } else if (results.error && res.error !== BulkIdErrorReason.DUPLICATE) {
+            results.error = BulkIdErrorReason.UNKNOWN;
           }
         }
         if (success) {

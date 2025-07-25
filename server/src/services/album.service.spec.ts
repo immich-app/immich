@@ -898,7 +898,7 @@ describe(AlbumService.name, () => {
         success: false,
         albumSuccessCount: 0,
         assetSuccessCount: 0,
-        error: BulkIdErrorReason.NOT_FOUND,
+        error: BulkIdErrorReason.UNKNOWN,
       });
 
       expect(mocks.album.update).not.toHaveBeenCalled();
@@ -1048,7 +1048,7 @@ describe(AlbumService.name, () => {
         success: false,
         albumSuccessCount: 0,
         assetSuccessCount: 0,
-        error: BulkIdErrorReason.NO_PERMISSION,
+        error: BulkIdErrorReason.UNKNOWN,
       });
 
       expect(mocks.album.update).not.toHaveBeenCalled();
@@ -1078,7 +1078,7 @@ describe(AlbumService.name, () => {
         success: false,
         albumSuccessCount: 0,
         assetSuccessCount: 0,
-        error: BulkIdErrorReason.NOT_FOUND,
+        error: BulkIdErrorReason.UNKNOWN,
       });
 
       expect(mocks.album.update).not.toHaveBeenCalled();
@@ -1101,7 +1101,7 @@ describe(AlbumService.name, () => {
         success: false,
         albumSuccessCount: 0,
         assetSuccessCount: 0,
-        error: BulkIdErrorReason.NOT_FOUND,
+        error: BulkIdErrorReason.UNKNOWN,
       });
 
       expect(mocks.access.album.checkSharedLinkAccess).toHaveBeenCalled();
