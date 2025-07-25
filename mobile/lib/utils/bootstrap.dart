@@ -33,7 +33,7 @@ abstract final class Bootstrap {
         ExifInfoSchema,
         AssetSchema,
         AlbumSchema,
-        UserSchema,
+        IsarUserSchema,
         BackupAlbumSchema,
         DuplicatedAssetSchema,
         LoggerMessageSchema,

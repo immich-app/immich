@@ -211,7 +211,7 @@ final remoteAlbumDateRangeProvider = FutureProvider.family<(DateTime, DateTime),
   },
 );
 
-final remoteAlbumSharedUsersProvider = FutureProvider.autoDispose.family<List<UserDto>, String>(
+final remoteAlbumSharedUsersProvider = FutureProvider.autoDispose.family<List<User>, String>(
   (ref, albumId) async {
     final link = ref.keepAlive();
     ref.onDispose(() => link.close());

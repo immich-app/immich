@@ -1,29 +1,30 @@
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/partner.service.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class PartnerNotifier extends Notifier<List<PartnerUserDto>> {
+class PartnerNotifier extends Notifier<List<PartnerUser>> {
   late DriftPartnerService _driftPartnerService;
 
   @override
-  List<PartnerUserDto> build() {
+  List<PartnerUser> build() {
     _driftPartnerService = ref.read(driftPartnerServiceProvider);
     return [];
   }
 
   Future<void> _loadPartners() async {
-    final currentUser = ref.read(currentUserProvider);
+    User? currentUser;
+    ref.read(currentUserNotifierProvider).whenData((asyncUser) => currentUser = asyncUser);
+
     if (currentUser == null) {
       return;
     }
 
-    state = await _driftPartnerService.getSharedWith(currentUser.id);
+    state = await _driftPartnerService.getSharedWith(currentUser!.id);
   }
 
-  Future<List<PartnerUserDto>> getPartners(String userId) async {
+  Future<List<PartnerUser>> getPartners(String userId) async {
     final partners = await _driftPartnerService.getSharedWith(userId);
     state = partners;
     return partners;
@@ -34,54 +35,64 @@ class PartnerNotifier extends Notifier<List<PartnerUserDto>> {
     await _loadPartners();
   }
 
-  Future<void> addPartner(PartnerUserDto partner) async {
-    final currentUser = ref.read(currentUserProvider);
+  Future<void> addPartner(PartnerUser partner) async {
+    User? currentUser;
+    ref.read(currentUserNotifierProvider).whenData((asyncUser) => currentUser = asyncUser);
+
     if (currentUser == null) {
       return;
     }
 
-    await _driftPartnerService.addPartner(partner.id, currentUser.id);
+    await _driftPartnerService.addPartner(partner.id, currentUser!.id);
     await _loadPartners();
     ref.invalidate(driftAvailablePartnerProvider);
     ref.invalidate(driftSharedByPartnerProvider);
   }
 
-  Future<void> removePartner(PartnerUserDto partner) async {
-    final currentUser = ref.read(currentUserProvider);
+  Future<void> removePartner(PartnerUser partner) async {
+    User? currentUser;
+    ref.read(currentUserNotifierProvider).whenData((asyncUser) => currentUser = asyncUser);
+
     if (currentUser == null) {
       return;
     }
 
-    await _driftPartnerService.removePartner(partner.id, currentUser.id);
+    await _driftPartnerService.removePartner(partner.id, currentUser!.id);
     await _loadPartners();
     ref.invalidate(driftAvailablePartnerProvider);
     ref.invalidate(driftSharedByPartnerProvider);
   }
 }
 
-final driftAvailablePartnerProvider = FutureProvider.autoDispose<List<PartnerUserDto>>((ref) {
-  final currentUser = ref.watch(currentUserProvider);
+final driftAvailablePartnerProvider = FutureProvider.autoDispose<List<PartnerUser>>((ref) {
+  User? currentUser;
+  ref.watch(currentUserNotifierProvider).whenData((asyncUser) => currentUser = asyncUser);
+
   if (currentUser == null) {
     return [];
   }
 
-  return ref.watch(driftPartnerServiceProvider).getAvailablePartners(currentUser.id);
+  return ref.watch(driftPartnerServiceProvider).getAvailablePartners(currentUser!.id);
 });
 
-final driftSharedByPartnerProvider = FutureProvider.autoDispose<List<PartnerUserDto>>((ref) {
-  final currentUser = ref.watch(currentUserProvider);
+final driftSharedByPartnerProvider = FutureProvider.autoDispose<List<PartnerUser>>((ref) {
+  User? currentUser;
+  ref.watch(currentUserNotifierProvider).whenData((asyncUser) => currentUser = asyncUser);
+
   if (currentUser == null) {
     return [];
   }
 
-  return ref.watch(driftPartnerServiceProvider).getSharedBy(currentUser.id);
+  return ref.watch(driftPartnerServiceProvider).getSharedBy(currentUser!.id);
 });
 
-final driftSharedWithPartnerProvider = FutureProvider.autoDispose<List<PartnerUserDto>>((ref) {
-  final currentUser = ref.watch(currentUserProvider);
+final driftSharedWithPartnerProvider = FutureProvider.autoDispose<List<PartnerUser>>((ref) {
+  User? currentUser;
+  ref.watch(currentUserNotifierProvider).whenData((asyncUser) => currentUser = asyncUser);
+
   if (currentUser == null) {
     return [];
   }
 
-  return ref.watch(driftPartnerServiceProvider).getSharedWith(currentUser.id);
+  return ref.watch(driftPartnerServiceProvider).getSharedWith(currentUser!.id);
 });

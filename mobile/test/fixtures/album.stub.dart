@@ -28,7 +28,7 @@ final class AlbumStub {
     shared: true,
     activityEnabled: false,
     endDate: DateTime(2020),
-  )..sharedUsers.addAll([User.fromDto(UserStub.admin)]);
+  )..sharedUsers.addAll([IsarUser.fromDto(UserStub.admin)]);
 
   static final oneAsset = Album(
     name: "album-with-single-asset",
@@ -55,7 +55,7 @@ final class AlbumStub {
   )
     ..assets.addAll([AssetStub.image1, AssetStub.image2])
     ..activityEnabled = true
-    ..owner.value = User.fromDto(UserStub.admin);
+    ..owner.value = IsarUser.fromDto(UserStub.admin);
 
   static final create2020end2020Album = Album(
     name: "create2020update2020Album",

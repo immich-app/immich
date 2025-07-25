@@ -7,7 +7,7 @@ class DriftPartnerRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftPartnerRepository(this._db) : super(_db);
 
-  Future<List<PartnerUserDto>> getPartners(String userId) {
+  Future<List<PartnerUser>> getPartners(String userId) {
     final query = _db.select(_db.partnerEntity).join([
       innerJoin(
         _db.userEntity,
@@ -21,7 +21,7 @@ class DriftPartnerRepository extends DriftDatabaseRepository {
     return query.map((row) {
       final user = row.readTable(_db.userEntity);
       final partner = row.readTable(_db.partnerEntity);
-      return PartnerUserDto(
+      return PartnerUser(
         id: user.id,
         email: user.email,
         name: user.name,
@@ -31,11 +31,11 @@ class DriftPartnerRepository extends DriftDatabaseRepository {
   }
 
   // Get users who we can share our library with
-  Future<List<PartnerUserDto>> getAvailablePartners(String currentUserId) {
+  Future<List<PartnerUser>> getAvailablePartners(String currentUserId) {
     final query = _db.select(_db.userEntity)..where((row) => row.id.equals(currentUserId).not());
 
     return query.map((user) {
-      return PartnerUserDto(
+      return PartnerUser(
         id: user.id,
         email: user.email,
         name: user.name,
@@ -45,7 +45,7 @@ class DriftPartnerRepository extends DriftDatabaseRepository {
   }
 
   // Get users who are sharing their photos WITH the current user
-  Future<List<PartnerUserDto>> getSharedWith(String partnerId) {
+  Future<List<PartnerUser>> getSharedWith(String partnerId) {
     final query = _db.select(_db.partnerEntity).join([
       innerJoin(
         _db.userEntity,
@@ -59,7 +59,7 @@ class DriftPartnerRepository extends DriftDatabaseRepository {
     return query.map((row) {
       final user = row.readTable(_db.userEntity);
       final partner = row.readTable(_db.partnerEntity);
-      return PartnerUserDto(
+      return PartnerUser(
         id: user.id,
         email: user.email,
         name: user.name,
@@ -69,7 +69,7 @@ class DriftPartnerRepository extends DriftDatabaseRepository {
   }
 
   // Get users who the current user is sharing their photos TO
-  Future<List<PartnerUserDto>> getSharedBy(String userId) {
+  Future<List<PartnerUser>> getSharedBy(String userId) {
     final query = _db.select(_db.partnerEntity).join([
       innerJoin(
         _db.userEntity,
@@ -83,7 +83,7 @@ class DriftPartnerRepository extends DriftDatabaseRepository {
     return query.map((row) {
       final user = row.readTable(_db.userEntity);
       final partner = row.readTable(_db.partnerEntity);
-      return PartnerUserDto(
+      return PartnerUser(
         id: user.id,
         email: user.email,
         name: user.name,
@@ -106,7 +106,7 @@ class DriftPartnerRepository extends DriftDatabaseRepository {
     return allPartnerIds;
   }
 
-  Future<PartnerUserDto?> getPartner(String partnerId, String userId) {
+  Future<PartnerUser?> getPartner(String partnerId, String userId) {
     final query = _db.select(_db.partnerEntity).join([
       innerJoin(
         _db.userEntity,
@@ -120,7 +120,7 @@ class DriftPartnerRepository extends DriftDatabaseRepository {
     return query.map((row) {
       final user = row.readTable(_db.userEntity);
       final partner = row.readTable(_db.partnerEntity);
-      return PartnerUserDto(
+      return PartnerUser(
         id: user.id,
         email: user.email,
         name: user.name,
@@ -129,7 +129,7 @@ class DriftPartnerRepository extends DriftDatabaseRepository {
     }).getSingleOrNull();
   }
 
-  Future<bool> toggleShowInTimeline(PartnerUserDto partner, String userId) {
+  Future<bool> toggleShowInTimeline(PartnerUser partner, String userId) {
     return _db.partnerEntity.update().replace(
           PartnerEntityCompanion(
             sharedById: Value(partner.id),

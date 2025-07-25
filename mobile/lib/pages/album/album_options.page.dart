@@ -69,7 +69,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
 
       try {
         await ref.read(albumProvider.notifier).removeUser(album, user);
-        album.sharedUsers.remove(entity.User.fromDto(user));
+        album.sharedUsers.remove(entity.IsarUser.fromDto(user));
         sharedUsers.value = album.sharedUsers.map((u) => u.toDto()).toList();
       } catch (error) {
         showErrorMessage();

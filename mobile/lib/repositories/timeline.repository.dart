@@ -15,11 +15,11 @@ class TimelineRepository extends DatabaseRepository {
   const TimelineRepository(super.db);
 
   Future<List<String>> getTimelineUserIds(String id) {
-    return db.users.filter().inTimelineEqualTo(true).or().idEqualTo(id).idProperty().findAll();
+    return db.isarUsers.filter().inTimelineEqualTo(true).or().idEqualTo(id).idProperty().findAll();
   }
 
   Stream<List<String>> watchTimelineUsers(String id) {
-    return db.users.filter().inTimelineEqualTo(true).or().idEqualTo(id).idProperty().watch();
+    return db.isarUsers.filter().inTimelineEqualTo(true).or().idEqualTo(id).idProperty().watch();
   }
 
   Stream<RenderList> watchArchiveTimeline(String userId) {

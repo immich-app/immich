@@ -95,7 +95,7 @@ class AlbumRepository extends DatabaseRepository {
   }
 
   Future<void> removeUsers(Album album, List<UserDto> users) => txn(
-        () => album.sharedUsers.update(unlink: users.map(entity.User.fromDto)),
+        () => album.sharedUsers.update(unlink: users.map(entity.IsarUser.fromDto)),
       );
 
   Future<void> addAssets(Album album, List<Asset> assets) => txn(() => album.assets.update(link: assets));
@@ -109,8 +109,9 @@ class AlbumRepository extends DatabaseRepository {
     return album;
   }
 
-  Future<void> addUsers(Album album, List<UserDto> users) =>
-      txn(() => album.sharedUsers.update(link: users.map(entity.User.fromDto)));
+  Future<void> addUsers(Album album, List<UserDto> users) => txn(
+        () => album.sharedUsers.update(link: users.map(entity.IsarUser.fromDto)),
+      );
 
   Future<void> deleteAllLocal() => txn(() => db.albums.where().localIdIsNotNull().deleteAll());
 

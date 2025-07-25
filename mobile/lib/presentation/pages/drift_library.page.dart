@@ -475,7 +475,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
 class _PartnerList extends StatelessWidget {
   const _PartnerList({required this.partners});
 
-  final List<PartnerUserDto> partners;
+  final List<PartnerUser> partners;
 
   @override
   Widget build(BuildContext context) {

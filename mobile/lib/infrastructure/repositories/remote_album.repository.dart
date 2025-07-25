@@ -8,6 +8,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 enum SortRemoteAlbumsBy { id, updatedAt }
@@ -40,8 +41,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     ]);
     query
       ..where(_db.remoteAssetEntity.deletedAt.isNull())
-      ..addColumns([assetCount])
-      ..addColumns([_db.userEntity.name])
+      ..addColumns([assetCount, _db.userEntity.name])
       ..groupBy([_db.remoteAlbumEntity.id]);
 
     if (sortBy.isNotEmpty) {
@@ -147,34 +147,18 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     }).getSingle();
   }
 
-  Future<List<UserDto>> getSharedUsers(String albumId) async {
-    final albumUserRows =
-        await (_db.select(_db.remoteAlbumUserEntity)..where((row) => row.albumId.equals(albumId))).get();
+  Future<List<User>> getSharedUsers(String albumId) async {
+    final query = _db.remoteAlbumUserEntity.selectOnly()
+      ..join([
+        innerJoin(
+          _db.userEntity,
+          _db.userEntity.id.equalsExp(_db.remoteAlbumUserEntity.userId),
+          useColumns: true,
+        ),
+      ])
+      ..where(_db.remoteAlbumUserEntity.albumId.equals(albumId));
 
-    if (albumUserRows.isEmpty) {
-      return [];
-    }
-
-    final userIds = albumUserRows.map((row) => row.userId);
-
-    return (_db.select(_db.userEntity)..where((row) => row.id.isIn(userIds)))
-        .map(
-          (user) => UserDto(
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            profileImagePath: user.profileImagePath?.isEmpty == true ? null : user.profileImagePath,
-            isAdmin: user.isAdmin,
-            updatedAt: user.updatedAt,
-            quotaSizeInBytes: user.quotaSizeInBytes ?? 0,
-            quotaUsageInBytes: user.quotaUsageInBytes,
-            memoryEnabled: true,
-            inTimeline: false,
-            isPartnerSharedBy: false,
-            isPartnerSharedWith: false,
-          ),
-        )
-        .get();
+    return query.map((row) => row.readTable(_db.userEntity).toDto()).get();
   }
 
   Future<List<RemoteAsset>> getAssets(String albumId) {

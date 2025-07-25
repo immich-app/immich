@@ -4,8 +4,9 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
-import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/auth_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
@@ -43,6 +44,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
 @DriftDatabase(
   tables: [
     UserEntity,
+    AuthUserEntity,
     UserMetadataEntity,
     PartnerEntity,
     LocalAlbumEntity,
@@ -74,7 +76,7 @@ class Drift extends $Drift implements IDatabaseRepository {
         );
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -101,6 +103,12 @@ class Drift extends $Drift implements IDatabaseRepository {
                 await m.alterTable(TableMigration(v4.personEntity));
                 // asset_face_entity is added
                 await m.create(v4.assetFaceEntity);
+              },
+              from4To5: (m, v5) async {
+                // Some column got moved from user_entity to auth_user_entity
+                await m.alterTable(TableMigration(v5.userEntity));
+                // auth_user_entity is added
+                await m.create(v5.authUserEntity);
               },
             ),
           );

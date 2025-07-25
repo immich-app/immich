@@ -893,7 +893,7 @@ class DriftMemoryRouteArgs {
 class DriftPartnerDetailRoute extends PageRouteInfo<DriftPartnerDetailRouteArgs> {
   DriftPartnerDetailRoute({
     Key? key,
-    required PartnerUserDto partner,
+    required PartnerUser partner,
     List<PageRouteInfo>? children,
   }) : super(
           DriftPartnerDetailRoute.name,
@@ -917,7 +917,7 @@ class DriftPartnerDetailRouteArgs {
 
   final Key? key;
 
-  final PartnerUserDto partner;
+  final PartnerUser partner;
 
   @override
   String toString() {

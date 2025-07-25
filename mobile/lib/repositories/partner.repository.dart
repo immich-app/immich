@@ -13,22 +13,24 @@ class PartnerRepository extends DatabaseRepository {
   const PartnerRepository(super.db);
 
   Future<List<UserDto>> getSharedBy() async {
-    return (await db.users.filter().isPartnerSharedByEqualTo(true).sortById().findAll()).map((u) => u.toDto()).toList();
+    return (await db.isarUsers.filter().isPartnerSharedByEqualTo(true).sortById().findAll())
+        .map((u) => u.toDto())
+        .toList();
   }
 
   Future<List<UserDto>> getSharedWith() async {
-    return (await db.users.filter().isPartnerSharedWithEqualTo(true).sortById().findAll())
+    return (await db.isarUsers.filter().isPartnerSharedWithEqualTo(true).sortById().findAll())
         .map((u) => u.toDto())
         .toList();
   }
 
   Stream<List<UserDto>> watchSharedBy() {
-    return (db.users.filter().isPartnerSharedByEqualTo(true).sortById().watch())
+    return (db.isarUsers.filter().isPartnerSharedByEqualTo(true).sortById().watch())
         .map((users) => users.map((u) => u.toDto()).toList());
   }
 
   Stream<List<UserDto>> watchSharedWith() {
-    return (db.users.filter().isPartnerSharedWithEqualTo(true).sortById().watch())
+    return (db.isarUsers.filter().isPartnerSharedWithEqualTo(true).sortById().watch())
         .map((users) => users.map((u) => u.toDto()).toList());
   }
 }

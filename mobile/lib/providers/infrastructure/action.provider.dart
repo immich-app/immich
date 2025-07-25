@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/drift_backup.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
@@ -62,12 +63,16 @@ class ActionNotifier extends Notifier<void> {
   }
 
   List<String> _getOwnedRemoteIdsForSource(ActionSource source) {
-    final ownerId = ref.read(currentUserProvider)?.id;
-    return _getAssets(source).whereType<RemoteAsset>().ownedAssets(ownerId).toIds().toList(growable: false);
+    User? user;
+    ref.read(currentUserNotifierProvider).whenData((asyncUser) => user = asyncUser);
+    return _getAssets(source).whereType<RemoteAsset>().ownedAssets(user?.id).toIds().toList(growable: false);
   }
 
   List<RemoteAsset> _getOwnedRemoteAssetsForSource(ActionSource source) {
-    final ownerId = ref.read(currentUserProvider)?.id;
+    User? user;
+    ref.read(currentUserNotifierProvider).whenData((asyncUser) => user = asyncUser);
+
+    final ownerId = user?.id;
     return _getIdsForSource<RemoteAsset>(source).ownedAssets(ownerId).toList();
   }
 

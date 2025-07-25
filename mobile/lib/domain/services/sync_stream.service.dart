@@ -25,7 +25,7 @@ class SyncStreamService {
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
   Future<void> sync() {
-    _logger.info("Remote sync request for userr");
+    _logger.info("Remote sync request for user");
     DLog.log("Remote sync request for user");
     // Start the sync stream and handle events
     return _syncApiRepository.streamChanges(_handleEvents);
@@ -120,6 +120,8 @@ class SyncStreamService {
   ) async {
     _logger.fine("Processing sync data for $type of length ${data.length}");
     switch (type) {
+      case SyncEntityType.authUserV1:
+        return _syncStreamRepository.updateAuthUsersV1(data.cast());
       case SyncEntityType.userV1:
         return _syncStreamRepository.updateUsersV1(data.cast());
       case SyncEntityType.userDeleteV1:

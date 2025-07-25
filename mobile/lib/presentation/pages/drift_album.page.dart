@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -14,7 +15,7 @@ import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/remote_album.utils.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
@@ -49,8 +50,9 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
   }
 
   void onSearch(String searchTerm, QuickFilterMode sortMode) {
-    final userId = ref.watch(currentUserProvider)?.id;
-    ref.read(remoteAlbumProvider.notifier).searchAlbums(searchTerm, userId, sortMode);
+    ref.watch(currentUserNotifierProvider).whenData(
+          (user) => ref.read(remoteAlbumProvider.notifier).searchAlbums(searchTerm, user?.id, sortMode),
+        );
   }
 
   Future<void> onRefresh() async {
@@ -88,7 +90,7 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
   Widget build(BuildContext context) {
     final albums = ref.watch(remoteAlbumProvider.select((s) => s.filteredAlbums));
 
-    final userId = ref.watch(currentUserProvider)?.id;
+    final user = ref.watch(currentUserNotifierProvider);
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -129,15 +131,17 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
             isGrid: isGrid,
             onToggleViewMode: toggleViewMode,
           ),
-          isGrid
-              ? _AlbumGrid(
-                  albums: albums,
-                  userId: userId,
-                )
-              : _AlbumList(
-                  albums: albums,
-                  userId: userId,
-                ),
+          user.widgetWhen(
+            onData: (user) => isGrid
+                ? _AlbumGrid(
+                    albums: albums,
+                    userId: user?.id,
+                  )
+                : _AlbumList(
+                    albums: albums,
+                    userId: user?.id,
+                  ),
+          ),
         ],
       ),
     );

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
@@ -64,5 +66,30 @@ class UserService {
 
   Future<void> deleteAll() {
     return _isarUserRepository.deleteAll();
+  }
+}
+
+class DriftUserService {
+  final DriftUserRepository _userRepository;
+  final SettingsService _settingsService;
+
+  const DriftUserService(
+    this._userRepository,
+    this._settingsService,
+  );
+
+  Future<User?> getMyUser() {
+    // TODO: Remove UserDto after new store
+    final isarCurrentUser = _settingsService.get(Setting.currentUser);
+
+    if (isarCurrentUser == null) {
+      throw Exception('User must be login');
+    }
+
+    return _userRepository.getById(isarCurrentUser.id);
+  }
+
+  Future<List<User>> getAll() {
+    return _userRepository.getAll();
   }
 }

@@ -108,7 +108,7 @@ class RemoteAlbumService {
     return _repository.getDateRange(albumId);
   }
 
-  Future<List<UserDto>> getSharedUsers(String albumId) {
+  Future<List<User>> getSharedUsers(String albumId) {
     return _repository.getSharedUsers(albumId);
   }
 

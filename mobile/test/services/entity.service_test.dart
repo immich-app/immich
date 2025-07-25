@@ -35,9 +35,9 @@ void main() {
       )
         ..remoteThumbnailAssetId = AssetStub.image1.remoteId
         ..assets.addAll([AssetStub.image1, AssetStub.image1])
-        ..owner.value = User.fromDto(UserStub.user1)
+        ..owner.value = IsarUser.fromDto(UserStub.user1)
         ..sharedUsers.addAll(
-          [User.fromDto(UserStub.admin), User.fromDto(UserStub.admin)],
+          [IsarUser.fromDto(UserStub.admin), IsarUser.fromDto(UserStub.admin)],
         );
 
       when(() => userRepository.getByUserId(any())).thenAnswer((_) async => UserStub.admin);

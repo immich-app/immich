@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
@@ -13,7 +14,7 @@ import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 final _features = [
@@ -26,12 +27,14 @@ final _features = [
     name: 'Selection Mode Timeline',
     icon: Icons.developer_mode_rounded,
     onTap: (ctx, ref) async {
-      final user = ref.watch(currentUserProvider);
+      User? user;
+      ref.watch(currentUserNotifierProvider).whenData((asyncUser) => user = asyncUser);
+
       if (user == null) {
         return Future.value();
       }
 
-      final assets = await ref.read(remoteAssetRepositoryProvider).getSome(user.id);
+      final assets = await ref.read(remoteAssetRepositoryProvider).getSome(user!.id);
 
       final selectedAssets = await ctx.pushRoute<Set<BaseAsset>>(
         DriftAssetSelectionTimelineRoute(

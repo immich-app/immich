@@ -12,15 +12,15 @@ class DriftPartnerService {
     this._partnerApiRepository,
   );
 
-  Future<List<PartnerUserDto>> getSharedWith(String userId) {
+  Future<List<PartnerUser>> getSharedWith(String userId) {
     return _driftPartnerRepository.getSharedWith(userId);
   }
 
-  Future<List<PartnerUserDto>> getSharedBy(String userId) {
+  Future<List<PartnerUser>> getSharedBy(String userId) {
     return _driftPartnerRepository.getSharedBy(userId);
   }
 
-  Future<List<PartnerUserDto>> getAvailablePartners(
+  Future<List<PartnerUser>> getAvailablePartners(
     String currentUserId,
   ) async {
     final otherUsers = await _driftPartnerRepository.getAvailablePartners(currentUserId);

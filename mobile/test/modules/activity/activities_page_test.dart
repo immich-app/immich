@@ -96,7 +96,7 @@ void main() {
     await db.writeTxn(() async {
       await db.clear();
       // Save all assets
-      await db.users.put(User.fromDto(UserStub.admin));
+      await db.isarUsers.put(IsarUser.fromDto(UserStub.admin));
       await db.assets.putAll([AssetStub.image1, AssetStub.image2]);
       await db.albums.put(AlbumStub.twoAsset);
       await AlbumStub.twoAsset.owner.save();
@@ -104,7 +104,7 @@ void main() {
     });
     expect(db.albums.countSync(), 1);
     expect(db.assets.countSync(), 2);
-    expect(db.users.countSync(), 1);
+    expect(db.isarUsers.countSync(), 1);
   });
 
   group("App bar", () {

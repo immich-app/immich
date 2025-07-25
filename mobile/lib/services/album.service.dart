@@ -347,7 +347,7 @@ class AlbumService {
         userId: user.id,
       );
 
-      album.sharedUsers.remove(entity.User.fromDto(user));
+      album.sharedUsers.remove(entity.IsarUser.fromDto(user));
       await _albumRepository.removeUsers(album, [user]);
       final a = await _albumRepository.get(album.id);
       // trigger watcher

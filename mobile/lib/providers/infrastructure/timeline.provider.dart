@@ -1,10 +1,11 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 
 final timelineRepositoryProvider = Provider<DriftTimelineRepository>(
   (ref) => DriftTimelineRepository(ref.watch(driftProvider)),
@@ -35,7 +36,10 @@ final timelineFactoryProvider = Provider<TimelineFactory>(
 
 final timelineUsersProvider = StreamProvider<List<String>>(
   (ref) {
-    final currentUserId = ref.watch(currentUserProvider.select((u) => u?.id));
+    User? user;
+    ref.watch(currentUserNotifierProvider).whenData((asyncUser) => user = asyncUser);
+
+    final currentUserId = user?.id;
     if (currentUserId == null) {
       return Stream.value([]);
     }

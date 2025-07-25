@@ -10,18 +10,18 @@ class IsarUserRepository extends IsarDatabaseRepository {
 
   Future<void> delete(List<String> ids) async {
     await transaction(() async {
-      await _db.users.deleteAllById(ids);
+      await _db.isarUsers.deleteAllById(ids);
     });
   }
 
   Future<void> deleteAll() async {
     await transaction(() async {
-      await _db.users.clear();
+      await _db.isarUsers.clear();
     });
   }
 
   Future<List<UserDto>> getAll({SortUserBy? sortBy}) async {
-    return (await _db.users
+    return (await _db.isarUsers
             .where()
             .optional(
               sortBy != null,
@@ -35,31 +35,44 @@ class IsarUserRepository extends IsarDatabaseRepository {
   }
 
   Future<UserDto?> getByUserId(String id) async {
-    return (await _db.users.getById(id))?.toDto();
+    return (await _db.isarUsers.getById(id))?.toDto();
   }
 
   Future<List<UserDto?>> getByUserIds(List<String> ids) async {
-    return (await _db.users.getAllById(ids)).map((u) => u?.toDto()).toList();
+    return (await _db.isarUsers.getAllById(ids)).map((u) => u?.toDto()).toList();
   }
 
   Future<bool> insert(UserDto user) async {
     await transaction(() async {
-      await _db.users.put(entity.User.fromDto(user));
+      await _db.isarUsers.put(entity.IsarUser.fromDto(user));
     });
     return true;
   }
 
   Future<UserDto> update(UserDto user) async {
     await transaction(() async {
-      await _db.users.put(entity.User.fromDto(user));
+      await _db.isarUsers.put(entity.IsarUser.fromDto(user));
     });
     return user;
   }
 
   Future<bool> updateAll(List<UserDto> users) async {
     await transaction(() async {
-      await _db.users.putAll(users.map(entity.User.fromDto).toList());
+      await _db.isarUsers.putAll(users.map(entity.IsarUser.fromDto).toList());
     });
     return true;
+  }
+}
+
+class DriftUserRepository extends DriftDatabaseRepository {
+  final Drift _db;
+  const DriftUserRepository(this._db) : super(_db);
+
+  Future<List<User>> getAll() {
+    return _db.managers.userEntity.orderBy((row) => row.id.asc()).map((row) => row.toDto()).get();
+  }
+
+  Future<User?> getById(String id) {
+    return _db.managers.userEntity.filter((row) => row.id.equals(id)).map((row) => row.toDto()).getSingleOrNull();
   }
 }

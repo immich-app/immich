@@ -2,10 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 
 @RoutePage()
 class DriftAssetSelectionTimelinePage extends ConsumerWidget {
@@ -30,14 +31,16 @@ class DriftAssetSelectionTimelinePage extends ConsumerWidget {
         ),
         timelineServiceProvider.overrideWith(
           (ref) {
-            final user = ref.watch(currentUserProvider);
+            User? user;
+            ref.watch(currentUserNotifierProvider).whenData((asyncUser) => user = asyncUser);
+
             if (user == null) {
               throw Exception(
                 'User must be logged in to access asset selection timeline',
               );
             }
 
-            final timelineService = ref.watch(timelineFactoryProvider).remoteAssets(user.id);
+            final timelineService = ref.watch(timelineFactoryProvider).remoteAssets(user!.id);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },

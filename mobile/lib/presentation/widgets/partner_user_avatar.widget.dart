@@ -9,7 +9,7 @@ import 'package:immich_mobile/services/api.service.dart';
 class PartnerUserAvatar extends StatelessWidget {
   const PartnerUserAvatar({super.key, required this.partner});
 
-  final PartnerUserDto partner;
+  final PartnerUser partner;
 
   @override
   Widget build(BuildContext context) {

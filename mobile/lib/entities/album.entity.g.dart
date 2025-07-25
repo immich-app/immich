@@ -116,7 +116,7 @@ const AlbumSchema = CollectionSchema(
     r'owner': LinkSchema(
       id: 8272576585804958029,
       name: r'owner',
-      target: r'User',
+      target: r'IsarUser',
       single: true,
     ),
     r'thumbnail': LinkSchema(
@@ -128,7 +128,7 @@ const AlbumSchema = CollectionSchema(
     r'sharedUsers': LinkSchema(
       id: 8972835302564625434,
       name: r'sharedUsers',
-      target: r'User',
+      target: r'IsarUser',
       single: false,
     ),
     r'assets': LinkSchema(
@@ -275,10 +275,10 @@ List<IsarLinkBase<dynamic>> _albumGetLinks(Album object) {
 
 void _albumAttach(IsarCollection<dynamic> col, Id id, Album object) {
   object.id = id;
-  object.owner.attach(col, col.isar.collection<User>(), r'owner', id);
+  object.owner.attach(col, col.isar.collection<IsarUser>(), r'owner', id);
   object.thumbnail.attach(col, col.isar.collection<Asset>(), r'thumbnail', id);
   object.sharedUsers
-      .attach(col, col.isar.collection<User>(), r'sharedUsers', id);
+      .attach(col, col.isar.collection<IsarUser>(), r'sharedUsers', id);
   object.assets.attach(col, col.isar.collection<Asset>(), r'assets', id);
 }
 
@@ -1500,7 +1500,8 @@ extension AlbumQueryFilter on QueryBuilder<Album, Album, QFilterCondition> {
 extension AlbumQueryObject on QueryBuilder<Album, Album, QFilterCondition> {}
 
 extension AlbumQueryLinks on QueryBuilder<Album, Album, QFilterCondition> {
-  QueryBuilder<Album, Album, QAfterFilterCondition> owner(FilterQuery<User> q) {
+  QueryBuilder<Album, Album, QAfterFilterCondition> owner(
+      FilterQuery<IsarUser> q) {
     return QueryBuilder.apply(this, (query) {
       return query.link(q, r'owner');
     });
@@ -1526,7 +1527,7 @@ extension AlbumQueryLinks on QueryBuilder<Album, Album, QFilterCondition> {
   }
 
   QueryBuilder<Album, Album, QAfterFilterCondition> sharedUsers(
-      FilterQuery<User> q) {
+      FilterQuery<IsarUser> q) {
     return QueryBuilder.apply(this, (query) {
       return query.link(q, r'sharedUsers');
     });

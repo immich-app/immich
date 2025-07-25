@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class StackActionButton extends ConsumerWidget {
@@ -19,12 +20,14 @@ class StackActionButton extends ConsumerWidget {
       return;
     }
 
-    final user = ref.watch(currentUserProvider);
+    User? user;
+    ref.watch(currentUserNotifierProvider).whenData((asyncUser) => user = asyncUser);
+
     if (user == null) {
       throw Exception('User must be logged in to access stack action');
     }
 
-    final result = await ref.read(actionProvider.notifier).stack(user.id, source);
+    final result = await ref.read(actionProvider.notifier).stack(user!.id, source);
     ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'stack_action_prompt'.t(

@@ -45,7 +45,7 @@ abstract final class TestUtils {
         ExifInfoSchema,
         AssetSchema,
         AlbumSchema,
-        UserSchema,
+        IsarUserSchema,
         BackupAlbumSchema,
         DuplicatedAssetSchema,
         LoggerMessageSchema,

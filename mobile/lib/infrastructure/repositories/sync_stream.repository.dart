@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
@@ -29,6 +30,38 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   SyncStreamRepository(super.db) : _db = db;
 
+  Future<void> updateAuthUsersV1(Iterable<SyncAuthUserV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final authUser in data) {
+          final companion = AuthUserEntityCompanion(
+            name: Value(authUser.name),
+            email: Value(authUser.email),
+            deletedAt: Value(authUser.deletedAt),
+            avatarColor: Value(authUser.avatarColor?.toAvatarColor()),
+            isAdmin: Value(authUser.isAdmin),
+            oauthId: Value(authUser.oauthId),
+            pinCode: Value(authUser.pinCode),
+            hasProfileImage: Value(authUser.hasProfileImage),
+            profileChangedAt: Value(authUser.profileChangedAt),
+            quotaSizeInBytes: Value(authUser.quotaSizeInBytes),
+            quotaUsageInBytes: Value(authUser.quotaUsageInBytes),
+            storageLabel: Value(authUser.storageLabel),
+          );
+
+          batch.insert(
+            _db.authUserEntity,
+            companion.copyWith(id: Value(authUser.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: SyncAuthUserV1', error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> deleteUsersV1(Iterable<SyncUserDeleteV1> data) async {
     try {
       await _db.userEntity.deleteWhere((row) => row.id.isIn(data.map((e) => e.userId)));
@@ -45,6 +78,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           final companion = UserEntityCompanion(
             name: Value(user.name),
             email: Value(user.email),
+            deletedAt: Value(user.deletedAt),
+            avatarColor: Value(user.avatarColor?.toAvatarColor()),
           );
 
           batch.insert(
@@ -602,6 +637,22 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       rethrow;
     }
   }
+}
+
+extension on UserAvatarColor {
+  AvatarColor toAvatarColor() => switch (this) {
+        UserAvatarColor.amber => AvatarColor.amber,
+        UserAvatarColor.blue => AvatarColor.blue,
+        UserAvatarColor.gray => AvatarColor.gray,
+        UserAvatarColor.green => AvatarColor.green,
+        UserAvatarColor.orange => AvatarColor.orange,
+        UserAvatarColor.pink => AvatarColor.pink,
+        UserAvatarColor.primary => AvatarColor.primary,
+        UserAvatarColor.purple => AvatarColor.purple,
+        UserAvatarColor.red => AvatarColor.red,
+        UserAvatarColor.yellow => AvatarColor.yellow,
+        _ => throw Exception('Unknown AvatarColor value: $this'),
+      };
 }
 
 extension on AssetTypeEnum {

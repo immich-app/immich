@@ -1,14 +1,16 @@
 import 'package:drift/drift.dart' hide Index;
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
+import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 
 part 'user.entity.g.dart';
 
+// TODO: Remove User once Isar is removed
 @Collection(inheritance: false)
-class User {
+class IsarUser {
   Id get isarId => fastHash(id);
   @Index(unique: true, replace: false, type: IndexType.hash)
   final String id;
@@ -26,7 +28,7 @@ class User {
   final int quotaUsageInBytes;
   final int quotaSizeInBytes;
 
-  const User({
+  const IsarUser({
     required this.id,
     required this.updatedAt,
     required this.email,
@@ -42,7 +44,7 @@ class User {
     this.quotaSizeInBytes = 0,
   });
 
-  static User fromDto(UserDto dto) => User(
+  static IsarUser fromDto(UserDto dto) => IsarUser(
         id: dto.id,
         updatedAt: dto.updatedAt,
         email: dto.email,
@@ -79,15 +81,25 @@ class UserEntity extends Table with DriftDefaultsMixin {
   const UserEntity();
 
   TextColumn get id => text()();
+
   TextColumn get name => text()();
-  BoolColumn get isAdmin => boolean().withDefault(const Constant(false))();
+
   TextColumn get email => text()();
-  TextColumn get profileImagePath => text().nullable()();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  // Quota
-  IntColumn get quotaSizeInBytes => integer().nullable()();
-  IntColumn get quotaUsageInBytes => integer().withDefault(const Constant(0))();
+
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  IntColumn get avatarColor => intEnum<AvatarColor>().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
+}
+
+extension UserEntityDataDomainEx on UserEntityData {
+  User toDto() => User(
+        id: id,
+        name: name,
+        email: email,
+        deletedAt: deletedAt,
+        avatarColor: avatarColor,
+      );
 }

@@ -263,7 +263,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     required int offset,
     required int count,
   }) async {
-    final albumData = await (_db.remoteAlbumEntity.select()..where((row) => row.id.equals(albumId))).getSingleOrNull();
+    final albumData = await _db.managers.remoteAlbumEntity.filter((row) => row.id.equals(albumId)).getSingleOrNull();
 
     // If album doesn't exist (was deleted), return empty list
     if (albumData == null) {

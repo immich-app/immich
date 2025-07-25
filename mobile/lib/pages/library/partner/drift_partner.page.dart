@@ -29,13 +29,13 @@ class DriftPartnerPage extends HookConsumerWidget {
         return;
       }
 
-      final selectedUser = await showDialog<PartnerUserDto>(
+      final selectedUser = await showDialog<PartnerUser>(
         context: context,
         builder: (context) {
           return SimpleDialog(
             title: const Text("partner_page_select_partner").tr(),
             children: [
-              for (PartnerUserDto partner in potentialPartners)
+              for (PartnerUser partner in potentialPartners)
                 SimpleDialogOption(
                   onPressed: () => context.pop(partner),
                   child: Row(
@@ -57,7 +57,7 @@ class DriftPartnerPage extends HookConsumerWidget {
       }
     }
 
-    onDeleteUser(PartnerUserDto partner) {
+    onDeleteUser(PartnerUser partner) {
       return showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -95,7 +95,7 @@ class DriftPartnerPage extends HookConsumerWidget {
 
 class _SharedToPartnerList extends ConsumerWidget {
   final VoidCallback onAddPartner;
-  final Function(PartnerUserDto partner) onDeletePartner;
+  final Function(PartnerUser partner) onDeletePartner;
 
   const _SharedToPartnerList({
     required this.onAddPartner,

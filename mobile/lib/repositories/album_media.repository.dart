@@ -99,7 +99,7 @@ class AlbumMediaRepository {
       shared: false,
       activityEnabled: false,
     );
-    album.owner.value = User.fromDto(Store.get(StoreKey.currentUser));
+    album.owner.value = IsarUser.fromDto(Store.get(StoreKey.currentUser));
     album.localId = assetPathEntity.id;
     album.isAll = assetPathEntity.isAll;
     return album;
