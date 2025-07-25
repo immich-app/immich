@@ -15,6 +15,7 @@ import {
   ServerVersionResponseDto,
 } from 'src/dtos/server.dto';
 import { VersionCheckStateResponseDto } from 'src/dtos/system-metadata.dto';
+import { Permission } from 'src/enum';
 import { Authenticated } from 'src/middleware/auth.guard';
 import { ServerService } from 'src/services/server.service';
 import { SystemMetadataService } from 'src/services/system-metadata.service';
@@ -30,19 +31,19 @@ export class ServerController {
   ) {}
 
   @Get('about')
-  @Authenticated()
+  @Authenticated({ permission: Permission.ServerAbout })
   getAboutInfo(): Promise<ServerAboutResponseDto> {
     return this.service.getAboutInfo();
   }
 
   @Get('apk-links')
-  @Authenticated()
+  @Authenticated({ permission: Permission.ServerApkLinks })
   getApkLinks(): ServerApkLinksDto {
     return this.service.getApkLinks();
   }
 
   @Get('storage')
-  @Authenticated()
+  @Authenticated({ permission: Permission.ServerStorage })
   getStorage(): Promise<ServerStorageResponseDto> {
     return this.service.getStorage();
   }
@@ -78,7 +79,7 @@ export class ServerController {
   }
 
   @Get('statistics')
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.ServerStatistics, admin: true })
   getServerStatistics(): Promise<ServerStatsResponseDto> {
     return this.service.getStatistics();
   }
@@ -88,23 +89,23 @@ export class ServerController {
     return this.service.getSupportedMediaTypes();
   }
 
+  @Get('license')
+  @Authenticated({ permission: Permission.ServerLicenseRead, admin: true })
+  @ApiNotFoundResponse()
+  getServerLicense(): Promise<LicenseResponseDto> {
+    return this.service.getLicense();
+  }
+
   @Put('license')
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.ServerLicenseUpdate, admin: true })
   setServerLicense(@Body() license: LicenseKeyDto): Promise<LicenseResponseDto> {
     return this.service.setLicense(license);
   }
 
   @Delete('license')
-  @Authenticated({ admin: true })
+  @Authenticated({ permission: Permission.ServerLicenseDelete, admin: true })
   deleteServerLicense(): Promise<void> {
     return this.service.deleteLicense();
-  }
-
-  @Get('license')
-  @Authenticated({ admin: true })
-  @ApiNotFoundResponse()
-  getServerLicense(): Promise<LicenseResponseDto> {
-    return this.service.getLicense();
   }
 
   @Get('version-check')
