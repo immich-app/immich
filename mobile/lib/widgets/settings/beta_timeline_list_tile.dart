@@ -99,7 +99,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
                       context.pop();
                     },
                     child: Text(
-                      "cancel".tr(context: context),
+                      "cancel".tr(),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -119,7 +119,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
                       );
                     },
                     child: Text(
-                      "ok".tr(context: context),
+                      "ok".tr(),
                     ),
                   ),
                 ],
