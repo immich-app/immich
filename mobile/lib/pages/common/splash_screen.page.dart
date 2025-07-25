@@ -42,30 +42,22 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
     final accessToken = Store.tryGet(StoreKey.accessToken);
 
-    bool isAuthSuccess = false;
-
     if (accessToken != null && serverUrl != null && endpoint != null) {
-      try {
-        isAuthSuccess = await ref.read(authProvider.notifier).saveAuthInfo(
-              accessToken: accessToken,
-            );
-      } catch (error, stackTrace) {
-        log.severe(
-          'Cannot set success login info',
-          error,
-          stackTrace,
-        );
-      }
+      ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
+            (a) => {
+              log.info('Successfully updated auth info with access token: $accessToken'),
+            },
+            onError: (exception) => {
+              log.severe(
+                'Failed to update auth info with access token: $accessToken',
+              ),
+              ref.read(authProvider.notifier).logout(),
+              context.replaceRoute(const LoginRoute()),
+            },
+          );
     } else {
-      isAuthSuccess = false;
       log.severe(
-        'Missing authentication, server, or endpoint info from the local store',
-      );
-    }
-
-    if (!isAuthSuccess) {
-      log.severe(
-        'Unable to login using offline or online methods - Logging out completely',
+        'Missing crucial offline login info - Logging out completely',
       );
       ref.read(authProvider.notifier).logout();
       context.replaceRoute(const LoginRoute());
