@@ -65,8 +65,8 @@ class GeneralBottomSheet extends ConsumerWidget {
     }
 
     return BaseBottomSheet(
-      initialChildSize: 0.25,
-      maxChildSize: 0.65,
+      initialChildSize: 0.45,
+      maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
       actions: [
         const ShareActionButton(source: ActionSource.timeline),

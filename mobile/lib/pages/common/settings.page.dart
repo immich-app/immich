@@ -182,8 +182,7 @@ class _BetaLandscapeToggle extends HookWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         const SizedBox(height: 100, child: BetaTimelineListTile()),
-        if (Store.isBetaTimelineEnabled)
-          const Expanded(child: BetaSyncSettings()),
+        if (Store.isBetaTimelineEnabled) const Expanded(child: BetaSyncSettings()),
       ],
     );
   }

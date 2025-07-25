@@ -58,9 +58,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
   void onSearch(String searchTerm, QuickFilterMode sortMode) {
     final userId = ref.watch(currentUserProvider)?.id;
-    ref
-        .read(remoteAlbumProvider.notifier)
-        .searchAlbums(searchTerm, userId, sortMode);
+    ref.read(remoteAlbumProvider.notifier).searchAlbums(searchTerm, userId, sortMode);
   }
 
   Future<void> onRefresh() async {
@@ -96,8 +94,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
   @override
   Widget build(BuildContext context) {
-    final albums =
-        ref.watch(remoteAlbumProvider.select((s) => s.filteredAlbums));
+    final albums = ref.watch(remoteAlbumProvider.select((s) => s.filteredAlbums));
 
     final userId = ref.watch(currentUserProvider)?.id;
 
@@ -210,9 +207,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                   const EdgeInsets.fromLTRB(16, 16, 32, 16),
                 ),
                 backgroundColor: WidgetStateProperty.all(
-                  albumSortOption == sortMode
-                      ? context.colorScheme.primary
-                      : Colors.transparent,
+                  albumSortOption == sortMode ? context.colorScheme.primary : Colors.transparent,
                 ),
                 shape: WidgetStateProperty.all(
                   const RoundedRectangleBorder(
@@ -425,9 +420,7 @@ class _QuickFilterButton extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          color: isSelected
-              ? context.colorScheme.onPrimary
-              : context.colorScheme.onSurface,
+          color: isSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
           fontSize: 14,
         ),
       ),
@@ -550,8 +543,7 @@ class _AlbumList extends ConsumerWidget {
                       child: Container(
                         decoration: BoxDecoration(
                           color: context.colorScheme.surfaceContainer,
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(16)),
+                          borderRadius: const BorderRadius.all(Radius.circular(16)),
                           border: Border.all(
                             color: context.colorScheme.outline.withAlpha(50),
                             width: 1,
@@ -728,11 +720,7 @@ class AddToAlbumHeader extends ConsumerWidget {
     Future<void> onCreateAlbum() async {
       final newAlbum = await ref.read(remoteAlbumProvider.notifier).createAlbum(
             title: "Untitled Album",
-            assetIds: ref
-                .read(multiSelectProvider)
-                .selectedAssets
-                .map((e) => (e as RemoteAsset).id)
-                .toList(),
+            assetIds: ref.read(multiSelectProvider).selectedAssets.map((e) => (e as RemoteAsset).id).toList(),
           );
 
       if (newAlbum == null) {
@@ -766,8 +754,7 @@ class AddToAlbumHeader extends ConsumerWidget {
                   vertical: 4,
                 ), // remove internal padding
                 minimumSize: const Size(0, 0), // allow shrinking
-                tapTargetSize:
-                    MaterialTapTargetSize.shrinkWrap, // remove extra height
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap, // remove extra height
               ),
               onPressed: onCreateAlbum,
               icon: Icon(
