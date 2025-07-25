@@ -1,13 +1,13 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { normalizeSearchString } from '$lib/utils/string-utils.js';
   import { type AlbumResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiCheckCircle } from '@mdi/js';
+  import { t } from 'svelte-i18n';
   import type { Action } from 'svelte/action';
-
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
 
   interface Props {
@@ -116,54 +116,63 @@
   }
 </script>
 
-<button
-  type="button"
-  onclick={onAlbumClick}
-  use:scrollIntoViewIfSelected
-  class="relative flex w-full gap-4 px-6 py-2 text-start transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
-  class:bg-gray-200={selected}
-  class:dark:bg-gray-700={selected}
-  onmouseenter={onMouseEnter}
-  onmouseleave={onMouseLeave}
-  use:longPress={{ onLongPress: () => handleMultiSelectClicked() }}
->
+<div role="group" class="relative flex w-full text-start" onmouseenter={onMouseEnter} onmouseleave={onMouseLeave}>
   {#if mouseOver || multiSelected}
-    <div class="absolute top-2 left-5.1 z-[1] rounded-full">
+    <div class="absolute left-3.5 z-[1] rounded-full">
       {#if multiSelected}
-        <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-          <Icon path={mdiCheckCircle} size="24" class="text-primary" onClick={handleMultiSelectClicked} />
-        </div>
+        <IconButton
+          icon={mdiCheckCircle}
+          aria-label={$t('add_to_album_toggle', { values: { album: album.albumName } })}
+          size="small"
+          shape="round"
+          variant="ghost"
+          color="primary"
+          class="bg-[#D9DCEF] dark:bg-[#232932]"
+          onclick={handleMultiSelectClicked}
+        />
       {:else}
-        <Icon
-          path={mdiCheckCircle}
-          size="24"
+        <IconButton
+          icon={mdiCheckCircle}
+          aria-label={$t('add_to_album_toggle', { values: { album: album.albumName } })}
+          size="small"
+          shape="round"
+          variant="ghost"
           class="text-white/80 hover:text-white"
-          onClick={handleMultiSelectClicked}
+          onclick={handleMultiSelectClicked}
         />
       {/if}
     </div>
   {/if}
-
-  <span class="h-12 w-12 shrink-0 rounded-xl bg-slate-300">
-    {#if album.albumThumbnailAssetId}
-      <img
-        src={getAssetThumbnailUrl(album.albumThumbnailAssetId)}
-        alt={album.albumName}
-        class={[
-          'h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg',
-          { 'scale-[0.85]': multiSelected },
-        ]}
-        data-testid="album-image"
-        draggable="false"
-      />
-    {/if}
-  </span>
-  <span class="flex h-12 flex-col items-start justify-center overflow-hidden">
-    <span class="w-full shrink overflow-hidden text-ellipsis whitespace-nowrap"
-      >{albumNameArray[0]}<b>{albumNameArray[1]}</b>{albumNameArray[2]}</span
-    >
-    <span class="flex gap-1 text-sm">
-      <AlbumListItemDetails {album} />
+  <button
+    type="button"
+    onclick={onAlbumClick}
+    use:scrollIntoViewIfSelected
+    class="flex w-full gap-4 px-6 py-2 text-start transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
+    class:bg-gray-200={selected}
+    class:dark:bg-gray-700={selected}
+    use:longPress={{ onLongPress: () => handleMultiSelectClicked() }}
+  >
+    <span class="h-12 w-12 shrink-0 rounded-xl bg-slate-300">
+      {#if album.albumThumbnailAssetId}
+        <img
+          src={getAssetThumbnailUrl(album.albumThumbnailAssetId)}
+          alt={album.albumName}
+          class={[
+            'h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg',
+            { 'scale-[0.85]': multiSelected },
+          ]}
+          data-testid="album-image"
+          draggable="false"
+        />
+      {/if}
     </span>
-  </span>
-</button>
+    <span class="flex h-12 flex-col items-start justify-center overflow-hidden">
+      <span class="w-full shrink overflow-hidden text-ellipsis whitespace-nowrap"
+        >{albumNameArray[0]}<b>{albumNameArray[1]}</b>{albumNameArray[2]}</span
+      >
+      <span class="flex gap-1 text-sm">
+        <AlbumListItemDetails {album} />
+      </span>
+    </span>
+  </button>
+</div>
