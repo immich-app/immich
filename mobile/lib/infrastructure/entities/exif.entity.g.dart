@@ -330,8 +330,7 @@ extension ExifInfoQueryWhere on QueryBuilder<ExifInfo, ExifInfo, QWhereClause> {
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterWhereClause> idGreaterThan(Id id,
-      {bool include = false}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterWhereClause> idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -339,8 +338,7 @@ extension ExifInfoQueryWhere on QueryBuilder<ExifInfo, ExifInfo, QWhereClause> {
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterWhereClause> idLessThan(Id id,
-      {bool include = false}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterWhereClause> idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -365,8 +363,7 @@ extension ExifInfoQueryWhere on QueryBuilder<ExifInfo, ExifInfo, QWhereClause> {
   }
 }
 
-extension ExifInfoQueryFilter
-    on QueryBuilder<ExifInfo, ExifInfo, QFilterCondition> {
+extension ExifInfoQueryFilter on QueryBuilder<ExifInfo, ExifInfo, QFilterCondition> {
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -471,9 +468,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'city',
@@ -483,9 +478,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> cityMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'city',
@@ -617,9 +610,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'country',
@@ -629,9 +620,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> countryMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'country',
@@ -659,8 +648,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      dateTimeOriginalIsNull() {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> dateTimeOriginalIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'dateTimeOriginal',
@@ -668,8 +656,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      dateTimeOriginalIsNotNull() {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> dateTimeOriginalIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'dateTimeOriginal',
@@ -677,8 +664,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      dateTimeOriginalEqualTo(DateTime? value) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> dateTimeOriginalEqualTo(DateTime? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'dateTimeOriginal',
@@ -687,8 +673,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      dateTimeOriginalGreaterThan(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> dateTimeOriginalGreaterThan(
     DateTime? value, {
     bool include = false,
   }) {
@@ -701,8 +686,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      dateTimeOriginalLessThan(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> dateTimeOriginalLessThan(
     DateTime? value, {
     bool include = false,
   }) {
@@ -715,8 +699,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      dateTimeOriginalBetween(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> dateTimeOriginalBetween(
     DateTime? lower,
     DateTime? upper, {
     bool includeLower = true,
@@ -741,8 +724,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      descriptionIsNotNull() {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'description',
@@ -763,8 +745,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      descriptionGreaterThan(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -839,8 +820,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionContains(
-      String value,
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionContains(String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -851,8 +831,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionMatches(
-      String pattern,
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionMatches(String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -872,8 +851,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      descriptionIsNotEmpty() {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> descriptionIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'description',
@@ -882,8 +860,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      exposureSecondsIsNull() {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> exposureSecondsIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'exposureSeconds',
@@ -891,8 +868,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      exposureSecondsIsNotNull() {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> exposureSecondsIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'exposureSeconds',
@@ -900,8 +876,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      exposureSecondsEqualTo(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> exposureSecondsEqualTo(
     double? value, {
     double epsilon = Query.epsilon,
   }) {
@@ -914,8 +889,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      exposureSecondsGreaterThan(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> exposureSecondsGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -930,8 +904,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      exposureSecondsLessThan(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> exposureSecondsLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -946,8 +919,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      exposureSecondsBetween(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> exposureSecondsBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -1060,8 +1032,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fileSizeEqualTo(
-      int? value) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> fileSizeEqualTo(int? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'fileSize',
@@ -1197,8 +1168,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> isoEqualTo(
-      int? value) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> isoEqualTo(int? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'iso',
@@ -1432,9 +1402,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'lens',
@@ -1444,9 +1412,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> lensMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'lens',
@@ -1656,9 +1622,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'make',
@@ -1668,9 +1632,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> makeMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'make',
@@ -1880,9 +1842,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'model',
@@ -1892,9 +1852,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> modelMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'model',
@@ -1930,8 +1888,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      orientationIsNotNull() {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'orientation',
@@ -1952,8 +1909,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      orientationGreaterThan(
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -2028,8 +1984,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationContains(
-      String value,
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationContains(String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -2040,8 +1995,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationMatches(
-      String pattern,
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationMatches(String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -2061,8 +2015,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
-      orientationIsNotEmpty() {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'orientation',
@@ -2175,9 +2128,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'state',
@@ -2187,9 +2138,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'state',
@@ -2321,9 +2270,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'timeZone',
@@ -2333,9 +2280,7 @@ extension ExifInfoQueryFilter
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> timeZoneMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'timeZone',
@@ -2364,11 +2309,9 @@ extension ExifInfoQueryFilter
   }
 }
 
-extension ExifInfoQueryObject
-    on QueryBuilder<ExifInfo, ExifInfo, QFilterCondition> {}
+extension ExifInfoQueryObject on QueryBuilder<ExifInfo, ExifInfo, QFilterCondition> {}
 
-extension ExifInfoQueryLinks
-    on QueryBuilder<ExifInfo, ExifInfo, QFilterCondition> {}
+extension ExifInfoQueryLinks on QueryBuilder<ExifInfo, ExifInfo, QFilterCondition> {}
 
 extension ExifInfoQuerySortBy on QueryBuilder<ExifInfo, ExifInfo, QSortBy> {
   QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> sortByCity() {
@@ -2576,8 +2519,7 @@ extension ExifInfoQuerySortBy on QueryBuilder<ExifInfo, ExifInfo, QSortBy> {
   }
 }
 
-extension ExifInfoQuerySortThenBy
-    on QueryBuilder<ExifInfo, ExifInfo, QSortThenBy> {
+extension ExifInfoQuerySortThenBy on QueryBuilder<ExifInfo, ExifInfo, QSortThenBy> {
   QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> thenByCity() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'city', Sort.asc);
@@ -2795,17 +2737,14 @@ extension ExifInfoQuerySortThenBy
   }
 }
 
-extension ExifInfoQueryWhereDistinct
-    on QueryBuilder<ExifInfo, ExifInfo, QDistinct> {
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByCity(
-      {bool caseSensitive = true}) {
+extension ExifInfoQueryWhereDistinct on QueryBuilder<ExifInfo, ExifInfo, QDistinct> {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByCity({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'city', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByCountry(
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByCountry({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'country', caseSensitive: caseSensitive);
     });
@@ -2817,8 +2756,7 @@ extension ExifInfoQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByDescription(
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByDescription({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'description', caseSensitive: caseSensitive);
     });
@@ -2854,8 +2792,7 @@ extension ExifInfoQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByLens(
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByLens({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lens', caseSensitive: caseSensitive);
     });
@@ -2867,8 +2804,7 @@ extension ExifInfoQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByMake(
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByMake({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'make', caseSensitive: caseSensitive);
     });
@@ -2880,37 +2816,32 @@ extension ExifInfoQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByModel(
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByModel({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'model', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByOrientation(
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByOrientation({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'orientation', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByState(
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByState({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'state', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByTimeZone(
-      {bool caseSensitive = true}) {
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByTimeZone({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'timeZone', caseSensitive: caseSensitive);
     });
   }
 }
 
-extension ExifInfoQueryProperty
-    on QueryBuilder<ExifInfo, ExifInfo, QQueryProperty> {
+extension ExifInfoQueryProperty on QueryBuilder<ExifInfo, ExifInfo, QQueryProperty> {
   QueryBuilder<ExifInfo, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
@@ -2929,8 +2860,7 @@ extension ExifInfoQueryProperty
     });
   }
 
-  QueryBuilder<ExifInfo, DateTime?, QQueryOperations>
-      dateTimeOriginalProperty() {
+  QueryBuilder<ExifInfo, DateTime?, QQueryOperations> dateTimeOriginalProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'dateTimeOriginal');
     });

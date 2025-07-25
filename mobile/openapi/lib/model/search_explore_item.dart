@@ -22,23 +22,21 @@ class SearchExploreItem {
   String value;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SearchExploreItem &&
-    other.data == data &&
-    other.value == value;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SearchExploreItem && other.data == data && other.value == value;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (data.hashCode) +
-    (value.hashCode);
+      // ignore: unnecessary_parenthesis
+      (data.hashCode) + (value.hashCode);
 
   @override
   String toString() => 'SearchExploreItem[data=$data, value=$value]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'data'] = this.data;
-      json[r'value'] = this.value;
+    json[r'data'] = this.data;
+    json[r'value'] = this.value;
     return json;
   }
 
@@ -58,7 +56,10 @@ class SearchExploreItem {
     return null;
   }
 
-  static List<SearchExploreItem> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SearchExploreItem> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SearchExploreItem>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +87,19 @@ class SearchExploreItem {
   }
 
   // maps a json object with a list of SearchExploreItem-objects as value to a dart map
-  static Map<String, List<SearchExploreItem>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SearchExploreItem>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SearchExploreItem>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SearchExploreItem.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SearchExploreItem.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +111,3 @@ class SearchExploreItem {
     'value',
   };
 }
-

@@ -55,58 +55,61 @@ class NotificationCreateDto {
   String userId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is NotificationCreateDto &&
-    other.data == data &&
-    other.description == description &&
-    other.level == level &&
-    other.readAt == readAt &&
-    other.title == title &&
-    other.type == type &&
-    other.userId == userId;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NotificationCreateDto &&
+          other.data == data &&
+          other.description == description &&
+          other.level == level &&
+          other.readAt == readAt &&
+          other.title == title &&
+          other.type == type &&
+          other.userId == userId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (data == null ? 0 : data!.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (level == null ? 0 : level!.hashCode) +
-    (readAt == null ? 0 : readAt!.hashCode) +
-    (title.hashCode) +
-    (type == null ? 0 : type!.hashCode) +
-    (userId.hashCode);
+      // ignore: unnecessary_parenthesis
+      (data == null ? 0 : data!.hashCode) +
+      (description == null ? 0 : description!.hashCode) +
+      (level == null ? 0 : level!.hashCode) +
+      (readAt == null ? 0 : readAt!.hashCode) +
+      (title.hashCode) +
+      (type == null ? 0 : type!.hashCode) +
+      (userId.hashCode);
 
   @override
-  String toString() => 'NotificationCreateDto[data=$data, description=$description, level=$level, readAt=$readAt, title=$title, type=$type, userId=$userId]';
+  String toString() =>
+      'NotificationCreateDto[data=$data, description=$description, level=$level, readAt=$readAt, title=$title, type=$type, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.data != null) {
       json[r'data'] = this.data;
     } else {
-    //  json[r'data'] = null;
+      //  json[r'data'] = null;
     }
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
-    //  json[r'description'] = null;
+      //  json[r'description'] = null;
     }
     if (this.level != null) {
       json[r'level'] = this.level;
     } else {
-    //  json[r'level'] = null;
+      //  json[r'level'] = null;
     }
     if (this.readAt != null) {
       json[r'readAt'] = this.readAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'readAt'] = null;
+      //  json[r'readAt'] = null;
     }
-      json[r'title'] = this.title;
+    json[r'title'] = this.title;
     if (this.type != null) {
       json[r'type'] = this.type;
     } else {
-    //  json[r'type'] = null;
+      //  json[r'type'] = null;
     }
-      json[r'userId'] = this.userId;
+    json[r'userId'] = this.userId;
     return json;
   }
 
@@ -131,7 +134,10 @@ class NotificationCreateDto {
     return null;
   }
 
-  static List<NotificationCreateDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<NotificationCreateDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <NotificationCreateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -159,13 +165,19 @@ class NotificationCreateDto {
   }
 
   // maps a json object with a list of NotificationCreateDto-objects as value to a dart map
-  static Map<String, List<NotificationCreateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<NotificationCreateDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<NotificationCreateDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = NotificationCreateDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = NotificationCreateDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -177,4 +189,3 @@ class NotificationCreateDto {
     'userId',
   };
 }
-

@@ -22,23 +22,22 @@ class SharedLinksResponse {
   bool sidebarWeb;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SharedLinksResponse &&
-    other.enabled == enabled &&
-    other.sidebarWeb == sidebarWeb;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SharedLinksResponse && other.enabled == enabled && other.sidebarWeb == sidebarWeb;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (enabled.hashCode) +
-    (sidebarWeb.hashCode);
+      // ignore: unnecessary_parenthesis
+      (enabled.hashCode) + (sidebarWeb.hashCode);
 
   @override
   String toString() => 'SharedLinksResponse[enabled=$enabled, sidebarWeb=$sidebarWeb]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'enabled'] = this.enabled;
-      json[r'sidebarWeb'] = this.sidebarWeb;
+    json[r'enabled'] = this.enabled;
+    json[r'sidebarWeb'] = this.sidebarWeb;
     return json;
   }
 
@@ -58,7 +57,10 @@ class SharedLinksResponse {
     return null;
   }
 
-  static List<SharedLinksResponse> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SharedLinksResponse> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SharedLinksResponse>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +88,19 @@ class SharedLinksResponse {
   }
 
   // maps a json object with a list of SharedLinksResponse-objects as value to a dart map
-  static Map<String, List<SharedLinksResponse>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SharedLinksResponse>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SharedLinksResponse>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SharedLinksResponse.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SharedLinksResponse.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +112,3 @@ class SharedLinksResponse {
     'sidebarWeb',
   };
 }
-

@@ -19,20 +19,20 @@ class BulkIdsDto {
   List<String> ids;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is BulkIdsDto &&
-    _deepEquality.equals(other.ids, ids);
+  bool operator ==(Object other) =>
+      identical(this, other) || other is BulkIdsDto && _deepEquality.equals(other.ids, ids);
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (ids.hashCode);
+      // ignore: unnecessary_parenthesis
+      (ids.hashCode);
 
   @override
   String toString() => 'BulkIdsDto[ids=$ids]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'ids'] = this.ids;
+    json[r'ids'] = this.ids;
     return json;
   }
 
@@ -45,15 +45,16 @@ class BulkIdsDto {
       final json = value.cast<String, dynamic>();
 
       return BulkIdsDto(
-        ids: json[r'ids'] is Iterable
-            ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+        ids: json[r'ids'] is Iterable ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false) : const [],
       );
     }
     return null;
   }
 
-  static List<BulkIdsDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<BulkIdsDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <BulkIdsDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -81,13 +82,19 @@ class BulkIdsDto {
   }
 
   // maps a json object with a list of BulkIdsDto-objects as value to a dart map
-  static Map<String, List<BulkIdsDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<BulkIdsDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<BulkIdsDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = BulkIdsDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = BulkIdsDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -98,4 +105,3 @@ class BulkIdsDto {
     'ids',
   };
 }
-

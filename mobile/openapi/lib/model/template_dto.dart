@@ -19,20 +19,19 @@ class TemplateDto {
   String template;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is TemplateDto &&
-    other.template == template;
+  bool operator ==(Object other) => identical(this, other) || other is TemplateDto && other.template == template;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (template.hashCode);
+      // ignore: unnecessary_parenthesis
+      (template.hashCode);
 
   @override
   String toString() => 'TemplateDto[template=$template]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'template'] = this.template;
+    json[r'template'] = this.template;
     return json;
   }
 
@@ -51,7 +50,10 @@ class TemplateDto {
     return null;
   }
 
-  static List<TemplateDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<TemplateDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <TemplateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +81,19 @@ class TemplateDto {
   }
 
   // maps a json object with a list of TemplateDto-objects as value to a dart map
-  static Map<String, List<TemplateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<TemplateDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<TemplateDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = TemplateDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = TemplateDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +104,3 @@ class TemplateDto {
     'template',
   };
 }
-

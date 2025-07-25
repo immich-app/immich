@@ -43,39 +43,42 @@ class AuthStatusResponseDto {
   String? pinExpiresAt;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AuthStatusResponseDto &&
-    other.expiresAt == expiresAt &&
-    other.isElevated == isElevated &&
-    other.password == password &&
-    other.pinCode == pinCode &&
-    other.pinExpiresAt == pinExpiresAt;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AuthStatusResponseDto &&
+          other.expiresAt == expiresAt &&
+          other.isElevated == isElevated &&
+          other.password == password &&
+          other.pinCode == pinCode &&
+          other.pinExpiresAt == pinExpiresAt;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (expiresAt == null ? 0 : expiresAt!.hashCode) +
-    (isElevated.hashCode) +
-    (password.hashCode) +
-    (pinCode.hashCode) +
-    (pinExpiresAt == null ? 0 : pinExpiresAt!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (expiresAt == null ? 0 : expiresAt!.hashCode) +
+      (isElevated.hashCode) +
+      (password.hashCode) +
+      (pinCode.hashCode) +
+      (pinExpiresAt == null ? 0 : pinExpiresAt!.hashCode);
 
   @override
-  String toString() => 'AuthStatusResponseDto[expiresAt=$expiresAt, isElevated=$isElevated, password=$password, pinCode=$pinCode, pinExpiresAt=$pinExpiresAt]';
+  String toString() =>
+      'AuthStatusResponseDto[expiresAt=$expiresAt, isElevated=$isElevated, password=$password, pinCode=$pinCode, pinExpiresAt=$pinExpiresAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.expiresAt != null) {
       json[r'expiresAt'] = this.expiresAt;
     } else {
-    //  json[r'expiresAt'] = null;
+      //  json[r'expiresAt'] = null;
     }
-      json[r'isElevated'] = this.isElevated;
-      json[r'password'] = this.password;
-      json[r'pinCode'] = this.pinCode;
+    json[r'isElevated'] = this.isElevated;
+    json[r'password'] = this.password;
+    json[r'pinCode'] = this.pinCode;
     if (this.pinExpiresAt != null) {
       json[r'pinExpiresAt'] = this.pinExpiresAt;
     } else {
-    //  json[r'pinExpiresAt'] = null;
+      //  json[r'pinExpiresAt'] = null;
     }
     return json;
   }
@@ -99,7 +102,10 @@ class AuthStatusResponseDto {
     return null;
   }
 
-  static List<AuthStatusResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AuthStatusResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AuthStatusResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -127,13 +133,19 @@ class AuthStatusResponseDto {
   }
 
   // maps a json object with a list of AuthStatusResponseDto-objects as value to a dart map
-  static Map<String, List<AuthStatusResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AuthStatusResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AuthStatusResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AuthStatusResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AuthStatusResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -146,4 +158,3 @@ class AuthStatusResponseDto {
     'pinCode',
   };
 }
-

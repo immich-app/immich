@@ -25,26 +25,26 @@ class UserLicense {
   String licenseKey;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is UserLicense &&
-    other.activatedAt == activatedAt &&
-    other.activationKey == activationKey &&
-    other.licenseKey == licenseKey;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserLicense &&
+          other.activatedAt == activatedAt &&
+          other.activationKey == activationKey &&
+          other.licenseKey == licenseKey;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (activatedAt.hashCode) +
-    (activationKey.hashCode) +
-    (licenseKey.hashCode);
+      // ignore: unnecessary_parenthesis
+      (activatedAt.hashCode) + (activationKey.hashCode) + (licenseKey.hashCode);
 
   @override
   String toString() => 'UserLicense[activatedAt=$activatedAt, activationKey=$activationKey, licenseKey=$licenseKey]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'activatedAt'] = this.activatedAt.toUtc().toIso8601String();
-      json[r'activationKey'] = this.activationKey;
-      json[r'licenseKey'] = this.licenseKey;
+    json[r'activatedAt'] = this.activatedAt.toUtc().toIso8601String();
+    json[r'activationKey'] = this.activationKey;
+    json[r'licenseKey'] = this.licenseKey;
     return json;
   }
 
@@ -65,7 +65,10 @@ class UserLicense {
     return null;
   }
 
-  static List<UserLicense> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<UserLicense> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <UserLicense>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -93,13 +96,19 @@ class UserLicense {
   }
 
   // maps a json object with a list of UserLicense-objects as value to a dart map
-  static Map<String, List<UserLicense>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<UserLicense>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<UserLicense>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = UserLicense.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = UserLicense.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +121,3 @@ class UserLicense {
     'licenseKey',
   };
 }
-

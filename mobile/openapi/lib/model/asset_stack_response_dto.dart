@@ -25,26 +25,26 @@ class AssetStackResponseDto {
   String primaryAssetId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetStackResponseDto &&
-    other.assetCount == assetCount &&
-    other.id == id &&
-    other.primaryAssetId == primaryAssetId;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AssetStackResponseDto &&
+          other.assetCount == assetCount &&
+          other.id == id &&
+          other.primaryAssetId == primaryAssetId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetCount.hashCode) +
-    (id.hashCode) +
-    (primaryAssetId.hashCode);
+      // ignore: unnecessary_parenthesis
+      (assetCount.hashCode) + (id.hashCode) + (primaryAssetId.hashCode);
 
   @override
   String toString() => 'AssetStackResponseDto[assetCount=$assetCount, id=$id, primaryAssetId=$primaryAssetId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetCount'] = this.assetCount;
-      json[r'id'] = this.id;
-      json[r'primaryAssetId'] = this.primaryAssetId;
+    json[r'assetCount'] = this.assetCount;
+    json[r'id'] = this.id;
+    json[r'primaryAssetId'] = this.primaryAssetId;
     return json;
   }
 
@@ -65,7 +65,10 @@ class AssetStackResponseDto {
     return null;
   }
 
-  static List<AssetStackResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetStackResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetStackResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -93,13 +96,19 @@ class AssetStackResponseDto {
   }
 
   // maps a json object with a list of AssetStackResponseDto-objects as value to a dart map
-  static Map<String, List<AssetStackResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AssetStackResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AssetStackResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetStackResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetStackResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +121,3 @@ class AssetStackResponseDto {
     'primaryAssetId',
   };
 }
-

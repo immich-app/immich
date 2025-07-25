@@ -19,20 +19,20 @@ class TagUpsertDto {
   List<String> tags;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is TagUpsertDto &&
-    _deepEquality.equals(other.tags, tags);
+  bool operator ==(Object other) =>
+      identical(this, other) || other is TagUpsertDto && _deepEquality.equals(other.tags, tags);
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (tags.hashCode);
+      // ignore: unnecessary_parenthesis
+      (tags.hashCode);
 
   @override
   String toString() => 'TagUpsertDto[tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'tags'] = this.tags;
+    json[r'tags'] = this.tags;
     return json;
   }
 
@@ -45,15 +45,16 @@ class TagUpsertDto {
       final json = value.cast<String, dynamic>();
 
       return TagUpsertDto(
-        tags: json[r'tags'] is Iterable
-            ? (json[r'tags'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+        tags: json[r'tags'] is Iterable ? (json[r'tags'] as Iterable).cast<String>().toList(growable: false) : const [],
       );
     }
     return null;
   }
 
-  static List<TagUpsertDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<TagUpsertDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <TagUpsertDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -81,13 +82,19 @@ class TagUpsertDto {
   }
 
   // maps a json object with a list of TagUpsertDto-objects as value to a dart map
-  static Map<String, List<TagUpsertDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<TagUpsertDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<TagUpsertDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = TagUpsertDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = TagUpsertDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -98,4 +105,3 @@ class TagUpsertDto {
     'tags',
   };
 }
-

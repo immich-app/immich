@@ -19,20 +19,20 @@ class SystemConfigNotificationsDto {
   SystemConfigSmtpDto smtp;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigNotificationsDto &&
-    other.smtp == smtp;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SystemConfigNotificationsDto && other.smtp == smtp;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (smtp.hashCode);
+      // ignore: unnecessary_parenthesis
+      (smtp.hashCode);
 
   @override
   String toString() => 'SystemConfigNotificationsDto[smtp=$smtp]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'smtp'] = this.smtp;
+    json[r'smtp'] = this.smtp;
     return json;
   }
 
@@ -51,7 +51,10 @@ class SystemConfigNotificationsDto {
     return null;
   }
 
-  static List<SystemConfigNotificationsDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigNotificationsDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigNotificationsDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +82,19 @@ class SystemConfigNotificationsDto {
   }
 
   // maps a json object with a list of SystemConfigNotificationsDto-objects as value to a dart map
-  static Map<String, List<SystemConfigNotificationsDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigNotificationsDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigNotificationsDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigNotificationsDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigNotificationsDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +105,3 @@ class SystemConfigNotificationsDto {
     'smtp',
   };
 }
-

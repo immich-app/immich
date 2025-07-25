@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class DeprecatedApi {
   DeprecatedApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
@@ -23,7 +22,9 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [num] count:
-  Future<Response> getRandomWithHttpInfo({ num? count, }) async {
+  Future<Response> getRandomWithHttpInfo({
+    num? count,
+  }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/random';
 
@@ -39,7 +40,6 @@ class DeprecatedApi {
     }
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -57,8 +57,12 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [num] count:
-  Future<List<AssetResponseDto>?> getRandom({ num? count, }) async {
-    final response = await getRandomWithHttpInfo( count: count, );
+  Future<List<AssetResponseDto>?> getRandom({
+    num? count,
+  }) async {
+    final response = await getRandomWithHttpInfo(
+      count: count,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -68,9 +72,8 @@ class DeprecatedApi {
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
-        .cast<AssetResponseDto>()
-        .toList(growable: false);
-
+          .cast<AssetResponseDto>()
+          .toList(growable: false);
     }
     return null;
   }

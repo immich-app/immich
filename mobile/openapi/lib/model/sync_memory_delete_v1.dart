@@ -19,20 +19,19 @@ class SyncMemoryDeleteV1 {
   String memoryId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncMemoryDeleteV1 &&
-    other.memoryId == memoryId;
+  bool operator ==(Object other) => identical(this, other) || other is SyncMemoryDeleteV1 && other.memoryId == memoryId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (memoryId.hashCode);
+      // ignore: unnecessary_parenthesis
+      (memoryId.hashCode);
 
   @override
   String toString() => 'SyncMemoryDeleteV1[memoryId=$memoryId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'memoryId'] = this.memoryId;
+    json[r'memoryId'] = this.memoryId;
     return json;
   }
 
@@ -51,7 +50,10 @@ class SyncMemoryDeleteV1 {
     return null;
   }
 
-  static List<SyncMemoryDeleteV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncMemoryDeleteV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncMemoryDeleteV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +81,19 @@ class SyncMemoryDeleteV1 {
   }
 
   // maps a json object with a list of SyncMemoryDeleteV1-objects as value to a dart map
-  static Map<String, List<SyncMemoryDeleteV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncMemoryDeleteV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncMemoryDeleteV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncMemoryDeleteV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncMemoryDeleteV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +104,3 @@ class SyncMemoryDeleteV1 {
     'memoryId',
   };
 }
-

@@ -46,51 +46,54 @@ class SyncAssetFaceV1 {
   String sourceType;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAssetFaceV1 &&
-    other.assetId == assetId &&
-    other.boundingBoxX1 == boundingBoxX1 &&
-    other.boundingBoxX2 == boundingBoxX2 &&
-    other.boundingBoxY1 == boundingBoxY1 &&
-    other.boundingBoxY2 == boundingBoxY2 &&
-    other.id == id &&
-    other.imageHeight == imageHeight &&
-    other.imageWidth == imageWidth &&
-    other.personId == personId &&
-    other.sourceType == sourceType;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncAssetFaceV1 &&
+          other.assetId == assetId &&
+          other.boundingBoxX1 == boundingBoxX1 &&
+          other.boundingBoxX2 == boundingBoxX2 &&
+          other.boundingBoxY1 == boundingBoxY1 &&
+          other.boundingBoxY2 == boundingBoxY2 &&
+          other.id == id &&
+          other.imageHeight == imageHeight &&
+          other.imageWidth == imageWidth &&
+          other.personId == personId &&
+          other.sourceType == sourceType;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetId.hashCode) +
-    (boundingBoxX1.hashCode) +
-    (boundingBoxX2.hashCode) +
-    (boundingBoxY1.hashCode) +
-    (boundingBoxY2.hashCode) +
-    (id.hashCode) +
-    (imageHeight.hashCode) +
-    (imageWidth.hashCode) +
-    (personId == null ? 0 : personId!.hashCode) +
-    (sourceType.hashCode);
+      // ignore: unnecessary_parenthesis
+      (assetId.hashCode) +
+      (boundingBoxX1.hashCode) +
+      (boundingBoxX2.hashCode) +
+      (boundingBoxY1.hashCode) +
+      (boundingBoxY2.hashCode) +
+      (id.hashCode) +
+      (imageHeight.hashCode) +
+      (imageWidth.hashCode) +
+      (personId == null ? 0 : personId!.hashCode) +
+      (sourceType.hashCode);
 
   @override
-  String toString() => 'SyncAssetFaceV1[assetId=$assetId, boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, personId=$personId, sourceType=$sourceType]';
+  String toString() =>
+      'SyncAssetFaceV1[assetId=$assetId, boundingBoxX1=$boundingBoxX1, boundingBoxX2=$boundingBoxX2, boundingBoxY1=$boundingBoxY1, boundingBoxY2=$boundingBoxY2, id=$id, imageHeight=$imageHeight, imageWidth=$imageWidth, personId=$personId, sourceType=$sourceType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetId'] = this.assetId;
-      json[r'boundingBoxX1'] = this.boundingBoxX1;
-      json[r'boundingBoxX2'] = this.boundingBoxX2;
-      json[r'boundingBoxY1'] = this.boundingBoxY1;
-      json[r'boundingBoxY2'] = this.boundingBoxY2;
-      json[r'id'] = this.id;
-      json[r'imageHeight'] = this.imageHeight;
-      json[r'imageWidth'] = this.imageWidth;
+    json[r'assetId'] = this.assetId;
+    json[r'boundingBoxX1'] = this.boundingBoxX1;
+    json[r'boundingBoxX2'] = this.boundingBoxX2;
+    json[r'boundingBoxY1'] = this.boundingBoxY1;
+    json[r'boundingBoxY2'] = this.boundingBoxY2;
+    json[r'id'] = this.id;
+    json[r'imageHeight'] = this.imageHeight;
+    json[r'imageWidth'] = this.imageWidth;
     if (this.personId != null) {
       json[r'personId'] = this.personId;
     } else {
-    //  json[r'personId'] = null;
+      //  json[r'personId'] = null;
     }
-      json[r'sourceType'] = this.sourceType;
+    json[r'sourceType'] = this.sourceType;
     return json;
   }
 
@@ -118,7 +121,10 @@ class SyncAssetFaceV1 {
     return null;
   }
 
-  static List<SyncAssetFaceV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncAssetFaceV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncAssetFaceV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -146,13 +152,19 @@ class SyncAssetFaceV1 {
   }
 
   // maps a json object with a list of SyncAssetFaceV1-objects as value to a dart map
-  static Map<String, List<SyncAssetFaceV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncAssetFaceV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncAssetFaceV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncAssetFaceV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncAssetFaceV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -172,4 +184,3 @@ class SyncAssetFaceV1 {
     'sourceType',
   };
 }
-

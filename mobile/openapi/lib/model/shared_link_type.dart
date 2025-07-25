@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class SharedLinkType {
   /// Instantiate a new enum with the provided [value].
   const SharedLinkType._(this.value);
@@ -34,7 +33,10 @@ class SharedLinkType {
 
   static SharedLinkType? fromJson(dynamic value) => SharedLinkTypeTypeTransformer().decode(value);
 
-  static List<SharedLinkType> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SharedLinkType> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SharedLinkType>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -68,8 +70,10 @@ class SharedLinkTypeTypeTransformer {
   SharedLinkType? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'ALBUM': return SharedLinkType.ALBUM;
-        case r'INDIVIDUAL': return SharedLinkType.INDIVIDUAL;
+        case r'ALBUM':
+          return SharedLinkType.ALBUM;
+        case r'INDIVIDUAL':
+          return SharedLinkType.INDIVIDUAL;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -82,4 +86,3 @@ class SharedLinkTypeTypeTransformer {
   /// Singleton [SharedLinkTypeTypeTransformer] instance.
   static SharedLinkTypeTypeTransformer? _instance;
 }
-

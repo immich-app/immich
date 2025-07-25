@@ -19,20 +19,20 @@ class SystemConfigThemeDto {
   String customCss;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigThemeDto &&
-    other.customCss == customCss;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SystemConfigThemeDto && other.customCss == customCss;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (customCss.hashCode);
+      // ignore: unnecessary_parenthesis
+      (customCss.hashCode);
 
   @override
   String toString() => 'SystemConfigThemeDto[customCss=$customCss]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'customCss'] = this.customCss;
+    json[r'customCss'] = this.customCss;
     return json;
   }
 
@@ -51,7 +51,10 @@ class SystemConfigThemeDto {
     return null;
   }
 
-  static List<SystemConfigThemeDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigThemeDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigThemeDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +82,19 @@ class SystemConfigThemeDto {
   }
 
   // maps a json object with a list of SystemConfigThemeDto-objects as value to a dart map
-  static Map<String, List<SystemConfigThemeDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigThemeDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigThemeDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigThemeDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigThemeDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +105,3 @@ class SystemConfigThemeDto {
     'customCss',
   };
 }
-

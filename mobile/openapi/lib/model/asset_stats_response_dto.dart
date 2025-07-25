@@ -25,26 +25,23 @@ class AssetStatsResponseDto {
   int videos;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetStatsResponseDto &&
-    other.images == images &&
-    other.total == total &&
-    other.videos == videos;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AssetStatsResponseDto && other.images == images && other.total == total && other.videos == videos;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (images.hashCode) +
-    (total.hashCode) +
-    (videos.hashCode);
+      // ignore: unnecessary_parenthesis
+      (images.hashCode) + (total.hashCode) + (videos.hashCode);
 
   @override
   String toString() => 'AssetStatsResponseDto[images=$images, total=$total, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'images'] = this.images;
-      json[r'total'] = this.total;
-      json[r'videos'] = this.videos;
+    json[r'images'] = this.images;
+    json[r'total'] = this.total;
+    json[r'videos'] = this.videos;
     return json;
   }
 
@@ -65,7 +62,10 @@ class AssetStatsResponseDto {
     return null;
   }
 
-  static List<AssetStatsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetStatsResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetStatsResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -93,13 +93,19 @@ class AssetStatsResponseDto {
   }
 
   // maps a json object with a list of AssetStatsResponseDto-objects as value to a dart map
-  static Map<String, List<AssetStatsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AssetStatsResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AssetStatsResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetStatsResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetStatsResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +118,3 @@ class AssetStatsResponseDto {
     'videos',
   };
 }
-

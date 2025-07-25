@@ -13,9 +13,7 @@ String _$assetStackIndexHash() => r'086ddb782e3eb38b80d755666fe35be8fe7322d7';
 final assetStackIndexProvider = AutoDisposeProvider<int>.internal(
   assetStackIndex,
   name: r'assetStackIndexProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$assetStackIndexHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product') ? null : _$assetStackIndexHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

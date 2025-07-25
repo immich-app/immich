@@ -36,32 +36,31 @@ class FacialRecognitionConfig {
   String modelName;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is FacialRecognitionConfig &&
-    other.enabled == enabled &&
-    other.maxDistance == maxDistance &&
-    other.minFaces == minFaces &&
-    other.minScore == minScore &&
-    other.modelName == modelName;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FacialRecognitionConfig &&
+          other.enabled == enabled &&
+          other.maxDistance == maxDistance &&
+          other.minFaces == minFaces &&
+          other.minScore == minScore &&
+          other.modelName == modelName;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (enabled.hashCode) +
-    (maxDistance.hashCode) +
-    (minFaces.hashCode) +
-    (minScore.hashCode) +
-    (modelName.hashCode);
+      // ignore: unnecessary_parenthesis
+      (enabled.hashCode) + (maxDistance.hashCode) + (minFaces.hashCode) + (minScore.hashCode) + (modelName.hashCode);
 
   @override
-  String toString() => 'FacialRecognitionConfig[enabled=$enabled, maxDistance=$maxDistance, minFaces=$minFaces, minScore=$minScore, modelName=$modelName]';
+  String toString() =>
+      'FacialRecognitionConfig[enabled=$enabled, maxDistance=$maxDistance, minFaces=$minFaces, minScore=$minScore, modelName=$modelName]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'enabled'] = this.enabled;
-      json[r'maxDistance'] = this.maxDistance;
-      json[r'minFaces'] = this.minFaces;
-      json[r'minScore'] = this.minScore;
-      json[r'modelName'] = this.modelName;
+    json[r'enabled'] = this.enabled;
+    json[r'maxDistance'] = this.maxDistance;
+    json[r'minFaces'] = this.minFaces;
+    json[r'minScore'] = this.minScore;
+    json[r'modelName'] = this.modelName;
     return json;
   }
 
@@ -84,7 +83,10 @@ class FacialRecognitionConfig {
     return null;
   }
 
-  static List<FacialRecognitionConfig> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<FacialRecognitionConfig> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <FacialRecognitionConfig>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -112,13 +114,19 @@ class FacialRecognitionConfig {
   }
 
   // maps a json object with a list of FacialRecognitionConfig-objects as value to a dart map
-  static Map<String, List<FacialRecognitionConfig>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<FacialRecognitionConfig>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<FacialRecognitionConfig>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = FacialRecognitionConfig.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = FacialRecognitionConfig.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -133,4 +141,3 @@ class FacialRecognitionConfig {
     'modelName',
   };
 }
-

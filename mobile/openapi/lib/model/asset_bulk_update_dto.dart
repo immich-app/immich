@@ -87,75 +87,78 @@ class AssetBulkUpdateDto {
   AssetVisibility? visibility;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetBulkUpdateDto &&
-    other.dateTimeOriginal == dateTimeOriginal &&
-    other.description == description &&
-    other.duplicateId == duplicateId &&
-    _deepEquality.equals(other.ids, ids) &&
-    other.isFavorite == isFavorite &&
-    other.latitude == latitude &&
-    other.longitude == longitude &&
-    other.rating == rating &&
-    other.visibility == visibility;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AssetBulkUpdateDto &&
+          other.dateTimeOriginal == dateTimeOriginal &&
+          other.description == description &&
+          other.duplicateId == duplicateId &&
+          _deepEquality.equals(other.ids, ids) &&
+          other.isFavorite == isFavorite &&
+          other.latitude == latitude &&
+          other.longitude == longitude &&
+          other.rating == rating &&
+          other.visibility == visibility;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (duplicateId == null ? 0 : duplicateId!.hashCode) +
-    (ids.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode) +
-    (latitude == null ? 0 : latitude!.hashCode) +
-    (longitude == null ? 0 : longitude!.hashCode) +
-    (rating == null ? 0 : rating!.hashCode) +
-    (visibility == null ? 0 : visibility!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
+      (description == null ? 0 : description!.hashCode) +
+      (duplicateId == null ? 0 : duplicateId!.hashCode) +
+      (ids.hashCode) +
+      (isFavorite == null ? 0 : isFavorite!.hashCode) +
+      (latitude == null ? 0 : latitude!.hashCode) +
+      (longitude == null ? 0 : longitude!.hashCode) +
+      (rating == null ? 0 : rating!.hashCode) +
+      (visibility == null ? 0 : visibility!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, description=$description, duplicateId=$duplicateId, ids=$ids, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, rating=$rating, visibility=$visibility]';
+  String toString() =>
+      'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, description=$description, duplicateId=$duplicateId, ids=$ids, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, rating=$rating, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.dateTimeOriginal != null) {
       json[r'dateTimeOriginal'] = this.dateTimeOriginal;
     } else {
-    //  json[r'dateTimeOriginal'] = null;
+      //  json[r'dateTimeOriginal'] = null;
     }
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
-    //  json[r'description'] = null;
+      //  json[r'description'] = null;
     }
     if (this.duplicateId != null) {
       json[r'duplicateId'] = this.duplicateId;
     } else {
-    //  json[r'duplicateId'] = null;
+      //  json[r'duplicateId'] = null;
     }
-      json[r'ids'] = this.ids;
+    json[r'ids'] = this.ids;
     if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
     } else {
-    //  json[r'isFavorite'] = null;
+      //  json[r'isFavorite'] = null;
     }
     if (this.latitude != null) {
       json[r'latitude'] = this.latitude;
     } else {
-    //  json[r'latitude'] = null;
+      //  json[r'latitude'] = null;
     }
     if (this.longitude != null) {
       json[r'longitude'] = this.longitude;
     } else {
-    //  json[r'longitude'] = null;
+      //  json[r'longitude'] = null;
     }
     if (this.rating != null) {
       json[r'rating'] = this.rating;
     } else {
-    //  json[r'rating'] = null;
+      //  json[r'rating'] = null;
     }
     if (this.visibility != null) {
       json[r'visibility'] = this.visibility;
     } else {
-    //  json[r'visibility'] = null;
+      //  json[r'visibility'] = null;
     }
     return json;
   }
@@ -172,9 +175,7 @@ class AssetBulkUpdateDto {
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
         description: mapValueOfType<String>(json, r'description'),
         duplicateId: mapValueOfType<String>(json, r'duplicateId'),
-        ids: json[r'ids'] is Iterable
-            ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+        ids: json[r'ids'] is Iterable ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false) : const [],
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         latitude: num.parse('${json[r'latitude']}'),
         longitude: num.parse('${json[r'longitude']}'),
@@ -185,7 +186,10 @@ class AssetBulkUpdateDto {
     return null;
   }
 
-  static List<AssetBulkUpdateDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetBulkUpdateDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetBulkUpdateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -213,13 +217,19 @@ class AssetBulkUpdateDto {
   }
 
   // maps a json object with a list of AssetBulkUpdateDto-objects as value to a dart map
-  static Map<String, List<AssetBulkUpdateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AssetBulkUpdateDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AssetBulkUpdateDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetBulkUpdateDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetBulkUpdateDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -230,4 +240,3 @@ class AssetBulkUpdateDto {
     'ids',
   };
 }
-

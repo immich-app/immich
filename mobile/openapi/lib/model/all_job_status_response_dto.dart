@@ -61,62 +61,65 @@ class AllJobStatusResponseDto {
   JobStatusDto videoConversion;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
-    other.backgroundTask == backgroundTask &&
-    other.backupDatabase == backupDatabase &&
-    other.duplicateDetection == duplicateDetection &&
-    other.faceDetection == faceDetection &&
-    other.facialRecognition == facialRecognition &&
-    other.library_ == library_ &&
-    other.metadataExtraction == metadataExtraction &&
-    other.migration == migration &&
-    other.notifications == notifications &&
-    other.search == search &&
-    other.sidecar == sidecar &&
-    other.smartSearch == smartSearch &&
-    other.storageTemplateMigration == storageTemplateMigration &&
-    other.thumbnailGeneration == thumbnailGeneration &&
-    other.videoConversion == videoConversion;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AllJobStatusResponseDto &&
+          other.backgroundTask == backgroundTask &&
+          other.backupDatabase == backupDatabase &&
+          other.duplicateDetection == duplicateDetection &&
+          other.faceDetection == faceDetection &&
+          other.facialRecognition == facialRecognition &&
+          other.library_ == library_ &&
+          other.metadataExtraction == metadataExtraction &&
+          other.migration == migration &&
+          other.notifications == notifications &&
+          other.search == search &&
+          other.sidecar == sidecar &&
+          other.smartSearch == smartSearch &&
+          other.storageTemplateMigration == storageTemplateMigration &&
+          other.thumbnailGeneration == thumbnailGeneration &&
+          other.videoConversion == videoConversion;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (backgroundTask.hashCode) +
-    (backupDatabase.hashCode) +
-    (duplicateDetection.hashCode) +
-    (faceDetection.hashCode) +
-    (facialRecognition.hashCode) +
-    (library_.hashCode) +
-    (metadataExtraction.hashCode) +
-    (migration.hashCode) +
-    (notifications.hashCode) +
-    (search.hashCode) +
-    (sidecar.hashCode) +
-    (smartSearch.hashCode) +
-    (storageTemplateMigration.hashCode) +
-    (thumbnailGeneration.hashCode) +
-    (videoConversion.hashCode);
+      // ignore: unnecessary_parenthesis
+      (backgroundTask.hashCode) +
+      (backupDatabase.hashCode) +
+      (duplicateDetection.hashCode) +
+      (faceDetection.hashCode) +
+      (facialRecognition.hashCode) +
+      (library_.hashCode) +
+      (metadataExtraction.hashCode) +
+      (migration.hashCode) +
+      (notifications.hashCode) +
+      (search.hashCode) +
+      (sidecar.hashCode) +
+      (smartSearch.hashCode) +
+      (storageTemplateMigration.hashCode) +
+      (thumbnailGeneration.hashCode) +
+      (videoConversion.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() =>
+      'AllJobStatusResponseDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'backgroundTask'] = this.backgroundTask;
-      json[r'backupDatabase'] = this.backupDatabase;
-      json[r'duplicateDetection'] = this.duplicateDetection;
-      json[r'faceDetection'] = this.faceDetection;
-      json[r'facialRecognition'] = this.facialRecognition;
-      json[r'library'] = this.library_;
-      json[r'metadataExtraction'] = this.metadataExtraction;
-      json[r'migration'] = this.migration;
-      json[r'notifications'] = this.notifications;
-      json[r'search'] = this.search;
-      json[r'sidecar'] = this.sidecar;
-      json[r'smartSearch'] = this.smartSearch;
-      json[r'storageTemplateMigration'] = this.storageTemplateMigration;
-      json[r'thumbnailGeneration'] = this.thumbnailGeneration;
-      json[r'videoConversion'] = this.videoConversion;
+    json[r'backgroundTask'] = this.backgroundTask;
+    json[r'backupDatabase'] = this.backupDatabase;
+    json[r'duplicateDetection'] = this.duplicateDetection;
+    json[r'faceDetection'] = this.faceDetection;
+    json[r'facialRecognition'] = this.facialRecognition;
+    json[r'library'] = this.library_;
+    json[r'metadataExtraction'] = this.metadataExtraction;
+    json[r'migration'] = this.migration;
+    json[r'notifications'] = this.notifications;
+    json[r'search'] = this.search;
+    json[r'sidecar'] = this.sidecar;
+    json[r'smartSearch'] = this.smartSearch;
+    json[r'storageTemplateMigration'] = this.storageTemplateMigration;
+    json[r'thumbnailGeneration'] = this.thumbnailGeneration;
+    json[r'videoConversion'] = this.videoConversion;
     return json;
   }
 
@@ -149,7 +152,10 @@ class AllJobStatusResponseDto {
     return null;
   }
 
-  static List<AllJobStatusResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AllJobStatusResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AllJobStatusResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -177,13 +183,19 @@ class AllJobStatusResponseDto {
   }
 
   // maps a json object with a list of AllJobStatusResponseDto-objects as value to a dart map
-  static Map<String, List<AllJobStatusResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AllJobStatusResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AllJobStatusResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AllJobStatusResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AllJobStatusResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -208,4 +220,3 @@ class AllJobStatusResponseDto {
     'videoConversion',
   };
 }
-

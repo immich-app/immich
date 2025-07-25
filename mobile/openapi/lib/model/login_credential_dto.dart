@@ -22,23 +22,21 @@ class LoginCredentialDto {
   String password;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is LoginCredentialDto &&
-    other.email == email &&
-    other.password == password;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is LoginCredentialDto && other.email == email && other.password == password;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (email.hashCode) +
-    (password.hashCode);
+      // ignore: unnecessary_parenthesis
+      (email.hashCode) + (password.hashCode);
 
   @override
   String toString() => 'LoginCredentialDto[email=$email, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'email'] = this.email;
-      json[r'password'] = this.password;
+    json[r'email'] = this.email;
+    json[r'password'] = this.password;
     return json;
   }
 
@@ -58,7 +56,10 @@ class LoginCredentialDto {
     return null;
   }
 
-  static List<LoginCredentialDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<LoginCredentialDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <LoginCredentialDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +87,19 @@ class LoginCredentialDto {
   }
 
   // maps a json object with a list of LoginCredentialDto-objects as value to a dart map
-  static Map<String, List<LoginCredentialDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<LoginCredentialDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<LoginCredentialDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = LoginCredentialDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = LoginCredentialDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +111,3 @@ class LoginCredentialDto {
     'password',
   };
 }
-

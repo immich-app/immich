@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class SyncEntityType {
   /// Instantiate a new enum with the provided [value].
   const SyncEntityType._(this.value);
@@ -114,7 +113,10 @@ class SyncEntityType {
 
   static SyncEntityType? fromJson(dynamic value) => SyncEntityTypeTypeTransformer().decode(value);
 
-  static List<SyncEntityType> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncEntityType> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncEntityType>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -148,48 +150,90 @@ class SyncEntityTypeTypeTransformer {
   SyncEntityType? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'AuthUserV1': return SyncEntityType.authUserV1;
-        case r'UserV1': return SyncEntityType.userV1;
-        case r'UserDeleteV1': return SyncEntityType.userDeleteV1;
-        case r'AssetV1': return SyncEntityType.assetV1;
-        case r'AssetDeleteV1': return SyncEntityType.assetDeleteV1;
-        case r'AssetExifV1': return SyncEntityType.assetExifV1;
-        case r'PartnerV1': return SyncEntityType.partnerV1;
-        case r'PartnerDeleteV1': return SyncEntityType.partnerDeleteV1;
-        case r'PartnerAssetV1': return SyncEntityType.partnerAssetV1;
-        case r'PartnerAssetBackfillV1': return SyncEntityType.partnerAssetBackfillV1;
-        case r'PartnerAssetDeleteV1': return SyncEntityType.partnerAssetDeleteV1;
-        case r'PartnerAssetExifV1': return SyncEntityType.partnerAssetExifV1;
-        case r'PartnerAssetExifBackfillV1': return SyncEntityType.partnerAssetExifBackfillV1;
-        case r'PartnerStackBackfillV1': return SyncEntityType.partnerStackBackfillV1;
-        case r'PartnerStackDeleteV1': return SyncEntityType.partnerStackDeleteV1;
-        case r'PartnerStackV1': return SyncEntityType.partnerStackV1;
-        case r'AlbumV1': return SyncEntityType.albumV1;
-        case r'AlbumDeleteV1': return SyncEntityType.albumDeleteV1;
-        case r'AlbumUserV1': return SyncEntityType.albumUserV1;
-        case r'AlbumUserBackfillV1': return SyncEntityType.albumUserBackfillV1;
-        case r'AlbumUserDeleteV1': return SyncEntityType.albumUserDeleteV1;
-        case r'AlbumAssetV1': return SyncEntityType.albumAssetV1;
-        case r'AlbumAssetBackfillV1': return SyncEntityType.albumAssetBackfillV1;
-        case r'AlbumAssetExifV1': return SyncEntityType.albumAssetExifV1;
-        case r'AlbumAssetExifBackfillV1': return SyncEntityType.albumAssetExifBackfillV1;
-        case r'AlbumToAssetV1': return SyncEntityType.albumToAssetV1;
-        case r'AlbumToAssetDeleteV1': return SyncEntityType.albumToAssetDeleteV1;
-        case r'AlbumToAssetBackfillV1': return SyncEntityType.albumToAssetBackfillV1;
-        case r'MemoryV1': return SyncEntityType.memoryV1;
-        case r'MemoryDeleteV1': return SyncEntityType.memoryDeleteV1;
-        case r'MemoryToAssetV1': return SyncEntityType.memoryToAssetV1;
-        case r'MemoryToAssetDeleteV1': return SyncEntityType.memoryToAssetDeleteV1;
-        case r'StackV1': return SyncEntityType.stackV1;
-        case r'StackDeleteV1': return SyncEntityType.stackDeleteV1;
-        case r'PersonV1': return SyncEntityType.personV1;
-        case r'PersonDeleteV1': return SyncEntityType.personDeleteV1;
-        case r'AssetFaceV1': return SyncEntityType.assetFaceV1;
-        case r'AssetFaceDeleteV1': return SyncEntityType.assetFaceDeleteV1;
-        case r'UserMetadataV1': return SyncEntityType.userMetadataV1;
-        case r'UserMetadataDeleteV1': return SyncEntityType.userMetadataDeleteV1;
-        case r'SyncAckV1': return SyncEntityType.syncAckV1;
-        case r'SyncResetV1': return SyncEntityType.syncResetV1;
+        case r'AuthUserV1':
+          return SyncEntityType.authUserV1;
+        case r'UserV1':
+          return SyncEntityType.userV1;
+        case r'UserDeleteV1':
+          return SyncEntityType.userDeleteV1;
+        case r'AssetV1':
+          return SyncEntityType.assetV1;
+        case r'AssetDeleteV1':
+          return SyncEntityType.assetDeleteV1;
+        case r'AssetExifV1':
+          return SyncEntityType.assetExifV1;
+        case r'PartnerV1':
+          return SyncEntityType.partnerV1;
+        case r'PartnerDeleteV1':
+          return SyncEntityType.partnerDeleteV1;
+        case r'PartnerAssetV1':
+          return SyncEntityType.partnerAssetV1;
+        case r'PartnerAssetBackfillV1':
+          return SyncEntityType.partnerAssetBackfillV1;
+        case r'PartnerAssetDeleteV1':
+          return SyncEntityType.partnerAssetDeleteV1;
+        case r'PartnerAssetExifV1':
+          return SyncEntityType.partnerAssetExifV1;
+        case r'PartnerAssetExifBackfillV1':
+          return SyncEntityType.partnerAssetExifBackfillV1;
+        case r'PartnerStackBackfillV1':
+          return SyncEntityType.partnerStackBackfillV1;
+        case r'PartnerStackDeleteV1':
+          return SyncEntityType.partnerStackDeleteV1;
+        case r'PartnerStackV1':
+          return SyncEntityType.partnerStackV1;
+        case r'AlbumV1':
+          return SyncEntityType.albumV1;
+        case r'AlbumDeleteV1':
+          return SyncEntityType.albumDeleteV1;
+        case r'AlbumUserV1':
+          return SyncEntityType.albumUserV1;
+        case r'AlbumUserBackfillV1':
+          return SyncEntityType.albumUserBackfillV1;
+        case r'AlbumUserDeleteV1':
+          return SyncEntityType.albumUserDeleteV1;
+        case r'AlbumAssetV1':
+          return SyncEntityType.albumAssetV1;
+        case r'AlbumAssetBackfillV1':
+          return SyncEntityType.albumAssetBackfillV1;
+        case r'AlbumAssetExifV1':
+          return SyncEntityType.albumAssetExifV1;
+        case r'AlbumAssetExifBackfillV1':
+          return SyncEntityType.albumAssetExifBackfillV1;
+        case r'AlbumToAssetV1':
+          return SyncEntityType.albumToAssetV1;
+        case r'AlbumToAssetDeleteV1':
+          return SyncEntityType.albumToAssetDeleteV1;
+        case r'AlbumToAssetBackfillV1':
+          return SyncEntityType.albumToAssetBackfillV1;
+        case r'MemoryV1':
+          return SyncEntityType.memoryV1;
+        case r'MemoryDeleteV1':
+          return SyncEntityType.memoryDeleteV1;
+        case r'MemoryToAssetV1':
+          return SyncEntityType.memoryToAssetV1;
+        case r'MemoryToAssetDeleteV1':
+          return SyncEntityType.memoryToAssetDeleteV1;
+        case r'StackV1':
+          return SyncEntityType.stackV1;
+        case r'StackDeleteV1':
+          return SyncEntityType.stackDeleteV1;
+        case r'PersonV1':
+          return SyncEntityType.personV1;
+        case r'PersonDeleteV1':
+          return SyncEntityType.personDeleteV1;
+        case r'AssetFaceV1':
+          return SyncEntityType.assetFaceV1;
+        case r'AssetFaceDeleteV1':
+          return SyncEntityType.assetFaceDeleteV1;
+        case r'UserMetadataV1':
+          return SyncEntityType.userMetadataV1;
+        case r'UserMetadataDeleteV1':
+          return SyncEntityType.userMetadataDeleteV1;
+        case r'SyncAckV1':
+          return SyncEntityType.syncAckV1;
+        case r'SyncResetV1':
+          return SyncEntityType.syncResetV1;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -202,4 +246,3 @@ class SyncEntityTypeTypeTransformer {
   /// Singleton [SyncEntityTypeTypeTransformer] instance.
   static SyncEntityTypeTypeTransformer? _instance;
 }
-

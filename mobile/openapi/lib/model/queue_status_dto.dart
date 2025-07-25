@@ -22,23 +22,21 @@ class QueueStatusDto {
   bool isPaused;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is QueueStatusDto &&
-    other.isActive == isActive &&
-    other.isPaused == isPaused;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is QueueStatusDto && other.isActive == isActive && other.isPaused == isPaused;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (isActive.hashCode) +
-    (isPaused.hashCode);
+      // ignore: unnecessary_parenthesis
+      (isActive.hashCode) + (isPaused.hashCode);
 
   @override
   String toString() => 'QueueStatusDto[isActive=$isActive, isPaused=$isPaused]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'isActive'] = this.isActive;
-      json[r'isPaused'] = this.isPaused;
+    json[r'isActive'] = this.isActive;
+    json[r'isPaused'] = this.isPaused;
     return json;
   }
 
@@ -58,7 +56,10 @@ class QueueStatusDto {
     return null;
   }
 
-  static List<QueueStatusDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<QueueStatusDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <QueueStatusDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +87,19 @@ class QueueStatusDto {
   }
 
   // maps a json object with a list of QueueStatusDto-objects as value to a dart map
-  static Map<String, List<QueueStatusDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<QueueStatusDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<QueueStatusDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = QueueStatusDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = QueueStatusDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +111,3 @@ class QueueStatusDto {
     'isPaused',
   };
 }
-

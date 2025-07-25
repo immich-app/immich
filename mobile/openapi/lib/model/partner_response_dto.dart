@@ -43,42 +43,45 @@ class PartnerResponseDto {
   String profileImagePath;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is PartnerResponseDto &&
-    other.avatarColor == avatarColor &&
-    other.email == email &&
-    other.id == id &&
-    other.inTimeline == inTimeline &&
-    other.name == name &&
-    other.profileChangedAt == profileChangedAt &&
-    other.profileImagePath == profileImagePath;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PartnerResponseDto &&
+          other.avatarColor == avatarColor &&
+          other.email == email &&
+          other.id == id &&
+          other.inTimeline == inTimeline &&
+          other.name == name &&
+          other.profileChangedAt == profileChangedAt &&
+          other.profileImagePath == profileImagePath;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (avatarColor.hashCode) +
-    (email.hashCode) +
-    (id.hashCode) +
-    (inTimeline == null ? 0 : inTimeline!.hashCode) +
-    (name.hashCode) +
-    (profileChangedAt.hashCode) +
-    (profileImagePath.hashCode);
+      // ignore: unnecessary_parenthesis
+      (avatarColor.hashCode) +
+      (email.hashCode) +
+      (id.hashCode) +
+      (inTimeline == null ? 0 : inTimeline!.hashCode) +
+      (name.hashCode) +
+      (profileChangedAt.hashCode) +
+      (profileImagePath.hashCode);
 
   @override
-  String toString() => 'PartnerResponseDto[avatarColor=$avatarColor, email=$email, id=$id, inTimeline=$inTimeline, name=$name, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath]';
+  String toString() =>
+      'PartnerResponseDto[avatarColor=$avatarColor, email=$email, id=$id, inTimeline=$inTimeline, name=$name, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'avatarColor'] = this.avatarColor;
-      json[r'email'] = this.email;
-      json[r'id'] = this.id;
+    json[r'avatarColor'] = this.avatarColor;
+    json[r'email'] = this.email;
+    json[r'id'] = this.id;
     if (this.inTimeline != null) {
       json[r'inTimeline'] = this.inTimeline;
     } else {
-    //  json[r'inTimeline'] = null;
+      //  json[r'inTimeline'] = null;
     }
-      json[r'name'] = this.name;
-      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
-      json[r'profileImagePath'] = this.profileImagePath;
+    json[r'name'] = this.name;
+    json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
+    json[r'profileImagePath'] = this.profileImagePath;
     return json;
   }
 
@@ -103,7 +106,10 @@ class PartnerResponseDto {
     return null;
   }
 
-  static List<PartnerResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<PartnerResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <PartnerResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -131,13 +137,19 @@ class PartnerResponseDto {
   }
 
   // maps a json object with a list of PartnerResponseDto-objects as value to a dart map
-  static Map<String, List<PartnerResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<PartnerResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<PartnerResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = PartnerResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = PartnerResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -153,4 +165,3 @@ class PartnerResponseDto {
     'profileImagePath',
   };
 }
-

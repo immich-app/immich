@@ -64,59 +64,62 @@ class PersonWithFacesResponseDto {
   DateTime? updatedAt;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is PersonWithFacesResponseDto &&
-    other.birthDate == birthDate &&
-    other.color == color &&
-    _deepEquality.equals(other.faces, faces) &&
-    other.id == id &&
-    other.isFavorite == isFavorite &&
-    other.isHidden == isHidden &&
-    other.name == name &&
-    other.thumbnailPath == thumbnailPath &&
-    other.updatedAt == updatedAt;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PersonWithFacesResponseDto &&
+          other.birthDate == birthDate &&
+          other.color == color &&
+          _deepEquality.equals(other.faces, faces) &&
+          other.id == id &&
+          other.isFavorite == isFavorite &&
+          other.isHidden == isHidden &&
+          other.name == name &&
+          other.thumbnailPath == thumbnailPath &&
+          other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (birthDate == null ? 0 : birthDate!.hashCode) +
-    (color == null ? 0 : color!.hashCode) +
-    (faces.hashCode) +
-    (id.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode) +
-    (isHidden.hashCode) +
-    (name.hashCode) +
-    (thumbnailPath.hashCode) +
-    (updatedAt == null ? 0 : updatedAt!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (birthDate == null ? 0 : birthDate!.hashCode) +
+      (color == null ? 0 : color!.hashCode) +
+      (faces.hashCode) +
+      (id.hashCode) +
+      (isFavorite == null ? 0 : isFavorite!.hashCode) +
+      (isHidden.hashCode) +
+      (name.hashCode) +
+      (thumbnailPath.hashCode) +
+      (updatedAt == null ? 0 : updatedAt!.hashCode);
 
   @override
-  String toString() => 'PersonWithFacesResponseDto[birthDate=$birthDate, color=$color, faces=$faces, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, updatedAt=$updatedAt]';
+  String toString() =>
+      'PersonWithFacesResponseDto[birthDate=$birthDate, color=$color, faces=$faces, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.birthDate != null) {
       json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
     } else {
-    //  json[r'birthDate'] = null;
+      //  json[r'birthDate'] = null;
     }
     if (this.color != null) {
       json[r'color'] = this.color;
     } else {
-    //  json[r'color'] = null;
+      //  json[r'color'] = null;
     }
-      json[r'faces'] = this.faces;
-      json[r'id'] = this.id;
+    json[r'faces'] = this.faces;
+    json[r'id'] = this.id;
     if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
     } else {
-    //  json[r'isFavorite'] = null;
+      //  json[r'isFavorite'] = null;
     }
-      json[r'isHidden'] = this.isHidden;
-      json[r'name'] = this.name;
-      json[r'thumbnailPath'] = this.thumbnailPath;
+    json[r'isHidden'] = this.isHidden;
+    json[r'name'] = this.name;
+    json[r'thumbnailPath'] = this.thumbnailPath;
     if (this.updatedAt != null) {
       json[r'updatedAt'] = this.updatedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'updatedAt'] = null;
+      //  json[r'updatedAt'] = null;
     }
     return json;
   }
@@ -144,7 +147,10 @@ class PersonWithFacesResponseDto {
     return null;
   }
 
-  static List<PersonWithFacesResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<PersonWithFacesResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <PersonWithFacesResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -172,13 +178,19 @@ class PersonWithFacesResponseDto {
   }
 
   // maps a json object with a list of PersonWithFacesResponseDto-objects as value to a dart map
-  static Map<String, List<PersonWithFacesResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<PersonWithFacesResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<PersonWithFacesResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = PersonWithFacesResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = PersonWithFacesResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -194,4 +206,3 @@ class PersonWithFacesResponseDto {
     'thumbnailPath',
   };
 }
-

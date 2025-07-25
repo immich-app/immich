@@ -19,20 +19,20 @@ class PeopleUpdateDto {
   List<PeopleUpdateItem> people;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is PeopleUpdateDto &&
-    _deepEquality.equals(other.people, people);
+  bool operator ==(Object other) =>
+      identical(this, other) || other is PeopleUpdateDto && _deepEquality.equals(other.people, people);
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (people.hashCode);
+      // ignore: unnecessary_parenthesis
+      (people.hashCode);
 
   @override
   String toString() => 'PeopleUpdateDto[people=$people]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'people'] = this.people;
+    json[r'people'] = this.people;
     return json;
   }
 
@@ -51,7 +51,10 @@ class PeopleUpdateDto {
     return null;
   }
 
-  static List<PeopleUpdateDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<PeopleUpdateDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <PeopleUpdateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +82,19 @@ class PeopleUpdateDto {
   }
 
   // maps a json object with a list of PeopleUpdateDto-objects as value to a dart map
-  static Map<String, List<PeopleUpdateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<PeopleUpdateDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<PeopleUpdateDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = PeopleUpdateDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = PeopleUpdateDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +105,3 @@ class PeopleUpdateDto {
     'people',
   };
 }
-

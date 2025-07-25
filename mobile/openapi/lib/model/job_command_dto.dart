@@ -28,26 +28,24 @@ class JobCommandDto {
   bool? force;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is JobCommandDto &&
-    other.command == command &&
-    other.force == force;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is JobCommandDto && other.command == command && other.force == force;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (command.hashCode) +
-    (force == null ? 0 : force!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (command.hashCode) + (force == null ? 0 : force!.hashCode);
 
   @override
   String toString() => 'JobCommandDto[command=$command, force=$force]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'command'] = this.command;
+    json[r'command'] = this.command;
     if (this.force != null) {
       json[r'force'] = this.force;
     } else {
-    //  json[r'force'] = null;
+      //  json[r'force'] = null;
     }
     return json;
   }
@@ -68,7 +66,10 @@ class JobCommandDto {
     return null;
   }
 
-  static List<JobCommandDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<JobCommandDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <JobCommandDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -96,13 +97,19 @@ class JobCommandDto {
   }
 
   // maps a json object with a list of JobCommandDto-objects as value to a dart map
-  static Map<String, List<JobCommandDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<JobCommandDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<JobCommandDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = JobCommandDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = JobCommandDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -113,4 +120,3 @@ class JobCommandDto {
     'command',
   };
 }
-

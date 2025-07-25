@@ -19,20 +19,19 @@ class SystemConfigMetadataDto {
   SystemConfigFacesDto faces;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigMetadataDto &&
-    other.faces == faces;
+  bool operator ==(Object other) => identical(this, other) || other is SystemConfigMetadataDto && other.faces == faces;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (faces.hashCode);
+      // ignore: unnecessary_parenthesis
+      (faces.hashCode);
 
   @override
   String toString() => 'SystemConfigMetadataDto[faces=$faces]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'faces'] = this.faces;
+    json[r'faces'] = this.faces;
     return json;
   }
 
@@ -51,7 +50,10 @@ class SystemConfigMetadataDto {
     return null;
   }
 
-  static List<SystemConfigMetadataDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigMetadataDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigMetadataDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +81,19 @@ class SystemConfigMetadataDto {
   }
 
   // maps a json object with a list of SystemConfigMetadataDto-objects as value to a dart map
-  static Map<String, List<SystemConfigMetadataDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigMetadataDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigMetadataDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigMetadataDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigMetadataDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +104,3 @@ class SystemConfigMetadataDto {
     'faces',
   };
 }
-

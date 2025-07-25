@@ -22,23 +22,22 @@ class DownloadArchiveInfo {
   int size;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is DownloadArchiveInfo &&
-    _deepEquality.equals(other.assetIds, assetIds) &&
-    other.size == size;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DownloadArchiveInfo && _deepEquality.equals(other.assetIds, assetIds) && other.size == size;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetIds.hashCode) +
-    (size.hashCode);
+      // ignore: unnecessary_parenthesis
+      (assetIds.hashCode) + (size.hashCode);
 
   @override
   String toString() => 'DownloadArchiveInfo[assetIds=$assetIds, size=$size]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetIds'] = this.assetIds;
-      json[r'size'] = this.size;
+    json[r'assetIds'] = this.assetIds;
+    json[r'size'] = this.size;
     return json;
   }
 
@@ -60,7 +59,10 @@ class DownloadArchiveInfo {
     return null;
   }
 
-  static List<DownloadArchiveInfo> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<DownloadArchiveInfo> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <DownloadArchiveInfo>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -88,13 +90,19 @@ class DownloadArchiveInfo {
   }
 
   // maps a json object with a list of DownloadArchiveInfo-objects as value to a dart map
-  static Map<String, List<DownloadArchiveInfo>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<DownloadArchiveInfo>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<DownloadArchiveInfo>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = DownloadArchiveInfo.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = DownloadArchiveInfo.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -106,4 +114,3 @@ class DownloadArchiveInfo {
     'size',
   };
 }
-

@@ -19,20 +19,19 @@ class TrashResponseDto {
   int count;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is TrashResponseDto &&
-    other.count == count;
+  bool operator ==(Object other) => identical(this, other) || other is TrashResponseDto && other.count == count;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (count.hashCode);
+      // ignore: unnecessary_parenthesis
+      (count.hashCode);
 
   @override
   String toString() => 'TrashResponseDto[count=$count]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'count'] = this.count;
+    json[r'count'] = this.count;
     return json;
   }
 
@@ -51,7 +50,10 @@ class TrashResponseDto {
     return null;
   }
 
-  static List<TrashResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<TrashResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <TrashResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +81,19 @@ class TrashResponseDto {
   }
 
   // maps a json object with a list of TrashResponseDto-objects as value to a dart map
-  static Map<String, List<TrashResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<TrashResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<TrashResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = TrashResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = TrashResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +104,3 @@ class TrashResponseDto {
     'count',
   };
 }
-

@@ -20,20 +20,20 @@ class SystemConfigUserDto {
   int deleteDelay;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigUserDto &&
-    other.deleteDelay == deleteDelay;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SystemConfigUserDto && other.deleteDelay == deleteDelay;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (deleteDelay.hashCode);
+      // ignore: unnecessary_parenthesis
+      (deleteDelay.hashCode);
 
   @override
   String toString() => 'SystemConfigUserDto[deleteDelay=$deleteDelay]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'deleteDelay'] = this.deleteDelay;
+    json[r'deleteDelay'] = this.deleteDelay;
     return json;
   }
 
@@ -52,7 +52,10 @@ class SystemConfigUserDto {
     return null;
   }
 
-  static List<SystemConfigUserDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigUserDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigUserDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -80,13 +83,19 @@ class SystemConfigUserDto {
   }
 
   // maps a json object with a list of SystemConfigUserDto-objects as value to a dart map
-  static Map<String, List<SystemConfigUserDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigUserDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigUserDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigUserDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigUserDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -97,4 +106,3 @@ class SystemConfigUserDto {
     'deleteDelay',
   };
 }
-

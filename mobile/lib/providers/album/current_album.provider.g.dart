@@ -10,12 +10,10 @@ String _$currentAlbumHash() => r'61f00273d6b69da45add1532cc3d3a076ee55110';
 
 /// See also [CurrentAlbum].
 @ProviderFor(CurrentAlbum)
-final currentAlbumProvider =
-    AutoDisposeNotifierProvider<CurrentAlbum, Album?>.internal(
+final currentAlbumProvider = AutoDisposeNotifierProvider<CurrentAlbum, Album?>.internal(
   CurrentAlbum.new,
   name: r'currentAlbumProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$currentAlbumHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product') ? null : _$currentAlbumHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

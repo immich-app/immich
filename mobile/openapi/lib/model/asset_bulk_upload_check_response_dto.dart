@@ -19,20 +19,21 @@ class AssetBulkUploadCheckResponseDto {
   List<AssetBulkUploadCheckResult> results;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetBulkUploadCheckResponseDto &&
-    _deepEquality.equals(other.results, results);
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AssetBulkUploadCheckResponseDto && _deepEquality.equals(other.results, results);
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (results.hashCode);
+      // ignore: unnecessary_parenthesis
+      (results.hashCode);
 
   @override
   String toString() => 'AssetBulkUploadCheckResponseDto[results=$results]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'results'] = this.results;
+    json[r'results'] = this.results;
     return json;
   }
 
@@ -51,7 +52,10 @@ class AssetBulkUploadCheckResponseDto {
     return null;
   }
 
-  static List<AssetBulkUploadCheckResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetBulkUploadCheckResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetBulkUploadCheckResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +83,19 @@ class AssetBulkUploadCheckResponseDto {
   }
 
   // maps a json object with a list of AssetBulkUploadCheckResponseDto-objects as value to a dart map
-  static Map<String, List<AssetBulkUploadCheckResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AssetBulkUploadCheckResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AssetBulkUploadCheckResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetBulkUploadCheckResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetBulkUploadCheckResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +106,3 @@ class AssetBulkUploadCheckResponseDto {
     'results',
   };
 }
-

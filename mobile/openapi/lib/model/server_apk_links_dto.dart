@@ -28,29 +28,29 @@ class ServerApkLinksDto {
   String x8664;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is ServerApkLinksDto &&
-    other.arm64v8a == arm64v8a &&
-    other.armeabiv7a == armeabiv7a &&
-    other.universal == universal &&
-    other.x8664 == x8664;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ServerApkLinksDto &&
+          other.arm64v8a == arm64v8a &&
+          other.armeabiv7a == armeabiv7a &&
+          other.universal == universal &&
+          other.x8664 == x8664;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (arm64v8a.hashCode) +
-    (armeabiv7a.hashCode) +
-    (universal.hashCode) +
-    (x8664.hashCode);
+      // ignore: unnecessary_parenthesis
+      (arm64v8a.hashCode) + (armeabiv7a.hashCode) + (universal.hashCode) + (x8664.hashCode);
 
   @override
-  String toString() => 'ServerApkLinksDto[arm64v8a=$arm64v8a, armeabiv7a=$armeabiv7a, universal=$universal, x8664=$x8664]';
+  String toString() =>
+      'ServerApkLinksDto[arm64v8a=$arm64v8a, armeabiv7a=$armeabiv7a, universal=$universal, x8664=$x8664]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'arm64v8a'] = this.arm64v8a;
-      json[r'armeabiv7a'] = this.armeabiv7a;
-      json[r'universal'] = this.universal;
-      json[r'x86_64'] = this.x8664;
+    json[r'arm64v8a'] = this.arm64v8a;
+    json[r'armeabiv7a'] = this.armeabiv7a;
+    json[r'universal'] = this.universal;
+    json[r'x86_64'] = this.x8664;
     return json;
   }
 
@@ -72,7 +72,10 @@ class ServerApkLinksDto {
     return null;
   }
 
-  static List<ServerApkLinksDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ServerApkLinksDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <ServerApkLinksDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -100,13 +103,19 @@ class ServerApkLinksDto {
   }
 
   // maps a json object with a list of ServerApkLinksDto-objects as value to a dart map
-  static Map<String, List<ServerApkLinksDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<ServerApkLinksDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<ServerApkLinksDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = ServerApkLinksDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = ServerApkLinksDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -120,4 +129,3 @@ class ServerApkLinksDto {
     'x86_64',
   };
 }
-

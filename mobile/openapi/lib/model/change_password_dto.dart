@@ -22,23 +22,22 @@ class ChangePasswordDto {
   String password;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is ChangePasswordDto &&
-    other.newPassword == newPassword &&
-    other.password == password;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChangePasswordDto && other.newPassword == newPassword && other.password == password;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (newPassword.hashCode) +
-    (password.hashCode);
+      // ignore: unnecessary_parenthesis
+      (newPassword.hashCode) + (password.hashCode);
 
   @override
   String toString() => 'ChangePasswordDto[newPassword=$newPassword, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'newPassword'] = this.newPassword;
-      json[r'password'] = this.password;
+    json[r'newPassword'] = this.newPassword;
+    json[r'password'] = this.password;
     return json;
   }
 
@@ -58,7 +57,10 @@ class ChangePasswordDto {
     return null;
   }
 
-  static List<ChangePasswordDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ChangePasswordDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <ChangePasswordDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +88,19 @@ class ChangePasswordDto {
   }
 
   // maps a json object with a list of ChangePasswordDto-objects as value to a dart map
-  static Map<String, List<ChangePasswordDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<ChangePasswordDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<ChangePasswordDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = ChangePasswordDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = ChangePasswordDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +112,3 @@ class ChangePasswordDto {
     'password',
   };
 }
-

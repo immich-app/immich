@@ -46,59 +46,62 @@ class SyncPersonV1 {
   DateTime updatedAt;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncPersonV1 &&
-    other.birthDate == birthDate &&
-    other.color == color &&
-    other.createdAt == createdAt &&
-    other.faceAssetId == faceAssetId &&
-    other.id == id &&
-    other.isFavorite == isFavorite &&
-    other.isHidden == isHidden &&
-    other.name == name &&
-    other.ownerId == ownerId &&
-    other.updatedAt == updatedAt;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncPersonV1 &&
+          other.birthDate == birthDate &&
+          other.color == color &&
+          other.createdAt == createdAt &&
+          other.faceAssetId == faceAssetId &&
+          other.id == id &&
+          other.isFavorite == isFavorite &&
+          other.isHidden == isHidden &&
+          other.name == name &&
+          other.ownerId == ownerId &&
+          other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (birthDate == null ? 0 : birthDate!.hashCode) +
-    (color == null ? 0 : color!.hashCode) +
-    (createdAt.hashCode) +
-    (faceAssetId == null ? 0 : faceAssetId!.hashCode) +
-    (id.hashCode) +
-    (isFavorite.hashCode) +
-    (isHidden.hashCode) +
-    (name.hashCode) +
-    (ownerId.hashCode) +
-    (updatedAt.hashCode);
+      // ignore: unnecessary_parenthesis
+      (birthDate == null ? 0 : birthDate!.hashCode) +
+      (color == null ? 0 : color!.hashCode) +
+      (createdAt.hashCode) +
+      (faceAssetId == null ? 0 : faceAssetId!.hashCode) +
+      (id.hashCode) +
+      (isFavorite.hashCode) +
+      (isHidden.hashCode) +
+      (name.hashCode) +
+      (ownerId.hashCode) +
+      (updatedAt.hashCode);
 
   @override
-  String toString() => 'SyncPersonV1[birthDate=$birthDate, color=$color, createdAt=$createdAt, faceAssetId=$faceAssetId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, ownerId=$ownerId, updatedAt=$updatedAt]';
+  String toString() =>
+      'SyncPersonV1[birthDate=$birthDate, color=$color, createdAt=$createdAt, faceAssetId=$faceAssetId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, ownerId=$ownerId, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.birthDate != null) {
       json[r'birthDate'] = this.birthDate!.toUtc().toIso8601String();
     } else {
-    //  json[r'birthDate'] = null;
+      //  json[r'birthDate'] = null;
     }
     if (this.color != null) {
       json[r'color'] = this.color;
     } else {
-    //  json[r'color'] = null;
+      //  json[r'color'] = null;
     }
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+    json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
     if (this.faceAssetId != null) {
       json[r'faceAssetId'] = this.faceAssetId;
     } else {
-    //  json[r'faceAssetId'] = null;
+      //  json[r'faceAssetId'] = null;
     }
-      json[r'id'] = this.id;
-      json[r'isFavorite'] = this.isFavorite;
-      json[r'isHidden'] = this.isHidden;
-      json[r'name'] = this.name;
-      json[r'ownerId'] = this.ownerId;
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+    json[r'id'] = this.id;
+    json[r'isFavorite'] = this.isFavorite;
+    json[r'isHidden'] = this.isHidden;
+    json[r'name'] = this.name;
+    json[r'ownerId'] = this.ownerId;
+    json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -126,7 +129,10 @@ class SyncPersonV1 {
     return null;
   }
 
-  static List<SyncPersonV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncPersonV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncPersonV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -154,13 +160,19 @@ class SyncPersonV1 {
   }
 
   // maps a json object with a list of SyncPersonV1-objects as value to a dart map
-  static Map<String, List<SyncPersonV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncPersonV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncPersonV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncPersonV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncPersonV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -180,4 +192,3 @@ class SyncPersonV1 {
     'updatedAt',
   };
 }
-

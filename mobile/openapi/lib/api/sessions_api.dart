@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class SessionsApi {
   SessionsApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
@@ -20,7 +19,9 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [SessionCreateDto] sessionCreateDto (required):
-  Future<Response> createSessionWithHttpInfo(SessionCreateDto sessionCreateDto,) async {
+  Future<Response> createSessionWithHttpInfo(
+    SessionCreateDto sessionCreateDto,
+  ) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sessions';
 
@@ -32,7 +33,6 @@ class SessionsApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>['application/json'];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -48,8 +48,12 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [SessionCreateDto] sessionCreateDto (required):
-  Future<SessionCreateResponseDto?> createSession(SessionCreateDto sessionCreateDto,) async {
-    final response = await createSessionWithHttpInfo(sessionCreateDto,);
+  Future<SessionCreateResponseDto?> createSession(
+    SessionCreateDto sessionCreateDto,
+  ) async {
+    final response = await createSessionWithHttpInfo(
+      sessionCreateDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -57,8 +61,10 @@ class SessionsApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SessionCreateResponseDto',) as SessionCreateResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'SessionCreateResponseDto',
+      ) as SessionCreateResponseDto;
     }
     return null;
   }
@@ -76,7 +82,6 @@ class SessionsApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -100,10 +105,11 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteSessionWithHttpInfo(String id,) async {
+  Future<Response> deleteSessionWithHttpInfo(
+    String id,
+  ) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/sessions/{id}'
-      .replaceAll('{id}', id);
+    final apiPath = r'/sessions/{id}'.replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -113,7 +119,6 @@ class SessionsApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -129,8 +134,12 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteSession(String id,) async {
-    final response = await deleteSessionWithHttpInfo(id,);
+  Future<void> deleteSession(
+    String id,
+  ) async {
+    final response = await deleteSessionWithHttpInfo(
+      id,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -149,7 +158,6 @@ class SessionsApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -173,9 +181,8 @@ class SessionsApi {
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<SessionResponseDto>') as List)
-        .cast<SessionResponseDto>()
-        .toList(growable: false);
-
+          .cast<SessionResponseDto>()
+          .toList(growable: false);
     }
     return null;
   }
@@ -184,10 +191,11 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> lockSessionWithHttpInfo(String id,) async {
+  Future<Response> lockSessionWithHttpInfo(
+    String id,
+  ) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/sessions/{id}/lock'
-      .replaceAll('{id}', id);
+    final apiPath = r'/sessions/{id}/lock'.replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -197,7 +205,6 @@ class SessionsApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -213,8 +220,12 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> lockSession(String id,) async {
-    final response = await lockSessionWithHttpInfo(id,);
+  Future<void> lockSession(
+    String id,
+  ) async {
+    final response = await lockSessionWithHttpInfo(
+      id,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -226,10 +237,12 @@ class SessionsApi {
   /// * [String] id (required):
   ///
   /// * [SessionUpdateDto] sessionUpdateDto (required):
-  Future<Response> updateSessionWithHttpInfo(String id, SessionUpdateDto sessionUpdateDto,) async {
+  Future<Response> updateSessionWithHttpInfo(
+    String id,
+    SessionUpdateDto sessionUpdateDto,
+  ) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/sessions/{id}'
-      .replaceAll('{id}', id);
+    final apiPath = r'/sessions/{id}'.replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody = sessionUpdateDto;
@@ -239,7 +252,6 @@ class SessionsApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>['application/json'];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -257,8 +269,14 @@ class SessionsApi {
   /// * [String] id (required):
   ///
   /// * [SessionUpdateDto] sessionUpdateDto (required):
-  Future<SessionResponseDto?> updateSession(String id, SessionUpdateDto sessionUpdateDto,) async {
-    final response = await updateSessionWithHttpInfo(id, sessionUpdateDto,);
+  Future<SessionResponseDto?> updateSession(
+    String id,
+    SessionUpdateDto sessionUpdateDto,
+  ) async {
+    final response = await updateSessionWithHttpInfo(
+      id,
+      sessionUpdateDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -266,8 +284,10 @@ class SessionsApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SessionResponseDto',) as SessionResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'SessionResponseDto',
+      ) as SessionResponseDto;
     }
     return null;
   }

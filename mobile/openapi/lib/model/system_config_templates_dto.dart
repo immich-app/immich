@@ -19,20 +19,19 @@ class SystemConfigTemplatesDto {
   SystemConfigTemplateEmailsDto email;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigTemplatesDto &&
-    other.email == email;
+  bool operator ==(Object other) => identical(this, other) || other is SystemConfigTemplatesDto && other.email == email;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (email.hashCode);
+      // ignore: unnecessary_parenthesis
+      (email.hashCode);
 
   @override
   String toString() => 'SystemConfigTemplatesDto[email=$email]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'email'] = this.email;
+    json[r'email'] = this.email;
     return json;
   }
 
@@ -51,7 +50,10 @@ class SystemConfigTemplatesDto {
     return null;
   }
 
-  static List<SystemConfigTemplatesDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigTemplatesDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigTemplatesDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +81,19 @@ class SystemConfigTemplatesDto {
   }
 
   // maps a json object with a list of SystemConfigTemplatesDto-objects as value to a dart map
-  static Map<String, List<SystemConfigTemplatesDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigTemplatesDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigTemplatesDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigTemplatesDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigTemplatesDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +104,3 @@ class SystemConfigTemplatesDto {
     'email',
   };
 }
-

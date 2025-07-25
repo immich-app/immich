@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class SystemMetadataApi {
   SystemMetadataApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
@@ -29,7 +28,6 @@ class SystemMetadataApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -51,8 +49,10 @@ class SystemMetadataApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AdminOnboardingUpdateDto',) as AdminOnboardingUpdateDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'AdminOnboardingUpdateDto',
+      ) as AdminOnboardingUpdateDto;
     }
     return null;
   }
@@ -70,7 +70,6 @@ class SystemMetadataApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -92,8 +91,10 @@ class SystemMetadataApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ReverseGeocodingStateResponseDto',) as ReverseGeocodingStateResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'ReverseGeocodingStateResponseDto',
+      ) as ReverseGeocodingStateResponseDto;
     }
     return null;
   }
@@ -111,7 +112,6 @@ class SystemMetadataApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -133,8 +133,10 @@ class SystemMetadataApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'VersionCheckStateResponseDto',) as VersionCheckStateResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'VersionCheckStateResponseDto',
+      ) as VersionCheckStateResponseDto;
     }
     return null;
   }
@@ -143,7 +145,9 @@ class SystemMetadataApi {
   /// Parameters:
   ///
   /// * [AdminOnboardingUpdateDto] adminOnboardingUpdateDto (required):
-  Future<Response> updateAdminOnboardingWithHttpInfo(AdminOnboardingUpdateDto adminOnboardingUpdateDto,) async {
+  Future<Response> updateAdminOnboardingWithHttpInfo(
+    AdminOnboardingUpdateDto adminOnboardingUpdateDto,
+  ) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/system-metadata/admin-onboarding';
 
@@ -155,7 +159,6 @@ class SystemMetadataApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>['application/json'];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -171,8 +174,12 @@ class SystemMetadataApi {
   /// Parameters:
   ///
   /// * [AdminOnboardingUpdateDto] adminOnboardingUpdateDto (required):
-  Future<void> updateAdminOnboarding(AdminOnboardingUpdateDto adminOnboardingUpdateDto,) async {
-    final response = await updateAdminOnboardingWithHttpInfo(adminOnboardingUpdateDto,);
+  Future<void> updateAdminOnboarding(
+    AdminOnboardingUpdateDto adminOnboardingUpdateDto,
+  ) async {
+    final response = await updateAdminOnboardingWithHttpInfo(
+      adminOnboardingUpdateDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

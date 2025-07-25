@@ -22,23 +22,21 @@ class SyncAckDto {
   SyncEntityType type;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAckDto &&
-    other.ack == ack &&
-    other.type == type;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SyncAckDto && other.ack == ack && other.type == type;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (ack.hashCode) +
-    (type.hashCode);
+      // ignore: unnecessary_parenthesis
+      (ack.hashCode) + (type.hashCode);
 
   @override
   String toString() => 'SyncAckDto[ack=$ack, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'ack'] = this.ack;
-      json[r'type'] = this.type;
+    json[r'ack'] = this.ack;
+    json[r'type'] = this.type;
     return json;
   }
 
@@ -58,7 +56,10 @@ class SyncAckDto {
     return null;
   }
 
-  static List<SyncAckDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncAckDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncAckDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +87,19 @@ class SyncAckDto {
   }
 
   // maps a json object with a list of SyncAckDto-objects as value to a dart map
-  static Map<String, List<SyncAckDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncAckDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncAckDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncAckDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncAckDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +111,3 @@ class SyncAckDto {
     'type',
   };
 }
-

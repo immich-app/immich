@@ -25,26 +25,23 @@ class SyncAlbumUserV1 {
   String userId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAlbumUserV1 &&
-    other.albumId == albumId &&
-    other.role == role &&
-    other.userId == userId;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncAlbumUserV1 && other.albumId == albumId && other.role == role && other.userId == userId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumId.hashCode) +
-    (role.hashCode) +
-    (userId.hashCode);
+      // ignore: unnecessary_parenthesis
+      (albumId.hashCode) + (role.hashCode) + (userId.hashCode);
 
   @override
   String toString() => 'SyncAlbumUserV1[albumId=$albumId, role=$role, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albumId'] = this.albumId;
-      json[r'role'] = this.role;
-      json[r'userId'] = this.userId;
+    json[r'albumId'] = this.albumId;
+    json[r'role'] = this.role;
+    json[r'userId'] = this.userId;
     return json;
   }
 
@@ -65,7 +62,10 @@ class SyncAlbumUserV1 {
     return null;
   }
 
-  static List<SyncAlbumUserV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncAlbumUserV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncAlbumUserV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -93,13 +93,19 @@ class SyncAlbumUserV1 {
   }
 
   // maps a json object with a list of SyncAlbumUserV1-objects as value to a dart map
-  static Map<String, List<SyncAlbumUserV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncAlbumUserV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncAlbumUserV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncAlbumUserV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncAlbumUserV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +118,3 @@ class SyncAlbumUserV1 {
     'userId',
   };
 }
-

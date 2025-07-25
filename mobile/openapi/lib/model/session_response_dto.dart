@@ -46,45 +46,48 @@ class SessionResponseDto {
   String updatedAt;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SessionResponseDto &&
-    other.createdAt == createdAt &&
-    other.current == current &&
-    other.deviceOS == deviceOS &&
-    other.deviceType == deviceType &&
-    other.expiresAt == expiresAt &&
-    other.id == id &&
-    other.isPendingSyncReset == isPendingSyncReset &&
-    other.updatedAt == updatedAt;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SessionResponseDto &&
+          other.createdAt == createdAt &&
+          other.current == current &&
+          other.deviceOS == deviceOS &&
+          other.deviceType == deviceType &&
+          other.expiresAt == expiresAt &&
+          other.id == id &&
+          other.isPendingSyncReset == isPendingSyncReset &&
+          other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (createdAt.hashCode) +
-    (current.hashCode) +
-    (deviceOS.hashCode) +
-    (deviceType.hashCode) +
-    (expiresAt == null ? 0 : expiresAt!.hashCode) +
-    (id.hashCode) +
-    (isPendingSyncReset.hashCode) +
-    (updatedAt.hashCode);
+      // ignore: unnecessary_parenthesis
+      (createdAt.hashCode) +
+      (current.hashCode) +
+      (deviceOS.hashCode) +
+      (deviceType.hashCode) +
+      (expiresAt == null ? 0 : expiresAt!.hashCode) +
+      (id.hashCode) +
+      (isPendingSyncReset.hashCode) +
+      (updatedAt.hashCode);
 
   @override
-  String toString() => 'SessionResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, updatedAt=$updatedAt]';
+  String toString() =>
+      'SessionResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'createdAt'] = this.createdAt;
-      json[r'current'] = this.current;
-      json[r'deviceOS'] = this.deviceOS;
-      json[r'deviceType'] = this.deviceType;
+    json[r'createdAt'] = this.createdAt;
+    json[r'current'] = this.current;
+    json[r'deviceOS'] = this.deviceOS;
+    json[r'deviceType'] = this.deviceType;
     if (this.expiresAt != null) {
       json[r'expiresAt'] = this.expiresAt;
     } else {
-    //  json[r'expiresAt'] = null;
+      //  json[r'expiresAt'] = null;
     }
-      json[r'id'] = this.id;
-      json[r'isPendingSyncReset'] = this.isPendingSyncReset;
-      json[r'updatedAt'] = this.updatedAt;
+    json[r'id'] = this.id;
+    json[r'isPendingSyncReset'] = this.isPendingSyncReset;
+    json[r'updatedAt'] = this.updatedAt;
     return json;
   }
 
@@ -110,7 +113,10 @@ class SessionResponseDto {
     return null;
   }
 
-  static List<SessionResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SessionResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SessionResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -138,13 +144,19 @@ class SessionResponseDto {
   }
 
   // maps a json object with a list of SessionResponseDto-objects as value to a dart map
-  static Map<String, List<SessionResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SessionResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SessionResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SessionResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SessionResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -161,4 +173,3 @@ class SessionResponseDto {
     'updatedAt',
   };
 }
-

@@ -22,23 +22,22 @@ class SyncAlbumToAssetDeleteV1 {
   String assetId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAlbumToAssetDeleteV1 &&
-    other.albumId == albumId &&
-    other.assetId == assetId;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncAlbumToAssetDeleteV1 && other.albumId == albumId && other.assetId == assetId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumId.hashCode) +
-    (assetId.hashCode);
+      // ignore: unnecessary_parenthesis
+      (albumId.hashCode) + (assetId.hashCode);
 
   @override
   String toString() => 'SyncAlbumToAssetDeleteV1[albumId=$albumId, assetId=$assetId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albumId'] = this.albumId;
-      json[r'assetId'] = this.assetId;
+    json[r'albumId'] = this.albumId;
+    json[r'assetId'] = this.assetId;
     return json;
   }
 
@@ -58,7 +57,10 @@ class SyncAlbumToAssetDeleteV1 {
     return null;
   }
 
-  static List<SyncAlbumToAssetDeleteV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncAlbumToAssetDeleteV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncAlbumToAssetDeleteV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +88,19 @@ class SyncAlbumToAssetDeleteV1 {
   }
 
   // maps a json object with a list of SyncAlbumToAssetDeleteV1-objects as value to a dart map
-  static Map<String, List<SyncAlbumToAssetDeleteV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncAlbumToAssetDeleteV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncAlbumToAssetDeleteV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncAlbumToAssetDeleteV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncAlbumToAssetDeleteV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +112,3 @@ class SyncAlbumToAssetDeleteV1 {
     'assetId',
   };
 }
-

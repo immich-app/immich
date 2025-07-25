@@ -19,20 +19,21 @@ class CheckExistingAssetsResponseDto {
   List<String> existingIds;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is CheckExistingAssetsResponseDto &&
-    _deepEquality.equals(other.existingIds, existingIds);
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CheckExistingAssetsResponseDto && _deepEquality.equals(other.existingIds, existingIds);
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (existingIds.hashCode);
+      // ignore: unnecessary_parenthesis
+      (existingIds.hashCode);
 
   @override
   String toString() => 'CheckExistingAssetsResponseDto[existingIds=$existingIds]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'existingIds'] = this.existingIds;
+    json[r'existingIds'] = this.existingIds;
     return json;
   }
 
@@ -53,7 +54,10 @@ class CheckExistingAssetsResponseDto {
     return null;
   }
 
-  static List<CheckExistingAssetsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<CheckExistingAssetsResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <CheckExistingAssetsResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -81,13 +85,19 @@ class CheckExistingAssetsResponseDto {
   }
 
   // maps a json object with a list of CheckExistingAssetsResponseDto-objects as value to a dart map
-  static Map<String, List<CheckExistingAssetsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<CheckExistingAssetsResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<CheckExistingAssetsResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = CheckExistingAssetsResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = CheckExistingAssetsResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -98,4 +108,3 @@ class CheckExistingAssetsResponseDto {
     'existingIds',
   };
 }
-

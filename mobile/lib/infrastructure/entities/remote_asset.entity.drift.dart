@@ -1,18 +1,14 @@
 // dart format width=80
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
-    as i1;
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart' as i1;
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as i2;
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart'
-    as i3;
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart' as i3;
 import 'package:drift/src/runtime/query_builder/query_builder.dart' as i4;
-import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart'
-    as i5;
+import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart' as i5;
 import 'package:drift/internal/modular.dart' as i6;
 
-typedef $$RemoteAssetEntityTableCreateCompanionBuilder
-    = i1.RemoteAssetEntityCompanion Function({
+typedef $$RemoteAssetEntityTableCreateCompanionBuilder = i1.RemoteAssetEntityCompanion Function({
   required String name,
   required i2.AssetType type,
   i0.Value<DateTime> createdAt,
@@ -31,8 +27,7 @@ typedef $$RemoteAssetEntityTableCreateCompanionBuilder
   required i2.AssetVisibility visibility,
   i0.Value<String?> stackId,
 });
-typedef $$RemoteAssetEntityTableUpdateCompanionBuilder
-    = i1.RemoteAssetEntityCompanion Function({
+typedef $$RemoteAssetEntityTableUpdateCompanionBuilder = i1.RemoteAssetEntityCompanion Function({
   i0.Value<String> name,
   i0.Value<i2.AssetType> type,
   i0.Value<DateTime> createdAt,
@@ -52,42 +47,29 @@ typedef $$RemoteAssetEntityTableUpdateCompanionBuilder
   i0.Value<String?> stackId,
 });
 
-final class $$RemoteAssetEntityTableReferences extends i0.BaseReferences<
-    i0.GeneratedDatabase,
-    i1.$RemoteAssetEntityTable,
-    i1.RemoteAssetEntityData> {
-  $$RemoteAssetEntityTableReferences(
-      super.$_db, super.$_table, super.$_typedResult);
+final class $$RemoteAssetEntityTableReferences
+    extends i0.BaseReferences<i0.GeneratedDatabase, i1.$RemoteAssetEntityTable, i1.RemoteAssetEntityData> {
+  $$RemoteAssetEntityTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static i5.$UserEntityTable _ownerIdTable(i0.GeneratedDatabase db) =>
-      i6.ReadDatabaseContainer(db)
-          .resultSet<i5.$UserEntityTable>('user_entity')
-          .createAlias(i0.$_aliasNameGenerator(
-              i6.ReadDatabaseContainer(db)
-                  .resultSet<i1.$RemoteAssetEntityTable>('remote_asset_entity')
-                  .ownerId,
-              i6.ReadDatabaseContainer(db)
-                  .resultSet<i5.$UserEntityTable>('user_entity')
-                  .id));
+      i6.ReadDatabaseContainer(db).resultSet<i5.$UserEntityTable>('user_entity').createAlias(i0.$_aliasNameGenerator(
+          i6.ReadDatabaseContainer(db).resultSet<i1.$RemoteAssetEntityTable>('remote_asset_entity').ownerId,
+          i6.ReadDatabaseContainer(db).resultSet<i5.$UserEntityTable>('user_entity').id));
 
   i5.$$UserEntityTableProcessedTableManager get ownerId {
     final $_column = $_itemColumn<String>('owner_id')!;
 
     final manager = i5
         .$$UserEntityTableTableManager(
-            $_db,
-            i6.ReadDatabaseContainer($_db)
-                .resultSet<i5.$UserEntityTable>('user_entity'))
+            $_db, i6.ReadDatabaseContainer($_db).resultSet<i5.$UserEntityTable>('user_entity'))
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_ownerIdTable($_db));
     if (item == null) return manager;
-    return i0.ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
+    return i0.ProcessedTableManager(manager.$state.copyWith(prefetchedData: [item]));
   }
 }
 
-class $$RemoteAssetEntityTableFilterComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$RemoteAssetEntityTable> {
+class $$RemoteAssetEntityTableFilterComposer extends i0.Composer<i0.GeneratedDatabase, i1.$RemoteAssetEntityTable> {
   $$RemoteAssetEntityTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -95,86 +77,73 @@ class $$RemoteAssetEntityTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => i0.ColumnFilters(column));
 
   i0.ColumnWithTypeConverterFilters<i2.AssetType, i2.AssetType, int> get type =>
-      $composableBuilder(
-          column: $table.type,
-          builder: (column) => i0.ColumnWithTypeConverterFilters(column));
+      $composableBuilder(column: $table.type, builder: (column) => i0.ColumnWithTypeConverterFilters(column));
 
-  i0.ColumnFilters<DateTime> get createdAt => $composableBuilder(
-      column: $table.createdAt, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-      column: $table.updatedAt, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<int> get width => $composableBuilder(
-      column: $table.width, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<int> get width =>
+      $composableBuilder(column: $table.width, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<int> get height => $composableBuilder(
-      column: $table.height, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<int> get height =>
+      $composableBuilder(column: $table.height, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<int> get durationInSeconds => $composableBuilder(
-      column: $table.durationInSeconds,
-      builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<int> get durationInSeconds =>
+      $composableBuilder(column: $table.durationInSeconds, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<String> get checksum => $composableBuilder(
-      column: $table.checksum, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<String> get checksum =>
+      $composableBuilder(column: $table.checksum, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<bool> get isFavorite => $composableBuilder(
-      column: $table.isFavorite, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<bool> get isFavorite =>
+      $composableBuilder(column: $table.isFavorite, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<DateTime> get localDateTime => $composableBuilder(
-      column: $table.localDateTime,
-      builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<DateTime> get localDateTime =>
+      $composableBuilder(column: $table.localDateTime, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<String> get thumbHash => $composableBuilder(
-      column: $table.thumbHash, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<String> get thumbHash =>
+      $composableBuilder(column: $table.thumbHash, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<DateTime> get deletedAt => $composableBuilder(
-      column: $table.deletedAt, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<String> get livePhotoVideoId => $composableBuilder(
-      column: $table.livePhotoVideoId,
-      builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<String> get livePhotoVideoId =>
+      $composableBuilder(column: $table.livePhotoVideoId, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnWithTypeConverterFilters<i2.AssetVisibility, i2.AssetVisibility, int>
-      get visibility => $composableBuilder(
-          column: $table.visibility,
-          builder: (column) => i0.ColumnWithTypeConverterFilters(column));
+  i0.ColumnWithTypeConverterFilters<i2.AssetVisibility, i2.AssetVisibility, int> get visibility =>
+      $composableBuilder(column: $table.visibility, builder: (column) => i0.ColumnWithTypeConverterFilters(column));
 
-  i0.ColumnFilters<String> get stackId => $composableBuilder(
-      column: $table.stackId, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<String> get stackId =>
+      $composableBuilder(column: $table.stackId, builder: (column) => i0.ColumnFilters(column));
 
   i5.$$UserEntityTableFilterComposer get ownerId {
     final i5.$$UserEntityTableFilterComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.ownerId,
-        referencedTable: i6.ReadDatabaseContainer($db)
-            .resultSet<i5.$UserEntityTable>('user_entity'),
+        referencedTable: i6.ReadDatabaseContainer($db).resultSet<i5.$UserEntityTable>('user_entity'),
         getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
+        builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
             i5.$$UserEntityTableFilterComposer(
               $db: $db,
-              $table: i6.ReadDatabaseContainer($db)
-                  .resultSet<i5.$UserEntityTable>('user_entity'),
+              $table: i6.ReadDatabaseContainer($db).resultSet<i5.$UserEntityTable>('user_entity'),
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
+              $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
             ));
     return composer;
   }
 }
 
-class $$RemoteAssetEntityTableOrderingComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$RemoteAssetEntityTable> {
+class $$RemoteAssetEntityTableOrderingComposer extends i0.Composer<i0.GeneratedDatabase, i1.$RemoteAssetEntityTable> {
   $$RemoteAssetEntityTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -182,88 +151,73 @@ class $$RemoteAssetEntityTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get type => $composableBuilder(
-      column: $table.type, builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-      column: $table.createdAt,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-      column: $table.updatedAt,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get width => $composableBuilder(
-      column: $table.width, builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<int> get width =>
+      $composableBuilder(column: $table.width, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get height => $composableBuilder(
-      column: $table.height, builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<int> get height =>
+      $composableBuilder(column: $table.height, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get durationInSeconds => $composableBuilder(
-      column: $table.durationInSeconds,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<int> get durationInSeconds =>
+      $composableBuilder(column: $table.durationInSeconds, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<String> get checksum => $composableBuilder(
-      column: $table.checksum, builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<String> get checksum =>
+      $composableBuilder(column: $table.checksum, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<bool> get isFavorite => $composableBuilder(
-      column: $table.isFavorite,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<bool> get isFavorite =>
+      $composableBuilder(column: $table.isFavorite, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<DateTime> get localDateTime => $composableBuilder(
-      column: $table.localDateTime,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<DateTime> get localDateTime =>
+      $composableBuilder(column: $table.localDateTime, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<String> get thumbHash => $composableBuilder(
-      column: $table.thumbHash,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<String> get thumbHash =>
+      $composableBuilder(column: $table.thumbHash, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
-      column: $table.deletedAt,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<String> get livePhotoVideoId => $composableBuilder(
-      column: $table.livePhotoVideoId,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<String> get livePhotoVideoId =>
+      $composableBuilder(column: $table.livePhotoVideoId, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get visibility => $composableBuilder(
-      column: $table.visibility,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<int> get visibility =>
+      $composableBuilder(column: $table.visibility, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<String> get stackId => $composableBuilder(
-      column: $table.stackId, builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<String> get stackId =>
+      $composableBuilder(column: $table.stackId, builder: (column) => i0.ColumnOrderings(column));
 
   i5.$$UserEntityTableOrderingComposer get ownerId {
     final i5.$$UserEntityTableOrderingComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.ownerId,
-        referencedTable: i6.ReadDatabaseContainer($db)
-            .resultSet<i5.$UserEntityTable>('user_entity'),
+        referencedTable: i6.ReadDatabaseContainer($db).resultSet<i5.$UserEntityTable>('user_entity'),
         getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
+        builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
             i5.$$UserEntityTableOrderingComposer(
               $db: $db,
-              $table: i6.ReadDatabaseContainer($db)
-                  .resultSet<i5.$UserEntityTable>('user_entity'),
+              $table: i6.ReadDatabaseContainer($db).resultSet<i5.$UserEntityTable>('user_entity'),
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
+              $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
             ));
     return composer;
   }
 }
 
-class $$RemoteAssetEntityTableAnnotationComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$RemoteAssetEntityTable> {
+class $$RemoteAssetEntityTableAnnotationComposer extends i0.Composer<i0.GeneratedDatabase, i1.$RemoteAssetEntityTable> {
   $$RemoteAssetEntityTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -271,8 +225,7 @@ class $$RemoteAssetEntityTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
+  i0.GeneratedColumn<String> get name => $composableBuilder(column: $table.name, builder: (column) => column);
 
   i0.GeneratedColumnWithTypeConverter<i2.AssetType, int> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
@@ -283,61 +236,48 @@ class $$RemoteAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get width =>
-      $composableBuilder(column: $table.width, builder: (column) => column);
+  i0.GeneratedColumn<int> get width => $composableBuilder(column: $table.width, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get height =>
-      $composableBuilder(column: $table.height, builder: (column) => column);
+  i0.GeneratedColumn<int> get height => $composableBuilder(column: $table.height, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get durationInSeconds => $composableBuilder(
-      column: $table.durationInSeconds, builder: (column) => column);
+  i0.GeneratedColumn<int> get durationInSeconds =>
+      $composableBuilder(column: $table.durationInSeconds, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
+  i0.GeneratedColumn<String> get id => $composableBuilder(column: $table.id, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get checksum =>
-      $composableBuilder(column: $table.checksum, builder: (column) => column);
+  i0.GeneratedColumn<String> get checksum => $composableBuilder(column: $table.checksum, builder: (column) => column);
 
-  i0.GeneratedColumn<bool> get isFavorite => $composableBuilder(
-      column: $table.isFavorite, builder: (column) => column);
+  i0.GeneratedColumn<bool> get isFavorite => $composableBuilder(column: $table.isFavorite, builder: (column) => column);
 
-  i0.GeneratedColumn<DateTime> get localDateTime => $composableBuilder(
-      column: $table.localDateTime, builder: (column) => column);
+  i0.GeneratedColumn<DateTime> get localDateTime =>
+      $composableBuilder(column: $table.localDateTime, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get thumbHash =>
-      $composableBuilder(column: $table.thumbHash, builder: (column) => column);
+  i0.GeneratedColumn<String> get thumbHash => $composableBuilder(column: $table.thumbHash, builder: (column) => column);
 
   i0.GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get livePhotoVideoId => $composableBuilder(
-      column: $table.livePhotoVideoId, builder: (column) => column);
+  i0.GeneratedColumn<String> get livePhotoVideoId =>
+      $composableBuilder(column: $table.livePhotoVideoId, builder: (column) => column);
 
   i0.GeneratedColumnWithTypeConverter<i2.AssetVisibility, int> get visibility =>
-      $composableBuilder(
-          column: $table.visibility, builder: (column) => column);
+      $composableBuilder(column: $table.visibility, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get stackId =>
-      $composableBuilder(column: $table.stackId, builder: (column) => column);
+  i0.GeneratedColumn<String> get stackId => $composableBuilder(column: $table.stackId, builder: (column) => column);
 
   i5.$$UserEntityTableAnnotationComposer get ownerId {
     final i5.$$UserEntityTableAnnotationComposer composer = $composerBuilder(
         composer: this,
         getCurrentColumn: (t) => t.ownerId,
-        referencedTable: i6.ReadDatabaseContainer($db)
-            .resultSet<i5.$UserEntityTable>('user_entity'),
+        referencedTable: i6.ReadDatabaseContainer($db).resultSet<i5.$UserEntityTable>('user_entity'),
         getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
+        builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
             i5.$$UserEntityTableAnnotationComposer(
               $db: $db,
-              $table: i6.ReadDatabaseContainer($db)
-                  .resultSet<i5.$UserEntityTable>('user_entity'),
+              $table: i6.ReadDatabaseContainer($db).resultSet<i5.$UserEntityTable>('user_entity'),
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
+              $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
             ));
     return composer;
   }
@@ -355,18 +295,13 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
     (i1.RemoteAssetEntityData, i1.$$RemoteAssetEntityTableReferences),
     i1.RemoteAssetEntityData,
     i0.PrefetchHooks Function({bool ownerId})> {
-  $$RemoteAssetEntityTableTableManager(
-      i0.GeneratedDatabase db, i1.$RemoteAssetEntityTable table)
+  $$RemoteAssetEntityTableTableManager(i0.GeneratedDatabase db, i1.$RemoteAssetEntityTable table)
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              i1.$$RemoteAssetEntityTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () => i1
-              .$$RemoteAssetEntityTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              i1.$$RemoteAssetEntityTableAnnotationComposer(
-                  $db: db, $table: table),
+          createFilteringComposer: () => i1.$$RemoteAssetEntityTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => i1.$$RemoteAssetEntityTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () => i1.$$RemoteAssetEntityTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<String> name = const i0.Value.absent(),
             i0.Value<i2.AssetType> type = const i0.Value.absent(),
@@ -443,38 +378,21 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
             visibility: visibility,
             stackId: stackId,
           ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (
-                    e.readTable(table),
-                    i1.$$RemoteAssetEntityTableReferences(db, table, e)
-                  ))
-              .toList(),
+          withReferenceMapper: (p0) =>
+              p0.map((e) => (e.readTable(table), i1.$$RemoteAssetEntityTableReferences(db, table, e))).toList(),
           prefetchHooksCallback: ({ownerId = false}) {
             return i0.PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
               addJoins: <
-                  T extends i0.TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic>>(state) {
+                  T extends i0.TableManagerState<dynamic, dynamic, dynamic, dynamic, dynamic, dynamic, dynamic, dynamic,
+                      dynamic, dynamic, dynamic>>(state) {
                 if (ownerId) {
                   state = state.withJoin(
                     currentTable: table,
                     currentColumn: table.ownerId,
-                    referencedTable:
-                        i1.$$RemoteAssetEntityTableReferences._ownerIdTable(db),
-                    referencedColumn: i1.$$RemoteAssetEntityTableReferences
-                        ._ownerIdTable(db)
-                        .id,
+                    referencedTable: i1.$$RemoteAssetEntityTableReferences._ownerIdTable(db),
+                    referencedColumn: i1.$$RemoteAssetEntityTableReferences._ownerIdTable(db).id,
                   ) as T;
                 }
 
@@ -488,21 +406,19 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
         ));
 }
 
-typedef $$RemoteAssetEntityTableProcessedTableManager
-    = i0.ProcessedTableManager<
-        i0.GeneratedDatabase,
-        i1.$RemoteAssetEntityTable,
-        i1.RemoteAssetEntityData,
-        i1.$$RemoteAssetEntityTableFilterComposer,
-        i1.$$RemoteAssetEntityTableOrderingComposer,
-        i1.$$RemoteAssetEntityTableAnnotationComposer,
-        $$RemoteAssetEntityTableCreateCompanionBuilder,
-        $$RemoteAssetEntityTableUpdateCompanionBuilder,
-        (i1.RemoteAssetEntityData, i1.$$RemoteAssetEntityTableReferences),
-        i1.RemoteAssetEntityData,
-        i0.PrefetchHooks Function({bool ownerId})>;
-i0.Index get uQRemoteAssetOwnerChecksum => i0.Index(
-    'UQ_remote_asset_owner_checksum',
+typedef $$RemoteAssetEntityTableProcessedTableManager = i0.ProcessedTableManager<
+    i0.GeneratedDatabase,
+    i1.$RemoteAssetEntityTable,
+    i1.RemoteAssetEntityData,
+    i1.$$RemoteAssetEntityTableFilterComposer,
+    i1.$$RemoteAssetEntityTableOrderingComposer,
+    i1.$$RemoteAssetEntityTableAnnotationComposer,
+    $$RemoteAssetEntityTableCreateCompanionBuilder,
+    $$RemoteAssetEntityTableUpdateCompanionBuilder,
+    (i1.RemoteAssetEntityData, i1.$$RemoteAssetEntityTableReferences),
+    i1.RemoteAssetEntityData,
+    i0.PrefetchHooks Function({bool ownerId})>;
+i0.Index get uQRemoteAssetOwnerChecksum => i0.Index('UQ_remote_asset_owner_checksum',
     'CREATE UNIQUE INDEX UQ_remote_asset_owner_checksum ON remote_asset_entity (checksum, owner_id)');
 
 class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
@@ -511,117 +427,81 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
   final i0.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $RemoteAssetEntityTable(this.attachedDatabase, [this._alias]);
-  static const i0.VerificationMeta _nameMeta =
-      const i0.VerificationMeta('name');
+  static const i0.VerificationMeta _nameMeta = const i0.VerificationMeta('name');
   @override
-  late final i0.GeneratedColumn<String> name = i0.GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: i0.DriftSqlType.string, requiredDuringInsert: true);
+  late final i0.GeneratedColumn<String> name =
+      i0.GeneratedColumn<String>('name', aliasedName, false, type: i0.DriftSqlType.string, requiredDuringInsert: true);
   @override
   late final i0.GeneratedColumnWithTypeConverter<i2.AssetType, int> type =
-      i0.GeneratedColumn<int>('type', aliasedName, false,
-              type: i0.DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<i2.AssetType>(
-              i1.$RemoteAssetEntityTable.$convertertype);
-  static const i0.VerificationMeta _createdAtMeta =
-      const i0.VerificationMeta('createdAt');
+      i0.GeneratedColumn<int>('type', aliasedName, false, type: i0.DriftSqlType.int, requiredDuringInsert: true)
+          .withConverter<i2.AssetType>(i1.$RemoteAssetEntityTable.$convertertype);
+  static const i0.VerificationMeta _createdAtMeta = const i0.VerificationMeta('createdAt');
   @override
-  late final i0.GeneratedColumn<DateTime> createdAt =
-      i0.GeneratedColumn<DateTime>('created_at', aliasedName, false,
-          type: i0.DriftSqlType.dateTime,
-          requiredDuringInsert: false,
-          defaultValue: i4.currentDateAndTime);
-  static const i0.VerificationMeta _updatedAtMeta =
-      const i0.VerificationMeta('updatedAt');
+  late final i0.GeneratedColumn<DateTime> createdAt = i0.GeneratedColumn<DateTime>('created_at', aliasedName, false,
+      type: i0.DriftSqlType.dateTime, requiredDuringInsert: false, defaultValue: i4.currentDateAndTime);
+  static const i0.VerificationMeta _updatedAtMeta = const i0.VerificationMeta('updatedAt');
   @override
-  late final i0.GeneratedColumn<DateTime> updatedAt =
-      i0.GeneratedColumn<DateTime>('updated_at', aliasedName, false,
-          type: i0.DriftSqlType.dateTime,
-          requiredDuringInsert: false,
-          defaultValue: i4.currentDateAndTime);
-  static const i0.VerificationMeta _widthMeta =
-      const i0.VerificationMeta('width');
+  late final i0.GeneratedColumn<DateTime> updatedAt = i0.GeneratedColumn<DateTime>('updated_at', aliasedName, false,
+      type: i0.DriftSqlType.dateTime, requiredDuringInsert: false, defaultValue: i4.currentDateAndTime);
+  static const i0.VerificationMeta _widthMeta = const i0.VerificationMeta('width');
   @override
-  late final i0.GeneratedColumn<int> width = i0.GeneratedColumn<int>(
-      'width', aliasedName, true,
+  late final i0.GeneratedColumn<int> width =
+      i0.GeneratedColumn<int>('width', aliasedName, true, type: i0.DriftSqlType.int, requiredDuringInsert: false);
+  static const i0.VerificationMeta _heightMeta = const i0.VerificationMeta('height');
+  @override
+  late final i0.GeneratedColumn<int> height =
+      i0.GeneratedColumn<int>('height', aliasedName, true, type: i0.DriftSqlType.int, requiredDuringInsert: false);
+  static const i0.VerificationMeta _durationInSecondsMeta = const i0.VerificationMeta('durationInSeconds');
+  @override
+  late final i0.GeneratedColumn<int> durationInSeconds = i0.GeneratedColumn<int>(
+      'duration_in_seconds', aliasedName, true,
       type: i0.DriftSqlType.int, requiredDuringInsert: false);
-  static const i0.VerificationMeta _heightMeta =
-      const i0.VerificationMeta('height');
-  @override
-  late final i0.GeneratedColumn<int> height = i0.GeneratedColumn<int>(
-      'height', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
-  static const i0.VerificationMeta _durationInSecondsMeta =
-      const i0.VerificationMeta('durationInSeconds');
-  @override
-  late final i0.GeneratedColumn<int> durationInSeconds =
-      i0.GeneratedColumn<int>('duration_in_seconds', aliasedName, true,
-          type: i0.DriftSqlType.int, requiredDuringInsert: false);
   static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
   @override
-  late final i0.GeneratedColumn<String> id = i0.GeneratedColumn<String>(
-      'id', aliasedName, false,
-      type: i0.DriftSqlType.string, requiredDuringInsert: true);
-  static const i0.VerificationMeta _checksumMeta =
-      const i0.VerificationMeta('checksum');
+  late final i0.GeneratedColumn<String> id =
+      i0.GeneratedColumn<String>('id', aliasedName, false, type: i0.DriftSqlType.string, requiredDuringInsert: true);
+  static const i0.VerificationMeta _checksumMeta = const i0.VerificationMeta('checksum');
   @override
-  late final i0.GeneratedColumn<String> checksum = i0.GeneratedColumn<String>(
-      'checksum', aliasedName, false,
+  late final i0.GeneratedColumn<String> checksum = i0.GeneratedColumn<String>('checksum', aliasedName, false,
       type: i0.DriftSqlType.string, requiredDuringInsert: true);
-  static const i0.VerificationMeta _isFavoriteMeta =
-      const i0.VerificationMeta('isFavorite');
+  static const i0.VerificationMeta _isFavoriteMeta = const i0.VerificationMeta('isFavorite');
   @override
-  late final i0.GeneratedColumn<bool> isFavorite = i0.GeneratedColumn<bool>(
-      'is_favorite', aliasedName, false,
+  late final i0.GeneratedColumn<bool> isFavorite = i0.GeneratedColumn<bool>('is_favorite', aliasedName, false,
       type: i0.DriftSqlType.bool,
       requiredDuringInsert: false,
-      defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-          'CHECK ("is_favorite" IN (0, 1))'),
+      defaultConstraints: i0.GeneratedColumn.constraintIsAlways('CHECK ("is_favorite" IN (0, 1))'),
       defaultValue: const i4.Constant(false));
-  static const i0.VerificationMeta _ownerIdMeta =
-      const i0.VerificationMeta('ownerId');
+  static const i0.VerificationMeta _ownerIdMeta = const i0.VerificationMeta('ownerId');
   @override
-  late final i0.GeneratedColumn<String> ownerId = i0.GeneratedColumn<String>(
-      'owner_id', aliasedName, false,
+  late final i0.GeneratedColumn<String> ownerId = i0.GeneratedColumn<String>('owner_id', aliasedName, false,
       type: i0.DriftSqlType.string,
       requiredDuringInsert: true,
-      defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-          'REFERENCES user_entity (id) ON DELETE CASCADE'));
-  static const i0.VerificationMeta _localDateTimeMeta =
-      const i0.VerificationMeta('localDateTime');
+      defaultConstraints: i0.GeneratedColumn.constraintIsAlways('REFERENCES user_entity (id) ON DELETE CASCADE'));
+  static const i0.VerificationMeta _localDateTimeMeta = const i0.VerificationMeta('localDateTime');
   @override
-  late final i0.GeneratedColumn<DateTime> localDateTime =
-      i0.GeneratedColumn<DateTime>('local_date_time', aliasedName, true,
-          type: i0.DriftSqlType.dateTime, requiredDuringInsert: false);
-  static const i0.VerificationMeta _thumbHashMeta =
-      const i0.VerificationMeta('thumbHash');
+  late final i0.GeneratedColumn<DateTime> localDateTime = i0.GeneratedColumn<DateTime>(
+      'local_date_time', aliasedName, true,
+      type: i0.DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const i0.VerificationMeta _thumbHashMeta = const i0.VerificationMeta('thumbHash');
   @override
-  late final i0.GeneratedColumn<String> thumbHash = i0.GeneratedColumn<String>(
-      'thumb_hash', aliasedName, true,
+  late final i0.GeneratedColumn<String> thumbHash = i0.GeneratedColumn<String>('thumb_hash', aliasedName, true,
       type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _deletedAtMeta =
-      const i0.VerificationMeta('deletedAt');
+  static const i0.VerificationMeta _deletedAtMeta = const i0.VerificationMeta('deletedAt');
   @override
-  late final i0.GeneratedColumn<DateTime> deletedAt =
-      i0.GeneratedColumn<DateTime>('deleted_at', aliasedName, true,
-          type: i0.DriftSqlType.dateTime, requiredDuringInsert: false);
-  static const i0.VerificationMeta _livePhotoVideoIdMeta =
-      const i0.VerificationMeta('livePhotoVideoId');
+  late final i0.GeneratedColumn<DateTime> deletedAt = i0.GeneratedColumn<DateTime>('deleted_at', aliasedName, true,
+      type: i0.DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const i0.VerificationMeta _livePhotoVideoIdMeta = const i0.VerificationMeta('livePhotoVideoId');
   @override
-  late final i0.GeneratedColumn<String> livePhotoVideoId =
-      i0.GeneratedColumn<String>('live_photo_video_id', aliasedName, true,
-          type: i0.DriftSqlType.string, requiredDuringInsert: false);
+  late final i0.GeneratedColumn<String> livePhotoVideoId = i0.GeneratedColumn<String>(
+      'live_photo_video_id', aliasedName, true,
+      type: i0.DriftSqlType.string, requiredDuringInsert: false);
   @override
-  late final i0.GeneratedColumnWithTypeConverter<i2.AssetVisibility, int>
-      visibility = i0.GeneratedColumn<int>('visibility', aliasedName, false,
-              type: i0.DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<i2.AssetVisibility>(
-              i1.$RemoteAssetEntityTable.$convertervisibility);
-  static const i0.VerificationMeta _stackIdMeta =
-      const i0.VerificationMeta('stackId');
+  late final i0.GeneratedColumnWithTypeConverter<i2.AssetVisibility, int> visibility =
+      i0.GeneratedColumn<int>('visibility', aliasedName, false, type: i0.DriftSqlType.int, requiredDuringInsert: true)
+          .withConverter<i2.AssetVisibility>(i1.$RemoteAssetEntityTable.$convertervisibility);
+  static const i0.VerificationMeta _stackIdMeta = const i0.VerificationMeta('stackId');
   @override
-  late final i0.GeneratedColumn<String> stackId = i0.GeneratedColumn<String>(
-      'stack_id', aliasedName, true,
+  late final i0.GeneratedColumn<String> stackId = i0.GeneratedColumn<String>('stack_id', aliasedName, true,
       type: i0.DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<i0.GeneratedColumn> get $columns => [
@@ -649,38 +529,30 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
   String get actualTableName => $name;
   static const String $name = 'remote_asset_entity';
   @override
-  i0.VerificationContext validateIntegrity(
-      i0.Insertable<i1.RemoteAssetEntityData> instance,
+  i0.VerificationContext validateIntegrity(i0.Insertable<i1.RemoteAssetEntityData> instance,
       {bool isInserting = false}) {
     final context = i0.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+      context.handle(_nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
     if (data.containsKey('created_at')) {
-      context.handle(_createdAtMeta,
-          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+      context.handle(_createdAtMeta, createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
     }
     if (data.containsKey('updated_at')) {
-      context.handle(_updatedAtMeta,
-          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+      context.handle(_updatedAtMeta, updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
     if (data.containsKey('width')) {
-      context.handle(
-          _widthMeta, width.isAcceptableOrUnknown(data['width']!, _widthMeta));
+      context.handle(_widthMeta, width.isAcceptableOrUnknown(data['width']!, _widthMeta));
     }
     if (data.containsKey('height')) {
-      context.handle(_heightMeta,
-          height.isAcceptableOrUnknown(data['height']!, _heightMeta));
+      context.handle(_heightMeta, height.isAcceptableOrUnknown(data['height']!, _heightMeta));
     }
     if (data.containsKey('duration_in_seconds')) {
-      context.handle(
-          _durationInSecondsMeta,
-          durationInSeconds.isAcceptableOrUnknown(
-              data['duration_in_seconds']!, _durationInSecondsMeta));
+      context.handle(_durationInSecondsMeta,
+          durationInSeconds.isAcceptableOrUnknown(data['duration_in_seconds']!, _durationInSecondsMeta));
     }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
@@ -688,46 +560,34 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
       context.missing(_idMeta);
     }
     if (data.containsKey('checksum')) {
-      context.handle(_checksumMeta,
-          checksum.isAcceptableOrUnknown(data['checksum']!, _checksumMeta));
+      context.handle(_checksumMeta, checksum.isAcceptableOrUnknown(data['checksum']!, _checksumMeta));
     } else if (isInserting) {
       context.missing(_checksumMeta);
     }
     if (data.containsKey('is_favorite')) {
-      context.handle(
-          _isFavoriteMeta,
-          isFavorite.isAcceptableOrUnknown(
-              data['is_favorite']!, _isFavoriteMeta));
+      context.handle(_isFavoriteMeta, isFavorite.isAcceptableOrUnknown(data['is_favorite']!, _isFavoriteMeta));
     }
     if (data.containsKey('owner_id')) {
-      context.handle(_ownerIdMeta,
-          ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta));
+      context.handle(_ownerIdMeta, ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta));
     } else if (isInserting) {
       context.missing(_ownerIdMeta);
     }
     if (data.containsKey('local_date_time')) {
       context.handle(
-          _localDateTimeMeta,
-          localDateTime.isAcceptableOrUnknown(
-              data['local_date_time']!, _localDateTimeMeta));
+          _localDateTimeMeta, localDateTime.isAcceptableOrUnknown(data['local_date_time']!, _localDateTimeMeta));
     }
     if (data.containsKey('thumb_hash')) {
-      context.handle(_thumbHashMeta,
-          thumbHash.isAcceptableOrUnknown(data['thumb_hash']!, _thumbHashMeta));
+      context.handle(_thumbHashMeta, thumbHash.isAcceptableOrUnknown(data['thumb_hash']!, _thumbHashMeta));
     }
     if (data.containsKey('deleted_at')) {
-      context.handle(_deletedAtMeta,
-          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+      context.handle(_deletedAtMeta, deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
     }
     if (data.containsKey('live_photo_video_id')) {
-      context.handle(
-          _livePhotoVideoIdMeta,
-          livePhotoVideoId.isAcceptableOrUnknown(
-              data['live_photo_video_id']!, _livePhotoVideoIdMeta));
+      context.handle(_livePhotoVideoIdMeta,
+          livePhotoVideoId.isAcceptableOrUnknown(data['live_photo_video_id']!, _livePhotoVideoIdMeta));
     }
     if (data.containsKey('stack_id')) {
-      context.handle(_stackIdMeta,
-          stackId.isAcceptableOrUnknown(data['stack_id']!, _stackIdMeta));
+      context.handle(_stackIdMeta, stackId.isAcceptableOrUnknown(data['stack_id']!, _stackIdMeta));
     }
     return context;
   }
@@ -735,47 +595,31 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
   @override
   Set<i0.GeneratedColumn> get $primaryKey => {id};
   @override
-  i1.RemoteAssetEntityData map(Map<String, dynamic> data,
-      {String? tablePrefix}) {
+  i1.RemoteAssetEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return i1.RemoteAssetEntityData(
-      name: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
-      type: i1.$RemoteAssetEntityTable.$convertertype.fromSql(attachedDatabase
-          .typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}type'])!),
-      createdAt: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
-      updatedAt: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      width: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}width']),
-      height: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}height']),
-      durationInSeconds: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.int, data['${effectivePrefix}duration_in_seconds']),
-      id: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}id'])!,
-      checksum: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}checksum'])!,
-      isFavorite: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.bool, data['${effectivePrefix}is_favorite'])!,
-      ownerId: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}owner_id'])!,
-      localDateTime: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.dateTime, data['${effectivePrefix}local_date_time']),
-      thumbHash: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}thumb_hash']),
-      deletedAt: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
-      livePhotoVideoId: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.string,
-          data['${effectivePrefix}live_photo_video_id']),
-      visibility: i1.$RemoteAssetEntityTable.$convertervisibility.fromSql(
-          attachedDatabase.typeMapping.read(
-              i0.DriftSqlType.int, data['${effectivePrefix}visibility'])!),
-      stackId: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}stack_id']),
+      name: attachedDatabase.typeMapping.read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
+      type: i1.$RemoteAssetEntityTable.$convertertype
+          .fromSql(attachedDatabase.typeMapping.read(i0.DriftSqlType.int, data['${effectivePrefix}type'])!),
+      createdAt: attachedDatabase.typeMapping.read(i0.DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping.read(i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      width: attachedDatabase.typeMapping.read(i0.DriftSqlType.int, data['${effectivePrefix}width']),
+      height: attachedDatabase.typeMapping.read(i0.DriftSqlType.int, data['${effectivePrefix}height']),
+      durationInSeconds:
+          attachedDatabase.typeMapping.read(i0.DriftSqlType.int, data['${effectivePrefix}duration_in_seconds']),
+      id: attachedDatabase.typeMapping.read(i0.DriftSqlType.string, data['${effectivePrefix}id'])!,
+      checksum: attachedDatabase.typeMapping.read(i0.DriftSqlType.string, data['${effectivePrefix}checksum'])!,
+      isFavorite: attachedDatabase.typeMapping.read(i0.DriftSqlType.bool, data['${effectivePrefix}is_favorite'])!,
+      ownerId: attachedDatabase.typeMapping.read(i0.DriftSqlType.string, data['${effectivePrefix}owner_id'])!,
+      localDateTime:
+          attachedDatabase.typeMapping.read(i0.DriftSqlType.dateTime, data['${effectivePrefix}local_date_time']),
+      thumbHash: attachedDatabase.typeMapping.read(i0.DriftSqlType.string, data['${effectivePrefix}thumb_hash']),
+      deletedAt: attachedDatabase.typeMapping.read(i0.DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
+      livePhotoVideoId:
+          attachedDatabase.typeMapping.read(i0.DriftSqlType.string, data['${effectivePrefix}live_photo_video_id']),
+      visibility: i1.$RemoteAssetEntityTable.$convertervisibility
+          .fromSql(attachedDatabase.typeMapping.read(i0.DriftSqlType.int, data['${effectivePrefix}visibility'])!),
+      stackId: attachedDatabase.typeMapping.read(i0.DriftSqlType.string, data['${effectivePrefix}stack_id']),
     );
   }
 
@@ -786,17 +630,15 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
 
   static i0.JsonTypeConverter2<i2.AssetType, int, int> $convertertype =
       const i0.EnumIndexConverter<i2.AssetType>(i2.AssetType.values);
-  static i0.JsonTypeConverter2<i2.AssetVisibility, int, int>
-      $convertervisibility = const i0.EnumIndexConverter<i2.AssetVisibility>(
-          i2.AssetVisibility.values);
+  static i0.JsonTypeConverter2<i2.AssetVisibility, int, int> $convertervisibility =
+      const i0.EnumIndexConverter<i2.AssetVisibility>(i2.AssetVisibility.values);
   @override
   bool get withoutRowId => true;
   @override
   bool get isStrict => true;
 }
 
-class RemoteAssetEntityData extends i0.DataClass
-    implements i0.Insertable<i1.RemoteAssetEntityData> {
+class RemoteAssetEntityData extends i0.DataClass implements i0.Insertable<i1.RemoteAssetEntityData> {
   final String name;
   final i2.AssetType type;
   final DateTime createdAt;
@@ -837,8 +679,7 @@ class RemoteAssetEntityData extends i0.DataClass
     final map = <String, i0.Expression>{};
     map['name'] = i0.Variable<String>(name);
     {
-      map['type'] = i0.Variable<int>(
-          i1.$RemoteAssetEntityTable.$convertertype.toSql(type));
+      map['type'] = i0.Variable<int>(i1.$RemoteAssetEntityTable.$convertertype.toSql(type));
     }
     map['created_at'] = i0.Variable<DateTime>(createdAt);
     map['updated_at'] = i0.Variable<DateTime>(updatedAt);
@@ -868,8 +709,7 @@ class RemoteAssetEntityData extends i0.DataClass
       map['live_photo_video_id'] = i0.Variable<String>(livePhotoVideoId);
     }
     {
-      map['visibility'] = i0.Variable<int>(
-          i1.$RemoteAssetEntityTable.$convertervisibility.toSql(visibility));
+      map['visibility'] = i0.Variable<int>(i1.$RemoteAssetEntityTable.$convertervisibility.toSql(visibility));
     }
     if (!nullToAbsent || stackId != null) {
       map['stack_id'] = i0.Variable<String>(stackId);
@@ -877,13 +717,11 @@ class RemoteAssetEntityData extends i0.DataClass
     return map;
   }
 
-  factory RemoteAssetEntityData.fromJson(Map<String, dynamic> json,
-      {i0.ValueSerializer? serializer}) {
+  factory RemoteAssetEntityData.fromJson(Map<String, dynamic> json, {i0.ValueSerializer? serializer}) {
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return RemoteAssetEntityData(
       name: serializer.fromJson<String>(json['name']),
-      type: i1.$RemoteAssetEntityTable.$convertertype
-          .fromJson(serializer.fromJson<int>(json['type'])),
+      type: i1.$RemoteAssetEntityTable.$convertertype.fromJson(serializer.fromJson<int>(json['type'])),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       width: serializer.fromJson<int?>(json['width']),
@@ -897,8 +735,8 @@ class RemoteAssetEntityData extends i0.DataClass
       thumbHash: serializer.fromJson<String?>(json['thumbHash']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       livePhotoVideoId: serializer.fromJson<String?>(json['livePhotoVideoId']),
-      visibility: i1.$RemoteAssetEntityTable.$convertervisibility
-          .fromJson(serializer.fromJson<int>(json['visibility'])),
+      visibility:
+          i1.$RemoteAssetEntityTable.$convertervisibility.fromJson(serializer.fromJson<int>(json['visibility'])),
       stackId: serializer.fromJson<String?>(json['stackId']),
     );
   }
@@ -907,8 +745,7 @@ class RemoteAssetEntityData extends i0.DataClass
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'name': serializer.toJson<String>(name),
-      'type': serializer
-          .toJson<int>(i1.$RemoteAssetEntityTable.$convertertype.toJson(type)),
+      'type': serializer.toJson<int>(i1.$RemoteAssetEntityTable.$convertertype.toJson(type)),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'width': serializer.toJson<int?>(width),
@@ -922,8 +759,7 @@ class RemoteAssetEntityData extends i0.DataClass
       'thumbHash': serializer.toJson<String?>(thumbHash),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'livePhotoVideoId': serializer.toJson<String?>(livePhotoVideoId),
-      'visibility': serializer.toJson<int>(
-          i1.$RemoteAssetEntityTable.$convertervisibility.toJson(visibility)),
+      'visibility': serializer.toJson<int>(i1.$RemoteAssetEntityTable.$convertervisibility.toJson(visibility)),
       'stackId': serializer.toJson<String?>(stackId),
     };
   }
@@ -953,20 +789,15 @@ class RemoteAssetEntityData extends i0.DataClass
         updatedAt: updatedAt ?? this.updatedAt,
         width: width.present ? width.value : this.width,
         height: height.present ? height.value : this.height,
-        durationInSeconds: durationInSeconds.present
-            ? durationInSeconds.value
-            : this.durationInSeconds,
+        durationInSeconds: durationInSeconds.present ? durationInSeconds.value : this.durationInSeconds,
         id: id ?? this.id,
         checksum: checksum ?? this.checksum,
         isFavorite: isFavorite ?? this.isFavorite,
         ownerId: ownerId ?? this.ownerId,
-        localDateTime:
-            localDateTime.present ? localDateTime.value : this.localDateTime,
+        localDateTime: localDateTime.present ? localDateTime.value : this.localDateTime,
         thumbHash: thumbHash.present ? thumbHash.value : this.thumbHash,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
-        livePhotoVideoId: livePhotoVideoId.present
-            ? livePhotoVideoId.value
-            : this.livePhotoVideoId,
+        livePhotoVideoId: livePhotoVideoId.present ? livePhotoVideoId.value : this.livePhotoVideoId,
         visibility: visibility ?? this.visibility,
         stackId: stackId.present ? stackId.value : this.stackId,
       );
@@ -978,24 +809,16 @@ class RemoteAssetEntityData extends i0.DataClass
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       width: data.width.present ? data.width.value : this.width,
       height: data.height.present ? data.height.value : this.height,
-      durationInSeconds: data.durationInSeconds.present
-          ? data.durationInSeconds.value
-          : this.durationInSeconds,
+      durationInSeconds: data.durationInSeconds.present ? data.durationInSeconds.value : this.durationInSeconds,
       id: data.id.present ? data.id.value : this.id,
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
-      isFavorite:
-          data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
+      isFavorite: data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
       ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
-      localDateTime: data.localDateTime.present
-          ? data.localDateTime.value
-          : this.localDateTime,
+      localDateTime: data.localDateTime.present ? data.localDateTime.value : this.localDateTime,
       thumbHash: data.thumbHash.present ? data.thumbHash.value : this.thumbHash,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
-      livePhotoVideoId: data.livePhotoVideoId.present
-          ? data.livePhotoVideoId.value
-          : this.livePhotoVideoId,
-      visibility:
-          data.visibility.present ? data.visibility.value : this.visibility,
+      livePhotoVideoId: data.livePhotoVideoId.present ? data.livePhotoVideoId.value : this.livePhotoVideoId,
+      visibility: data.visibility.present ? data.visibility.value : this.visibility,
       stackId: data.stackId.present ? data.stackId.value : this.stackId,
     );
   }
@@ -1025,24 +848,8 @@ class RemoteAssetEntityData extends i0.DataClass
   }
 
   @override
-  int get hashCode => Object.hash(
-      name,
-      type,
-      createdAt,
-      updatedAt,
-      width,
-      height,
-      durationInSeconds,
-      id,
-      checksum,
-      isFavorite,
-      ownerId,
-      localDateTime,
-      thumbHash,
-      deletedAt,
-      livePhotoVideoId,
-      visibility,
-      stackId);
+  int get hashCode => Object.hash(name, type, createdAt, updatedAt, width, height, durationInSeconds, id, checksum,
+      isFavorite, ownerId, localDateTime, thumbHash, deletedAt, livePhotoVideoId, visibility, stackId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1066,8 +873,7 @@ class RemoteAssetEntityData extends i0.DataClass
           other.stackId == this.stackId);
 }
 
-class RemoteAssetEntityCompanion
-    extends i0.UpdateCompanion<i1.RemoteAssetEntityData> {
+class RemoteAssetEntityCompanion extends i0.UpdateCompanion<i1.RemoteAssetEntityData> {
   final i0.Value<String> name;
   final i0.Value<i2.AssetType> type;
   final i0.Value<DateTime> createdAt;
@@ -1214,8 +1020,7 @@ class RemoteAssetEntityCompanion
       map['name'] = i0.Variable<String>(name.value);
     }
     if (type.present) {
-      map['type'] = i0.Variable<int>(
-          i1.$RemoteAssetEntityTable.$convertertype.toSql(type.value));
+      map['type'] = i0.Variable<int>(i1.$RemoteAssetEntityTable.$convertertype.toSql(type.value));
     }
     if (createdAt.present) {
       map['created_at'] = i0.Variable<DateTime>(createdAt.value);
@@ -1257,9 +1062,7 @@ class RemoteAssetEntityCompanion
       map['live_photo_video_id'] = i0.Variable<String>(livePhotoVideoId.value);
     }
     if (visibility.present) {
-      map['visibility'] = i0.Variable<int>(i1
-          .$RemoteAssetEntityTable.$convertervisibility
-          .toSql(visibility.value));
+      map['visibility'] = i0.Variable<int>(i1.$RemoteAssetEntityTable.$convertervisibility.toSql(visibility.value));
     }
     if (stackId.present) {
       map['stack_id'] = i0.Variable<String>(stackId.value);
@@ -1292,5 +1095,5 @@ class RemoteAssetEntityCompanion
   }
 }
 
-i0.Index get idxRemoteAssetChecksum => i0.Index('idx_remote_asset_checksum',
-    'CREATE INDEX idx_remote_asset_checksum ON remote_asset_entity (checksum)');
+i0.Index get idxRemoteAssetChecksum =>
+    i0.Index('idx_remote_asset_checksum', 'CREATE INDEX idx_remote_asset_checksum ON remote_asset_entity (checksum)');

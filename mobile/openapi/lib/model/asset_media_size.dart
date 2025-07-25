@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class AssetMediaSize {
   /// Instantiate a new enum with the provided [value].
   const AssetMediaSize._(this.value);
@@ -36,7 +35,10 @@ class AssetMediaSize {
 
   static AssetMediaSize? fromJson(dynamic value) => AssetMediaSizeTypeTransformer().decode(value);
 
-  static List<AssetMediaSize> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetMediaSize> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetMediaSize>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -70,9 +72,12 @@ class AssetMediaSizeTypeTransformer {
   AssetMediaSize? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'fullsize': return AssetMediaSize.fullsize;
-        case r'preview': return AssetMediaSize.preview;
-        case r'thumbnail': return AssetMediaSize.thumbnail;
+        case r'fullsize':
+          return AssetMediaSize.fullsize;
+        case r'preview':
+          return AssetMediaSize.preview;
+        case r'thumbnail':
+          return AssetMediaSize.thumbnail;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -85,4 +90,3 @@ class AssetMediaSizeTypeTransformer {
   /// Singleton [AssetMediaSizeTypeTransformer] instance.
   static AssetMediaSizeTypeTransformer? _instance;
 }
-

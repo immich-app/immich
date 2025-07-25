@@ -28,26 +28,26 @@ class SystemConfigGeneratedImageDto {
   int size;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigGeneratedImageDto &&
-    other.format == format &&
-    other.quality == quality &&
-    other.size == size;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SystemConfigGeneratedImageDto &&
+          other.format == format &&
+          other.quality == quality &&
+          other.size == size;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (format.hashCode) +
-    (quality.hashCode) +
-    (size.hashCode);
+      // ignore: unnecessary_parenthesis
+      (format.hashCode) + (quality.hashCode) + (size.hashCode);
 
   @override
   String toString() => 'SystemConfigGeneratedImageDto[format=$format, quality=$quality, size=$size]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'format'] = this.format;
-      json[r'quality'] = this.quality;
-      json[r'size'] = this.size;
+    json[r'format'] = this.format;
+    json[r'quality'] = this.quality;
+    json[r'size'] = this.size;
     return json;
   }
 
@@ -68,7 +68,10 @@ class SystemConfigGeneratedImageDto {
     return null;
   }
 
-  static List<SystemConfigGeneratedImageDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigGeneratedImageDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigGeneratedImageDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -96,13 +99,19 @@ class SystemConfigGeneratedImageDto {
   }
 
   // maps a json object with a list of SystemConfigGeneratedImageDto-objects as value to a dart map
-  static Map<String, List<SystemConfigGeneratedImageDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigGeneratedImageDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigGeneratedImageDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigGeneratedImageDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigGeneratedImageDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -115,4 +124,3 @@ class SystemConfigGeneratedImageDto {
     'size',
   };
 }
-

@@ -19,20 +19,19 @@ class AssetFaceDeleteDto {
   bool force;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetFaceDeleteDto &&
-    other.force == force;
+  bool operator ==(Object other) => identical(this, other) || other is AssetFaceDeleteDto && other.force == force;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (force.hashCode);
+      // ignore: unnecessary_parenthesis
+      (force.hashCode);
 
   @override
   String toString() => 'AssetFaceDeleteDto[force=$force]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'force'] = this.force;
+    json[r'force'] = this.force;
     return json;
   }
 
@@ -51,7 +50,10 @@ class AssetFaceDeleteDto {
     return null;
   }
 
-  static List<AssetFaceDeleteDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetFaceDeleteDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetFaceDeleteDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +81,19 @@ class AssetFaceDeleteDto {
   }
 
   // maps a json object with a list of AssetFaceDeleteDto-objects as value to a dart map
-  static Map<String, List<AssetFaceDeleteDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AssetFaceDeleteDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AssetFaceDeleteDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetFaceDeleteDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetFaceDeleteDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +104,3 @@ class AssetFaceDeleteDto {
     'force',
   };
 }
-

@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class AuthenticationApi {
   AuthenticationApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
@@ -20,7 +19,9 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [ChangePasswordDto] changePasswordDto (required):
-  Future<Response> changePasswordWithHttpInfo(ChangePasswordDto changePasswordDto,) async {
+  Future<Response> changePasswordWithHttpInfo(
+    ChangePasswordDto changePasswordDto,
+  ) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/change-password';
 
@@ -32,7 +33,6 @@ class AuthenticationApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>['application/json'];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -48,8 +48,12 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [ChangePasswordDto] changePasswordDto (required):
-  Future<UserAdminResponseDto?> changePassword(ChangePasswordDto changePasswordDto,) async {
-    final response = await changePasswordWithHttpInfo(changePasswordDto,);
+  Future<UserAdminResponseDto?> changePassword(
+    ChangePasswordDto changePasswordDto,
+  ) async {
+    final response = await changePasswordWithHttpInfo(
+      changePasswordDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -57,8 +61,10 @@ class AuthenticationApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'UserAdminResponseDto',
+      ) as UserAdminResponseDto;
     }
     return null;
   }
@@ -67,7 +73,9 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [PinCodeChangeDto] pinCodeChangeDto (required):
-  Future<Response> changePinCodeWithHttpInfo(PinCodeChangeDto pinCodeChangeDto,) async {
+  Future<Response> changePinCodeWithHttpInfo(
+    PinCodeChangeDto pinCodeChangeDto,
+  ) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/pin-code';
 
@@ -79,7 +87,6 @@ class AuthenticationApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>['application/json'];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -95,8 +102,12 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [PinCodeChangeDto] pinCodeChangeDto (required):
-  Future<void> changePinCode(PinCodeChangeDto pinCodeChangeDto,) async {
-    final response = await changePinCodeWithHttpInfo(pinCodeChangeDto,);
+  Future<void> changePinCode(
+    PinCodeChangeDto pinCodeChangeDto,
+  ) async {
+    final response = await changePinCodeWithHttpInfo(
+      pinCodeChangeDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -115,7 +126,6 @@ class AuthenticationApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -137,8 +147,10 @@ class AuthenticationApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AuthStatusResponseDto',) as AuthStatusResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'AuthStatusResponseDto',
+      ) as AuthStatusResponseDto;
     }
     return null;
   }
@@ -156,7 +168,6 @@ class AuthenticationApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -180,7 +191,9 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [LoginCredentialDto] loginCredentialDto (required):
-  Future<Response> loginWithHttpInfo(LoginCredentialDto loginCredentialDto,) async {
+  Future<Response> loginWithHttpInfo(
+    LoginCredentialDto loginCredentialDto,
+  ) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/login';
 
@@ -192,7 +205,6 @@ class AuthenticationApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>['application/json'];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -208,8 +220,12 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [LoginCredentialDto] loginCredentialDto (required):
-  Future<LoginResponseDto?> login(LoginCredentialDto loginCredentialDto,) async {
-    final response = await loginWithHttpInfo(loginCredentialDto,);
+  Future<LoginResponseDto?> login(
+    LoginCredentialDto loginCredentialDto,
+  ) async {
+    final response = await loginWithHttpInfo(
+      loginCredentialDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -217,8 +233,10 @@ class AuthenticationApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LoginResponseDto',) as LoginResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'LoginResponseDto',
+      ) as LoginResponseDto;
     }
     return null;
   }
@@ -236,7 +254,6 @@ class AuthenticationApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -258,8 +275,10 @@ class AuthenticationApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LogoutResponseDto',) as LogoutResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'LogoutResponseDto',
+      ) as LogoutResponseDto;
     }
     return null;
   }
@@ -268,7 +287,9 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [PinCodeResetDto] pinCodeResetDto (required):
-  Future<Response> resetPinCodeWithHttpInfo(PinCodeResetDto pinCodeResetDto,) async {
+  Future<Response> resetPinCodeWithHttpInfo(
+    PinCodeResetDto pinCodeResetDto,
+  ) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/pin-code';
 
@@ -280,7 +301,6 @@ class AuthenticationApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>['application/json'];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -296,8 +316,12 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [PinCodeResetDto] pinCodeResetDto (required):
-  Future<void> resetPinCode(PinCodeResetDto pinCodeResetDto,) async {
-    final response = await resetPinCodeWithHttpInfo(pinCodeResetDto,);
+  Future<void> resetPinCode(
+    PinCodeResetDto pinCodeResetDto,
+  ) async {
+    final response = await resetPinCodeWithHttpInfo(
+      pinCodeResetDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -307,7 +331,9 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [PinCodeSetupDto] pinCodeSetupDto (required):
-  Future<Response> setupPinCodeWithHttpInfo(PinCodeSetupDto pinCodeSetupDto,) async {
+  Future<Response> setupPinCodeWithHttpInfo(
+    PinCodeSetupDto pinCodeSetupDto,
+  ) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/pin-code';
 
@@ -320,7 +346,6 @@ class AuthenticationApi {
 
     const contentTypes = <String>['application/json'];
 
-
     return apiClient.invokeAPI(
       apiPath,
       'POST',
@@ -335,8 +360,12 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [PinCodeSetupDto] pinCodeSetupDto (required):
-  Future<void> setupPinCode(PinCodeSetupDto pinCodeSetupDto,) async {
-    final response = await setupPinCodeWithHttpInfo(pinCodeSetupDto,);
+  Future<void> setupPinCode(
+    PinCodeSetupDto pinCodeSetupDto,
+  ) async {
+    final response = await setupPinCodeWithHttpInfo(
+      pinCodeSetupDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -346,7 +375,9 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [SignUpDto] signUpDto (required):
-  Future<Response> signUpAdminWithHttpInfo(SignUpDto signUpDto,) async {
+  Future<Response> signUpAdminWithHttpInfo(
+    SignUpDto signUpDto,
+  ) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/admin-sign-up';
 
@@ -359,7 +390,6 @@ class AuthenticationApi {
 
     const contentTypes = <String>['application/json'];
 
-
     return apiClient.invokeAPI(
       apiPath,
       'POST',
@@ -374,8 +404,12 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [SignUpDto] signUpDto (required):
-  Future<UserAdminResponseDto?> signUpAdmin(SignUpDto signUpDto,) async {
-    final response = await signUpAdminWithHttpInfo(signUpDto,);
+  Future<UserAdminResponseDto?> signUpAdmin(
+    SignUpDto signUpDto,
+  ) async {
+    final response = await signUpAdminWithHttpInfo(
+      signUpDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -383,8 +417,10 @@ class AuthenticationApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserAdminResponseDto',) as UserAdminResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'UserAdminResponseDto',
+      ) as UserAdminResponseDto;
     }
     return null;
   }
@@ -393,7 +429,9 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [SessionUnlockDto] sessionUnlockDto (required):
-  Future<Response> unlockAuthSessionWithHttpInfo(SessionUnlockDto sessionUnlockDto,) async {
+  Future<Response> unlockAuthSessionWithHttpInfo(
+    SessionUnlockDto sessionUnlockDto,
+  ) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/auth/session/unlock';
 
@@ -405,7 +443,6 @@ class AuthenticationApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>['application/json'];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -421,8 +458,12 @@ class AuthenticationApi {
   /// Parameters:
   ///
   /// * [SessionUnlockDto] sessionUnlockDto (required):
-  Future<void> unlockAuthSession(SessionUnlockDto sessionUnlockDto,) async {
-    final response = await unlockAuthSessionWithHttpInfo(sessionUnlockDto,);
+  Future<void> unlockAuthSession(
+    SessionUnlockDto sessionUnlockDto,
+  ) async {
+    final response = await unlockAuthSessionWithHttpInfo(
+      sessionUnlockDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -441,7 +482,6 @@ class AuthenticationApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -463,8 +503,10 @@ class AuthenticationApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'ValidateAccessTokenResponseDto',) as ValidateAccessTokenResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'ValidateAccessTokenResponseDto',
+      ) as ValidateAccessTokenResponseDto;
     }
     return null;
   }

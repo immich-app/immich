@@ -94,91 +94,94 @@ class AlbumResponseDto {
   DateTime updatedAt;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AlbumResponseDto &&
-    other.albumName == albumName &&
-    other.albumThumbnailAssetId == albumThumbnailAssetId &&
-    _deepEquality.equals(other.albumUsers, albumUsers) &&
-    other.assetCount == assetCount &&
-    _deepEquality.equals(other.assets, assets) &&
-    other.createdAt == createdAt &&
-    other.description == description &&
-    other.endDate == endDate &&
-    other.hasSharedLink == hasSharedLink &&
-    other.id == id &&
-    other.isActivityEnabled == isActivityEnabled &&
-    other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp &&
-    other.order == order &&
-    other.owner == owner &&
-    other.ownerId == ownerId &&
-    other.shared == shared &&
-    other.startDate == startDate &&
-    other.updatedAt == updatedAt;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AlbumResponseDto &&
+          other.albumName == albumName &&
+          other.albumThumbnailAssetId == albumThumbnailAssetId &&
+          _deepEquality.equals(other.albumUsers, albumUsers) &&
+          other.assetCount == assetCount &&
+          _deepEquality.equals(other.assets, assets) &&
+          other.createdAt == createdAt &&
+          other.description == description &&
+          other.endDate == endDate &&
+          other.hasSharedLink == hasSharedLink &&
+          other.id == id &&
+          other.isActivityEnabled == isActivityEnabled &&
+          other.lastModifiedAssetTimestamp == lastModifiedAssetTimestamp &&
+          other.order == order &&
+          other.owner == owner &&
+          other.ownerId == ownerId &&
+          other.shared == shared &&
+          other.startDate == startDate &&
+          other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumName.hashCode) +
-    (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
-    (albumUsers.hashCode) +
-    (assetCount.hashCode) +
-    (assets.hashCode) +
-    (createdAt.hashCode) +
-    (description.hashCode) +
-    (endDate == null ? 0 : endDate!.hashCode) +
-    (hasSharedLink.hashCode) +
-    (id.hashCode) +
-    (isActivityEnabled.hashCode) +
-    (lastModifiedAssetTimestamp == null ? 0 : lastModifiedAssetTimestamp!.hashCode) +
-    (order == null ? 0 : order!.hashCode) +
-    (owner.hashCode) +
-    (ownerId.hashCode) +
-    (shared.hashCode) +
-    (startDate == null ? 0 : startDate!.hashCode) +
-    (updatedAt.hashCode);
+      // ignore: unnecessary_parenthesis
+      (albumName.hashCode) +
+      (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
+      (albumUsers.hashCode) +
+      (assetCount.hashCode) +
+      (assets.hashCode) +
+      (createdAt.hashCode) +
+      (description.hashCode) +
+      (endDate == null ? 0 : endDate!.hashCode) +
+      (hasSharedLink.hashCode) +
+      (id.hashCode) +
+      (isActivityEnabled.hashCode) +
+      (lastModifiedAssetTimestamp == null ? 0 : lastModifiedAssetTimestamp!.hashCode) +
+      (order == null ? 0 : order!.hashCode) +
+      (owner.hashCode) +
+      (ownerId.hashCode) +
+      (shared.hashCode) +
+      (startDate == null ? 0 : startDate!.hashCode) +
+      (updatedAt.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, albumUsers=$albumUsers, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, owner=$owner, ownerId=$ownerId, shared=$shared, startDate=$startDate, updatedAt=$updatedAt]';
+  String toString() =>
+      'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, albumUsers=$albumUsers, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, owner=$owner, ownerId=$ownerId, shared=$shared, startDate=$startDate, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albumName'] = this.albumName;
+    json[r'albumName'] = this.albumName;
     if (this.albumThumbnailAssetId != null) {
       json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
     } else {
-    //  json[r'albumThumbnailAssetId'] = null;
+      //  json[r'albumThumbnailAssetId'] = null;
     }
-      json[r'albumUsers'] = this.albumUsers;
-      json[r'assetCount'] = this.assetCount;
-      json[r'assets'] = this.assets;
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-      json[r'description'] = this.description;
+    json[r'albumUsers'] = this.albumUsers;
+    json[r'assetCount'] = this.assetCount;
+    json[r'assets'] = this.assets;
+    json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+    json[r'description'] = this.description;
     if (this.endDate != null) {
       json[r'endDate'] = this.endDate!.toUtc().toIso8601String();
     } else {
-    //  json[r'endDate'] = null;
+      //  json[r'endDate'] = null;
     }
-      json[r'hasSharedLink'] = this.hasSharedLink;
-      json[r'id'] = this.id;
-      json[r'isActivityEnabled'] = this.isActivityEnabled;
+    json[r'hasSharedLink'] = this.hasSharedLink;
+    json[r'id'] = this.id;
+    json[r'isActivityEnabled'] = this.isActivityEnabled;
     if (this.lastModifiedAssetTimestamp != null) {
       json[r'lastModifiedAssetTimestamp'] = this.lastModifiedAssetTimestamp!.toUtc().toIso8601String();
     } else {
-    //  json[r'lastModifiedAssetTimestamp'] = null;
+      //  json[r'lastModifiedAssetTimestamp'] = null;
     }
     if (this.order != null) {
       json[r'order'] = this.order;
     } else {
-    //  json[r'order'] = null;
+      //  json[r'order'] = null;
     }
-      json[r'owner'] = this.owner;
-      json[r'ownerId'] = this.ownerId;
-      json[r'shared'] = this.shared;
+    json[r'owner'] = this.owner;
+    json[r'ownerId'] = this.ownerId;
+    json[r'shared'] = this.shared;
     if (this.startDate != null) {
       json[r'startDate'] = this.startDate!.toUtc().toIso8601String();
     } else {
-    //  json[r'startDate'] = null;
+      //  json[r'startDate'] = null;
     }
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+    json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -214,7 +217,10 @@ class AlbumResponseDto {
     return null;
   }
 
-  static List<AlbumResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AlbumResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AlbumResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -242,13 +248,19 @@ class AlbumResponseDto {
   }
 
   // maps a json object with a list of AlbumResponseDto-objects as value to a dart map
-  static Map<String, List<AlbumResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AlbumResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AlbumResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AlbumResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AlbumResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -272,4 +284,3 @@ class AlbumResponseDto {
     'updatedAt',
   };
 }
-

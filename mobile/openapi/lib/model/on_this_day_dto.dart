@@ -20,20 +20,19 @@ class OnThisDayDto {
   num year;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is OnThisDayDto &&
-    other.year == year;
+  bool operator ==(Object other) => identical(this, other) || other is OnThisDayDto && other.year == year;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (year.hashCode);
+      // ignore: unnecessary_parenthesis
+      (year.hashCode);
 
   @override
   String toString() => 'OnThisDayDto[year=$year]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'year'] = this.year;
+    json[r'year'] = this.year;
     return json;
   }
 
@@ -52,7 +51,10 @@ class OnThisDayDto {
     return null;
   }
 
-  static List<OnThisDayDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<OnThisDayDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <OnThisDayDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -80,13 +82,19 @@ class OnThisDayDto {
   }
 
   // maps a json object with a list of OnThisDayDto-objects as value to a dart map
-  static Map<String, List<OnThisDayDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<OnThisDayDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<OnThisDayDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = OnThisDayDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = OnThisDayDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -97,4 +105,3 @@ class OnThisDayDto {
     'year',
   };
 }
-

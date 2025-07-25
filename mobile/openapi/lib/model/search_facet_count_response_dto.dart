@@ -22,23 +22,21 @@ class SearchFacetCountResponseDto {
   String value;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SearchFacetCountResponseDto &&
-    other.count == count &&
-    other.value == value;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SearchFacetCountResponseDto && other.count == count && other.value == value;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (count.hashCode) +
-    (value.hashCode);
+      // ignore: unnecessary_parenthesis
+      (count.hashCode) + (value.hashCode);
 
   @override
   String toString() => 'SearchFacetCountResponseDto[count=$count, value=$value]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'count'] = this.count;
-      json[r'value'] = this.value;
+    json[r'count'] = this.count;
+    json[r'value'] = this.value;
     return json;
   }
 
@@ -58,7 +56,10 @@ class SearchFacetCountResponseDto {
     return null;
   }
 
-  static List<SearchFacetCountResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SearchFacetCountResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SearchFacetCountResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +87,19 @@ class SearchFacetCountResponseDto {
   }
 
   // maps a json object with a list of SearchFacetCountResponseDto-objects as value to a dart map
-  static Map<String, List<SearchFacetCountResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SearchFacetCountResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SearchFacetCountResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SearchFacetCountResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SearchFacetCountResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +111,3 @@ class SearchFacetCountResponseDto {
     'value',
   };
 }
-

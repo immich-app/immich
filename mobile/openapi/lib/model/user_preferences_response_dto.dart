@@ -49,50 +49,53 @@ class UserPreferencesResponseDto {
   TagsResponse tags;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is UserPreferencesResponseDto &&
-    other.albums == albums &&
-    other.cast == cast &&
-    other.download == download &&
-    other.emailNotifications == emailNotifications &&
-    other.folders == folders &&
-    other.memories == memories &&
-    other.people == people &&
-    other.purchase == purchase &&
-    other.ratings == ratings &&
-    other.sharedLinks == sharedLinks &&
-    other.tags == tags;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserPreferencesResponseDto &&
+          other.albums == albums &&
+          other.cast == cast &&
+          other.download == download &&
+          other.emailNotifications == emailNotifications &&
+          other.folders == folders &&
+          other.memories == memories &&
+          other.people == people &&
+          other.purchase == purchase &&
+          other.ratings == ratings &&
+          other.sharedLinks == sharedLinks &&
+          other.tags == tags;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albums.hashCode) +
-    (cast.hashCode) +
-    (download.hashCode) +
-    (emailNotifications.hashCode) +
-    (folders.hashCode) +
-    (memories.hashCode) +
-    (people.hashCode) +
-    (purchase.hashCode) +
-    (ratings.hashCode) +
-    (sharedLinks.hashCode) +
-    (tags.hashCode);
+      // ignore: unnecessary_parenthesis
+      (albums.hashCode) +
+      (cast.hashCode) +
+      (download.hashCode) +
+      (emailNotifications.hashCode) +
+      (folders.hashCode) +
+      (memories.hashCode) +
+      (people.hashCode) +
+      (purchase.hashCode) +
+      (ratings.hashCode) +
+      (sharedLinks.hashCode) +
+      (tags.hashCode);
 
   @override
-  String toString() => 'UserPreferencesResponseDto[albums=$albums, cast=$cast, download=$download, emailNotifications=$emailNotifications, folders=$folders, memories=$memories, people=$people, purchase=$purchase, ratings=$ratings, sharedLinks=$sharedLinks, tags=$tags]';
+  String toString() =>
+      'UserPreferencesResponseDto[albums=$albums, cast=$cast, download=$download, emailNotifications=$emailNotifications, folders=$folders, memories=$memories, people=$people, purchase=$purchase, ratings=$ratings, sharedLinks=$sharedLinks, tags=$tags]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albums'] = this.albums;
-      json[r'cast'] = this.cast;
-      json[r'download'] = this.download;
-      json[r'emailNotifications'] = this.emailNotifications;
-      json[r'folders'] = this.folders;
-      json[r'memories'] = this.memories;
-      json[r'people'] = this.people;
-      json[r'purchase'] = this.purchase;
-      json[r'ratings'] = this.ratings;
-      json[r'sharedLinks'] = this.sharedLinks;
-      json[r'tags'] = this.tags;
+    json[r'albums'] = this.albums;
+    json[r'cast'] = this.cast;
+    json[r'download'] = this.download;
+    json[r'emailNotifications'] = this.emailNotifications;
+    json[r'folders'] = this.folders;
+    json[r'memories'] = this.memories;
+    json[r'people'] = this.people;
+    json[r'purchase'] = this.purchase;
+    json[r'ratings'] = this.ratings;
+    json[r'sharedLinks'] = this.sharedLinks;
+    json[r'tags'] = this.tags;
     return json;
   }
 
@@ -121,7 +124,10 @@ class UserPreferencesResponseDto {
     return null;
   }
 
-  static List<UserPreferencesResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<UserPreferencesResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <UserPreferencesResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -149,13 +155,19 @@ class UserPreferencesResponseDto {
   }
 
   // maps a json object with a list of UserPreferencesResponseDto-objects as value to a dart map
-  static Map<String, List<UserPreferencesResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<UserPreferencesResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<UserPreferencesResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = UserPreferencesResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = UserPreferencesResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -176,4 +188,3 @@ class UserPreferencesResponseDto {
     'tags',
   };
 }
-

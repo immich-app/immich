@@ -43,48 +43,51 @@ class LibraryResponseDto {
   DateTime updatedAt;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is LibraryResponseDto &&
-    other.assetCount == assetCount &&
-    other.createdAt == createdAt &&
-    _deepEquality.equals(other.exclusionPatterns, exclusionPatterns) &&
-    other.id == id &&
-    _deepEquality.equals(other.importPaths, importPaths) &&
-    other.name == name &&
-    other.ownerId == ownerId &&
-    other.refreshedAt == refreshedAt &&
-    other.updatedAt == updatedAt;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LibraryResponseDto &&
+          other.assetCount == assetCount &&
+          other.createdAt == createdAt &&
+          _deepEquality.equals(other.exclusionPatterns, exclusionPatterns) &&
+          other.id == id &&
+          _deepEquality.equals(other.importPaths, importPaths) &&
+          other.name == name &&
+          other.ownerId == ownerId &&
+          other.refreshedAt == refreshedAt &&
+          other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetCount.hashCode) +
-    (createdAt.hashCode) +
-    (exclusionPatterns.hashCode) +
-    (id.hashCode) +
-    (importPaths.hashCode) +
-    (name.hashCode) +
-    (ownerId.hashCode) +
-    (refreshedAt == null ? 0 : refreshedAt!.hashCode) +
-    (updatedAt.hashCode);
+      // ignore: unnecessary_parenthesis
+      (assetCount.hashCode) +
+      (createdAt.hashCode) +
+      (exclusionPatterns.hashCode) +
+      (id.hashCode) +
+      (importPaths.hashCode) +
+      (name.hashCode) +
+      (ownerId.hashCode) +
+      (refreshedAt == null ? 0 : refreshedAt!.hashCode) +
+      (updatedAt.hashCode);
 
   @override
-  String toString() => 'LibraryResponseDto[assetCount=$assetCount, createdAt=$createdAt, exclusionPatterns=$exclusionPatterns, id=$id, importPaths=$importPaths, name=$name, ownerId=$ownerId, refreshedAt=$refreshedAt, updatedAt=$updatedAt]';
+  String toString() =>
+      'LibraryResponseDto[assetCount=$assetCount, createdAt=$createdAt, exclusionPatterns=$exclusionPatterns, id=$id, importPaths=$importPaths, name=$name, ownerId=$ownerId, refreshedAt=$refreshedAt, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetCount'] = this.assetCount;
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-      json[r'exclusionPatterns'] = this.exclusionPatterns;
-      json[r'id'] = this.id;
-      json[r'importPaths'] = this.importPaths;
-      json[r'name'] = this.name;
-      json[r'ownerId'] = this.ownerId;
+    json[r'assetCount'] = this.assetCount;
+    json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+    json[r'exclusionPatterns'] = this.exclusionPatterns;
+    json[r'id'] = this.id;
+    json[r'importPaths'] = this.importPaths;
+    json[r'name'] = this.name;
+    json[r'ownerId'] = this.ownerId;
     if (this.refreshedAt != null) {
       json[r'refreshedAt'] = this.refreshedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'refreshedAt'] = null;
+      //  json[r'refreshedAt'] = null;
     }
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+    json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -115,7 +118,10 @@ class LibraryResponseDto {
     return null;
   }
 
-  static List<LibraryResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<LibraryResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <LibraryResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -143,13 +149,19 @@ class LibraryResponseDto {
   }
 
   // maps a json object with a list of LibraryResponseDto-objects as value to a dart map
-  static Map<String, List<LibraryResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<LibraryResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<LibraryResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = LibraryResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = LibraryResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -168,4 +180,3 @@ class LibraryResponseDto {
     'updatedAt',
   };
 }
-

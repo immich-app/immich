@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class ReactionLevel {
   /// Instantiate a new enum with the provided [value].
   const ReactionLevel._(this.value);
@@ -34,7 +33,10 @@ class ReactionLevel {
 
   static ReactionLevel? fromJson(dynamic value) => ReactionLevelTypeTransformer().decode(value);
 
-  static List<ReactionLevel> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ReactionLevel> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <ReactionLevel>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -68,8 +70,10 @@ class ReactionLevelTypeTransformer {
   ReactionLevel? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'album': return ReactionLevel.album;
-        case r'asset': return ReactionLevel.asset;
+        case r'album':
+          return ReactionLevel.album;
+        case r'asset':
+          return ReactionLevel.asset;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -82,4 +86,3 @@ class ReactionLevelTypeTransformer {
   /// Singleton [ReactionLevelTypeTransformer] instance.
   static ReactionLevelTypeTransformer? _instance;
 }
-

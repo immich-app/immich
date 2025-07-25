@@ -19,20 +19,20 @@ class MemoryStatisticsResponseDto {
   int total;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is MemoryStatisticsResponseDto &&
-    other.total == total;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is MemoryStatisticsResponseDto && other.total == total;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (total.hashCode);
+      // ignore: unnecessary_parenthesis
+      (total.hashCode);
 
   @override
   String toString() => 'MemoryStatisticsResponseDto[total=$total]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'total'] = this.total;
+    json[r'total'] = this.total;
     return json;
   }
 
@@ -51,7 +51,10 @@ class MemoryStatisticsResponseDto {
     return null;
   }
 
-  static List<MemoryStatisticsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<MemoryStatisticsResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <MemoryStatisticsResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +82,19 @@ class MemoryStatisticsResponseDto {
   }
 
   // maps a json object with a list of MemoryStatisticsResponseDto-objects as value to a dart map
-  static Map<String, List<MemoryStatisticsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<MemoryStatisticsResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<MemoryStatisticsResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = MemoryStatisticsResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = MemoryStatisticsResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +105,3 @@ class MemoryStatisticsResponseDto {
     'total',
   };
 }
-

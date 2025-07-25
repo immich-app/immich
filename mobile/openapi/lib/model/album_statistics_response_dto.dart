@@ -25,26 +25,26 @@ class AlbumStatisticsResponseDto {
   int shared;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AlbumStatisticsResponseDto &&
-    other.notShared == notShared &&
-    other.owned == owned &&
-    other.shared == shared;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AlbumStatisticsResponseDto &&
+          other.notShared == notShared &&
+          other.owned == owned &&
+          other.shared == shared;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (notShared.hashCode) +
-    (owned.hashCode) +
-    (shared.hashCode);
+      // ignore: unnecessary_parenthesis
+      (notShared.hashCode) + (owned.hashCode) + (shared.hashCode);
 
   @override
   String toString() => 'AlbumStatisticsResponseDto[notShared=$notShared, owned=$owned, shared=$shared]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'notShared'] = this.notShared;
-      json[r'owned'] = this.owned;
-      json[r'shared'] = this.shared;
+    json[r'notShared'] = this.notShared;
+    json[r'owned'] = this.owned;
+    json[r'shared'] = this.shared;
     return json;
   }
 
@@ -65,7 +65,10 @@ class AlbumStatisticsResponseDto {
     return null;
   }
 
-  static List<AlbumStatisticsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AlbumStatisticsResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AlbumStatisticsResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -93,13 +96,19 @@ class AlbumStatisticsResponseDto {
   }
 
   // maps a json object with a list of AlbumStatisticsResponseDto-objects as value to a dart map
-  static Map<String, List<AlbumStatisticsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AlbumStatisticsResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AlbumStatisticsResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AlbumStatisticsResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AlbumStatisticsResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +121,3 @@ class AlbumStatisticsResponseDto {
     'shared',
   };
 }
-

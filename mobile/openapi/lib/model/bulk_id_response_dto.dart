@@ -25,17 +25,14 @@ class BulkIdResponseDto {
   bool success;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is BulkIdResponseDto &&
-    other.error == error &&
-    other.id == id &&
-    other.success == success;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BulkIdResponseDto && other.error == error && other.id == id && other.success == success;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (error == null ? 0 : error!.hashCode) +
-    (id.hashCode) +
-    (success.hashCode);
+      // ignore: unnecessary_parenthesis
+      (error == null ? 0 : error!.hashCode) + (id.hashCode) + (success.hashCode);
 
   @override
   String toString() => 'BulkIdResponseDto[error=$error, id=$id, success=$success]';
@@ -45,10 +42,10 @@ class BulkIdResponseDto {
     if (this.error != null) {
       json[r'error'] = this.error;
     } else {
-    //  json[r'error'] = null;
+      //  json[r'error'] = null;
     }
-      json[r'id'] = this.id;
-      json[r'success'] = this.success;
+    json[r'id'] = this.id;
+    json[r'success'] = this.success;
     return json;
   }
 
@@ -69,7 +66,10 @@ class BulkIdResponseDto {
     return null;
   }
 
-  static List<BulkIdResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<BulkIdResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <BulkIdResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -97,13 +97,19 @@ class BulkIdResponseDto {
   }
 
   // maps a json object with a list of BulkIdResponseDto-objects as value to a dart map
-  static Map<String, List<BulkIdResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<BulkIdResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<BulkIdResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = BulkIdResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = BulkIdResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -115,7 +121,6 @@ class BulkIdResponseDto {
     'success',
   };
 }
-
 
 class BulkIdResponseDtoErrorEnum {
   /// Instantiate a new enum with the provided [value].
@@ -142,9 +147,13 @@ class BulkIdResponseDtoErrorEnum {
     unknown,
   ];
 
-  static BulkIdResponseDtoErrorEnum? fromJson(dynamic value) => BulkIdResponseDtoErrorEnumTypeTransformer().decode(value);
+  static BulkIdResponseDtoErrorEnum? fromJson(dynamic value) =>
+      BulkIdResponseDtoErrorEnumTypeTransformer().decode(value);
 
-  static List<BulkIdResponseDtoErrorEnum> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<BulkIdResponseDtoErrorEnum> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <BulkIdResponseDtoErrorEnum>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -161,7 +170,8 @@ class BulkIdResponseDtoErrorEnum {
 /// Transformation class that can [encode] an instance of [BulkIdResponseDtoErrorEnum] to String,
 /// and [decode] dynamic data back to [BulkIdResponseDtoErrorEnum].
 class BulkIdResponseDtoErrorEnumTypeTransformer {
-  factory BulkIdResponseDtoErrorEnumTypeTransformer() => _instance ??= const BulkIdResponseDtoErrorEnumTypeTransformer._();
+  factory BulkIdResponseDtoErrorEnumTypeTransformer() =>
+      _instance ??= const BulkIdResponseDtoErrorEnumTypeTransformer._();
 
   const BulkIdResponseDtoErrorEnumTypeTransformer._();
 
@@ -178,10 +188,14 @@ class BulkIdResponseDtoErrorEnumTypeTransformer {
   BulkIdResponseDtoErrorEnum? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'duplicate': return BulkIdResponseDtoErrorEnum.duplicate;
-        case r'no_permission': return BulkIdResponseDtoErrorEnum.noPermission;
-        case r'not_found': return BulkIdResponseDtoErrorEnum.notFound;
-        case r'unknown': return BulkIdResponseDtoErrorEnum.unknown;
+        case r'duplicate':
+          return BulkIdResponseDtoErrorEnum.duplicate;
+        case r'no_permission':
+          return BulkIdResponseDtoErrorEnum.noPermission;
+        case r'not_found':
+          return BulkIdResponseDtoErrorEnum.notFound;
+        case r'unknown':
+          return BulkIdResponseDtoErrorEnum.unknown;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -194,5 +208,3 @@ class BulkIdResponseDtoErrorEnumTypeTransformer {
   /// Singleton [BulkIdResponseDtoErrorEnumTypeTransformer] instance.
   static BulkIdResponseDtoErrorEnumTypeTransformer? _instance;
 }
-
-

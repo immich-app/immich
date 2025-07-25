@@ -55,75 +55,78 @@ class SyncAuthUserV1 {
   String? storageLabel;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAuthUserV1 &&
-    other.avatarColor == avatarColor &&
-    other.deletedAt == deletedAt &&
-    other.email == email &&
-    other.hasProfileImage == hasProfileImage &&
-    other.id == id &&
-    other.isAdmin == isAdmin &&
-    other.name == name &&
-    other.oauthId == oauthId &&
-    other.pinCode == pinCode &&
-    other.profileChangedAt == profileChangedAt &&
-    other.quotaSizeInBytes == quotaSizeInBytes &&
-    other.quotaUsageInBytes == quotaUsageInBytes &&
-    other.storageLabel == storageLabel;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncAuthUserV1 &&
+          other.avatarColor == avatarColor &&
+          other.deletedAt == deletedAt &&
+          other.email == email &&
+          other.hasProfileImage == hasProfileImage &&
+          other.id == id &&
+          other.isAdmin == isAdmin &&
+          other.name == name &&
+          other.oauthId == oauthId &&
+          other.pinCode == pinCode &&
+          other.profileChangedAt == profileChangedAt &&
+          other.quotaSizeInBytes == quotaSizeInBytes &&
+          other.quotaUsageInBytes == quotaUsageInBytes &&
+          other.storageLabel == storageLabel;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (avatarColor == null ? 0 : avatarColor!.hashCode) +
-    (deletedAt == null ? 0 : deletedAt!.hashCode) +
-    (email.hashCode) +
-    (hasProfileImage.hashCode) +
-    (id.hashCode) +
-    (isAdmin.hashCode) +
-    (name.hashCode) +
-    (oauthId.hashCode) +
-    (pinCode == null ? 0 : pinCode!.hashCode) +
-    (profileChangedAt.hashCode) +
-    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
-    (quotaUsageInBytes.hashCode) +
-    (storageLabel == null ? 0 : storageLabel!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (avatarColor == null ? 0 : avatarColor!.hashCode) +
+      (deletedAt == null ? 0 : deletedAt!.hashCode) +
+      (email.hashCode) +
+      (hasProfileImage.hashCode) +
+      (id.hashCode) +
+      (isAdmin.hashCode) +
+      (name.hashCode) +
+      (oauthId.hashCode) +
+      (pinCode == null ? 0 : pinCode!.hashCode) +
+      (profileChangedAt.hashCode) +
+      (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
+      (quotaUsageInBytes.hashCode) +
+      (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'SyncAuthUserV1[avatarColor=$avatarColor, deletedAt=$deletedAt, email=$email, hasProfileImage=$hasProfileImage, id=$id, isAdmin=$isAdmin, name=$name, oauthId=$oauthId, pinCode=$pinCode, profileChangedAt=$profileChangedAt, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, storageLabel=$storageLabel]';
+  String toString() =>
+      'SyncAuthUserV1[avatarColor=$avatarColor, deletedAt=$deletedAt, email=$email, hasProfileImage=$hasProfileImage, id=$id, isAdmin=$isAdmin, name=$name, oauthId=$oauthId, pinCode=$pinCode, profileChangedAt=$profileChangedAt, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.avatarColor != null) {
       json[r'avatarColor'] = this.avatarColor;
     } else {
-    //  json[r'avatarColor'] = null;
+      //  json[r'avatarColor'] = null;
     }
     if (this.deletedAt != null) {
       json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'deletedAt'] = null;
+      //  json[r'deletedAt'] = null;
     }
-      json[r'email'] = this.email;
-      json[r'hasProfileImage'] = this.hasProfileImage;
-      json[r'id'] = this.id;
-      json[r'isAdmin'] = this.isAdmin;
-      json[r'name'] = this.name;
-      json[r'oauthId'] = this.oauthId;
+    json[r'email'] = this.email;
+    json[r'hasProfileImage'] = this.hasProfileImage;
+    json[r'id'] = this.id;
+    json[r'isAdmin'] = this.isAdmin;
+    json[r'name'] = this.name;
+    json[r'oauthId'] = this.oauthId;
     if (this.pinCode != null) {
       json[r'pinCode'] = this.pinCode;
     } else {
-    //  json[r'pinCode'] = null;
+      //  json[r'pinCode'] = null;
     }
-      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
+    json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
-    //  json[r'quotaSizeInBytes'] = null;
+      //  json[r'quotaSizeInBytes'] = null;
     }
-      json[r'quotaUsageInBytes'] = this.quotaUsageInBytes;
+    json[r'quotaUsageInBytes'] = this.quotaUsageInBytes;
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
-    //  json[r'storageLabel'] = null;
+      //  json[r'storageLabel'] = null;
     }
     return json;
   }
@@ -155,7 +158,10 @@ class SyncAuthUserV1 {
     return null;
   }
 
-  static List<SyncAuthUserV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncAuthUserV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncAuthUserV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -183,13 +189,19 @@ class SyncAuthUserV1 {
   }
 
   // maps a json object with a list of SyncAuthUserV1-objects as value to a dart map
-  static Map<String, List<SyncAuthUserV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncAuthUserV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncAuthUserV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncAuthUserV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncAuthUserV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -212,4 +224,3 @@ class SyncAuthUserV1 {
     'storageLabel',
   };
 }
-

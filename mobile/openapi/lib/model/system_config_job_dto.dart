@@ -49,50 +49,53 @@ class SystemConfigJobDto {
   JobSettingsDto videoConversion;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigJobDto &&
-    other.backgroundTask == backgroundTask &&
-    other.faceDetection == faceDetection &&
-    other.library_ == library_ &&
-    other.metadataExtraction == metadataExtraction &&
-    other.migration == migration &&
-    other.notifications == notifications &&
-    other.search == search &&
-    other.sidecar == sidecar &&
-    other.smartSearch == smartSearch &&
-    other.thumbnailGeneration == thumbnailGeneration &&
-    other.videoConversion == videoConversion;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SystemConfigJobDto &&
+          other.backgroundTask == backgroundTask &&
+          other.faceDetection == faceDetection &&
+          other.library_ == library_ &&
+          other.metadataExtraction == metadataExtraction &&
+          other.migration == migration &&
+          other.notifications == notifications &&
+          other.search == search &&
+          other.sidecar == sidecar &&
+          other.smartSearch == smartSearch &&
+          other.thumbnailGeneration == thumbnailGeneration &&
+          other.videoConversion == videoConversion;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (backgroundTask.hashCode) +
-    (faceDetection.hashCode) +
-    (library_.hashCode) +
-    (metadataExtraction.hashCode) +
-    (migration.hashCode) +
-    (notifications.hashCode) +
-    (search.hashCode) +
-    (sidecar.hashCode) +
-    (smartSearch.hashCode) +
-    (thumbnailGeneration.hashCode) +
-    (videoConversion.hashCode);
+      // ignore: unnecessary_parenthesis
+      (backgroundTask.hashCode) +
+      (faceDetection.hashCode) +
+      (library_.hashCode) +
+      (metadataExtraction.hashCode) +
+      (migration.hashCode) +
+      (notifications.hashCode) +
+      (search.hashCode) +
+      (sidecar.hashCode) +
+      (smartSearch.hashCode) +
+      (thumbnailGeneration.hashCode) +
+      (videoConversion.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() =>
+      'SystemConfigJobDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'backgroundTask'] = this.backgroundTask;
-      json[r'faceDetection'] = this.faceDetection;
-      json[r'library'] = this.library_;
-      json[r'metadataExtraction'] = this.metadataExtraction;
-      json[r'migration'] = this.migration;
-      json[r'notifications'] = this.notifications;
-      json[r'search'] = this.search;
-      json[r'sidecar'] = this.sidecar;
-      json[r'smartSearch'] = this.smartSearch;
-      json[r'thumbnailGeneration'] = this.thumbnailGeneration;
-      json[r'videoConversion'] = this.videoConversion;
+    json[r'backgroundTask'] = this.backgroundTask;
+    json[r'faceDetection'] = this.faceDetection;
+    json[r'library'] = this.library_;
+    json[r'metadataExtraction'] = this.metadataExtraction;
+    json[r'migration'] = this.migration;
+    json[r'notifications'] = this.notifications;
+    json[r'search'] = this.search;
+    json[r'sidecar'] = this.sidecar;
+    json[r'smartSearch'] = this.smartSearch;
+    json[r'thumbnailGeneration'] = this.thumbnailGeneration;
+    json[r'videoConversion'] = this.videoConversion;
     return json;
   }
 
@@ -121,7 +124,10 @@ class SystemConfigJobDto {
     return null;
   }
 
-  static List<SystemConfigJobDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigJobDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigJobDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -149,13 +155,19 @@ class SystemConfigJobDto {
   }
 
   // maps a json object with a list of SystemConfigJobDto-objects as value to a dart map
-  static Map<String, List<SystemConfigJobDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigJobDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigJobDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigJobDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigJobDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -176,4 +188,3 @@ class SystemConfigJobDto {
     'videoConversion',
   };
 }
-

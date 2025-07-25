@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class StacksApi {
   StacksApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
@@ -20,7 +19,9 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [StackCreateDto] stackCreateDto (required):
-  Future<Response> createStackWithHttpInfo(StackCreateDto stackCreateDto,) async {
+  Future<Response> createStackWithHttpInfo(
+    StackCreateDto stackCreateDto,
+  ) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/stacks';
 
@@ -32,7 +33,6 @@ class StacksApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>['application/json'];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -48,8 +48,12 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [StackCreateDto] stackCreateDto (required):
-  Future<StackResponseDto?> createStack(StackCreateDto stackCreateDto,) async {
-    final response = await createStackWithHttpInfo(stackCreateDto,);
+  Future<StackResponseDto?> createStack(
+    StackCreateDto stackCreateDto,
+  ) async {
+    final response = await createStackWithHttpInfo(
+      stackCreateDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -57,8 +61,10 @@ class StacksApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'StackResponseDto',) as StackResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'StackResponseDto',
+      ) as StackResponseDto;
     }
     return null;
   }
@@ -67,10 +73,11 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteStackWithHttpInfo(String id,) async {
+  Future<Response> deleteStackWithHttpInfo(
+    String id,
+  ) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/stacks/{id}'
-      .replaceAll('{id}', id);
+    final apiPath = r'/stacks/{id}'.replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -80,7 +87,6 @@ class StacksApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -96,8 +102,12 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteStack(String id,) async {
-    final response = await deleteStackWithHttpInfo(id,);
+  Future<void> deleteStack(
+    String id,
+  ) async {
+    final response = await deleteStackWithHttpInfo(
+      id,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -107,7 +117,9 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<Response> deleteStacksWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
+  Future<Response> deleteStacksWithHttpInfo(
+    BulkIdsDto bulkIdsDto,
+  ) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/stacks';
 
@@ -120,7 +132,6 @@ class StacksApi {
 
     const contentTypes = <String>['application/json'];
 
-
     return apiClient.invokeAPI(
       apiPath,
       'DELETE',
@@ -135,8 +146,12 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<void> deleteStacks(BulkIdsDto bulkIdsDto,) async {
-    final response = await deleteStacksWithHttpInfo(bulkIdsDto,);
+  Future<void> deleteStacks(
+    BulkIdsDto bulkIdsDto,
+  ) async {
+    final response = await deleteStacksWithHttpInfo(
+      bulkIdsDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -146,10 +161,11 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getStackWithHttpInfo(String id,) async {
+  Future<Response> getStackWithHttpInfo(
+    String id,
+  ) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/stacks/{id}'
-      .replaceAll('{id}', id);
+    final apiPath = r'/stacks/{id}'.replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -159,7 +175,6 @@ class StacksApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -175,8 +190,12 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<StackResponseDto?> getStack(String id,) async {
-    final response = await getStackWithHttpInfo(id,);
+  Future<StackResponseDto?> getStack(
+    String id,
+  ) async {
+    final response = await getStackWithHttpInfo(
+      id,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -184,8 +203,10 @@ class StacksApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'StackResponseDto',) as StackResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'StackResponseDto',
+      ) as StackResponseDto;
     }
     return null;
   }
@@ -196,11 +217,12 @@ class StacksApi {
   /// * [String] assetId (required):
   ///
   /// * [String] id (required):
-  Future<Response> removeAssetFromStackWithHttpInfo(String assetId, String id,) async {
+  Future<Response> removeAssetFromStackWithHttpInfo(
+    String assetId,
+    String id,
+  ) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/stacks/{id}/assets/{assetId}'
-      .replaceAll('{assetId}', assetId)
-      .replaceAll('{id}', id);
+    final apiPath = r'/stacks/{id}/assets/{assetId}'.replaceAll('{assetId}', assetId).replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -210,7 +232,6 @@ class StacksApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -228,8 +249,14 @@ class StacksApi {
   /// * [String] assetId (required):
   ///
   /// * [String] id (required):
-  Future<void> removeAssetFromStack(String assetId, String id,) async {
-    final response = await removeAssetFromStackWithHttpInfo(assetId, id,);
+  Future<void> removeAssetFromStack(
+    String assetId,
+    String id,
+  ) async {
+    final response = await removeAssetFromStackWithHttpInfo(
+      assetId,
+      id,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -239,7 +266,9 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] primaryAssetId:
-  Future<Response> searchStacksWithHttpInfo({ String? primaryAssetId, }) async {
+  Future<Response> searchStacksWithHttpInfo({
+    String? primaryAssetId,
+  }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/stacks';
 
@@ -256,7 +285,6 @@ class StacksApi {
 
     const contentTypes = <String>[];
 
-
     return apiClient.invokeAPI(
       apiPath,
       'GET',
@@ -271,8 +299,12 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] primaryAssetId:
-  Future<List<StackResponseDto>?> searchStacks({ String? primaryAssetId, }) async {
-    final response = await searchStacksWithHttpInfo( primaryAssetId: primaryAssetId, );
+  Future<List<StackResponseDto>?> searchStacks({
+    String? primaryAssetId,
+  }) async {
+    final response = await searchStacksWithHttpInfo(
+      primaryAssetId: primaryAssetId,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -282,9 +314,8 @@ class StacksApi {
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<StackResponseDto>') as List)
-        .cast<StackResponseDto>()
-        .toList(growable: false);
-
+          .cast<StackResponseDto>()
+          .toList(growable: false);
     }
     return null;
   }
@@ -295,10 +326,12 @@ class StacksApi {
   /// * [String] id (required):
   ///
   /// * [StackUpdateDto] stackUpdateDto (required):
-  Future<Response> updateStackWithHttpInfo(String id, StackUpdateDto stackUpdateDto,) async {
+  Future<Response> updateStackWithHttpInfo(
+    String id,
+    StackUpdateDto stackUpdateDto,
+  ) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/stacks/{id}'
-      .replaceAll('{id}', id);
+    final apiPath = r'/stacks/{id}'.replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody = stackUpdateDto;
@@ -308,7 +341,6 @@ class StacksApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>['application/json'];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -326,8 +358,14 @@ class StacksApi {
   /// * [String] id (required):
   ///
   /// * [StackUpdateDto] stackUpdateDto (required):
-  Future<StackResponseDto?> updateStack(String id, StackUpdateDto stackUpdateDto,) async {
-    final response = await updateStackWithHttpInfo(id, stackUpdateDto,);
+  Future<StackResponseDto?> updateStack(
+    String id,
+    StackUpdateDto stackUpdateDto,
+  ) async {
+    final response = await updateStackWithHttpInfo(
+      id,
+      stackUpdateDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -335,8 +373,10 @@ class StacksApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'StackResponseDto',) as StackResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'StackResponseDto',
+      ) as StackResponseDto;
     }
     return null;
   }

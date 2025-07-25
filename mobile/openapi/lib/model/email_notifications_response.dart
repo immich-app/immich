@@ -25,26 +25,27 @@ class EmailNotificationsResponse {
   bool enabled;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is EmailNotificationsResponse &&
-    other.albumInvite == albumInvite &&
-    other.albumUpdate == albumUpdate &&
-    other.enabled == enabled;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EmailNotificationsResponse &&
+          other.albumInvite == albumInvite &&
+          other.albumUpdate == albumUpdate &&
+          other.enabled == enabled;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumInvite.hashCode) +
-    (albumUpdate.hashCode) +
-    (enabled.hashCode);
+      // ignore: unnecessary_parenthesis
+      (albumInvite.hashCode) + (albumUpdate.hashCode) + (enabled.hashCode);
 
   @override
-  String toString() => 'EmailNotificationsResponse[albumInvite=$albumInvite, albumUpdate=$albumUpdate, enabled=$enabled]';
+  String toString() =>
+      'EmailNotificationsResponse[albumInvite=$albumInvite, albumUpdate=$albumUpdate, enabled=$enabled]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albumInvite'] = this.albumInvite;
-      json[r'albumUpdate'] = this.albumUpdate;
-      json[r'enabled'] = this.enabled;
+    json[r'albumInvite'] = this.albumInvite;
+    json[r'albumUpdate'] = this.albumUpdate;
+    json[r'enabled'] = this.enabled;
     return json;
   }
 
@@ -65,7 +66,10 @@ class EmailNotificationsResponse {
     return null;
   }
 
-  static List<EmailNotificationsResponse> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<EmailNotificationsResponse> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <EmailNotificationsResponse>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -93,13 +97,19 @@ class EmailNotificationsResponse {
   }
 
   // maps a json object with a list of EmailNotificationsResponse-objects as value to a dart map
-  static Map<String, List<EmailNotificationsResponse>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<EmailNotificationsResponse>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<EmailNotificationsResponse>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = EmailNotificationsResponse.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = EmailNotificationsResponse.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +122,3 @@ class EmailNotificationsResponse {
     'enabled',
   };
 }
-

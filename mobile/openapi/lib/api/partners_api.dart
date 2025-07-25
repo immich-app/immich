@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class PartnersApi {
   PartnersApi([ApiClient? apiClient]) : apiClient = apiClient ?? defaultApiClient;
 
@@ -20,10 +19,11 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> createPartnerWithHttpInfo(String id,) async {
+  Future<Response> createPartnerWithHttpInfo(
+    String id,
+  ) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/partners/{id}'
-      .replaceAll('{id}', id);
+    final apiPath = r'/partners/{id}'.replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -33,7 +33,6 @@ class PartnersApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -49,8 +48,12 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<PartnerResponseDto?> createPartner(String id,) async {
-    final response = await createPartnerWithHttpInfo(id,);
+  Future<PartnerResponseDto?> createPartner(
+    String id,
+  ) async {
+    final response = await createPartnerWithHttpInfo(
+      id,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -58,8 +61,10 @@ class PartnersApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PartnerResponseDto',) as PartnerResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'PartnerResponseDto',
+      ) as PartnerResponseDto;
     }
     return null;
   }
@@ -68,7 +73,9 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerDirection] direction (required):
-  Future<Response> getPartnersWithHttpInfo(PartnerDirection direction,) async {
+  Future<Response> getPartnersWithHttpInfo(
+    PartnerDirection direction,
+  ) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners';
 
@@ -79,10 +86,9 @@ class PartnersApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-      queryParams.addAll(_queryParams('', 'direction', direction));
+    queryParams.addAll(_queryParams('', 'direction', direction));
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -98,8 +104,12 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerDirection] direction (required):
-  Future<List<PartnerResponseDto>?> getPartners(PartnerDirection direction,) async {
-    final response = await getPartnersWithHttpInfo(direction,);
+  Future<List<PartnerResponseDto>?> getPartners(
+    PartnerDirection direction,
+  ) async {
+    final response = await getPartnersWithHttpInfo(
+      direction,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -109,9 +119,8 @@ class PartnersApi {
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<PartnerResponseDto>') as List)
-        .cast<PartnerResponseDto>()
-        .toList(growable: false);
-
+          .cast<PartnerResponseDto>()
+          .toList(growable: false);
     }
     return null;
   }
@@ -120,10 +129,11 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> removePartnerWithHttpInfo(String id,) async {
+  Future<Response> removePartnerWithHttpInfo(
+    String id,
+  ) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/partners/{id}'
-      .replaceAll('{id}', id);
+    final apiPath = r'/partners/{id}'.replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -133,7 +143,6 @@ class PartnersApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>[];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -149,8 +158,12 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> removePartner(String id,) async {
-    final response = await removePartnerWithHttpInfo(id,);
+  Future<void> removePartner(
+    String id,
+  ) async {
+    final response = await removePartnerWithHttpInfo(
+      id,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -162,10 +175,12 @@ class PartnersApi {
   /// * [String] id (required):
   ///
   /// * [UpdatePartnerDto] updatePartnerDto (required):
-  Future<Response> updatePartnerWithHttpInfo(String id, UpdatePartnerDto updatePartnerDto,) async {
+  Future<Response> updatePartnerWithHttpInfo(
+    String id,
+    UpdatePartnerDto updatePartnerDto,
+  ) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/partners/{id}'
-      .replaceAll('{id}', id);
+    final apiPath = r'/partners/{id}'.replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
     Object? postBody = updatePartnerDto;
@@ -175,7 +190,6 @@ class PartnersApi {
     final formParams = <String, String>{};
 
     const contentTypes = <String>['application/json'];
-
 
     return apiClient.invokeAPI(
       apiPath,
@@ -193,8 +207,14 @@ class PartnersApi {
   /// * [String] id (required):
   ///
   /// * [UpdatePartnerDto] updatePartnerDto (required):
-  Future<PartnerResponseDto?> updatePartner(String id, UpdatePartnerDto updatePartnerDto,) async {
-    final response = await updatePartnerWithHttpInfo(id, updatePartnerDto,);
+  Future<PartnerResponseDto?> updatePartner(
+    String id,
+    UpdatePartnerDto updatePartnerDto,
+  ) async {
+    final response = await updatePartnerWithHttpInfo(
+      id,
+      updatePartnerDto,
+    );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -202,8 +222,10 @@ class PartnersApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PartnerResponseDto',) as PartnerResponseDto;
-    
+      return await apiClient.deserializeAsync(
+        await _decodeBodyBytes(response),
+        'PartnerResponseDto',
+      ) as PartnerResponseDto;
     }
     return null;
   }

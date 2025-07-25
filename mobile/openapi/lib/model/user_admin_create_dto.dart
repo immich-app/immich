@@ -62,67 +62,70 @@ class UserAdminCreateDto {
   String? storageLabel;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is UserAdminCreateDto &&
-    other.avatarColor == avatarColor &&
-    other.email == email &&
-    other.isAdmin == isAdmin &&
-    other.name == name &&
-    other.notify == notify &&
-    other.password == password &&
-    other.quotaSizeInBytes == quotaSizeInBytes &&
-    other.shouldChangePassword == shouldChangePassword &&
-    other.storageLabel == storageLabel;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserAdminCreateDto &&
+          other.avatarColor == avatarColor &&
+          other.email == email &&
+          other.isAdmin == isAdmin &&
+          other.name == name &&
+          other.notify == notify &&
+          other.password == password &&
+          other.quotaSizeInBytes == quotaSizeInBytes &&
+          other.shouldChangePassword == shouldChangePassword &&
+          other.storageLabel == storageLabel;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (avatarColor == null ? 0 : avatarColor!.hashCode) +
-    (email.hashCode) +
-    (isAdmin == null ? 0 : isAdmin!.hashCode) +
-    (name.hashCode) +
-    (notify == null ? 0 : notify!.hashCode) +
-    (password.hashCode) +
-    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
-    (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
-    (storageLabel == null ? 0 : storageLabel!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (avatarColor == null ? 0 : avatarColor!.hashCode) +
+      (email.hashCode) +
+      (isAdmin == null ? 0 : isAdmin!.hashCode) +
+      (name.hashCode) +
+      (notify == null ? 0 : notify!.hashCode) +
+      (password.hashCode) +
+      (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
+      (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
+      (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UserAdminCreateDto[avatarColor=$avatarColor, email=$email, isAdmin=$isAdmin, name=$name, notify=$notify, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() =>
+      'UserAdminCreateDto[avatarColor=$avatarColor, email=$email, isAdmin=$isAdmin, name=$name, notify=$notify, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.avatarColor != null) {
       json[r'avatarColor'] = this.avatarColor;
     } else {
-    //  json[r'avatarColor'] = null;
+      //  json[r'avatarColor'] = null;
     }
-      json[r'email'] = this.email;
+    json[r'email'] = this.email;
     if (this.isAdmin != null) {
       json[r'isAdmin'] = this.isAdmin;
     } else {
-    //  json[r'isAdmin'] = null;
+      //  json[r'isAdmin'] = null;
     }
-      json[r'name'] = this.name;
+    json[r'name'] = this.name;
     if (this.notify != null) {
       json[r'notify'] = this.notify;
     } else {
-    //  json[r'notify'] = null;
+      //  json[r'notify'] = null;
     }
-      json[r'password'] = this.password;
+    json[r'password'] = this.password;
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
-    //  json[r'quotaSizeInBytes'] = null;
+      //  json[r'quotaSizeInBytes'] = null;
     }
     if (this.shouldChangePassword != null) {
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     } else {
-    //  json[r'shouldChangePassword'] = null;
+      //  json[r'shouldChangePassword'] = null;
     }
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
-    //  json[r'storageLabel'] = null;
+      //  json[r'storageLabel'] = null;
     }
     return json;
   }
@@ -150,7 +153,10 @@ class UserAdminCreateDto {
     return null;
   }
 
-  static List<UserAdminCreateDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<UserAdminCreateDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <UserAdminCreateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -178,13 +184,19 @@ class UserAdminCreateDto {
   }
 
   // maps a json object with a list of UserAdminCreateDto-objects as value to a dart map
-  static Map<String, List<UserAdminCreateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<UserAdminCreateDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<UserAdminCreateDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = UserAdminCreateDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = UserAdminCreateDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -197,4 +209,3 @@ class UserAdminCreateDto {
     'password',
   };
 }
-

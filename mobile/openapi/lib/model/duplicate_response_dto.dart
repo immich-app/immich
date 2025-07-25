@@ -22,23 +22,22 @@ class DuplicateResponseDto {
   String duplicateId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is DuplicateResponseDto &&
-    _deepEquality.equals(other.assets, assets) &&
-    other.duplicateId == duplicateId;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DuplicateResponseDto && _deepEquality.equals(other.assets, assets) && other.duplicateId == duplicateId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assets.hashCode) +
-    (duplicateId.hashCode);
+      // ignore: unnecessary_parenthesis
+      (assets.hashCode) + (duplicateId.hashCode);
 
   @override
   String toString() => 'DuplicateResponseDto[assets=$assets, duplicateId=$duplicateId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assets'] = this.assets;
-      json[r'duplicateId'] = this.duplicateId;
+    json[r'assets'] = this.assets;
+    json[r'duplicateId'] = this.duplicateId;
     return json;
   }
 
@@ -58,7 +57,10 @@ class DuplicateResponseDto {
     return null;
   }
 
-  static List<DuplicateResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<DuplicateResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <DuplicateResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +88,19 @@ class DuplicateResponseDto {
   }
 
   // maps a json object with a list of DuplicateResponseDto-objects as value to a dart map
-  static Map<String, List<DuplicateResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<DuplicateResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<DuplicateResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = DuplicateResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = DuplicateResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +112,3 @@ class DuplicateResponseDto {
     'duplicateId',
   };
 }
-

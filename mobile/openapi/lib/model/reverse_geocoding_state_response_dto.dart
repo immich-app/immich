@@ -22,30 +22,32 @@ class ReverseGeocodingStateResponseDto {
   String? lastUpdate;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is ReverseGeocodingStateResponseDto &&
-    other.lastImportFileName == lastImportFileName &&
-    other.lastUpdate == lastUpdate;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReverseGeocodingStateResponseDto &&
+          other.lastImportFileName == lastImportFileName &&
+          other.lastUpdate == lastUpdate;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (lastImportFileName == null ? 0 : lastImportFileName!.hashCode) +
-    (lastUpdate == null ? 0 : lastUpdate!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (lastImportFileName == null ? 0 : lastImportFileName!.hashCode) + (lastUpdate == null ? 0 : lastUpdate!.hashCode);
 
   @override
-  String toString() => 'ReverseGeocodingStateResponseDto[lastImportFileName=$lastImportFileName, lastUpdate=$lastUpdate]';
+  String toString() =>
+      'ReverseGeocodingStateResponseDto[lastImportFileName=$lastImportFileName, lastUpdate=$lastUpdate]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.lastImportFileName != null) {
       json[r'lastImportFileName'] = this.lastImportFileName;
     } else {
-    //  json[r'lastImportFileName'] = null;
+      //  json[r'lastImportFileName'] = null;
     }
     if (this.lastUpdate != null) {
       json[r'lastUpdate'] = this.lastUpdate;
     } else {
-    //  json[r'lastUpdate'] = null;
+      //  json[r'lastUpdate'] = null;
     }
     return json;
   }
@@ -66,7 +68,10 @@ class ReverseGeocodingStateResponseDto {
     return null;
   }
 
-  static List<ReverseGeocodingStateResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ReverseGeocodingStateResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <ReverseGeocodingStateResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -94,13 +99,19 @@ class ReverseGeocodingStateResponseDto {
   }
 
   // maps a json object with a list of ReverseGeocodingStateResponseDto-objects as value to a dart map
-  static Map<String, List<ReverseGeocodingStateResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<ReverseGeocodingStateResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<ReverseGeocodingStateResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = ReverseGeocodingStateResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = ReverseGeocodingStateResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +123,3 @@ class ReverseGeocodingStateResponseDto {
     'lastUpdate',
   };
 }
-

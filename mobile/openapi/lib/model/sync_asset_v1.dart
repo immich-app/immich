@@ -61,94 +61,97 @@ class SyncAssetV1 {
   AssetVisibility visibility;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAssetV1 &&
-    other.checksum == checksum &&
-    other.deletedAt == deletedAt &&
-    other.duration == duration &&
-    other.fileCreatedAt == fileCreatedAt &&
-    other.fileModifiedAt == fileModifiedAt &&
-    other.id == id &&
-    other.isFavorite == isFavorite &&
-    other.livePhotoVideoId == livePhotoVideoId &&
-    other.localDateTime == localDateTime &&
-    other.originalFileName == originalFileName &&
-    other.ownerId == ownerId &&
-    other.stackId == stackId &&
-    other.thumbhash == thumbhash &&
-    other.type == type &&
-    other.visibility == visibility;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncAssetV1 &&
+          other.checksum == checksum &&
+          other.deletedAt == deletedAt &&
+          other.duration == duration &&
+          other.fileCreatedAt == fileCreatedAt &&
+          other.fileModifiedAt == fileModifiedAt &&
+          other.id == id &&
+          other.isFavorite == isFavorite &&
+          other.livePhotoVideoId == livePhotoVideoId &&
+          other.localDateTime == localDateTime &&
+          other.originalFileName == originalFileName &&
+          other.ownerId == ownerId &&
+          other.stackId == stackId &&
+          other.thumbhash == thumbhash &&
+          other.type == type &&
+          other.visibility == visibility;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (checksum.hashCode) +
-    (deletedAt == null ? 0 : deletedAt!.hashCode) +
-    (duration == null ? 0 : duration!.hashCode) +
-    (fileCreatedAt == null ? 0 : fileCreatedAt!.hashCode) +
-    (fileModifiedAt == null ? 0 : fileModifiedAt!.hashCode) +
-    (id.hashCode) +
-    (isFavorite.hashCode) +
-    (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
-    (localDateTime == null ? 0 : localDateTime!.hashCode) +
-    (originalFileName.hashCode) +
-    (ownerId.hashCode) +
-    (stackId == null ? 0 : stackId!.hashCode) +
-    (thumbhash == null ? 0 : thumbhash!.hashCode) +
-    (type.hashCode) +
-    (visibility.hashCode);
+      // ignore: unnecessary_parenthesis
+      (checksum.hashCode) +
+      (deletedAt == null ? 0 : deletedAt!.hashCode) +
+      (duration == null ? 0 : duration!.hashCode) +
+      (fileCreatedAt == null ? 0 : fileCreatedAt!.hashCode) +
+      (fileModifiedAt == null ? 0 : fileModifiedAt!.hashCode) +
+      (id.hashCode) +
+      (isFavorite.hashCode) +
+      (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
+      (localDateTime == null ? 0 : localDateTime!.hashCode) +
+      (originalFileName.hashCode) +
+      (ownerId.hashCode) +
+      (stackId == null ? 0 : stackId!.hashCode) +
+      (thumbhash == null ? 0 : thumbhash!.hashCode) +
+      (type.hashCode) +
+      (visibility.hashCode);
 
   @override
-  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isFavorite=$isFavorite, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, stackId=$stackId, thumbhash=$thumbhash, type=$type, visibility=$visibility]';
+  String toString() =>
+      'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isFavorite=$isFavorite, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, stackId=$stackId, thumbhash=$thumbhash, type=$type, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'checksum'] = this.checksum;
+    json[r'checksum'] = this.checksum;
     if (this.deletedAt != null) {
       json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'deletedAt'] = null;
+      //  json[r'deletedAt'] = null;
     }
     if (this.duration != null) {
       json[r'duration'] = this.duration;
     } else {
-    //  json[r'duration'] = null;
+      //  json[r'duration'] = null;
     }
     if (this.fileCreatedAt != null) {
       json[r'fileCreatedAt'] = this.fileCreatedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'fileCreatedAt'] = null;
+      //  json[r'fileCreatedAt'] = null;
     }
     if (this.fileModifiedAt != null) {
       json[r'fileModifiedAt'] = this.fileModifiedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'fileModifiedAt'] = null;
+      //  json[r'fileModifiedAt'] = null;
     }
-      json[r'id'] = this.id;
-      json[r'isFavorite'] = this.isFavorite;
+    json[r'id'] = this.id;
+    json[r'isFavorite'] = this.isFavorite;
     if (this.livePhotoVideoId != null) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
-    //  json[r'livePhotoVideoId'] = null;
+      //  json[r'livePhotoVideoId'] = null;
     }
     if (this.localDateTime != null) {
       json[r'localDateTime'] = this.localDateTime!.toUtc().toIso8601String();
     } else {
-    //  json[r'localDateTime'] = null;
+      //  json[r'localDateTime'] = null;
     }
-      json[r'originalFileName'] = this.originalFileName;
-      json[r'ownerId'] = this.ownerId;
+    json[r'originalFileName'] = this.originalFileName;
+    json[r'ownerId'] = this.ownerId;
     if (this.stackId != null) {
       json[r'stackId'] = this.stackId;
     } else {
-    //  json[r'stackId'] = null;
+      //  json[r'stackId'] = null;
     }
     if (this.thumbhash != null) {
       json[r'thumbhash'] = this.thumbhash;
     } else {
-    //  json[r'thumbhash'] = null;
+      //  json[r'thumbhash'] = null;
     }
-      json[r'type'] = this.type;
-      json[r'visibility'] = this.visibility;
+    json[r'type'] = this.type;
+    json[r'visibility'] = this.visibility;
     return json;
   }
 
@@ -181,7 +184,10 @@ class SyncAssetV1 {
     return null;
   }
 
-  static List<SyncAssetV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncAssetV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncAssetV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -209,13 +215,19 @@ class SyncAssetV1 {
   }
 
   // maps a json object with a list of SyncAssetV1-objects as value to a dart map
-  static Map<String, List<SyncAssetV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncAssetV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncAssetV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncAssetV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncAssetV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -240,4 +252,3 @@ class SyncAssetV1 {
     'visibility',
   };
 }
-

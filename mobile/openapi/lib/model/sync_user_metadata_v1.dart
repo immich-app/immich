@@ -25,26 +25,23 @@ class SyncUserMetadataV1 {
   Object value;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncUserMetadataV1 &&
-    other.key == key &&
-    other.userId == userId &&
-    other.value == value;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncUserMetadataV1 && other.key == key && other.userId == userId && other.value == value;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (key.hashCode) +
-    (userId.hashCode) +
-    (value.hashCode);
+      // ignore: unnecessary_parenthesis
+      (key.hashCode) + (userId.hashCode) + (value.hashCode);
 
   @override
   String toString() => 'SyncUserMetadataV1[key=$key, userId=$userId, value=$value]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'key'] = this.key;
-      json[r'userId'] = this.userId;
-      json[r'value'] = this.value;
+    json[r'key'] = this.key;
+    json[r'userId'] = this.userId;
+    json[r'value'] = this.value;
     return json;
   }
 
@@ -65,7 +62,10 @@ class SyncUserMetadataV1 {
     return null;
   }
 
-  static List<SyncUserMetadataV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncUserMetadataV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncUserMetadataV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -93,13 +93,19 @@ class SyncUserMetadataV1 {
   }
 
   // maps a json object with a list of SyncUserMetadataV1-objects as value to a dart map
-  static Map<String, List<SyncUserMetadataV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncUserMetadataV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncUserMetadataV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncUserMetadataV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncUserMetadataV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +118,3 @@ class SyncUserMetadataV1 {
     'value',
   };
 }
-

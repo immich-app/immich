@@ -74,79 +74,82 @@ class UserAdminUpdateDto {
   String? storageLabel;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is UserAdminUpdateDto &&
-    other.avatarColor == avatarColor &&
-    other.email == email &&
-    other.isAdmin == isAdmin &&
-    other.name == name &&
-    other.password == password &&
-    other.pinCode == pinCode &&
-    other.quotaSizeInBytes == quotaSizeInBytes &&
-    other.shouldChangePassword == shouldChangePassword &&
-    other.storageLabel == storageLabel;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserAdminUpdateDto &&
+          other.avatarColor == avatarColor &&
+          other.email == email &&
+          other.isAdmin == isAdmin &&
+          other.name == name &&
+          other.password == password &&
+          other.pinCode == pinCode &&
+          other.quotaSizeInBytes == quotaSizeInBytes &&
+          other.shouldChangePassword == shouldChangePassword &&
+          other.storageLabel == storageLabel;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (avatarColor == null ? 0 : avatarColor!.hashCode) +
-    (email == null ? 0 : email!.hashCode) +
-    (isAdmin == null ? 0 : isAdmin!.hashCode) +
-    (name == null ? 0 : name!.hashCode) +
-    (password == null ? 0 : password!.hashCode) +
-    (pinCode == null ? 0 : pinCode!.hashCode) +
-    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
-    (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
-    (storageLabel == null ? 0 : storageLabel!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (avatarColor == null ? 0 : avatarColor!.hashCode) +
+      (email == null ? 0 : email!.hashCode) +
+      (isAdmin == null ? 0 : isAdmin!.hashCode) +
+      (name == null ? 0 : name!.hashCode) +
+      (password == null ? 0 : password!.hashCode) +
+      (pinCode == null ? 0 : pinCode!.hashCode) +
+      (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
+      (shouldChangePassword == null ? 0 : shouldChangePassword!.hashCode) +
+      (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UserAdminUpdateDto[avatarColor=$avatarColor, email=$email, isAdmin=$isAdmin, name=$name, password=$password, pinCode=$pinCode, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() =>
+      'UserAdminUpdateDto[avatarColor=$avatarColor, email=$email, isAdmin=$isAdmin, name=$name, password=$password, pinCode=$pinCode, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.avatarColor != null) {
       json[r'avatarColor'] = this.avatarColor;
     } else {
-    //  json[r'avatarColor'] = null;
+      //  json[r'avatarColor'] = null;
     }
     if (this.email != null) {
       json[r'email'] = this.email;
     } else {
-    //  json[r'email'] = null;
+      //  json[r'email'] = null;
     }
     if (this.isAdmin != null) {
       json[r'isAdmin'] = this.isAdmin;
     } else {
-    //  json[r'isAdmin'] = null;
+      //  json[r'isAdmin'] = null;
     }
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
-    //  json[r'name'] = null;
+      //  json[r'name'] = null;
     }
     if (this.password != null) {
       json[r'password'] = this.password;
     } else {
-    //  json[r'password'] = null;
+      //  json[r'password'] = null;
     }
     if (this.pinCode != null) {
       json[r'pinCode'] = this.pinCode;
     } else {
-    //  json[r'pinCode'] = null;
+      //  json[r'pinCode'] = null;
     }
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
-    //  json[r'quotaSizeInBytes'] = null;
+      //  json[r'quotaSizeInBytes'] = null;
     }
     if (this.shouldChangePassword != null) {
       json[r'shouldChangePassword'] = this.shouldChangePassword;
     } else {
-    //  json[r'shouldChangePassword'] = null;
+      //  json[r'shouldChangePassword'] = null;
     }
     if (this.storageLabel != null) {
       json[r'storageLabel'] = this.storageLabel;
     } else {
-    //  json[r'storageLabel'] = null;
+      //  json[r'storageLabel'] = null;
     }
     return json;
   }
@@ -174,7 +177,10 @@ class UserAdminUpdateDto {
     return null;
   }
 
-  static List<UserAdminUpdateDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<UserAdminUpdateDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <UserAdminUpdateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -202,20 +208,24 @@ class UserAdminUpdateDto {
   }
 
   // maps a json object with a list of UserAdminUpdateDto-objects as value to a dart map
-  static Map<String, List<UserAdminUpdateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<UserAdminUpdateDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<UserAdminUpdateDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = UserAdminUpdateDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = UserAdminUpdateDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
   }
 
   /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  static const requiredKeys = <String>{};
 }
-

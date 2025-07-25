@@ -67,64 +67,67 @@ class SharedLinkCreateDto {
   SharedLinkType type;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SharedLinkCreateDto &&
-    other.albumId == albumId &&
-    other.allowDownload == allowDownload &&
-    other.allowUpload == allowUpload &&
-    _deepEquality.equals(other.assetIds, assetIds) &&
-    other.description == description &&
-    other.expiresAt == expiresAt &&
-    other.password == password &&
-    other.showMetadata == showMetadata &&
-    other.type == type;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SharedLinkCreateDto &&
+          other.albumId == albumId &&
+          other.allowDownload == allowDownload &&
+          other.allowUpload == allowUpload &&
+          _deepEquality.equals(other.assetIds, assetIds) &&
+          other.description == description &&
+          other.expiresAt == expiresAt &&
+          other.password == password &&
+          other.showMetadata == showMetadata &&
+          other.type == type;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumId == null ? 0 : albumId!.hashCode) +
-    (allowDownload.hashCode) +
-    (allowUpload == null ? 0 : allowUpload!.hashCode) +
-    (assetIds.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (expiresAt == null ? 0 : expiresAt!.hashCode) +
-    (password == null ? 0 : password!.hashCode) +
-    (showMetadata.hashCode) +
-    (type.hashCode);
+      // ignore: unnecessary_parenthesis
+      (albumId == null ? 0 : albumId!.hashCode) +
+      (allowDownload.hashCode) +
+      (allowUpload == null ? 0 : allowUpload!.hashCode) +
+      (assetIds.hashCode) +
+      (description == null ? 0 : description!.hashCode) +
+      (expiresAt == null ? 0 : expiresAt!.hashCode) +
+      (password == null ? 0 : password!.hashCode) +
+      (showMetadata.hashCode) +
+      (type.hashCode);
 
   @override
-  String toString() => 'SharedLinkCreateDto[albumId=$albumId, allowDownload=$allowDownload, allowUpload=$allowUpload, assetIds=$assetIds, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, type=$type]';
+  String toString() =>
+      'SharedLinkCreateDto[albumId=$albumId, allowDownload=$allowDownload, allowUpload=$allowUpload, assetIds=$assetIds, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.albumId != null) {
       json[r'albumId'] = this.albumId;
     } else {
-    //  json[r'albumId'] = null;
+      //  json[r'albumId'] = null;
     }
-      json[r'allowDownload'] = this.allowDownload;
+    json[r'allowDownload'] = this.allowDownload;
     if (this.allowUpload != null) {
       json[r'allowUpload'] = this.allowUpload;
     } else {
-    //  json[r'allowUpload'] = null;
+      //  json[r'allowUpload'] = null;
     }
-      json[r'assetIds'] = this.assetIds;
+    json[r'assetIds'] = this.assetIds;
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
-    //  json[r'description'] = null;
+      //  json[r'description'] = null;
     }
     if (this.expiresAt != null) {
       json[r'expiresAt'] = this.expiresAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'expiresAt'] = null;
+      //  json[r'expiresAt'] = null;
     }
     if (this.password != null) {
       json[r'password'] = this.password;
     } else {
-    //  json[r'password'] = null;
+      //  json[r'password'] = null;
     }
-      json[r'showMetadata'] = this.showMetadata;
-      json[r'type'] = this.type;
+    json[r'showMetadata'] = this.showMetadata;
+    json[r'type'] = this.type;
     return json;
   }
 
@@ -153,7 +156,10 @@ class SharedLinkCreateDto {
     return null;
   }
 
-  static List<SharedLinkCreateDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SharedLinkCreateDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SharedLinkCreateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -181,13 +187,19 @@ class SharedLinkCreateDto {
   }
 
   // maps a json object with a list of SharedLinkCreateDto-objects as value to a dart map
-  static Map<String, List<SharedLinkCreateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SharedLinkCreateDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SharedLinkCreateDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SharedLinkCreateDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SharedLinkCreateDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -198,4 +210,3 @@ class SharedLinkCreateDto {
     'type',
   };
 }
-

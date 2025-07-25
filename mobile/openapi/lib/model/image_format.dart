@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class ImageFormat {
   /// Instantiate a new enum with the provided [value].
   const ImageFormat._(this.value);
@@ -34,7 +33,10 @@ class ImageFormat {
 
   static ImageFormat? fromJson(dynamic value) => ImageFormatTypeTransformer().decode(value);
 
-  static List<ImageFormat> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ImageFormat> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <ImageFormat>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -68,8 +70,10 @@ class ImageFormatTypeTransformer {
   ImageFormat? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'jpeg': return ImageFormat.jpeg;
-        case r'webp': return ImageFormat.webp;
+        case r'jpeg':
+          return ImageFormat.jpeg;
+        case r'webp':
+          return ImageFormat.webp;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -82,4 +86,3 @@ class ImageFormatTypeTransformer {
   /// Singleton [ImageFormatTypeTransformer] instance.
   static ImageFormatTypeTransformer? _instance;
 }
-

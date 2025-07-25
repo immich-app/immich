@@ -43,48 +43,51 @@ class SyncAlbumV1 {
   DateTime updatedAt;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAlbumV1 &&
-    other.createdAt == createdAt &&
-    other.description == description &&
-    other.id == id &&
-    other.isActivityEnabled == isActivityEnabled &&
-    other.name == name &&
-    other.order == order &&
-    other.ownerId == ownerId &&
-    other.thumbnailAssetId == thumbnailAssetId &&
-    other.updatedAt == updatedAt;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncAlbumV1 &&
+          other.createdAt == createdAt &&
+          other.description == description &&
+          other.id == id &&
+          other.isActivityEnabled == isActivityEnabled &&
+          other.name == name &&
+          other.order == order &&
+          other.ownerId == ownerId &&
+          other.thumbnailAssetId == thumbnailAssetId &&
+          other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (createdAt.hashCode) +
-    (description.hashCode) +
-    (id.hashCode) +
-    (isActivityEnabled.hashCode) +
-    (name.hashCode) +
-    (order.hashCode) +
-    (ownerId.hashCode) +
-    (thumbnailAssetId == null ? 0 : thumbnailAssetId!.hashCode) +
-    (updatedAt.hashCode);
+      // ignore: unnecessary_parenthesis
+      (createdAt.hashCode) +
+      (description.hashCode) +
+      (id.hashCode) +
+      (isActivityEnabled.hashCode) +
+      (name.hashCode) +
+      (order.hashCode) +
+      (ownerId.hashCode) +
+      (thumbnailAssetId == null ? 0 : thumbnailAssetId!.hashCode) +
+      (updatedAt.hashCode);
 
   @override
-  String toString() => 'SyncAlbumV1[createdAt=$createdAt, description=$description, id=$id, isActivityEnabled=$isActivityEnabled, name=$name, order=$order, ownerId=$ownerId, thumbnailAssetId=$thumbnailAssetId, updatedAt=$updatedAt]';
+  String toString() =>
+      'SyncAlbumV1[createdAt=$createdAt, description=$description, id=$id, isActivityEnabled=$isActivityEnabled, name=$name, order=$order, ownerId=$ownerId, thumbnailAssetId=$thumbnailAssetId, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-      json[r'description'] = this.description;
-      json[r'id'] = this.id;
-      json[r'isActivityEnabled'] = this.isActivityEnabled;
-      json[r'name'] = this.name;
-      json[r'order'] = this.order;
-      json[r'ownerId'] = this.ownerId;
+    json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+    json[r'description'] = this.description;
+    json[r'id'] = this.id;
+    json[r'isActivityEnabled'] = this.isActivityEnabled;
+    json[r'name'] = this.name;
+    json[r'order'] = this.order;
+    json[r'ownerId'] = this.ownerId;
     if (this.thumbnailAssetId != null) {
       json[r'thumbnailAssetId'] = this.thumbnailAssetId;
     } else {
-    //  json[r'thumbnailAssetId'] = null;
+      //  json[r'thumbnailAssetId'] = null;
     }
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+    json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -111,7 +114,10 @@ class SyncAlbumV1 {
     return null;
   }
 
-  static List<SyncAlbumV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncAlbumV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncAlbumV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -139,13 +145,19 @@ class SyncAlbumV1 {
   }
 
   // maps a json object with a list of SyncAlbumV1-objects as value to a dart map
-  static Map<String, List<SyncAlbumV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncAlbumV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncAlbumV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncAlbumV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncAlbumV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -164,4 +176,3 @@ class SyncAlbumV1 {
     'updatedAt',
   };
 }
-

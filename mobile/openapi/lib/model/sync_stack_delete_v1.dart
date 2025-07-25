@@ -19,20 +19,19 @@ class SyncStackDeleteV1 {
   String stackId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncStackDeleteV1 &&
-    other.stackId == stackId;
+  bool operator ==(Object other) => identical(this, other) || other is SyncStackDeleteV1 && other.stackId == stackId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (stackId.hashCode);
+      // ignore: unnecessary_parenthesis
+      (stackId.hashCode);
 
   @override
   String toString() => 'SyncStackDeleteV1[stackId=$stackId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'stackId'] = this.stackId;
+    json[r'stackId'] = this.stackId;
     return json;
   }
 
@@ -51,7 +50,10 @@ class SyncStackDeleteV1 {
     return null;
   }
 
-  static List<SyncStackDeleteV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncStackDeleteV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncStackDeleteV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +81,19 @@ class SyncStackDeleteV1 {
   }
 
   // maps a json object with a list of SyncStackDeleteV1-objects as value to a dart map
-  static Map<String, List<SyncStackDeleteV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncStackDeleteV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncStackDeleteV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncStackDeleteV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncStackDeleteV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +104,3 @@ class SyncStackDeleteV1 {
     'stackId',
   };
 }
-

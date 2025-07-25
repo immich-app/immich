@@ -31,32 +31,31 @@ class SyncStackV1 {
   DateTime updatedAt;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncStackV1 &&
-    other.createdAt == createdAt &&
-    other.id == id &&
-    other.ownerId == ownerId &&
-    other.primaryAssetId == primaryAssetId &&
-    other.updatedAt == updatedAt;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncStackV1 &&
+          other.createdAt == createdAt &&
+          other.id == id &&
+          other.ownerId == ownerId &&
+          other.primaryAssetId == primaryAssetId &&
+          other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (createdAt.hashCode) +
-    (id.hashCode) +
-    (ownerId.hashCode) +
-    (primaryAssetId.hashCode) +
-    (updatedAt.hashCode);
+      // ignore: unnecessary_parenthesis
+      (createdAt.hashCode) + (id.hashCode) + (ownerId.hashCode) + (primaryAssetId.hashCode) + (updatedAt.hashCode);
 
   @override
-  String toString() => 'SyncStackV1[createdAt=$createdAt, id=$id, ownerId=$ownerId, primaryAssetId=$primaryAssetId, updatedAt=$updatedAt]';
+  String toString() =>
+      'SyncStackV1[createdAt=$createdAt, id=$id, ownerId=$ownerId, primaryAssetId=$primaryAssetId, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-      json[r'id'] = this.id;
-      json[r'ownerId'] = this.ownerId;
-      json[r'primaryAssetId'] = this.primaryAssetId;
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+    json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+    json[r'id'] = this.id;
+    json[r'ownerId'] = this.ownerId;
+    json[r'primaryAssetId'] = this.primaryAssetId;
+    json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -79,7 +78,10 @@ class SyncStackV1 {
     return null;
   }
 
-  static List<SyncStackV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncStackV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncStackV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -107,13 +109,19 @@ class SyncStackV1 {
   }
 
   // maps a json object with a list of SyncStackV1-objects as value to a dart map
-  static Map<String, List<SyncStackV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncStackV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncStackV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncStackV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncStackV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -128,4 +136,3 @@ class SyncStackV1 {
     'updatedAt',
   };
 }
-

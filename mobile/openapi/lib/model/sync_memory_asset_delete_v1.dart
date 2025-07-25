@@ -22,23 +22,22 @@ class SyncMemoryAssetDeleteV1 {
   String memoryId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncMemoryAssetDeleteV1 &&
-    other.assetId == assetId &&
-    other.memoryId == memoryId;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncMemoryAssetDeleteV1 && other.assetId == assetId && other.memoryId == memoryId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetId.hashCode) +
-    (memoryId.hashCode);
+      // ignore: unnecessary_parenthesis
+      (assetId.hashCode) + (memoryId.hashCode);
 
   @override
   String toString() => 'SyncMemoryAssetDeleteV1[assetId=$assetId, memoryId=$memoryId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetId'] = this.assetId;
-      json[r'memoryId'] = this.memoryId;
+    json[r'assetId'] = this.assetId;
+    json[r'memoryId'] = this.memoryId;
     return json;
   }
 
@@ -58,7 +57,10 @@ class SyncMemoryAssetDeleteV1 {
     return null;
   }
 
-  static List<SyncMemoryAssetDeleteV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncMemoryAssetDeleteV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncMemoryAssetDeleteV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +88,19 @@ class SyncMemoryAssetDeleteV1 {
   }
 
   // maps a json object with a list of SyncMemoryAssetDeleteV1-objects as value to a dart map
-  static Map<String, List<SyncMemoryAssetDeleteV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncMemoryAssetDeleteV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncMemoryAssetDeleteV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncMemoryAssetDeleteV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncMemoryAssetDeleteV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +112,3 @@ class SyncMemoryAssetDeleteV1 {
     'memoryId',
   };
 }
-

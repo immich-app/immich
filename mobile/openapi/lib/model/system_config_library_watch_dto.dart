@@ -19,20 +19,20 @@ class SystemConfigLibraryWatchDto {
   bool enabled;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigLibraryWatchDto &&
-    other.enabled == enabled;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SystemConfigLibraryWatchDto && other.enabled == enabled;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (enabled.hashCode);
+      // ignore: unnecessary_parenthesis
+      (enabled.hashCode);
 
   @override
   String toString() => 'SystemConfigLibraryWatchDto[enabled=$enabled]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'enabled'] = this.enabled;
+    json[r'enabled'] = this.enabled;
     return json;
   }
 
@@ -51,7 +51,10 @@ class SystemConfigLibraryWatchDto {
     return null;
   }
 
-  static List<SystemConfigLibraryWatchDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigLibraryWatchDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigLibraryWatchDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +82,19 @@ class SystemConfigLibraryWatchDto {
   }
 
   // maps a json object with a list of SystemConfigLibraryWatchDto-objects as value to a dart map
-  static Map<String, List<SystemConfigLibraryWatchDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigLibraryWatchDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigLibraryWatchDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigLibraryWatchDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigLibraryWatchDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +105,3 @@ class SystemConfigLibraryWatchDto {
     'enabled',
   };
 }
-

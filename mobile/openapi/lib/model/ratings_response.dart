@@ -19,20 +19,19 @@ class RatingsResponse {
   bool enabled;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is RatingsResponse &&
-    other.enabled == enabled;
+  bool operator ==(Object other) => identical(this, other) || other is RatingsResponse && other.enabled == enabled;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (enabled.hashCode);
+      // ignore: unnecessary_parenthesis
+      (enabled.hashCode);
 
   @override
   String toString() => 'RatingsResponse[enabled=$enabled]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'enabled'] = this.enabled;
+    json[r'enabled'] = this.enabled;
     return json;
   }
 
@@ -51,7 +50,10 @@ class RatingsResponse {
     return null;
   }
 
-  static List<RatingsResponse> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<RatingsResponse> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <RatingsResponse>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +81,19 @@ class RatingsResponse {
   }
 
   // maps a json object with a list of RatingsResponse-objects as value to a dart map
-  static Map<String, List<RatingsResponse>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<RatingsResponse>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<RatingsResponse>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = RatingsResponse.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = RatingsResponse.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +104,3 @@ class RatingsResponse {
     'enabled',
   };
 }
-

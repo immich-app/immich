@@ -7,8 +7,7 @@ void main() async {
   await ImmichTestHelper.initialize();
 
   group("Login input validation test", () {
-    immichWidgetTest("Test leading/trailing whitespace",
-        (tester, helper) async {
+    immichWidgetTest("Test leading/trailing whitespace", (tester, helper) async {
       await helper.loginHelper.waitForLoginScreen();
       await helper.loginHelper.acknowledgeNewServerVersion();
 

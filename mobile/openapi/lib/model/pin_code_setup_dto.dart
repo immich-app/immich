@@ -19,20 +19,19 @@ class PinCodeSetupDto {
   String pinCode;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is PinCodeSetupDto &&
-    other.pinCode == pinCode;
+  bool operator ==(Object other) => identical(this, other) || other is PinCodeSetupDto && other.pinCode == pinCode;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (pinCode.hashCode);
+      // ignore: unnecessary_parenthesis
+      (pinCode.hashCode);
 
   @override
   String toString() => 'PinCodeSetupDto[pinCode=$pinCode]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'pinCode'] = this.pinCode;
+    json[r'pinCode'] = this.pinCode;
     return json;
   }
 
@@ -51,7 +50,10 @@ class PinCodeSetupDto {
     return null;
   }
 
-  static List<PinCodeSetupDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<PinCodeSetupDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <PinCodeSetupDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +81,19 @@ class PinCodeSetupDto {
   }
 
   // maps a json object with a list of PinCodeSetupDto-objects as value to a dart map
-  static Map<String, List<PinCodeSetupDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<PinCodeSetupDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<PinCodeSetupDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = PinCodeSetupDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = PinCodeSetupDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +104,3 @@ class PinCodeSetupDto {
     'pinCode',
   };
 }
-

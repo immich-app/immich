@@ -79,80 +79,83 @@ class SystemConfigDto {
   SystemConfigUserDto user;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
-    other.backup == backup &&
-    other.ffmpeg == ffmpeg &&
-    other.image == image &&
-    other.job == job &&
-    other.library_ == library_ &&
-    other.logging == logging &&
-    other.machineLearning == machineLearning &&
-    other.map == map &&
-    other.metadata == metadata &&
-    other.newVersionCheck == newVersionCheck &&
-    other.nightlyTasks == nightlyTasks &&
-    other.notifications == notifications &&
-    other.oauth == oauth &&
-    other.passwordLogin == passwordLogin &&
-    other.reverseGeocoding == reverseGeocoding &&
-    other.server == server &&
-    other.storageTemplate == storageTemplate &&
-    other.templates == templates &&
-    other.theme == theme &&
-    other.trash == trash &&
-    other.user == user;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SystemConfigDto &&
+          other.backup == backup &&
+          other.ffmpeg == ffmpeg &&
+          other.image == image &&
+          other.job == job &&
+          other.library_ == library_ &&
+          other.logging == logging &&
+          other.machineLearning == machineLearning &&
+          other.map == map &&
+          other.metadata == metadata &&
+          other.newVersionCheck == newVersionCheck &&
+          other.nightlyTasks == nightlyTasks &&
+          other.notifications == notifications &&
+          other.oauth == oauth &&
+          other.passwordLogin == passwordLogin &&
+          other.reverseGeocoding == reverseGeocoding &&
+          other.server == server &&
+          other.storageTemplate == storageTemplate &&
+          other.templates == templates &&
+          other.theme == theme &&
+          other.trash == trash &&
+          other.user == user;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (backup.hashCode) +
-    (ffmpeg.hashCode) +
-    (image.hashCode) +
-    (job.hashCode) +
-    (library_.hashCode) +
-    (logging.hashCode) +
-    (machineLearning.hashCode) +
-    (map.hashCode) +
-    (metadata.hashCode) +
-    (newVersionCheck.hashCode) +
-    (nightlyTasks.hashCode) +
-    (notifications.hashCode) +
-    (oauth.hashCode) +
-    (passwordLogin.hashCode) +
-    (reverseGeocoding.hashCode) +
-    (server.hashCode) +
-    (storageTemplate.hashCode) +
-    (templates.hashCode) +
-    (theme.hashCode) +
-    (trash.hashCode) +
-    (user.hashCode);
+      // ignore: unnecessary_parenthesis
+      (backup.hashCode) +
+      (ffmpeg.hashCode) +
+      (image.hashCode) +
+      (job.hashCode) +
+      (library_.hashCode) +
+      (logging.hashCode) +
+      (machineLearning.hashCode) +
+      (map.hashCode) +
+      (metadata.hashCode) +
+      (newVersionCheck.hashCode) +
+      (nightlyTasks.hashCode) +
+      (notifications.hashCode) +
+      (oauth.hashCode) +
+      (passwordLogin.hashCode) +
+      (reverseGeocoding.hashCode) +
+      (server.hashCode) +
+      (storageTemplate.hashCode) +
+      (templates.hashCode) +
+      (theme.hashCode) +
+      (trash.hashCode) +
+      (user.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[backup=$backup, ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, nightlyTasks=$nightlyTasks, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user]';
+  String toString() =>
+      'SystemConfigDto[backup=$backup, ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, nightlyTasks=$nightlyTasks, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'backup'] = this.backup;
-      json[r'ffmpeg'] = this.ffmpeg;
-      json[r'image'] = this.image;
-      json[r'job'] = this.job;
-      json[r'library'] = this.library_;
-      json[r'logging'] = this.logging;
-      json[r'machineLearning'] = this.machineLearning;
-      json[r'map'] = this.map;
-      json[r'metadata'] = this.metadata;
-      json[r'newVersionCheck'] = this.newVersionCheck;
-      json[r'nightlyTasks'] = this.nightlyTasks;
-      json[r'notifications'] = this.notifications;
-      json[r'oauth'] = this.oauth;
-      json[r'passwordLogin'] = this.passwordLogin;
-      json[r'reverseGeocoding'] = this.reverseGeocoding;
-      json[r'server'] = this.server;
-      json[r'storageTemplate'] = this.storageTemplate;
-      json[r'templates'] = this.templates;
-      json[r'theme'] = this.theme;
-      json[r'trash'] = this.trash;
-      json[r'user'] = this.user;
+    json[r'backup'] = this.backup;
+    json[r'ffmpeg'] = this.ffmpeg;
+    json[r'image'] = this.image;
+    json[r'job'] = this.job;
+    json[r'library'] = this.library_;
+    json[r'logging'] = this.logging;
+    json[r'machineLearning'] = this.machineLearning;
+    json[r'map'] = this.map;
+    json[r'metadata'] = this.metadata;
+    json[r'newVersionCheck'] = this.newVersionCheck;
+    json[r'nightlyTasks'] = this.nightlyTasks;
+    json[r'notifications'] = this.notifications;
+    json[r'oauth'] = this.oauth;
+    json[r'passwordLogin'] = this.passwordLogin;
+    json[r'reverseGeocoding'] = this.reverseGeocoding;
+    json[r'server'] = this.server;
+    json[r'storageTemplate'] = this.storageTemplate;
+    json[r'templates'] = this.templates;
+    json[r'theme'] = this.theme;
+    json[r'trash'] = this.trash;
+    json[r'user'] = this.user;
     return json;
   }
 
@@ -191,7 +194,10 @@ class SystemConfigDto {
     return null;
   }
 
-  static List<SystemConfigDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -219,13 +225,19 @@ class SystemConfigDto {
   }
 
   // maps a json object with a list of SystemConfigDto-objects as value to a dart map
-  static Map<String, List<SystemConfigDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -256,4 +268,3 @@ class SystemConfigDto {
     'user',
   };
 }
-

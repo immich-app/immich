@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class AssetOrder {
   /// Instantiate a new enum with the provided [value].
   const AssetOrder._(this.value);
@@ -34,7 +33,10 @@ class AssetOrder {
 
   static AssetOrder? fromJson(dynamic value) => AssetOrderTypeTransformer().decode(value);
 
-  static List<AssetOrder> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetOrder> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetOrder>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -68,8 +70,10 @@ class AssetOrderTypeTransformer {
   AssetOrder? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'asc': return AssetOrder.asc;
-        case r'desc': return AssetOrder.desc;
+        case r'asc':
+          return AssetOrder.asc;
+        case r'desc':
+          return AssetOrder.desc;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -82,4 +86,3 @@ class AssetOrderTypeTransformer {
   /// Singleton [AssetOrderTypeTransformer] instance.
   static AssetOrderTypeTransformer? _instance;
 }
-

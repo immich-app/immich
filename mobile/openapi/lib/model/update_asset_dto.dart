@@ -84,72 +84,75 @@ class UpdateAssetDto {
   AssetVisibility? visibility;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is UpdateAssetDto &&
-    other.dateTimeOriginal == dateTimeOriginal &&
-    other.description == description &&
-    other.isFavorite == isFavorite &&
-    other.latitude == latitude &&
-    other.livePhotoVideoId == livePhotoVideoId &&
-    other.longitude == longitude &&
-    other.rating == rating &&
-    other.visibility == visibility;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UpdateAssetDto &&
+          other.dateTimeOriginal == dateTimeOriginal &&
+          other.description == description &&
+          other.isFavorite == isFavorite &&
+          other.latitude == latitude &&
+          other.livePhotoVideoId == livePhotoVideoId &&
+          other.longitude == longitude &&
+          other.rating == rating &&
+          other.visibility == visibility;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode) +
-    (latitude == null ? 0 : latitude!.hashCode) +
-    (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
-    (longitude == null ? 0 : longitude!.hashCode) +
-    (rating == null ? 0 : rating!.hashCode) +
-    (visibility == null ? 0 : visibility!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (dateTimeOriginal == null ? 0 : dateTimeOriginal!.hashCode) +
+      (description == null ? 0 : description!.hashCode) +
+      (isFavorite == null ? 0 : isFavorite!.hashCode) +
+      (latitude == null ? 0 : latitude!.hashCode) +
+      (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
+      (longitude == null ? 0 : longitude!.hashCode) +
+      (rating == null ? 0 : rating!.hashCode) +
+      (visibility == null ? 0 : visibility!.hashCode);
 
   @override
-  String toString() => 'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isFavorite=$isFavorite, latitude=$latitude, livePhotoVideoId=$livePhotoVideoId, longitude=$longitude, rating=$rating, visibility=$visibility]';
+  String toString() =>
+      'UpdateAssetDto[dateTimeOriginal=$dateTimeOriginal, description=$description, isFavorite=$isFavorite, latitude=$latitude, livePhotoVideoId=$livePhotoVideoId, longitude=$longitude, rating=$rating, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.dateTimeOriginal != null) {
       json[r'dateTimeOriginal'] = this.dateTimeOriginal;
     } else {
-    //  json[r'dateTimeOriginal'] = null;
+      //  json[r'dateTimeOriginal'] = null;
     }
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
-    //  json[r'description'] = null;
+      //  json[r'description'] = null;
     }
     if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
     } else {
-    //  json[r'isFavorite'] = null;
+      //  json[r'isFavorite'] = null;
     }
     if (this.latitude != null) {
       json[r'latitude'] = this.latitude;
     } else {
-    //  json[r'latitude'] = null;
+      //  json[r'latitude'] = null;
     }
     if (this.livePhotoVideoId != null) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
-    //  json[r'livePhotoVideoId'] = null;
+      //  json[r'livePhotoVideoId'] = null;
     }
     if (this.longitude != null) {
       json[r'longitude'] = this.longitude;
     } else {
-    //  json[r'longitude'] = null;
+      //  json[r'longitude'] = null;
     }
     if (this.rating != null) {
       json[r'rating'] = this.rating;
     } else {
-    //  json[r'rating'] = null;
+      //  json[r'rating'] = null;
     }
     if (this.visibility != null) {
       json[r'visibility'] = this.visibility;
     } else {
-    //  json[r'visibility'] = null;
+      //  json[r'visibility'] = null;
     }
     return json;
   }
@@ -176,7 +179,10 @@ class UpdateAssetDto {
     return null;
   }
 
-  static List<UpdateAssetDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<UpdateAssetDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <UpdateAssetDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -204,20 +210,24 @@ class UpdateAssetDto {
   }
 
   // maps a json object with a list of UpdateAssetDto-objects as value to a dart map
-  static Map<String, List<UpdateAssetDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<UpdateAssetDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<UpdateAssetDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = UpdateAssetDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = UpdateAssetDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
   }
 
   /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  static const requiredKeys = <String>{};
 }
-

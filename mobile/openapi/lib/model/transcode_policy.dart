@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class TranscodePolicy {
   /// Instantiate a new enum with the provided [value].
   const TranscodePolicy._(this.value);
@@ -40,7 +39,10 @@ class TranscodePolicy {
 
   static TranscodePolicy? fromJson(dynamic value) => TranscodePolicyTypeTransformer().decode(value);
 
-  static List<TranscodePolicy> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<TranscodePolicy> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <TranscodePolicy>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -74,11 +76,16 @@ class TranscodePolicyTypeTransformer {
   TranscodePolicy? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'all': return TranscodePolicy.all;
-        case r'optimal': return TranscodePolicy.optimal;
-        case r'bitrate': return TranscodePolicy.bitrate;
-        case r'required': return TranscodePolicy.required_;
-        case r'disabled': return TranscodePolicy.disabled;
+        case r'all':
+          return TranscodePolicy.all;
+        case r'optimal':
+          return TranscodePolicy.optimal;
+        case r'bitrate':
+          return TranscodePolicy.bitrate;
+        case r'required':
+          return TranscodePolicy.required_;
+        case r'disabled':
+          return TranscodePolicy.disabled;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -91,4 +98,3 @@ class TranscodePolicyTypeTransformer {
   /// Singleton [TranscodePolicyTypeTransformer] instance.
   static TranscodePolicyTypeTransformer? _instance;
 }
-

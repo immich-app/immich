@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class TranscodeHWAccel {
   /// Instantiate a new enum with the provided [value].
   const TranscodeHWAccel._(this.value);
@@ -40,7 +39,10 @@ class TranscodeHWAccel {
 
   static TranscodeHWAccel? fromJson(dynamic value) => TranscodeHWAccelTypeTransformer().decode(value);
 
-  static List<TranscodeHWAccel> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<TranscodeHWAccel> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <TranscodeHWAccel>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -74,11 +76,16 @@ class TranscodeHWAccelTypeTransformer {
   TranscodeHWAccel? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'nvenc': return TranscodeHWAccel.nvenc;
-        case r'qsv': return TranscodeHWAccel.qsv;
-        case r'vaapi': return TranscodeHWAccel.vaapi;
-        case r'rkmpp': return TranscodeHWAccel.rkmpp;
-        case r'disabled': return TranscodeHWAccel.disabled;
+        case r'nvenc':
+          return TranscodeHWAccel.nvenc;
+        case r'qsv':
+          return TranscodeHWAccel.qsv;
+        case r'vaapi':
+          return TranscodeHWAccel.vaapi;
+        case r'rkmpp':
+          return TranscodeHWAccel.rkmpp;
+        case r'disabled':
+          return TranscodeHWAccel.disabled;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -91,4 +98,3 @@ class TranscodeHWAccelTypeTransformer {
   /// Singleton [TranscodeHWAccelTypeTransformer] instance.
   static TranscodeHWAccelTypeTransformer? _instance;
 }
-

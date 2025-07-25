@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class Permission {
   /// Instantiate a new enum with the provided [value].
   const Permission._(this.value);
@@ -198,7 +197,10 @@ class Permission {
 
   static Permission? fromJson(dynamic value) => PermissionTypeTransformer().decode(value);
 
-  static List<Permission> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<Permission> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <Permission>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -232,90 +234,174 @@ class PermissionTypeTransformer {
   Permission? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'all': return Permission.all;
-        case r'activity.create': return Permission.activityPeriodCreate;
-        case r'activity.read': return Permission.activityPeriodRead;
-        case r'activity.update': return Permission.activityPeriodUpdate;
-        case r'activity.delete': return Permission.activityPeriodDelete;
-        case r'activity.statistics': return Permission.activityPeriodStatistics;
-        case r'apiKey.create': return Permission.apiKeyPeriodCreate;
-        case r'apiKey.read': return Permission.apiKeyPeriodRead;
-        case r'apiKey.update': return Permission.apiKeyPeriodUpdate;
-        case r'apiKey.delete': return Permission.apiKeyPeriodDelete;
-        case r'asset.read': return Permission.assetPeriodRead;
-        case r'asset.update': return Permission.assetPeriodUpdate;
-        case r'asset.delete': return Permission.assetPeriodDelete;
-        case r'asset.share': return Permission.assetPeriodShare;
-        case r'asset.view': return Permission.assetPeriodView;
-        case r'asset.download': return Permission.assetPeriodDownload;
-        case r'asset.upload': return Permission.assetPeriodUpload;
-        case r'album.create': return Permission.albumPeriodCreate;
-        case r'album.read': return Permission.albumPeriodRead;
-        case r'album.update': return Permission.albumPeriodUpdate;
-        case r'album.delete': return Permission.albumPeriodDelete;
-        case r'album.statistics': return Permission.albumPeriodStatistics;
-        case r'album.addAsset': return Permission.albumPeriodAddAsset;
-        case r'album.removeAsset': return Permission.albumPeriodRemoveAsset;
-        case r'album.share': return Permission.albumPeriodShare;
-        case r'album.download': return Permission.albumPeriodDownload;
-        case r'authDevice.delete': return Permission.authDevicePeriodDelete;
-        case r'archive.read': return Permission.archivePeriodRead;
-        case r'face.create': return Permission.facePeriodCreate;
-        case r'face.read': return Permission.facePeriodRead;
-        case r'face.update': return Permission.facePeriodUpdate;
-        case r'face.delete': return Permission.facePeriodDelete;
-        case r'library.create': return Permission.libraryPeriodCreate;
-        case r'library.read': return Permission.libraryPeriodRead;
-        case r'library.update': return Permission.libraryPeriodUpdate;
-        case r'library.delete': return Permission.libraryPeriodDelete;
-        case r'library.statistics': return Permission.libraryPeriodStatistics;
-        case r'timeline.read': return Permission.timelinePeriodRead;
-        case r'timeline.download': return Permission.timelinePeriodDownload;
-        case r'memory.create': return Permission.memoryPeriodCreate;
-        case r'memory.read': return Permission.memoryPeriodRead;
-        case r'memory.update': return Permission.memoryPeriodUpdate;
-        case r'memory.delete': return Permission.memoryPeriodDelete;
-        case r'notification.create': return Permission.notificationPeriodCreate;
-        case r'notification.read': return Permission.notificationPeriodRead;
-        case r'notification.update': return Permission.notificationPeriodUpdate;
-        case r'notification.delete': return Permission.notificationPeriodDelete;
-        case r'partner.create': return Permission.partnerPeriodCreate;
-        case r'partner.read': return Permission.partnerPeriodRead;
-        case r'partner.update': return Permission.partnerPeriodUpdate;
-        case r'partner.delete': return Permission.partnerPeriodDelete;
-        case r'person.create': return Permission.personPeriodCreate;
-        case r'person.read': return Permission.personPeriodRead;
-        case r'person.update': return Permission.personPeriodUpdate;
-        case r'person.delete': return Permission.personPeriodDelete;
-        case r'person.statistics': return Permission.personPeriodStatistics;
-        case r'person.merge': return Permission.personPeriodMerge;
-        case r'person.reassign': return Permission.personPeriodReassign;
-        case r'session.create': return Permission.sessionPeriodCreate;
-        case r'session.read': return Permission.sessionPeriodRead;
-        case r'session.update': return Permission.sessionPeriodUpdate;
-        case r'session.delete': return Permission.sessionPeriodDelete;
-        case r'session.lock': return Permission.sessionPeriodLock;
-        case r'sharedLink.create': return Permission.sharedLinkPeriodCreate;
-        case r'sharedLink.read': return Permission.sharedLinkPeriodRead;
-        case r'sharedLink.update': return Permission.sharedLinkPeriodUpdate;
-        case r'sharedLink.delete': return Permission.sharedLinkPeriodDelete;
-        case r'stack.create': return Permission.stackPeriodCreate;
-        case r'stack.read': return Permission.stackPeriodRead;
-        case r'stack.update': return Permission.stackPeriodUpdate;
-        case r'stack.delete': return Permission.stackPeriodDelete;
-        case r'systemConfig.read': return Permission.systemConfigPeriodRead;
-        case r'systemConfig.update': return Permission.systemConfigPeriodUpdate;
-        case r'systemMetadata.read': return Permission.systemMetadataPeriodRead;
-        case r'systemMetadata.update': return Permission.systemMetadataPeriodUpdate;
-        case r'tag.create': return Permission.tagPeriodCreate;
-        case r'tag.read': return Permission.tagPeriodRead;
-        case r'tag.update': return Permission.tagPeriodUpdate;
-        case r'tag.delete': return Permission.tagPeriodDelete;
-        case r'tag.asset': return Permission.tagPeriodAsset;
-        case r'admin.user.create': return Permission.adminPeriodUserPeriodCreate;
-        case r'admin.user.read': return Permission.adminPeriodUserPeriodRead;
-        case r'admin.user.update': return Permission.adminPeriodUserPeriodUpdate;
-        case r'admin.user.delete': return Permission.adminPeriodUserPeriodDelete;
+        case r'all':
+          return Permission.all;
+        case r'activity.create':
+          return Permission.activityPeriodCreate;
+        case r'activity.read':
+          return Permission.activityPeriodRead;
+        case r'activity.update':
+          return Permission.activityPeriodUpdate;
+        case r'activity.delete':
+          return Permission.activityPeriodDelete;
+        case r'activity.statistics':
+          return Permission.activityPeriodStatistics;
+        case r'apiKey.create':
+          return Permission.apiKeyPeriodCreate;
+        case r'apiKey.read':
+          return Permission.apiKeyPeriodRead;
+        case r'apiKey.update':
+          return Permission.apiKeyPeriodUpdate;
+        case r'apiKey.delete':
+          return Permission.apiKeyPeriodDelete;
+        case r'asset.read':
+          return Permission.assetPeriodRead;
+        case r'asset.update':
+          return Permission.assetPeriodUpdate;
+        case r'asset.delete':
+          return Permission.assetPeriodDelete;
+        case r'asset.share':
+          return Permission.assetPeriodShare;
+        case r'asset.view':
+          return Permission.assetPeriodView;
+        case r'asset.download':
+          return Permission.assetPeriodDownload;
+        case r'asset.upload':
+          return Permission.assetPeriodUpload;
+        case r'album.create':
+          return Permission.albumPeriodCreate;
+        case r'album.read':
+          return Permission.albumPeriodRead;
+        case r'album.update':
+          return Permission.albumPeriodUpdate;
+        case r'album.delete':
+          return Permission.albumPeriodDelete;
+        case r'album.statistics':
+          return Permission.albumPeriodStatistics;
+        case r'album.addAsset':
+          return Permission.albumPeriodAddAsset;
+        case r'album.removeAsset':
+          return Permission.albumPeriodRemoveAsset;
+        case r'album.share':
+          return Permission.albumPeriodShare;
+        case r'album.download':
+          return Permission.albumPeriodDownload;
+        case r'authDevice.delete':
+          return Permission.authDevicePeriodDelete;
+        case r'archive.read':
+          return Permission.archivePeriodRead;
+        case r'face.create':
+          return Permission.facePeriodCreate;
+        case r'face.read':
+          return Permission.facePeriodRead;
+        case r'face.update':
+          return Permission.facePeriodUpdate;
+        case r'face.delete':
+          return Permission.facePeriodDelete;
+        case r'library.create':
+          return Permission.libraryPeriodCreate;
+        case r'library.read':
+          return Permission.libraryPeriodRead;
+        case r'library.update':
+          return Permission.libraryPeriodUpdate;
+        case r'library.delete':
+          return Permission.libraryPeriodDelete;
+        case r'library.statistics':
+          return Permission.libraryPeriodStatistics;
+        case r'timeline.read':
+          return Permission.timelinePeriodRead;
+        case r'timeline.download':
+          return Permission.timelinePeriodDownload;
+        case r'memory.create':
+          return Permission.memoryPeriodCreate;
+        case r'memory.read':
+          return Permission.memoryPeriodRead;
+        case r'memory.update':
+          return Permission.memoryPeriodUpdate;
+        case r'memory.delete':
+          return Permission.memoryPeriodDelete;
+        case r'notification.create':
+          return Permission.notificationPeriodCreate;
+        case r'notification.read':
+          return Permission.notificationPeriodRead;
+        case r'notification.update':
+          return Permission.notificationPeriodUpdate;
+        case r'notification.delete':
+          return Permission.notificationPeriodDelete;
+        case r'partner.create':
+          return Permission.partnerPeriodCreate;
+        case r'partner.read':
+          return Permission.partnerPeriodRead;
+        case r'partner.update':
+          return Permission.partnerPeriodUpdate;
+        case r'partner.delete':
+          return Permission.partnerPeriodDelete;
+        case r'person.create':
+          return Permission.personPeriodCreate;
+        case r'person.read':
+          return Permission.personPeriodRead;
+        case r'person.update':
+          return Permission.personPeriodUpdate;
+        case r'person.delete':
+          return Permission.personPeriodDelete;
+        case r'person.statistics':
+          return Permission.personPeriodStatistics;
+        case r'person.merge':
+          return Permission.personPeriodMerge;
+        case r'person.reassign':
+          return Permission.personPeriodReassign;
+        case r'session.create':
+          return Permission.sessionPeriodCreate;
+        case r'session.read':
+          return Permission.sessionPeriodRead;
+        case r'session.update':
+          return Permission.sessionPeriodUpdate;
+        case r'session.delete':
+          return Permission.sessionPeriodDelete;
+        case r'session.lock':
+          return Permission.sessionPeriodLock;
+        case r'sharedLink.create':
+          return Permission.sharedLinkPeriodCreate;
+        case r'sharedLink.read':
+          return Permission.sharedLinkPeriodRead;
+        case r'sharedLink.update':
+          return Permission.sharedLinkPeriodUpdate;
+        case r'sharedLink.delete':
+          return Permission.sharedLinkPeriodDelete;
+        case r'stack.create':
+          return Permission.stackPeriodCreate;
+        case r'stack.read':
+          return Permission.stackPeriodRead;
+        case r'stack.update':
+          return Permission.stackPeriodUpdate;
+        case r'stack.delete':
+          return Permission.stackPeriodDelete;
+        case r'systemConfig.read':
+          return Permission.systemConfigPeriodRead;
+        case r'systemConfig.update':
+          return Permission.systemConfigPeriodUpdate;
+        case r'systemMetadata.read':
+          return Permission.systemMetadataPeriodRead;
+        case r'systemMetadata.update':
+          return Permission.systemMetadataPeriodUpdate;
+        case r'tag.create':
+          return Permission.tagPeriodCreate;
+        case r'tag.read':
+          return Permission.tagPeriodRead;
+        case r'tag.update':
+          return Permission.tagPeriodUpdate;
+        case r'tag.delete':
+          return Permission.tagPeriodDelete;
+        case r'tag.asset':
+          return Permission.tagPeriodAsset;
+        case r'admin.user.create':
+          return Permission.adminPeriodUserPeriodCreate;
+        case r'admin.user.read':
+          return Permission.adminPeriodUserPeriodRead;
+        case r'admin.user.update':
+          return Permission.adminPeriodUserPeriodUpdate;
+        case r'admin.user.delete':
+          return Permission.adminPeriodUserPeriodDelete;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -328,4 +414,3 @@ class PermissionTypeTransformer {
   /// Singleton [PermissionTypeTransformer] instance.
   static PermissionTypeTransformer? _instance;
 }
-

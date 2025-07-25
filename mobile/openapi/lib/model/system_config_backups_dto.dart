@@ -19,20 +19,20 @@ class SystemConfigBackupsDto {
   DatabaseBackupConfig database;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigBackupsDto &&
-    other.database == database;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SystemConfigBackupsDto && other.database == database;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (database.hashCode);
+      // ignore: unnecessary_parenthesis
+      (database.hashCode);
 
   @override
   String toString() => 'SystemConfigBackupsDto[database=$database]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'database'] = this.database;
+    json[r'database'] = this.database;
     return json;
   }
 
@@ -51,7 +51,10 @@ class SystemConfigBackupsDto {
     return null;
   }
 
-  static List<SystemConfigBackupsDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigBackupsDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigBackupsDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +82,19 @@ class SystemConfigBackupsDto {
   }
 
   // maps a json object with a list of SystemConfigBackupsDto-objects as value to a dart map
-  static Map<String, List<SystemConfigBackupsDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigBackupsDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigBackupsDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigBackupsDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigBackupsDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +105,3 @@ class SystemConfigBackupsDto {
     'database',
   };
 }
-

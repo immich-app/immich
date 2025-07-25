@@ -22,15 +22,14 @@ class VersionCheckStateResponseDto {
   String? releaseVersion;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is VersionCheckStateResponseDto &&
-    other.checkedAt == checkedAt &&
-    other.releaseVersion == releaseVersion;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is VersionCheckStateResponseDto && other.checkedAt == checkedAt && other.releaseVersion == releaseVersion;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (checkedAt == null ? 0 : checkedAt!.hashCode) +
-    (releaseVersion == null ? 0 : releaseVersion!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (checkedAt == null ? 0 : checkedAt!.hashCode) + (releaseVersion == null ? 0 : releaseVersion!.hashCode);
 
   @override
   String toString() => 'VersionCheckStateResponseDto[checkedAt=$checkedAt, releaseVersion=$releaseVersion]';
@@ -40,12 +39,12 @@ class VersionCheckStateResponseDto {
     if (this.checkedAt != null) {
       json[r'checkedAt'] = this.checkedAt;
     } else {
-    //  json[r'checkedAt'] = null;
+      //  json[r'checkedAt'] = null;
     }
     if (this.releaseVersion != null) {
       json[r'releaseVersion'] = this.releaseVersion;
     } else {
-    //  json[r'releaseVersion'] = null;
+      //  json[r'releaseVersion'] = null;
     }
     return json;
   }
@@ -66,7 +65,10 @@ class VersionCheckStateResponseDto {
     return null;
   }
 
-  static List<VersionCheckStateResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<VersionCheckStateResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <VersionCheckStateResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -94,13 +96,19 @@ class VersionCheckStateResponseDto {
   }
 
   // maps a json object with a list of VersionCheckStateResponseDto-objects as value to a dart map
-  static Map<String, List<VersionCheckStateResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<VersionCheckStateResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<VersionCheckStateResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = VersionCheckStateResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = VersionCheckStateResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +120,3 @@ class VersionCheckStateResponseDto {
     'releaseVersion',
   };
 }
-

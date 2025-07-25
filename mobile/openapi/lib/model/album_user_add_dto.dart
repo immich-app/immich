@@ -22,23 +22,21 @@ class AlbumUserAddDto {
   String userId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AlbumUserAddDto &&
-    other.role == role &&
-    other.userId == userId;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is AlbumUserAddDto && other.role == role && other.userId == userId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (role.hashCode) +
-    (userId.hashCode);
+      // ignore: unnecessary_parenthesis
+      (role.hashCode) + (userId.hashCode);
 
   @override
   String toString() => 'AlbumUserAddDto[role=$role, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'role'] = this.role;
-      json[r'userId'] = this.userId;
+    json[r'role'] = this.role;
+    json[r'userId'] = this.userId;
     return json;
   }
 
@@ -58,7 +56,10 @@ class AlbumUserAddDto {
     return null;
   }
 
-  static List<AlbumUserAddDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AlbumUserAddDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AlbumUserAddDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +87,19 @@ class AlbumUserAddDto {
   }
 
   // maps a json object with a list of AlbumUserAddDto-objects as value to a dart map
-  static Map<String, List<AlbumUserAddDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AlbumUserAddDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AlbumUserAddDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AlbumUserAddDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AlbumUserAddDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -103,4 +110,3 @@ class AlbumUserAddDto {
     'userId',
   };
 }
-

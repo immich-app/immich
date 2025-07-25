@@ -43,40 +43,43 @@ class PlacesResponseDto {
   String name;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is PlacesResponseDto &&
-    other.admin1name == admin1name &&
-    other.admin2name == admin2name &&
-    other.latitude == latitude &&
-    other.longitude == longitude &&
-    other.name == name;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PlacesResponseDto &&
+          other.admin1name == admin1name &&
+          other.admin2name == admin2name &&
+          other.latitude == latitude &&
+          other.longitude == longitude &&
+          other.name == name;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (admin1name == null ? 0 : admin1name!.hashCode) +
-    (admin2name == null ? 0 : admin2name!.hashCode) +
-    (latitude.hashCode) +
-    (longitude.hashCode) +
-    (name.hashCode);
+      // ignore: unnecessary_parenthesis
+      (admin1name == null ? 0 : admin1name!.hashCode) +
+      (admin2name == null ? 0 : admin2name!.hashCode) +
+      (latitude.hashCode) +
+      (longitude.hashCode) +
+      (name.hashCode);
 
   @override
-  String toString() => 'PlacesResponseDto[admin1name=$admin1name, admin2name=$admin2name, latitude=$latitude, longitude=$longitude, name=$name]';
+  String toString() =>
+      'PlacesResponseDto[admin1name=$admin1name, admin2name=$admin2name, latitude=$latitude, longitude=$longitude, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.admin1name != null) {
       json[r'admin1name'] = this.admin1name;
     } else {
-    //  json[r'admin1name'] = null;
+      //  json[r'admin1name'] = null;
     }
     if (this.admin2name != null) {
       json[r'admin2name'] = this.admin2name;
     } else {
-    //  json[r'admin2name'] = null;
+      //  json[r'admin2name'] = null;
     }
-      json[r'latitude'] = this.latitude;
-      json[r'longitude'] = this.longitude;
-      json[r'name'] = this.name;
+    json[r'latitude'] = this.latitude;
+    json[r'longitude'] = this.longitude;
+    json[r'name'] = this.name;
     return json;
   }
 
@@ -99,7 +102,10 @@ class PlacesResponseDto {
     return null;
   }
 
-  static List<PlacesResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<PlacesResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <PlacesResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -127,13 +133,19 @@ class PlacesResponseDto {
   }
 
   // maps a json object with a list of PlacesResponseDto-objects as value to a dart map
-  static Map<String, List<PlacesResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<PlacesResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<PlacesResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = PlacesResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = PlacesResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -146,4 +158,3 @@ class PlacesResponseDto {
     'name',
   };
 }
-

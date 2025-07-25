@@ -52,69 +52,72 @@ class SyncMemoryV1 {
   DateTime updatedAt;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncMemoryV1 &&
-    other.createdAt == createdAt &&
-    other.data == data &&
-    other.deletedAt == deletedAt &&
-    other.hideAt == hideAt &&
-    other.id == id &&
-    other.isSaved == isSaved &&
-    other.memoryAt == memoryAt &&
-    other.ownerId == ownerId &&
-    other.seenAt == seenAt &&
-    other.showAt == showAt &&
-    other.type == type &&
-    other.updatedAt == updatedAt;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncMemoryV1 &&
+          other.createdAt == createdAt &&
+          other.data == data &&
+          other.deletedAt == deletedAt &&
+          other.hideAt == hideAt &&
+          other.id == id &&
+          other.isSaved == isSaved &&
+          other.memoryAt == memoryAt &&
+          other.ownerId == ownerId &&
+          other.seenAt == seenAt &&
+          other.showAt == showAt &&
+          other.type == type &&
+          other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (createdAt.hashCode) +
-    (data.hashCode) +
-    (deletedAt == null ? 0 : deletedAt!.hashCode) +
-    (hideAt == null ? 0 : hideAt!.hashCode) +
-    (id.hashCode) +
-    (isSaved.hashCode) +
-    (memoryAt.hashCode) +
-    (ownerId.hashCode) +
-    (seenAt == null ? 0 : seenAt!.hashCode) +
-    (showAt == null ? 0 : showAt!.hashCode) +
-    (type.hashCode) +
-    (updatedAt.hashCode);
+      // ignore: unnecessary_parenthesis
+      (createdAt.hashCode) +
+      (data.hashCode) +
+      (deletedAt == null ? 0 : deletedAt!.hashCode) +
+      (hideAt == null ? 0 : hideAt!.hashCode) +
+      (id.hashCode) +
+      (isSaved.hashCode) +
+      (memoryAt.hashCode) +
+      (ownerId.hashCode) +
+      (seenAt == null ? 0 : seenAt!.hashCode) +
+      (showAt == null ? 0 : showAt!.hashCode) +
+      (type.hashCode) +
+      (updatedAt.hashCode);
 
   @override
-  String toString() => 'SyncMemoryV1[createdAt=$createdAt, data=$data, deletedAt=$deletedAt, hideAt=$hideAt, id=$id, isSaved=$isSaved, memoryAt=$memoryAt, ownerId=$ownerId, seenAt=$seenAt, showAt=$showAt, type=$type, updatedAt=$updatedAt]';
+  String toString() =>
+      'SyncMemoryV1[createdAt=$createdAt, data=$data, deletedAt=$deletedAt, hideAt=$hideAt, id=$id, isSaved=$isSaved, memoryAt=$memoryAt, ownerId=$ownerId, seenAt=$seenAt, showAt=$showAt, type=$type, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-      json[r'data'] = this.data;
+    json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+    json[r'data'] = this.data;
     if (this.deletedAt != null) {
       json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'deletedAt'] = null;
+      //  json[r'deletedAt'] = null;
     }
     if (this.hideAt != null) {
       json[r'hideAt'] = this.hideAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'hideAt'] = null;
+      //  json[r'hideAt'] = null;
     }
-      json[r'id'] = this.id;
-      json[r'isSaved'] = this.isSaved;
-      json[r'memoryAt'] = this.memoryAt.toUtc().toIso8601String();
-      json[r'ownerId'] = this.ownerId;
+    json[r'id'] = this.id;
+    json[r'isSaved'] = this.isSaved;
+    json[r'memoryAt'] = this.memoryAt.toUtc().toIso8601String();
+    json[r'ownerId'] = this.ownerId;
     if (this.seenAt != null) {
       json[r'seenAt'] = this.seenAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'seenAt'] = null;
+      //  json[r'seenAt'] = null;
     }
     if (this.showAt != null) {
       json[r'showAt'] = this.showAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'showAt'] = null;
+      //  json[r'showAt'] = null;
     }
-      json[r'type'] = this.type;
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+    json[r'type'] = this.type;
+    json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -144,7 +147,10 @@ class SyncMemoryV1 {
     return null;
   }
 
-  static List<SyncMemoryV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncMemoryV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncMemoryV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -172,13 +178,19 @@ class SyncMemoryV1 {
   }
 
   // maps a json object with a list of SyncMemoryV1-objects as value to a dart map
-  static Map<String, List<SyncMemoryV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncMemoryV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncMemoryV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncMemoryV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncMemoryV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -200,4 +212,3 @@ class SyncMemoryV1 {
     'updatedAt',
   };
 }
-

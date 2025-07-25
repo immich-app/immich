@@ -25,13 +25,13 @@ class StackUpdateDto {
   String? primaryAssetId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is StackUpdateDto &&
-    other.primaryAssetId == primaryAssetId;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is StackUpdateDto && other.primaryAssetId == primaryAssetId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (primaryAssetId == null ? 0 : primaryAssetId!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (primaryAssetId == null ? 0 : primaryAssetId!.hashCode);
 
   @override
   String toString() => 'StackUpdateDto[primaryAssetId=$primaryAssetId]';
@@ -41,7 +41,7 @@ class StackUpdateDto {
     if (this.primaryAssetId != null) {
       json[r'primaryAssetId'] = this.primaryAssetId;
     } else {
-    //  json[r'primaryAssetId'] = null;
+      //  json[r'primaryAssetId'] = null;
     }
     return json;
   }
@@ -61,7 +61,10 @@ class StackUpdateDto {
     return null;
   }
 
-  static List<StackUpdateDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<StackUpdateDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <StackUpdateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -89,20 +92,24 @@ class StackUpdateDto {
   }
 
   // maps a json object with a list of StackUpdateDto-objects as value to a dart map
-  static Map<String, List<StackUpdateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<StackUpdateDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<StackUpdateDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = StackUpdateDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = StackUpdateDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
   }
 
   /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  static const requiredKeys = <String>{};
 }
-

@@ -62,58 +62,61 @@ class PersonUpdateDto {
   String? name;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is PersonUpdateDto &&
-    other.birthDate == birthDate &&
-    other.color == color &&
-    other.featureFaceAssetId == featureFaceAssetId &&
-    other.isFavorite == isFavorite &&
-    other.isHidden == isHidden &&
-    other.name == name;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PersonUpdateDto &&
+          other.birthDate == birthDate &&
+          other.color == color &&
+          other.featureFaceAssetId == featureFaceAssetId &&
+          other.isFavorite == isFavorite &&
+          other.isHidden == isHidden &&
+          other.name == name;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (birthDate == null ? 0 : birthDate!.hashCode) +
-    (color == null ? 0 : color!.hashCode) +
-    (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode) +
-    (isHidden == null ? 0 : isHidden!.hashCode) +
-    (name == null ? 0 : name!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (birthDate == null ? 0 : birthDate!.hashCode) +
+      (color == null ? 0 : color!.hashCode) +
+      (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
+      (isFavorite == null ? 0 : isFavorite!.hashCode) +
+      (isHidden == null ? 0 : isHidden!.hashCode) +
+      (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'PersonUpdateDto[birthDate=$birthDate, color=$color, featureFaceAssetId=$featureFaceAssetId, isFavorite=$isFavorite, isHidden=$isHidden, name=$name]';
+  String toString() =>
+      'PersonUpdateDto[birthDate=$birthDate, color=$color, featureFaceAssetId=$featureFaceAssetId, isFavorite=$isFavorite, isHidden=$isHidden, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.birthDate != null) {
       json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
     } else {
-    //  json[r'birthDate'] = null;
+      //  json[r'birthDate'] = null;
     }
     if (this.color != null) {
       json[r'color'] = this.color;
     } else {
-    //  json[r'color'] = null;
+      //  json[r'color'] = null;
     }
     if (this.featureFaceAssetId != null) {
       json[r'featureFaceAssetId'] = this.featureFaceAssetId;
     } else {
-    //  json[r'featureFaceAssetId'] = null;
+      //  json[r'featureFaceAssetId'] = null;
     }
     if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
     } else {
-    //  json[r'isFavorite'] = null;
+      //  json[r'isFavorite'] = null;
     }
     if (this.isHidden != null) {
       json[r'isHidden'] = this.isHidden;
     } else {
-    //  json[r'isHidden'] = null;
+      //  json[r'isHidden'] = null;
     }
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
-    //  json[r'name'] = null;
+      //  json[r'name'] = null;
     }
     return json;
   }
@@ -138,7 +141,10 @@ class PersonUpdateDto {
     return null;
   }
 
-  static List<PersonUpdateDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<PersonUpdateDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <PersonUpdateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -166,20 +172,24 @@ class PersonUpdateDto {
   }
 
   // maps a json object with a list of PersonUpdateDto-objects as value to a dart map
-  static Map<String, List<PersonUpdateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<PersonUpdateDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<PersonUpdateDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = PersonUpdateDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = PersonUpdateDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
   }
 
   /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  static const requiredKeys = <String>{};
 }
-

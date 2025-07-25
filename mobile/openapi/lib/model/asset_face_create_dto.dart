@@ -40,41 +40,44 @@ class AssetFaceCreateDto {
   int y;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetFaceCreateDto &&
-    other.assetId == assetId &&
-    other.height == height &&
-    other.imageHeight == imageHeight &&
-    other.imageWidth == imageWidth &&
-    other.personId == personId &&
-    other.width == width &&
-    other.x == x &&
-    other.y == y;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AssetFaceCreateDto &&
+          other.assetId == assetId &&
+          other.height == height &&
+          other.imageHeight == imageHeight &&
+          other.imageWidth == imageWidth &&
+          other.personId == personId &&
+          other.width == width &&
+          other.x == x &&
+          other.y == y;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetId.hashCode) +
-    (height.hashCode) +
-    (imageHeight.hashCode) +
-    (imageWidth.hashCode) +
-    (personId.hashCode) +
-    (width.hashCode) +
-    (x.hashCode) +
-    (y.hashCode);
+      // ignore: unnecessary_parenthesis
+      (assetId.hashCode) +
+      (height.hashCode) +
+      (imageHeight.hashCode) +
+      (imageWidth.hashCode) +
+      (personId.hashCode) +
+      (width.hashCode) +
+      (x.hashCode) +
+      (y.hashCode);
 
   @override
-  String toString() => 'AssetFaceCreateDto[assetId=$assetId, height=$height, imageHeight=$imageHeight, imageWidth=$imageWidth, personId=$personId, width=$width, x=$x, y=$y]';
+  String toString() =>
+      'AssetFaceCreateDto[assetId=$assetId, height=$height, imageHeight=$imageHeight, imageWidth=$imageWidth, personId=$personId, width=$width, x=$x, y=$y]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetId'] = this.assetId;
-      json[r'height'] = this.height;
-      json[r'imageHeight'] = this.imageHeight;
-      json[r'imageWidth'] = this.imageWidth;
-      json[r'personId'] = this.personId;
-      json[r'width'] = this.width;
-      json[r'x'] = this.x;
-      json[r'y'] = this.y;
+    json[r'assetId'] = this.assetId;
+    json[r'height'] = this.height;
+    json[r'imageHeight'] = this.imageHeight;
+    json[r'imageWidth'] = this.imageWidth;
+    json[r'personId'] = this.personId;
+    json[r'width'] = this.width;
+    json[r'x'] = this.x;
+    json[r'y'] = this.y;
     return json;
   }
 
@@ -100,7 +103,10 @@ class AssetFaceCreateDto {
     return null;
   }
 
-  static List<AssetFaceCreateDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetFaceCreateDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetFaceCreateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -128,13 +134,19 @@ class AssetFaceCreateDto {
   }
 
   // maps a json object with a list of AssetFaceCreateDto-objects as value to a dart map
-  static Map<String, List<AssetFaceCreateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AssetFaceCreateDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AssetFaceCreateDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetFaceCreateDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetFaceCreateDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -152,4 +164,3 @@ class AssetFaceCreateDto {
     'y',
   };
 }
-

@@ -22,23 +22,24 @@ class TagBulkAssetsDto {
   List<String> tagIds;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is TagBulkAssetsDto &&
-    _deepEquality.equals(other.assetIds, assetIds) &&
-    _deepEquality.equals(other.tagIds, tagIds);
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TagBulkAssetsDto &&
+          _deepEquality.equals(other.assetIds, assetIds) &&
+          _deepEquality.equals(other.tagIds, tagIds);
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetIds.hashCode) +
-    (tagIds.hashCode);
+      // ignore: unnecessary_parenthesis
+      (assetIds.hashCode) + (tagIds.hashCode);
 
   @override
   String toString() => 'TagBulkAssetsDto[assetIds=$assetIds, tagIds=$tagIds]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetIds'] = this.assetIds;
-      json[r'tagIds'] = this.tagIds;
+    json[r'assetIds'] = this.assetIds;
+    json[r'tagIds'] = this.tagIds;
     return json;
   }
 
@@ -62,7 +63,10 @@ class TagBulkAssetsDto {
     return null;
   }
 
-  static List<TagBulkAssetsDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<TagBulkAssetsDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <TagBulkAssetsDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -90,13 +94,19 @@ class TagBulkAssetsDto {
   }
 
   // maps a json object with a list of TagBulkAssetsDto-objects as value to a dart map
-  static Map<String, List<TagBulkAssetsDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<TagBulkAssetsDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<TagBulkAssetsDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = TagBulkAssetsDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = TagBulkAssetsDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -108,4 +118,3 @@ class TagBulkAssetsDto {
     'tagIds',
   };
 }
-

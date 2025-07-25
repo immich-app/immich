@@ -46,17 +46,19 @@ class SessionCreateDto {
   num? duration;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SessionCreateDto &&
-    other.deviceOS == deviceOS &&
-    other.deviceType == deviceType &&
-    other.duration == duration;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SessionCreateDto &&
+          other.deviceOS == deviceOS &&
+          other.deviceType == deviceType &&
+          other.duration == duration;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (deviceOS == null ? 0 : deviceOS!.hashCode) +
-    (deviceType == null ? 0 : deviceType!.hashCode) +
-    (duration == null ? 0 : duration!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (deviceOS == null ? 0 : deviceOS!.hashCode) +
+      (deviceType == null ? 0 : deviceType!.hashCode) +
+      (duration == null ? 0 : duration!.hashCode);
 
   @override
   String toString() => 'SessionCreateDto[deviceOS=$deviceOS, deviceType=$deviceType, duration=$duration]';
@@ -66,17 +68,17 @@ class SessionCreateDto {
     if (this.deviceOS != null) {
       json[r'deviceOS'] = this.deviceOS;
     } else {
-    //  json[r'deviceOS'] = null;
+      //  json[r'deviceOS'] = null;
     }
     if (this.deviceType != null) {
       json[r'deviceType'] = this.deviceType;
     } else {
-    //  json[r'deviceType'] = null;
+      //  json[r'deviceType'] = null;
     }
     if (this.duration != null) {
       json[r'duration'] = this.duration;
     } else {
-    //  json[r'duration'] = null;
+      //  json[r'duration'] = null;
     }
     return json;
   }
@@ -98,7 +100,10 @@ class SessionCreateDto {
     return null;
   }
 
-  static List<SessionCreateDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SessionCreateDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SessionCreateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -126,20 +131,24 @@ class SessionCreateDto {
   }
 
   // maps a json object with a list of SessionCreateDto-objects as value to a dart map
-  static Map<String, List<SessionCreateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SessionCreateDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SessionCreateDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SessionCreateDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SessionCreateDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
   }
 
   /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  static const requiredKeys = <String>{};
 }
-

@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class SourceType {
   /// Instantiate a new enum with the provided [value].
   const SourceType._(this.value);
@@ -36,7 +35,10 @@ class SourceType {
 
   static SourceType? fromJson(dynamic value) => SourceTypeTypeTransformer().decode(value);
 
-  static List<SourceType> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SourceType> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SourceType>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -70,9 +72,12 @@ class SourceTypeTypeTransformer {
   SourceType? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'machine-learning': return SourceType.machineLearning;
-        case r'exif': return SourceType.exif;
-        case r'manual': return SourceType.manual;
+        case r'machine-learning':
+          return SourceType.machineLearning;
+        case r'exif':
+          return SourceType.exif;
+        case r'manual':
+          return SourceType.manual;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -85,4 +90,3 @@ class SourceTypeTypeTransformer {
   /// Singleton [SourceTypeTypeTransformer] instance.
   static SourceTypeTypeTransformer? _instance;
 }
-

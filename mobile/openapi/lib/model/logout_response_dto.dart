@@ -22,23 +22,22 @@ class LogoutResponseDto {
   bool successful;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is LogoutResponseDto &&
-    other.redirectUri == redirectUri &&
-    other.successful == successful;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LogoutResponseDto && other.redirectUri == redirectUri && other.successful == successful;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (redirectUri.hashCode) +
-    (successful.hashCode);
+      // ignore: unnecessary_parenthesis
+      (redirectUri.hashCode) + (successful.hashCode);
 
   @override
   String toString() => 'LogoutResponseDto[redirectUri=$redirectUri, successful=$successful]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'redirectUri'] = this.redirectUri;
-      json[r'successful'] = this.successful;
+    json[r'redirectUri'] = this.redirectUri;
+    json[r'successful'] = this.successful;
     return json;
   }
 
@@ -58,7 +57,10 @@ class LogoutResponseDto {
     return null;
   }
 
-  static List<LogoutResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<LogoutResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <LogoutResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +88,19 @@ class LogoutResponseDto {
   }
 
   // maps a json object with a list of LogoutResponseDto-objects as value to a dart map
-  static Map<String, List<LogoutResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<LogoutResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<LogoutResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = LogoutResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = LogoutResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +112,3 @@ class LogoutResponseDto {
     'successful',
   };
 }
-

@@ -25,26 +25,26 @@ class ServerVersionHistoryResponseDto {
   String version;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is ServerVersionHistoryResponseDto &&
-    other.createdAt == createdAt &&
-    other.id == id &&
-    other.version == version;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ServerVersionHistoryResponseDto &&
+          other.createdAt == createdAt &&
+          other.id == id &&
+          other.version == version;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (createdAt.hashCode) +
-    (id.hashCode) +
-    (version.hashCode);
+      // ignore: unnecessary_parenthesis
+      (createdAt.hashCode) + (id.hashCode) + (version.hashCode);
 
   @override
   String toString() => 'ServerVersionHistoryResponseDto[createdAt=$createdAt, id=$id, version=$version]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-      json[r'id'] = this.id;
-      json[r'version'] = this.version;
+    json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+    json[r'id'] = this.id;
+    json[r'version'] = this.version;
     return json;
   }
 
@@ -65,7 +65,10 @@ class ServerVersionHistoryResponseDto {
     return null;
   }
 
-  static List<ServerVersionHistoryResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ServerVersionHistoryResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <ServerVersionHistoryResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -93,13 +96,19 @@ class ServerVersionHistoryResponseDto {
   }
 
   // maps a json object with a list of ServerVersionHistoryResponseDto-objects as value to a dart map
-  static Map<String, List<ServerVersionHistoryResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<ServerVersionHistoryResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<ServerVersionHistoryResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = ServerVersionHistoryResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = ServerVersionHistoryResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +121,3 @@ class ServerVersionHistoryResponseDto {
     'version',
   };
 }
-

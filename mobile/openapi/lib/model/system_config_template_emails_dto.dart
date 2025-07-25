@@ -25,26 +25,27 @@ class SystemConfigTemplateEmailsDto {
   String welcomeTemplate;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigTemplateEmailsDto &&
-    other.albumInviteTemplate == albumInviteTemplate &&
-    other.albumUpdateTemplate == albumUpdateTemplate &&
-    other.welcomeTemplate == welcomeTemplate;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SystemConfigTemplateEmailsDto &&
+          other.albumInviteTemplate == albumInviteTemplate &&
+          other.albumUpdateTemplate == albumUpdateTemplate &&
+          other.welcomeTemplate == welcomeTemplate;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumInviteTemplate.hashCode) +
-    (albumUpdateTemplate.hashCode) +
-    (welcomeTemplate.hashCode);
+      // ignore: unnecessary_parenthesis
+      (albumInviteTemplate.hashCode) + (albumUpdateTemplate.hashCode) + (welcomeTemplate.hashCode);
 
   @override
-  String toString() => 'SystemConfigTemplateEmailsDto[albumInviteTemplate=$albumInviteTemplate, albumUpdateTemplate=$albumUpdateTemplate, welcomeTemplate=$welcomeTemplate]';
+  String toString() =>
+      'SystemConfigTemplateEmailsDto[albumInviteTemplate=$albumInviteTemplate, albumUpdateTemplate=$albumUpdateTemplate, welcomeTemplate=$welcomeTemplate]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albumInviteTemplate'] = this.albumInviteTemplate;
-      json[r'albumUpdateTemplate'] = this.albumUpdateTemplate;
-      json[r'welcomeTemplate'] = this.welcomeTemplate;
+    json[r'albumInviteTemplate'] = this.albumInviteTemplate;
+    json[r'albumUpdateTemplate'] = this.albumUpdateTemplate;
+    json[r'welcomeTemplate'] = this.welcomeTemplate;
     return json;
   }
 
@@ -65,7 +66,10 @@ class SystemConfigTemplateEmailsDto {
     return null;
   }
 
-  static List<SystemConfigTemplateEmailsDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigTemplateEmailsDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigTemplateEmailsDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -93,13 +97,19 @@ class SystemConfigTemplateEmailsDto {
   }
 
   // maps a json object with a list of SystemConfigTemplateEmailsDto-objects as value to a dart map
-  static Map<String, List<SystemConfigTemplateEmailsDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigTemplateEmailsDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigTemplateEmailsDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigTemplateEmailsDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigTemplateEmailsDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +122,3 @@ class SystemConfigTemplateEmailsDto {
     'welcomeTemplate',
   };
 }
-

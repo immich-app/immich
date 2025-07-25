@@ -19,20 +19,20 @@ class OnboardingResponseDto {
   bool isOnboarded;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is OnboardingResponseDto &&
-    other.isOnboarded == isOnboarded;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is OnboardingResponseDto && other.isOnboarded == isOnboarded;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (isOnboarded.hashCode);
+      // ignore: unnecessary_parenthesis
+      (isOnboarded.hashCode);
 
   @override
   String toString() => 'OnboardingResponseDto[isOnboarded=$isOnboarded]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'isOnboarded'] = this.isOnboarded;
+    json[r'isOnboarded'] = this.isOnboarded;
     return json;
   }
 
@@ -51,7 +51,10 @@ class OnboardingResponseDto {
     return null;
   }
 
-  static List<OnboardingResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<OnboardingResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <OnboardingResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +82,19 @@ class OnboardingResponseDto {
   }
 
   // maps a json object with a list of OnboardingResponseDto-objects as value to a dart map
-  static Map<String, List<OnboardingResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<OnboardingResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<OnboardingResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = OnboardingResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = OnboardingResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +105,3 @@ class OnboardingResponseDto {
     'isOnboarded',
   };
 }
-

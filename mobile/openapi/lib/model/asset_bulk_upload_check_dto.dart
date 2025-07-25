@@ -19,20 +19,20 @@ class AssetBulkUploadCheckDto {
   List<AssetBulkUploadCheckItem> assets;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetBulkUploadCheckDto &&
-    _deepEquality.equals(other.assets, assets);
+  bool operator ==(Object other) =>
+      identical(this, other) || other is AssetBulkUploadCheckDto && _deepEquality.equals(other.assets, assets);
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assets.hashCode);
+      // ignore: unnecessary_parenthesis
+      (assets.hashCode);
 
   @override
   String toString() => 'AssetBulkUploadCheckDto[assets=$assets]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assets'] = this.assets;
+    json[r'assets'] = this.assets;
     return json;
   }
 
@@ -51,7 +51,10 @@ class AssetBulkUploadCheckDto {
     return null;
   }
 
-  static List<AssetBulkUploadCheckDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetBulkUploadCheckDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetBulkUploadCheckDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +82,19 @@ class AssetBulkUploadCheckDto {
   }
 
   // maps a json object with a list of AssetBulkUploadCheckDto-objects as value to a dart map
-  static Map<String, List<AssetBulkUploadCheckDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AssetBulkUploadCheckDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AssetBulkUploadCheckDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetBulkUploadCheckDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetBulkUploadCheckDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +105,3 @@ class AssetBulkUploadCheckDto {
     'assets',
   };
 }
-

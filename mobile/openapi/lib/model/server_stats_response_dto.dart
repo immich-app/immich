@@ -34,35 +34,38 @@ class ServerStatsResponseDto {
   int videos;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is ServerStatsResponseDto &&
-    other.photos == photos &&
-    other.usage == usage &&
-    _deepEquality.equals(other.usageByUser, usageByUser) &&
-    other.usagePhotos == usagePhotos &&
-    other.usageVideos == usageVideos &&
-    other.videos == videos;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ServerStatsResponseDto &&
+          other.photos == photos &&
+          other.usage == usage &&
+          _deepEquality.equals(other.usageByUser, usageByUser) &&
+          other.usagePhotos == usagePhotos &&
+          other.usageVideos == usageVideos &&
+          other.videos == videos;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (photos.hashCode) +
-    (usage.hashCode) +
-    (usageByUser.hashCode) +
-    (usagePhotos.hashCode) +
-    (usageVideos.hashCode) +
-    (videos.hashCode);
+      // ignore: unnecessary_parenthesis
+      (photos.hashCode) +
+      (usage.hashCode) +
+      (usageByUser.hashCode) +
+      (usagePhotos.hashCode) +
+      (usageVideos.hashCode) +
+      (videos.hashCode);
 
   @override
-  String toString() => 'ServerStatsResponseDto[photos=$photos, usage=$usage, usageByUser=$usageByUser, usagePhotos=$usagePhotos, usageVideos=$usageVideos, videos=$videos]';
+  String toString() =>
+      'ServerStatsResponseDto[photos=$photos, usage=$usage, usageByUser=$usageByUser, usagePhotos=$usagePhotos, usageVideos=$usageVideos, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'photos'] = this.photos;
-      json[r'usage'] = this.usage;
-      json[r'usageByUser'] = this.usageByUser;
-      json[r'usagePhotos'] = this.usagePhotos;
-      json[r'usageVideos'] = this.usageVideos;
-      json[r'videos'] = this.videos;
+    json[r'photos'] = this.photos;
+    json[r'usage'] = this.usage;
+    json[r'usageByUser'] = this.usageByUser;
+    json[r'usagePhotos'] = this.usagePhotos;
+    json[r'usageVideos'] = this.usageVideos;
+    json[r'videos'] = this.videos;
     return json;
   }
 
@@ -86,7 +89,10 @@ class ServerStatsResponseDto {
     return null;
   }
 
-  static List<ServerStatsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ServerStatsResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <ServerStatsResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -114,13 +120,19 @@ class ServerStatsResponseDto {
   }
 
   // maps a json object with a list of ServerStatsResponseDto-objects as value to a dart map
-  static Map<String, List<ServerStatsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<ServerStatsResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<ServerStatsResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = ServerStatsResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = ServerStatsResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -136,4 +148,3 @@ class ServerStatsResponseDto {
     'videos',
   };
 }
-

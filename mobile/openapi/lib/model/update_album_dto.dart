@@ -61,51 +61,54 @@ class UpdateAlbumDto {
   AssetOrder? order;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is UpdateAlbumDto &&
-    other.albumName == albumName &&
-    other.albumThumbnailAssetId == albumThumbnailAssetId &&
-    other.description == description &&
-    other.isActivityEnabled == isActivityEnabled &&
-    other.order == order;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UpdateAlbumDto &&
+          other.albumName == albumName &&
+          other.albumThumbnailAssetId == albumThumbnailAssetId &&
+          other.description == description &&
+          other.isActivityEnabled == isActivityEnabled &&
+          other.order == order;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumName == null ? 0 : albumName!.hashCode) +
-    (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (isActivityEnabled == null ? 0 : isActivityEnabled!.hashCode) +
-    (order == null ? 0 : order!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (albumName == null ? 0 : albumName!.hashCode) +
+      (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
+      (description == null ? 0 : description!.hashCode) +
+      (isActivityEnabled == null ? 0 : isActivityEnabled!.hashCode) +
+      (order == null ? 0 : order!.hashCode);
 
   @override
-  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, isActivityEnabled=$isActivityEnabled, order=$order]';
+  String toString() =>
+      'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, isActivityEnabled=$isActivityEnabled, order=$order]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.albumName != null) {
       json[r'albumName'] = this.albumName;
     } else {
-    //  json[r'albumName'] = null;
+      //  json[r'albumName'] = null;
     }
     if (this.albumThumbnailAssetId != null) {
       json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
     } else {
-    //  json[r'albumThumbnailAssetId'] = null;
+      //  json[r'albumThumbnailAssetId'] = null;
     }
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
-    //  json[r'description'] = null;
+      //  json[r'description'] = null;
     }
     if (this.isActivityEnabled != null) {
       json[r'isActivityEnabled'] = this.isActivityEnabled;
     } else {
-    //  json[r'isActivityEnabled'] = null;
+      //  json[r'isActivityEnabled'] = null;
     }
     if (this.order != null) {
       json[r'order'] = this.order;
     } else {
-    //  json[r'order'] = null;
+      //  json[r'order'] = null;
     }
     return json;
   }
@@ -129,7 +132,10 @@ class UpdateAlbumDto {
     return null;
   }
 
-  static List<UpdateAlbumDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<UpdateAlbumDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <UpdateAlbumDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -157,20 +163,24 @@ class UpdateAlbumDto {
   }
 
   // maps a json object with a list of UpdateAlbumDto-objects as value to a dart map
-  static Map<String, List<UpdateAlbumDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<UpdateAlbumDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<UpdateAlbumDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = UpdateAlbumDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = UpdateAlbumDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
   }
 
   /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  static const requiredKeys = <String>{};
 }
-

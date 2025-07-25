@@ -22,23 +22,21 @@ class FoldersResponse {
   bool sidebarWeb;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is FoldersResponse &&
-    other.enabled == enabled &&
-    other.sidebarWeb == sidebarWeb;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is FoldersResponse && other.enabled == enabled && other.sidebarWeb == sidebarWeb;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (enabled.hashCode) +
-    (sidebarWeb.hashCode);
+      // ignore: unnecessary_parenthesis
+      (enabled.hashCode) + (sidebarWeb.hashCode);
 
   @override
   String toString() => 'FoldersResponse[enabled=$enabled, sidebarWeb=$sidebarWeb]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'enabled'] = this.enabled;
-      json[r'sidebarWeb'] = this.sidebarWeb;
+    json[r'enabled'] = this.enabled;
+    json[r'sidebarWeb'] = this.sidebarWeb;
     return json;
   }
 
@@ -58,7 +56,10 @@ class FoldersResponse {
     return null;
   }
 
-  static List<FoldersResponse> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<FoldersResponse> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <FoldersResponse>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +87,19 @@ class FoldersResponse {
   }
 
   // maps a json object with a list of FoldersResponse-objects as value to a dart map
-  static Map<String, List<FoldersResponse>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<FoldersResponse>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<FoldersResponse>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = FoldersResponse.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = FoldersResponse.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +111,3 @@ class FoldersResponse {
     'sidebarWeb',
   };
 }
-

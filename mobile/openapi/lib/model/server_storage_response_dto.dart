@@ -37,38 +37,41 @@ class ServerStorageResponseDto {
   int diskUseRaw;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is ServerStorageResponseDto &&
-    other.diskAvailable == diskAvailable &&
-    other.diskAvailableRaw == diskAvailableRaw &&
-    other.diskSize == diskSize &&
-    other.diskSizeRaw == diskSizeRaw &&
-    other.diskUsagePercentage == diskUsagePercentage &&
-    other.diskUse == diskUse &&
-    other.diskUseRaw == diskUseRaw;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ServerStorageResponseDto &&
+          other.diskAvailable == diskAvailable &&
+          other.diskAvailableRaw == diskAvailableRaw &&
+          other.diskSize == diskSize &&
+          other.diskSizeRaw == diskSizeRaw &&
+          other.diskUsagePercentage == diskUsagePercentage &&
+          other.diskUse == diskUse &&
+          other.diskUseRaw == diskUseRaw;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (diskAvailable.hashCode) +
-    (diskAvailableRaw.hashCode) +
-    (diskSize.hashCode) +
-    (diskSizeRaw.hashCode) +
-    (diskUsagePercentage.hashCode) +
-    (diskUse.hashCode) +
-    (diskUseRaw.hashCode);
+      // ignore: unnecessary_parenthesis
+      (diskAvailable.hashCode) +
+      (diskAvailableRaw.hashCode) +
+      (diskSize.hashCode) +
+      (diskSizeRaw.hashCode) +
+      (diskUsagePercentage.hashCode) +
+      (diskUse.hashCode) +
+      (diskUseRaw.hashCode);
 
   @override
-  String toString() => 'ServerStorageResponseDto[diskAvailable=$diskAvailable, diskAvailableRaw=$diskAvailableRaw, diskSize=$diskSize, diskSizeRaw=$diskSizeRaw, diskUsagePercentage=$diskUsagePercentage, diskUse=$diskUse, diskUseRaw=$diskUseRaw]';
+  String toString() =>
+      'ServerStorageResponseDto[diskAvailable=$diskAvailable, diskAvailableRaw=$diskAvailableRaw, diskSize=$diskSize, diskSizeRaw=$diskSizeRaw, diskUsagePercentage=$diskUsagePercentage, diskUse=$diskUse, diskUseRaw=$diskUseRaw]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'diskAvailable'] = this.diskAvailable;
-      json[r'diskAvailableRaw'] = this.diskAvailableRaw;
-      json[r'diskSize'] = this.diskSize;
-      json[r'diskSizeRaw'] = this.diskSizeRaw;
-      json[r'diskUsagePercentage'] = this.diskUsagePercentage;
-      json[r'diskUse'] = this.diskUse;
-      json[r'diskUseRaw'] = this.diskUseRaw;
+    json[r'diskAvailable'] = this.diskAvailable;
+    json[r'diskAvailableRaw'] = this.diskAvailableRaw;
+    json[r'diskSize'] = this.diskSize;
+    json[r'diskSizeRaw'] = this.diskSizeRaw;
+    json[r'diskUsagePercentage'] = this.diskUsagePercentage;
+    json[r'diskUse'] = this.diskUse;
+    json[r'diskUseRaw'] = this.diskUseRaw;
     return json;
   }
 
@@ -93,7 +96,10 @@ class ServerStorageResponseDto {
     return null;
   }
 
-  static List<ServerStorageResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ServerStorageResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <ServerStorageResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -121,13 +127,19 @@ class ServerStorageResponseDto {
   }
 
   // maps a json object with a list of ServerStorageResponseDto-objects as value to a dart map
-  static Map<String, List<ServerStorageResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<ServerStorageResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<ServerStorageResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = ServerStorageResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = ServerStorageResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -144,4 +156,3 @@ class ServerStorageResponseDto {
     'diskUseRaw',
   };
 }
-

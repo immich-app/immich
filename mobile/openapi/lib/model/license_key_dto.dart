@@ -22,23 +22,22 @@ class LicenseKeyDto {
   String licenseKey;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is LicenseKeyDto &&
-    other.activationKey == activationKey &&
-    other.licenseKey == licenseKey;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LicenseKeyDto && other.activationKey == activationKey && other.licenseKey == licenseKey;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (activationKey.hashCode) +
-    (licenseKey.hashCode);
+      // ignore: unnecessary_parenthesis
+      (activationKey.hashCode) + (licenseKey.hashCode);
 
   @override
   String toString() => 'LicenseKeyDto[activationKey=$activationKey, licenseKey=$licenseKey]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'activationKey'] = this.activationKey;
-      json[r'licenseKey'] = this.licenseKey;
+    json[r'activationKey'] = this.activationKey;
+    json[r'licenseKey'] = this.licenseKey;
     return json;
   }
 
@@ -58,7 +57,10 @@ class LicenseKeyDto {
     return null;
   }
 
-  static List<LicenseKeyDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<LicenseKeyDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <LicenseKeyDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +88,19 @@ class LicenseKeyDto {
   }
 
   // maps a json object with a list of LicenseKeyDto-objects as value to a dart map
-  static Map<String, List<LicenseKeyDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<LicenseKeyDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<LicenseKeyDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = LicenseKeyDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = LicenseKeyDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +112,3 @@ class LicenseKeyDto {
     'licenseKey',
   };
 }
-

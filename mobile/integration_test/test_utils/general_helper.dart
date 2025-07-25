@@ -79,8 +79,7 @@ Future<void> pumpUntilFound(
   Duration timeout = const Duration(seconds: 120),
 }) async {
   bool found = false;
-  final timer =
-      Timer(timeout, () => throw TimeoutException("Pump until has timed out"));
+  final timer = Timer(timeout, () => throw TimeoutException("Pump until has timed out"));
   while (found != true) {
     await tester.pump();
     found = tester.any(finder);

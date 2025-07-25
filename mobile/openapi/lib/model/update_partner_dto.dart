@@ -19,20 +19,20 @@ class UpdatePartnerDto {
   bool inTimeline;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is UpdatePartnerDto &&
-    other.inTimeline == inTimeline;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is UpdatePartnerDto && other.inTimeline == inTimeline;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (inTimeline.hashCode);
+      // ignore: unnecessary_parenthesis
+      (inTimeline.hashCode);
 
   @override
   String toString() => 'UpdatePartnerDto[inTimeline=$inTimeline]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'inTimeline'] = this.inTimeline;
+    json[r'inTimeline'] = this.inTimeline;
     return json;
   }
 
@@ -51,7 +51,10 @@ class UpdatePartnerDto {
     return null;
   }
 
-  static List<UpdatePartnerDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<UpdatePartnerDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <UpdatePartnerDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +82,19 @@ class UpdatePartnerDto {
   }
 
   // maps a json object with a list of UpdatePartnerDto-objects as value to a dart map
-  static Map<String, List<UpdatePartnerDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<UpdatePartnerDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<UpdatePartnerDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = UpdatePartnerDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = UpdatePartnerDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +105,3 @@ class UpdatePartnerDto {
     'inTimeline',
   };
 }
-

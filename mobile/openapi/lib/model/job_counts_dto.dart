@@ -34,35 +34,38 @@ class JobCountsDto {
   int waiting;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is JobCountsDto &&
-    other.active == active &&
-    other.completed == completed &&
-    other.delayed == delayed &&
-    other.failed == failed &&
-    other.paused == paused &&
-    other.waiting == waiting;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is JobCountsDto &&
+          other.active == active &&
+          other.completed == completed &&
+          other.delayed == delayed &&
+          other.failed == failed &&
+          other.paused == paused &&
+          other.waiting == waiting;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (active.hashCode) +
-    (completed.hashCode) +
-    (delayed.hashCode) +
-    (failed.hashCode) +
-    (paused.hashCode) +
-    (waiting.hashCode);
+      // ignore: unnecessary_parenthesis
+      (active.hashCode) +
+      (completed.hashCode) +
+      (delayed.hashCode) +
+      (failed.hashCode) +
+      (paused.hashCode) +
+      (waiting.hashCode);
 
   @override
-  String toString() => 'JobCountsDto[active=$active, completed=$completed, delayed=$delayed, failed=$failed, paused=$paused, waiting=$waiting]';
+  String toString() =>
+      'JobCountsDto[active=$active, completed=$completed, delayed=$delayed, failed=$failed, paused=$paused, waiting=$waiting]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'active'] = this.active;
-      json[r'completed'] = this.completed;
-      json[r'delayed'] = this.delayed;
-      json[r'failed'] = this.failed;
-      json[r'paused'] = this.paused;
-      json[r'waiting'] = this.waiting;
+    json[r'active'] = this.active;
+    json[r'completed'] = this.completed;
+    json[r'delayed'] = this.delayed;
+    json[r'failed'] = this.failed;
+    json[r'paused'] = this.paused;
+    json[r'waiting'] = this.waiting;
     return json;
   }
 
@@ -86,7 +89,10 @@ class JobCountsDto {
     return null;
   }
 
-  static List<JobCountsDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<JobCountsDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <JobCountsDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -114,13 +120,19 @@ class JobCountsDto {
   }
 
   // maps a json object with a list of JobCountsDto-objects as value to a dart map
-  static Map<String, List<JobCountsDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<JobCountsDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<JobCountsDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = JobCountsDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = JobCountsDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -136,4 +148,3 @@ class JobCountsDto {
     'waiting',
   };
 }
-

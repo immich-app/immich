@@ -19,20 +19,20 @@ class SyncAssetFaceDeleteV1 {
   String assetFaceId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAssetFaceDeleteV1 &&
-    other.assetFaceId == assetFaceId;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SyncAssetFaceDeleteV1 && other.assetFaceId == assetFaceId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetFaceId.hashCode);
+      // ignore: unnecessary_parenthesis
+      (assetFaceId.hashCode);
 
   @override
   String toString() => 'SyncAssetFaceDeleteV1[assetFaceId=$assetFaceId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetFaceId'] = this.assetFaceId;
+    json[r'assetFaceId'] = this.assetFaceId;
     return json;
   }
 
@@ -51,7 +51,10 @@ class SyncAssetFaceDeleteV1 {
     return null;
   }
 
-  static List<SyncAssetFaceDeleteV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncAssetFaceDeleteV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncAssetFaceDeleteV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +82,19 @@ class SyncAssetFaceDeleteV1 {
   }
 
   // maps a json object with a list of SyncAssetFaceDeleteV1-objects as value to a dart map
-  static Map<String, List<SyncAssetFaceDeleteV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncAssetFaceDeleteV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncAssetFaceDeleteV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncAssetFaceDeleteV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncAssetFaceDeleteV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +105,3 @@ class SyncAssetFaceDeleteV1 {
     'assetFaceId',
   };
 }
-

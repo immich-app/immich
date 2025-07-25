@@ -22,23 +22,24 @@ class DownloadResponse {
   bool includeEmbeddedVideos;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is DownloadResponse &&
-    other.archiveSize == archiveSize &&
-    other.includeEmbeddedVideos == includeEmbeddedVideos;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DownloadResponse &&
+          other.archiveSize == archiveSize &&
+          other.includeEmbeddedVideos == includeEmbeddedVideos;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (archiveSize.hashCode) +
-    (includeEmbeddedVideos.hashCode);
+      // ignore: unnecessary_parenthesis
+      (archiveSize.hashCode) + (includeEmbeddedVideos.hashCode);
 
   @override
   String toString() => 'DownloadResponse[archiveSize=$archiveSize, includeEmbeddedVideos=$includeEmbeddedVideos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'archiveSize'] = this.archiveSize;
-      json[r'includeEmbeddedVideos'] = this.includeEmbeddedVideos;
+    json[r'archiveSize'] = this.archiveSize;
+    json[r'includeEmbeddedVideos'] = this.includeEmbeddedVideos;
     return json;
   }
 
@@ -58,7 +59,10 @@ class DownloadResponse {
     return null;
   }
 
-  static List<DownloadResponse> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<DownloadResponse> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <DownloadResponse>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +90,19 @@ class DownloadResponse {
   }
 
   // maps a json object with a list of DownloadResponse-objects as value to a dart map
-  static Map<String, List<DownloadResponse>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<DownloadResponse>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<DownloadResponse>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = DownloadResponse.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = DownloadResponse.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +114,3 @@ class DownloadResponse {
     'includeEmbeddedVideos',
   };
 }
-

@@ -22,23 +22,22 @@ class JobStatusDto {
   QueueStatusDto queueStatus;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is JobStatusDto &&
-    other.jobCounts == jobCounts &&
-    other.queueStatus == queueStatus;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is JobStatusDto && other.jobCounts == jobCounts && other.queueStatus == queueStatus;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (jobCounts.hashCode) +
-    (queueStatus.hashCode);
+      // ignore: unnecessary_parenthesis
+      (jobCounts.hashCode) + (queueStatus.hashCode);
 
   @override
   String toString() => 'JobStatusDto[jobCounts=$jobCounts, queueStatus=$queueStatus]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'jobCounts'] = this.jobCounts;
-      json[r'queueStatus'] = this.queueStatus;
+    json[r'jobCounts'] = this.jobCounts;
+    json[r'queueStatus'] = this.queueStatus;
     return json;
   }
 
@@ -58,7 +57,10 @@ class JobStatusDto {
     return null;
   }
 
-  static List<JobStatusDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<JobStatusDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <JobStatusDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +88,19 @@ class JobStatusDto {
   }
 
   // maps a json object with a list of JobStatusDto-objects as value to a dart map
-  static Map<String, List<JobStatusDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<JobStatusDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<JobStatusDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = JobStatusDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = JobStatusDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +112,3 @@ class JobStatusDto {
     'queueStatus',
   };
 }
-

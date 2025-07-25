@@ -31,17 +31,14 @@ class TagCreateDto {
   String? parentId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is TagCreateDto &&
-    other.color == color &&
-    other.name == name &&
-    other.parentId == parentId;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TagCreateDto && other.color == color && other.name == name && other.parentId == parentId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (color == null ? 0 : color!.hashCode) +
-    (name.hashCode) +
-    (parentId == null ? 0 : parentId!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (color == null ? 0 : color!.hashCode) + (name.hashCode) + (parentId == null ? 0 : parentId!.hashCode);
 
   @override
   String toString() => 'TagCreateDto[color=$color, name=$name, parentId=$parentId]';
@@ -51,13 +48,13 @@ class TagCreateDto {
     if (this.color != null) {
       json[r'color'] = this.color;
     } else {
-    //  json[r'color'] = null;
+      //  json[r'color'] = null;
     }
-      json[r'name'] = this.name;
+    json[r'name'] = this.name;
     if (this.parentId != null) {
       json[r'parentId'] = this.parentId;
     } else {
-    //  json[r'parentId'] = null;
+      //  json[r'parentId'] = null;
     }
     return json;
   }
@@ -79,7 +76,10 @@ class TagCreateDto {
     return null;
   }
 
-  static List<TagCreateDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<TagCreateDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <TagCreateDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -107,13 +107,19 @@ class TagCreateDto {
   }
 
   // maps a json object with a list of TagCreateDto-objects as value to a dart map
-  static Map<String, List<TagCreateDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<TagCreateDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<TagCreateDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = TagCreateDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = TagCreateDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -124,4 +130,3 @@ class TagCreateDto {
     'name',
   };
 }
-

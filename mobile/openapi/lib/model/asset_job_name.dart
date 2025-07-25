@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class AssetJobName {
   /// Instantiate a new enum with the provided [value].
   const AssetJobName._(this.value);
@@ -38,7 +37,10 @@ class AssetJobName {
 
   static AssetJobName? fromJson(dynamic value) => AssetJobNameTypeTransformer().decode(value);
 
-  static List<AssetJobName> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetJobName> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetJobName>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -72,10 +74,14 @@ class AssetJobNameTypeTransformer {
   AssetJobName? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'refresh-faces': return AssetJobName.refreshFaces;
-        case r'refresh-metadata': return AssetJobName.refreshMetadata;
-        case r'regenerate-thumbnail': return AssetJobName.regenerateThumbnail;
-        case r'transcode-video': return AssetJobName.transcodeVideo;
+        case r'refresh-faces':
+          return AssetJobName.refreshFaces;
+        case r'refresh-metadata':
+          return AssetJobName.refreshMetadata;
+        case r'regenerate-thumbnail':
+          return AssetJobName.regenerateThumbnail;
+        case r'transcode-video':
+          return AssetJobName.transcodeVideo;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -88,4 +94,3 @@ class AssetJobNameTypeTransformer {
   /// Singleton [AssetJobNameTypeTransformer] instance.
   static AssetJobNameTypeTransformer? _instance;
 }
-

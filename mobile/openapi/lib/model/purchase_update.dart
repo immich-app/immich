@@ -34,15 +34,17 @@ class PurchaseUpdate {
   bool? showSupportBadge;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is PurchaseUpdate &&
-    other.hideBuyButtonUntil == hideBuyButtonUntil &&
-    other.showSupportBadge == showSupportBadge;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PurchaseUpdate &&
+          other.hideBuyButtonUntil == hideBuyButtonUntil &&
+          other.showSupportBadge == showSupportBadge;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (hideBuyButtonUntil == null ? 0 : hideBuyButtonUntil!.hashCode) +
-    (showSupportBadge == null ? 0 : showSupportBadge!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (hideBuyButtonUntil == null ? 0 : hideBuyButtonUntil!.hashCode) +
+      (showSupportBadge == null ? 0 : showSupportBadge!.hashCode);
 
   @override
   String toString() => 'PurchaseUpdate[hideBuyButtonUntil=$hideBuyButtonUntil, showSupportBadge=$showSupportBadge]';
@@ -52,12 +54,12 @@ class PurchaseUpdate {
     if (this.hideBuyButtonUntil != null) {
       json[r'hideBuyButtonUntil'] = this.hideBuyButtonUntil;
     } else {
-    //  json[r'hideBuyButtonUntil'] = null;
+      //  json[r'hideBuyButtonUntil'] = null;
     }
     if (this.showSupportBadge != null) {
       json[r'showSupportBadge'] = this.showSupportBadge;
     } else {
-    //  json[r'showSupportBadge'] = null;
+      //  json[r'showSupportBadge'] = null;
     }
     return json;
   }
@@ -78,7 +80,10 @@ class PurchaseUpdate {
     return null;
   }
 
-  static List<PurchaseUpdate> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<PurchaseUpdate> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <PurchaseUpdate>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -106,20 +111,24 @@ class PurchaseUpdate {
   }
 
   // maps a json object with a list of PurchaseUpdate-objects as value to a dart map
-  static Map<String, List<PurchaseUpdate>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<PurchaseUpdate>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<PurchaseUpdate>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = PurchaseUpdate.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = PurchaseUpdate.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
   }
 
   /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  static const requiredKeys = <String>{};
 }
-

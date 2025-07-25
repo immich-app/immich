@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class VideoCodec {
   /// Instantiate a new enum with the provided [value].
   const VideoCodec._(this.value);
@@ -38,7 +37,10 @@ class VideoCodec {
 
   static VideoCodec? fromJson(dynamic value) => VideoCodecTypeTransformer().decode(value);
 
-  static List<VideoCodec> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<VideoCodec> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <VideoCodec>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -72,10 +74,14 @@ class VideoCodecTypeTransformer {
   VideoCodec? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'h264': return VideoCodec.h264;
-        case r'hevc': return VideoCodec.hevc;
-        case r'vp9': return VideoCodec.vp9;
-        case r'av1': return VideoCodec.av1;
+        case r'h264':
+          return VideoCodec.h264;
+        case r'hevc':
+          return VideoCodec.hevc;
+        case r'vp9':
+          return VideoCodec.vp9;
+        case r'av1':
+          return VideoCodec.av1;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -88,4 +94,3 @@ class VideoCodecTypeTransformer {
   /// Singleton [VideoCodecTypeTransformer] instance.
   static VideoCodecTypeTransformer? _instance;
 }
-

@@ -33,32 +33,31 @@ class SystemConfigSmtpTransportDto {
   String username;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigSmtpTransportDto &&
-    other.host == host &&
-    other.ignoreCert == ignoreCert &&
-    other.password == password &&
-    other.port == port &&
-    other.username == username;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SystemConfigSmtpTransportDto &&
+          other.host == host &&
+          other.ignoreCert == ignoreCert &&
+          other.password == password &&
+          other.port == port &&
+          other.username == username;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (host.hashCode) +
-    (ignoreCert.hashCode) +
-    (password.hashCode) +
-    (port.hashCode) +
-    (username.hashCode);
+      // ignore: unnecessary_parenthesis
+      (host.hashCode) + (ignoreCert.hashCode) + (password.hashCode) + (port.hashCode) + (username.hashCode);
 
   @override
-  String toString() => 'SystemConfigSmtpTransportDto[host=$host, ignoreCert=$ignoreCert, password=$password, port=$port, username=$username]';
+  String toString() =>
+      'SystemConfigSmtpTransportDto[host=$host, ignoreCert=$ignoreCert, password=$password, port=$port, username=$username]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'host'] = this.host;
-      json[r'ignoreCert'] = this.ignoreCert;
-      json[r'password'] = this.password;
-      json[r'port'] = this.port;
-      json[r'username'] = this.username;
+    json[r'host'] = this.host;
+    json[r'ignoreCert'] = this.ignoreCert;
+    json[r'password'] = this.password;
+    json[r'port'] = this.port;
+    json[r'username'] = this.username;
     return json;
   }
 
@@ -81,7 +80,10 @@ class SystemConfigSmtpTransportDto {
     return null;
   }
 
-  static List<SystemConfigSmtpTransportDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigSmtpTransportDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigSmtpTransportDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -109,13 +111,19 @@ class SystemConfigSmtpTransportDto {
   }
 
   // maps a json object with a list of SystemConfigSmtpTransportDto-objects as value to a dart map
-  static Map<String, List<SystemConfigSmtpTransportDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigSmtpTransportDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigSmtpTransportDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigSmtpTransportDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigSmtpTransportDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -130,4 +138,3 @@ class SystemConfigSmtpTransportDto {
     'username',
   };
 }
-

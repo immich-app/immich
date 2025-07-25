@@ -41,19 +41,21 @@ class AssetFullSyncDto {
   String? userId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetFullSyncDto &&
-    other.lastId == lastId &&
-    other.limit == limit &&
-    other.updatedUntil == updatedUntil &&
-    other.userId == userId;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AssetFullSyncDto &&
+          other.lastId == lastId &&
+          other.limit == limit &&
+          other.updatedUntil == updatedUntil &&
+          other.userId == userId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (lastId == null ? 0 : lastId!.hashCode) +
-    (limit.hashCode) +
-    (updatedUntil.hashCode) +
-    (userId == null ? 0 : userId!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (lastId == null ? 0 : lastId!.hashCode) +
+      (limit.hashCode) +
+      (updatedUntil.hashCode) +
+      (userId == null ? 0 : userId!.hashCode);
 
   @override
   String toString() => 'AssetFullSyncDto[lastId=$lastId, limit=$limit, updatedUntil=$updatedUntil, userId=$userId]';
@@ -63,14 +65,14 @@ class AssetFullSyncDto {
     if (this.lastId != null) {
       json[r'lastId'] = this.lastId;
     } else {
-    //  json[r'lastId'] = null;
+      //  json[r'lastId'] = null;
     }
-      json[r'limit'] = this.limit;
-      json[r'updatedUntil'] = this.updatedUntil.toUtc().toIso8601String();
+    json[r'limit'] = this.limit;
+    json[r'updatedUntil'] = this.updatedUntil.toUtc().toIso8601String();
     if (this.userId != null) {
       json[r'userId'] = this.userId;
     } else {
-    //  json[r'userId'] = null;
+      //  json[r'userId'] = null;
     }
     return json;
   }
@@ -93,7 +95,10 @@ class AssetFullSyncDto {
     return null;
   }
 
-  static List<AssetFullSyncDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetFullSyncDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetFullSyncDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -121,13 +126,19 @@ class AssetFullSyncDto {
   }
 
   // maps a json object with a list of AssetFullSyncDto-objects as value to a dart map
-  static Map<String, List<AssetFullSyncDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AssetFullSyncDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AssetFullSyncDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetFullSyncDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetFullSyncDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -139,4 +150,3 @@ class AssetFullSyncDto {
     'updatedUntil',
   };
 }
-

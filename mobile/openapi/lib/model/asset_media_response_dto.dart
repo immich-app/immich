@@ -22,23 +22,21 @@ class AssetMediaResponseDto {
   AssetMediaStatus status;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetMediaResponseDto &&
-    other.id == id &&
-    other.status == status;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is AssetMediaResponseDto && other.id == id && other.status == status;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (id.hashCode) +
-    (status.hashCode);
+      // ignore: unnecessary_parenthesis
+      (id.hashCode) + (status.hashCode);
 
   @override
   String toString() => 'AssetMediaResponseDto[id=$id, status=$status]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
-      json[r'status'] = this.status;
+    json[r'id'] = this.id;
+    json[r'status'] = this.status;
     return json;
   }
 
@@ -58,7 +56,10 @@ class AssetMediaResponseDto {
     return null;
   }
 
-  static List<AssetMediaResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetMediaResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetMediaResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +87,19 @@ class AssetMediaResponseDto {
   }
 
   // maps a json object with a list of AssetMediaResponseDto-objects as value to a dart map
-  static Map<String, List<AssetMediaResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AssetMediaResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AssetMediaResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetMediaResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetMediaResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +111,3 @@ class AssetMediaResponseDto {
     'status',
   };
 }
-

@@ -25,17 +25,16 @@ class MapReverseGeocodeResponseDto {
   String? state;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is MapReverseGeocodeResponseDto &&
-    other.city == city &&
-    other.country == country &&
-    other.state == state;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MapReverseGeocodeResponseDto && other.city == city && other.country == country && other.state == state;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (city == null ? 0 : city!.hashCode) +
-    (country == null ? 0 : country!.hashCode) +
-    (state == null ? 0 : state!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (city == null ? 0 : city!.hashCode) +
+      (country == null ? 0 : country!.hashCode) +
+      (state == null ? 0 : state!.hashCode);
 
   @override
   String toString() => 'MapReverseGeocodeResponseDto[city=$city, country=$country, state=$state]';
@@ -45,17 +44,17 @@ class MapReverseGeocodeResponseDto {
     if (this.city != null) {
       json[r'city'] = this.city;
     } else {
-    //  json[r'city'] = null;
+      //  json[r'city'] = null;
     }
     if (this.country != null) {
       json[r'country'] = this.country;
     } else {
-    //  json[r'country'] = null;
+      //  json[r'country'] = null;
     }
     if (this.state != null) {
       json[r'state'] = this.state;
     } else {
-    //  json[r'state'] = null;
+      //  json[r'state'] = null;
     }
     return json;
   }
@@ -77,7 +76,10 @@ class MapReverseGeocodeResponseDto {
     return null;
   }
 
-  static List<MapReverseGeocodeResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<MapReverseGeocodeResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <MapReverseGeocodeResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -105,13 +107,19 @@ class MapReverseGeocodeResponseDto {
   }
 
   // maps a json object with a list of MapReverseGeocodeResponseDto-objects as value to a dart map
-  static Map<String, List<MapReverseGeocodeResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<MapReverseGeocodeResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<MapReverseGeocodeResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = MapReverseGeocodeResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = MapReverseGeocodeResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -124,4 +132,3 @@ class MapReverseGeocodeResponseDto {
     'state',
   };
 }
-

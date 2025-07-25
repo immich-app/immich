@@ -28,29 +28,28 @@ class LibraryStatsResponseDto {
   int videos;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is LibraryStatsResponseDto &&
-    other.photos == photos &&
-    other.total == total &&
-    other.usage == usage &&
-    other.videos == videos;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LibraryStatsResponseDto &&
+          other.photos == photos &&
+          other.total == total &&
+          other.usage == usage &&
+          other.videos == videos;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (photos.hashCode) +
-    (total.hashCode) +
-    (usage.hashCode) +
-    (videos.hashCode);
+      // ignore: unnecessary_parenthesis
+      (photos.hashCode) + (total.hashCode) + (usage.hashCode) + (videos.hashCode);
 
   @override
   String toString() => 'LibraryStatsResponseDto[photos=$photos, total=$total, usage=$usage, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'photos'] = this.photos;
-      json[r'total'] = this.total;
-      json[r'usage'] = this.usage;
-      json[r'videos'] = this.videos;
+    json[r'photos'] = this.photos;
+    json[r'total'] = this.total;
+    json[r'usage'] = this.usage;
+    json[r'videos'] = this.videos;
     return json;
   }
 
@@ -72,7 +71,10 @@ class LibraryStatsResponseDto {
     return null;
   }
 
-  static List<LibraryStatsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<LibraryStatsResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <LibraryStatsResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -100,13 +102,19 @@ class LibraryStatsResponseDto {
   }
 
   // maps a json object with a list of LibraryStatsResponseDto-objects as value to a dart map
-  static Map<String, List<LibraryStatsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<LibraryStatsResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<LibraryStatsResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = LibraryStatsResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = LibraryStatsResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -120,4 +128,3 @@ class LibraryStatsResponseDto {
     'videos',
   };
 }
-

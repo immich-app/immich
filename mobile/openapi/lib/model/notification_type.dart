@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class NotificationType {
   /// Instantiate a new enum with the provided [value].
   const NotificationType._(this.value);
@@ -38,7 +37,10 @@ class NotificationType {
 
   static NotificationType? fromJson(dynamic value) => NotificationTypeTypeTransformer().decode(value);
 
-  static List<NotificationType> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<NotificationType> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <NotificationType>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -72,10 +74,14 @@ class NotificationTypeTypeTransformer {
   NotificationType? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'JobFailed': return NotificationType.jobFailed;
-        case r'BackupFailed': return NotificationType.backupFailed;
-        case r'SystemMessage': return NotificationType.systemMessage;
-        case r'Custom': return NotificationType.custom;
+        case r'JobFailed':
+          return NotificationType.jobFailed;
+        case r'BackupFailed':
+          return NotificationType.backupFailed;
+        case r'SystemMessage':
+          return NotificationType.systemMessage;
+        case r'Custom':
+          return NotificationType.custom;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -88,4 +94,3 @@ class NotificationTypeTypeTransformer {
   /// Singleton [NotificationTypeTypeTransformer] instance.
   static NotificationTypeTypeTransformer? _instance;
 }
-

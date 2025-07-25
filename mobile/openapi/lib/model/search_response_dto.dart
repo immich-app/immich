@@ -22,23 +22,21 @@ class SearchResponseDto {
   SearchAssetResponseDto assets;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SearchResponseDto &&
-    other.albums == albums &&
-    other.assets == assets;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SearchResponseDto && other.albums == albums && other.assets == assets;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albums.hashCode) +
-    (assets.hashCode);
+      // ignore: unnecessary_parenthesis
+      (albums.hashCode) + (assets.hashCode);
 
   @override
   String toString() => 'SearchResponseDto[albums=$albums, assets=$assets]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albums'] = this.albums;
-      json[r'assets'] = this.assets;
+    json[r'albums'] = this.albums;
+    json[r'assets'] = this.assets;
     return json;
   }
 
@@ -58,7 +56,10 @@ class SearchResponseDto {
     return null;
   }
 
-  static List<SearchResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SearchResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SearchResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +87,19 @@ class SearchResponseDto {
   }
 
   // maps a json object with a list of SearchResponseDto-objects as value to a dart map
-  static Map<String, List<SearchResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SearchResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SearchResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SearchResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SearchResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +111,3 @@ class SearchResponseDto {
     'assets',
   };
 }
-

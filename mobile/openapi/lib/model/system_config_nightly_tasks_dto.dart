@@ -34,35 +34,38 @@ class SystemConfigNightlyTasksDto {
   bool syncQuotaUsage;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigNightlyTasksDto &&
-    other.clusterNewFaces == clusterNewFaces &&
-    other.databaseCleanup == databaseCleanup &&
-    other.generateMemories == generateMemories &&
-    other.missingThumbnails == missingThumbnails &&
-    other.startTime == startTime &&
-    other.syncQuotaUsage == syncQuotaUsage;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SystemConfigNightlyTasksDto &&
+          other.clusterNewFaces == clusterNewFaces &&
+          other.databaseCleanup == databaseCleanup &&
+          other.generateMemories == generateMemories &&
+          other.missingThumbnails == missingThumbnails &&
+          other.startTime == startTime &&
+          other.syncQuotaUsage == syncQuotaUsage;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (clusterNewFaces.hashCode) +
-    (databaseCleanup.hashCode) +
-    (generateMemories.hashCode) +
-    (missingThumbnails.hashCode) +
-    (startTime.hashCode) +
-    (syncQuotaUsage.hashCode);
+      // ignore: unnecessary_parenthesis
+      (clusterNewFaces.hashCode) +
+      (databaseCleanup.hashCode) +
+      (generateMemories.hashCode) +
+      (missingThumbnails.hashCode) +
+      (startTime.hashCode) +
+      (syncQuotaUsage.hashCode);
 
   @override
-  String toString() => 'SystemConfigNightlyTasksDto[clusterNewFaces=$clusterNewFaces, databaseCleanup=$databaseCleanup, generateMemories=$generateMemories, missingThumbnails=$missingThumbnails, startTime=$startTime, syncQuotaUsage=$syncQuotaUsage]';
+  String toString() =>
+      'SystemConfigNightlyTasksDto[clusterNewFaces=$clusterNewFaces, databaseCleanup=$databaseCleanup, generateMemories=$generateMemories, missingThumbnails=$missingThumbnails, startTime=$startTime, syncQuotaUsage=$syncQuotaUsage]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'clusterNewFaces'] = this.clusterNewFaces;
-      json[r'databaseCleanup'] = this.databaseCleanup;
-      json[r'generateMemories'] = this.generateMemories;
-      json[r'missingThumbnails'] = this.missingThumbnails;
-      json[r'startTime'] = this.startTime;
-      json[r'syncQuotaUsage'] = this.syncQuotaUsage;
+    json[r'clusterNewFaces'] = this.clusterNewFaces;
+    json[r'databaseCleanup'] = this.databaseCleanup;
+    json[r'generateMemories'] = this.generateMemories;
+    json[r'missingThumbnails'] = this.missingThumbnails;
+    json[r'startTime'] = this.startTime;
+    json[r'syncQuotaUsage'] = this.syncQuotaUsage;
     return json;
   }
 
@@ -86,7 +89,10 @@ class SystemConfigNightlyTasksDto {
     return null;
   }
 
-  static List<SystemConfigNightlyTasksDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigNightlyTasksDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigNightlyTasksDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -114,13 +120,19 @@ class SystemConfigNightlyTasksDto {
   }
 
   // maps a json object with a list of SystemConfigNightlyTasksDto-objects as value to a dart map
-  static Map<String, List<SystemConfigNightlyTasksDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigNightlyTasksDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigNightlyTasksDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigNightlyTasksDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigNightlyTasksDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -136,4 +148,3 @@ class SystemConfigNightlyTasksDto {
     'syncQuotaUsage',
   };
 }
-

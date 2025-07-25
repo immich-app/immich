@@ -19,20 +19,20 @@ class CastResponse {
   bool gCastEnabled;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is CastResponse &&
-    other.gCastEnabled == gCastEnabled;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is CastResponse && other.gCastEnabled == gCastEnabled;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (gCastEnabled.hashCode);
+      // ignore: unnecessary_parenthesis
+      (gCastEnabled.hashCode);
 
   @override
   String toString() => 'CastResponse[gCastEnabled=$gCastEnabled]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'gCastEnabled'] = this.gCastEnabled;
+    json[r'gCastEnabled'] = this.gCastEnabled;
     return json;
   }
 
@@ -51,7 +51,10 @@ class CastResponse {
     return null;
   }
 
-  static List<CastResponse> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<CastResponse> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <CastResponse>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +82,19 @@ class CastResponse {
   }
 
   // maps a json object with a list of CastResponse-objects as value to a dart map
-  static Map<String, List<CastResponse>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<CastResponse>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<CastResponse>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = CastResponse.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = CastResponse.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +105,3 @@ class CastResponse {
     'gCastEnabled',
   };
 }
-

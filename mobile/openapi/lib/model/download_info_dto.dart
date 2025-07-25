@@ -47,40 +47,43 @@ class DownloadInfoDto {
   String? userId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is DownloadInfoDto &&
-    other.albumId == albumId &&
-    other.archiveSize == archiveSize &&
-    _deepEquality.equals(other.assetIds, assetIds) &&
-    other.userId == userId;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DownloadInfoDto &&
+          other.albumId == albumId &&
+          other.archiveSize == archiveSize &&
+          _deepEquality.equals(other.assetIds, assetIds) &&
+          other.userId == userId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumId == null ? 0 : albumId!.hashCode) +
-    (archiveSize == null ? 0 : archiveSize!.hashCode) +
-    (assetIds.hashCode) +
-    (userId == null ? 0 : userId!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (albumId == null ? 0 : albumId!.hashCode) +
+      (archiveSize == null ? 0 : archiveSize!.hashCode) +
+      (assetIds.hashCode) +
+      (userId == null ? 0 : userId!.hashCode);
 
   @override
-  String toString() => 'DownloadInfoDto[albumId=$albumId, archiveSize=$archiveSize, assetIds=$assetIds, userId=$userId]';
+  String toString() =>
+      'DownloadInfoDto[albumId=$albumId, archiveSize=$archiveSize, assetIds=$assetIds, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.albumId != null) {
       json[r'albumId'] = this.albumId;
     } else {
-    //  json[r'albumId'] = null;
+      //  json[r'albumId'] = null;
     }
     if (this.archiveSize != null) {
       json[r'archiveSize'] = this.archiveSize;
     } else {
-    //  json[r'archiveSize'] = null;
+      //  json[r'archiveSize'] = null;
     }
-      json[r'assetIds'] = this.assetIds;
+    json[r'assetIds'] = this.assetIds;
     if (this.userId != null) {
       json[r'userId'] = this.userId;
     } else {
-    //  json[r'userId'] = null;
+      //  json[r'userId'] = null;
     }
     return json;
   }
@@ -105,7 +108,10 @@ class DownloadInfoDto {
     return null;
   }
 
-  static List<DownloadInfoDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<DownloadInfoDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <DownloadInfoDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -133,20 +139,24 @@ class DownloadInfoDto {
   }
 
   // maps a json object with a list of DownloadInfoDto-objects as value to a dart map
-  static Map<String, List<DownloadInfoDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<DownloadInfoDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<DownloadInfoDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = DownloadInfoDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = DownloadInfoDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
   }
 
   /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  static const requiredKeys = <String>{};
 }
-

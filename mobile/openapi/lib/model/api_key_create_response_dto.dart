@@ -22,23 +22,21 @@ class APIKeyCreateResponseDto {
   String secret;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is APIKeyCreateResponseDto &&
-    other.apiKey == apiKey &&
-    other.secret == secret;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is APIKeyCreateResponseDto && other.apiKey == apiKey && other.secret == secret;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (apiKey.hashCode) +
-    (secret.hashCode);
+      // ignore: unnecessary_parenthesis
+      (apiKey.hashCode) + (secret.hashCode);
 
   @override
   String toString() => 'APIKeyCreateResponseDto[apiKey=$apiKey, secret=$secret]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'apiKey'] = this.apiKey;
-      json[r'secret'] = this.secret;
+    json[r'apiKey'] = this.apiKey;
+    json[r'secret'] = this.secret;
     return json;
   }
 
@@ -58,7 +56,10 @@ class APIKeyCreateResponseDto {
     return null;
   }
 
-  static List<APIKeyCreateResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<APIKeyCreateResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <APIKeyCreateResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +87,19 @@ class APIKeyCreateResponseDto {
   }
 
   // maps a json object with a list of APIKeyCreateResponseDto-objects as value to a dart map
-  static Map<String, List<APIKeyCreateResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<APIKeyCreateResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<APIKeyCreateResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = APIKeyCreateResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = APIKeyCreateResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +111,3 @@ class APIKeyCreateResponseDto {
     'secret',
   };
 }
-

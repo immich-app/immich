@@ -22,23 +22,22 @@ class AssetJobsDto {
   AssetJobName name;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetJobsDto &&
-    _deepEquality.equals(other.assetIds, assetIds) &&
-    other.name == name;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AssetJobsDto && _deepEquality.equals(other.assetIds, assetIds) && other.name == name;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (assetIds.hashCode) +
-    (name.hashCode);
+      // ignore: unnecessary_parenthesis
+      (assetIds.hashCode) + (name.hashCode);
 
   @override
   String toString() => 'AssetJobsDto[assetIds=$assetIds, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetIds'] = this.assetIds;
-      json[r'name'] = this.name;
+    json[r'assetIds'] = this.assetIds;
+    json[r'name'] = this.name;
     return json;
   }
 
@@ -60,7 +59,10 @@ class AssetJobsDto {
     return null;
   }
 
-  static List<AssetJobsDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetJobsDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetJobsDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -88,13 +90,19 @@ class AssetJobsDto {
   }
 
   // maps a json object with a list of AssetJobsDto-objects as value to a dart map
-  static Map<String, List<AssetJobsDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AssetJobsDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AssetJobsDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetJobsDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetJobsDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -106,4 +114,3 @@ class AssetJobsDto {
     'name',
   };
 }
-

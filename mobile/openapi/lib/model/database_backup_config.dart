@@ -26,26 +26,27 @@ class DatabaseBackupConfig {
   num keepLastAmount;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is DatabaseBackupConfig &&
-    other.cronExpression == cronExpression &&
-    other.enabled == enabled &&
-    other.keepLastAmount == keepLastAmount;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DatabaseBackupConfig &&
+          other.cronExpression == cronExpression &&
+          other.enabled == enabled &&
+          other.keepLastAmount == keepLastAmount;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (cronExpression.hashCode) +
-    (enabled.hashCode) +
-    (keepLastAmount.hashCode);
+      // ignore: unnecessary_parenthesis
+      (cronExpression.hashCode) + (enabled.hashCode) + (keepLastAmount.hashCode);
 
   @override
-  String toString() => 'DatabaseBackupConfig[cronExpression=$cronExpression, enabled=$enabled, keepLastAmount=$keepLastAmount]';
+  String toString() =>
+      'DatabaseBackupConfig[cronExpression=$cronExpression, enabled=$enabled, keepLastAmount=$keepLastAmount]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'cronExpression'] = this.cronExpression;
-      json[r'enabled'] = this.enabled;
-      json[r'keepLastAmount'] = this.keepLastAmount;
+    json[r'cronExpression'] = this.cronExpression;
+    json[r'enabled'] = this.enabled;
+    json[r'keepLastAmount'] = this.keepLastAmount;
     return json;
   }
 
@@ -66,7 +67,10 @@ class DatabaseBackupConfig {
     return null;
   }
 
-  static List<DatabaseBackupConfig> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<DatabaseBackupConfig> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <DatabaseBackupConfig>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -94,13 +98,19 @@ class DatabaseBackupConfig {
   }
 
   // maps a json object with a list of DatabaseBackupConfig-objects as value to a dart map
-  static Map<String, List<DatabaseBackupConfig>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<DatabaseBackupConfig>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<DatabaseBackupConfig>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = DatabaseBackupConfig.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = DatabaseBackupConfig.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -113,4 +123,3 @@ class DatabaseBackupConfig {
     'keepLastAmount',
   };
 }
-

@@ -25,13 +25,13 @@ class AlbumsUpdate {
   AssetOrder? defaultAssetOrder;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AlbumsUpdate &&
-    other.defaultAssetOrder == defaultAssetOrder;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is AlbumsUpdate && other.defaultAssetOrder == defaultAssetOrder;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (defaultAssetOrder == null ? 0 : defaultAssetOrder!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (defaultAssetOrder == null ? 0 : defaultAssetOrder!.hashCode);
 
   @override
   String toString() => 'AlbumsUpdate[defaultAssetOrder=$defaultAssetOrder]';
@@ -41,7 +41,7 @@ class AlbumsUpdate {
     if (this.defaultAssetOrder != null) {
       json[r'defaultAssetOrder'] = this.defaultAssetOrder;
     } else {
-    //  json[r'defaultAssetOrder'] = null;
+      //  json[r'defaultAssetOrder'] = null;
     }
     return json;
   }
@@ -61,7 +61,10 @@ class AlbumsUpdate {
     return null;
   }
 
-  static List<AlbumsUpdate> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AlbumsUpdate> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AlbumsUpdate>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -89,20 +92,24 @@ class AlbumsUpdate {
   }
 
   // maps a json object with a list of AlbumsUpdate-objects as value to a dart map
-  static Map<String, List<AlbumsUpdate>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AlbumsUpdate>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AlbumsUpdate>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AlbumsUpdate.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AlbumsUpdate.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
   }
 
   /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  static const requiredKeys = <String>{};
 }
-

@@ -25,26 +25,26 @@ class AssetDeltaSyncResponseDto {
   List<AssetResponseDto> upserted;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetDeltaSyncResponseDto &&
-    _deepEquality.equals(other.deleted, deleted) &&
-    other.needsFullSync == needsFullSync &&
-    _deepEquality.equals(other.upserted, upserted);
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AssetDeltaSyncResponseDto &&
+          _deepEquality.equals(other.deleted, deleted) &&
+          other.needsFullSync == needsFullSync &&
+          _deepEquality.equals(other.upserted, upserted);
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (deleted.hashCode) +
-    (needsFullSync.hashCode) +
-    (upserted.hashCode);
+      // ignore: unnecessary_parenthesis
+      (deleted.hashCode) + (needsFullSync.hashCode) + (upserted.hashCode);
 
   @override
   String toString() => 'AssetDeltaSyncResponseDto[deleted=$deleted, needsFullSync=$needsFullSync, upserted=$upserted]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'deleted'] = this.deleted;
-      json[r'needsFullSync'] = this.needsFullSync;
-      json[r'upserted'] = this.upserted;
+    json[r'deleted'] = this.deleted;
+    json[r'needsFullSync'] = this.needsFullSync;
+    json[r'upserted'] = this.upserted;
     return json;
   }
 
@@ -67,7 +67,10 @@ class AssetDeltaSyncResponseDto {
     return null;
   }
 
-  static List<AssetDeltaSyncResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetDeltaSyncResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AssetDeltaSyncResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -95,13 +98,19 @@ class AssetDeltaSyncResponseDto {
   }
 
   // maps a json object with a list of AssetDeltaSyncResponseDto-objects as value to a dart map
-  static Map<String, List<AssetDeltaSyncResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AssetDeltaSyncResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AssetDeltaSyncResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetDeltaSyncResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetDeltaSyncResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -114,4 +123,3 @@ class AssetDeltaSyncResponseDto {
     'upserted',
   };
 }
-

@@ -25,26 +25,23 @@ class ServerVersionResponseDto {
   int patch_;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is ServerVersionResponseDto &&
-    other.major == major &&
-    other.minor == minor &&
-    other.patch_ == patch_;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ServerVersionResponseDto && other.major == major && other.minor == minor && other.patch_ == patch_;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (major.hashCode) +
-    (minor.hashCode) +
-    (patch_.hashCode);
+      // ignore: unnecessary_parenthesis
+      (major.hashCode) + (minor.hashCode) + (patch_.hashCode);
 
   @override
   String toString() => 'ServerVersionResponseDto[major=$major, minor=$minor, patch_=$patch_]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'major'] = this.major;
-      json[r'minor'] = this.minor;
-      json[r'patch'] = this.patch_;
+    json[r'major'] = this.major;
+    json[r'minor'] = this.minor;
+    json[r'patch'] = this.patch_;
     return json;
   }
 
@@ -65,7 +62,10 @@ class ServerVersionResponseDto {
     return null;
   }
 
-  static List<ServerVersionResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ServerVersionResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <ServerVersionResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -93,13 +93,19 @@ class ServerVersionResponseDto {
   }
 
   // maps a json object with a list of ServerVersionResponseDto-objects as value to a dart map
-  static Map<String, List<ServerVersionResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<ServerVersionResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<ServerVersionResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = ServerVersionResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = ServerVersionResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +118,3 @@ class ServerVersionResponseDto {
     'patch',
   };
 }
-

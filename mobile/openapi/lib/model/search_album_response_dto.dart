@@ -28,29 +28,28 @@ class SearchAlbumResponseDto {
   int total;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SearchAlbumResponseDto &&
-    other.count == count &&
-    _deepEquality.equals(other.facets, facets) &&
-    _deepEquality.equals(other.items, items) &&
-    other.total == total;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SearchAlbumResponseDto &&
+          other.count == count &&
+          _deepEquality.equals(other.facets, facets) &&
+          _deepEquality.equals(other.items, items) &&
+          other.total == total;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (count.hashCode) +
-    (facets.hashCode) +
-    (items.hashCode) +
-    (total.hashCode);
+      // ignore: unnecessary_parenthesis
+      (count.hashCode) + (facets.hashCode) + (items.hashCode) + (total.hashCode);
 
   @override
   String toString() => 'SearchAlbumResponseDto[count=$count, facets=$facets, items=$items, total=$total]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'count'] = this.count;
-      json[r'facets'] = this.facets;
-      json[r'items'] = this.items;
-      json[r'total'] = this.total;
+    json[r'count'] = this.count;
+    json[r'facets'] = this.facets;
+    json[r'items'] = this.items;
+    json[r'total'] = this.total;
     return json;
   }
 
@@ -72,7 +71,10 @@ class SearchAlbumResponseDto {
     return null;
   }
 
-  static List<SearchAlbumResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SearchAlbumResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SearchAlbumResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -100,13 +102,19 @@ class SearchAlbumResponseDto {
   }
 
   // maps a json object with a list of SearchAlbumResponseDto-objects as value to a dart map
-  static Map<String, List<SearchAlbumResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SearchAlbumResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SearchAlbumResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SearchAlbumResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SearchAlbumResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -120,4 +128,3 @@ class SearchAlbumResponseDto {
     'total',
   };
 }
-

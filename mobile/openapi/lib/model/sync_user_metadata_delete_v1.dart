@@ -22,23 +22,21 @@ class SyncUserMetadataDeleteV1 {
   String userId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncUserMetadataDeleteV1 &&
-    other.key == key &&
-    other.userId == userId;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SyncUserMetadataDeleteV1 && other.key == key && other.userId == userId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (key.hashCode) +
-    (userId.hashCode);
+      // ignore: unnecessary_parenthesis
+      (key.hashCode) + (userId.hashCode);
 
   @override
   String toString() => 'SyncUserMetadataDeleteV1[key=$key, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'key'] = this.key;
-      json[r'userId'] = this.userId;
+    json[r'key'] = this.key;
+    json[r'userId'] = this.userId;
     return json;
   }
 
@@ -58,7 +56,10 @@ class SyncUserMetadataDeleteV1 {
     return null;
   }
 
-  static List<SyncUserMetadataDeleteV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncUserMetadataDeleteV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncUserMetadataDeleteV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +87,19 @@ class SyncUserMetadataDeleteV1 {
   }
 
   // maps a json object with a list of SyncUserMetadataDeleteV1-objects as value to a dart map
-  static Map<String, List<SyncUserMetadataDeleteV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncUserMetadataDeleteV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncUserMetadataDeleteV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncUserMetadataDeleteV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncUserMetadataDeleteV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +111,3 @@ class SyncUserMetadataDeleteV1 {
     'userId',
   };
 }
-

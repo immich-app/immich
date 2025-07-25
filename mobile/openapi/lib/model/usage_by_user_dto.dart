@@ -40,45 +40,48 @@ class UsageByUserDto {
   int videos;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is UsageByUserDto &&
-    other.photos == photos &&
-    other.quotaSizeInBytes == quotaSizeInBytes &&
-    other.usage == usage &&
-    other.usagePhotos == usagePhotos &&
-    other.usageVideos == usageVideos &&
-    other.userId == userId &&
-    other.userName == userName &&
-    other.videos == videos;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UsageByUserDto &&
+          other.photos == photos &&
+          other.quotaSizeInBytes == quotaSizeInBytes &&
+          other.usage == usage &&
+          other.usagePhotos == usagePhotos &&
+          other.usageVideos == usageVideos &&
+          other.userId == userId &&
+          other.userName == userName &&
+          other.videos == videos;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (photos.hashCode) +
-    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
-    (usage.hashCode) +
-    (usagePhotos.hashCode) +
-    (usageVideos.hashCode) +
-    (userId.hashCode) +
-    (userName.hashCode) +
-    (videos.hashCode);
+      // ignore: unnecessary_parenthesis
+      (photos.hashCode) +
+      (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
+      (usage.hashCode) +
+      (usagePhotos.hashCode) +
+      (usageVideos.hashCode) +
+      (userId.hashCode) +
+      (userName.hashCode) +
+      (videos.hashCode);
 
   @override
-  String toString() => 'UsageByUserDto[photos=$photos, quotaSizeInBytes=$quotaSizeInBytes, usage=$usage, usagePhotos=$usagePhotos, usageVideos=$usageVideos, userId=$userId, userName=$userName, videos=$videos]';
+  String toString() =>
+      'UsageByUserDto[photos=$photos, quotaSizeInBytes=$quotaSizeInBytes, usage=$usage, usagePhotos=$usagePhotos, usageVideos=$usageVideos, userId=$userId, userName=$userName, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'photos'] = this.photos;
+    json[r'photos'] = this.photos;
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
-    //  json[r'quotaSizeInBytes'] = null;
+      //  json[r'quotaSizeInBytes'] = null;
     }
-      json[r'usage'] = this.usage;
-      json[r'usagePhotos'] = this.usagePhotos;
-      json[r'usageVideos'] = this.usageVideos;
-      json[r'userId'] = this.userId;
-      json[r'userName'] = this.userName;
-      json[r'videos'] = this.videos;
+    json[r'usage'] = this.usage;
+    json[r'usagePhotos'] = this.usagePhotos;
+    json[r'usageVideos'] = this.usageVideos;
+    json[r'userId'] = this.userId;
+    json[r'userName'] = this.userName;
+    json[r'videos'] = this.videos;
     return json;
   }
 
@@ -104,7 +107,10 @@ class UsageByUserDto {
     return null;
   }
 
-  static List<UsageByUserDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<UsageByUserDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <UsageByUserDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -132,13 +138,19 @@ class UsageByUserDto {
   }
 
   // maps a json object with a list of UsageByUserDto-objects as value to a dart map
-  static Map<String, List<UsageByUserDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<UsageByUserDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<UsageByUserDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = UsageByUserDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = UsageByUserDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -156,4 +168,3 @@ class UsageByUserDto {
     'videos',
   };
 }
-

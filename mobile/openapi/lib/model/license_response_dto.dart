@@ -25,26 +25,27 @@ class LicenseResponseDto {
   String licenseKey;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is LicenseResponseDto &&
-    other.activatedAt == activatedAt &&
-    other.activationKey == activationKey &&
-    other.licenseKey == licenseKey;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LicenseResponseDto &&
+          other.activatedAt == activatedAt &&
+          other.activationKey == activationKey &&
+          other.licenseKey == licenseKey;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (activatedAt.hashCode) +
-    (activationKey.hashCode) +
-    (licenseKey.hashCode);
+      // ignore: unnecessary_parenthesis
+      (activatedAt.hashCode) + (activationKey.hashCode) + (licenseKey.hashCode);
 
   @override
-  String toString() => 'LicenseResponseDto[activatedAt=$activatedAt, activationKey=$activationKey, licenseKey=$licenseKey]';
+  String toString() =>
+      'LicenseResponseDto[activatedAt=$activatedAt, activationKey=$activationKey, licenseKey=$licenseKey]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'activatedAt'] = this.activatedAt.toUtc().toIso8601String();
-      json[r'activationKey'] = this.activationKey;
-      json[r'licenseKey'] = this.licenseKey;
+    json[r'activatedAt'] = this.activatedAt.toUtc().toIso8601String();
+    json[r'activationKey'] = this.activationKey;
+    json[r'licenseKey'] = this.licenseKey;
     return json;
   }
 
@@ -65,7 +66,10 @@ class LicenseResponseDto {
     return null;
   }
 
-  static List<LicenseResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<LicenseResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <LicenseResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -93,13 +97,19 @@ class LicenseResponseDto {
   }
 
   // maps a json object with a list of LicenseResponseDto-objects as value to a dart map
-  static Map<String, List<LicenseResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<LicenseResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<LicenseResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = LicenseResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = LicenseResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +122,3 @@ class LicenseResponseDto {
     'licenseKey',
   };
 }
-

@@ -31,32 +31,35 @@ class SystemConfigImageDto {
   SystemConfigGeneratedImageDto thumbnail;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigImageDto &&
-    other.colorspace == colorspace &&
-    other.extractEmbedded == extractEmbedded &&
-    other.fullsize == fullsize &&
-    other.preview == preview &&
-    other.thumbnail == thumbnail;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SystemConfigImageDto &&
+          other.colorspace == colorspace &&
+          other.extractEmbedded == extractEmbedded &&
+          other.fullsize == fullsize &&
+          other.preview == preview &&
+          other.thumbnail == thumbnail;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (colorspace.hashCode) +
-    (extractEmbedded.hashCode) +
-    (fullsize.hashCode) +
-    (preview.hashCode) +
-    (thumbnail.hashCode);
+      // ignore: unnecessary_parenthesis
+      (colorspace.hashCode) +
+      (extractEmbedded.hashCode) +
+      (fullsize.hashCode) +
+      (preview.hashCode) +
+      (thumbnail.hashCode);
 
   @override
-  String toString() => 'SystemConfigImageDto[colorspace=$colorspace, extractEmbedded=$extractEmbedded, fullsize=$fullsize, preview=$preview, thumbnail=$thumbnail]';
+  String toString() =>
+      'SystemConfigImageDto[colorspace=$colorspace, extractEmbedded=$extractEmbedded, fullsize=$fullsize, preview=$preview, thumbnail=$thumbnail]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'colorspace'] = this.colorspace;
-      json[r'extractEmbedded'] = this.extractEmbedded;
-      json[r'fullsize'] = this.fullsize;
-      json[r'preview'] = this.preview;
-      json[r'thumbnail'] = this.thumbnail;
+    json[r'colorspace'] = this.colorspace;
+    json[r'extractEmbedded'] = this.extractEmbedded;
+    json[r'fullsize'] = this.fullsize;
+    json[r'preview'] = this.preview;
+    json[r'thumbnail'] = this.thumbnail;
     return json;
   }
 
@@ -79,7 +82,10 @@ class SystemConfigImageDto {
     return null;
   }
 
-  static List<SystemConfigImageDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigImageDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigImageDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -107,13 +113,19 @@ class SystemConfigImageDto {
   }
 
   // maps a json object with a list of SystemConfigImageDto-objects as value to a dart map
-  static Map<String, List<SystemConfigImageDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigImageDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigImageDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigImageDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigImageDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -128,4 +140,3 @@ class SystemConfigImageDto {
     'thumbnail',
   };
 }
-

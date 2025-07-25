@@ -351,7 +351,6 @@ part 'model/version_check_state_response_dto.dart';
 part 'model/video_codec.dart';
 part 'model/video_container.dart';
 
-
 /// An [ApiClient] instance that uses the default values obtained from
 /// the OpenAPI specification file.
 var defaultApiClient = ApiClient();

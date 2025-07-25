@@ -187,152 +187,155 @@ class ServerAboutResponseDto {
   String versionUrl;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is ServerAboutResponseDto &&
-    other.build == build &&
-    other.buildImage == buildImage &&
-    other.buildImageUrl == buildImageUrl &&
-    other.buildUrl == buildUrl &&
-    other.exiftool == exiftool &&
-    other.ffmpeg == ffmpeg &&
-    other.imagemagick == imagemagick &&
-    other.libvips == libvips &&
-    other.licensed == licensed &&
-    other.nodejs == nodejs &&
-    other.repository == repository &&
-    other.repositoryUrl == repositoryUrl &&
-    other.sourceCommit == sourceCommit &&
-    other.sourceRef == sourceRef &&
-    other.sourceUrl == sourceUrl &&
-    other.thirdPartyBugFeatureUrl == thirdPartyBugFeatureUrl &&
-    other.thirdPartyDocumentationUrl == thirdPartyDocumentationUrl &&
-    other.thirdPartySourceUrl == thirdPartySourceUrl &&
-    other.thirdPartySupportUrl == thirdPartySupportUrl &&
-    other.version == version &&
-    other.versionUrl == versionUrl;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ServerAboutResponseDto &&
+          other.build == build &&
+          other.buildImage == buildImage &&
+          other.buildImageUrl == buildImageUrl &&
+          other.buildUrl == buildUrl &&
+          other.exiftool == exiftool &&
+          other.ffmpeg == ffmpeg &&
+          other.imagemagick == imagemagick &&
+          other.libvips == libvips &&
+          other.licensed == licensed &&
+          other.nodejs == nodejs &&
+          other.repository == repository &&
+          other.repositoryUrl == repositoryUrl &&
+          other.sourceCommit == sourceCommit &&
+          other.sourceRef == sourceRef &&
+          other.sourceUrl == sourceUrl &&
+          other.thirdPartyBugFeatureUrl == thirdPartyBugFeatureUrl &&
+          other.thirdPartyDocumentationUrl == thirdPartyDocumentationUrl &&
+          other.thirdPartySourceUrl == thirdPartySourceUrl &&
+          other.thirdPartySupportUrl == thirdPartySupportUrl &&
+          other.version == version &&
+          other.versionUrl == versionUrl;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (build == null ? 0 : build!.hashCode) +
-    (buildImage == null ? 0 : buildImage!.hashCode) +
-    (buildImageUrl == null ? 0 : buildImageUrl!.hashCode) +
-    (buildUrl == null ? 0 : buildUrl!.hashCode) +
-    (exiftool == null ? 0 : exiftool!.hashCode) +
-    (ffmpeg == null ? 0 : ffmpeg!.hashCode) +
-    (imagemagick == null ? 0 : imagemagick!.hashCode) +
-    (libvips == null ? 0 : libvips!.hashCode) +
-    (licensed.hashCode) +
-    (nodejs == null ? 0 : nodejs!.hashCode) +
-    (repository == null ? 0 : repository!.hashCode) +
-    (repositoryUrl == null ? 0 : repositoryUrl!.hashCode) +
-    (sourceCommit == null ? 0 : sourceCommit!.hashCode) +
-    (sourceRef == null ? 0 : sourceRef!.hashCode) +
-    (sourceUrl == null ? 0 : sourceUrl!.hashCode) +
-    (thirdPartyBugFeatureUrl == null ? 0 : thirdPartyBugFeatureUrl!.hashCode) +
-    (thirdPartyDocumentationUrl == null ? 0 : thirdPartyDocumentationUrl!.hashCode) +
-    (thirdPartySourceUrl == null ? 0 : thirdPartySourceUrl!.hashCode) +
-    (thirdPartySupportUrl == null ? 0 : thirdPartySupportUrl!.hashCode) +
-    (version.hashCode) +
-    (versionUrl.hashCode);
+      // ignore: unnecessary_parenthesis
+      (build == null ? 0 : build!.hashCode) +
+      (buildImage == null ? 0 : buildImage!.hashCode) +
+      (buildImageUrl == null ? 0 : buildImageUrl!.hashCode) +
+      (buildUrl == null ? 0 : buildUrl!.hashCode) +
+      (exiftool == null ? 0 : exiftool!.hashCode) +
+      (ffmpeg == null ? 0 : ffmpeg!.hashCode) +
+      (imagemagick == null ? 0 : imagemagick!.hashCode) +
+      (libvips == null ? 0 : libvips!.hashCode) +
+      (licensed.hashCode) +
+      (nodejs == null ? 0 : nodejs!.hashCode) +
+      (repository == null ? 0 : repository!.hashCode) +
+      (repositoryUrl == null ? 0 : repositoryUrl!.hashCode) +
+      (sourceCommit == null ? 0 : sourceCommit!.hashCode) +
+      (sourceRef == null ? 0 : sourceRef!.hashCode) +
+      (sourceUrl == null ? 0 : sourceUrl!.hashCode) +
+      (thirdPartyBugFeatureUrl == null ? 0 : thirdPartyBugFeatureUrl!.hashCode) +
+      (thirdPartyDocumentationUrl == null ? 0 : thirdPartyDocumentationUrl!.hashCode) +
+      (thirdPartySourceUrl == null ? 0 : thirdPartySourceUrl!.hashCode) +
+      (thirdPartySupportUrl == null ? 0 : thirdPartySupportUrl!.hashCode) +
+      (version.hashCode) +
+      (versionUrl.hashCode);
 
   @override
-  String toString() => 'ServerAboutResponseDto[build=$build, buildImage=$buildImage, buildImageUrl=$buildImageUrl, buildUrl=$buildUrl, exiftool=$exiftool, ffmpeg=$ffmpeg, imagemagick=$imagemagick, libvips=$libvips, licensed=$licensed, nodejs=$nodejs, repository=$repository, repositoryUrl=$repositoryUrl, sourceCommit=$sourceCommit, sourceRef=$sourceRef, sourceUrl=$sourceUrl, thirdPartyBugFeatureUrl=$thirdPartyBugFeatureUrl, thirdPartyDocumentationUrl=$thirdPartyDocumentationUrl, thirdPartySourceUrl=$thirdPartySourceUrl, thirdPartySupportUrl=$thirdPartySupportUrl, version=$version, versionUrl=$versionUrl]';
+  String toString() =>
+      'ServerAboutResponseDto[build=$build, buildImage=$buildImage, buildImageUrl=$buildImageUrl, buildUrl=$buildUrl, exiftool=$exiftool, ffmpeg=$ffmpeg, imagemagick=$imagemagick, libvips=$libvips, licensed=$licensed, nodejs=$nodejs, repository=$repository, repositoryUrl=$repositoryUrl, sourceCommit=$sourceCommit, sourceRef=$sourceRef, sourceUrl=$sourceUrl, thirdPartyBugFeatureUrl=$thirdPartyBugFeatureUrl, thirdPartyDocumentationUrl=$thirdPartyDocumentationUrl, thirdPartySourceUrl=$thirdPartySourceUrl, thirdPartySupportUrl=$thirdPartySupportUrl, version=$version, versionUrl=$versionUrl]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.build != null) {
       json[r'build'] = this.build;
     } else {
-    //  json[r'build'] = null;
+      //  json[r'build'] = null;
     }
     if (this.buildImage != null) {
       json[r'buildImage'] = this.buildImage;
     } else {
-    //  json[r'buildImage'] = null;
+      //  json[r'buildImage'] = null;
     }
     if (this.buildImageUrl != null) {
       json[r'buildImageUrl'] = this.buildImageUrl;
     } else {
-    //  json[r'buildImageUrl'] = null;
+      //  json[r'buildImageUrl'] = null;
     }
     if (this.buildUrl != null) {
       json[r'buildUrl'] = this.buildUrl;
     } else {
-    //  json[r'buildUrl'] = null;
+      //  json[r'buildUrl'] = null;
     }
     if (this.exiftool != null) {
       json[r'exiftool'] = this.exiftool;
     } else {
-    //  json[r'exiftool'] = null;
+      //  json[r'exiftool'] = null;
     }
     if (this.ffmpeg != null) {
       json[r'ffmpeg'] = this.ffmpeg;
     } else {
-    //  json[r'ffmpeg'] = null;
+      //  json[r'ffmpeg'] = null;
     }
     if (this.imagemagick != null) {
       json[r'imagemagick'] = this.imagemagick;
     } else {
-    //  json[r'imagemagick'] = null;
+      //  json[r'imagemagick'] = null;
     }
     if (this.libvips != null) {
       json[r'libvips'] = this.libvips;
     } else {
-    //  json[r'libvips'] = null;
+      //  json[r'libvips'] = null;
     }
-      json[r'licensed'] = this.licensed;
+    json[r'licensed'] = this.licensed;
     if (this.nodejs != null) {
       json[r'nodejs'] = this.nodejs;
     } else {
-    //  json[r'nodejs'] = null;
+      //  json[r'nodejs'] = null;
     }
     if (this.repository != null) {
       json[r'repository'] = this.repository;
     } else {
-    //  json[r'repository'] = null;
+      //  json[r'repository'] = null;
     }
     if (this.repositoryUrl != null) {
       json[r'repositoryUrl'] = this.repositoryUrl;
     } else {
-    //  json[r'repositoryUrl'] = null;
+      //  json[r'repositoryUrl'] = null;
     }
     if (this.sourceCommit != null) {
       json[r'sourceCommit'] = this.sourceCommit;
     } else {
-    //  json[r'sourceCommit'] = null;
+      //  json[r'sourceCommit'] = null;
     }
     if (this.sourceRef != null) {
       json[r'sourceRef'] = this.sourceRef;
     } else {
-    //  json[r'sourceRef'] = null;
+      //  json[r'sourceRef'] = null;
     }
     if (this.sourceUrl != null) {
       json[r'sourceUrl'] = this.sourceUrl;
     } else {
-    //  json[r'sourceUrl'] = null;
+      //  json[r'sourceUrl'] = null;
     }
     if (this.thirdPartyBugFeatureUrl != null) {
       json[r'thirdPartyBugFeatureUrl'] = this.thirdPartyBugFeatureUrl;
     } else {
-    //  json[r'thirdPartyBugFeatureUrl'] = null;
+      //  json[r'thirdPartyBugFeatureUrl'] = null;
     }
     if (this.thirdPartyDocumentationUrl != null) {
       json[r'thirdPartyDocumentationUrl'] = this.thirdPartyDocumentationUrl;
     } else {
-    //  json[r'thirdPartyDocumentationUrl'] = null;
+      //  json[r'thirdPartyDocumentationUrl'] = null;
     }
     if (this.thirdPartySourceUrl != null) {
       json[r'thirdPartySourceUrl'] = this.thirdPartySourceUrl;
     } else {
-    //  json[r'thirdPartySourceUrl'] = null;
+      //  json[r'thirdPartySourceUrl'] = null;
     }
     if (this.thirdPartySupportUrl != null) {
       json[r'thirdPartySupportUrl'] = this.thirdPartySupportUrl;
     } else {
-    //  json[r'thirdPartySupportUrl'] = null;
+      //  json[r'thirdPartySupportUrl'] = null;
     }
-      json[r'version'] = this.version;
-      json[r'versionUrl'] = this.versionUrl;
+    json[r'version'] = this.version;
+    json[r'versionUrl'] = this.versionUrl;
     return json;
   }
 
@@ -371,7 +374,10 @@ class ServerAboutResponseDto {
     return null;
   }
 
-  static List<ServerAboutResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ServerAboutResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <ServerAboutResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -399,13 +405,19 @@ class ServerAboutResponseDto {
   }
 
   // maps a json object with a list of ServerAboutResponseDto-objects as value to a dart map
-  static Map<String, List<ServerAboutResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<ServerAboutResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<ServerAboutResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = ServerAboutResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = ServerAboutResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -418,4 +430,3 @@ class ServerAboutResponseDto {
     'versionUrl',
   };
 }
-

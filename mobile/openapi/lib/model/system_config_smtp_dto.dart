@@ -28,29 +28,28 @@ class SystemConfigSmtpDto {
   SystemConfigSmtpTransportDto transport;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigSmtpDto &&
-    other.enabled == enabled &&
-    other.from == from &&
-    other.replyTo == replyTo &&
-    other.transport == transport;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SystemConfigSmtpDto &&
+          other.enabled == enabled &&
+          other.from == from &&
+          other.replyTo == replyTo &&
+          other.transport == transport;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (enabled.hashCode) +
-    (from.hashCode) +
-    (replyTo.hashCode) +
-    (transport.hashCode);
+      // ignore: unnecessary_parenthesis
+      (enabled.hashCode) + (from.hashCode) + (replyTo.hashCode) + (transport.hashCode);
 
   @override
   String toString() => 'SystemConfigSmtpDto[enabled=$enabled, from=$from, replyTo=$replyTo, transport=$transport]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'enabled'] = this.enabled;
-      json[r'from'] = this.from;
-      json[r'replyTo'] = this.replyTo;
-      json[r'transport'] = this.transport;
+    json[r'enabled'] = this.enabled;
+    json[r'from'] = this.from;
+    json[r'replyTo'] = this.replyTo;
+    json[r'transport'] = this.transport;
     return json;
   }
 
@@ -72,7 +71,10 @@ class SystemConfigSmtpDto {
     return null;
   }
 
-  static List<SystemConfigSmtpDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigSmtpDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigSmtpDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -100,13 +102,19 @@ class SystemConfigSmtpDto {
   }
 
   // maps a json object with a list of SystemConfigSmtpDto-objects as value to a dart map
-  static Map<String, List<SystemConfigSmtpDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigSmtpDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigSmtpDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigSmtpDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigSmtpDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -120,4 +128,3 @@ class SystemConfigSmtpDto {
     'transport',
   };
 }
-

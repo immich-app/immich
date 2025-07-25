@@ -34,32 +34,35 @@ class CreateAlbumDto {
   String? description;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is CreateAlbumDto &&
-    other.albumName == albumName &&
-    _deepEquality.equals(other.albumUsers, albumUsers) &&
-    _deepEquality.equals(other.assetIds, assetIds) &&
-    other.description == description;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CreateAlbumDto &&
+          other.albumName == albumName &&
+          _deepEquality.equals(other.albumUsers, albumUsers) &&
+          _deepEquality.equals(other.assetIds, assetIds) &&
+          other.description == description;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumName.hashCode) +
-    (albumUsers.hashCode) +
-    (assetIds.hashCode) +
-    (description == null ? 0 : description!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (albumName.hashCode) +
+      (albumUsers.hashCode) +
+      (assetIds.hashCode) +
+      (description == null ? 0 : description!.hashCode);
 
   @override
-  String toString() => 'CreateAlbumDto[albumName=$albumName, albumUsers=$albumUsers, assetIds=$assetIds, description=$description]';
+  String toString() =>
+      'CreateAlbumDto[albumName=$albumName, albumUsers=$albumUsers, assetIds=$assetIds, description=$description]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albumName'] = this.albumName;
-      json[r'albumUsers'] = this.albumUsers;
-      json[r'assetIds'] = this.assetIds;
+    json[r'albumName'] = this.albumName;
+    json[r'albumUsers'] = this.albumUsers;
+    json[r'assetIds'] = this.assetIds;
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
-    //  json[r'description'] = null;
+      //  json[r'description'] = null;
     }
     return json;
   }
@@ -84,7 +87,10 @@ class CreateAlbumDto {
     return null;
   }
 
-  static List<CreateAlbumDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<CreateAlbumDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <CreateAlbumDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -112,13 +118,19 @@ class CreateAlbumDto {
   }
 
   // maps a json object with a list of CreateAlbumDto-objects as value to a dart map
-  static Map<String, List<CreateAlbumDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<CreateAlbumDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<CreateAlbumDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = CreateAlbumDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = CreateAlbumDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -129,4 +141,3 @@ class CreateAlbumDto {
     'albumName',
   };
 }
-

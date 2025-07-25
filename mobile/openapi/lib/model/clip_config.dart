@@ -22,23 +22,21 @@ class CLIPConfig {
   String modelName;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is CLIPConfig &&
-    other.enabled == enabled &&
-    other.modelName == modelName;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is CLIPConfig && other.enabled == enabled && other.modelName == modelName;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (enabled.hashCode) +
-    (modelName.hashCode);
+      // ignore: unnecessary_parenthesis
+      (enabled.hashCode) + (modelName.hashCode);
 
   @override
   String toString() => 'CLIPConfig[enabled=$enabled, modelName=$modelName]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'enabled'] = this.enabled;
-      json[r'modelName'] = this.modelName;
+    json[r'enabled'] = this.enabled;
+    json[r'modelName'] = this.modelName;
     return json;
   }
 
@@ -58,7 +56,10 @@ class CLIPConfig {
     return null;
   }
 
-  static List<CLIPConfig> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<CLIPConfig> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <CLIPConfig>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +87,19 @@ class CLIPConfig {
   }
 
   // maps a json object with a list of CLIPConfig-objects as value to a dart map
-  static Map<String, List<CLIPConfig>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<CLIPConfig>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<CLIPConfig>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = CLIPConfig.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = CLIPConfig.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +111,3 @@ class CLIPConfig {
     'modelName',
   };
 }
-

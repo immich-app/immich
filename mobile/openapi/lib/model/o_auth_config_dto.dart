@@ -37,17 +37,19 @@ class OAuthConfigDto {
   String? state;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is OAuthConfigDto &&
-    other.codeChallenge == codeChallenge &&
-    other.redirectUri == redirectUri &&
-    other.state == state;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is OAuthConfigDto &&
+          other.codeChallenge == codeChallenge &&
+          other.redirectUri == redirectUri &&
+          other.state == state;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (codeChallenge == null ? 0 : codeChallenge!.hashCode) +
-    (redirectUri.hashCode) +
-    (state == null ? 0 : state!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (codeChallenge == null ? 0 : codeChallenge!.hashCode) +
+      (redirectUri.hashCode) +
+      (state == null ? 0 : state!.hashCode);
 
   @override
   String toString() => 'OAuthConfigDto[codeChallenge=$codeChallenge, redirectUri=$redirectUri, state=$state]';
@@ -57,13 +59,13 @@ class OAuthConfigDto {
     if (this.codeChallenge != null) {
       json[r'codeChallenge'] = this.codeChallenge;
     } else {
-    //  json[r'codeChallenge'] = null;
+      //  json[r'codeChallenge'] = null;
     }
-      json[r'redirectUri'] = this.redirectUri;
+    json[r'redirectUri'] = this.redirectUri;
     if (this.state != null) {
       json[r'state'] = this.state;
     } else {
-    //  json[r'state'] = null;
+      //  json[r'state'] = null;
     }
     return json;
   }
@@ -85,7 +87,10 @@ class OAuthConfigDto {
     return null;
   }
 
-  static List<OAuthConfigDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<OAuthConfigDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <OAuthConfigDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -113,13 +118,19 @@ class OAuthConfigDto {
   }
 
   // maps a json object with a list of OAuthConfigDto-objects as value to a dart map
-  static Map<String, List<OAuthConfigDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<OAuthConfigDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<OAuthConfigDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = OAuthConfigDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = OAuthConfigDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -130,4 +141,3 @@ class OAuthConfigDto {
     'redirectUri',
   };
 }
-

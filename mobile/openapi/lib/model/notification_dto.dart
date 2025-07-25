@@ -58,53 +58,56 @@ class NotificationDto {
   NotificationType type;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is NotificationDto &&
-    other.createdAt == createdAt &&
-    other.data == data &&
-    other.description == description &&
-    other.id == id &&
-    other.level == level &&
-    other.readAt == readAt &&
-    other.title == title &&
-    other.type == type;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NotificationDto &&
+          other.createdAt == createdAt &&
+          other.data == data &&
+          other.description == description &&
+          other.id == id &&
+          other.level == level &&
+          other.readAt == readAt &&
+          other.title == title &&
+          other.type == type;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (createdAt.hashCode) +
-    (data == null ? 0 : data!.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (id.hashCode) +
-    (level.hashCode) +
-    (readAt == null ? 0 : readAt!.hashCode) +
-    (title.hashCode) +
-    (type.hashCode);
+      // ignore: unnecessary_parenthesis
+      (createdAt.hashCode) +
+      (data == null ? 0 : data!.hashCode) +
+      (description == null ? 0 : description!.hashCode) +
+      (id.hashCode) +
+      (level.hashCode) +
+      (readAt == null ? 0 : readAt!.hashCode) +
+      (title.hashCode) +
+      (type.hashCode);
 
   @override
-  String toString() => 'NotificationDto[createdAt=$createdAt, data=$data, description=$description, id=$id, level=$level, readAt=$readAt, title=$title, type=$type]';
+  String toString() =>
+      'NotificationDto[createdAt=$createdAt, data=$data, description=$description, id=$id, level=$level, readAt=$readAt, title=$title, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+    json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
     if (this.data != null) {
       json[r'data'] = this.data;
     } else {
-    //  json[r'data'] = null;
+      //  json[r'data'] = null;
     }
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
-    //  json[r'description'] = null;
+      //  json[r'description'] = null;
     }
-      json[r'id'] = this.id;
-      json[r'level'] = this.level;
+    json[r'id'] = this.id;
+    json[r'level'] = this.level;
     if (this.readAt != null) {
       json[r'readAt'] = this.readAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'readAt'] = null;
+      //  json[r'readAt'] = null;
     }
-      json[r'title'] = this.title;
-      json[r'type'] = this.type;
+    json[r'title'] = this.title;
+    json[r'type'] = this.type;
     return json;
   }
 
@@ -130,7 +133,10 @@ class NotificationDto {
     return null;
   }
 
-  static List<NotificationDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<NotificationDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <NotificationDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -158,13 +164,19 @@ class NotificationDto {
   }
 
   // maps a json object with a list of NotificationDto-objects as value to a dart map
-  static Map<String, List<NotificationDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<NotificationDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<NotificationDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = NotificationDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = NotificationDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -179,4 +191,3 @@ class NotificationDto {
     'type',
   };
 }
-

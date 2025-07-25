@@ -49,46 +49,49 @@ class TagResponseDto {
   String value;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is TagResponseDto &&
-    other.color == color &&
-    other.createdAt == createdAt &&
-    other.id == id &&
-    other.name == name &&
-    other.parentId == parentId &&
-    other.updatedAt == updatedAt &&
-    other.value == value;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TagResponseDto &&
+          other.color == color &&
+          other.createdAt == createdAt &&
+          other.id == id &&
+          other.name == name &&
+          other.parentId == parentId &&
+          other.updatedAt == updatedAt &&
+          other.value == value;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (color == null ? 0 : color!.hashCode) +
-    (createdAt.hashCode) +
-    (id.hashCode) +
-    (name.hashCode) +
-    (parentId == null ? 0 : parentId!.hashCode) +
-    (updatedAt.hashCode) +
-    (value.hashCode);
+      // ignore: unnecessary_parenthesis
+      (color == null ? 0 : color!.hashCode) +
+      (createdAt.hashCode) +
+      (id.hashCode) +
+      (name.hashCode) +
+      (parentId == null ? 0 : parentId!.hashCode) +
+      (updatedAt.hashCode) +
+      (value.hashCode);
 
   @override
-  String toString() => 'TagResponseDto[color=$color, createdAt=$createdAt, id=$id, name=$name, parentId=$parentId, updatedAt=$updatedAt, value=$value]';
+  String toString() =>
+      'TagResponseDto[color=$color, createdAt=$createdAt, id=$id, name=$name, parentId=$parentId, updatedAt=$updatedAt, value=$value]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.color != null) {
       json[r'color'] = this.color;
     } else {
-    //  json[r'color'] = null;
+      //  json[r'color'] = null;
     }
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-      json[r'id'] = this.id;
-      json[r'name'] = this.name;
+    json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+    json[r'id'] = this.id;
+    json[r'name'] = this.name;
     if (this.parentId != null) {
       json[r'parentId'] = this.parentId;
     } else {
-    //  json[r'parentId'] = null;
+      //  json[r'parentId'] = null;
     }
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
-      json[r'value'] = this.value;
+    json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+    json[r'value'] = this.value;
     return json;
   }
 
@@ -113,7 +116,10 @@ class TagResponseDto {
     return null;
   }
 
-  static List<TagResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<TagResponseDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <TagResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -141,13 +147,19 @@ class TagResponseDto {
   }
 
   // maps a json object with a list of TagResponseDto-objects as value to a dart map
-  static Map<String, List<TagResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<TagResponseDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<TagResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = TagResponseDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = TagResponseDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -162,4 +174,3 @@ class TagResponseDto {
     'value',
   };
 }
-

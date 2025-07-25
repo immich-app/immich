@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class AudioCodec {
   /// Instantiate a new enum with the provided [value].
   const AudioCodec._(this.value);
@@ -38,7 +37,10 @@ class AudioCodec {
 
   static AudioCodec? fromJson(dynamic value) => AudioCodecTypeTransformer().decode(value);
 
-  static List<AudioCodec> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AudioCodec> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AudioCodec>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -72,10 +74,14 @@ class AudioCodecTypeTransformer {
   AudioCodec? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'mp3': return AudioCodec.mp3;
-        case r'aac': return AudioCodec.aac;
-        case r'libopus': return AudioCodec.libopus;
-        case r'pcm_s16le': return AudioCodec.pcmS16le;
+        case r'mp3':
+          return AudioCodec.mp3;
+        case r'aac':
+          return AudioCodec.aac;
+        case r'libopus':
+          return AudioCodec.libopus;
+        case r'pcm_s16le':
+          return AudioCodec.pcmS16le;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -88,4 +94,3 @@ class AudioCodecTypeTransformer {
   /// Singleton [AudioCodecTypeTransformer] instance.
   static AudioCodecTypeTransformer? _instance;
 }
-

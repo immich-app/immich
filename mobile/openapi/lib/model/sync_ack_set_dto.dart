@@ -19,20 +19,20 @@ class SyncAckSetDto {
   List<String> acks;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncAckSetDto &&
-    _deepEquality.equals(other.acks, acks);
+  bool operator ==(Object other) =>
+      identical(this, other) || other is SyncAckSetDto && _deepEquality.equals(other.acks, acks);
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (acks.hashCode);
+      // ignore: unnecessary_parenthesis
+      (acks.hashCode);
 
   @override
   String toString() => 'SyncAckSetDto[acks=$acks]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'acks'] = this.acks;
+    json[r'acks'] = this.acks;
     return json;
   }
 
@@ -45,15 +45,16 @@ class SyncAckSetDto {
       final json = value.cast<String, dynamic>();
 
       return SyncAckSetDto(
-        acks: json[r'acks'] is Iterable
-            ? (json[r'acks'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+        acks: json[r'acks'] is Iterable ? (json[r'acks'] as Iterable).cast<String>().toList(growable: false) : const [],
       );
     }
     return null;
   }
 
-  static List<SyncAckSetDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncAckSetDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncAckSetDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -81,13 +82,19 @@ class SyncAckSetDto {
   }
 
   // maps a json object with a list of SyncAckSetDto-objects as value to a dart map
-  static Map<String, List<SyncAckSetDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncAckSetDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncAckSetDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncAckSetDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncAckSetDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -98,4 +105,3 @@ class SyncAckSetDto {
     'acks',
   };
 }
-

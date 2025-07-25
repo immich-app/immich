@@ -19,20 +19,19 @@ class SyncUserDeleteV1 {
   String userId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncUserDeleteV1 &&
-    other.userId == userId;
+  bool operator ==(Object other) => identical(this, other) || other is SyncUserDeleteV1 && other.userId == userId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (userId.hashCode);
+      // ignore: unnecessary_parenthesis
+      (userId.hashCode);
 
   @override
   String toString() => 'SyncUserDeleteV1[userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'userId'] = this.userId;
+    json[r'userId'] = this.userId;
     return json;
   }
 
@@ -51,7 +50,10 @@ class SyncUserDeleteV1 {
     return null;
   }
 
-  static List<SyncUserDeleteV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncUserDeleteV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncUserDeleteV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +81,19 @@ class SyncUserDeleteV1 {
   }
 
   // maps a json object with a list of SyncUserDeleteV1-objects as value to a dart map
-  static Map<String, List<SyncUserDeleteV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncUserDeleteV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncUserDeleteV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncUserDeleteV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncUserDeleteV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +104,3 @@ class SyncUserDeleteV1 {
     'userId',
   };
 }
-

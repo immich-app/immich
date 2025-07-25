@@ -25,26 +25,26 @@ class SystemConfigMapDto {
   String lightStyle;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SystemConfigMapDto &&
-    other.darkStyle == darkStyle &&
-    other.enabled == enabled &&
-    other.lightStyle == lightStyle;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SystemConfigMapDto &&
+          other.darkStyle == darkStyle &&
+          other.enabled == enabled &&
+          other.lightStyle == lightStyle;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (darkStyle.hashCode) +
-    (enabled.hashCode) +
-    (lightStyle.hashCode);
+      // ignore: unnecessary_parenthesis
+      (darkStyle.hashCode) + (enabled.hashCode) + (lightStyle.hashCode);
 
   @override
   String toString() => 'SystemConfigMapDto[darkStyle=$darkStyle, enabled=$enabled, lightStyle=$lightStyle]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'darkStyle'] = this.darkStyle;
-      json[r'enabled'] = this.enabled;
-      json[r'lightStyle'] = this.lightStyle;
+    json[r'darkStyle'] = this.darkStyle;
+    json[r'enabled'] = this.enabled;
+    json[r'lightStyle'] = this.lightStyle;
     return json;
   }
 
@@ -65,7 +65,10 @@ class SystemConfigMapDto {
     return null;
   }
 
-  static List<SystemConfigMapDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SystemConfigMapDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SystemConfigMapDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -93,13 +96,19 @@ class SystemConfigMapDto {
   }
 
   // maps a json object with a list of SystemConfigMapDto-objects as value to a dart map
-  static Map<String, List<SystemConfigMapDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SystemConfigMapDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SystemConfigMapDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SystemConfigMapDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SystemConfigMapDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -112,4 +121,3 @@ class SystemConfigMapDto {
     'lightStyle',
   };
 }
-

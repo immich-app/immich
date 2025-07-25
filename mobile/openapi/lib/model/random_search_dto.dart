@@ -254,232 +254,235 @@ class RandomSearchDto {
   bool? withStacked;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is RandomSearchDto &&
-    _deepEquality.equals(other.albumIds, albumIds) &&
-    other.city == city &&
-    other.country == country &&
-    other.createdAfter == createdAfter &&
-    other.createdBefore == createdBefore &&
-    other.deviceId == deviceId &&
-    other.isEncoded == isEncoded &&
-    other.isFavorite == isFavorite &&
-    other.isMotion == isMotion &&
-    other.isNotInAlbum == isNotInAlbum &&
-    other.isOffline == isOffline &&
-    other.lensModel == lensModel &&
-    other.libraryId == libraryId &&
-    other.make == make &&
-    other.model == model &&
-    _deepEquality.equals(other.personIds, personIds) &&
-    other.rating == rating &&
-    other.size == size &&
-    other.state == state &&
-    _deepEquality.equals(other.tagIds, tagIds) &&
-    other.takenAfter == takenAfter &&
-    other.takenBefore == takenBefore &&
-    other.trashedAfter == trashedAfter &&
-    other.trashedBefore == trashedBefore &&
-    other.type == type &&
-    other.updatedAfter == updatedAfter &&
-    other.updatedBefore == updatedBefore &&
-    other.visibility == visibility &&
-    other.withDeleted == withDeleted &&
-    other.withExif == withExif &&
-    other.withPeople == withPeople &&
-    other.withStacked == withStacked;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RandomSearchDto &&
+          _deepEquality.equals(other.albumIds, albumIds) &&
+          other.city == city &&
+          other.country == country &&
+          other.createdAfter == createdAfter &&
+          other.createdBefore == createdBefore &&
+          other.deviceId == deviceId &&
+          other.isEncoded == isEncoded &&
+          other.isFavorite == isFavorite &&
+          other.isMotion == isMotion &&
+          other.isNotInAlbum == isNotInAlbum &&
+          other.isOffline == isOffline &&
+          other.lensModel == lensModel &&
+          other.libraryId == libraryId &&
+          other.make == make &&
+          other.model == model &&
+          _deepEquality.equals(other.personIds, personIds) &&
+          other.rating == rating &&
+          other.size == size &&
+          other.state == state &&
+          _deepEquality.equals(other.tagIds, tagIds) &&
+          other.takenAfter == takenAfter &&
+          other.takenBefore == takenBefore &&
+          other.trashedAfter == trashedAfter &&
+          other.trashedBefore == trashedBefore &&
+          other.type == type &&
+          other.updatedAfter == updatedAfter &&
+          other.updatedBefore == updatedBefore &&
+          other.visibility == visibility &&
+          other.withDeleted == withDeleted &&
+          other.withExif == withExif &&
+          other.withPeople == withPeople &&
+          other.withStacked == withStacked;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (albumIds.hashCode) +
-    (city == null ? 0 : city!.hashCode) +
-    (country == null ? 0 : country!.hashCode) +
-    (createdAfter == null ? 0 : createdAfter!.hashCode) +
-    (createdBefore == null ? 0 : createdBefore!.hashCode) +
-    (deviceId == null ? 0 : deviceId!.hashCode) +
-    (isEncoded == null ? 0 : isEncoded!.hashCode) +
-    (isFavorite == null ? 0 : isFavorite!.hashCode) +
-    (isMotion == null ? 0 : isMotion!.hashCode) +
-    (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
-    (isOffline == null ? 0 : isOffline!.hashCode) +
-    (lensModel == null ? 0 : lensModel!.hashCode) +
-    (libraryId == null ? 0 : libraryId!.hashCode) +
-    (make == null ? 0 : make!.hashCode) +
-    (model == null ? 0 : model!.hashCode) +
-    (personIds.hashCode) +
-    (rating == null ? 0 : rating!.hashCode) +
-    (size == null ? 0 : size!.hashCode) +
-    (state == null ? 0 : state!.hashCode) +
-    (tagIds == null ? 0 : tagIds!.hashCode) +
-    (takenAfter == null ? 0 : takenAfter!.hashCode) +
-    (takenBefore == null ? 0 : takenBefore!.hashCode) +
-    (trashedAfter == null ? 0 : trashedAfter!.hashCode) +
-    (trashedBefore == null ? 0 : trashedBefore!.hashCode) +
-    (type == null ? 0 : type!.hashCode) +
-    (updatedAfter == null ? 0 : updatedAfter!.hashCode) +
-    (updatedBefore == null ? 0 : updatedBefore!.hashCode) +
-    (visibility == null ? 0 : visibility!.hashCode) +
-    (withDeleted == null ? 0 : withDeleted!.hashCode) +
-    (withExif == null ? 0 : withExif!.hashCode) +
-    (withPeople == null ? 0 : withPeople!.hashCode) +
-    (withStacked == null ? 0 : withStacked!.hashCode);
+      // ignore: unnecessary_parenthesis
+      (albumIds.hashCode) +
+      (city == null ? 0 : city!.hashCode) +
+      (country == null ? 0 : country!.hashCode) +
+      (createdAfter == null ? 0 : createdAfter!.hashCode) +
+      (createdBefore == null ? 0 : createdBefore!.hashCode) +
+      (deviceId == null ? 0 : deviceId!.hashCode) +
+      (isEncoded == null ? 0 : isEncoded!.hashCode) +
+      (isFavorite == null ? 0 : isFavorite!.hashCode) +
+      (isMotion == null ? 0 : isMotion!.hashCode) +
+      (isNotInAlbum == null ? 0 : isNotInAlbum!.hashCode) +
+      (isOffline == null ? 0 : isOffline!.hashCode) +
+      (lensModel == null ? 0 : lensModel!.hashCode) +
+      (libraryId == null ? 0 : libraryId!.hashCode) +
+      (make == null ? 0 : make!.hashCode) +
+      (model == null ? 0 : model!.hashCode) +
+      (personIds.hashCode) +
+      (rating == null ? 0 : rating!.hashCode) +
+      (size == null ? 0 : size!.hashCode) +
+      (state == null ? 0 : state!.hashCode) +
+      (tagIds == null ? 0 : tagIds!.hashCode) +
+      (takenAfter == null ? 0 : takenAfter!.hashCode) +
+      (takenBefore == null ? 0 : takenBefore!.hashCode) +
+      (trashedAfter == null ? 0 : trashedAfter!.hashCode) +
+      (trashedBefore == null ? 0 : trashedBefore!.hashCode) +
+      (type == null ? 0 : type!.hashCode) +
+      (updatedAfter == null ? 0 : updatedAfter!.hashCode) +
+      (updatedBefore == null ? 0 : updatedBefore!.hashCode) +
+      (visibility == null ? 0 : visibility!.hashCode) +
+      (withDeleted == null ? 0 : withDeleted!.hashCode) +
+      (withExif == null ? 0 : withExif!.hashCode) +
+      (withPeople == null ? 0 : withPeople!.hashCode) +
+      (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'RandomSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() =>
+      'RandomSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albumIds'] = this.albumIds;
+    json[r'albumIds'] = this.albumIds;
     if (this.city != null) {
       json[r'city'] = this.city;
     } else {
-    //  json[r'city'] = null;
+      //  json[r'city'] = null;
     }
     if (this.country != null) {
       json[r'country'] = this.country;
     } else {
-    //  json[r'country'] = null;
+      //  json[r'country'] = null;
     }
     if (this.createdAfter != null) {
       json[r'createdAfter'] = this.createdAfter!.toUtc().toIso8601String();
     } else {
-    //  json[r'createdAfter'] = null;
+      //  json[r'createdAfter'] = null;
     }
     if (this.createdBefore != null) {
       json[r'createdBefore'] = this.createdBefore!.toUtc().toIso8601String();
     } else {
-    //  json[r'createdBefore'] = null;
+      //  json[r'createdBefore'] = null;
     }
     if (this.deviceId != null) {
       json[r'deviceId'] = this.deviceId;
     } else {
-    //  json[r'deviceId'] = null;
+      //  json[r'deviceId'] = null;
     }
     if (this.isEncoded != null) {
       json[r'isEncoded'] = this.isEncoded;
     } else {
-    //  json[r'isEncoded'] = null;
+      //  json[r'isEncoded'] = null;
     }
     if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
     } else {
-    //  json[r'isFavorite'] = null;
+      //  json[r'isFavorite'] = null;
     }
     if (this.isMotion != null) {
       json[r'isMotion'] = this.isMotion;
     } else {
-    //  json[r'isMotion'] = null;
+      //  json[r'isMotion'] = null;
     }
     if (this.isNotInAlbum != null) {
       json[r'isNotInAlbum'] = this.isNotInAlbum;
     } else {
-    //  json[r'isNotInAlbum'] = null;
+      //  json[r'isNotInAlbum'] = null;
     }
     if (this.isOffline != null) {
       json[r'isOffline'] = this.isOffline;
     } else {
-    //  json[r'isOffline'] = null;
+      //  json[r'isOffline'] = null;
     }
     if (this.lensModel != null) {
       json[r'lensModel'] = this.lensModel;
     } else {
-    //  json[r'lensModel'] = null;
+      //  json[r'lensModel'] = null;
     }
     if (this.libraryId != null) {
       json[r'libraryId'] = this.libraryId;
     } else {
-    //  json[r'libraryId'] = null;
+      //  json[r'libraryId'] = null;
     }
     if (this.make != null) {
       json[r'make'] = this.make;
     } else {
-    //  json[r'make'] = null;
+      //  json[r'make'] = null;
     }
     if (this.model != null) {
       json[r'model'] = this.model;
     } else {
-    //  json[r'model'] = null;
+      //  json[r'model'] = null;
     }
-      json[r'personIds'] = this.personIds;
+    json[r'personIds'] = this.personIds;
     if (this.rating != null) {
       json[r'rating'] = this.rating;
     } else {
-    //  json[r'rating'] = null;
+      //  json[r'rating'] = null;
     }
     if (this.size != null) {
       json[r'size'] = this.size;
     } else {
-    //  json[r'size'] = null;
+      //  json[r'size'] = null;
     }
     if (this.state != null) {
       json[r'state'] = this.state;
     } else {
-    //  json[r'state'] = null;
+      //  json[r'state'] = null;
     }
     if (this.tagIds != null) {
       json[r'tagIds'] = this.tagIds;
     } else {
-    //  json[r'tagIds'] = null;
+      //  json[r'tagIds'] = null;
     }
     if (this.takenAfter != null) {
       json[r'takenAfter'] = this.takenAfter!.toUtc().toIso8601String();
     } else {
-    //  json[r'takenAfter'] = null;
+      //  json[r'takenAfter'] = null;
     }
     if (this.takenBefore != null) {
       json[r'takenBefore'] = this.takenBefore!.toUtc().toIso8601String();
     } else {
-    //  json[r'takenBefore'] = null;
+      //  json[r'takenBefore'] = null;
     }
     if (this.trashedAfter != null) {
       json[r'trashedAfter'] = this.trashedAfter!.toUtc().toIso8601String();
     } else {
-    //  json[r'trashedAfter'] = null;
+      //  json[r'trashedAfter'] = null;
     }
     if (this.trashedBefore != null) {
       json[r'trashedBefore'] = this.trashedBefore!.toUtc().toIso8601String();
     } else {
-    //  json[r'trashedBefore'] = null;
+      //  json[r'trashedBefore'] = null;
     }
     if (this.type != null) {
       json[r'type'] = this.type;
     } else {
-    //  json[r'type'] = null;
+      //  json[r'type'] = null;
     }
     if (this.updatedAfter != null) {
       json[r'updatedAfter'] = this.updatedAfter!.toUtc().toIso8601String();
     } else {
-    //  json[r'updatedAfter'] = null;
+      //  json[r'updatedAfter'] = null;
     }
     if (this.updatedBefore != null) {
       json[r'updatedBefore'] = this.updatedBefore!.toUtc().toIso8601String();
     } else {
-    //  json[r'updatedBefore'] = null;
+      //  json[r'updatedBefore'] = null;
     }
     if (this.visibility != null) {
       json[r'visibility'] = this.visibility;
     } else {
-    //  json[r'visibility'] = null;
+      //  json[r'visibility'] = null;
     }
     if (this.withDeleted != null) {
       json[r'withDeleted'] = this.withDeleted;
     } else {
-    //  json[r'withDeleted'] = null;
+      //  json[r'withDeleted'] = null;
     }
     if (this.withExif != null) {
       json[r'withExif'] = this.withExif;
     } else {
-    //  json[r'withExif'] = null;
+      //  json[r'withExif'] = null;
     }
     if (this.withPeople != null) {
       json[r'withPeople'] = this.withPeople;
     } else {
-    //  json[r'withPeople'] = null;
+      //  json[r'withPeople'] = null;
     }
     if (this.withStacked != null) {
       json[r'withStacked'] = this.withStacked;
     } else {
-    //  json[r'withStacked'] = null;
+      //  json[r'withStacked'] = null;
     }
     return json;
   }
@@ -536,7 +539,10 @@ class RandomSearchDto {
     return null;
   }
 
-  static List<RandomSearchDto> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<RandomSearchDto> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <RandomSearchDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -564,20 +570,24 @@ class RandomSearchDto {
   }
 
   // maps a json object with a list of RandomSearchDto-objects as value to a dart map
-  static Map<String, List<RandomSearchDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<RandomSearchDto>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<RandomSearchDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = RandomSearchDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = RandomSearchDto.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
   }
 
   /// The list of required keys that must be present in a JSON.
-  static const requiredKeys = <String>{
-  };
+  static const requiredKeys = <String>{};
 }
-

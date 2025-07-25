@@ -22,23 +22,22 @@ class SyncPartnerDeleteV1 {
   String sharedWithId;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is SyncPartnerDeleteV1 &&
-    other.sharedById == sharedById &&
-    other.sharedWithId == sharedWithId;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncPartnerDeleteV1 && other.sharedById == sharedById && other.sharedWithId == sharedWithId;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (sharedById.hashCode) +
-    (sharedWithId.hashCode);
+      // ignore: unnecessary_parenthesis
+      (sharedById.hashCode) + (sharedWithId.hashCode);
 
   @override
   String toString() => 'SyncPartnerDeleteV1[sharedById=$sharedById, sharedWithId=$sharedWithId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'sharedById'] = this.sharedById;
-      json[r'sharedWithId'] = this.sharedWithId;
+    json[r'sharedById'] = this.sharedById;
+    json[r'sharedWithId'] = this.sharedWithId;
     return json;
   }
 
@@ -58,7 +57,10 @@ class SyncPartnerDeleteV1 {
     return null;
   }
 
-  static List<SyncPartnerDeleteV1> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<SyncPartnerDeleteV1> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <SyncPartnerDeleteV1>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -86,13 +88,19 @@ class SyncPartnerDeleteV1 {
   }
 
   // maps a json object with a list of SyncPartnerDeleteV1-objects as value to a dart map
-  static Map<String, List<SyncPartnerDeleteV1>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<SyncPartnerDeleteV1>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<SyncPartnerDeleteV1>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = SyncPartnerDeleteV1.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = SyncPartnerDeleteV1.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -104,4 +112,3 @@ class SyncPartnerDeleteV1 {
     'sharedWithId',
   };
 }
-

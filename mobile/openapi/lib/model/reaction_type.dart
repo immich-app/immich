@@ -10,7 +10,6 @@
 
 part of openapi.api;
 
-
 class ReactionType {
   /// Instantiate a new enum with the provided [value].
   const ReactionType._(this.value);
@@ -34,7 +33,10 @@ class ReactionType {
 
   static ReactionType? fromJson(dynamic value) => ReactionTypeTypeTransformer().decode(value);
 
-  static List<ReactionType> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<ReactionType> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <ReactionType>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -68,8 +70,10 @@ class ReactionTypeTypeTransformer {
   ReactionType? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'comment': return ReactionType.comment;
-        case r'like': return ReactionType.like;
+        case r'comment':
+          return ReactionType.comment;
+        case r'like':
+          return ReactionType.like;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -82,4 +86,3 @@ class ReactionTypeTypeTransformer {
   /// Singleton [ReactionTypeTypeTransformer] instance.
   static ReactionTypeTypeTransformer? _instance;
 }
-

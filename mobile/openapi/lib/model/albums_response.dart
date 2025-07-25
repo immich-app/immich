@@ -19,20 +19,20 @@ class AlbumsResponse {
   AssetOrder defaultAssetOrder;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AlbumsResponse &&
-    other.defaultAssetOrder == defaultAssetOrder;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is AlbumsResponse && other.defaultAssetOrder == defaultAssetOrder;
 
   @override
   int get hashCode =>
-    // ignore: unnecessary_parenthesis
-    (defaultAssetOrder.hashCode);
+      // ignore: unnecessary_parenthesis
+      (defaultAssetOrder.hashCode);
 
   @override
   String toString() => 'AlbumsResponse[defaultAssetOrder=$defaultAssetOrder]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'defaultAssetOrder'] = this.defaultAssetOrder;
+    json[r'defaultAssetOrder'] = this.defaultAssetOrder;
     return json;
   }
 
@@ -51,7 +51,10 @@ class AlbumsResponse {
     return null;
   }
 
-  static List<AlbumsResponse> listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AlbumsResponse> listFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final result = <AlbumsResponse>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -79,13 +82,19 @@ class AlbumsResponse {
   }
 
   // maps a json object with a list of AlbumsResponse-objects as value to a dart map
-  static Map<String, List<AlbumsResponse>> mapListFromJson(dynamic json, {bool growable = false,}) {
+  static Map<String, List<AlbumsResponse>> mapListFromJson(
+    dynamic json, {
+    bool growable = false,
+  }) {
     final map = <String, List<AlbumsResponse>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AlbumsResponse.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AlbumsResponse.listFromJson(
+          entry.value,
+          growable: growable,
+        );
       }
     }
     return map;
@@ -96,4 +105,3 @@ class AlbumsResponse {
     'defaultAssetOrder',
   };
 }
-
