@@ -21,7 +21,7 @@ class EntitiyCountTile extends StatelessWidget {
 
   int calculateMaxDigits(double availableWidth) {
     const double charWidth = 11.0;
-    return (availableWidth / charWidth).floor().clamp(1, 20);
+    return (availableWidth / charWidth).floor().clamp(1, 8);
   }
 
   @override
