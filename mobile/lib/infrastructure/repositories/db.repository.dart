@@ -102,6 +102,13 @@ class Drift extends $Drift implements IDatabaseRepository {
                 columnTransformer: {v5.userEntity.profileChangedAt: currentDateAndTime},
               ),
             );
+            // Drops the (checksum, ownerId) and adds it back as (ownerId, checksum)
+            await customStatement('DROP INDEX IF EXISTS UQ_remote_asset_owner_checksum');
+            await m.create(v5.idxRemoteAssetOwnerChecksum);
+            // Adds libraryId to remote_asset_entity
+            await m.addColumn(v5.remoteAssetEntity, v5.remoteAssetEntity.libraryId);
+            await m.create(v5.uQRemoteAssetsOwnerChecksum);
+            await m.create(v5.uQRemoteAssetsOwnerLibraryChecksum);
           },
         ),
       );
