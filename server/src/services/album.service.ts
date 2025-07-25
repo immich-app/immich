@@ -189,31 +189,38 @@ export class AlbumService extends BaseService {
   }
 
   async addAssetsToAlbums(auth: AuthDto, dto: AlbumsAddAssetsDto): Promise<AlbumsAddAssetsResponseDto> {
-    const fullResults: BulkIdResponseDto[][] = []; //:{[albumId: string]: BulkIdResponseDto[]} = {};
+    const results: AlbumsAddAssetsResponseDto = {
+      success: true,
+      albumSuccessCount: 0,
+      assetSuccessCount: 0,
+      error: BulkIdErrorReason.DUPLICATE,
+    };
+    const successFulAssetIds: Set<string> = new Set();
     for (const albumId of dto.albumIds) {
       try {
         const albumResults = await this.addAssets(auth, albumId, { ids: dto.assetIds });
-        fullResults.push(albumResults);
+
+        let success = false;
+        for (const res of albumResults) {
+          if (res.success) {
+            success = true;
+            results.success = true;
+            results.error = undefined;
+            successFulAssetIds.add(res.id);
+          }
+        }
+        if (success) {
+          results.albumSuccessCount++;
+        }
       } catch {
-        fullResults.push([{ id: albumId, success: false, error: BulkIdErrorReason.NO_PERMISSION }]);
+        if (results.error) {
+          results.error = BulkIdErrorReason.UNKNOWN;
+        }
       }
     }
-    const successfulResults = fullResults.filter((r) => r.some(({ success }) => success));
-    if (successfulResults.length > 0) {
-      const albumSuccessCount = successfulResults.length;
-      const successFulAssetIds = new Set(
-        successfulResults.flatMap((result) => result.filter(({ success }) => success).flatMap(({ id }) => id)),
-      );
-      const assetSuccessCount = successFulAssetIds.size;
+    results.assetSuccessCount = successFulAssetIds.size;
 
-      return { success: true, albumSuccessCount, assetSuccessCount };
-    }
-    const error =
-      fullResults.flat().filter(({ error }) => error === BulkIdErrorReason.DUPLICATE).length ===
-      dto.albumIds.length * dto.assetIds.length
-        ? BulkIdErrorReason.DUPLICATE
-        : BulkIdErrorReason.UNKNOWN;
-    return { success: false, albumSuccessCount: 0, assetSuccessCount: 0, error };
+    return results;
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
