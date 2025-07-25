@@ -65,6 +65,7 @@ class BaseActionButton extends StatelessWidget {
               ),
               maxLines: 3,
               textAlign: TextAlign.center,
+              softWrap: true,
             ),
           ],
         ),
