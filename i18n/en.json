@@ -511,6 +511,7 @@
   "back_close_deselect": "Back, close, or deselect",
   "background_location_permission": "Background location permission",
   "background_location_permission_content": "In order to switch networks when running in the background, Immich must *always* have precise location access so the app can read the Wi-Fi network's name",
+  "backup": "Backup",
   "backup_album_selection_page_albums_device": "Albums on device ({count})",
   "backup_album_selection_page_albums_tap": "Tap to include, double tap to exclude",
   "backup_album_selection_page_assets_scatter": "Assets can scatter across multiple albums. Thus, albums can be included or excluded during the backup process.",
