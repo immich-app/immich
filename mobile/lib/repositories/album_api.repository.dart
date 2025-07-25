@@ -1,11 +1,9 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/album/album.model.dart'
-    show AlbumAssetOrder, RemoteAlbum;
+import 'package:immich_mobile/domain/models/album/album.model.dart' show AlbumAssetOrder, RemoteAlbum;
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
-    as entity;
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart' as entity;
 import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
@@ -150,8 +148,7 @@ class AlbumApiRepository extends ApiRepository {
   }
 
   Future<Album> addUsers(String albumId, Iterable<String> userIds) async {
-    final albumUsers =
-        userIds.map((userId) => AlbumUserAddDto(userId: userId)).toList();
+    final albumUsers = userIds.map((userId) => AlbumUserAddDto(userId: userId)).toList();
     final response = await checkNull(
       _api.addUsersToAlbum(
         albumId,
@@ -180,11 +177,9 @@ class AlbumApiRepository extends ApiRepository {
       sortOrder: dto.order == AssetOrder.asc ? SortOrder.asc : SortOrder.desc,
     );
     album.remoteAssetCount = dto.assetCount;
-    album.owner.value =
-        entity.User.fromDto(UserConverter.fromSimpleUserDto(dto.owner));
+    album.owner.value = entity.User.fromDto(UserConverter.fromSimpleUserDto(dto.owner));
     album.remoteThumbnailAssetId = dto.albumThumbnailAssetId;
-    final users = dto.albumUsers
-        .map((albumUser) => UserConverter.fromSimpleUserDto(albumUser.user));
+    final users = dto.albumUsers.map((albumUser) => UserConverter.fromSimpleUserDto(albumUser.user));
     album.sharedUsers.addAll(users.map(entity.User.fromDto));
     final assets = dto.assets.map(Asset.remote).toList();
     album.assets.addAll(assets);
@@ -202,9 +197,7 @@ class AlbumApiRepository extends ApiRepository {
       updatedAt: dto.updatedAt,
       thumbnailAssetId: dto.albumThumbnailAssetId,
       isActivityEnabled: dto.isActivityEnabled,
-      order: dto.order == AssetOrder.asc
-          ? AlbumAssetOrder.asc
-          : AlbumAssetOrder.desc,
+      order: dto.order == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
       assetCount: dto.assetCount,
       ownerName: dto.owner.name,
     );

@@ -19,8 +19,7 @@ class BackgroundBackupSettings extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isBackgroundEnabled =
-        ref.watch(backupProvider.select((s) => s.backgroundBackup));
+    final isBackgroundEnabled = ref.watch(backupProvider.select((s) => s.backgroundBackup));
     final iosSettings = ref.watch(iOSBackgroundSettingsProvider);
 
     void showErrorToUser(String msg) {
@@ -80,12 +79,11 @@ class BackgroundBackupSettings extends ConsumerWidget {
         title: 'backup_controller_page_background_is_off'.tr(),
         subtileText: 'backup_controller_page_background_description'.tr(),
         buttonText: 'backup_controller_page_background_turn_on'.tr(),
-        onButtonTap: () =>
-            ref.read(backupProvider.notifier).configureBackgroundBackup(
-                  enabled: true,
-                  onError: showErrorToUser,
-                  onBatteryInfo: showBatteryOptimizationInfoToUser,
-                ),
+        onButtonTap: () => ref.read(backupProvider.notifier).configureBackgroundBackup(
+              enabled: true,
+              onError: showErrorToUser,
+              onBatteryInfo: showBatteryOptimizationInfoToUser,
+            ),
       );
     }
 
@@ -96,10 +94,8 @@ class BackgroundBackupSettings extends ConsumerWidget {
             onError: showErrorToUser,
             onBatteryInfo: showBatteryOptimizationInfoToUser,
           ),
-        if (Platform.isIOS && iosSettings?.appRefreshEnabled != true)
-          const _IOSBackgroundRefreshDisabled(),
-        if (Platform.isIOS && iosSettings != null)
-          IosDebugInfoTile(settings: iosSettings),
+        if (Platform.isIOS && iosSettings?.appRefreshEnabled != true) const _IOSBackgroundRefreshDisabled(),
+        if (Platform.isIOS && iosSettings != null) IosDebugInfoTile(settings: iosSettings),
       ],
     );
   }
@@ -112,13 +108,9 @@ class _IOSBackgroundRefreshDisabled extends StatelessWidget {
   Widget build(BuildContext context) {
     return SettingsButtonListTile(
       icon: Icons.task_outlined,
-      title:
-          'backup_controller_page_background_app_refresh_disabled_title'.tr(),
-      subtileText:
-          'backup_controller_page_background_app_refresh_disabled_content'.tr(),
-      buttonText:
-          'backup_controller_page_background_app_refresh_enable_button_text'
-              .tr(),
+      title: 'backup_controller_page_background_app_refresh_disabled_title'.tr(),
+      subtileText: 'backup_controller_page_background_app_refresh_disabled_content'.tr(),
+      buttonText: 'backup_controller_page_background_app_refresh_enable_button_text'.tr(),
       onButtonTap: () => openAppSettings(),
     );
   }
@@ -135,8 +127,7 @@ class _BackgroundSettingsEnabled extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isWifiRequired =
-        ref.watch(backupProvider.select((s) => s.backupRequireWifi));
+    final isWifiRequired = ref.watch(backupProvider.select((s) => s.backupRequireWifi));
     final isWifiRequiredNotifier = useValueNotifier(isWifiRequired);
     useValueChanged(
       isWifiRequired,
@@ -145,8 +136,7 @@ class _BackgroundSettingsEnabled extends HookConsumerWidget {
       ),
     );
 
-    final isChargingRequired =
-        ref.watch(backupProvider.select((s) => s.backupRequireCharging));
+    final isChargingRequired = ref.watch(backupProvider.select((s) => s.backupRequireCharging));
     final isChargingRequiredNotifier = useValueNotifier(isChargingRequired);
     useValueChanged(
       isChargingRequired,
@@ -162,22 +152,16 @@ class _BackgroundSettingsEnabled extends HookConsumerWidget {
           _ => 3,
         };
 
-    int backupDelayToMilliseconds(int v) =>
-        switch (v) { 0 => 5000, 1 => 30000, 2 => 120000, _ => 600000 };
+    int backupDelayToMilliseconds(int v) => switch (v) { 0 => 5000, 1 => 30000, 2 => 120000, _ => 600000 };
 
     String formatBackupDelaySliderValue(int v) => switch (v) {
-          0 => 'setting_notifications_notify_seconds'
-              .tr(namedArgs: {'count': '5'}),
-          1 => 'setting_notifications_notify_seconds'
-              .tr(namedArgs: {'count': '30'}),
-          2 => 'setting_notifications_notify_minutes'
-              .tr(namedArgs: {'count': '2'}),
-          _ => 'setting_notifications_notify_minutes'
-              .tr(namedArgs: {'count': '10'}),
+          0 => 'setting_notifications_notify_seconds'.tr(namedArgs: {'count': '5'}),
+          1 => 'setting_notifications_notify_seconds'.tr(namedArgs: {'count': '30'}),
+          2 => 'setting_notifications_notify_minutes'.tr(namedArgs: {'count': '2'}),
+          _ => 'setting_notifications_notify_minutes'.tr(namedArgs: {'count': '10'}),
         };
 
-    final backupTriggerDelay =
-        ref.watch(backupProvider.select((s) => s.backupTriggerDelay));
+    final backupTriggerDelay = ref.watch(backupProvider.select((s) => s.backupTriggerDelay));
     final triggerDelay = useState(backupDelayToSliderValue(backupTriggerDelay));
     useValueChanged(
       triggerDelay.value,
@@ -193,35 +177,32 @@ class _BackgroundSettingsEnabled extends HookConsumerWidget {
       iconColor: context.primaryColor,
       title: 'backup_controller_page_background_is_on'.tr(),
       buttonText: 'backup_controller_page_background_turn_off'.tr(),
-      onButtonTap: () =>
-          ref.read(backupProvider.notifier).configureBackgroundBackup(
-                enabled: false,
-                onError: onError,
-                onBatteryInfo: onBatteryInfo,
-              ),
+      onButtonTap: () => ref.read(backupProvider.notifier).configureBackgroundBackup(
+            enabled: false,
+            onError: onError,
+            onBatteryInfo: onBatteryInfo,
+          ),
       subtitle: Column(
         children: [
           SettingsSwitchListTile(
             valueNotifier: isWifiRequiredNotifier,
             title: 'backup_controller_page_background_wifi'.tr(),
             icon: Icons.wifi,
-            onChanged: (enabled) =>
-                ref.read(backupProvider.notifier).configureBackgroundBackup(
-                      requireWifi: enabled,
-                      onError: onError,
-                      onBatteryInfo: onBatteryInfo,
-                    ),
+            onChanged: (enabled) => ref.read(backupProvider.notifier).configureBackgroundBackup(
+                  requireWifi: enabled,
+                  onError: onError,
+                  onBatteryInfo: onBatteryInfo,
+                ),
           ),
           SettingsSwitchListTile(
             valueNotifier: isChargingRequiredNotifier,
             title: 'backup_controller_page_background_charging'.tr(),
             icon: Icons.charging_station,
-            onChanged: (enabled) =>
-                ref.read(backupProvider.notifier).configureBackgroundBackup(
-                      requireCharging: enabled,
-                      onError: onError,
-                      onBatteryInfo: onBatteryInfo,
-                    ),
+            onChanged: (enabled) => ref.read(backupProvider.notifier).configureBackgroundBackup(
+                  requireCharging: enabled,
+                  onError: onError,
+                  onBatteryInfo: onBatteryInfo,
+                ),
           ),
           if (Platform.isAndroid)
             SettingsSliderListTile(

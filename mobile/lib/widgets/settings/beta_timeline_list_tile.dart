@@ -18,12 +18,10 @@ class BetaTimelineListTile extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<BetaTimelineListTile> createState() =>
-      _BetaTimelineListTileState();
+  ConsumerState<BetaTimelineListTile> createState() => _BetaTimelineListTileState();
 }
 
-class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
-    with SingleTickerProviderStateMixin {
+class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _rotationAnimation;
   late Animation<double> _pulseAnimation;
@@ -69,14 +67,11 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
 
   @override
   Widget build(BuildContext context) {
-    final betaTimelineValue = ref
-        .watch(appSettingsServiceProvider)
-        .getSetting<bool>(AppSettingsEnum.betaTimeline);
+    final betaTimelineValue = ref.watch(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.betaTimeline);
     final serverInfo = ref.watch(serverInfoProvider);
     final auth = ref.watch(authProvider);
 
-    if (!auth.isAuthenticated ||
-        (serverInfo.serverVersion.minor < 136 && kReleaseMode)) {
+    if (!auth.isAuthenticated || (serverInfo.serverVersion.minor < 136 && kReleaseMode)) {
       return const SizedBox.shrink();
     }
 
@@ -88,9 +83,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
             context: context,
             builder: (context) {
               return AlertDialog(
-                title: value
-                    ? const Text("Enable Beta Timeline")
-                    : const Text("Disable Beta Timeline"),
+                title: value ? const Text("Enable Beta Timeline") : const Text("Disable Beta Timeline"),
                 content: value
                     ? const Text(
                         "Are you sure you want to enable the beta timeline?",
@@ -182,8 +175,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
                 borderRadius: const BorderRadius.all(Radius.circular(10.5)),
                 onTap: () => onSwitchChanged(!betaTimelineValue),
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   child: Row(
                     children: [
                       Transform.scale(
@@ -218,10 +210,8 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
-                                  "advanced_settings_beta_timeline_title"
-                                      .t(context: context),
-                                  style:
-                                      context.textTheme.titleMedium?.copyWith(
+                                  "advanced_settings_beta_timeline_title".t(context: context),
+                                  style: context.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -237,17 +227,14 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
                                     ),
                                     gradient: LinearGradient(
                                       colors: [
-                                        context.primaryColor
-                                            .withValues(alpha: 0.8),
-                                        context.primaryColor
-                                            .withValues(alpha: 0.6),
+                                        context.primaryColor.withValues(alpha: 0.8),
+                                        context.primaryColor.withValues(alpha: 0.6),
                                       ],
                                     ),
                                   ),
                                   child: Text(
                                     'NEW',
-                                    style:
-                                        context.textTheme.labelSmall?.copyWith(
+                                    style: context.textTheme.labelSmall?.copyWith(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 10,
@@ -259,11 +246,9 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile>
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              "advanced_settings_beta_timeline_subtitle"
-                                  .t(context: context),
+                              "advanced_settings_beta_timeline_subtitle".t(context: context),
                               style: context.textTheme.labelLarge?.copyWith(
-                                color: context.textTheme.labelLarge?.color
-                                    ?.withValues(alpha: 0.9),
+                                color: context.textTheme.labelLarge?.color?.withValues(alpha: 0.9),
                               ),
                               maxLines: 2,
                             ),

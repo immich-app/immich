@@ -20,8 +20,7 @@ class SslClientCertSettings extends StatefulWidget {
 }
 
 class _SslClientCertSettingsState extends State<SslClientCertSettings> {
-  _SslClientCertSettingsState()
-      : isCertExist = SSLClientCertStoreVal.load() != null;
+  _SslClientCertSettingsState() : isCertExist = SSLClientCertStoreVal.load() != null;
 
   bool isCertExist;
 
@@ -62,9 +61,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
                 width: 15,
               ),
               ElevatedButton(
-                onPressed: widget.isLoggedIn || !isCertExist
-                    ? null
-                    : () => removeCert(context),
+                onPressed: widget.isLoggedIn || !isCertExist ? null : () => removeCert(context),
                 child: Text("remove".tr()),
               ),
             ],
@@ -127,8 +124,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
         ),
         actions: [
           TextButton(
-            onPressed: () =>
-                {ctx.pop(), storeCert(context, data, password.text)},
+            onPressed: () => {ctx.pop(), storeCert(context, data, password.text)},
             child: Text("client_cert_dialog_msg_confirm".tr()),
           ),
         ],

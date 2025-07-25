@@ -31,13 +31,11 @@ class LanguageSettings extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final localeEntries = useMemoized(() => locales.entries.toList(), const []);
     final currentLocale = context.locale;
-    final filteredLocaleEntries =
-        useState<List<MapEntry<String, Locale>>>(localeEntries);
+    final filteredLocaleEntries = useState<List<MapEntry<String, Locale>>>(localeEntries);
     final selectedLocale = useState<Locale>(currentLocale);
 
     final isLoading = useState<bool>(false);
-    final isButtonDisabled =
-        selectedLocale.value == currentLocale || isLoading.value;
+    final isButtonDisabled = selectedLocale.value == currentLocale || isLoading.value;
 
     final searchController = useTextEditingController();
     final searchFocusNode = useFocusNode();
@@ -51,8 +49,7 @@ class LanguageSettings extends HookConsumerWidget {
         } else {
           filteredLocaleEntries.value = localeEntries
               .where(
-                (entry) =>
-                    entry.key.toLowerCase().contains(searchTerm.toLowerCase()),
+                (entry) => entry.key.toLowerCase().contains(searchTerm.toLowerCase()),
               )
               .toList();
         }
@@ -94,12 +91,9 @@ class LanguageSettings extends HookConsumerWidget {
                     itemExtent: 64.0,
                     cacheExtent: 100,
                     itemBuilder: (context, index) {
-                      final countryName =
-                          filteredLocaleEntries.value[index].key;
-                      final localeValue =
-                          filteredLocaleEntries.value[index].value;
-                      final bool isSelected =
-                          selectedLocale.value == localeValue;
+                      final countryName = filteredLocaleEntries.value[index].key;
+                      final localeValue = filteredLocaleEntries.value[index].value;
+                      final bool isSelected = selectedLocale.value == localeValue;
 
                       return _LanguageItem(
                         key: ValueKey(localeValue.toString()),
@@ -285,8 +279,7 @@ class _LanguageItem extends StatelessWidget {
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color:
-              context.colorScheme.surfaceContainerLowest.withValues(alpha: .6),
+          color: context.colorScheme.surfaceContainerLowest.withValues(alpha: .6),
           borderRadius: const BorderRadius.all(
             Radius.circular(16.0),
           ),
@@ -300,9 +293,7 @@ class _LanguageItem extends StatelessWidget {
             countryName,
             style: context.textTheme.titleSmall?.copyWith(
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              color: isSelected
-                  ? context.colorScheme.primary
-                  : context.colorScheme.onSurfaceVariant,
+              color: isSelected ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
             ),
           ),
           trailing: isSelected

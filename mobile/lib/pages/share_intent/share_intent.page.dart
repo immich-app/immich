@@ -38,9 +38,7 @@ class ShareIntentPage extends HookConsumerWidget {
 
     void upload() async {
       for (final attachment in candidates) {
-        await ref
-            .read(shareIntentUploadProvider.notifier)
-            .upload(attachment.file);
+        await ref.read(shareIntentUploadProvider.notifier).upload(attachment.file);
       }
 
       isUploaded.value = true;
@@ -76,9 +74,7 @@ class ShareIntentPage extends HookConsumerWidget {
         leading: IconButton(
           onPressed: () {
             context.navigateTo(
-              Store.isBetaTimelineEnabled
-                  ? const TabShellRoute()
-                  : const TabControllerRoute(),
+              Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute(),
             );
           },
           icon: const Icon(Icons.arrow_back),
@@ -170,9 +166,7 @@ class ShareIntentPage extends HookConsumerWidget {
             height: 48,
             child: ElevatedButton(
               onPressed: isUploaded.value ? null : upload,
-              child: isUploaded.value
-                  ? UploadingText(candidates: candidates)
-                  : const Text('upload').tr(),
+              child: isUploaded.value ? UploadingText(candidates: candidates) : const Text('upload').tr(),
             ),
           ),
         ),

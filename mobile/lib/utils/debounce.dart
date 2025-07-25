@@ -19,8 +19,7 @@ class Debouncer {
 
     if (maxWaitTime != null &&
         // _actionFuture == null && // TODO: should this check be here?
-        (_lastActionTime == null ||
-            DateTime.now().difference(_lastActionTime!) > maxWaitTime!)) {
+        (_lastActionTime == null || DateTime.now().difference(_lastActionTime!) > maxWaitTime!)) {
       _callAndRest();
       return;
     }
@@ -60,8 +59,7 @@ class Debouncer {
     _actionFuture = null;
   }
 
-  bool get isActive =>
-      _actionFuture != null || (_timer != null && _timer!.isActive);
+  bool get isActive => _actionFuture != null || (_timer != null && _timer!.isActive);
 }
 
 /// Creates a [Debouncer] that will be disposed automatically. If no [interval] is provided, a

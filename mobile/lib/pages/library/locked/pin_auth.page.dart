@@ -23,11 +23,10 @@ class PinAuthPage extends HookConsumerWidget {
     final isBetaTimeline = Store.isBetaTimelineEnabled;
 
     Future<void> registerBiometric(String pinCode) async {
-      final isRegistered =
-          await ref.read(localAuthProvider.notifier).registerBiometric(
-                context,
-                pinCode,
-              );
+      final isRegistered = await ref.read(localAuthProvider.notifier).registerBiometric(
+            context,
+            pinCode,
+          );
 
       if (isRegistered) {
         context.showSnackBar(
@@ -101,8 +100,7 @@ class PinAuthPage extends HookConsumerWidget {
                           autoFocus: true,
                           onSuccess: (_) {
                             if (isBetaTimeline) {
-                              context
-                                  .replaceRoute(const DriftLockedFolderRoute());
+                              context.replaceRoute(const DriftLockedFolderRoute());
                             } else {
                               context.replaceRoute(const LockedRoute());
                             }

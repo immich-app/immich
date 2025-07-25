@@ -5,8 +5,7 @@ import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 
 class SettingsNotifier extends Notifier<SettingsService> {
   @override
-  SettingsService build() =>
-      SettingsService(storeService: ref.read(storeServiceProvider));
+  SettingsService build() => SettingsService(storeService: ref.read(storeServiceProvider));
 
   T get<T>(Setting<T> setting) => state.get(setting);
 
@@ -18,5 +17,4 @@ class SettingsNotifier extends Notifier<SettingsService> {
   Stream<T> watch<T>(Setting<T> setting) => state.watch(setting);
 }
 
-final settingsProvider =
-    NotifierProvider<SettingsNotifier, SettingsService>(SettingsNotifier.new);
+final settingsProvider = NotifierProvider<SettingsNotifier, SettingsService>(SettingsNotifier.new);

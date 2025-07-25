@@ -21,8 +21,7 @@ class MapSettingsListTile extends StatelessWidget {
       activeColor: context.primaryColor,
       title: Text(
         title,
-        style:
-            context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+        style: context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
       ).tr(),
       value: selected,
       onChanged: onChanged,

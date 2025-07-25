@@ -73,10 +73,7 @@ class _DateTimePicker extends HookWidget {
 
   // returns a list of location<name> along with it's offset in duration
   List<_TimeZoneOffset> getAllTimeZones() {
-    return tz.timeZoneDatabase.locations.values
-        .map(_TimeZoneOffset.fromLocation)
-        .sorted()
-        .toList();
+    return tz.timeZoneDatabase.locations.values.map(_TimeZoneOffset.fromLocation).sorted().toList();
   }
 
   @override
@@ -125,11 +122,9 @@ class _DateTimePicker extends HookWidget {
     }
 
     void popWithDateTime() {
-      final formattedDateTime =
-          DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(date.value);
-      final dtWithOffset = formattedDateTime +
-          Duration(milliseconds: tzOffset.value.offsetInMilliseconds)
-              .formatAsOffset();
+      final formattedDateTime = DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(date.value);
+      final dtWithOffset =
+          formattedDateTime + Duration(milliseconds: tzOffset.value.offsetInMilliseconds).formatAsOffset();
       context.pop(dtWithOffset);
     }
 
@@ -245,19 +240,15 @@ class _TimeZoneOffset implements Comparable<_TimeZoneOffset> {
   }
 
   @override
-  String toString() =>
-      '_TimeZoneOffset(display: $display, location: $location)';
+  String toString() => '_TimeZoneOffset(display: $display, location: $location)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is _TimeZoneOffset &&
-        other.display == display &&
-        other.offsetInMilliseconds == offsetInMilliseconds;
+    return other is _TimeZoneOffset && other.display == display && other.offsetInMilliseconds == offsetInMilliseconds;
   }
 
   @override
-  int get hashCode =>
-      display.hashCode ^ offsetInMilliseconds.hashCode ^ location.hashCode;
+  int get hashCode => display.hashCode ^ offsetInMilliseconds.hashCode ^ location.hashCode;
 }

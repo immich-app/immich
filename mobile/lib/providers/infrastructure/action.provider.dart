@@ -26,8 +26,7 @@ class ActionResult {
   const ActionResult({required this.count, required this.success, this.error});
 
   @override
-  String toString() =>
-      'ActionResult(count: $count, success: $success, error: $error)';
+  String toString() => 'ActionResult(count: $count, success: $success, error: $error)';
 }
 
 class ActionNotifier extends Notifier<void> {
@@ -44,10 +43,7 @@ class ActionNotifier extends Notifier<void> {
   }
 
   List<String> _getRemoteIdsForSource(ActionSource source) {
-    return _getAssets(source)
-        .whereType<RemoteAsset>()
-        .toIds()
-        .toList(growable: false);
+    return _getAssets(source).whereType<RemoteAsset>().toIds().toList(growable: false);
   }
 
   List<String> _getLocalIdsForSource(ActionSource source) {
@@ -67,11 +63,7 @@ class ActionNotifier extends Notifier<void> {
 
   List<String> _getOwnedRemoteIdsForSource(ActionSource source) {
     final ownerId = ref.read(currentUserProvider)?.id;
-    return _getAssets(source)
-        .whereType<RemoteAsset>()
-        .ownedAssets(ownerId)
-        .toIds()
-        .toList(growable: false);
+    return _getAssets(source).whereType<RemoteAsset>().ownedAssets(ownerId).toIds().toList(growable: false);
   }
 
   List<RemoteAsset> _getOwnedRemoteAssetsForSource(ActionSource source) {
@@ -355,8 +347,7 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> downloadAll(ActionSource source) async {
-    final assets =
-        _getAssets(source).whereType<RemoteAsset>().toList(growable: false);
+    final assets = _getAssets(source).whereType<RemoteAsset>().toList(growable: false);
 
     try {
       final didEnqueue = await _service.downloadAll(assets);

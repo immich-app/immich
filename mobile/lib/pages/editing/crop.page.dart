@@ -187,9 +187,7 @@ class _AspectRatioButton extends StatelessWidget {
               '7:5' => Icons.crop_7_5_rounded,
               _ => Icons.crop_free_rounded,
             },
-            color: aspectRatio.value == ratio
-                ? context.primaryColor
-                : context.themeData.iconTheme.color,
+            color: aspectRatio.value == ratio ? context.primaryColor : context.themeData.iconTheme.color,
           ),
           onPressed: () {
             cropController.crop = const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9);

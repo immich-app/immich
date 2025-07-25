@@ -62,8 +62,7 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
         if (update.task.metaData.isEmpty) {
           return;
         }
-        final livePhotosId =
-            LivePhotosMetadata.fromJson(update.task.metaData).id;
+        final livePhotosId = LivePhotosMetadata.fromJson(update.task.metaData).id;
         _downloadService.saveLivePhotos(update.task, livePhotosId);
         _onDownloadComplete(update.task.taskId);
         break;
@@ -191,8 +190,7 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
   }
 }
 
-final downloadStateProvider =
-    StateNotifierProvider<DownloadStateNotifier, DownloadState>(
+final downloadStateProvider = StateNotifierProvider<DownloadStateNotifier, DownloadState>(
   ((ref) => DownloadStateNotifier(
         ref.watch(downloadServiceProvider),
         ref.watch(shareServiceProvider),

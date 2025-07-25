@@ -19,23 +19,15 @@ class AlbumInfoListTile extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool isSelected =
-        ref.watch(backupProvider).selectedBackupAlbums.contains(album);
-    final bool isExcluded =
-        ref.watch(backupProvider).excludedBackupAlbums.contains(album);
-    final syncAlbum = ref
-        .watch(appSettingsServiceProvider)
-        .getSetting(AppSettingsEnum.syncAlbums);
+    final bool isSelected = ref.watch(backupProvider).selectedBackupAlbums.contains(album);
+    final bool isExcluded = ref.watch(backupProvider).excludedBackupAlbums.contains(album);
+    final syncAlbum = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
 
     buildTileColor() {
       if (isSelected) {
-        return context.isDarkTheme
-            ? context.primaryColor.withAlpha(100)
-            : context.primaryColor.withAlpha(25);
+        return context.isDarkTheme ? context.primaryColor.withAlpha(100) : context.primaryColor.withAlpha(25);
       } else if (isExcluded) {
-        return context.isDarkTheme
-            ? Colors.red[300]?.withAlpha(150)
-            : Colors.red[100]?.withAlpha(150);
+        return context.isDarkTheme ? Colors.red[300]?.withAlpha(150) : Colors.red[100]?.withAlpha(150);
       } else {
         return Colors.transparent;
       }

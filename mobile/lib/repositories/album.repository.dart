@@ -4,8 +4,7 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
-    as entity;
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart' as entity;
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
@@ -14,8 +13,7 @@ import 'package:isar/isar.dart';
 
 enum AlbumSort { remoteId, localId }
 
-final albumRepositoryProvider =
-    Provider((ref) => AlbumRepository(ref.watch(dbProvider)));
+final albumRepositoryProvider = Provider((ref) => AlbumRepository(ref.watch(dbProvider)));
 
 class AlbumRepository extends DatabaseRepository {
   const AlbumRepository(super.db);
@@ -75,8 +73,7 @@ class AlbumRepository extends DatabaseRepository {
     } else {
       afterWhere = baseQuery.localIdIsNotNull();
     }
-    QueryBuilder<Album, Album, QAfterFilterCondition> filterQuery =
-        afterWhere.filter().noOp();
+    QueryBuilder<Album, Album, QAfterFilterCondition> filterQuery = afterWhere.filter().noOp();
     if (shared != null) {
       filterQuery = filterQuery.sharedEqualTo(true);
     }
@@ -101,34 +98,27 @@ class AlbumRepository extends DatabaseRepository {
         () => album.sharedUsers.update(unlink: users.map(entity.User.fromDto)),
       );
 
-  Future<void> addAssets(Album album, List<Asset> assets) =>
-      txn(() => album.assets.update(link: assets));
+  Future<void> addAssets(Album album, List<Asset> assets) => txn(() => album.assets.update(link: assets));
 
-  Future<void> removeAssets(Album album, List<Asset> assets) =>
-      txn(() => album.assets.update(unlink: assets));
+  Future<void> removeAssets(Album album, List<Asset> assets) => txn(() => album.assets.update(unlink: assets));
 
   Future<Album> recalculateMetadata(Album album) async {
     album.startDate = await album.assets.filter().fileCreatedAtProperty().min();
     album.endDate = await album.assets.filter().fileCreatedAtProperty().max();
-    album.lastModifiedAssetTimestamp =
-        await album.assets.filter().updatedAtProperty().max();
+    album.lastModifiedAssetTimestamp = await album.assets.filter().updatedAtProperty().max();
     return album;
   }
 
   Future<void> addUsers(Album album, List<UserDto> users) =>
       txn(() => album.sharedUsers.update(link: users.map(entity.User.fromDto)));
 
-  Future<void> deleteAllLocal() =>
-      txn(() => db.albums.where().localIdIsNotNull().deleteAll());
+  Future<void> deleteAllLocal() => txn(() => db.albums.where().localIdIsNotNull().deleteAll());
 
   Future<List<Album>> search(
     String searchTerm,
     QuickFilterMode filterMode,
   ) async {
-    var query = db.albums
-        .filter()
-        .nameContains(searchTerm, caseSensitive: false)
-        .remoteIdIsNotNull();
+    var query = db.albums.filter().nameContains(searchTerm, caseSensitive: false).remoteIdIsNotNull();
     final isarUserId = fastHash(Store.get(StoreKey.currentUser).id);
 
     switch (filterMode) {

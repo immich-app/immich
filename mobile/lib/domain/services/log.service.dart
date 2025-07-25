@@ -56,8 +56,7 @@ class LogService {
   }) async {
     final instance = LogService._(logRepository, storeRepository, shouldBuffer);
     await logRepository.truncate(limit: kLogTruncateLimit);
-    final level = await instance._storeRepository.tryGet(StoreKey.logLevel) ??
-        LogLevel.info.index;
+    final level = await instance._storeRepository.tryGet(StoreKey.logLevel) ?? LogLevel.info.index;
     Logger.root.level = Level.LEVELS.elementAtOrNull(level) ?? Level.INFO;
     return instance;
   }
@@ -146,9 +145,7 @@ class LoggerUnInitializedException implements Exception {
 
 /// Log levels according to dart logging [Level]
 extension LevelDomainToInfraExtension on Level {
-  LogLevel toLogLevel() =>
-      LogLevel.values.elementAtOrNull(Level.LEVELS.indexOf(this)) ??
-      LogLevel.info;
+  LogLevel toLogLevel() => LogLevel.values.elementAtOrNull(Level.LEVELS.indexOf(this)) ?? LogLevel.info;
 }
 
 extension on LogLevel {

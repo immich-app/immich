@@ -24,8 +24,7 @@ enum AvatarColor {
   const AvatarColor(this.value);
 
   Color toColor({bool isDarkTheme = false}) => switch (this) {
-        AvatarColor.primary =>
-          isDarkTheme ? const Color(0xFFABCBFA) : const Color(0xFF4250AF),
+        AvatarColor.primary => isDarkTheme ? const Color(0xFFABCBFA) : const Color(0xFF4250AF),
         AvatarColor.pink => const Color.fromARGB(255, 244, 114, 182),
         AvatarColor.red => const Color.fromARGB(255, 239, 68, 68),
         AvatarColor.yellow => const Color.fromARGB(255, 234, 179, 8),
@@ -241,14 +240,11 @@ licenseKey: $licenseKey,
   bool operator ==(covariant License other) {
     if (identical(this, other)) return true;
 
-    return activatedAt == other.activatedAt &&
-        activationKey == other.activationKey &&
-        licenseKey == other.licenseKey;
+    return activatedAt == other.activatedAt && activationKey == other.activationKey && licenseKey == other.licenseKey;
   }
 
   @override
-  int get hashCode =>
-      activatedAt.hashCode ^ activationKey.hashCode ^ licenseKey.hashCode;
+  int get hashCode => activatedAt.hashCode ^ activationKey.hashCode ^ licenseKey.hashCode;
 }
 
 // Model for a user metadata stored in the server
@@ -310,10 +306,6 @@ license: ${license ?? "<NA>"},
 
   @override
   int get hashCode {
-    return userId.hashCode ^
-        key.hashCode ^
-        onboarding.hashCode ^
-        preferences.hashCode ^
-        license.hashCode;
+    return userId.hashCode ^ key.hashCode ^ onboarding.hashCode ^ preferences.hashCode ^ license.hashCode;
   }
 }

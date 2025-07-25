@@ -13,22 +13,15 @@ class MapStateNotifier extends _$MapStateNotifier {
   MapState build() {
     final appSettingsProvider = ref.read(appSettingsServiceProvider);
 
-    final lightStyleUrl =
-        ref.read(serverInfoProvider).serverConfig.mapLightStyleUrl;
-    final darkStyleUrl =
-        ref.read(serverInfoProvider).serverConfig.mapDarkStyleUrl;
+    final lightStyleUrl = ref.read(serverInfoProvider).serverConfig.mapLightStyleUrl;
+    final darkStyleUrl = ref.read(serverInfoProvider).serverConfig.mapDarkStyleUrl;
 
     return MapState(
-      themeMode: ThemeMode.values[
-          appSettingsProvider.getSetting<int>(AppSettingsEnum.mapThemeMode)],
-      showFavoriteOnly: appSettingsProvider
-          .getSetting<bool>(AppSettingsEnum.mapShowFavoriteOnly),
-      includeArchived: appSettingsProvider
-          .getSetting<bool>(AppSettingsEnum.mapIncludeArchived),
-      withPartners:
-          appSettingsProvider.getSetting<bool>(AppSettingsEnum.mapwithPartners),
-      relativeTime:
-          appSettingsProvider.getSetting<int>(AppSettingsEnum.mapRelativeDate),
+      themeMode: ThemeMode.values[appSettingsProvider.getSetting<int>(AppSettingsEnum.mapThemeMode)],
+      showFavoriteOnly: appSettingsProvider.getSetting<bool>(AppSettingsEnum.mapShowFavoriteOnly),
+      includeArchived: appSettingsProvider.getSetting<bool>(AppSettingsEnum.mapIncludeArchived),
+      withPartners: appSettingsProvider.getSetting<bool>(AppSettingsEnum.mapwithPartners),
+      relativeTime: appSettingsProvider.getSetting<int>(AppSettingsEnum.mapRelativeDate),
       lightStyleFetched: AsyncData(lightStyleUrl),
       darkStyleFetched: AsyncData(darkStyleUrl),
     );

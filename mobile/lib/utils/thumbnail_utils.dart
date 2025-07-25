@@ -12,8 +12,7 @@ String getAltText(
   if (exifInfo?.description != null && exifInfo!.description!.isNotEmpty) {
     return exifInfo.description!;
   }
-  final (template, args) =
-      getAltTextTemplate(exifInfo, fileCreatedAt, type, peopleNames);
+  final (template, args) = getAltTextTemplate(exifInfo, fileCreatedAt, type, peopleNames);
   return template.t(args: args);
 }
 

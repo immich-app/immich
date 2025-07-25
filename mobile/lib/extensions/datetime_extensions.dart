@@ -57,9 +57,7 @@ extension DateRangeFormatting on DateTime {
     final localeString = locale?.toString() ?? 'en_US';
 
     // Check if it's a single date (same day)
-    if (startDate.year == endDate.year &&
-        startDate.month == endDate.month &&
-        startDate.day == endDate.day) {
+    if (startDate.year == endDate.year && startDate.month == endDate.month && startDate.day == endDate.day) {
       if (startDate.year == currentYear) {
         // Single date of this year: "Aug 28"
         return DateFormat.MMMd(localeString).format(startDate);

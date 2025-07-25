@@ -42,53 +42,41 @@ void main() {
 
     when(() => mockAbortCallbackWrapper()).thenReturn(false);
 
-    when(() => mockSyncApiRepo.streamChanges(any()))
-        .thenAnswer((invocation) async {
+    when(() => mockSyncApiRepo.streamChanges(any())).thenAnswer((invocation) async {
       handleEventsCallback = invocation.positionalArguments.first;
     });
 
     when(() => mockSyncApiRepo.ack(any())).thenAnswer((_) async => {});
 
-    when(() => mockSyncStreamRepo.updateUsersV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.deleteUsersV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updatePartnerV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.deletePartnerV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updateAssetsV1(any()))
-        .thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateUsersV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updatePartnerV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.deletePartnerV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateAssetsV1(any())).thenAnswer(successHandler);
     when(
       () => mockSyncStreamRepo.updateAssetsV1(
         any(),
         debugLabel: any(named: 'debugLabel'),
       ),
     ).thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.deleteAssetsV1(any()))
-        .thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.deleteAssetsV1(any())).thenAnswer(successHandler);
     when(
       () => mockSyncStreamRepo.deleteAssetsV1(
         any(),
         debugLabel: any(named: 'debugLabel'),
       ),
     ).thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updateAssetsExifV1(any()))
-        .thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateAssetsExifV1(any())).thenAnswer(successHandler);
     when(
       () => mockSyncStreamRepo.updateAssetsExifV1(
         any(),
         debugLabel: any(named: 'debugLabel'),
       ),
     ).thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updateMemoriesV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.deleteMemoriesV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updateMemoryAssetsV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.deleteMemoryAssetsV1(any()))
-        .thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateMemoriesV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.deleteMemoriesV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateMemoryAssetsV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.deleteMemoryAssetsV1(any())).thenAnswer(successHandler);
     when(
       () => mockSyncStreamRepo.updateStacksV1(
         any(),
@@ -101,18 +89,12 @@ void main() {
         debugLabel: any(named: 'debugLabel'),
       ),
     ).thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updateUserMetadatasV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.deleteUserMetadatasV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updatePeopleV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.deletePeopleV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.updateAssetFacesV1(any()))
-        .thenAnswer(successHandler);
-    when(() => mockSyncStreamRepo.deleteAssetFacesV1(any()))
-        .thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateUserMetadatasV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.deleteUserMetadatasV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updatePeopleV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.deletePeopleV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.updateAssetFacesV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncStreamRepo.deleteAssetFacesV1(any())).thenAnswer(successHandler);
 
     sut = SyncStreamService(
       syncApiRepository: mockSyncApiRepo,
@@ -221,8 +203,7 @@ void main() {
 
         final processingCompleter = Completer<void>();
         bool handler1Started = false;
-        when(() => mockSyncStreamRepo.deleteUsersV1(any()))
-            .thenAnswer((_) async {
+        when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer((_) async {
           handler1Started = true;
           return processingCompleter.future;
         });
@@ -241,8 +222,7 @@ void main() {
           SyncStreamStub.partnerDeleteV1,
         ];
 
-        final processingFuture =
-            handleEventsCallback(events, mockAbortCallbackWrapper.call);
+        final processingFuture = handleEventsCallback(events, mockAbortCallbackWrapper.call);
         await pumpEventQueue();
 
         expect(handler1Started, isTrue);
@@ -307,8 +287,7 @@ void main() {
     });
 
     test("handles memory sync failure gracefully", () async {
-      when(() => mockSyncStreamRepo.updateMemoriesV1(any()))
-          .thenThrow(Exception("Memory sync failed"));
+      when(() => mockSyncStreamRepo.updateMemoriesV1(any())).thenThrow(Exception("Memory sync failed"));
 
       final events = [
         SyncStreamStub.memoryV1,
@@ -339,8 +318,7 @@ void main() {
       verify(() => mockSyncApiRepo.ack(["6"])).called(1);
     });
 
-    test("processes memory create/update events with correct data types",
-        () async {
+    test("processes memory create/update events with correct data types", () async {
       final events = [SyncStreamStub.memoryV1];
 
       await simulateEvents(events);

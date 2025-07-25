@@ -6,8 +6,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:photo_manager/photo_manager.dart' hide AssetType;
 
-final fileMediaRepositoryProvider =
-    Provider((ref) => const FileMediaRepository());
+final fileMediaRepositoryProvider = Provider((ref) => const FileMediaRepository());
 
 class FileMediaRepository {
   const FileMediaRepository();
@@ -66,9 +65,7 @@ class FileMediaRepository {
 
   Future<void> clearFileCache() => PhotoManager.clearFileCache();
 
-  Future<void> enableBackgroundAccess() =>
-      PhotoManager.setIgnorePermissionCheck(true);
+  Future<void> enableBackgroundAccess() => PhotoManager.setIgnorePermissionCheck(true);
 
-  Future<void> requestExtendedPermissions() =>
-      PhotoManager.requestPermissionExtend();
+  Future<void> requestExtendedPermissions() => PhotoManager.requestPermissionExtend();
 }

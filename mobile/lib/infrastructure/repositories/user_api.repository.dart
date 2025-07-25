@@ -11,8 +11,7 @@ class UserApiRepository extends ApiRepository {
   const UserApiRepository(this._api);
 
   Future<UserDto?> getMyUser() async {
-    final (adminDto, preferenceDto) =
-        await (_api.getMyUser(), _api.getMyPreferences()).wait;
+    final (adminDto, preferenceDto) = await (_api.getMyUser(), _api.getMyPreferences()).wait;
     if (adminDto == null) return null;
 
     return UserConverter.fromAdminDto(adminDto, preferenceDto);

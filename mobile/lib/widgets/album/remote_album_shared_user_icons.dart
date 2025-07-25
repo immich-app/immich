@@ -16,8 +16,7 @@ class RemoteAlbumSharedUserIcons extends ConsumerWidget {
       return const SizedBox();
     }
 
-    final sharedUsersAsync =
-        ref.watch(remoteAlbumSharedUsersProvider(currentAlbum.id));
+    final sharedUsersAsync = ref.watch(remoteAlbumSharedUsersProvider(currentAlbum.id));
 
     return sharedUsersAsync.maybeWhen(
       data: (sharedUsers) {

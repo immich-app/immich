@@ -14,12 +14,10 @@ class DriftLockedFolderPage extends ConsumerStatefulWidget {
   const DriftLockedFolderPage({super.key});
 
   @override
-  ConsumerState<DriftLockedFolderPage> createState() =>
-      _DriftLockedFolderPageState();
+  ConsumerState<DriftLockedFolderPage> createState() => _DriftLockedFolderPageState();
 }
 
-class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage>
-    with WidgetsBindingObserver {
+class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage> with WidgetsBindingObserver {
   bool _showOverlay = false;
 
   @override
@@ -54,8 +52,7 @@ class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage>
               throw Exception('User must be logged in to access locked folder');
             }
 
-            final timelineService =
-                ref.watch(timelineFactoryProvider).lockedFolder(user.id);
+            final timelineService = ref.watch(timelineFactoryProvider).lockedFolder(user.id);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },
@@ -64,8 +61,7 @@ class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage>
       child: _showOverlay
           ? const SizedBox()
           : PopScope(
-              onPopInvokedWithResult: (didPop, _) =>
-                  didPop ? ref.read(authProvider.notifier).lockPinCode() : null,
+              onPopInvokedWithResult: (didPop, _) => didPop ? ref.read(authProvider.notifier).lockPinCode() : null,
               child: Timeline(
                 appBar: MesmerizingSliverAppBar(
                   title: 'locked_folder'.t(context: context),

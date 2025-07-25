@@ -23,8 +23,7 @@ class DriftArchivePage extends StatelessWidget {
               throw Exception('User must be logged in to access archive');
             }
 
-            final timelineService =
-                ref.watch(timelineFactoryProvider).archive(user.id);
+            final timelineService = ref.watch(timelineFactoryProvider).archive(user.id);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },

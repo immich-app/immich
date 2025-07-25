@@ -29,6 +29,3 @@ translation:
 	dart run bin/generate_keys.dart
 	dart format lib/generated/codegen_loader.g.dart
 	dart format lib/generated/intl_keys.g.dart
-
-build-beta:
-	flutter build apk --flavor beta --release

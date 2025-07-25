@@ -69,7 +69,6 @@ class GCastRepository {
   }
 
   Future<List<CastDevice>> listDestinations() async {
-    return await CastDiscoveryService()
-        .search(timeout: const Duration(seconds: 3));
+    return await CastDiscoveryService().search(timeout: const Duration(seconds: 3));
   }
 }

@@ -218,8 +218,7 @@ class PhotoViewGallery extends StatefulWidget {
 }
 
 class _PhotoViewGalleryState extends State<PhotoViewGallery> {
-  late final PageController _controller =
-      widget.pageController ?? PageController();
+  late final PageController _controller = widget.pageController ?? PageController();
   PhotoViewControllerCallback? _getController;
 
   void scaleStateChangedCallback(PhotoViewScaleState scaleState) {

@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -38,8 +37,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   }
 
   Future<void> addAssets(BuildContext context) async {
-    final albumAssets =
-        await ref.read(remoteAlbumProvider.notifier).getAssets(widget.album.id);
+    final albumAssets = await ref.read(remoteAlbumProvider.notifier).getAssets(widget.album.id);
 
     final newAssets = await context.pushRoute<Set<BaseAsset>>(
       DriftAssetSelectionTimelineRoute(
@@ -83,9 +81,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     }
 
     try {
-      await ref
-          .read(remoteAlbumProvider.notifier)
-          .addUsers(widget.album.id, newUsers);
+      await ref.read(remoteAlbumProvider.notifier).addUsers(widget.album.id, newUsers);
 
       if (newUsers.isNotEmpty) {
         ImmichToast.show(
@@ -158,14 +154,11 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
     if (confirmed == true) {
       try {
-        await ref
-            .read(remoteAlbumProvider.notifier)
-            .deleteAlbum(widget.album.id);
+        await ref.read(remoteAlbumProvider.notifier).deleteAlbum(widget.album.id);
 
         ImmichToast.show(
           context: context,
-          msg: 'library_deleted'
-              .t(context: context), // Using existing success message
+          msg: 'album_deleted'.t(context: context),
           toastType: ToastType.success,
         );
 
@@ -239,9 +232,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       overrides: [
         timelineServiceProvider.overrideWith(
           (ref) {
-            final timelineService = ref
-                .watch(timelineFactoryProvider)
-                .remoteAlbum(albumId: widget.album.id);
+            final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: widget.album.id);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },

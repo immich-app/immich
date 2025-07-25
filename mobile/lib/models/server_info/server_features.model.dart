@@ -50,9 +50,6 @@ class ServerFeatures {
 
   @override
   int get hashCode {
-    return trash.hashCode ^
-        map.hashCode ^
-        oauthEnabled.hashCode ^
-        passwordLogin.hashCode;
+    return trash.hashCode ^ map.hashCode ^ oauthEnabled.hashCode ^ passwordLogin.hashCode;
   }
 }

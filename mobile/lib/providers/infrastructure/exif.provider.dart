@@ -6,5 +6,4 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'exif.provider.g.dart';
 
 @Riverpod(keepAlive: true)
-IsarExifRepository exifRepository(Ref ref) =>
-    IsarExifRepository(ref.watch(isarProvider));
+IsarExifRepository exifRepository(Ref ref) => IsarExifRepository(ref.watch(isarProvider));

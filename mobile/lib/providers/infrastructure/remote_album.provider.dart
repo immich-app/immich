@@ -31,16 +31,14 @@ class RemoteAlbumState {
   }
 
   @override
-  String toString() =>
-      'RemoteAlbumState(albums: ${albums.length}, filteredAlbums: ${filteredAlbums.length})';
+  String toString() => 'RemoteAlbumState(albums: ${albums.length}, filteredAlbums: ${filteredAlbums.length})';
 
   @override
   bool operator ==(covariant RemoteAlbumState other) {
     if (identical(this, other)) return true;
     final listEquals = const DeepCollectionEquality().equals;
 
-    return listEquals(other.albums, albums) &&
-        listEquals(other.filteredAlbums, filteredAlbums);
+    return listEquals(other.albums, albums) && listEquals(other.filteredAlbums, filteredAlbums);
   }
 
   @override
@@ -101,8 +99,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     RemoteAlbumSortMode sortMode, {
     bool isReverse = false,
   }) {
-    final sortedAlbums = _remoteAlbumService
-        .sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
+    final sortedAlbums = _remoteAlbumService.sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
     state = state.copyWith(filteredAlbums: sortedAlbums);
   }
 
@@ -169,12 +166,9 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   }
 
   Future<RemoteAlbum?> toggleAlbumOrder(String albumId) async {
-    final currentAlbum =
-        state.albums.firstWhere((album) => album.id == albumId);
+    final currentAlbum = state.albums.firstWhere((album) => album.id == albumId);
 
-    final newOrder = currentAlbum.order == AlbumAssetOrder.asc
-        ? AlbumAssetOrder.desc
-        : AlbumAssetOrder.asc;
+    final newOrder = currentAlbum.order == AlbumAssetOrder.asc ? AlbumAssetOrder.desc : AlbumAssetOrder.asc;
 
     return updateAlbum(albumId, order: newOrder);
   }
@@ -182,10 +176,8 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   Future<void> deleteAlbum(String albumId) async {
     await _remoteAlbumService.deleteAlbum(albumId);
 
-    final updatedAlbums =
-        state.albums.where((album) => album.id != albumId).toList();
-    final updatedFilteredAlbums =
-        state.filteredAlbums.where((album) => album.id != albumId).toList();
+    final updatedAlbums = state.albums.where((album) => album.id != albumId).toList();
+    final updatedFilteredAlbums = state.filteredAlbums.where((album) => album.id != albumId).toList();
 
     state = state.copyWith(
       albums: updatedAlbums,
@@ -212,16 +204,14 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   }
 }
 
-final remoteAlbumDateRangeProvider =
-    FutureProvider.family<(DateTime, DateTime), String>(
+final remoteAlbumDateRangeProvider = FutureProvider.family<(DateTime, DateTime), String>(
   (ref, albumId) async {
     final service = ref.watch(remoteAlbumServiceProvider);
     return service.getDateRange(albumId);
   },
 );
 
-final remoteAlbumSharedUsersProvider =
-    FutureProvider.autoDispose.family<List<UserDto>, String>(
+final remoteAlbumSharedUsersProvider = FutureProvider.autoDispose.family<List<UserDto>, String>(
   (ref, albumId) async {
     final link = ref.keepAlive();
     ref.onDispose(() => link.close());

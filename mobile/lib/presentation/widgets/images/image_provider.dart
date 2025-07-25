@@ -71,5 +71,4 @@ ImageProvider getThumbnailImageProvider({
 }
 
 bool _shouldUseLocalAsset(BaseAsset asset) =>
-    asset.hasLocal &&
-    (!asset.hasRemote || !AppSetting.get(Setting.preferRemoteImage));
+    asset.hasLocal && (!asset.hasRemote || !AppSetting.get(Setting.preferRemoteImage));

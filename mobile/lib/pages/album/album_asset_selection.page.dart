@@ -65,10 +65,8 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
           if (selected.value.isNotEmpty || canDeselect)
             TextButton(
               onPressed: () {
-                var payload =
-                    AssetSelectionPageResult(selectedAssets: selected.value);
-                AutoRouter.of(context)
-                    .popForced<AssetSelectionPageResult>(payload);
+                var payload = AssetSelectionPageResult(selectedAssets: selected.value);
+                AutoRouter.of(context).popForced<AssetSelectionPageResult>(payload);
               },
               child: Text(
                 canDeselect ? "done" : "add",

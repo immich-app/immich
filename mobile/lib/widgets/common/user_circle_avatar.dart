@@ -34,9 +34,7 @@ class UserCircleAvatar extends ConsumerWidget {
       style: TextStyle(
         fontWeight: FontWeight.bold,
         fontSize: 12,
-        color: userAvatarColor.computeLuminance() > 0.5
-            ? Colors.black
-            : Colors.white,
+        color: userAvatarColor.computeLuminance() > 0.5 ? Colors.black : Colors.white,
       ),
       child: Text(user.name[0].toUpperCase()),
     );

@@ -398,6 +398,7 @@
   "album_cover_updated": "Album cover updated",
   "album_delete_confirmation": "Are you sure you want to delete the album {album}?",
   "album_delete_confirmation_description": "If this album is shared, other users will not be able to access it anymore.",
+  "album_deleted": "Album deleted",
   "album_info_card_backup_album_excluded": "EXCLUDED",
   "album_info_card_backup_album_included": "INCLUDED",
   "album_info_updated": "Album info updated",

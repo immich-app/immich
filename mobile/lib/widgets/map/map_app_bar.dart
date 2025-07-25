@@ -22,9 +22,8 @@ class MapAppBar extends HookWidget implements PreferredSizeWidget {
       padding: EdgeInsets.only(top: context.padding.top + 25),
       child: ValueListenableBuilder(
         valueListenable: selectedAssets,
-        builder: (ctx, value, child) => value.isNotEmpty
-            ? _SelectionRow(selectedAssets: selectedAssets)
-            : const _NonSelectionRow(),
+        builder: (ctx, value, child) =>
+            value.isNotEmpty ? _SelectionRow(selectedAssets: selectedAssets) : const _NonSelectionRow(),
       ),
     );
   }

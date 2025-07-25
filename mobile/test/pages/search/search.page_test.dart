@@ -42,8 +42,7 @@ void main() {
     ];
   });
 
-  final emptyTextSearch = isA<MetadataSearchDto>()
-      .having((s) => s.originalFileName, 'originalFileName', null);
+  final emptyTextSearch = isA<MetadataSearchDto>().having((s) => s.originalFileName, 'originalFileName', null);
 
   testWidgets('contextual search with/without text', (tester) async {
     await tester.pumpConsumerWidget(
@@ -111,8 +110,7 @@ void main() {
 
     expect(
       captured.first,
-      isA<MetadataSearchDto>()
-          .having((s) => s.originalFileName, 'originalFileName', 'test'),
+      isA<MetadataSearchDto>().having((s) => s.originalFileName, 'originalFileName', 'test'),
     );
 
     await tester.enterText(searchField, '');

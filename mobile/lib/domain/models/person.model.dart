@@ -55,22 +55,17 @@ class PersonDto {
   factory PersonDto.fromMap(Map<String, dynamic> map) {
     return PersonDto(
       id: map['id'] as String,
-      birthDate: map['birthDate'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['birthDate'] as int)
-          : null,
+      birthDate: map['birthDate'] != null ? DateTime.fromMillisecondsSinceEpoch(map['birthDate'] as int) : null,
       isHidden: map['isHidden'] as bool,
       name: map['name'] as String,
       thumbnailPath: map['thumbnailPath'] as String,
-      updatedAt: map['updatedAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int)
-          : null,
+      updatedAt: map['updatedAt'] != null ? DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int) : null,
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory PersonDto.fromJson(String source) =>
-      PersonDto.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory PersonDto.fromJson(String source) => PersonDto.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   bool operator ==(covariant PersonDto other) {

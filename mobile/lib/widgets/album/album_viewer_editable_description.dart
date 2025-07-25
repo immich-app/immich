@@ -19,15 +19,13 @@ class AlbumViewerEditableDescription extends HookConsumerWidget {
     final albumViewerState = ref.watch(albumViewerProvider);
 
     final descriptionTextEditController = useTextEditingController(
-      text: albumViewerState.isEditAlbum &&
-              albumViewerState.editDescriptionText.isNotEmpty
+      text: albumViewerState.isEditAlbum && albumViewerState.editDescriptionText.isNotEmpty
           ? albumViewerState.editDescriptionText
           : albumDescription,
     );
 
     void onFocusModeChange() {
-      if (!descriptionFocusNode.hasFocus &&
-          descriptionTextEditController.text.isEmpty) {
+      if (!descriptionFocusNode.hasFocus && descriptionTextEditController.text.isEmpty) {
         ref.watch(albumViewerProvider.notifier).setEditDescriptionText("");
         descriptionTextEditController.text = "";
       }
@@ -49,9 +47,7 @@ class AlbumViewerEditableDescription extends HookConsumerWidget {
         onChanged: (value) {
           if (value.isEmpty) {
           } else {
-            ref
-                .watch(albumViewerProvider.notifier)
-                .setEditDescriptionText(value);
+            ref.watch(albumViewerProvider.notifier).setEditDescriptionText(value);
           }
         },
         focusNode: descriptionFocusNode,
@@ -62,9 +58,7 @@ class AlbumViewerEditableDescription extends HookConsumerWidget {
         onTap: () {
           context.focusScope.requestFocus(descriptionFocusNode);
 
-          ref
-              .watch(albumViewerProvider.notifier)
-              .setEditDescriptionText(albumDescription);
+          ref.watch(albumViewerProvider.notifier).setEditDescriptionText(albumDescription);
           ref.watch(albumViewerProvider.notifier).enableEditAlbum();
 
           if (descriptionTextEditController.text == '') {

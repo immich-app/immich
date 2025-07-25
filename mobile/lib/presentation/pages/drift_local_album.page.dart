@@ -102,8 +102,7 @@ class _AlbumList extends ConsumerWidget {
                       color: context.colorScheme.onSurfaceSecondary,
                     ),
                   ),
-                  onTap: () =>
-                      context.pushRoute(LocalTimelineRoute(album: album)),
+                  onTap: () => context.pushRoute(LocalTimelineRoute(album: album)),
                 ),
               );
             },

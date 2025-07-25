@@ -39,23 +39,19 @@ void main() {
     mockSyncApi = MockSyncApi();
     mockHttpClient = MockHttpClient();
     mockStreamedResponse = MockStreamedResponse();
-    responseStreamController =
-        StreamController<List<int>>.broadcast(sync: true);
+    responseStreamController = StreamController<List<int>>.broadcast(sync: true);
 
     registerFallbackValue(FakeBaseRequest());
 
     when(() => mockApiService.apiClient).thenReturn(mockApiClient);
     when(() => mockApiService.syncApi).thenReturn(mockSyncApi);
     when(() => mockApiClient.basePath).thenReturn('http://demo.immich.app/api');
-    when(() => mockApiService.applyToParams(any(), any()))
-        .thenAnswer((_) async => {});
+    when(() => mockApiService.applyToParams(any(), any())).thenAnswer((_) async => {});
 
     // Mock HTTP client behavior
-    when(() => mockHttpClient.send(any()))
-        .thenAnswer((_) async => mockStreamedResponse);
+    when(() => mockHttpClient.send(any())).thenAnswer((_) async => mockStreamedResponse);
     when(() => mockStreamedResponse.statusCode).thenReturn(200);
-    when(() => mockStreamedResponse.stream)
-        .thenAnswer((_) => http.ByteStream(responseStreamController.stream));
+    when(() => mockStreamedResponse.stream).thenAnswer((_) => http.ByteStream(responseStreamController.stream));
     when(() => mockHttpClient.close()).thenAnswer((_) => {});
 
     sut = SyncApiRepository(mockApiService);
@@ -270,8 +266,7 @@ void main() {
   test('streamChanges throws ApiException on non-200 status code', () async {
     when(() => mockStreamedResponse.statusCode).thenReturn(401);
     final errorBodyController = StreamController<List<int>>(sync: true);
-    when(() => mockStreamedResponse.stream)
-        .thenAnswer((_) => http.ByteStream(errorBodyController.stream));
+    when(() => mockStreamedResponse.stream).thenAnswer((_) => http.ByteStream(errorBodyController.stream));
 
     int onDataCallCount = 0;
 

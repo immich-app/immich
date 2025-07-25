@@ -98,7 +98,8 @@ jobs:
         run: dart analyze --fatal-infos
 
       - name: Run dart format
-        run: dart format lib/ --set-exit-if-changed
+        # Ignore generated files manually until https://github.com/dart-lang/dart_style/issues/864 is resolved
+        run: dart format --set-exit-if-changed $(find lib -name '*.dart' -not \( -name 'generated_plugin_registrant.dart' -o -name '*.g.dart' -o -name '*.drift.dart' \))
 
       - name: Run dart custom_lint
         run: dart run custom_lint

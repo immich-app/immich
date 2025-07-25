@@ -18,12 +18,10 @@ class BackupUploadProgressBar extends ConsumerWidget {
 
     final isIcloudAsset = isManualUpload
         ? ref.watch(
-            manualUploadProvider
-                .select((value) => value.currentUploadAsset.isIcloudAsset),
+            manualUploadProvider.select((value) => value.currentUploadAsset.isIcloudAsset),
           )
         : ref.watch(
-            backupProvider
-                .select((value) => value.currentUploadAsset.isIcloudAsset),
+            backupProvider.select((value) => value.currentUploadAsset.isIcloudAsset),
           );
 
     final uploadProgress = isManualUpload

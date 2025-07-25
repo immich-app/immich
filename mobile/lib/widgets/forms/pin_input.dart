@@ -30,8 +30,7 @@ class PinInput extends StatelessWidget {
       final minimumPadding = 18.0;
       final gapWidth = 3.0;
       final screenWidth = context.width;
-      final pinWidth =
-          (screenWidth - (minimumPadding * 2) - (gapWidth * 5)) / (length ?? 6);
+      final pinWidth = (screenWidth - (minimumPadding * 2) - (gapWidth * 5)) / (length ?? 6);
 
       if (pinWidth > 60) {
         return const Size(60, 64);
@@ -62,8 +61,7 @@ class PinInput extends StatelessWidget {
         if (label != null) ...[
           Text(
             label!,
-            style: context.textTheme.displayLarge
-                ?.copyWith(color: context.colorScheme.onSurface.withAlpha(200)),
+            style: context.textTheme.displayLarge?.copyWith(color: context.colorScheme.onSurface.withAlpha(200)),
           ),
           const SizedBox(height: 4),
         ],

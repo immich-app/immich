@@ -30,13 +30,11 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isInLockedView = ref.watch(inLockedViewProvider);
 
-    final isShowingSheet = ref
-        .watch(assetViewerProvider.select((state) => state.showingBottomSheet));
+    final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
     int opacity = ref.watch(
       assetViewerProvider.select((state) => state.backgroundOpacity),
     );
-    final showControls =
-        ref.watch(assetViewerProvider.select((s) => s.showingControls));
+    final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
     if (!showControls) {
       opacity = 0;
@@ -45,8 +43,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isCasting = ref.watch(
       castProvider.select((c) => c.isCasting),
     );
-    final websocketConnected =
-        ref.watch(websocketProvider.select((c) => c.isConnected));
+    final websocketConnected = ref.watch(websocketProvider.select((c) => c.isConnected));
 
     final actions = <Widget>[
       if (isCasting || (asset.hasRemote && websocketConnected))
@@ -78,8 +75,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         opacity: opacity / 255,
         duration: Durations.short2,
         child: AppBar(
-          backgroundColor:
-              isShowingSheet ? Colors.transparent : Colors.black.withAlpha(125),
+          backgroundColor: isShowingSheet ? Colors.transparent : Colors.black.withAlpha(125),
           leading: const _AppBarBackButton(),
           iconTheme: const IconThemeData(size: 22, color: Colors.white),
           actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
@@ -117,12 +113,9 @@ class _AppBarBackButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isShowingSheet = ref
-        .watch(assetViewerProvider.select((state) => state.showingBottomSheet));
-    final backgroundColor =
-        isShowingSheet && !context.isDarkTheme ? Colors.white : Colors.black;
-    final foregroundColor =
-        isShowingSheet && !context.isDarkTheme ? Colors.black : Colors.white;
+    final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
+    final backgroundColor = isShowingSheet && !context.isDarkTheme ? Colors.white : Colors.black;
+    final foregroundColor = isShowingSheet && !context.isDarkTheme ? Colors.black : Colors.white;
 
     return Padding(
       padding: const EdgeInsets.only(left: 12.0),

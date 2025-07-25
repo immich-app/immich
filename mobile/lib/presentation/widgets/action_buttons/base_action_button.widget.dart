@@ -25,12 +25,10 @@ class BaseActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final miniWidth =
-        minWidth ?? (context.isMobile ? context.width / 4.5 : 75.0);
+    final miniWidth = minWidth ?? (context.isMobile ? context.width / 4.5 : 75.0);
     final iconTheme = IconTheme.of(context);
     final iconSize = iconTheme.size ?? 24.0;
-    final iconColor =
-        this.iconColor ?? iconTheme.color ?? context.themeData.iconTheme.color;
+    final iconColor = this.iconColor ?? iconTheme.color ?? context.themeData.iconTheme.color;
     final textColor = context.themeData.textTheme.labelLarge?.color;
 
     if (menuItem) {

@@ -21,12 +21,10 @@ class DriftBackupAlbumSelectionPage extends ConsumerStatefulWidget {
   const DriftBackupAlbumSelectionPage({super.key});
 
   @override
-  ConsumerState<DriftBackupAlbumSelectionPage> createState() =>
-      _DriftBackupAlbumSelectionPageState();
+  ConsumerState<DriftBackupAlbumSelectionPage> createState() => _DriftBackupAlbumSelectionPageState();
 }
 
-class _DriftBackupAlbumSelectionPageState
-    extends ConsumerState<DriftBackupAlbumSelectionPage> {
+class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbumSelectionPage> {
   String _searchQuery = '';
   bool _isSearchMode = false;
   int _initialTotalAssetCount = 0;
@@ -42,13 +40,10 @@ class _DriftBackupAlbumSelectionPageState
     _searchController = TextEditingController();
     _searchFocusNode = FocusNode();
 
-    _enableSyncUploadAlbum.value = ref
-        .read(appSettingsServiceProvider)
-        .getSetting(AppSettingsEnum.syncAlbums);
+    _enableSyncUploadAlbum.value = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
     ref.read(backupAlbumProvider.notifier).getAll();
 
-    _initialTotalAssetCount =
-        ref.read(driftBackupProvider.select((p) => p.totalCount));
+    _initialTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
   }
 
   @override
@@ -69,12 +64,8 @@ class _DriftBackupAlbumSelectionPageState
       return album.name.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
 
-    final selectedBackupAlbums = albums
-        .where((album) => album.backupSelection == BackupSelection.selected)
-        .toList();
-    final excludedBackupAlbums = albums
-        .where((album) => album.backupSelection == BackupSelection.excluded)
-        .toList();
+    final selectedBackupAlbums = albums.where((album) => album.backupSelection == BackupSelection.selected).toList();
+    final excludedBackupAlbums = albums.where((album) => album.backupSelection == BackupSelection.excluded).toList();
 
     handleSyncAlbumToggle(bool isEnable) async {
       if (isEnable) {
@@ -98,16 +89,11 @@ class _DriftBackupAlbumSelectionPageState
             return;
           }
 
-          await ref
-              .read(driftBackupProvider.notifier)
-              .getBackupStatus(currentUser.id);
-          final currentTotalAssetCount =
-              ref.read(driftBackupProvider.select((p) => p.totalCount));
+          await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+          final currentTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
 
           if (currentTotalAssetCount != _initialTotalAssetCount) {
-            final isBackupEnabled = ref
-                .read(appSettingsServiceProvider)
-                .getSetting(AppSettingsEnum.enableBackup);
+            final isBackupEnabled = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
 
             if (!isBackupEnabled) {
               return;
@@ -132,8 +118,7 @@ class _DriftBackupAlbumSelectionPageState
                   autofocus: true,
                   controller: _searchController,
                   focusNode: _searchFocusNode,
-                  onChanged: (value) =>
-                      setState(() => _searchQuery = value.trim()),
+                  onChanged: (value) => setState(() => _searchQuery = value.trim()),
                 )
               : const Text(
                   "backup_album_selection_page_select_albums",
@@ -195,8 +180,7 @@ class _DriftBackupAlbumSelectionPageState
                   SettingsSwitchListTile(
                     valueNotifier: _enableSyncUploadAlbum,
                     title: "sync_albums".t(context: context),
-                    subtitle: "sync_upload_album_setting_subtitle"
-                        .t(context: context),
+                    subtitle: "sync_upload_album_setting_subtitle".t(context: context),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                     titleStyle: context.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.bold,
@@ -238,8 +222,7 @@ class _DriftBackupAlbumSelectionPageState
                           builder: (BuildContext context) {
                             return AlertDialog(
                               shape: const RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
+                                borderRadius: BorderRadius.all(Radius.circular(10)),
                               ),
                               elevation: 5,
                               title: Text(
@@ -428,8 +411,7 @@ class _SelectedAlbumNameChips extends ConsumerWidget {
                   ),
                 ),
                 backgroundColor: context.primaryColor,
-                deleteIconColor:
-                    context.isDarkTheme ? Colors.black : Colors.white,
+                deleteIconColor: context.isDarkTheme ? Colors.black : Colors.white,
                 deleteIcon: const Icon(
                   Icons.cancel_rounded,
                   size: 15,
@@ -504,9 +486,7 @@ class _SelectAllButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final canSelectAll = filteredAlbums
-        .where((album) => album.backupSelection != BackupSelection.selected)
-        .isNotEmpty;
+    final canSelectAll = filteredAlbums.where((album) => album.backupSelection != BackupSelection.selected).isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -518,9 +498,7 @@ class _SelectAllButton extends ConsumerWidget {
                   ? () {
                       for (final album in filteredAlbums) {
                         if (album.backupSelection != BackupSelection.selected) {
-                          ref
-                              .read(backupAlbumProvider.notifier)
-                              .selectAlbum(album);
+                          ref.read(backupAlbumProvider.notifier).selectAlbum(album);
                         }
                       }
                     }
@@ -544,9 +522,7 @@ class _SelectAllButton extends ConsumerWidget {
                   ? () {
                       for (final album in filteredAlbums) {
                         if (album.backupSelection == BackupSelection.selected) {
-                          ref
-                              .read(backupAlbumProvider.notifier)
-                              .deselectAlbum(album);
+                          ref.read(backupAlbumProvider.notifier).deselectAlbum(album);
                         }
                       }
                     }

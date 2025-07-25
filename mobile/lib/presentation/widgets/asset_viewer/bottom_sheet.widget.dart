@@ -52,8 +52,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       if (asset.hasRemote) ...[
         const ShareLinkActionButton(source: ActionSource.viewer),
         const ArchiveActionButton(source: ActionSource.viewer),
-        if (!asset.hasLocal)
-          const DownloadActionButton(source: ActionSource.viewer),
+        if (!asset.hasLocal) const DownloadActionButton(source: ActionSource.viewer),
         isTrashEnable
             ? const TrashActionButton(source: ActionSource.viewer)
             : const DeletePermanentActionButton(source: ActionSource.viewer),
@@ -100,18 +99,14 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
   String _getFileInfo(BaseAsset asset, ExifInfo? exifInfo) {
     final height = asset.height ?? exifInfo?.height;
     final width = asset.width ?? exifInfo?.width;
-    final resolution = (width != null && height != null)
-        ? "${width.toInt()} x ${height.toInt()}"
-        : null;
-    final fileSize =
-        exifInfo?.fileSize != null ? formatBytes(exifInfo!.fileSize!) : null;
+    final resolution = (width != null && height != null) ? "${width.toInt()} x ${height.toInt()}" : null;
+    final fileSize = exifInfo?.fileSize != null ? formatBytes(exifInfo!.fileSize!) : null;
 
     return switch ((fileSize, resolution)) {
       (null, null) => '',
       (String fileSize, null) => fileSize,
       (null, String resolution) => resolution,
-      (String fileSize, String resolution) =>
-        '$fileSize$_kSeparator$resolution',
+      (String fileSize, String resolution) => '$fileSize$_kSeparator$resolution',
     };
   }
 
@@ -133,17 +128,12 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
       return null;
     }
 
-    final fNumber =
-        exifInfo.fNumber.isNotEmpty ? 'ƒ/${exifInfo.fNumber}' : null;
-    final exposureTime =
-        exifInfo.exposureTime.isNotEmpty ? exifInfo.exposureTime : null;
-    final focalLength =
-        exifInfo.focalLength.isNotEmpty ? '${exifInfo.focalLength} mm' : null;
+    final fNumber = exifInfo.fNumber.isNotEmpty ? 'ƒ/${exifInfo.fNumber}' : null;
+    final exposureTime = exifInfo.exposureTime.isNotEmpty ? exifInfo.exposureTime : null;
+    final focalLength = exifInfo.focalLength.isNotEmpty ? '${exifInfo.focalLength} mm' : null;
     final iso = exifInfo.iso != null ? 'ISO ${exifInfo.iso}' : null;
 
-    return [fNumber, exposureTime, focalLength, iso]
-        .where((spec) => spec != null && spec.isNotEmpty)
-        .join(_kSeparator);
+    return [fNumber, exposureTime, focalLength, iso].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
   }
 
   @override

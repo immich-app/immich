@@ -52,28 +52,21 @@ class BottomGalleryBar extends ConsumerWidget {
     if (asset == null) {
       return const SizedBox();
     }
-    final isOwner =
-        asset.ownerId == fastHash(ref.watch(currentUserProvider)?.id ?? '');
+    final isOwner = asset.ownerId == fastHash(ref.watch(currentUserProvider)?.id ?? '');
     final showControls = ref.watch(showControlsProvider);
     final stackId = asset.stackId;
 
-    final stackItems = showStack && stackId != null
-        ? ref.watch(assetStackStateProvider(stackId))
-        : <Asset>[];
+    final stackItems = showStack && stackId != null ? ref.watch(assetStackStateProvider(stackId)) : <Asset>[];
     bool isStackPrimaryAsset = asset.stackPrimaryAssetId == null;
     final navStack = AutoRouter.of(context).stackData;
-    final isTrashEnabled =
-        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
-    final isFromTrash = isTrashEnabled &&
-        navStack.length > 2 &&
-        navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
+    final isTrashEnabled = ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
+    final isFromTrash =
+        isTrashEnabled && navStack.length > 2 && navStack.elementAt(navStack.length - 2).name == TrashRoute.name;
     final isInAlbum = ref.watch(currentAlbumProvider)?.isRemote ?? false;
 
     void removeAssetFromStack() {
       if (stackIndex.value > 0 && showStack && stackId != null) {
-        ref
-            .read(assetStackStateProvider(stackId).notifier)
-            .removeChild(stackIndex.value - 1);
+        ref.read(assetStackStateProvider(stackId).notifier).removeChild(stackIndex.value - 1);
       }
     }
 
@@ -89,8 +82,7 @@ class BottomGalleryBar extends ConsumerWidget {
 
           // `assetIndex == totalAssets.value - 1` handle the case of removing the last asset
           // to not throw the error when the next preCache index is called
-          if (totalAssets.value == 1 ||
-              assetIndex.value == totalAssets.value - 1) {
+          if (totalAssets.value == 1 || assetIndex.value == totalAssets.value - 1) {
             // Handle only one asset
             context.maybePop();
           }
@@ -98,9 +90,7 @@ class BottomGalleryBar extends ConsumerWidget {
           totalAssets.value -= 1;
         }
         if (isDeleted) {
-          ref
-              .read(currentAssetProvider.notifier)
-              .set(renderList.loadAsset(assetIndex.value));
+          ref.read(currentAssetProvider.notifier).set(renderList.loadAsset(assetIndex.value));
         }
         return isDeleted;
       }
@@ -144,9 +134,7 @@ class BottomGalleryBar extends ConsumerWidget {
         return;
       }
 
-      await ref
-          .read(stackServiceProvider)
-          .deleteStack(asset.stackId!, stackItems);
+      await ref.read(stackServiceProvider).deleteStack(asset.stackId!, stackItems);
     }
 
     void showStackActionItems() {
@@ -240,8 +228,7 @@ class BottomGalleryBar extends ConsumerWidget {
 
     handleRemoveFromAlbum() async {
       final album = ref.read(currentAlbumProvider);
-      final bool isSuccess = album != null &&
-          await ref.read(albumProvider.notifier).removeAsset(album, [asset]);
+      final bool isSuccess = album != null && await ref.read(albumProvider.notifier).removeAsset(album, [asset]);
 
       if (isSuccess) {
         // Workaround for asset remaining in the gallery
@@ -373,9 +360,7 @@ class BottomGalleryBar extends ConsumerWidget {
                   unselectedItemColor: Colors.white,
                   showSelectedLabels: true,
                   showUnselectedLabels: true,
-                  items: albumActions
-                      .map((e) => e.keys.first)
-                      .toList(growable: false),
+                  items: albumActions.map((e) => e.keys.first).toList(growable: false),
                   onTap: (index) {
                     albumActions[index].values.first.call(index);
                   },

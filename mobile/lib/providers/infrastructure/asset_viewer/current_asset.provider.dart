@@ -4,8 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 
-final currentAssetNotifier =
-    AutoDisposeNotifierProvider<CurrentAssetNotifier, BaseAsset?>(
+final currentAssetNotifier = AutoDisposeNotifierProvider<CurrentAssetNotifier, BaseAsset?>(
   CurrentAssetNotifier.new,
 );
 
@@ -20,10 +19,7 @@ class CurrentAssetNotifier extends AutoDisposeNotifier<BaseAsset?> {
     _keepAliveLink?.close();
     _assetSubscription?.cancel();
     state = asset;
-    _assetSubscription = ref
-        .watch(assetServiceProvider)
-        .watchAsset(asset)
-        .listen((updatedAsset) {
+    _assetSubscription = ref.watch(assetServiceProvider).watchAsset(asset).listen((updatedAsset) {
       if (updatedAsset != null) {
         state = updatedAsset;
       }

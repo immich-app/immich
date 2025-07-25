@@ -27,9 +27,7 @@ class DriftUploadDetailPage extends ConsumerWidget {
         elevation: 0,
         scrolledUnderElevation: 1,
       ),
-      body: uploadItems.isEmpty
-          ? _buildEmptyState(context)
-          : _buildUploadList(uploadItems),
+      body: uploadItems.isEmpty ? _buildEmptyState(context) : _buildUploadList(uploadItems),
     );
   }
 
@@ -79,9 +77,7 @@ class DriftUploadDetailPage extends ConsumerWidget {
 
     return Card(
       elevation: 0,
-      color: item.isFailed != null
-          ? context.colorScheme.errorContainer
-          : context.colorScheme.surfaceContainer,
+      color: item.isFailed != null ? context.colorScheme.errorContainer : context.colorScheme.surfaceContainer,
       shape: RoundedRectangleBorder(
         borderRadius: const BorderRadius.all(
           Radius.circular(16),
@@ -119,8 +115,7 @@ class DriftUploadDetailPage extends ConsumerWidget {
                         Text(
                           'Tap for more details',
                           style: context.textTheme.bodySmall?.copyWith(
-                            color: context.colorScheme.onSurface
-                                .withValues(alpha: 0.6),
+                            color: context.colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -163,13 +158,10 @@ class DriftUploadDetailPage extends ConsumerWidget {
                 tween: Tween<double>(begin: 0.0, end: progress),
                 duration: const Duration(milliseconds: 300),
                 builder: (context, value, _) => CircularProgressIndicator(
-                  backgroundColor:
-                      context.colorScheme.outline.withValues(alpha: 0.2),
+                  backgroundColor: context.colorScheme.outline.withValues(alpha: 0.2),
                   strokeWidth: 3,
                   value: value,
-                  color: isCompleted
-                      ? context.colorScheme.primary
-                      : context.colorScheme.secondary,
+                  color: isCompleted ? context.colorScheme.primary : context.colorScheme.secondary,
                 ),
               ),
             ),
@@ -279,12 +271,10 @@ class FileDetailDialog extends ConsumerWidget {
                         height: 128,
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: context.colorScheme.outline
-                                .withValues(alpha: 0.2),
+                            color: context.colorScheme.outline.withValues(alpha: 0.2),
                             width: 1,
                           ),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(12)),
+                          borderRadius: const BorderRadius.all(Radius.circular(12)),
                         ),
                         child: asset != null
                             ? Thumbnail(
@@ -314,8 +304,7 @@ class FileDetailDialog extends ConsumerWidget {
                         "File Size",
                         formatHumanReadableBytes(uploadStatus.fileSize, 2),
                       ),
-                      if (asset.width != null)
-                        _buildInfoRow(context, "Width", "${asset.width}px"),
+                      if (asset.width != null) _buildInfoRow(context, "Width", "${asset.width}px"),
                       if (asset.height != null)
                         _buildInfoRow(
                           context,

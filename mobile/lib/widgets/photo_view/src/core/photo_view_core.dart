@@ -122,10 +122,7 @@ class PhotoViewCore extends StatefulWidget {
 }
 
 class PhotoViewCoreState extends State<PhotoViewCore>
-    with
-        TickerProviderStateMixin,
-        PhotoViewControllerDelegate,
-        HitCornersDetector {
+    with TickerProviderStateMixin, PhotoViewControllerDelegate, HitCornersDetector {
   Offset? _normalizedPosition;
   double? _scaleBefore;
   double? _rotationBefore;
@@ -136,8 +133,8 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   late final AnimationController _positionAnimationController;
   Animation<Offset>? _positionAnimation;
 
-  late final AnimationController _rotationAnimationController =
-      AnimationController(vsync: this)..addListener(handleRotationAnimation);
+  late final AnimationController _rotationAnimationController = AnimationController(vsync: this)
+    ..addListener(handleRotationAnimation);
   Animation<double>? _rotationAnimation;
 
   PhotoViewHeroAttributes? get heroAttributes => widget.heroAttributes;
@@ -166,8 +163,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   }
 
   bool _shouldAllowPanRotate() => switch (scaleStateController.scaleState) {
-        PhotoViewScaleState.zoomedIn =>
-          scaleStateController.hasZoomedOutManually,
+        PhotoViewScaleState.zoomedIn => scaleStateController.hasZoomedOutManually,
         _ => true,
       };
 
@@ -182,8 +178,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
     updateMultiple(
       scale: newScale,
-      position:
-          panEnabled ? delta : clampPosition(position: delta * details.scale),
+      position: panEnabled ? delta : clampPosition(position: delta * details.scale),
       rotation: rotationEnabled ? _rotationBefore! + details.rotation : null,
       rotationFocusPoint: rotationEnabled ? details.focalPoint : null,
     );
@@ -266,8 +261,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     if (!mounted) {
       return;
     }
-    _positionAnimation = Tween<Offset>(begin: from, end: to)
-        .animate(_positionAnimationController);
+    _positionAnimation = Tween<Offset>(begin: from, end: to).animate(_positionAnimationController);
     _positionAnimationController
       ..value = 0.0
       ..fling(velocity: 0.4);
@@ -277,8 +271,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     if (!mounted) {
       return;
     }
-    _rotationAnimation = Tween<double>(begin: from, end: to)
-        .animate(_rotationAnimationController);
+    _rotationAnimation = Tween<double>(begin: from, end: to).animate(_rotationAnimationController);
     _rotationAnimationController
       ..value = 0.0
       ..fling(velocity: 0.4);
@@ -292,8 +285,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
   /// Check if scale is equal to initial after scale animation update
   void onAnimationStatusCompleted() {
-    if (scaleStateController.scaleState != PhotoViewScaleState.initial &&
-        scale == scaleBoundaries.initialScale) {
+    if (scaleStateController.scaleState != PhotoViewScaleState.initial && scale == scaleBoundaries.initialScale) {
       scaleStateController.setInvisibly(PhotoViewScaleState.initial);
     }
   }
@@ -326,8 +318,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     _scaleAnimationController = AnimationController(vsync: this)
       ..addListener(handleScaleAnimation)
       ..addStatusListener(onAnimationStatus);
-    _positionAnimationController = AnimationController(vsync: this)
-      ..addListener(handlePositionAnimate);
+    _positionAnimationController = AnimationController(vsync: this)..addListener(handlePositionAnimate);
   }
 
   void animateOnScaleStateUpdate(double prevScale, double nextScale) {
@@ -389,9 +380,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
           );
 
           final child = Container(
-            constraints: widget.tightMode
-                ? BoxConstraints.tight(scaleBoundaries.childSize * scale)
-                : null,
+            constraints: widget.tightMode ? BoxConstraints.tight(scaleBoundaries.childSize * scale) : null,
             decoration: widget.backgroundDecoration ?? _defaultDecoration,
             child: Center(
               child: Transform(
@@ -421,8 +410,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
                     )
                 : null,
             onDragEnd: widget.onDragEnd != null
-                ? (details) =>
-                    widget.onDragEnd!(context, details, widget.controller.value)
+                ? (details) => widget.onDragEnd!(context, details, widget.controller.value)
                 : null,
             onDragUpdate: widget.onDragUpdate != null
                 ? (details) => widget.onDragUpdate!(
@@ -432,15 +420,10 @@ class PhotoViewCoreState extends State<PhotoViewCore>
                     )
                 : null,
             hitDetector: this,
-            onTapUp: widget.onTapUp != null
-                ? (details) => widget.onTapUp!(context, details, value)
-                : null,
-            onTapDown: widget.onTapDown != null
-                ? (details) => widget.onTapDown!(context, details, value)
-                : null,
-            onLongPressStart: widget.onLongPressStart != null
-                ? (details) => widget.onLongPressStart!(context, details, value)
-                : null,
+            onTapUp: widget.onTapUp != null ? (details) => widget.onTapUp!(context, details, value) : null,
+            onTapDown: widget.onTapDown != null ? (details) => widget.onTapDown!(context, details, value) : null,
+            onLongPressStart:
+                widget.onLongPressStart != null ? (details) => widget.onLongPressStart!(context, details, value) : null,
             child: child,
           );
         } else {
@@ -467,9 +450,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     return widget.hasCustomChild
         ? widget.customChild!
         : Image(
-            key: widget.heroAttributes?.tag != null
-                ? ObjectKey(widget.heroAttributes!.tag)
-                : null,
+            key: widget.heroAttributes?.tag != null ? ObjectKey(widget.heroAttributes!.tag) : null,
             image: widget.imageProvider!,
             semanticLabel: widget.semanticLabel,
             gaplessPlayback: widget.gaplessPlayback ?? false,
@@ -507,9 +488,7 @@ class _CenterWithOriginalSizeDelegate extends SingleChildLayoutDelegate {
 
   @override
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
-    return useImageScale
-        ? const BoxConstraints()
-        : BoxConstraints.tight(subjectSize);
+    return useImageScale ? const BoxConstraints() : BoxConstraints.tight(subjectSize);
   }
 
   @override
@@ -527,6 +506,5 @@ class _CenterWithOriginalSizeDelegate extends SingleChildLayoutDelegate {
           useImageScale == other.useImageScale;
 
   @override
-  int get hashCode =>
-      subjectSize.hashCode ^ basePosition.hashCode ^ useImageScale.hashCode;
+  int get hashCode => subjectSize.hashCode ^ basePosition.hashCode ^ useImageScale.hashCode;
 }

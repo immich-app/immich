@@ -17,8 +17,7 @@ class AnimatedPlayPause extends StatefulWidget {
   State<StatefulWidget> createState() => AnimatedPlayPauseState();
 }
 
-class AnimatedPlayPauseState extends State<AnimatedPlayPause>
-    with SingleTickerProviderStateMixin {
+class AnimatedPlayPauseState extends State<AnimatedPlayPause> with SingleTickerProviderStateMixin {
   late final animationController = AnimationController(
     vsync: this,
     value: widget.playing ? 1 : 0,

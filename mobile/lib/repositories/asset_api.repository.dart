@@ -99,8 +99,7 @@ class AssetApiRepository extends ApiRepository {
   }
 
   Future<StackResponse> stack(List<String> ids) async {
-    final responseDto =
-        await checkNull(_stacksApi.createStack(StackCreateDto(assetIds: ids)));
+    final responseDto = await checkNull(_stacksApi.createStack(StackCreateDto(assetIds: ids)));
 
     return responseDto.toStack();
   }

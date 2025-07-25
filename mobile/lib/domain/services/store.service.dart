@@ -12,8 +12,7 @@ class StoreService {
   final Map<int, Object?> _cache = {};
   late final StreamSubscription<StoreDto> _storeUpdateSubscription;
 
-  StoreService._({required IsarStoreRepository storeRepository})
-      : _storeRepository = storeRepository;
+  StoreService._({required IsarStoreRepository storeRepository}) : _storeRepository = storeRepository;
 
   // TODO: Temporary typedef to make minimal changes. Remove this and make the presentation layer access store through a provider
   static StoreService? _instance;
@@ -48,8 +47,7 @@ class StoreService {
     }
   }
 
-  StreamSubscription<StoreDto> _listenForChange() =>
-      _storeRepository.watchAll().listen((event) {
+  StreamSubscription<StoreDto> _listenForChange() => _storeRepository.watchAll().listen((event) {
         _cache[event.key.id] = event.value;
       });
 

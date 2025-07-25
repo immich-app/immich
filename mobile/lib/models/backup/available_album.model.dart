@@ -29,8 +29,7 @@ class AvailableAlbum {
   bool get isAll => album.isAll;
 
   @override
-  String toString() =>
-      'AvailableAlbum(albumEntity: $album, lastBackup: $lastBackup)';
+  String toString() => 'AvailableAlbum(albumEntity: $album, lastBackup: $lastBackup)';
 
   @override
   bool operator ==(Object other) {

@@ -22,15 +22,13 @@ extension LogOnError<T> on AsyncValue<T> {
       }
 
       if (!skip) {
-        return onLoading?.call() ??
-            const Center(child: ImmichLoadingIndicator());
+        return onLoading?.call() ?? const Center(child: ImmichLoadingIndicator());
       }
     }
 
     if (hasError && !hasValue) {
       _asyncErrorLogger.severe('Could not load value', error, stackTrace);
-      return onError?.call(error, stackTrace) ??
-          ScaffoldErrorBody(errorMsg: error?.toString());
+      return onError?.call(error, stackTrace) ?? ScaffoldErrorBody(errorMsg: error?.toString());
     }
 
     return onData(requireValue);

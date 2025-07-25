@@ -97,14 +97,12 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
               ListTile(
                 leading: Icon(
                   Icons.delete,
-                  color:
-                      context.isDarkTheme ? Colors.red[400] : Colors.red[800],
+                  color: context.isDarkTheme ? Colors.red[400] : Colors.red[800],
                 ),
                 title: Text(
                   'delete_album'.t(context: context),
                   style: textStyle.copyWith(
-                    color:
-                        context.isDarkTheme ? Colors.red[400] : Colors.red[800],
+                    color: context.isDarkTheme ? Colors.red[400] : Colors.red[800],
                   ),
                 ),
                 onTap: onDeleteAlbum,

@@ -29,8 +29,7 @@ class LayoutSettings extends HookConsumerWidget {
         ),
         SettingsSliderListTile(
           valueNotifier: tilesPerRow,
-          text: 'theme_setting_asset_list_tiles_per_row_title'
-              .tr(namedArgs: {'count': "${tilesPerRow.value}"}),
+          text: 'theme_setting_asset_list_tiles_per_row_title'.tr(namedArgs: {'count': "${tilesPerRow.value}"}),
           label: "${tilesPerRow.value}",
           maxValue: 6,
           minValue: 2,

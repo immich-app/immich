@@ -130,10 +130,8 @@ class AppLogDetailPage extends HookConsumerWidget {
         child: ListView(
           children: [
             buildTextWithCopyButton("MESSAGE", logMessage.message),
-            if (logMessage.error != null)
-              buildTextWithCopyButton("DETAILS", logMessage.error.toString()),
-            if (logMessage.logger != null)
-              buildLogContext1(logMessage.logger.toString()),
+            if (logMessage.error != null) buildTextWithCopyButton("DETAILS", logMessage.error.toString()),
+            if (logMessage.logger != null) buildLogContext1(logMessage.logger.toString()),
             if (logMessage.stack != null)
               buildTextWithCopyButton(
                 "STACK TRACE",

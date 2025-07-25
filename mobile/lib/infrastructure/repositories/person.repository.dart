@@ -8,8 +8,7 @@ class DriftPersonRepository extends DriftDatabaseRepository {
   const DriftPersonRepository(this._db) : super(_db);
 
   Future<List<Person>> getAll(String userId) {
-    final query = _db.personEntity.select()
-      ..where((e) => e.ownerId.equals(userId));
+    final query = _db.personEntity.select()..where((e) => e.ownerId.equals(userId));
 
     return query.map((person) {
       return person.toDto();

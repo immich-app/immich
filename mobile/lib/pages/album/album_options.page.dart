@@ -7,8 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
-    as entity;
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart' as entity;
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
@@ -28,8 +27,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
       return const SizedBox();
     }
 
-    final sharedUsers =
-        useState(album.sharedUsers.map((u) => u.toDto()).toList());
+    final sharedUsers = useState(album.sharedUsers.map((u) => u.toDto()).toList());
     final owner = album.owner.value;
     final userId = ref.watch(authProvider).userId;
     final activityEnabled = useState(album.activityEnabled);
@@ -50,8 +48,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
       isProcessing.value = true;
 
       try {
-        final isSuccess =
-            await ref.read(albumProvider.notifier).leaveAlbum(album);
+        final isSuccess = await ref.read(albumProvider.notifier).leaveAlbum(album);
 
         if (isSuccess) {
           context.navigateTo(
@@ -99,8 +96,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         actions = [
           ListTile(
             leading: const Icon(Icons.person_remove_rounded),
-            title: const Text("shared_album_section_people_action_remove_user")
-                .tr(),
+            title: const Text("shared_album_section_people_action_remove_user").tr(),
             onTap: () => removeUserFromAlbum(user),
           ),
         ];
@@ -126,9 +122,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
 
     buildOwnerInfo() {
       return ListTile(
-        leading: owner != null
-            ? UserCircleAvatar(user: owner.toDto())
-            : const SizedBox(),
+        leading: owner != null ? UserCircleAvatar(user: owner.toDto()) : const SizedBox(),
         title: Text(
           album.owner.value?.name ?? "",
           style: const TextStyle(
@@ -170,12 +164,8 @@ class AlbumOptionsPage extends HookConsumerWidget {
                 color: context.colorScheme.onSurfaceSecondary,
               ),
             ),
-            trailing: userId == user.id || isOwner
-                ? const Icon(Icons.more_horiz_rounded)
-                : const SizedBox(),
-            onTap: userId == user.id || isOwner
-                ? () => handleUserClick(user)
-                : null,
+            trailing: userId == user.id || isOwner ? const Icon(Icons.more_horiz_rounded) : const SizedBox(),
+            onTap: userId == user.id || isOwner ? () => handleUserClick(user) : null,
           );
         },
       );
@@ -204,20 +194,15 @@ class AlbumOptionsPage extends HookConsumerWidget {
               value: activityEnabled.value,
               onChanged: (bool value) async {
                 activityEnabled.value = value;
-                if (await ref
-                    .read(albumProvider.notifier)
-                    .setActivitystatus(album, value)) {
+                if (await ref.read(albumProvider.notifier).setActivitystatus(album, value)) {
                   album.activityEnabled = value;
                 }
               },
-              activeColor: activityEnabled.value
-                  ? context.primaryColor
-                  : context.themeData.disabledColor,
+              activeColor: activityEnabled.value ? context.primaryColor : context.themeData.disabledColor,
               dense: true,
               title: Text(
                 "comments_and_likes",
-                style: context.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w500),
+                style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
               ).tr(),
               subtitle: Text(
                 "let_others_respond",

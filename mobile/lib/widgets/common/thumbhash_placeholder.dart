@@ -13,8 +13,7 @@ OctoSet blurHashOrPlaceholder(
 }) {
   return OctoSet(
     placeholderBuilder: blurHashPlaceholderBuilder(blurhash, fit: fit),
-    errorBuilder:
-        blurHashErrorBuilder(blurhash, fit: fit, message: errorMessage),
+    errorBuilder: blurHashErrorBuilder(blurhash, fit: fit, message: errorMessage),
   );
 }
 
