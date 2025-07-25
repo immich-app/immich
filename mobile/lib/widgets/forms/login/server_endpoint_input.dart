@@ -18,10 +18,7 @@ class ServerEndpointInput extends StatelessWidget {
     if (url == null || url.isEmpty) return null;
 
     final parsedUrl = Uri.tryParse(sanitizeUrl(url));
-    if (parsedUrl == null ||
-        !parsedUrl.isAbsolute ||
-        !parsedUrl.scheme.startsWith("http") ||
-        parsedUrl.host.isEmpty) {
+    if (parsedUrl == null || !parsedUrl.isAbsolute || !parsedUrl.scheme.startsWith("http") || parsedUrl.host.isEmpty) {
       return 'login_form_err_invalid_url'.tr();
     }
 

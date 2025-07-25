@@ -34,14 +34,12 @@ class TimelineFactory {
         _settingsService = settingsService;
 
   GroupAssetsBy get groupBy {
-    final group =
-        GroupAssetsBy.values[_settingsService.get(Setting.groupAssetsBy)];
+    final group = GroupAssetsBy.values[_settingsService.get(Setting.groupAssetsBy)];
     // We do not support auto grouping in the new timeline yet, fallback to day grouping
     return group == GroupAssetsBy.auto ? GroupAssetsBy.day : group;
   }
 
-  TimelineService main(List<String> timelineUsers) =>
-      TimelineService(_timelineRepository.main(timelineUsers, groupBy));
+  TimelineService main(List<String> timelineUsers) => TimelineService(_timelineRepository.main(timelineUsers, groupBy));
 
   TimelineService localAlbum({required String albumId}) =>
       TimelineService(_timelineRepository.localAlbum(albumId, groupBy));
@@ -49,29 +47,21 @@ class TimelineFactory {
   TimelineService remoteAlbum({required String albumId}) =>
       TimelineService(_timelineRepository.remoteAlbum(albumId, groupBy));
 
-  TimelineService remoteAssets(String userId) =>
-      TimelineService(_timelineRepository.remote(userId, groupBy));
+  TimelineService remoteAssets(String userId) => TimelineService(_timelineRepository.remote(userId, groupBy));
 
-  TimelineService favorite(String userId) =>
-      TimelineService(_timelineRepository.favorite(userId, groupBy));
+  TimelineService favorite(String userId) => TimelineService(_timelineRepository.favorite(userId, groupBy));
 
-  TimelineService trash(String userId) =>
-      TimelineService(_timelineRepository.trash(userId, groupBy));
+  TimelineService trash(String userId) => TimelineService(_timelineRepository.trash(userId, groupBy));
 
-  TimelineService archive(String userId) =>
-      TimelineService(_timelineRepository.archived(userId, groupBy));
+  TimelineService archive(String userId) => TimelineService(_timelineRepository.archived(userId, groupBy));
 
-  TimelineService lockedFolder(String userId) =>
-      TimelineService(_timelineRepository.locked(userId, groupBy));
+  TimelineService lockedFolder(String userId) => TimelineService(_timelineRepository.locked(userId, groupBy));
 
-  TimelineService video(String userId) =>
-      TimelineService(_timelineRepository.video(userId, groupBy));
+  TimelineService video(String userId) => TimelineService(_timelineRepository.video(userId, groupBy));
 
-  TimelineService place(String place) =>
-      TimelineService(_timelineRepository.place(place, groupBy));
+  TimelineService place(String place) => TimelineService(_timelineRepository.place(place, groupBy));
 
-  TimelineService fromAssets(List<BaseAsset> assets) =>
-      TimelineService(_timelineRepository.fromAssets(assets));
+  TimelineService fromAssets(List<BaseAsset> assets) => TimelineService(_timelineRepository.fromAssets(assets));
 }
 
 class TimelineService {
@@ -98,8 +88,7 @@ class TimelineService {
         _bucketSource = bucketSource {
     _bucketSubscription = _bucketSource().listen((buckets) {
       _mutex.run(() async {
-        final totalAssets =
-            buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
+        final totalAssets = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
 
         if (totalAssets == 0) {
           _bufferOffset = 0;
@@ -132,8 +121,7 @@ class TimelineService {
 
   Stream<List<Bucket>> Function() get watchBuckets => _bucketSource;
 
-  Future<List<BaseAsset>> loadAssets(int index, int count) =>
-      _mutex.run(() => _loadAssets(index, count));
+  Future<List<BaseAsset>> loadAssets(int index, int count) => _mutex.run(() => _loadAssets(index, count));
 
   Future<List<BaseAsset>> _loadAssets(int index, int count) async {
     if (hasRange(index, count)) {
@@ -182,11 +170,9 @@ class TimelineService {
   }
 
   // Pre-cache assets around the given index for asset viewer
-  Future<void> preCacheAssets(int index) =>
-      _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
+  Future<void> preCacheAssets(int index) => _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
 
-  BaseAsset getRandomAsset() =>
-      _buffer.elementAt(math.Random().nextInt(_buffer.length));
+  BaseAsset getRandomAsset() => _buffer.elementAt(math.Random().nextInt(_buffer.length));
 
   BaseAsset getAsset(int index) {
     if (!hasRange(index, 1)) {

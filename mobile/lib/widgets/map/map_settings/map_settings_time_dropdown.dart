@@ -81,8 +81,7 @@ class MapTimeDropDown extends StatelessWidget {
                       ),
                     )
                     .inDays,
-                label: "map_settings_date_range_option_years"
-                    .tr(namedArgs: {'years': "3"}),
+                label: "map_settings_date_range_option_years".tr(namedArgs: {'years': "3"}),
               ),
             ],
           ),

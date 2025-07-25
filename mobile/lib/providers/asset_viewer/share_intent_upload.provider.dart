@@ -9,8 +9,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/share_intent_service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 
-final shareIntentUploadProvider = StateNotifierProvider<
-    ShareIntentUploadStateNotifier, List<ShareIntentAttachment>>(
+final shareIntentUploadProvider = StateNotifierProvider<ShareIntentUploadStateNotifier, List<ShareIntentAttachment>>(
   ((ref) => ShareIntentUploadStateNotifier(
         ref.watch(appRouterProvider),
         ref.watch(uploadServiceProvider),
@@ -18,8 +17,7 @@ final shareIntentUploadProvider = StateNotifierProvider<
       )),
 );
 
-class ShareIntentUploadStateNotifier
-    extends StateNotifier<List<ShareIntentAttachment>> {
+class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttachment>> {
   final AppRouter router;
   final UploadService _uploadService;
   final ShareIntentService _shareIntentService;
@@ -53,8 +51,7 @@ class ShareIntentUploadStateNotifier
   }
 
   void removeAttachment(ShareIntentAttachment attachment) {
-    final updatedState =
-        state.where((element) => element != attachment).toList();
+    final updatedState = state.where((element) => element != attachment).toList();
     if (updatedState.length != state.length) {
       state = updatedState;
     }
@@ -87,27 +84,20 @@ class ShareIntentUploadStateNotifier
 
     state = [
       for (final attachment in state)
-        if (attachment.id == taskId.toInt())
-          attachment.copyWith(status: uploadStatus)
-        else
-          attachment,
+        if (attachment.id == taskId.toInt()) attachment.copyWith(status: uploadStatus) else attachment,
     ];
   }
 
   void _taskProgressCallback(TaskProgressUpdate update) {
     // Ignore if the task is canceled or completed
-    if (update.progress == downloadFailed ||
-        update.progress == downloadCompleted) {
+    if (update.progress == downloadFailed || update.progress == downloadCompleted) {
       return;
     }
 
     final taskId = update.task.taskId;
     state = [
       for (final attachment in state)
-        if (attachment.id == taskId.toInt())
-          attachment.copyWith(uploadProgress: update.progress)
-        else
-          attachment,
+        if (attachment.id == taskId.toInt()) attachment.copyWith(uploadProgress: update.progress) else attachment,
     ];
   }
 

@@ -5,8 +5,7 @@ import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:openapi/api.dart';
 
-final authApiRepositoryProvider =
-    Provider((ref) => AuthApiRepository(ref.watch(apiServiceProvider)));
+final authApiRepositoryProvider = Provider((ref) => AuthApiRepository(ref.watch(apiServiceProvider)));
 
 class AuthApiRepository extends ApiRepository {
   final ApiService _apiService;
@@ -35,9 +34,7 @@ class AuthApiRepository extends ApiRepository {
   }
 
   Future<void> logout() async {
-    await _apiService.authenticationApi
-        .logout()
-        .timeout(const Duration(seconds: 7));
+    await _apiService.authenticationApi.logout().timeout(const Duration(seconds: 7));
   }
 
   _mapLoginReponse(LoginResponseDto dto) {
@@ -54,8 +51,7 @@ class AuthApiRepository extends ApiRepository {
 
   Future<bool> unlockPinCode(String pinCode) async {
     try {
-      await _apiService.authenticationApi
-          .unlockAuthSession(SessionUnlockDto(pinCode: pinCode));
+      await _apiService.authenticationApi.unlockAuthSession(SessionUnlockDto(pinCode: pinCode));
       return true;
     } catch (_) {
       return false;
@@ -63,8 +59,7 @@ class AuthApiRepository extends ApiRepository {
   }
 
   Future<void> setupPinCode(String pinCode) {
-    return _apiService.authenticationApi
-        .setupPinCode(PinCodeSetupDto(pinCode: pinCode));
+    return _apiService.authenticationApi.setupPinCode(PinCodeSetupDto(pinCode: pinCode));
   }
 
   Future<void> lockPinCode() {

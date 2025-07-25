@@ -68,8 +68,7 @@ class BetaSyncSettings extends HookConsumerWidget {
 
         // Refresh all stream queries
         database.notifyUpdates({
-          for (final table in database.allTables)
-            drift_db.TableUpdate.onTable(table),
+          for (final table in database.allTables) drift_db.TableUpdate.onTable(table),
         });
       });
     }
@@ -77,9 +76,7 @@ class BetaSyncSettings extends HookConsumerWidget {
     Future<void> exportDatabase() async {
       try {
         // WAL Checkpoint to ensure all changes are written to the database
-        await ref
-            .read(driftProvider)
-            .customStatement("pragma wal_checkpoint(truncate)");
+        await ref.read(driftProvider).customStatement("pragma wal_checkpoint(truncate)");
         final documentsDir = await getApplicationDocumentsDirectory();
         final dbFile = File(path.join(documentsDir.path, 'immich.sqlite'));
 
@@ -118,8 +115,7 @@ class BetaSyncSettings extends HookConsumerWidget {
         if (context.mounted) {
           context.scaffoldMessenger.showSnackBar(
             SnackBar(
-              content:
-                  Text("Database exported successfully".t(context: context)),
+              content: Text("Database exported successfully".t(context: context)),
             ),
           );
         }
@@ -127,8 +123,7 @@ class BetaSyncSettings extends HookConsumerWidget {
         if (context.mounted) {
           context.scaffoldMessenger.showSnackBar(
             SnackBar(
-              content:
-                  Text("Failed to export database: $e".t(context: context)),
+              content: Text("Failed to export database: $e".t(context: context)),
             ),
           );
         }

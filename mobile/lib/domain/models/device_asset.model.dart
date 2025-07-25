@@ -15,9 +15,7 @@ class DeviceAsset {
   bool operator ==(covariant DeviceAsset other) {
     if (identical(this, other)) return true;
 
-    return other.assetId == assetId &&
-        other.hash == hash &&
-        other.modifiedTime == modifiedTime;
+    return other.assetId == assetId && other.hash == hash && other.modifiedTime == modifiedTime;
   }
 
   @override

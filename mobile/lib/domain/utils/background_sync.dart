@@ -67,12 +67,10 @@ class BackgroundSyncManager {
     // captured by the closure passed to [runInIsolateGentle].
     _deviceAlbumSyncTask = full
         ? runInIsolateGentle(
-            computation: (ref) =>
-                ref.read(localSyncServiceProvider).sync(full: true),
+            computation: (ref) => ref.read(localSyncServiceProvider).sync(full: true),
           )
         : runInIsolateGentle(
-            computation: (ref) =>
-                ref.read(localSyncServiceProvider).sync(full: false),
+            computation: (ref) => ref.read(localSyncServiceProvider).sync(full: false),
           );
 
     return _deviceAlbumSyncTask!.whenComplete(() {
@@ -139,7 +137,5 @@ Cancelable<void> _handleWsAssetUploadReadyV1Batch(
   List<dynamic> batchData,
 ) =>
     runInIsolateGentle(
-      computation: (ref) => ref
-          .read(syncStreamServiceProvider)
-          .handleWsAssetUploadReadyV1Batch(batchData),
+      computation: (ref) => ref.read(syncStreamServiceProvider).handleWsAssetUploadReadyV1Batch(batchData),
     );

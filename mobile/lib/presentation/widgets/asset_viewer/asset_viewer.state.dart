@@ -108,7 +108,6 @@ class AssetViewerStateNotifier extends AutoDisposeNotifier<AssetViewerState> {
   }
 }
 
-final assetViewerProvider =
-    AutoDisposeNotifierProvider<AssetViewerStateNotifier, AssetViewerState>(
+final assetViewerProvider = AutoDisposeNotifierProvider<AssetViewerStateNotifier, AssetViewerState>(
   AssetViewerStateNotifier.new,
 );

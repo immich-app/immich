@@ -27,8 +27,7 @@ class CreateAlbumPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albumTitleController =
-        useTextEditingController.fromValue(TextEditingValue.empty);
+    final albumTitleController = useTextEditingController.fromValue(TextEditingValue.empty);
     final albumTitleTextFieldFocusNode = useFocusNode();
     final albumDescriptionTextFieldFocusNode = useFocusNode();
     final isAlbumTitleTextFieldFocus = useState(false);
@@ -45,15 +44,12 @@ class CreateAlbumPage extends HookConsumerWidget {
       if (albumTitleController.text.isEmpty) {
         albumTitleController.text = 'create_album_page_untitled'.tr();
         isAlbumTitleEmpty.value = false;
-        ref
-            .watch(albumTitleProvider.notifier)
-            .setAlbumTitle('create_album_page_untitled'.tr());
+        ref.watch(albumTitleProvider.notifier).setAlbumTitle('create_album_page_untitled'.tr());
       }
     }
 
     onSelectPhotosButtonPressed() async {
-      AssetSelectionPageResult? selectedAsset =
-          await context.pushRoute<AssetSelectionPageResult?>(
+      AssetSelectionPageResult? selectedAsset = await context.pushRoute<AssetSelectionPageResult?>(
         AlbumAssetSelectionRoute(
           existingAssets: selectedAssets.value,
           canDeselect: true,
@@ -118,8 +114,7 @@ class CreateAlbumPage extends HookConsumerWidget {
             child: FilledButton.icon(
               style: FilledButton.styleFrom(
                 alignment: Alignment.centerLeft,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
                     Radius.circular(10),
@@ -230,15 +225,12 @@ class CreateAlbumPage extends HookConsumerWidget {
         ).tr(),
         actions: [
           TextButton(
-            onPressed:
-                albumTitleController.text.isNotEmpty ? createAlbum : null,
+            onPressed: albumTitleController.text.isNotEmpty ? createAlbum : null,
             child: Text(
               'create'.tr(),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: albumTitleController.text.isNotEmpty
-                    ? context.primaryColor
-                    : context.themeData.disabledColor,
+                color: albumTitleController.text.isNotEmpty ? context.primaryColor : context.themeData.disabledColor,
               ),
             ),
           ),

@@ -69,8 +69,7 @@ void main() {
     setUp(() {
       assetsApi = MockAssetsApi();
       when(() => apiService.assetsApi).thenReturn(assetsApi);
-      when(() => assetsApi.updateAssets(any()))
-          .thenAnswer((_) async => Future.value());
+      when(() => assetsApi.updateAssets(any())).thenAnswer((_) async => Future.value());
     });
 
     test("asset is updated with DateTime", () async {
@@ -79,11 +78,9 @@ void main() {
       await sut.changeDateTime(assets, dateTime.toIso8601String());
 
       verify(() => assetsApi.updateAssets(any())).called(1);
-      final upsertExifCallback =
-          verify(() => syncService.upsertAssetsWithExif(captureAny()));
+      final upsertExifCallback = verify(() => syncService.upsertAssetsWithExif(captureAny()));
       upsertExifCallback.called(1);
-      final receivedAssets =
-          upsertExifCallback.captured.firstOrNull as List<Object>? ?? [];
+      final receivedAssets = upsertExifCallback.captured.firstOrNull as List<Object>? ?? [];
       final receivedDatetime = receivedAssets.cast<Asset>().map(
             (a) => a.exifInfo?.dateTimeOriginal ?? DateTime(0),
           );
@@ -96,14 +93,11 @@ void main() {
       await sut.changeLocation(assets, latLng);
 
       verify(() => assetsApi.updateAssets(any())).called(1);
-      final upsertExifCallback =
-          verify(() => syncService.upsertAssetsWithExif(captureAny()));
+      final upsertExifCallback = verify(() => syncService.upsertAssetsWithExif(captureAny()));
       upsertExifCallback.called(1);
-      final receivedAssets =
-          upsertExifCallback.captured.firstOrNull as List<Object>? ?? [];
+      final receivedAssets = upsertExifCallback.captured.firstOrNull as List<Object>? ?? [];
       final receivedCoords = receivedAssets.cast<Asset>().map(
-            (a) =>
-                LatLng(a.exifInfo?.latitude ?? 0, a.exifInfo?.longitude ?? 0),
+            (a) => LatLng(a.exifInfo?.latitude ?? 0, a.exifInfo?.longitude ?? 0),
           );
       expect(receivedCoords.every((l) => l == latLng), isTrue);
     });

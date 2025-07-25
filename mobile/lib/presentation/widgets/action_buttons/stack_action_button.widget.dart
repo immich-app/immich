@@ -24,8 +24,7 @@ class StackActionButton extends ConsumerWidget {
       throw Exception('User must be logged in to access stack action');
     }
 
-    final result =
-        await ref.read(actionProvider.notifier).stack(user.id, source);
+    final result = await ref.read(actionProvider.notifier).stack(user.id, source);
     ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'stack_action_prompt'.t(
@@ -36,9 +35,7 @@ class StackActionButton extends ConsumerWidget {
     if (context.mounted) {
       ImmichToast.show(
         context: context,
-        msg: result.success
-            ? successMessage
-            : 'scaffold_body_error_occurred'.t(context: context),
+        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
         gravity: ToastGravity.BOTTOM,
         toastType: result.success ? ToastType.success : ToastType.error,
       );

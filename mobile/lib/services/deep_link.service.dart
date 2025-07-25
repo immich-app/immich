@@ -67,8 +67,7 @@ class DeepLinkService {
   ) async {
     final path = link.uri.path;
 
-    const uuidRegex =
-        r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
+    const uuidRegex = r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
     final assetRegex = RegExp('/photos/($uuidRegex)');
     final albumRegex = RegExp('/albums/($uuidRegex)');
 

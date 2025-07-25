@@ -66,9 +66,7 @@ class PeopleCollectionPage extends HookConsumerWidget {
               data: (people) {
                 if (search.value != null) {
                   people = people.where((person) {
-                    return person.name
-                        .toLowerCase()
-                        .contains(search.value!.toLowerCase());
+                    return person.name.toLowerCase().contains(search.value!.toLowerCase());
                   }).toList();
                 }
                 return GridView.builder(
@@ -107,8 +105,7 @@ class PeopleCollectionPage extends HookConsumerWidget {
                         ),
                         const SizedBox(height: 12),
                         GestureDetector(
-                          onTap: () =>
-                              showNameEditModel(person.id, person.name),
+                          onTap: () => showNameEditModel(person.id, person.name),
                           child: person.name.isEmpty
                               ? Text(
                                   'add_a_name'.tr(),
@@ -124,8 +121,7 @@ class PeopleCollectionPage extends HookConsumerWidget {
                                   child: Text(
                                     person.name,
                                     overflow: TextOverflow.ellipsis,
-                                    style:
-                                        context.textTheme.titleSmall?.copyWith(
+                                    style: context.textTheme.titleSmall?.copyWith(
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),

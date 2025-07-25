@@ -49,10 +49,8 @@ class CastDialog extends ConsumerWidget {
             }
 
             final devices = snapshot.data!;
-            final connected =
-                devices.where((d) => isCurrentDevice(d.$1)).toList();
-            final others =
-                devices.where((d) => !isCurrentDevice(d.$1)).toList();
+            final connected = devices.where((d) => isCurrentDevice(d.$1)).toList();
+            final others = devices.where((d) => !isCurrentDevice(d.$1)).toList();
 
             final List<dynamic> sectionedList = [];
 
@@ -85,25 +83,18 @@ class CastDialog extends ConsumerWidget {
                     ).tr(),
                   );
                 } else {
-                  final (deviceName, type, deviceObj) =
-                      item as (String, CastDestinationType, dynamic);
+                  final (deviceName, type, deviceObj) = item as (String, CastDestinationType, dynamic);
 
                   return ListTile(
                     title: Text(
                       deviceName,
                       style: TextStyle(
-                        color: isCurrentDevice(deviceName)
-                            ? context.colorScheme.primary
-                            : null,
+                        color: isCurrentDevice(deviceName) ? context.colorScheme.primary : null,
                       ),
                     ),
                     leading: Icon(
-                      type == CastDestinationType.googleCast
-                          ? Icons.cast
-                          : Icons.cast_connected,
-                      color: isCurrentDevice(deviceName)
-                          ? context.colorScheme.primary
-                          : null,
+                      type == CastDestinationType.googleCast ? Icons.cast : Icons.cast_connected,
+                      color: isCurrentDevice(deviceName) ? context.colorScheme.primary : null,
                     ),
                     trailing: isCurrentDevice(deviceName)
                         ? Icon(Icons.check, color: context.colorScheme.primary)
@@ -120,9 +111,7 @@ class CastDialog extends ConsumerWidget {
                       }
 
                       if (!isCurrentDevice(deviceName)) {
-                        ref
-                            .read(castProvider.notifier)
-                            .connect(type, deviceObj);
+                        ref.read(castProvider.notifier).connect(type, deviceObj);
                       }
                     },
                   );

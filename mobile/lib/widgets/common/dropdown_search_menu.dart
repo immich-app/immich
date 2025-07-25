@@ -30,8 +30,7 @@ class DropdownSearchMenu<T> extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final selectedItem = useState<DropdownMenuEntry<T>?>(
-      dropdownMenuEntries
-          .firstWhereOrNull((item) => item.value == initialSelection),
+      dropdownMenuEntries.firstWhereOrNull((item) => item.value == initialSelection),
     );
     final showTimeZoneDropdown = useState<bool>(false);
 
@@ -77,10 +76,7 @@ class DropdownSearchMenu<T> extends HookWidget {
         displayStringForOption: (option) => option.label,
         optionsBuilder: (textEditingValue) {
           return dropdownMenuEntries.where(
-            (item) => item.label
-                .toLowerCase()
-                .trim()
-                .contains(textEditingValue.text.toLowerCase().trim()),
+            (item) => item.label.toLowerCase().trim().contains(textEditingValue.text.toLowerCase().trim()),
           );
         },
         onSelected: (option) {
@@ -127,9 +123,7 @@ class DropdownSearchMenu<T> extends HookWidget {
                       onTap: () => onSelected(option),
                       child: Builder(
                         builder: (BuildContext context) {
-                          final bool highlight =
-                              AutocompleteHighlightedOption.of(context) ==
-                                  index;
+                          final bool highlight = AutocompleteHighlightedOption.of(context) == index;
                           if (highlight) {
                             SchedulerBinding.instance.addPostFrameCallback(
                               (Duration timeStamp) {
@@ -142,12 +136,7 @@ class DropdownSearchMenu<T> extends HookWidget {
                             );
                           }
                           return Container(
-                            color: highlight
-                                ? Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.12)
-                                : null,
+                            color: highlight ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12) : null,
                             padding: const EdgeInsets.all(16.0),
                             child: Text(
                               option.label,

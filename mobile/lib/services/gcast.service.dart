@@ -71,8 +71,7 @@ class GCastService {
   }
 
   void _handleMediaStatus(Map<String, dynamic> message) {
-    final statusList =
-        (message['status'] as List).whereType<Map<String, dynamic>>().toList();
+    final statusList = (message['status'] as List).whereType<Map<String, dynamic>>().toList();
 
     if (statusList.isEmpty) {
       return;
@@ -112,8 +111,7 @@ class GCastService {
     }
 
     if (status["currentTime"] != null) {
-      final currentTime =
-          Duration(milliseconds: (status["currentTime"] * 1000 ?? 0).toInt());
+      final currentTime = Duration(milliseconds: (status["currentTime"] * 1000 ?? 0).toInt());
       onCurrentTime?.call(currentTime);
     }
   }
@@ -150,8 +148,7 @@ class GCastService {
 
     // we want to make sure we have at least 10 seconds remaining in the session
     // this is to account for network latency and other delays when sending the request
-    final bufferedExpiration =
-        tokenExpiration.subtract(const Duration(seconds: 10));
+    final bufferedExpiration = tokenExpiration.subtract(const Duration(seconds: 10));
 
     return bufferedExpiration.isAfter(DateTime.now());
   }
@@ -181,8 +178,7 @@ class GCastService {
             type: AssetMediaSize.fullsize,
           );
 
-    final authenticatedURL =
-        "$unauthenticatedUrl&sessionKey=${sessionKey?.token}";
+    final authenticatedURL = "$unauthenticatedUrl&sessionKey=${sessionKey?.token}";
 
     // get image mime type
     final mimeType = await _assetApiRepository.getAssetMIMEType(asset.id);
@@ -210,8 +206,7 @@ class GCastService {
     _mediaStatusPollingTimer?.cancel();
 
     if (asset.isVideo) {
-      _mediaStatusPollingTimer =
-          Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      _mediaStatusPollingTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
         if (isConnected) {
           _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
             "type": "GET_STATUS",
@@ -264,11 +259,7 @@ class GCastService {
 
     return dests
         .map(
-      (device) => (
-        device.extras["fn"] ?? "Google Cast",
-        CastDestinationType.googleCast,
-        device
-      ),
+      (device) => (device.extras["fn"] ?? "Google Cast", CastDestinationType.googleCast, device),
     )
         .where((device) {
       final caString = device.$3.extras["ca"];

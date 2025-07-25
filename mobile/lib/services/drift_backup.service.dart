@@ -144,8 +144,7 @@ class DriftBackupService {
       }
       final response = jsonDecode(update.responseBody!);
 
-      final localAsset =
-          await _localAssetRepository.getById(metadata.localAssetId);
+      final localAsset = await _localAssetRepository.getById(metadata.localAssetId);
       if (localAsset == null) {
         return;
       }
@@ -313,6 +312,5 @@ class UploadTaskMetadata {
   }
 
   @override
-  int get hashCode =>
-      localAssetId.hashCode ^ isLivePhotos.hashCode ^ livePhotoVideoId.hashCode;
+  int get hashCode => localAssetId.hashCode ^ isLivePhotos.hashCode ^ livePhotoVideoId.hashCode;
 }

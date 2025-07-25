@@ -112,8 +112,7 @@ class SyncApiRepository {
       client.close();
     }
     stopwatch.stop();
-    _logger
-        .info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
+    _logger.info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
     DLog.log("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
   }
 

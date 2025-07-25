@@ -117,9 +117,8 @@ class LocalMediaSummaryPage extends StatelessWidget {
                   return SliverList.builder(
                     itemBuilder: (_, index) {
                       final album = albums[index];
-                      final countFuture = db.managers.localAlbumAssetEntity
-                          .filter((f) => f.albumId.id.equals(album.id))
-                          .count();
+                      final countFuture =
+                          db.managers.localAlbumAssetEntity.filter((f) => f.albumId.id.equals(album.id)).count();
                       return _Summary(
                         leading: const Icon(Icons.photo_album_rounded),
                         name: album.name,
@@ -226,9 +225,8 @@ class RemoteMediaSummaryPage extends StatelessWidget {
                   return SliverList.builder(
                     itemBuilder: (_, index) {
                       final album = albums[index];
-                      final countFuture = db.managers.remoteAlbumAssetEntity
-                          .filter((f) => f.albumId.id.equals(album.id))
-                          .count();
+                      final countFuture =
+                          db.managers.remoteAlbumAssetEntity.filter((f) => f.albumId.id.equals(album.id)).count();
                       return _Summary(
                         leading: const Icon(Icons.photo_album_rounded),
                         name: album.name,

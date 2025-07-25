@@ -15,8 +15,7 @@ class DriftCreateAlbumPage extends ConsumerStatefulWidget {
   const DriftCreateAlbumPage({super.key});
 
   @override
-  ConsumerState<DriftCreateAlbumPage> createState() =>
-      _DriftCreateAlbumPageState();
+  ConsumerState<DriftCreateAlbumPage> createState() => _DriftCreateAlbumPageState();
 }
 
 class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
@@ -285,9 +284,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
               'create'.t(),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: _canCreateAlbum
-                    ? context.primaryColor
-                    : context.themeData.disabledColor,
+                color: _canCreateAlbum ? context.primaryColor : context.themeData.disabledColor,
               ),
             ),
           ),
@@ -351,8 +348,7 @@ class _AlbumTitleTextFieldState extends State<_AlbumTitleTextField> {
       ),
       controller: widget.textController,
       onTap: () {
-        if (widget.textController.text ==
-            'create_album_page_untitled'.t(context: context)) {
+        if (widget.textController.text == 'create_album_page_untitled'.t(context: context)) {
           widget.textController.clear();
         }
       },
@@ -411,12 +407,10 @@ class _AlbumViewerEditableDescription extends StatefulWidget {
   final FocusNode focusNode;
 
   @override
-  State<_AlbumViewerEditableDescription> createState() =>
-      _AlbumViewerEditableDescriptionState();
+  State<_AlbumViewerEditableDescription> createState() => _AlbumViewerEditableDescriptionState();
 }
 
-class _AlbumViewerEditableDescriptionState
-    extends State<_AlbumViewerEditableDescription> {
+class _AlbumViewerEditableDescriptionState extends State<_AlbumViewerEditableDescription> {
   @override
   void initState() {
     super.initState();
@@ -458,19 +452,18 @@ class _AlbumViewerEditableDescriptionState
             horizontal: 12.0,
             vertical: 16.0,
           ),
-          suffixIcon:
-              widget.focusNode.hasFocus && widget.textController.text.isNotEmpty
-                  ? IconButton(
-                      onPressed: () {
-                        widget.textController.clear();
-                      },
-                      icon: Icon(
-                        Icons.cancel_rounded,
-                        color: context.primaryColor,
-                      ),
-                      splashRadius: 10.0,
-                    )
-                  : null,
+          suffixIcon: widget.focusNode.hasFocus && widget.textController.text.isNotEmpty
+              ? IconButton(
+                  onPressed: () {
+                    widget.textController.clear();
+                  },
+                  icon: Icon(
+                    Icons.cancel_rounded,
+                    color: context.primaryColor,
+                  ),
+                  splashRadius: 10.0,
+                )
+              : null,
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(
               color: context.colorScheme.outline.withValues(alpha: 0.3),

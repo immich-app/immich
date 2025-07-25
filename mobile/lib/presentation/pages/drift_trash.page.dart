@@ -23,8 +23,7 @@ class DriftTrashPage extends StatelessWidget {
               throw Exception('User must be logged in to access trash');
             }
 
-            final timelineService =
-                ref.watch(timelineFactoryProvider).trash(user.id);
+            final timelineService = ref.watch(timelineFactoryProvider).trash(user.id);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },

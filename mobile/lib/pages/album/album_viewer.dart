@@ -48,8 +48,7 @@ class AlbumViewer extends HookConsumerWidget {
     );
 
     Future<bool> onRemoveFromAlbumPressed(Iterable<Asset> assets) async {
-      final bool isSuccess =
-          await ref.read(albumProvider.notifier).removeAsset(album, assets);
+      final bool isSuccess = await ref.read(albumProvider.notifier).removeAsset(album, assets);
 
       if (!isSuccess) {
         ImmichToast.show(
@@ -65,8 +64,7 @@ class AlbumViewer extends HookConsumerWidget {
     /// Find out if the assets in album exist on the device
     /// If they exist, add to selected asset state to show they are already selected.
     void onAddPhotosPressed() async {
-      AssetSelectionPageResult? returnPayload =
-          await context.pushRoute<AssetSelectionPageResult?>(
+      AssetSelectionPageResult? returnPayload = await context.pushRoute<AssetSelectionPageResult?>(
         AlbumAssetSelectionRoute(
           existingAssets: album.assets,
           canDeselect: false,
@@ -77,9 +75,7 @@ class AlbumViewer extends HookConsumerWidget {
         // Check if there is new assets add
         isProcessing.value = true;
 
-        await ref
-            .watch(albumProvider.notifier)
-            .addAssets(album, returnPayload.selectedAssets);
+        await ref.watch(albumProvider.notifier).addAssets(album, returnPayload.selectedAssets);
 
         isProcessing.value = false;
       }

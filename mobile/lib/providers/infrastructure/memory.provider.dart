@@ -14,8 +14,7 @@ final driftMemoryServiceProvider = Provider<DriftMemoryService>(
   (ref) => DriftMemoryService(ref.watch(driftMemoryRepositoryProvider)),
 );
 
-final driftMemoryFutureProvider =
-    FutureProvider.autoDispose<List<DriftMemory>>((ref) async {
+final driftMemoryFutureProvider = FutureProvider.autoDispose<List<DriftMemory>>((ref) async {
   final user = ref.watch(currentUserProvider);
   if (user == null) {
     return [];

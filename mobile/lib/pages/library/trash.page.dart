@@ -24,8 +24,7 @@ class TrashPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final trashRenderList = ref.watch(trashTimelineProvider);
-    final trashDays =
-        ref.watch(serverInfoProvider.select((v) => v.serverConfig.trashDays));
+    final trashDays = ref.watch(serverInfoProvider.select((v) => v.serverConfig.trashDays));
     final selectionEnabledHook = useState(false);
     final selection = useState(<Asset>{});
     final processing = useProcessingOverlay();
@@ -68,16 +67,13 @@ class TrashPage extends HookConsumerWidget {
       processing.value = true;
       try {
         if (selection.value.isNotEmpty) {
-          final isRemoved = await ref
-              .read(assetProvider.notifier)
-              .deleteAssets(selection.value, force: true);
+          final isRemoved = await ref.read(assetProvider.notifier).deleteAssets(selection.value, force: true);
 
           if (isRemoved) {
             if (context.mounted) {
               ImmichToast.show(
                 context: context,
-                msg: 'assets_deleted_permanently'
-                    .tr(namedArgs: {'count': "${selection.value.length}"}),
+                msg: 'assets_deleted_permanently'.tr(namedArgs: {'count': "${selection.value.length}"}),
                 gravity: ToastGravity.BOTTOM,
               );
             }
@@ -110,15 +106,12 @@ class TrashPage extends HookConsumerWidget {
       processing.value = true;
       try {
         if (selection.value.isNotEmpty) {
-          final result = await ref
-              .read(trashProvider.notifier)
-              .restoreAssets(selection.value);
+          final result = await ref.read(trashProvider.notifier).restoreAssets(selection.value);
 
           if (result && context.mounted) {
             ImmichToast.show(
               context: context,
-              msg: 'assets_restored_successfully'
-                  .tr(namedArgs: {'count': "${selection.value.length}"}),
+              msg: 'assets_restored_successfully'.tr(namedArgs: {'count': "${selection.value.length}"}),
               gravity: ToastGravity.BOTTOM,
             );
           }
@@ -131,9 +124,7 @@ class TrashPage extends HookConsumerWidget {
 
     String getAppBarTitle(String count) {
       if (selectionEnabledHook.value) {
-        return selection.value.isNotEmpty
-            ? "${selection.value.length}"
-            : "trash_page_select_assets_btn".tr();
+        return selection.value.isNotEmpty ? "${selection.value.length}" : "trash_page_select_assets_btn".tr();
       }
       return 'trash_page_title'.tr(namedArgs: {'count': count});
     }
@@ -147,9 +138,8 @@ class TrashPage extends HookConsumerWidget {
                   selectionEnabledHook.value = false;
                   selection.value = {};
                 },
-          icon: !selectionEnabledHook.value
-              ? const Icon(Icons.arrow_back_ios_rounded)
-              : const Icon(Icons.close_rounded),
+          icon:
+              !selectionEnabledHook.value ? const Icon(Icons.arrow_back_ios_rounded) : const Icon(Icons.close_rounded),
         ),
         centerTitle: !selectionEnabledHook.value,
         automaticallyImplyLeading: false,
@@ -192,9 +182,7 @@ class TrashPage extends HookConsumerWidget {
                       color: Colors.red[400],
                     ),
                     label: Text(
-                      selection.value.isEmpty
-                          ? 'trash_page_delete_all'.tr()
-                          : 'delete'.tr(),
+                      selection.value.isEmpty ? 'trash_page_delete_all'.tr() : 'delete'.tr(),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.red[400],
@@ -212,9 +200,7 @@ class TrashPage extends HookConsumerWidget {
                       Icons.history_rounded,
                     ),
                     label: Text(
-                      selection.value.isEmpty
-                          ? 'trash_page_restore_all'.tr()
-                          : 'restore'.tr(),
+                      selection.value.isEmpty ? 'trash_page_restore_all'.tr() : 'restore'.tr(),
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,

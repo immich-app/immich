@@ -79,9 +79,7 @@ class _ActionButtonGrid extends ConsumerWidget {
                   onTap: () => context.pushRoute(const SharedLinkRoute()),
                   label: 'shared_links'.t(context: context),
                 ),
-                isTrashEnable
-                    ? const SizedBox(width: 8)
-                    : const SizedBox.shrink(),
+                isTrashEnable ? const SizedBox(width: 8) : const SizedBox.shrink(),
                 isTrashEnable
                     ? _ActionButton(
                         icon: Icons.delete_outline_rounded,
@@ -267,8 +265,7 @@ class _PlacesCollectionCard extends StatelessWidget {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all(Radius.circular(20)),
-                    color:
-                        context.colorScheme.secondaryContainer.withAlpha(100),
+                    color: context.colorScheme.secondaryContainer.withAlpha(100),
                   ),
                   child: IgnorePointer(
                     child: MapThumbnail(
@@ -278,9 +275,7 @@ class _PlacesCollectionCard extends StatelessWidget {
                         -157.91959,
                       ),
                       showAttribution: false,
-                      themeMode: context.isDarkTheme
-                          ? ThemeMode.dark
-                          : ThemeMode.light,
+                      themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
                     ),
                   ),
                 ),

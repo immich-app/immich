@@ -267,8 +267,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     PhotoViewGalleryPageOptions buildVideo(BuildContext context, Asset asset) {
       return PhotoViewGalleryPageOptions.customChild(
-        onDragStart: (_, details, __, ___) =>
-            localPosition.value = details.localPosition,
+        onDragStart: (_, details, __, ___) => localPosition.value = details.localPosition,
         onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
         heroAttributes: _getHeroAttributes(asset),
         filterQuality: FilterQuality.high,
@@ -304,8 +303,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
       final stackId = newAsset.stackId;
       if (stackId != null && currentIndex.value == index) {
-        final stackElements =
-            ref.read(assetStackStateProvider(newAsset.stackId!));
+        final stackElements = ref.read(assetStackStateProvider(newAsset.stackId!));
         if (stackIndex.value < stackElements.length) {
           newAsset = stackElements.elementAt(stackIndex.value);
         }
@@ -319,8 +317,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     return PopScope(
       // Change immersive mode back to normal "edgeToEdge" mode
-      onPopInvokedWithResult: (didPop, _) =>
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge),
+      onPopInvokedWithResult: (didPop, _) => SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge),
       child: Scaffold(
         backgroundColor: Colors.black,
         body: Stack(
@@ -335,8 +332,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
                 if (asset.isImage && !ref.read(isPlayingMotionVideoProvider)) {
                   isZoomed.value = state != PhotoViewScaleState.initial;
-                  ref.read(showControlsProvider.notifier).show =
-                      !isZoomed.value;
+                  ref.read(showControlsProvider.notifier).show = !isZoomed.value;
                 }
               },
               gaplessPlayback: true,
@@ -454,9 +450,7 @@ class GalleryViewerPage extends HookConsumerWidget {
   @pragma('vm:prefer-inline')
   PhotoViewHeroAttributes _getHeroAttributes(Asset asset) {
     return PhotoViewHeroAttributes(
-      tag: asset.isInDb
-          ? asset.id + heroOffset
-          : '${asset.remoteId}-$heroOffset',
+      tag: asset.isInDb ? asset.id + heroOffset : '${asset.remoteId}-$heroOffset',
       transitionOnUserGestures: true,
     );
   }

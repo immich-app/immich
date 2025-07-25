@@ -13,9 +13,7 @@ String _$personServiceHash() => r'10883bccc6c402205e6785cf9ee6cd7142cd0983';
 final personServiceProvider = AutoDisposeProvider<PersonService>.internal(
   personService,
   name: r'personServiceProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$personServiceHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product') ? null : _$personServiceHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

@@ -20,18 +20,15 @@ class PrimaryColorSetting extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeProvider = ref.read(immichThemeProvider);
 
-    final primaryColorSetting =
-        useAppSettingsState(AppSettingsEnum.primaryColor);
-    final systemPrimaryColorSetting =
-        useAppSettingsState(AppSettingsEnum.dynamicTheme);
+    final primaryColorSetting = useAppSettingsState(AppSettingsEnum.primaryColor);
+    final systemPrimaryColorSetting = useAppSettingsState(AppSettingsEnum.dynamicTheme);
 
     final currentPreset = useValueNotifier(ref.read(immichThemePresetProvider));
     const tileSize = 55.0;
 
     useValueChanged(
       primaryColorSetting.value,
-      (_, __) => currentPreset.value = ImmichColorPreset.values
-          .firstWhere((e) => e.name == primaryColorSetting.value),
+      (_, __) => currentPreset.value = ImmichColorPreset.values.firstWhere((e) => e.name == primaryColorSetting.value),
     );
 
     void popBottomSheet() {
@@ -131,8 +128,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               margin: const EdgeInsets.only(top: 10),
               child: SwitchListTile.adaptive(
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
+                contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
                 dense: true,
                 activeColor: context.primaryColor,
                 tileColor: context.colorScheme.surfaceContainerHigh,
@@ -164,8 +160,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
                     topColor: theme.light.primary,
                     bottomColor: theme.dark.primary,
                     tileSize: tileSize,
-                    showSelector: currentPreset.value == preset &&
-                        !systemPrimaryColorSetting.value,
+                    showSelector: currentPreset.value == preset && !systemPrimaryColorSetting.value,
                   ),
                 );
               }).toList(),
@@ -201,8 +196,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
                 ),
                 Text(
                   "theme_setting_primary_color_subtitle".tr(),
-                  style: context.textTheme.bodyMedium
-                      ?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+                  style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                 ),
               ],
             ),

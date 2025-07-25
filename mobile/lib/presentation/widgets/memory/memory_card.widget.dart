@@ -46,11 +46,9 @@ class DriftMemoryCard extends StatelessWidget {
               BoxFit fit = BoxFit.contain;
               if (asset.width != null && asset.height != null) {
                 final aspectRatio = asset.width! / asset.height!;
-                final phoneAspectRatio =
-                    constraints.maxWidth / constraints.maxHeight;
+                final phoneAspectRatio = constraints.maxWidth / constraints.maxHeight;
                 // Look for a 25% difference in either direction
-                if (phoneAspectRatio * .75 < aspectRatio &&
-                    phoneAspectRatio * 1.25 > aspectRatio) {
+                if (phoneAspectRatio * .75 < aspectRatio && phoneAspectRatio * 1.25 > aspectRatio) {
                   // Cover to look nice if we have nearly the same aspect ratio
                   fit = BoxFit.cover;
                 }

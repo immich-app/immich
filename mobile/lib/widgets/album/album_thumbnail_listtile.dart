@@ -50,10 +50,8 @@ class AlbumThumbnailListTile extends StatelessWidget {
           type: AssetMediaSize.thumbnail,
         ),
         httpHeaders: ApiService.getRequestHeaders(),
-        cacheKey:
-            getAlbumThumbNailCacheKey(album, type: AssetMediaSize.thumbnail),
-        errorWidget: (context, url, error) =>
-            const Icon(Icons.image_not_supported_outlined),
+        cacheKey: getAlbumThumbNailCacheKey(album, type: AssetMediaSize.thumbnail),
+        errorWidget: (context, url, error) => const Icon(Icons.image_not_supported_outlined),
       );
     }
 
@@ -70,9 +68,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(8)),
-              child: album.thumbnail.value == null
-                  ? buildEmptyThumbnail()
-                  : buildAlbumThumbnail(),
+              child: album.thumbnail.value == null ? buildEmptyThumbnail() : buildAlbumThumbnail(),
             ),
             Expanded(
               child: Padding(

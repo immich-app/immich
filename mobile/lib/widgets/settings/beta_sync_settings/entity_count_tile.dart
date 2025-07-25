@@ -16,9 +16,7 @@ class EntitiyCountTile extends StatelessWidget {
 
   String zeroPadding(int number, int targetWidth) {
     final numStr = number.toString();
-    return numStr.length < targetWidth
-        ? "0" * (targetWidth - numStr.length)
-        : "";
+    return numStr.length < targetWidth ? "0" * (targetWidth - numStr.length) : "";
   }
 
   int calculateMaxDigits(double availableWidth) {
@@ -77,8 +75,7 @@ class EntitiyCountTile extends StatelessWidget {
                     TextSpan(
                       text: zeroPadding(count, maxDigits),
                       style: TextStyle(
-                        color: context.colorScheme.onSurfaceSecondary
-                            .withAlpha(75),
+                        color: context.colorScheme.onSurfaceSecondary.withAlpha(75),
                       ),
                     ),
                     TextSpan(

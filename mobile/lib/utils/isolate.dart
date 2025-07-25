@@ -17,8 +17,7 @@ class InvalidIsolateUsageException implements Exception {
   const InvalidIsolateUsageException();
 
   @override
-  String toString() =>
-      "IsolateHelper should only be used from the root isolate";
+  String toString() => "IsolateHelper should only be used from the root isolate";
 }
 
 // !! Should be used only from the root isolate

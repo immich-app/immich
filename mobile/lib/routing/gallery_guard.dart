@@ -7,8 +7,7 @@ class GalleryGuard extends AutoRouteGuard {
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     final newRouteName = resolver.route.name;
-    final currentTopRouteName =
-        router.stack.isNotEmpty ? router.stack.last.name : null;
+    final currentTopRouteName = router.stack.isNotEmpty ? router.stack.last.name : null;
 
     if (currentTopRouteName == newRouteName) {
       // Replace instead of pushing duplicate

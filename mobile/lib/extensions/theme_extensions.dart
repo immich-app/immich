@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 extension ImmichColorSchemeExtensions on ColorScheme {
   bool get _isDarkMode => brightness == Brightness.dark;
-  Color get onSurfaceSecondary => _isDarkMode
-      ? onSurface.darken(amount: .3)
-      : onSurface.lighten(amount: .3);
+  Color get onSurfaceSecondary => _isDarkMode ? onSurface.darken(amount: .3) : onSurface.lighten(amount: .3);
 }
 
 extension ColorExtensions on Color {

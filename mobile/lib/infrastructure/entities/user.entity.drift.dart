@@ -1,13 +1,11 @@
 // dart format width=80
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
-import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart'
-    as i1;
+import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart' as i1;
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart' as i2;
 import 'package:drift/src/runtime/query_builder/query_builder.dart' as i3;
 
-typedef $$UserEntityTableCreateCompanionBuilder = i1.UserEntityCompanion
-    Function({
+typedef $$UserEntityTableCreateCompanionBuilder = i1.UserEntityCompanion Function({
   required String id,
   required String name,
   i0.Value<bool> isAdmin,
@@ -17,8 +15,7 @@ typedef $$UserEntityTableCreateCompanionBuilder = i1.UserEntityCompanion
   i0.Value<int?> quotaSizeInBytes,
   i0.Value<int> quotaUsageInBytes,
 });
-typedef $$UserEntityTableUpdateCompanionBuilder = i1.UserEntityCompanion
-    Function({
+typedef $$UserEntityTableUpdateCompanionBuilder = i1.UserEntityCompanion Function({
   i0.Value<String> id,
   i0.Value<String> name,
   i0.Value<bool> isAdmin,
@@ -29,8 +26,7 @@ typedef $$UserEntityTableUpdateCompanionBuilder = i1.UserEntityCompanion
   i0.Value<int> quotaUsageInBytes,
 });
 
-class $$UserEntityTableFilterComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$UserEntityTable> {
+class $$UserEntityTableFilterComposer extends i0.Composer<i0.GeneratedDatabase, i1.$UserEntityTable> {
   $$UserEntityTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -38,36 +34,32 @@ class $$UserEntityTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnFilters<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<bool> get isAdmin => $composableBuilder(
-      column: $table.isAdmin, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<bool> get isAdmin =>
+      $composableBuilder(column: $table.isAdmin, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<String> get email => $composableBuilder(
-      column: $table.email, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<String> get profileImagePath => $composableBuilder(
-      column: $table.profileImagePath,
-      builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<String> get profileImagePath =>
+      $composableBuilder(column: $table.profileImagePath, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-      column: $table.updatedAt, builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<int> get quotaSizeInBytes => $composableBuilder(
-      column: $table.quotaSizeInBytes,
-      builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<int> get quotaSizeInBytes =>
+      $composableBuilder(column: $table.quotaSizeInBytes, builder: (column) => i0.ColumnFilters(column));
 
-  i0.ColumnFilters<int> get quotaUsageInBytes => $composableBuilder(
-      column: $table.quotaUsageInBytes,
-      builder: (column) => i0.ColumnFilters(column));
+  i0.ColumnFilters<int> get quotaUsageInBytes =>
+      $composableBuilder(column: $table.quotaUsageInBytes, builder: (column) => i0.ColumnFilters(column));
 }
 
-class $$UserEntityTableOrderingComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$UserEntityTable> {
+class $$UserEntityTableOrderingComposer extends i0.Composer<i0.GeneratedDatabase, i1.$UserEntityTable> {
   $$UserEntityTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -75,37 +67,32 @@ class $$UserEntityTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.ColumnOrderings<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<bool> get isAdmin => $composableBuilder(
-      column: $table.isAdmin, builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<bool> get isAdmin =>
+      $composableBuilder(column: $table.isAdmin, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<String> get email => $composableBuilder(
-      column: $table.email, builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<String> get profileImagePath => $composableBuilder(
-      column: $table.profileImagePath,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<String> get profileImagePath =>
+      $composableBuilder(column: $table.profileImagePath, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-      column: $table.updatedAt,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get quotaSizeInBytes => $composableBuilder(
-      column: $table.quotaSizeInBytes,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<int> get quotaSizeInBytes =>
+      $composableBuilder(column: $table.quotaSizeInBytes, builder: (column) => i0.ColumnOrderings(column));
 
-  i0.ColumnOrderings<int> get quotaUsageInBytes => $composableBuilder(
-      column: $table.quotaUsageInBytes,
-      builder: (column) => i0.ColumnOrderings(column));
+  i0.ColumnOrderings<int> get quotaUsageInBytes =>
+      $composableBuilder(column: $table.quotaUsageInBytes, builder: (column) => i0.ColumnOrderings(column));
 }
 
-class $$UserEntityTableAnnotationComposer
-    extends i0.Composer<i0.GeneratedDatabase, i1.$UserEntityTable> {
+class $$UserEntityTableAnnotationComposer extends i0.Composer<i0.GeneratedDatabase, i1.$UserEntityTable> {
   $$UserEntityTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -113,29 +100,25 @@ class $$UserEntityTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  i0.GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
+  i0.GeneratedColumn<String> get id => $composableBuilder(column: $table.id, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
+  i0.GeneratedColumn<String> get name => $composableBuilder(column: $table.name, builder: (column) => column);
 
-  i0.GeneratedColumn<bool> get isAdmin =>
-      $composableBuilder(column: $table.isAdmin, builder: (column) => column);
+  i0.GeneratedColumn<bool> get isAdmin => $composableBuilder(column: $table.isAdmin, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get email =>
-      $composableBuilder(column: $table.email, builder: (column) => column);
+  i0.GeneratedColumn<String> get email => $composableBuilder(column: $table.email, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get profileImagePath => $composableBuilder(
-      column: $table.profileImagePath, builder: (column) => column);
+  i0.GeneratedColumn<String> get profileImagePath =>
+      $composableBuilder(column: $table.profileImagePath, builder: (column) => column);
 
   i0.GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get quotaSizeInBytes => $composableBuilder(
-      column: $table.quotaSizeInBytes, builder: (column) => column);
+  i0.GeneratedColumn<int> get quotaSizeInBytes =>
+      $composableBuilder(column: $table.quotaSizeInBytes, builder: (column) => column);
 
-  i0.GeneratedColumn<int> get quotaUsageInBytes => $composableBuilder(
-      column: $table.quotaUsageInBytes, builder: (column) => column);
+  i0.GeneratedColumn<int> get quotaUsageInBytes =>
+      $composableBuilder(column: $table.quotaUsageInBytes, builder: (column) => column);
 }
 
 class $$UserEntityTableTableManager extends i0.RootTableManager<
@@ -147,24 +130,16 @@ class $$UserEntityTableTableManager extends i0.RootTableManager<
     i1.$$UserEntityTableAnnotationComposer,
     $$UserEntityTableCreateCompanionBuilder,
     $$UserEntityTableUpdateCompanionBuilder,
-    (
-      i1.UserEntityData,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$UserEntityTable,
-          i1.UserEntityData>
-    ),
+    (i1.UserEntityData, i0.BaseReferences<i0.GeneratedDatabase, i1.$UserEntityTable, i1.UserEntityData>),
     i1.UserEntityData,
     i0.PrefetchHooks Function()> {
-  $$UserEntityTableTableManager(
-      i0.GeneratedDatabase db, i1.$UserEntityTable table)
+  $$UserEntityTableTableManager(i0.GeneratedDatabase db, i1.$UserEntityTable table)
       : super(i0.TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              i1.$$UserEntityTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              i1.$$UserEntityTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              i1.$$UserEntityTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () => i1.$$UserEntityTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => i1.$$UserEntityTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () => i1.$$UserEntityTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             i0.Value<String> id = const i0.Value.absent(),
             i0.Value<String> name = const i0.Value.absent(),
@@ -205,9 +180,7 @@ class $$UserEntityTableTableManager extends i0.RootTableManager<
             quotaSizeInBytes: quotaSizeInBytes,
             quotaUsageInBytes: quotaUsageInBytes,
           ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
-              .toList(),
+          withReferenceMapper: (p0) => p0.map((e) => (e.readTable(table), i0.BaseReferences(db, table, e))).toList(),
           prefetchHooksCallback: null,
         ));
 }
@@ -221,95 +194,63 @@ typedef $$UserEntityTableProcessedTableManager = i0.ProcessedTableManager<
     i1.$$UserEntityTableAnnotationComposer,
     $$UserEntityTableCreateCompanionBuilder,
     $$UserEntityTableUpdateCompanionBuilder,
-    (
-      i1.UserEntityData,
-      i0.BaseReferences<i0.GeneratedDatabase, i1.$UserEntityTable,
-          i1.UserEntityData>
-    ),
+    (i1.UserEntityData, i0.BaseReferences<i0.GeneratedDatabase, i1.$UserEntityTable, i1.UserEntityData>),
     i1.UserEntityData,
     i0.PrefetchHooks Function()>;
 
-class $UserEntityTable extends i2.UserEntity
-    with i0.TableInfo<$UserEntityTable, i1.UserEntityData> {
+class $UserEntityTable extends i2.UserEntity with i0.TableInfo<$UserEntityTable, i1.UserEntityData> {
   @override
   final i0.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $UserEntityTable(this.attachedDatabase, [this._alias]);
   static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
   @override
-  late final i0.GeneratedColumn<String> id = i0.GeneratedColumn<String>(
-      'id', aliasedName, false,
-      type: i0.DriftSqlType.string, requiredDuringInsert: true);
-  static const i0.VerificationMeta _nameMeta =
-      const i0.VerificationMeta('name');
+  late final i0.GeneratedColumn<String> id =
+      i0.GeneratedColumn<String>('id', aliasedName, false, type: i0.DriftSqlType.string, requiredDuringInsert: true);
+  static const i0.VerificationMeta _nameMeta = const i0.VerificationMeta('name');
   @override
-  late final i0.GeneratedColumn<String> name = i0.GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: i0.DriftSqlType.string, requiredDuringInsert: true);
-  static const i0.VerificationMeta _isAdminMeta =
-      const i0.VerificationMeta('isAdmin');
+  late final i0.GeneratedColumn<String> name =
+      i0.GeneratedColumn<String>('name', aliasedName, false, type: i0.DriftSqlType.string, requiredDuringInsert: true);
+  static const i0.VerificationMeta _isAdminMeta = const i0.VerificationMeta('isAdmin');
   @override
-  late final i0.GeneratedColumn<bool> isAdmin = i0.GeneratedColumn<bool>(
-      'is_admin', aliasedName, false,
+  late final i0.GeneratedColumn<bool> isAdmin = i0.GeneratedColumn<bool>('is_admin', aliasedName, false,
       type: i0.DriftSqlType.bool,
       requiredDuringInsert: false,
-      defaultConstraints:
-          i0.GeneratedColumn.constraintIsAlways('CHECK ("is_admin" IN (0, 1))'),
+      defaultConstraints: i0.GeneratedColumn.constraintIsAlways('CHECK ("is_admin" IN (0, 1))'),
       defaultValue: const i3.Constant(false));
-  static const i0.VerificationMeta _emailMeta =
-      const i0.VerificationMeta('email');
+  static const i0.VerificationMeta _emailMeta = const i0.VerificationMeta('email');
   @override
-  late final i0.GeneratedColumn<String> email = i0.GeneratedColumn<String>(
-      'email', aliasedName, false,
-      type: i0.DriftSqlType.string, requiredDuringInsert: true);
-  static const i0.VerificationMeta _profileImagePathMeta =
-      const i0.VerificationMeta('profileImagePath');
+  late final i0.GeneratedColumn<String> email =
+      i0.GeneratedColumn<String>('email', aliasedName, false, type: i0.DriftSqlType.string, requiredDuringInsert: true);
+  static const i0.VerificationMeta _profileImagePathMeta = const i0.VerificationMeta('profileImagePath');
   @override
-  late final i0.GeneratedColumn<String> profileImagePath =
-      i0.GeneratedColumn<String>('profile_image_path', aliasedName, true,
-          type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _updatedAtMeta =
-      const i0.VerificationMeta('updatedAt');
+  late final i0.GeneratedColumn<String> profileImagePath = i0.GeneratedColumn<String>(
+      'profile_image_path', aliasedName, true,
+      type: i0.DriftSqlType.string, requiredDuringInsert: false);
+  static const i0.VerificationMeta _updatedAtMeta = const i0.VerificationMeta('updatedAt');
   @override
-  late final i0.GeneratedColumn<DateTime> updatedAt =
-      i0.GeneratedColumn<DateTime>('updated_at', aliasedName, false,
-          type: i0.DriftSqlType.dateTime,
-          requiredDuringInsert: false,
-          defaultValue: i3.currentDateAndTime);
-  static const i0.VerificationMeta _quotaSizeInBytesMeta =
-      const i0.VerificationMeta('quotaSizeInBytes');
+  late final i0.GeneratedColumn<DateTime> updatedAt = i0.GeneratedColumn<DateTime>('updated_at', aliasedName, false,
+      type: i0.DriftSqlType.dateTime, requiredDuringInsert: false, defaultValue: i3.currentDateAndTime);
+  static const i0.VerificationMeta _quotaSizeInBytesMeta = const i0.VerificationMeta('quotaSizeInBytes');
   @override
   late final i0.GeneratedColumn<int> quotaSizeInBytes = i0.GeneratedColumn<int>(
       'quota_size_in_bytes', aliasedName, true,
       type: i0.DriftSqlType.int, requiredDuringInsert: false);
-  static const i0.VerificationMeta _quotaUsageInBytesMeta =
-      const i0.VerificationMeta('quotaUsageInBytes');
+  static const i0.VerificationMeta _quotaUsageInBytesMeta = const i0.VerificationMeta('quotaUsageInBytes');
   @override
-  late final i0.GeneratedColumn<int> quotaUsageInBytes =
-      i0.GeneratedColumn<int>('quota_usage_in_bytes', aliasedName, false,
-          type: i0.DriftSqlType.int,
-          requiredDuringInsert: false,
-          defaultValue: const i3.Constant(0));
+  late final i0.GeneratedColumn<int> quotaUsageInBytes = i0.GeneratedColumn<int>(
+      'quota_usage_in_bytes', aliasedName, false,
+      type: i0.DriftSqlType.int, requiredDuringInsert: false, defaultValue: const i3.Constant(0));
   @override
-  List<i0.GeneratedColumn> get $columns => [
-        id,
-        name,
-        isAdmin,
-        email,
-        profileImagePath,
-        updatedAt,
-        quotaSizeInBytes,
-        quotaUsageInBytes
-      ];
+  List<i0.GeneratedColumn> get $columns =>
+      [id, name, isAdmin, email, profileImagePath, updatedAt, quotaSizeInBytes, quotaUsageInBytes];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'user_entity';
   @override
-  i0.VerificationContext validateIntegrity(
-      i0.Insertable<i1.UserEntityData> instance,
-      {bool isInserting = false}) {
+  i0.VerificationContext validateIntegrity(i0.Insertable<i1.UserEntityData> instance, {bool isInserting = false}) {
     final context = i0.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -318,42 +259,32 @@ class $UserEntityTable extends i2.UserEntity
       context.missing(_idMeta);
     }
     if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+      context.handle(_nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
     if (data.containsKey('is_admin')) {
-      context.handle(_isAdminMeta,
-          isAdmin.isAcceptableOrUnknown(data['is_admin']!, _isAdminMeta));
+      context.handle(_isAdminMeta, isAdmin.isAcceptableOrUnknown(data['is_admin']!, _isAdminMeta));
     }
     if (data.containsKey('email')) {
-      context.handle(
-          _emailMeta, email.isAcceptableOrUnknown(data['email']!, _emailMeta));
+      context.handle(_emailMeta, email.isAcceptableOrUnknown(data['email']!, _emailMeta));
     } else if (isInserting) {
       context.missing(_emailMeta);
     }
     if (data.containsKey('profile_image_path')) {
-      context.handle(
-          _profileImagePathMeta,
-          profileImagePath.isAcceptableOrUnknown(
-              data['profile_image_path']!, _profileImagePathMeta));
+      context.handle(_profileImagePathMeta,
+          profileImagePath.isAcceptableOrUnknown(data['profile_image_path']!, _profileImagePathMeta));
     }
     if (data.containsKey('updated_at')) {
-      context.handle(_updatedAtMeta,
-          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+      context.handle(_updatedAtMeta, updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
     if (data.containsKey('quota_size_in_bytes')) {
-      context.handle(
-          _quotaSizeInBytesMeta,
-          quotaSizeInBytes.isAcceptableOrUnknown(
-              data['quota_size_in_bytes']!, _quotaSizeInBytesMeta));
+      context.handle(_quotaSizeInBytesMeta,
+          quotaSizeInBytes.isAcceptableOrUnknown(data['quota_size_in_bytes']!, _quotaSizeInBytesMeta));
     }
     if (data.containsKey('quota_usage_in_bytes')) {
-      context.handle(
-          _quotaUsageInBytesMeta,
-          quotaUsageInBytes.isAcceptableOrUnknown(
-              data['quota_usage_in_bytes']!, _quotaUsageInBytesMeta));
+      context.handle(_quotaUsageInBytesMeta,
+          quotaUsageInBytes.isAcceptableOrUnknown(data['quota_usage_in_bytes']!, _quotaUsageInBytesMeta));
     }
     return context;
   }
@@ -364,22 +295,17 @@ class $UserEntityTable extends i2.UserEntity
   i1.UserEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return i1.UserEntityData(
-      id: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
-      isAdmin: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.bool, data['${effectivePrefix}is_admin'])!,
-      email: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}email'])!,
-      profileImagePath: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.string, data['${effectivePrefix}profile_image_path']),
-      updatedAt: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      quotaSizeInBytes: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.int, data['${effectivePrefix}quota_size_in_bytes']),
-      quotaUsageInBytes: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.int, data['${effectivePrefix}quota_usage_in_bytes'])!,
+      id: attachedDatabase.typeMapping.read(i0.DriftSqlType.string, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping.read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
+      isAdmin: attachedDatabase.typeMapping.read(i0.DriftSqlType.bool, data['${effectivePrefix}is_admin'])!,
+      email: attachedDatabase.typeMapping.read(i0.DriftSqlType.string, data['${effectivePrefix}email'])!,
+      profileImagePath:
+          attachedDatabase.typeMapping.read(i0.DriftSqlType.string, data['${effectivePrefix}profile_image_path']),
+      updatedAt: attachedDatabase.typeMapping.read(i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      quotaSizeInBytes:
+          attachedDatabase.typeMapping.read(i0.DriftSqlType.int, data['${effectivePrefix}quota_size_in_bytes']),
+      quotaUsageInBytes:
+          attachedDatabase.typeMapping.read(i0.DriftSqlType.int, data['${effectivePrefix}quota_usage_in_bytes'])!,
     );
   }
 
@@ -394,8 +320,7 @@ class $UserEntityTable extends i2.UserEntity
   bool get isStrict => true;
 }
 
-class UserEntityData extends i0.DataClass
-    implements i0.Insertable<i1.UserEntityData> {
+class UserEntityData extends i0.DataClass implements i0.Insertable<i1.UserEntityData> {
   final String id;
   final String name;
   final bool isAdmin;
@@ -431,8 +356,7 @@ class UserEntityData extends i0.DataClass
     return map;
   }
 
-  factory UserEntityData.fromJson(Map<String, dynamic> json,
-      {i0.ValueSerializer? serializer}) {
+  factory UserEntityData.fromJson(Map<String, dynamic> json, {i0.ValueSerializer? serializer}) {
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return UserEntityData(
       id: serializer.fromJson<String>(json['id']),
@@ -474,13 +398,9 @@ class UserEntityData extends i0.DataClass
         name: name ?? this.name,
         isAdmin: isAdmin ?? this.isAdmin,
         email: email ?? this.email,
-        profileImagePath: profileImagePath.present
-            ? profileImagePath.value
-            : this.profileImagePath,
+        profileImagePath: profileImagePath.present ? profileImagePath.value : this.profileImagePath,
         updatedAt: updatedAt ?? this.updatedAt,
-        quotaSizeInBytes: quotaSizeInBytes.present
-            ? quotaSizeInBytes.value
-            : this.quotaSizeInBytes,
+        quotaSizeInBytes: quotaSizeInBytes.present ? quotaSizeInBytes.value : this.quotaSizeInBytes,
         quotaUsageInBytes: quotaUsageInBytes ?? this.quotaUsageInBytes,
       );
   UserEntityData copyWithCompanion(i1.UserEntityCompanion data) {
@@ -489,16 +409,10 @@ class UserEntityData extends i0.DataClass
       name: data.name.present ? data.name.value : this.name,
       isAdmin: data.isAdmin.present ? data.isAdmin.value : this.isAdmin,
       email: data.email.present ? data.email.value : this.email,
-      profileImagePath: data.profileImagePath.present
-          ? data.profileImagePath.value
-          : this.profileImagePath,
+      profileImagePath: data.profileImagePath.present ? data.profileImagePath.value : this.profileImagePath,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      quotaSizeInBytes: data.quotaSizeInBytes.present
-          ? data.quotaSizeInBytes.value
-          : this.quotaSizeInBytes,
-      quotaUsageInBytes: data.quotaUsageInBytes.present
-          ? data.quotaUsageInBytes.value
-          : this.quotaUsageInBytes,
+      quotaSizeInBytes: data.quotaSizeInBytes.present ? data.quotaSizeInBytes.value : this.quotaSizeInBytes,
+      quotaUsageInBytes: data.quotaUsageInBytes.present ? data.quotaUsageInBytes.value : this.quotaUsageInBytes,
     );
   }
 
@@ -518,8 +432,8 @@ class UserEntityData extends i0.DataClass
   }
 
   @override
-  int get hashCode => Object.hash(id, name, isAdmin, email, profileImagePath,
-      updatedAt, quotaSizeInBytes, quotaUsageInBytes);
+  int get hashCode =>
+      Object.hash(id, name, isAdmin, email, profileImagePath, updatedAt, quotaSizeInBytes, quotaUsageInBytes);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

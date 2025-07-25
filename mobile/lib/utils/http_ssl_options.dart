@@ -12,8 +12,7 @@ class HttpSSLOptions {
 
   static void apply({bool applyNative = true}) {
     AppSettingsEnum setting = AppSettingsEnum.allowSelfSignedSSLCert;
-    bool allowSelfSignedSSLCert =
-        Store.get(setting.storeKey as StoreKey<bool>, setting.defaultValue);
+    bool allowSelfSignedSSLCert = Store.get(setting.storeKey as StoreKey<bool>, setting.defaultValue);
     _apply(allowSelfSignedSSLCert, applyNative: applyNative);
   }
 
@@ -29,8 +28,7 @@ class HttpSSLOptions {
 
     SSLClientCertStoreVal? clientCert = SSLClientCertStoreVal.load();
 
-    HttpOverrides.global =
-        HttpSSLCertOverride(allowSelfSignedSSLCert, serverHost, clientCert);
+    HttpOverrides.global = HttpSSLCertOverride(allowSelfSignedSSLCert, serverHost, clientCert);
 
     if (applyNative && Platform.isAndroid) {
       _channel.invokeMethod("apply", [

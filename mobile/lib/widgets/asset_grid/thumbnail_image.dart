@@ -41,9 +41,8 @@ class ThumbnailImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final assetContainerColor = context.isDarkTheme
-        ? context.primaryColor.darken(amount: 0.6)
-        : context.primaryColor.lighten(amount: 0.8);
+    final assetContainerColor =
+        context.isDarkTheme ? context.primaryColor.darken(amount: 0.6) : context.primaryColor.lighten(amount: 0.8);
 
     return Stack(
       children: [
@@ -118,9 +117,8 @@ class _SelectedIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final assetContainerColor = context.isDarkTheme
-        ? context.primaryColor.darken(amount: 0.6)
-        : context.primaryColor.lighten(amount: 0.8);
+    final assetContainerColor =
+        context.isDarkTheme ? context.primaryColor.darken(amount: 0.6) : context.primaryColor.lighten(amount: 0.8);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -322,9 +320,7 @@ class _ImageIcon extends StatelessWidget {
     }
 
     return DecoratedBox(
-      decoration: canDeselect
-          ? BoxDecoration(color: assetContainerColor)
-          : const BoxDecoration(color: Colors.grey),
+      decoration: canDeselect ? BoxDecoration(color: assetContainerColor) : const BoxDecoration(color: Colors.grey),
       child: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(15.0)),
         child: image,

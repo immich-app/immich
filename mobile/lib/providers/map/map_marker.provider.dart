@@ -16,8 +16,7 @@ Future<List<MapMarker>> mapMarkers(Ref ref) async {
   bool isWithPartners = mapState.withPartners;
 
   if (mapState.relativeTime != 0) {
-    fileCreatedAfter =
-        DateTime.now().subtract(Duration(days: mapState.relativeTime));
+    fileCreatedAfter = DateTime.now().subtract(Duration(days: mapState.relativeTime));
   }
 
   if (mapState.showFavoriteOnly) {

@@ -40,8 +40,7 @@ class LargeLeadingTile extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: selected
-              ? selectedTileColor ??
-                  Theme.of(context).primaryColor.withAlpha(30)
+              ? selectedTileColor ?? Theme.of(context).primaryColor.withAlpha(30)
               : tileColor ?? Colors.transparent,
           borderRadius: BorderRadius.circular(borderRadius),
         ),

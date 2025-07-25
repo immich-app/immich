@@ -54,11 +54,7 @@ class Stack {
 
   @override
   int get hashCode {
-    return id.hashCode ^
-        createdAt.hashCode ^
-        updatedAt.hashCode ^
-        ownerId.hashCode ^
-        primaryAssetId.hashCode;
+    return id.hashCode ^ createdAt.hashCode ^ updatedAt.hashCode ^ ownerId.hashCode ^ primaryAssetId.hashCode;
   }
 }
 
@@ -77,9 +73,7 @@ class StackResponse {
   bool operator ==(covariant StackResponse other) {
     if (identical(this, other)) return true;
 
-    return other.id == id &&
-        other.primaryAssetId == primaryAssetId &&
-        other.assetIds == assetIds;
+    return other.id == id && other.primaryAssetId == primaryAssetId && other.assetIds == assetIds;
   }
 
   @override

@@ -40,8 +40,7 @@ class MemoryPage extends HookConsumerWidget {
     final currentAsset = useState<Asset?>(null);
 
     /// The list of all of the asset page controllers
-    final memoryAssetPageControllers =
-        List.generate(memories.length, (i) => usePageController());
+    final memoryAssetPageControllers = List.generate(memories.length, (i) => usePageController());
 
     /// The main vertically scrolling page controller with each list of memories
     final memoryPageController = usePageController(initialPage: memoryIndex);
@@ -73,19 +72,16 @@ class MemoryPage extends HookConsumerWidget {
         // Wait for the next frame to ensure the page is built
         SchedulerBinding.instance.addPostFrameCallback((_) {
           final previousIndex = currentMemoryIndex.value - 1;
-          final previousMemoryController =
-              memoryAssetPageControllers[previousIndex];
+          final previousMemoryController = memoryAssetPageControllers[previousIndex];
 
           // Ensure the controller is attached
           if (previousMemoryController.hasClients) {
-            previousMemoryController
-                .jumpToPage(memories[previousIndex].assets.length - 1);
+            previousMemoryController.jumpToPage(memories[previousIndex].assets.length - 1);
           } else {
             // Wait for the next frame until it is attached
             SchedulerBinding.instance.addPostFrameCallback((_) {
               if (previousMemoryController.hasClients) {
-                previousMemoryController
-                    .jumpToPage(memories[previousIndex].assets.length - 1);
+                previousMemoryController.jumpToPage(memories[previousIndex].assets.length - 1);
               }
             });
           }
@@ -96,8 +92,7 @@ class MemoryPage extends HookConsumerWidget {
     toNextAsset(int currentAssetIndex) {
       if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
         // Go to the next asset
-        PageController controller =
-            memoryAssetPageControllers[currentMemoryIndex.value];
+        PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
         controller.nextPage(
           curve: Curves.easeInOut,
@@ -112,8 +107,7 @@ class MemoryPage extends HookConsumerWidget {
     toPreviousAsset(int currentAssetIndex) {
       if (currentAssetIndex > 0) {
         // Go to the previous asset
-        PageController controller =
-            memoryAssetPageControllers[currentMemoryIndex.value];
+        PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
         controller.previousPage(
           curve: Curves.easeInOut,
@@ -126,8 +120,7 @@ class MemoryPage extends HookConsumerWidget {
     }
 
     updateProgressText() {
-      assetProgress.value =
-          "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}";
+      assetProgress.value = "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}";
     }
 
     /// Downloads and caches the image for the asset at this [currentMemory]'s index
@@ -180,8 +173,7 @@ class MemoryPage extends HookConsumerWidget {
 
     // Precache the next page right away if we are on the first page
     if (currentAssetPage.value == 0) {
-      Future.delayed(const Duration(milliseconds: 200))
-          .then((_) => precacheAsset(1));
+      Future.delayed(const Duration(milliseconds: 200)).then((_) => precacheAsset(1));
     }
 
     Future<void> onAssetChanged(int otherIndex) async {
@@ -212,12 +204,10 @@ class MemoryPage extends HookConsumerWidget {
         // maxScrollExtend contains the sum of horizontal pixels of all assets for depth = 1
         // or sum of vertical pixels of all memories for depth = 0
         if (notification is ScrollUpdateNotification) {
-          final isEpiloguePage =
-              (memoryPageController.page?.floor() ?? 0) >= memories.length;
+          final isEpiloguePage = (memoryPageController.page?.floor() ?? 0) >= memories.length;
 
           final offset = notification.metrics.pixels;
-          if (isEpiloguePage &&
-              (offset > notification.metrics.maxScrollExtent + 150)) {
+          if (isEpiloguePage && (offset > notification.metrics.maxScrollExtent + 150)) {
             context.maybePop();
             return true;
           }
@@ -358,8 +348,7 @@ class MemoryPage extends HookConsumerWidget {
                             ),
                           ),
                         ),
-                        if (currentAsset.value != null &&
-                            currentAsset.value!.isVideo)
+                        if (currentAsset.value != null && currentAsset.value!.isVideo)
                           Positioned(
                             bottom: 24,
                             right: 32,

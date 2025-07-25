@@ -23,8 +23,7 @@ class _TimerHook extends Hook<RestartableTimer> {
     required this.callback,
   });
   @override
-  HookState<RestartableTimer, Hook<RestartableTimer>> createState() =>
-      _TimerHookState();
+  HookState<RestartableTimer, Hook<RestartableTimer>> createState() => _TimerHookState();
 }
 
 class _TimerHookState extends HookState<RestartableTimer, _TimerHook> {

@@ -15,12 +15,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'user.provider.g.dart';
 
 @Riverpod(keepAlive: true)
-IsarUserRepository userRepository(Ref ref) =>
-    IsarUserRepository(ref.watch(isarProvider));
+IsarUserRepository userRepository(Ref ref) => IsarUserRepository(ref.watch(isarProvider));
 
 @Riverpod(keepAlive: true)
-UserApiRepository userApiRepository(Ref ref) =>
-    UserApiRepository(ref.watch(apiServiceProvider).usersApi);
+UserApiRepository userApiRepository(Ref ref) => UserApiRepository(ref.watch(apiServiceProvider).usersApi);
 
 @Riverpod(keepAlive: true)
 UserService userService(Ref ref) => UserService(
@@ -41,7 +39,6 @@ final driftPartnerServiceProvider = Provider<DriftPartnerService>(
   ),
 );
 
-final partnerUsersProvider =
-    NotifierProvider<PartnerNotifier, List<PartnerUserDto>>(
+final partnerUsersProvider = NotifierProvider<PartnerNotifier, List<PartnerUserDto>>(
   PartnerNotifier.new,
 );

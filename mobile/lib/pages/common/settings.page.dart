@@ -129,8 +129,7 @@ class _TabletLayout extends HookWidget {
   const _TabletLayout();
   @override
   Widget build(BuildContext context) {
-    final selectedSection =
-        useState<SettingSection>(SettingSection.values.first);
+    final selectedSection = useState<SettingSection>(SettingSection.values.first);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,

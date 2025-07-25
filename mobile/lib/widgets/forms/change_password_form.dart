@@ -17,10 +17,8 @@ class ChangePasswordForm extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final passwordController =
-        useTextEditingController.fromValue(TextEditingValue.empty);
-    final confirmPasswordController =
-        useTextEditingController.fromValue(TextEditingValue.empty);
+    final passwordController = useTextEditingController.fromValue(TextEditingValue.empty);
+    final confirmPasswordController = useTextEditingController.fromValue(TextEditingValue.empty);
     final authState = ref.watch(authProvider);
     final formKey = GlobalKey<FormState>();
 
@@ -72,20 +70,15 @@ class ChangePasswordForm extends HookConsumerWidget {
                       passwordController: passwordController,
                       onPressed: () async {
                         if (formKey.currentState!.validate()) {
-                          var isSuccess = await ref
-                              .read(authProvider.notifier)
-                              .changePassword(passwordController.value.text);
+                          var isSuccess =
+                              await ref.read(authProvider.notifier).changePassword(passwordController.value.text);
 
                           if (isSuccess) {
                             await ref.read(authProvider.notifier).logout();
 
-                            ref
-                                .read(manualUploadProvider.notifier)
-                                .cancelBackup();
+                            ref.read(manualUploadProvider.notifier).cancelBackup();
                             ref.read(backupProvider.notifier).cancelBackup();
-                            await ref
-                                .read(assetProvider.notifier)
-                                .clearAllAssets();
+                            await ref.read(assetProvider.notifier).clearAllAssets();
                             ref.read(websocketProvider.notifier).disconnect();
 
                             AutoRouter.of(context).back();

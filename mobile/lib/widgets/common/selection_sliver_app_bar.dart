@@ -12,8 +12,7 @@ class SelectionSliverAppBar extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<SelectionSliverAppBar> createState() =>
-      _SelectionSliverAppBarState();
+  ConsumerState<SelectionSliverAppBar> createState() => _SelectionSliverAppBarState();
 }
 
 class _SelectionSliverAppBarState extends ConsumerState<SelectionSliverAppBar> {

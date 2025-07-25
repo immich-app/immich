@@ -52,18 +52,14 @@ class PeoplePicker extends HookConsumerWidget {
                 shrinkWrap: true,
                 itemCount: people
                     .where(
-                      (person) => person.name
-                          .toLowerCase()
-                          .contains(searchQuery.value.toLowerCase()),
+                      (person) => person.name.toLowerCase().contains(searchQuery.value.toLowerCase()),
                     )
                     .length,
                 padding: const EdgeInsets.all(8),
                 itemBuilder: (context, index) {
                   final person = people
                       .where(
-                        (person) => person.name
-                            .toLowerCase()
-                            .contains(searchQuery.value.toLowerCase()),
+                        (person) => person.name.toLowerCase().contains(searchQuery.value.toLowerCase()),
                       )
                       .toList()[index];
                   final isSelected = selectedPeople.value.contains(person);
@@ -76,9 +72,7 @@ class PeoplePicker extends HookConsumerWidget {
                         style: context.textTheme.bodyLarge?.copyWith(
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
-                          color: isSelected
-                              ? context.colorScheme.onPrimary
-                              : context.colorScheme.onSurface,
+                          color: isSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
                         ),
                       ),
                       leading: SizedBox(

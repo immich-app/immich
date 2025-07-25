@@ -58,8 +58,7 @@ class SharedLinkPage extends HookConsumerWidget {
               child: Icon(
                 Icons.link_off,
                 size: 100,
-                color:
-                    context.themeData.iconTheme.color?.withValues(alpha: 0.5),
+                color: context.themeData.iconTheme.color?.withValues(alpha: 0.5),
               ),
             ),
           ),
@@ -86,8 +85,7 @@ class SharedLinkPage extends HookConsumerWidget {
                 if (constraints.maxWidth > 600) {
                   // Two column
                   return GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       mainAxisExtent: 180,
                     ),
@@ -121,8 +119,7 @@ class SharedLinkPage extends HookConsumerWidget {
       body: SafeArea(
         child: sharedLinks.widgetWhen(
           onError: (error, stackTrace) => buildNoShares(),
-          onData: (links) =>
-              links.isNotEmpty ? buildSharesList(links) : buildNoShares(),
+          onData: (links) => links.isNotEmpty ? buildSharesList(links) : buildNoShares(),
         ),
       ),
     );

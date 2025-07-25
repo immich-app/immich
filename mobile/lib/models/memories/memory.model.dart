@@ -30,9 +30,7 @@ class Memory {
     if (identical(this, other)) return true;
     final listEquals = const DeepCollectionEquality().equals;
 
-    return other is Memory &&
-        other.title == title &&
-        listEquals(other.assets, assets);
+    return other is Memory && other.title == title && listEquals(other.assets, assets);
   }
 
   @override

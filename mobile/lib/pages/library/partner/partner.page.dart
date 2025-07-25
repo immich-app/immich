@@ -53,8 +53,7 @@ class PartnerPage extends HookConsumerWidget {
         },
       );
       if (selectedUser != null) {
-        final ok =
-            await ref.read(partnerServiceProvider).addPartner(selectedUser);
+        final ok = await ref.read(partnerServiceProvider).addPartner(selectedUser);
         if (ok) {
           ref.invalidate(partnerSharedByProvider);
         } else {
@@ -73,8 +72,7 @@ class PartnerPage extends HookConsumerWidget {
         builder: (BuildContext context) {
           return ConfirmDialog(
             title: "stop_photo_sharing",
-            content: "partner_page_stop_sharing_content"
-                .tr(namedArgs: {'partner': u.name}),
+            content: "partner_page_stop_sharing_content".tr(namedArgs: {'partner': u.name}),
             onOk: () => ref.read(partnerServiceProvider).removePartner(u),
           );
         },
@@ -149,8 +147,7 @@ class PartnerPage extends HookConsumerWidget {
         centerTitle: false,
         actions: [
           IconButton(
-            onPressed:
-                availableUsers.whenOrNull(data: (data) => addNewUsersHandler),
+            onPressed: availableUsers.whenOrNull(data: (data) => addNewUsersHandler),
             icon: const Icon(Icons.person_add),
             tooltip: "add_partner".tr(),
           ),

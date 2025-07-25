@@ -82,8 +82,7 @@ class _ColorFilterGenerator {
       ];
     }
 
-    double x =
-        ((1 + ((value > 0) ? ((3 * value) / 100) : (value / 100)))).toDouble();
+    double x = ((1 + ((value > 0) ? ((3 * value) / 100) : (value / 100)))).toDouble();
     double lumR = 0.3086;
     double lumG = 0.6094;
     double lumB = 0.082;

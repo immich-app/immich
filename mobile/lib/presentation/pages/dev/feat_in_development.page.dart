@@ -31,8 +31,7 @@ final _features = [
         return Future.value();
       }
 
-      final assets =
-          await ref.read(remoteAssetRepositoryProvider).getSome(user.id);
+      final assets = await ref.read(remoteAssetRepositoryProvider).getSome(user.id);
 
       final selectedAssets = await ctx.pushRoute<Set<BaseAsset>>(
         DriftAssetSelectionTimelineRoute(
@@ -75,9 +74,7 @@ final _features = [
   _Feature(
     name: 'WAL Checkpoint',
     icon: Icons.save_rounded,
-    onTap: (_, ref) => ref
-        .read(driftProvider)
-        .customStatement("pragma wal_checkpoint(truncate)"),
+    onTap: (_, ref) => ref.read(driftProvider).customStatement("pragma wal_checkpoint(truncate)"),
   ),
   _Feature(
     name: '',

@@ -22,8 +22,7 @@ class ThumbnailWithInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var textAndIconColor =
-        context.isDarkTheme ? Colors.grey[100] : Colors.grey[700];
+    var textAndIconColor = context.isDarkTheme ? Colors.grey[100] : Colors.grey[700];
     return ThumbnailWithInfoContainer(
       onTap: onTap,
       borderRadius: borderRadius,
@@ -37,8 +36,7 @@ class ThumbnailWithInfo extends StatelessWidget {
                 fit: BoxFit.cover,
                 imageUrl: imageUrl!,
                 httpHeaders: ApiService.getRequestHeaders(),
-                errorWidget: (context, url, error) =>
-                    const Icon(Icons.image_not_supported_outlined),
+                errorWidget: (context, url, error) => const Icon(Icons.image_not_supported_outlined),
               ),
             )
           : Center(

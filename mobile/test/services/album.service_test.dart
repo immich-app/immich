@@ -54,28 +54,22 @@ void main() {
 
   group('refreshDeviceAlbums', () {
     test('empty selection with one album in db', () async {
-      when(() => backupRepository.getIdsBySelection(BackupSelection.exclude))
-          .thenAnswer((_) async => []);
-      when(() => backupRepository.getIdsBySelection(BackupSelection.select))
-          .thenAnswer((_) async => []);
+      when(() => backupRepository.getIdsBySelection(BackupSelection.exclude)).thenAnswer((_) async => []);
+      when(() => backupRepository.getIdsBySelection(BackupSelection.select)).thenAnswer((_) async => []);
       when(() => albumMediaRepository.getAll()).thenAnswer((_) async => []);
       when(() => albumRepository.count(local: true)).thenAnswer((_) async => 1);
-      when(() => syncService.removeAllLocalAlbumsAndAssets())
-          .thenAnswer((_) async => true);
+      when(() => syncService.removeAllLocalAlbumsAndAssets()).thenAnswer((_) async => true);
       final result = await sut.refreshDeviceAlbums();
       expect(result, false);
       verify(() => syncService.removeAllLocalAlbumsAndAssets());
     });
 
     test('one selected albums, two on device', () async {
-      when(() => backupRepository.getIdsBySelection(BackupSelection.exclude))
-          .thenAnswer((_) async => []);
+      when(() => backupRepository.getIdsBySelection(BackupSelection.exclude)).thenAnswer((_) async => []);
       when(() => backupRepository.getIdsBySelection(BackupSelection.select))
           .thenAnswer((_) async => [AlbumStub.oneAsset.localId!]);
-      when(() => albumMediaRepository.getAll())
-          .thenAnswer((_) async => [AlbumStub.oneAsset, AlbumStub.twoAsset]);
-      when(() => syncService.syncLocalAlbumAssetsToDb(any(), any()))
-          .thenAnswer((_) async => true);
+      when(() => albumMediaRepository.getAll()).thenAnswer((_) async => [AlbumStub.oneAsset, AlbumStub.twoAsset]);
+      when(() => syncService.syncLocalAlbumAssetsToDb(any(), any())).thenAnswer((_) async => true);
       final result = await sut.refreshDeviceAlbums();
       expect(result, true);
       verify(
@@ -88,10 +82,8 @@ void main() {
   group('refreshRemoteAlbums', () {
     test('is working', () async {
       when(() => syncService.getUsersFromServer()).thenAnswer((_) async => []);
-      when(() => syncService.syncUsersFromServer(any()))
-          .thenAnswer((_) async => true);
-      when(() => albumApiRepository.getAll(shared: true))
-          .thenAnswer((_) async => [AlbumStub.sharedWithUser]);
+      when(() => syncService.syncUsersFromServer(any())).thenAnswer((_) async => true);
+      when(() => albumApiRepository.getAll(shared: true)).thenAnswer((_) async => [AlbumStub.sharedWithUser]);
 
       when(() => albumApiRepository.getAll(shared: null))
           .thenAnswer((_) async => [AlbumStub.oneAsset, AlbumStub.twoAsset]);
@@ -142,8 +134,7 @@ void main() {
         () => albumRepository.create(AlbumStub.oneAsset),
       ).thenAnswer((_) async => AlbumStub.twoAsset);
 
-      final result =
-          await sut.createAlbum("name", [AssetStub.image1], [UserStub.user1]);
+      final result = await sut.createAlbum("name", [AssetStub.image1], [UserStub.user1]);
       expect(result, AlbumStub.twoAsset);
       verify(
         () => albumApiRepository.create(
@@ -163,10 +154,7 @@ void main() {
       when(
         () => albumApiRepository.addAssets(AlbumStub.oneAsset.remoteId!, any()),
       ).thenAnswer(
-        (_) async => (
-          added: [AssetStub.image2.remoteId!],
-          duplicates: [AssetStub.image1.remoteId!]
-        ),
+        (_) async => (added: [AssetStub.image2.remoteId!], duplicates: [AssetStub.image1.remoteId!]),
       );
       when(
         () => albumRepository.get(AlbumStub.oneAsset.id),
@@ -198,8 +186,7 @@ void main() {
   group('addAdditionalUserToAlbum', () {
     test('one added', () async {
       when(
-        () =>
-            albumApiRepository.addUsers(AlbumStub.emptyAlbum.remoteId!, any()),
+        () => albumApiRepository.addUsers(AlbumStub.emptyAlbum.remoteId!, any()),
       ).thenAnswer(
         (_) async => AlbumStub.sharedWithUser,
       );

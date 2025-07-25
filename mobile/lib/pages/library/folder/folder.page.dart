@@ -21,9 +21,7 @@ RecursiveFolder? _findFolderInStructure(
   RecursiveFolder targetFolder,
 ) {
   for (final folder in rootFolder.subfolders) {
-    if (targetFolder.path == '/' &&
-        folder.path.isEmpty &&
-        folder.name == targetFolder.name) {
+    if (targetFolder.path == '/' && folder.path.isEmpty && folder.name == targetFolder.name) {
       return folder;
     }
 
@@ -54,9 +52,7 @@ class FolderPage extends HookConsumerWidget {
     useEffect(
       () {
         if (folder == null) {
-          ref
-              .read(folderStructureProvider.notifier)
-              .fetchFolders(sortOrder.value);
+          ref.read(folderStructureProvider.notifier).fetchFolders(sortOrder.value);
         }
         return null;
       },
@@ -67,8 +63,7 @@ class FolderPage extends HookConsumerWidget {
     useEffect(
       () {
         if (folder != null && folderState.hasValue) {
-          final updatedFolder =
-              _findFolderInStructure(folderState.value!, folder!);
+          final updatedFolder = _findFolderInStructure(folderState.value!, folder!);
           if (updatedFolder != null) {
             currentFolder.value = updatedFolder;
           }
@@ -79,8 +74,7 @@ class FolderPage extends HookConsumerWidget {
     );
 
     void onToggleSortOrder() {
-      final newOrder =
-          sortOrder.value == SortOrder.asc ? SortOrder.desc : SortOrder.asc;
+      final newOrder = sortOrder.value == SortOrder.asc ? SortOrder.desc : SortOrder.asc;
 
       ref.read(folderStructureProvider.notifier).fetchFolders(newOrder);
 
@@ -151,9 +145,7 @@ class FolderContent extends HookConsumerWidget {
     useEffect(
       () {
         if (folder == null) return;
-        ref
-            .read(folderRenderListProvider(folder!).notifier)
-            .fetchAssets(sortOrder);
+        ref.read(folderRenderListProvider(folder!).notifier).fetchAssets(sortOrder);
         return null;
       },
       [folder],
@@ -211,13 +203,10 @@ class FolderContent extends HookConsumerWidget {
                                 ),
                               )
                             : null,
-                        onTap: () =>
-                            context.pushRoute(FolderRoute(folder: subfolder)),
+                        onTap: () => context.pushRoute(FolderRoute(folder: subfolder)),
                       ),
                     ),
-                  if (!list.isEmpty &&
-                      list.allAssets != null &&
-                      list.allAssets!.isNotEmpty)
+                  if (!list.isEmpty && list.allAssets != null && list.allAssets!.isNotEmpty)
                     ...list.allAssets!.map(
                       (asset) => LargeLeadingTile(
                         onTap: () {

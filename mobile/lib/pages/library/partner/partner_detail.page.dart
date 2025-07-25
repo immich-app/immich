@@ -38,9 +38,8 @@ class PartnerDetailPage extends HookConsumerWidget {
       if (toggleInProcess) return;
       toggleInProcess = true;
       try {
-        final ok = await ref
-            .read(partnerSharedWithProvider.notifier)
-            .updatePartner(partner, inTimeline: !inTimeline.value);
+        final ok =
+            await ref.read(partnerSharedWithProvider.notifier).updatePartner(partner, inTimeline: !inTimeline.value);
         if (ok) {
           inTimeline.value = !inTimeline.value;
           final action = inTimeline.value ? "shown on" : "hidden from";

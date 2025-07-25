@@ -23,8 +23,7 @@ class DriftFavoritePage extends StatelessWidget {
               throw Exception('User must be logged in to access favorite');
             }
 
-            final timelineService =
-                ref.watch(timelineFactoryProvider).favorite(user.id);
+            final timelineService = ref.watch(timelineFactoryProvider).favorite(user.id);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },

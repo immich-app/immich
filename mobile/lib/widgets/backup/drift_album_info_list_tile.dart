@@ -22,19 +22,13 @@ class DriftAlbumInfoListTile extends HookConsumerWidget {
     final bool isSelected = album.backupSelection == BackupSelection.selected;
     final bool isExcluded = album.backupSelection == BackupSelection.excluded;
 
-    final syncAlbum = ref
-        .watch(appSettingsServiceProvider)
-        .getSetting(AppSettingsEnum.syncAlbums);
+    final syncAlbum = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
 
     buildTileColor() {
       if (isSelected) {
-        return context.isDarkTheme
-            ? context.primaryColor.withAlpha(100)
-            : context.primaryColor.withAlpha(25);
+        return context.isDarkTheme ? context.primaryColor.withAlpha(100) : context.primaryColor.withAlpha(25);
       } else if (isExcluded) {
-        return context.isDarkTheme
-            ? Colors.red[300]?.withAlpha(150)
-            : Colors.red[100]?.withAlpha(150);
+        return context.isDarkTheme ? Colors.red[300]?.withAlpha(150) : Colors.red[100]?.withAlpha(150);
       } else {
         return Colors.transparent;
       }

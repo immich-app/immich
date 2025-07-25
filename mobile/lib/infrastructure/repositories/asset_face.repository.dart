@@ -8,10 +8,7 @@ class DriftAssetFaceRepository extends DriftDatabaseRepository {
   const DriftAssetFaceRepository(this._db) : super(_db);
 
   Future<List<AssetFace>> getAll() {
-    return _db.assetFaceEntity
-        .select()
-        .map((assetFace) => assetFace.toDto())
-        .get();
+    return _db.assetFaceEntity.select().map((assetFace) => assetFace.toDto()).get();
   }
 }
 
