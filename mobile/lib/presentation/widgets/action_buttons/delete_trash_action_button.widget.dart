@@ -7,6 +7,11 @@ import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
+/// This delete action has the following behavior:
+/// - Delete permanently on the server
+/// - Prompt to delete the asset locally
+///
+/// This action is used when the asset is selected in multi-selection mode in the trash page
 class DeleteTrashActionButton extends ConsumerWidget {
   final ActionSource source;
 

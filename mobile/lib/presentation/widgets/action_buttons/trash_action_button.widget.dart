@@ -10,6 +10,9 @@ import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
+/// This delete action has the following behavior:
+/// - Set the deletedAt information, put the asset in the trash in the server
+/// which will be permanently deleted after the number of days configure by the admin
 class TrashActionButton extends ConsumerWidget {
   final ActionSource source;
 
