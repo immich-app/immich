@@ -25,8 +25,7 @@ Future<RenderList> personAssets(Ref ref, String personId) async {
   final assets = await personService.getPersonAssets(personId);
 
   final settings = ref.read(appSettingsServiceProvider);
-  final groupBy =
-      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
+  final groupBy = GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
   return await RenderList.fromAssets(assets, groupBy);
 }
 

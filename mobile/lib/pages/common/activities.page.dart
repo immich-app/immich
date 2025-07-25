@@ -27,10 +27,8 @@ class ActivitiesPage extends HookConsumerWidget {
     final asset = ref.watch(currentAssetProvider);
     final user = ref.watch(currentUserProvider);
 
-    final activityNotifier = ref
-        .read(albumActivityProvider(album.remoteId!, asset?.remoteId).notifier);
-    final activities =
-        ref.watch(albumActivityProvider(album.remoteId!, asset?.remoteId));
+    final activityNotifier = ref.read(albumActivityProvider(album.remoteId!, asset?.remoteId).notifier);
+    final activities = ref.watch(albumActivityProvider(album.remoteId!, asset?.remoteId));
 
     final listViewScrollController = useScrollController();
 
@@ -49,10 +47,7 @@ class ActivitiesPage extends HookConsumerWidget {
       body: activities.widgetWhen(
         onData: (data) {
           final liked = data.firstWhereOrNull(
-            (a) =>
-                a.type == ActivityType.like &&
-                a.user.id == user?.id &&
-                a.assetId == asset?.remoteId,
+            (a) => a.type == ActivityType.like && a.user.id == user?.id && a.assetId == asset?.remoteId,
           );
 
           return SafeArea(
@@ -71,18 +66,15 @@ class ActivitiesPage extends HookConsumerWidget {
                     }
 
                     final activity = data[index];
-                    final canDelete = activity.user.id == user?.id ||
-                        album.ownerId == user?.id;
+                    final canDelete = activity.user.id == user?.id || album.ownerId == user?.id;
 
                     return Padding(
                       padding: const EdgeInsets.all(5),
                       child: DismissibleActivity(
                         activity.id,
                         ActivityTile(activity),
-                        onDismiss: canDelete
-                            ? (activityId) async => await activityNotifier
-                                .removeActivity(activity.id)
-                            : null,
+                        onDismiss:
+                            canDelete ? (activityId) async => await activityNotifier.removeActivity(activity.id) : null,
                       ),
                     );
                   },

@@ -29,8 +29,7 @@ class ViewerBottomBar extends ConsumerWidget {
     int opacity = ref.watch(
       assetViewerProvider.select((state) => state.backgroundOpacity),
     );
-    final showControls =
-        ref.watch(assetViewerProvider.select((s) => s.showingControls));
+    final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
     if (!showControls) {
       opacity = 0;
@@ -38,10 +37,8 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final actions = <Widget>[
       const ShareActionButton(source: ActionSource.viewer),
-      if (asset.isLocalOnly)
-        const UploadActionButton(source: ActionSource.viewer),
-      if (asset.hasRemote && isOwner)
-        const ArchiveActionButton(source: ActionSource.viewer),
+      if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
+      if (asset.hasRemote && isOwner) const ArchiveActionButton(source: ActionSource.viewer),
     ];
 
     return IgnorePointer(
@@ -55,11 +52,9 @@ class ViewerBottomBar extends ConsumerWidget {
               ? const SizedBox.shrink()
               : Theme(
                   data: context.themeData.copyWith(
-                    iconTheme:
-                        const IconThemeData(size: 22, color: Colors.white),
+                    iconTheme: const IconThemeData(size: 22, color: Colors.white),
                     textTheme: context.themeData.textTheme.copyWith(
-                      labelLarge:
-                          context.themeData.textTheme.labelLarge?.copyWith(
+                      labelLarge: context.themeData.textTheme.labelLarge?.copyWith(
                         color: Colors.white,
                       ),
                     ),

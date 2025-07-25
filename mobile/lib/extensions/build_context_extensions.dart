@@ -60,6 +60,5 @@ extension ContextHelper on BuildContext {
   FocusScopeNode get focusScope => FocusScope.of(this);
 
   // Show SnackBars from the current context
-  void showSnackBar(SnackBar snackBar) =>
-      ScaffoldMessenger.of(this).showSnackBar(snackBar);
+  void showSnackBar(SnackBar snackBar) => ScaffoldMessenger.of(this).showSnackBar(snackBar);
 }

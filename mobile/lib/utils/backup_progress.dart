@@ -50,8 +50,7 @@ String humanReadableBytesProgress(int bytes, int bytesTotal) {
 }
 
 class ThrottleProgressUpdate {
-  ThrottleProgressUpdate(this._fun, Duration interval)
-      : _interval = interval.inMicroseconds;
+  ThrottleProgressUpdate(this._fun, Duration interval) : _interval = interval.inMicroseconds;
   final void Function(String?, int, int) _fun;
   final int _interval;
   int _invokedAt = 0;

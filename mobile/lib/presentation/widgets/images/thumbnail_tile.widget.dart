@@ -28,9 +28,8 @@ class ThumbnailTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
 
-    final assetContainerColor = context.isDarkTheme
-        ? context.primaryColor.darken(amount: 0.4)
-        : context.primaryColor.lighten(amount: 0.75);
+    final assetContainerColor =
+        context.isDarkTheme ? context.primaryColor.darken(amount: 0.4) : context.primaryColor.lighten(amount: 0.75);
 
     final isSelected = ref.watch(
       multiSelectProvider.select(
@@ -53,8 +52,7 @@ class ThumbnailTile extends ConsumerWidget {
               )
             : const BoxDecoration();
 
-    final hasStack =
-        asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
+    final hasStack = asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
 
     return Stack(
       children: [
@@ -63,9 +61,8 @@ class ThumbnailTile extends ConsumerWidget {
           curve: Curves.decelerate,
           decoration: borderStyle,
           child: ClipRRect(
-            borderRadius: isSelected || lockSelection
-                ? const BorderRadius.all(Radius.circular(15.0))
-                : BorderRadius.zero,
+            borderRadius:
+                isSelected || lockSelection ? const BorderRadius.all(Radius.circular(15.0)) : BorderRadius.zero,
             child: Stack(
               children: [
                 Positioned.fill(
@@ -141,9 +138,7 @@ class ThumbnailTile extends ConsumerWidget {
               child: _SelectionIndicator(
                 isSelected: isSelected,
                 isLocked: lockSelection,
-                color: lockSelection
-                    ? context.colorScheme.surfaceContainerHighest
-                    : assetContainerColor,
+                color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor,
               ),
             ),
           ),

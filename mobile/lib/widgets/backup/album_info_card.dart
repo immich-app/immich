@@ -23,13 +23,9 @@ class AlbumInfoCard extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool isSelected =
-        ref.watch(backupProvider).selectedBackupAlbums.contains(album);
-    final bool isExcluded =
-        ref.watch(backupProvider).excludedBackupAlbums.contains(album);
-    final syncAlbum = ref
-        .watch(appSettingsServiceProvider)
-        .getSetting(AppSettingsEnum.syncAlbums);
+    final bool isSelected = ref.watch(backupProvider).selectedBackupAlbums.contains(album);
+    final bool isExcluded = ref.watch(backupProvider).excludedBackupAlbums.contains(album);
+    final syncAlbum = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
 
     final isDarkTheme = context.isDarkTheme;
 
@@ -37,10 +33,8 @@ class AlbumInfoCard extends HookConsumerWidget {
       context.primaryColor.withAlpha(100),
       BlendMode.darken,
     );
-    ColorFilter excludedFilter =
-        ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
-    ColorFilter unselectedFilter =
-        const ColorFilter.mode(Colors.black, BlendMode.color);
+    ColorFilter excludedFilter = ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
+    ColorFilter unselectedFilter = const ColorFilter.mode(Colors.black, BlendMode.color);
 
     buildSelectedTextBox() {
       if (isSelected) {
@@ -133,9 +127,7 @@ class AlbumInfoCard extends HookConsumerWidget {
             Radius.circular(12), // if you need this
           ),
           side: BorderSide(
-            color: isDarkTheme
-                ? const Color.fromARGB(255, 37, 35, 35)
-                : const Color(0xFFC9C9C9),
+            color: isDarkTheme ? const Color.fromARGB(255, 37, 35, 35) : const Color(0xFFC9C9C9),
             width: 1,
           ),
         ),
@@ -190,8 +182,7 @@ class AlbumInfoCard extends HookConsumerWidget {
                         Padding(
                           padding: const EdgeInsets.only(top: 2.0),
                           child: Text(
-                            album.assetCount.toString() +
-                                (album.isAll ? " (${'all'.tr()})" : ""),
+                            album.assetCount.toString() + (album.isAll ? " (${'all'.tr()})" : ""),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],

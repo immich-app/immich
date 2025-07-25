@@ -2,8 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/stack.model.dart';
-import 'package:immich_mobile/infrastructure/entities/exif.entity.dart'
-    hide ExifInfo;
+import 'package:immich_mobile/infrastructure/entities/exif.entity.dart' hide ExifInfo;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
@@ -22,8 +21,7 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
         (row) =>
             _db.remoteAssetEntity.ownerId.equals(userId) &
             _db.remoteAssetEntity.deletedAt.isNull() &
-            _db.remoteAssetEntity.visibility
-                .equalsValue(AssetVisibility.timeline),
+            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
       )
       ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
       ..limit(10);
@@ -57,8 +55,7 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
 
     final query = _db.remoteAssetEntity.select()
       ..where(
-        (row) =>
-            row.stackId.equals(asset.stackId!) & row.id.equals(asset.id).not(),
+        (row) => row.stackId.equals(asset.stackId!) & row.id.equals(asset.id).not(),
       )
       ..orderBy([(row) => OrderingTerm.desc(row.createdAt)]);
 
@@ -74,16 +71,14 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
 
   Future<List<(String, String)>> getPlaces() {
     final asset = Subquery(
-      _db.remoteAssetEntity.select()
-        ..orderBy([(row) => OrderingTerm.desc(row.createdAt)]),
+      _db.remoteAssetEntity.select()..orderBy([(row) => OrderingTerm.desc(row.createdAt)]),
       "asset",
     );
 
     final query = asset.selectOnly().join([
       innerJoin(
         _db.remoteExifEntity,
-        _db.remoteExifEntity.assetId
-            .equalsExp(asset.ref(_db.remoteAssetEntity.id)),
+        _db.remoteExifEntity.assetId.equalsExp(asset.ref(_db.remoteAssetEntity.id)),
         useColumns: false,
       ),
     ])
@@ -94,9 +89,7 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
       ..where(
         _db.remoteExifEntity.city.isNotNull() &
             asset.ref(_db.remoteAssetEntity.deletedAt).isNull() &
-            asset
-                .ref(_db.remoteAssetEntity.visibility)
-                .equals(AssetVisibility.timeline.index),
+            asset.ref(_db.remoteAssetEntity.visibility).equals(AssetVisibility.timeline.index),
       )
       ..groupBy([_db.remoteExifEntity.city])
       ..orderBy([OrderingTerm.asc(_db.remoteExifEntity.city)]);

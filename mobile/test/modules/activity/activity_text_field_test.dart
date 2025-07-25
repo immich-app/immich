@@ -44,8 +44,7 @@ void main() {
     activityMock = MockAlbumActivity();
     overrides = [
       currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
-      albumActivityProvider(AlbumStub.twoAsset.remoteId!)
-          .overrideWith(() => activityMock),
+      albumActivityProvider(AlbumStub.twoAsset.remoteId!).overrideWith(() => activityMock),
     ];
   });
 
@@ -152,8 +151,7 @@ void main() {
       overrides: overrides,
     );
 
-    when(() => activityMock.removeActivity(any()))
-        .thenAnswer((_) => Future.value());
+    when(() => activityMock.removeActivity(any())).thenAnswer((_) => Future.value());
 
     final suffixIcon = find.byType(IconButton);
     await tester.tap(suffixIcon);

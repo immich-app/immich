@@ -17,8 +17,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-    final uploadProfileImageStatus =
-        ref.watch(uploadProfileImageProvider).status;
+    final uploadProfileImageStatus = ref.watch(uploadProfileImageProvider).status;
     final user = ref.watch(currentUserProvider);
 
     buildUserProfileImage() {
@@ -55,12 +54,10 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
       );
 
       if (image != null) {
-        var success =
-            await ref.watch(uploadProfileImageProvider.notifier).upload(image);
+        var success = await ref.watch(uploadProfileImageProvider.notifier).upload(image);
 
         if (success) {
-          final profileImagePath =
-              ref.read(uploadProfileImageProvider).profileImagePath;
+          final profileImagePath = ref.read(uploadProfileImageProvider).profileImagePath;
           ref.watch(authProvider.notifier).updateUserProfileImagePath(
                 profileImagePath,
               );

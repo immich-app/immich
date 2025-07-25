@@ -50,8 +50,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         orderings.add(
           switch (sort) {
             SortRemoteAlbumsBy.id => OrderingTerm.asc(_db.remoteAlbumEntity.id),
-            SortRemoteAlbumsBy.updatedAt =>
-              OrderingTerm.desc(_db.remoteAlbumEntity.updatedAt),
+            SortRemoteAlbumsBy.updatedAt => OrderingTerm.desc(_db.remoteAlbumEntity.updatedAt),
           },
         );
       }
@@ -137,8 +136,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       ..join([
         innerJoin(
           _db.remoteAssetEntity,
-          _db.remoteAssetEntity.id
-              .equalsExp(_db.remoteAlbumAssetEntity.assetId),
+          _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId),
         ),
       ]);
 
@@ -150,9 +148,8 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   }
 
   Future<List<UserDto>> getSharedUsers(String albumId) async {
-    final albumUserRows = await (_db.select(_db.remoteAlbumUserEntity)
-          ..where((row) => row.albumId.equals(albumId)))
-        .get();
+    final albumUserRows =
+        await (_db.select(_db.remoteAlbumUserEntity)..where((row) => row.albumId.equals(albumId))).get();
 
     if (albumUserRows.isEmpty) {
       return [];
@@ -166,9 +163,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
             id: user.id,
             email: user.email,
             name: user.name,
-            profileImagePath: user.profileImagePath?.isEmpty == true
-                ? null
-                : user.profileImagePath,
+            profileImagePath: user.profileImagePath?.isEmpty == true ? null : user.profileImagePath,
             isAdmin: user.isAdmin,
             updatedAt: user.updatedAt,
             quotaSizeInBytes: user.quotaSizeInBytes ?? 0,
@@ -191,9 +186,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     ])
       ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId));
 
-    return query
-        .map((row) => row.readTable(_db.remoteAssetEntity).toDto())
-        .get();
+    return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }
 
   Future<int> addAssets(String albumId, List<String> assetIds) async {

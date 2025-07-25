@@ -44,8 +44,7 @@ class MemoryBottomInfo extends StatelessWidget {
           minWidth: 0,
           onPressed: () {
             context.maybePop();
-            scrollToDateNotifierProvider
-                .scrollToDate(memory.assets[0].fileCreatedAt);
+            scrollToDateNotifierProvider.scrollToDate(memory.assets[0].fileCreatedAt);
           },
           shape: const CircleBorder(),
           color: Colors.white.withValues(alpha: 0.2),

@@ -8,8 +8,7 @@ class DriftUserMetadataRepository extends DriftDatabaseRepository {
   const DriftUserMetadataRepository(this._db) : super(_db);
 
   Future<List<UserMetadata>> getUserMetadata(String userId) {
-    final query = _db.userMetadataEntity.select()
-      ..where((e) => e.userId.equals(userId));
+    final query = _db.userMetadataEntity.select()..where((e) => e.userId.equals(userId));
 
     return query.map((userMetadata) {
       return userMetadata.toDto();

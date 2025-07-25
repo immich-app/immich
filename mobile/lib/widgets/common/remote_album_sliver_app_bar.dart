@@ -35,12 +35,10 @@ class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
   final void Function()? onEditTitle;
 
   @override
-  ConsumerState<RemoteAlbumSliverAppBar> createState() =>
-      _MesmerizingSliverAppBarState();
+  ConsumerState<RemoteAlbumSliverAppBar> createState() => _MesmerizingSliverAppBarState();
 }
 
-class _MesmerizingSliverAppBarState
-    extends ConsumerState<RemoteAlbumSliverAppBar> {
+class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBar> {
   double _scrollProgress = 0.0;
 
   double _calculateScrollProgress(FlexibleSpaceBarSettings? settings) {
@@ -53,14 +51,12 @@ class _MesmerizingSliverAppBarState
       return 1.0;
     }
 
-    return (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent)
-        .clamp(0.0, 1.0);
+    return (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isMultiSelectEnabled =
-        ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
     if (currentAlbum == null) {
@@ -103,9 +99,7 @@ class _MesmerizingSliverAppBarState
             elevation: 0,
             leading: IconButton(
               icon: Icon(
-                Platform.isIOS
-                    ? Icons.arrow_back_ios_new_rounded
-                    : Icons.arrow_back,
+                Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
                 color: actionIconColor,
                 shadows: actionIconShadows,
               ),
@@ -136,8 +130,7 @@ class _MesmerizingSliverAppBarState
             ],
             flexibleSpace: Builder(
               builder: (context) {
-                final settings = context.dependOnInheritedWidgetOfExactType<
-                    FlexibleSpaceBarSettings>();
+                final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
                 final scrollProgress = _calculateScrollProgress(settings);
 
                 // Update scroll progress for the leading button
@@ -188,12 +181,10 @@ class _ExpandedBackground extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_ExpandedBackground> createState() =>
-      _ExpandedBackgroundState();
+  ConsumerState<_ExpandedBackground> createState() => _ExpandedBackgroundState();
 }
 
-class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
-    with SingleTickerProviderStateMixin {
+class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with SingleTickerProviderStateMixin {
   late AnimationController _slideController;
   late Animation<Offset> _slideAnimation;
 
@@ -405,8 +396,7 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
   @override
   void initState() {
     super.initState();
-    _reloadSubscription =
-        EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
+    _reloadSubscription = EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
   }
 
   @override
@@ -453,8 +443,7 @@ class _RandomAssetBackground extends StatefulWidget {
   State<_RandomAssetBackground> createState() => _RandomAssetBackgroundState();
 }
 
-class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
-    with TickerProviderStateMixin {
+class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with TickerProviderStateMixin {
   late AnimationController _zoomController;
   late AnimationController _crossFadeController;
   late Animation<double> _zoomAnimation;
@@ -625,8 +614,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
                         alignment: Alignment.topRight,
                         image: getFullImageProvider(_currentAsset!),
                         fit: BoxFit.cover,
-                        frameBuilder:
-                            (context, child, frame, wasSynchronouslyLoaded) {
+                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
                           if (wasSynchronouslyLoaded || frame != null) {
                             return child;
                           }
@@ -657,8 +645,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
                         alignment: Alignment.topRight,
                         image: getFullImageProvider(_nextAsset!),
                         fit: BoxFit.cover,
-                        frameBuilder:
-                            (context, child, frame, wasSynchronouslyLoaded) {
+                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
                           if (wasSynchronouslyLoaded || frame != null) {
                             return child;
                           }

@@ -45,8 +45,7 @@ class MapBottomSheet extends HookConsumerWidget {
     useOnStreamChange<MapEvent>(mapEventStream, onData: handleMapEvents);
 
     bool onScrollNotification(DraggableScrollableNotification notification) {
-      isBottomSheetOpened.value =
-          notification.extent > (notification.maxExtent * 0.9);
+      isBottomSheetOpened.value = notification.extent > (notification.maxExtent * 0.9);
       bottomSheetOffset.value = notification.extent;
       // do not bubble
       return true;
@@ -70,9 +69,7 @@ class MapBottomSheet extends HookConsumerWidget {
               selectedAssets: selectedAssets,
               onAssetsSelected: onAssetsSelected,
               // Do not bother with the event if the bottom sheet is not user scrolled
-              onGridAssetChanged: (assetId) => isBottomSheetOpened.value
-                  ? onGridAssetChanged?.call(assetId)
-                  : null,
+              onGridAssetChanged: (assetId) => isBottomSheetOpened.value ? onGridAssetChanged?.call(assetId) : null,
               onZoomToAsset: onZoomToAsset,
             ),
           ),

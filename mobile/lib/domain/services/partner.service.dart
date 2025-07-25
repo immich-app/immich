@@ -23,10 +23,8 @@ class DriftPartnerService {
   Future<List<PartnerUserDto>> getAvailablePartners(
     String currentUserId,
   ) async {
-    final otherUsers =
-        await _driftPartnerRepository.getAvailablePartners(currentUserId);
-    final currentPartners =
-        await _driftPartnerRepository.getSharedBy(currentUserId);
+    final otherUsers = await _driftPartnerRepository.getAvailablePartners(currentUserId);
+    final currentPartners = await _driftPartnerRepository.getSharedBy(currentUserId);
     final available = otherUsers.where((user) {
       return !currentPartners.any((partner) => partner.id == user.id);
     }).toList();

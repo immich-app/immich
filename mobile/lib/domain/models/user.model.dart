@@ -175,16 +175,13 @@ class PartnerUserDto {
       email: map['email'] as String,
       name: map['name'] as String,
       inTimeline: map['inTimeline'] as bool,
-      profileImagePath: map['profileImagePath'] != null
-          ? map['profileImagePath'] as String
-          : null,
+      profileImagePath: map['profileImagePath'] != null ? map['profileImagePath'] as String : null,
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory PartnerUserDto.fromJson(String source) =>
-      PartnerUserDto.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory PartnerUserDto.fromJson(String source) => PartnerUserDto.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
@@ -204,10 +201,6 @@ class PartnerUserDto {
 
   @override
   int get hashCode {
-    return id.hashCode ^
-        email.hashCode ^
-        name.hashCode ^
-        inTimeline.hashCode ^
-        profileImagePath.hashCode;
+    return id.hashCode ^ email.hashCode ^ name.hashCode ^ inTimeline.hashCode ^ profileImagePath.hashCode;
   }
 }

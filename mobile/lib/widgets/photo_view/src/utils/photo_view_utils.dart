@@ -101,11 +101,7 @@ class ScaleBoundaries {
 
   @override
   int get hashCode =>
-      _minScale.hashCode ^
-      _maxScale.hashCode ^
-      _initialScale.hashCode ^
-      outerSize.hashCode ^
-      childSize.hashCode;
+      _minScale.hashCode ^ _maxScale.hashCode ^ _initialScale.hashCode ^ outerSize.hashCode ^ childSize.hashCode;
 }
 
 double _scaleForContained(Size size, Size childSize) {

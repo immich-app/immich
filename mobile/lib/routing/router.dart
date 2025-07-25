@@ -139,8 +139,7 @@ class AppRouter extends RootStackRouter {
   ) {
     _authGuard = AuthGuard(apiService);
     _duplicateGuard = const DuplicateGuard();
-    _lockedGuard =
-        LockedGuard(apiService, secureStorageService, localAuthService);
+    _lockedGuard = LockedGuard(apiService, secureStorageService, localAuthService);
     _backupPermissionGuard = BackupPermissionGuard(galleryPermissionNotifier);
     _galleryGuard = const GalleryGuard();
   }

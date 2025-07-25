@@ -41,8 +41,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
-    final isMultiSelectEnabled =
-        ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
     return SliverAnimatedOpacity(
       duration: Durations.medium1,
@@ -116,8 +115,7 @@ class _ImmichLogoWithText extends StatelessWidget {
             Builder(
               builder: (context) {
                 return Badge(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                   backgroundColor: context.primaryColor,
                   alignment: Alignment.centerRight,
                   offset: const Offset(16, -8),
@@ -180,8 +178,8 @@ class _ProfileIndicator extends ConsumerWidget {
         ),
         backgroundColor: Colors.transparent,
         alignment: Alignment.bottomRight,
-        isLabelVisible: serverInfoState.isVersionMismatch ||
-            ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable),
+        isLabelVisible:
+            serverInfoState.isVersionMismatch || ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable),
         offset: const Offset(-2, -12),
         child: user == null
             ? const Icon(
@@ -241,8 +239,7 @@ class _BackupIndicator extends ConsumerWidget {
 
   Widget? _getBackupBadgeIcon(BuildContext context, WidgetRef ref) {
     final BackUpState backupState = ref.watch(backupProvider);
-    final bool isEnableAutoBackup =
-        backupState.backgroundBackup || backupState.autoBackup;
+    final bool isEnableAutoBackup = backupState.backgroundBackup || backupState.autoBackup;
     final isDarkTheme = context.isDarkTheme;
     final iconColor = isDarkTheme ? Colors.white : Colors.black;
 
@@ -257,8 +254,7 @@ class _BackupIndicator extends ConsumerWidget {
             semanticsLabel: 'backup_controller_page_backup'.tr(),
           ),
         );
-      } else if (backupState.backupProgress !=
-              BackUpProgressEnum.inBackground &&
+      } else if (backupState.backupProgress != BackUpProgressEnum.inBackground &&
           backupState.backupProgress != BackUpProgressEnum.manualInProgress) {
         return Icon(
           Icons.check_outlined,
@@ -286,12 +282,10 @@ class _SyncStatusIndicator extends ConsumerStatefulWidget {
   const _SyncStatusIndicator();
 
   @override
-  ConsumerState<_SyncStatusIndicator> createState() =>
-      _SyncStatusIndicatorState();
+  ConsumerState<_SyncStatusIndicator> createState() => _SyncStatusIndicatorState();
 }
 
-class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator>
-    with TickerProviderStateMixin {
+class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator> with TickerProviderStateMixin {
   late AnimationController _rotationController;
   late AnimationController _dismissalController;
   late Animation<double> _rotationAnimation;
@@ -349,8 +343,7 @@ class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator>
     }
 
     // Don't show anything if not syncing and dismissal animation is complete
-    if (!isSyncing &&
-        _dismissalController.status == AnimationStatus.completed) {
+    if (!isSyncing && _dismissalController.status == AnimationStatus.completed) {
       return const SizedBox.shrink();
     }
 
@@ -364,10 +357,7 @@ class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator>
             child: Opacity(
               opacity: isSyncing ? 1.0 : _dismissalAnimation.value,
               child: Transform.rotate(
-                angle: _rotationAnimation.value *
-                    2 *
-                    3.14159 *
-                    -1, // Rotate counter-clockwise
+                angle: _rotationAnimation.value * 2 * 3.14159 * -1, // Rotate counter-clockwise
                 child: Icon(
                   Icons.sync,
                   size: 24,

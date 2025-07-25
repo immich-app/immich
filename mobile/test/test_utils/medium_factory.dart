@@ -25,10 +25,8 @@ class MediumFactory {
       name: name ?? 'Asset ${random.nextInt(1000000)}',
       checksum: checksum ?? '${random.nextInt(1000000)}',
       type: type ?? AssetType.image,
-      createdAt: createdAt ??
-          DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
-      updatedAt: updatedAt ??
-          DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
+      createdAt: createdAt ?? DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
+      updatedAt: updatedAt ?? DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
     );
   }
 
@@ -45,8 +43,7 @@ class MediumFactory {
     return LocalAlbum(
       id: id ?? '${random.nextInt(1000000)}',
       name: name ?? 'Album ${random.nextInt(1000000)}',
-      updatedAt: updatedAt ??
-          DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
+      updatedAt: updatedAt ?? DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
       assetCount: assetCount ?? random.nextInt(100),
       backupSelection: backupSelection ?? BackupSelection.none,
       isIosSharedAlbum: isIosSharedAlbum ?? false,

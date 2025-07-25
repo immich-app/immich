@@ -18,8 +18,7 @@ class NetworkingSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentEndpoint = getServerUrl();
-    final featureEnabled =
-        useAppSettingsState(AppSettingsEnum.autoEndpointSwitching);
+    final featureEnabled = useAppSettingsState(AppSettingsEnum.autoEndpointSwitching);
 
     Future<void> checkWifiReadPermission() async {
       final [hasLocationInUse, hasLocationAlways] = await Future.wait([
@@ -39,9 +38,7 @@ class NetworkingSettings extends HookConsumerWidget {
               actions: [
                 TextButton(
                   onPressed: () async {
-                    final isGrant = await ref
-                        .read(networkProvider.notifier)
-                        .requestWifiReadPermission();
+                    final isGrant = await ref.read(networkProvider.notifier).requestWifiReadPermission();
 
                     Navigator.pop(context, isGrant);
                   },
@@ -63,9 +60,7 @@ class NetworkingSettings extends HookConsumerWidget {
               actions: [
                 TextButton(
                   onPressed: () async {
-                    final isGrant = await ref
-                        .read(networkProvider.notifier)
-                        .requestWifiReadBackgroundPermission();
+                    final isGrant = await ref.read(networkProvider.notifier).requestWifiReadBackgroundPermission();
 
                     Navigator.pop(context, isGrant);
                   },
@@ -77,8 +72,7 @@ class NetworkingSettings extends HookConsumerWidget {
         );
       }
 
-      if (isGrantLocationAlwaysPermission != null &&
-          !isGrantLocationAlwaysPermission) {
+      if (isGrantLocationAlwaysPermission != null && !isGrantLocationAlwaysPermission) {
         await ref.read(networkProvider.notifier).openSettings();
       }
     }
@@ -101,9 +95,7 @@ class NetworkingSettings extends HookConsumerWidget {
           padding: const EdgeInsets.only(top: 8, left: 16, bottom: 8),
           child: NetworkPreferenceTitle(
             title: "current_server_address".tr().toUpperCase(),
-            icon: (currentEndpoint?.startsWith('https') ?? false)
-                ? Icons.https_outlined
-                : Icons.http_outlined,
+            icon: (currentEndpoint?.startsWith('https') ?? false) ? Icons.https_outlined : Icons.http_outlined,
           ),
         ),
         Padding(

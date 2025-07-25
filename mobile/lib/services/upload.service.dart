@@ -20,14 +20,11 @@ class UploadService {
   void Function(TaskStatusUpdate)? onUploadStatus;
   void Function(TaskProgressUpdate)? onTaskProgress;
 
-  final StreamController<TaskStatusUpdate> _taskStatusController =
-      StreamController<TaskStatusUpdate>.broadcast();
-  final StreamController<TaskProgressUpdate> _taskProgressController =
-      StreamController<TaskProgressUpdate>.broadcast();
+  final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
+  final StreamController<TaskProgressUpdate> _taskProgressController = StreamController<TaskProgressUpdate>.broadcast();
 
   Stream<TaskStatusUpdate> get taskStatusStream => _taskStatusController.stream;
-  Stream<TaskProgressUpdate> get taskProgressStream =>
-      _taskProgressController.stream;
+  Stream<TaskProgressUpdate> get taskProgressStream => _taskProgressController.stream;
 
   UploadService(
     this._uploadRepository,
@@ -103,8 +100,7 @@ class UploadService {
     final headers = ApiService.getRequestHeaders();
     final deviceId = Store.get(StoreKey.deviceId);
 
-    final (baseDirectory, directory, filename) =
-        await Task.split(filePath: file.path);
+    final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
     final stats = await file.stat();
     final fileCreatedAt = stats.changed;
     final fileModifiedAt = stats.modified;

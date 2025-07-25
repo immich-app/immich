@@ -59,8 +59,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
     useEffect(
       () {
         final wifiName = ref.read(authProvider.notifier).getSavedWifiName();
-        final localEndpoint =
-            ref.read(authProvider.notifier).getSavedLocalEndpoint();
+        final localEndpoint = ref.read(authProvider.notifier).getSavedLocalEndpoint();
 
         if (wifiName != null) {
           wifiNameText.value = wifiName;
@@ -131,8 +130,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
         saveWifiName(wifiName);
       }
 
-      final serverEndpoint =
-          ref.read(authProvider.notifier).getServerEndpoint();
+      final serverEndpoint = ref.read(authProvider.notifier).getServerEndpoint();
 
       if (serverEndpoint != null) {
         saveLocalEndpoint(serverEndpoint);
@@ -194,10 +192,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                               wifiNameText.value,
                               style: context.textTheme.labelLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: enabled
-                                    ? context.primaryColor
-                                    : context.colorScheme.onSurface
-                                        .withAlpha(100),
+                                color: enabled ? context.primaryColor : context.colorScheme.onSurface.withAlpha(100),
                                 fontFamily: 'Inconsolata',
                               ),
                             ),
@@ -217,10 +212,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                               localEndpointText.value,
                               style: context.textTheme.labelLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: enabled
-                                    ? context.primaryColor
-                                    : context.colorScheme.onSurface
-                                        .withAlpha(100),
+                                color: enabled ? context.primaryColor : context.colorScheme.onSurface.withAlpha(100),
                                 fontFamily: 'Inconsolata',
                               ),
                             ),
@@ -238,8 +230,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                         height: 48,
                         child: OutlinedButton.icon(
                           icon: const Icon(Icons.wifi_find_rounded),
-                          label:
-                              Text('use_current_connection'.tr().toUpperCase()),
+                          label: Text('use_current_connection'.tr().toUpperCase()),
                           onPressed: enabled ? autofillCurrentNetwork : null,
                         ),
                       ),

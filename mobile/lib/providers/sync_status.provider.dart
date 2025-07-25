@@ -92,8 +92,7 @@ class SyncStatusNotifier extends Notifier<SyncStatusState> {
 
   void startRemoteSync() => setRemoteSyncStatus(SyncStatus.syncing);
   void completeRemoteSync() => setRemoteSyncStatus(SyncStatus.success);
-  void errorRemoteSync(String error) =>
-      setRemoteSyncStatus(SyncStatus.error, error);
+  void errorRemoteSync(String error) => setRemoteSyncStatus(SyncStatus.error, error);
 
   ///
   /// Local Sync
@@ -108,8 +107,7 @@ class SyncStatusNotifier extends Notifier<SyncStatusState> {
 
   void startLocalSync() => setLocalSyncStatus(SyncStatus.syncing);
   void completeLocalSync() => setLocalSyncStatus(SyncStatus.success);
-  void errorLocalSync(String error) =>
-      setLocalSyncStatus(SyncStatus.error, error);
+  void errorLocalSync(String error) => setLocalSyncStatus(SyncStatus.error, error);
 
   ///
   /// Hash Job
@@ -127,7 +125,6 @@ class SyncStatusNotifier extends Notifier<SyncStatusState> {
   void errorHashJob(String error) => setHashJobStatus(SyncStatus.error, error);
 }
 
-final syncStatusProvider =
-    NotifierProvider<SyncStatusNotifier, SyncStatusState>(
+final syncStatusProvider = NotifierProvider<SyncStatusNotifier, SyncStatusState>(
   SyncStatusNotifier.new,
 );

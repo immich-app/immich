@@ -59,8 +59,7 @@ class PlacesCollectionPage extends HookConsumerWidget {
                 height: 200,
                 width: context.width,
                 child: MapThumbnail(
-                  onTap: (_, __) => context
-                      .pushRoute(MapRoute(initialLocation: currentLocation)),
+                  onTap: (_, __) => context.pushRoute(MapRoute(initialLocation: currentLocation)),
                   zoom: 8,
                   centre: currentLocation ??
                       const LatLng(
@@ -68,8 +67,7 @@ class PlacesCollectionPage extends HookConsumerWidget {
                         -157.91959,
                       ),
                   showAttribution: false,
-                  themeMode:
-                      context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
+                  themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
                 ),
               ),
             ),
@@ -77,9 +75,7 @@ class PlacesCollectionPage extends HookConsumerWidget {
             data: (places) {
               if (search.value != null) {
                 places = places.where((place) {
-                  return place.label
-                      .toLowerCase()
-                      .contains(search.value!.toLowerCase());
+                  return place.label.toLowerCase().contains(search.value!.toLowerCase());
                 }).toList();
               }
               return ListView.builder(
@@ -110,8 +106,7 @@ class PlaceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thumbnailUrl =
-        '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail';
+    final thumbnailUrl = '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail';
 
     void navigateToPlace() {
       context.pushRoute(
@@ -152,8 +147,7 @@ class PlaceTile extends StatelessWidget {
           fit: BoxFit.cover,
           imageUrl: thumbnailUrl,
           httpHeaders: ApiService.getRequestHeaders(),
-          errorWidget: (context, url, error) =>
-              const Icon(Icons.image_not_supported_outlined),
+          errorWidget: (context, url, error) => const Icon(Icons.image_not_supported_outlined),
         ),
       ),
     );

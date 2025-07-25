@@ -11,8 +11,7 @@ import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
   unique: true,
 )
 @TableIndex(name: 'idx_remote_asset_checksum', columns: {#checksum})
-class RemoteAssetEntity extends Table
-    with DriftDefaultsMixin, AssetEntityMixin {
+class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   const RemoteAssetEntity();
 
   TextColumn get id => text()();
@@ -21,8 +20,7 @@ class RemoteAssetEntity extends Table
 
   BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
 
-  TextColumn get ownerId =>
-      text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
+  TextColumn get ownerId => text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
   DateTimeColumn get localDateTime => dateTime().nullable()();
 

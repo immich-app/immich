@@ -86,8 +86,7 @@ void main() {
 
   group('Store Service put:', () {
     setUp(() {
-      when(() => mockStoreRepo.insert<String>(any<StoreKey<String>>(), any()))
-          .thenAnswer((_) async => true);
+      when(() => mockStoreRepo.insert<String>(any<StoreKey<String>>(), any())).thenAnswer((_) async => true);
     });
 
     test('Skip insert when value is not modified', () async {
@@ -101,8 +100,7 @@ void main() {
       final newAccessToken = _kAccessToken.toUpperCase();
       await sut.put(StoreKey.accessToken, newAccessToken);
       verify(
-        () =>
-            mockStoreRepo.insert<String>(StoreKey.accessToken, newAccessToken),
+        () => mockStoreRepo.insert<String>(StoreKey.accessToken, newAccessToken),
       ).called(1);
       expect(sut.tryGet(StoreKey.accessToken), newAccessToken);
     });
@@ -113,8 +111,7 @@ void main() {
 
     setUp(() {
       valueController = StreamController<String?>.broadcast();
-      when(() => mockStoreRepo.watch<String>(any<StoreKey<String>>()))
-          .thenAnswer((_) => valueController.stream);
+      when(() => mockStoreRepo.watch<String>(any<StoreKey<String>>())).thenAnswer((_) => valueController.stream);
     });
 
     tearDown(() async {
@@ -143,14 +140,12 @@ void main() {
 
   group('Store Service delete:', () {
     setUp(() {
-      when(() => mockStoreRepo.delete<String>(any<StoreKey<String>>()))
-          .thenAnswer((_) async => true);
+      when(() => mockStoreRepo.delete<String>(any<StoreKey<String>>())).thenAnswer((_) async => true);
     });
 
     test('Removes the value from the DB', () async {
       await sut.delete(StoreKey.accessToken);
-      verify(() => mockStoreRepo.delete<String>(StoreKey.accessToken))
-          .called(1);
+      verify(() => mockStoreRepo.delete<String>(StoreKey.accessToken)).called(1);
     });
 
     test('Removes the value from the cache', () async {

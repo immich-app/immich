@@ -106,9 +106,7 @@ class PhotosPage extends HookConsumerWidget {
     return Stack(
       children: [
         MultiselectGrid(
-          topWidget: (currentUser != null && currentUser.memoryEnabled)
-              ? const MemoryLane()
-              : const SizedBox(),
+          topWidget: (currentUser != null && currentUser.memoryEnabled) ? const MemoryLane() : const SizedBox(),
           renderListProvider: timelineUsers.length > 1
               ? multiUsersTimelineProvider(timelineUsers)
               : singleUserTimelineProvider(currentUser?.id),
@@ -120,9 +118,7 @@ class PhotosPage extends HookConsumerWidget {
         ),
         AnimatedPositioned(
           duration: const Duration(milliseconds: 300),
-          top: ref.watch(multiselectProvider)
-              ? -(kToolbarHeight + context.padding.top)
-              : 0,
+          top: ref.watch(multiselectProvider) ? -(kToolbarHeight + context.padding.top) : 0,
           left: 0,
           right: 0,
           child: Container(

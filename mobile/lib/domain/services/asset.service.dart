@@ -19,9 +19,7 @@ class AssetService {
 
   Stream<BaseAsset?> watchAsset(BaseAsset asset) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).id;
-    return asset is LocalAsset
-        ? _localAssetRepository.watchAsset(id)
-        : _remoteAssetRepository.watchAsset(id);
+    return asset is LocalAsset ? _localAssetRepository.watchAsset(id) : _remoteAssetRepository.watchAsset(id);
   }
 
   Future<List<RemoteAsset>> getStack(RemoteAsset asset) async {
@@ -40,8 +38,7 @@ class AssetService {
       return null;
     }
 
-    final id =
-        asset is LocalAsset ? asset.remoteId! : (asset as RemoteAsset).id;
+    final id = asset is LocalAsset ? asset.remoteId! : (asset as RemoteAsset).id;
     return _remoteAssetRepository.getExif(id);
   }
 
@@ -56,8 +53,7 @@ class AssetService {
       width = exif?.width ?? asset.width?.toDouble();
       height = exif?.height ?? asset.height?.toDouble();
     } else if (asset is LocalAsset) {
-      isFlipped = _platform.isAndroid &&
-          (asset.orientation == 90 || asset.orientation == 270);
+      isFlipped = _platform.isAndroid && (asset.orientation == 90 || asset.orientation == 270);
       width = asset.width?.toDouble();
       height = asset.height?.toDouble();
     } else {
@@ -78,10 +74,7 @@ class AssetService {
   }
 
   Future<(int local, int remote)> getAssetCounts() async {
-    return (
-      await _localAssetRepository.getCount(),
-      await _remoteAssetRepository.getCount()
-    );
+    return (await _localAssetRepository.getCount(), await _remoteAssetRepository.getCount());
   }
 
   Future<int> getLocalHashedCount() {

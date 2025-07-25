@@ -38,11 +38,8 @@ class ActivityTile extends HookConsumerWidget {
         leftAlign: isLike || showAssetThumbnail,
       ),
       // No subtitle for like, so center title
-      titleAlignment:
-          !isLike ? ListTileTitleAlignment.top : ListTileTitleAlignment.center,
-      trailing: showAssetThumbnail
-          ? _ActivityAssetThumbnail(activity.assetId!)
-          : null,
+      titleAlignment: !isLike ? ListTileTitleAlignment.top : ListTileTitleAlignment.center,
+      trailing: showAssetThumbnail ? _ActivityAssetThumbnail(activity.assetId!) : null,
       subtitle: !isLike ? Text(activity.comment!) : null,
     );
   }
@@ -62,12 +59,10 @@ class _ActivityTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = context.isDarkTheme ? Colors.white : Colors.black;
-    final textStyle = context.textTheme.bodyMedium
-        ?.copyWith(color: textColor.withValues(alpha: 0.6));
+    final textStyle = context.textTheme.bodyMedium?.copyWith(color: textColor.withValues(alpha: 0.6));
 
     return Row(
-      mainAxisAlignment:
-          leftAlign ? MainAxisAlignment.start : MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: leftAlign ? MainAxisAlignment.start : MainAxisAlignment.spaceBetween,
       mainAxisSize: leftAlign ? MainAxisSize.min : MainAxisSize.max,
       children: [
         Text(

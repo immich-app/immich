@@ -22,8 +22,7 @@ final localAlbumProvider = FutureProvider<List<LocalAlbum>>(
 );
 
 final localAlbumThumbnailProvider = FutureProvider.family<LocalAsset?, String>(
-  (ref, albumId) =>
-      LocalAlbumService(ref.watch(localAlbumRepository)).getThumbnail(albumId),
+  (ref, albumId) => LocalAlbumService(ref.watch(localAlbumRepository)).getThumbnail(albumId),
 );
 
 final remoteAlbumRepository = Provider<DriftRemoteAlbumRepository>(
@@ -38,8 +37,7 @@ final remoteAlbumServiceProvider = Provider<RemoteAlbumService>(
   dependencies: [remoteAlbumRepository],
 );
 
-final remoteAlbumProvider =
-    NotifierProvider<RemoteAlbumNotifier, RemoteAlbumState>(
+final remoteAlbumProvider = NotifierProvider<RemoteAlbumNotifier, RemoteAlbumState>(
   RemoteAlbumNotifier.new,
   dependencies: [remoteAlbumServiceProvider],
 );

@@ -32,8 +32,7 @@ class DriftPartnerRepository extends DriftDatabaseRepository {
 
   // Get users who we can share our library with
   Future<List<PartnerUserDto>> getAvailablePartners(String currentUserId) {
-    final query = _db.select(_db.userEntity)
-      ..where((row) => row.id.equals(currentUserId).not());
+    final query = _db.select(_db.userEntity)..where((row) => row.id.equals(currentUserId).not());
 
     return query.map((user) {
       return PartnerUserDto(
@@ -95,20 +94,15 @@ class DriftPartnerRepository extends DriftDatabaseRepository {
 
   Future<List<String>> getAllPartnerIds(String userId) async {
     // Get users who are sharing with me (sharedWithId = userId)
-    final sharingWithMeQuery = _db.select(_db.partnerEntity)
-      ..where((tbl) => tbl.sharedWithId.equals(userId));
-    final sharingWithMe =
-        await sharingWithMeQuery.map((row) => row.sharedById).get();
+    final sharingWithMeQuery = _db.select(_db.partnerEntity)..where((tbl) => tbl.sharedWithId.equals(userId));
+    final sharingWithMe = await sharingWithMeQuery.map((row) => row.sharedById).get();
 
     // Get users who I am sharing with (sharedById = userId)
-    final sharingWithThemQuery = _db.select(_db.partnerEntity)
-      ..where((tbl) => tbl.sharedById.equals(userId));
-    final sharingWithThem =
-        await sharingWithThemQuery.map((row) => row.sharedWithId).get();
+    final sharingWithThemQuery = _db.select(_db.partnerEntity)..where((tbl) => tbl.sharedById.equals(userId));
+    final sharingWithThem = await sharingWithThemQuery.map((row) => row.sharedWithId).get();
 
     // Combine both lists and remove duplicates
-    final allPartnerIds =
-        <String>{...sharingWithMe, ...sharingWithThem}.toList();
+    final allPartnerIds = <String>{...sharingWithMe, ...sharingWithThem}.toList();
     return allPartnerIds;
   }
 
@@ -120,8 +114,7 @@ class DriftPartnerRepository extends DriftDatabaseRepository {
       ),
     ])
       ..where(
-        _db.partnerEntity.sharedById.equals(partnerId) &
-            _db.partnerEntity.sharedWithId.equals(userId),
+        _db.partnerEntity.sharedById.equals(partnerId) & _db.partnerEntity.sharedWithId.equals(userId),
       );
 
     return query.map((row) {

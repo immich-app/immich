@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -28,8 +27,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final BackUpState backupState = ref.watch(backupProvider);
-    final bool isEnableAutoBackup =
-        backupState.backgroundBackup || backupState.autoBackup;
+    final bool isEnableAutoBackup = backupState.backgroundBackup || backupState.autoBackup;
     final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
     final user = ref.watch(currentUserProvider);
     final isDarkTheme = context.isDarkTheme;
@@ -58,9 +56,8 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ),
           backgroundColor: Colors.transparent,
           alignment: Alignment.bottomRight,
-          isLabelVisible: serverInfoState.isVersionMismatch ||
-              ((user?.isAdmin ?? false) &&
-                  serverInfoState.isNewReleaseAvailable),
+          isLabelVisible:
+              serverInfoState.isVersionMismatch || ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable),
           offset: const Offset(-2, -12),
           child: user == null
               ? const Icon(
@@ -93,8 +90,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
               semanticsLabel: 'backup_controller_page_backup'.tr(),
             ),
           );
-        } else if (backupState.backupProgress !=
-                BackUpProgressEnum.inBackground &&
+        } else if (backupState.backupProgress != BackUpProgressEnum.inBackground &&
             backupState.backupProgress != BackUpProgressEnum.manualInProgress) {
           return Icon(
             Icons.check_outlined,
@@ -186,7 +182,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
               child: action,
             ),
           ),
-        if (kDebugMode || kProfileMode || appFlavor == 'beta')
+        if (kDebugMode || kProfileMode)
           IconButton(
             icon: const Icon(Icons.science_rounded),
             onPressed: () => context.pushRoute(const FeatInDevRoute()),

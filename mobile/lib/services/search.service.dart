@@ -61,8 +61,7 @@ class SearchService {
       }
 
       return SearchResult(
-        assets: await _assetRepository
-            .getAllByRemoteId(response.assets.items.map((e) => e.id)),
+        assets: await _assetRepository.getAllByRemoteId(response.assets.items.map((e) => e.id)),
         nextPage: response.assets.nextPage?.toInt(),
       );
     } catch (error, stackTrace) {

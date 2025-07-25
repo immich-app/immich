@@ -50,8 +50,7 @@ class SettingsButtonListTile extends StatelessWidget {
             ),
           if (subtitle != null) subtitle!,
           const SizedBox(height: 6),
-          child ??
-              ElevatedButton(onPressed: onButtonTap, child: Text(buttonText)),
+          child ?? ElevatedButton(onPressed: onButtonTap, child: Text(buttonText)),
         ],
       ),
     );

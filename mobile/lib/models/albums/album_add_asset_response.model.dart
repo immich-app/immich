@@ -32,16 +32,14 @@ class AlbumAddAssetsResponse {
   String toJson() => json.encode(toMap());
 
   @override
-  String toString() =>
-      'AddAssetsResponse(alreadyInAlbum: $alreadyInAlbum, successfullyAdded: $successfullyAdded)';
+  String toString() => 'AddAssetsResponse(alreadyInAlbum: $alreadyInAlbum, successfullyAdded: $successfullyAdded)';
 
   @override
   bool operator ==(covariant AlbumAddAssetsResponse other) {
     if (identical(this, other)) return true;
     final listEquals = const DeepCollectionEquality().equals;
 
-    return listEquals(other.alreadyInAlbum, alreadyInAlbum) &&
-        other.successfullyAdded == successfullyAdded;
+    return listEquals(other.alreadyInAlbum, alreadyInAlbum) && other.successfullyAdded == successfullyAdded;
   }
 
   @override

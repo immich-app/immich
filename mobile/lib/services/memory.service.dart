@@ -35,8 +35,7 @@ class MemoryService {
       List<Memory> memories = [];
 
       for (final memory in data) {
-        final dbAssets = await _assetRepository
-            .getAllByRemoteId(memory.assets.map((e) => e.id));
+        final dbAssets = await _assetRepository.getAllByRemoteId(memory.assets.map((e) => e.id));
         final yearsAgo = now.year - memory.data.year;
         if (dbAssets.isNotEmpty) {
           final String title = 'years_ago'.t(
@@ -67,8 +66,7 @@ class MemoryService {
       if (memoryResponse == null) {
         return null;
       }
-      final dbAssets = await _assetRepository
-          .getAllByRemoteId(memoryResponse.assets.map((e) => e.id));
+      final dbAssets = await _assetRepository.getAllByRemoteId(memoryResponse.assets.map((e) => e.id));
       if (dbAssets.isEmpty) {
         log.warning("No assets found for memory with ID: $id");
         return null;

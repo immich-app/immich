@@ -26,8 +26,7 @@ class DriftPartnerDetailPage extends StatelessWidget {
       overrides: [
         timelineServiceProvider.overrideWith(
           (ref) {
-            final timelineService =
-                ref.watch(timelineFactoryProvider).remoteAssets(partner.id);
+            final timelineService = ref.watch(timelineFactoryProvider).remoteAssets(partner.id);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },

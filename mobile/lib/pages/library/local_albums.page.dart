@@ -54,8 +54,7 @@ class LocalAlbumsPage extends HookConsumerWidget {
                   color: context.colorScheme.onSurfaceSecondary,
                 ),
               ),
-              onTap: () => context
-                  .pushRoute(AlbumViewerRoute(albumId: albums[index].id)),
+              onTap: () => context.pushRoute(AlbumViewerRoute(albumId: albums[index].id)),
             ),
           );
         },

@@ -105,9 +105,7 @@ final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>(
     final availableTileWidth = args.maxWidth - (spacing * (columnCount - 1));
     final tileExtent = math.max(0, availableTileWidth) / columnCount;
 
-    final groupBy = args.groupBy ??
-        GroupAssetsBy
-            .values[ref.watch(settingsProvider).get(Setting.groupAssetsBy)];
+    final groupBy = args.groupBy ?? GroupAssetsBy.values[ref.watch(settingsProvider).get(Setting.groupAssetsBy)];
 
     final timelineService = ref.watch(timelineServiceProvider);
     yield* timelineService.watchBuckets().map((buckets) {
@@ -123,7 +121,6 @@ final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>(
   dependencies: [timelineServiceProvider, timelineArgsProvider],
 );
 
-final timelineStateProvider =
-    NotifierProvider<TimelineStateNotifier, TimelineState>(
+final timelineStateProvider = NotifierProvider<TimelineStateNotifier, TimelineState>(
   TimelineStateNotifier.new,
 );

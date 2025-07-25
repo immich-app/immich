@@ -14,10 +14,8 @@ class HapticSetting extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hapticFeedbackSetting =
-        useAppSettingsState(AppSettingsEnum.enableHapticFeedback);
-    final isHapticFeedbackEnabled =
-        useValueNotifier(hapticFeedbackSetting.value);
+    final hapticFeedbackSetting = useAppSettingsState(AppSettingsEnum.enableHapticFeedback);
+    final isHapticFeedbackEnabled = useValueNotifier(hapticFeedbackSetting.value);
 
     onHapticFeedbackChange(bool isEnabled) {
       hapticFeedbackSetting.value = isEnabled;

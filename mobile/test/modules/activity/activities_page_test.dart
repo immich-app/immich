@@ -198,8 +198,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        when(() => activityMock.addComment(any()))
-            .thenAnswer((_) => Future.value());
+        when(() => activityMock.addComment(any())).thenAnswer((_) => Future.value());
 
         final textField = find.byType(TextField);
         await tester.enterText(textField, 'Test comment');

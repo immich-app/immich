@@ -120,12 +120,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     super.dispose();
   }
 
-  bool get showingBottomSheet =>
-      ref.read(assetViewerProvider.select((s) => s.showingBottomSheet));
+  bool get showingBottomSheet => ref.read(assetViewerProvider.select((s) => s.showingBottomSheet));
 
   Color get backgroundColor {
-    final opacity =
-        ref.read(assetViewerProvider.select((s) => s.backgroundOpacity));
+    final opacity = ref.read(assetViewerProvider.select((s) => s.backgroundOpacity));
     return Colors.black.withAlpha(opacity);
   }
 
@@ -139,9 +137,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   // This is used to calculate the scale of the asset when the bottom sheet is showing.
   // It is a small increment to ensure that the asset is slightly zoomed in when the
   // bottom sheet is showing, which emulates the zoom effect.
-  double get _getScaleForBottomSheet =>
-      (viewController?.prevValue.scale ?? viewController?.value.scale ?? 1.0) +
-      0.01;
+  double get _getScaleForBottomSheet => (viewController?.prevValue.scale ?? viewController?.value.scale ?? 1.0) + 0.01;
 
   double _getVerticalOffsetForBottomSheet(double extent) =>
       (context.height * extent) - (context.height * _kBottomSheetMinimumExtent);
@@ -235,8 +231,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onPageBuild(PhotoViewControllerBase controller) {
     viewController ??= controller;
     if (showingBottomSheet) {
-      final verticalOffset = (context.height * bottomSheetController.size) -
-          (context.height * _kBottomSheetMinimumExtent);
+      final verticalOffset =
+          (context.height * bottomSheetController.size) - (context.height * _kBottomSheetMinimumExtent);
       controller.position = Offset(0, -verticalOffset);
     }
   }
@@ -262,9 +258,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     viewController = controller;
     dragDownPosition = details.localPosition;
     initialPhotoViewState = controller.value;
-    final isZoomed =
-        scaleStateController.scaleState == PhotoViewScaleState.zoomedIn ||
-            scaleStateController.scaleState == PhotoViewScaleState.covering;
+    final isZoomed = scaleStateController.scaleState == PhotoViewScaleState.zoomedIn ||
+        scaleStateController.scaleState == PhotoViewScaleState.covering;
     if (!showingBottomSheet && isZoomed) {
       blockGestures = true;
     }
@@ -349,8 +344,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       updatedScale = initialPhotoViewState.scale! * (1.0 - scaleReduction);
     }
 
-    final backgroundOpacity =
-        (255 * (1.0 - (scaleReduction / dragRatio))).round();
+    final backgroundOpacity = (255 * (1.0 - (scaleReduction / dragRatio))).round();
 
     viewController?.updateMultiple(
       position: initialPhotoViewState.position + delta,
@@ -494,8 +488,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _snapBottomSheet() {
-    if (bottomSheetController.size > _kBottomSheetSnapExtent ||
-        bottomSheetController.size < 0.4) {
+    if (bottomSheetController.size > _kBottomSheetSnapExtent || bottomSheetController.size < 0.4) {
       return;
     }
     isSnapping = true;
@@ -514,8 +507,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     BaseAsset asset = ref.read(timelineServiceProvider).getAsset(index);
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
     if (stackChildren != null && stackChildren.isNotEmpty) {
-      asset = stackChildren
-          .elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
+      asset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
     }
     return Container(
       width: double.infinity,
@@ -547,8 +539,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     BaseAsset asset = ref.read(timelineServiceProvider).getAsset(index);
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
     if (stackChildren != null && stackChildren.isNotEmpty) {
-      asset = stackChildren
-          .elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
+      asset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
     }
 
     final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
@@ -564,8 +555,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     return PhotoViewGalleryPageOptions(
       key: ValueKey(asset.heroTag),
       imageProvider: getFullImageProvider(asset, size: size),
-      heroAttributes:
-          PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
+      heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       tightMode: true,
       initialScale: PhotoViewComputedScale.contained * 0.999,
@@ -600,8 +590,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onTapDown: _onTapDown,
-      heroAttributes:
-          PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
+      heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       initialScale: PhotoViewComputedScale.contained * 0.99,
       maxScale: 1.0,
@@ -615,8 +604,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           asset: asset,
           image: Image(
             key: ValueKey(asset),
-            image:
-                getFullImageProvider(asset, size: Size(ctx.width, ctx.height)),
+            image: getFullImageProvider(asset, size: Size(ctx.width, ctx.height)),
             fit: BoxFit.contain,
             height: ctx.height,
             width: ctx.width,
@@ -641,8 +629,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     ref.watch(isPlayingMotionVideoProvider);
 
     // Listen for casting changes and send initial asset to the cast provider
-    ref.listen(castProvider.select((value) => value.isCasting),
-        (_, isCasting) async {
+    ref.listen(castProvider.select((value) => value.isCasting), (_, isCasting) async {
       if (!isCasting) return;
 
       final asset = ref.read(currentAssetNotifier);

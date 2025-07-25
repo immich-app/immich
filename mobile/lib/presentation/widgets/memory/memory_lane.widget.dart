@@ -47,8 +47,7 @@ class DriftMemoryLane extends ConsumerWidget {
             ),
           );
         },
-        children:
-            memories.map((memory) => DriftMemoryCard(memory: memory)).toList(),
+        children: memories.map((memory) => DriftMemoryCard(memory: memory)).toList(),
       ),
     );
   }

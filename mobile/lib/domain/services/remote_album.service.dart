@@ -44,8 +44,7 @@ class RemoteAlbumService {
       filtered = filtered
           .where(
             (album) =>
-                album.name.toLowerCase().contains(lowerQuery) ||
-                album.description.toLowerCase().contains(lowerQuery),
+                album.name.toLowerCase().contains(lowerQuery) || album.description.toLowerCase().contains(lowerQuery),
           )
           .toList();
     }
@@ -53,12 +52,10 @@ class RemoteAlbumService {
     if (userId != null) {
       switch (filterMode) {
         case QuickFilterMode.myAlbums:
-          filtered =
-              filtered.where((album) => album.ownerId == userId).toList();
+          filtered = filtered.where((album) => album.ownerId == userId).toList();
           break;
         case QuickFilterMode.sharedWithMe:
-          filtered =
-              filtered.where((album) => album.ownerId != userId).toList();
+          filtered = filtered.where((album) => album.ownerId != userId).toList();
           break;
         case QuickFilterMode.all:
           break;

@@ -33,9 +33,7 @@ class PasswordInput extends HookConsumerWidget {
         suffixIcon: IconButton(
           onPressed: () => isPasswordVisible.value = !isPasswordVisible.value,
           icon: Icon(
-            isPasswordVisible.value
-                ? Icons.visibility_off_sharp
-                : Icons.visibility_sharp,
+            isPasswordVisible.value ? Icons.visibility_off_sharp : Icons.visibility_sharp,
           ),
         ),
       ),

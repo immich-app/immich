@@ -61,9 +61,7 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
       ref.read(websocketProvider.notifier).stopListenToOldEvents();
       ref.read(websocketProvider.notifier).startListeningToBetaEvents();
 
-      final permission = await ref
-          .read(galleryPermissionNotifier.notifier)
-          .requestGalleryPermission();
+      final permission = await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
 
       if (permission.isGranted) {
         await ref.read(backgroundSyncProvider).syncLocal(full: true);
@@ -138,9 +136,7 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
                       child: ElevatedButton(
                         onPressed: () {
                           context.replaceRoute(
-                            widget.switchingToBeta
-                                ? const TabShellRoute()
-                                : const TabControllerRoute(),
+                            widget.switchingToBeta ? const TabShellRoute() : const TabControllerRoute(),
                           );
                         },
                         child: const Text("Continue"),

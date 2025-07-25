@@ -10,7 +10,7 @@ enum ImmichColorPreset {
   lime,
   green,
   cyan,
-  slateGray
+  slateGray,
 }
 
 const ImmichColorPreset defaultColorPreset = ImmichColorPreset.indigo;

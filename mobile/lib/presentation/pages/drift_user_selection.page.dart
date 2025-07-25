@@ -14,8 +14,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 // TODO: Refactor this provider when we have user provider/service/repository pattern in place
-final driftUsersProvider =
-    FutureProvider.autoDispose<List<UserDto>>((ref) async {
+final driftUsersProvider = FutureProvider.autoDispose<List<UserDto>>((ref) async {
   final drift = ref.watch(driftProvider);
   final currentUser = ref.watch(currentUserProvider);
 
@@ -57,8 +56,7 @@ class DriftUserSelectionPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<UserDto>> suggestedShareUsers =
-        ref.watch(driftUsersProvider);
+    final AsyncValue<List<UserDto>> suggestedShareUsers = ref.watch(driftUsersProvider);
     final sharedUsersList = useState<Set<UserDto>>({});
 
     addNewUsersHandler() {
@@ -174,8 +172,7 @@ class DriftUserSelectionPage extends HookConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed:
-                sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
+            onPressed: sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
             child: const Text(
               "add",
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
@@ -186,16 +183,13 @@ class DriftUserSelectionPage extends HookConsumerWidget {
       body: suggestedShareUsers.widgetWhen(
         onData: (users) {
           // Get shared users for this album from the database
-          final sharedUsers =
-              ref.watch(remoteAlbumSharedUsersProvider(album.id));
+          final sharedUsers = ref.watch(remoteAlbumSharedUsersProvider(album.id));
 
           return sharedUsers.when(
             data: (albumSharedUsers) {
               // Filter out users that are already shared with this album and the owner
               final filteredUsers = users.where((user) {
-                return !albumSharedUsers
-                        .any((sharedUser) => sharedUser.id == user.id) &&
-                    user.id != album.ownerId;
+                return !albumSharedUsers.any((sharedUser) => sharedUser.id == user.id) && user.id != album.ownerId;
               }).toList();
 
               return buildUserList(filteredUsers);
@@ -203,8 +197,7 @@ class DriftUserSelectionPage extends HookConsumerWidget {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) {
               // If we can't load shared users, just filter out the owner
-              final filteredUsers =
-                  users.where((user) => user.id != album.ownerId).toList();
+              final filteredUsers = users.where((user) => user.id != album.ownerId).toList();
               return buildUserList(filteredUsers);
             },
           );

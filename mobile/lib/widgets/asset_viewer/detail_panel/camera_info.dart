@@ -24,10 +24,7 @@ class CameraInfo extends StatelessWidget {
         "${exifInfo.make} ${exifInfo.model}",
         style: context.textTheme.labelLarge,
       ),
-      subtitle: exifInfo.f != null ||
-              exifInfo.exposureSeconds != null ||
-              exifInfo.mm != null ||
-              exifInfo.iso != null
+      subtitle: exifInfo.f != null || exifInfo.exposureSeconds != null || exifInfo.mm != null || exifInfo.iso != null
           ? Text(
               "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO ${exifInfo.iso ?? ''} ",
               style: context.textTheme.bodySmall,

@@ -74,8 +74,7 @@ class BackupService {
     }
   }
 
-  Future<void> _saveDuplicatedAssetIds(List<String> deviceAssetIds) =>
-      _assetRepository.transaction(
+  Future<void> _saveDuplicatedAssetIds(List<String> deviceAssetIds) => _assetRepository.transaction(
         () => _assetRepository.upsertDuplicatedAssets(deviceAssetIds),
       );
 
@@ -127,8 +126,7 @@ class BackupService {
         continue;
       }
 
-      if (useTimeFilter &&
-          localAlbum.modifiedAt.isBefore(backupAlbum.lastBackup)) {
+      if (useTimeFilter && localAlbum.modifiedAt.isBefore(backupAlbum.lastBackup)) {
         continue;
       }
       final List<Asset> assets;
@@ -189,8 +187,7 @@ class BackupService {
     final Set<String> existing = {};
     try {
       final String deviceId = Store.get(StoreKey.deviceId);
-      final CheckExistingAssetsResponseDto? duplicates =
-          await _apiService.assetsApi.checkExistingAssets(
+      final CheckExistingAssetsResponseDto? duplicates = await _apiService.assetsApi.checkExistingAssets(
         CheckExistingAssetsDto(
           deviceAssetIds: candidates.map((c) => c.asset.localId!).toList(),
           deviceId: deviceId,
@@ -215,8 +212,7 @@ class BackupService {
   }
 
   Future<bool> _checkPermissions() async {
-    if (Platform.isAndroid &&
-        !(await pm.Permission.accessMediaLocation.status).isGranted) {
+    if (Platform.isAndroid && !(await pm.Permission.accessMediaLocation.status).isGranted) {
       // double check that permission is granted here, to guard against
       // uploading corrupt assets without EXIF information
       _log.warning("Media location permission is not granted. "
@@ -255,8 +251,7 @@ class BackupService {
     required void Function(CurrentUploadAsset asset) onCurrentAsset,
     required void Function(ErrorUploadAsset error) onError,
   }) async {
-    final bool isIgnoreIcloudAssets =
-        _appSetting.getSetting(AppSettingsEnum.ignoreIcloudAssets);
+    final bool isIgnoreIcloudAssets = _appSetting.getSetting(AppSettingsEnum.ignoreIcloudAssets);
     final shouldSyncAlbums = _appSetting.getSetting(AppSettingsEnum.syncAlbums);
     final String deviceId = Store.get(StoreKey.deviceId);
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
@@ -279,8 +274,7 @@ class BackupService {
       File? livePhotoFile;
 
       try {
-        final isAvailableLocally =
-            await asset.local!.isLocallyAvailable(isOrigin: true);
+        final isAvailableLocally = await asset.local!.isLocallyAvailable(isOrigin: true);
 
         // Handle getting files from iCloud
         if (!isAvailableLocally && Platform.isIOS) {
@@ -292,17 +286,14 @@ class BackupService {
           onCurrentAsset(
             CurrentUploadAsset(
               id: asset.localId!,
-              fileCreatedAt: asset.fileCreatedAt.year == 1970
-                  ? asset.fileModifiedAt
-                  : asset.fileCreatedAt,
+              fileCreatedAt: asset.fileCreatedAt.year == 1970 ? asset.fileModifiedAt : asset.fileCreatedAt,
               fileName: asset.fileName,
               fileType: _getAssetType(asset.type),
               iCloudAsset: true,
             ),
           );
 
-          file =
-              await asset.local!.loadFile(progressHandler: pmProgressHandler);
+          file = await asset.local!.loadFile(progressHandler: pmProgressHandler);
           if (asset.local!.isLivePhoto) {
             livePhotoFile = await asset.local!.loadFile(
               withSubtype: true,
@@ -310,18 +301,15 @@ class BackupService {
             );
           }
         } else {
-          file =
-              await asset.local!.originFile.timeout(const Duration(seconds: 5));
+          file = await asset.local!.originFile.timeout(const Duration(seconds: 5));
 
           if (asset.local!.isLivePhoto) {
-            livePhotoFile = await asset.local!.originFileWithSubtype
-                .timeout(const Duration(seconds: 5));
+            livePhotoFile = await asset.local!.originFileWithSubtype.timeout(const Duration(seconds: 5));
           }
         }
 
         if (file != null) {
-          String? originalFileName =
-              await _assetMediaRepository.getOriginalFilename(asset.localId!);
+          String? originalFileName = await _assetMediaRepository.getOriginalFilename(asset.localId!);
           originalFileName ??= asset.fileName;
 
           if (asset.local!.isLivePhoto) {
@@ -349,10 +337,8 @@ class BackupService {
           baseRequest.headers.addAll(ApiService.getRequestHeaders());
           baseRequest.fields['deviceAssetId'] = asset.localId!;
           baseRequest.fields['deviceId'] = deviceId;
-          baseRequest.fields['fileCreatedAt'] =
-              asset.fileCreatedAt.toUtc().toIso8601String();
-          baseRequest.fields['fileModifiedAt'] =
-              asset.fileModifiedAt.toUtc().toIso8601String();
+          baseRequest.fields['fileCreatedAt'] = asset.fileCreatedAt.toUtc().toIso8601String();
+          baseRequest.fields['fileModifiedAt'] = asset.fileModifiedAt.toUtc().toIso8601String();
           baseRequest.fields['isFavorite'] = asset.isFavorite.toString();
           baseRequest.fields['duration'] = asset.duration.toString();
           baseRequest.files.add(assetRawUploadData);
@@ -360,9 +346,7 @@ class BackupService {
           onCurrentAsset(
             CurrentUploadAsset(
               id: asset.localId!,
-              fileCreatedAt: asset.fileCreatedAt.year == 1970
-                  ? asset.fileModifiedAt
-                  : asset.fileCreatedAt,
+              fileCreatedAt: asset.fileCreatedAt.year == 1970 ? asset.fileModifiedAt : asset.fileCreatedAt,
               fileName: originalFileName,
               fileType: _getAssetType(asset.type),
               fileSize: file.lengthSync(),
@@ -389,8 +373,7 @@ class BackupService {
             cancellationToken: cancelToken,
           );
 
-          final responseBody =
-              jsonDecode(await response.stream.bytesToString());
+          final responseBody = jsonDecode(await response.stream.bytesToString());
 
           if (![200, 201].contains(response.statusCode)) {
             final error = responseBody;

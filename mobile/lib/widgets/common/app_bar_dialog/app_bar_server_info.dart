@@ -173,12 +173,10 @@ class AppBarServerInfo extends HookConsumerWidget {
                         verticalOffset: 0,
                         decoration: BoxDecoration(
                           color: context.primaryColor.withValues(alpha: 0.9),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(10)),
+                          borderRadius: const BorderRadius.all(Radius.circular(10)),
                         ),
                         textStyle: TextStyle(
-                          color:
-                              context.isDarkTheme ? Colors.black : Colors.white,
+                          color: context.isDarkTheme ? Colors.black : Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                         message: getServerUrl() ?? '--',

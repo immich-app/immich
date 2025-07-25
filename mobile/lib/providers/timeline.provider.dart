@@ -18,8 +18,7 @@ final singleUserTimelineProvider = StreamProvider.family<RenderList, String?>(
   dependencies: [localeProvider],
 );
 
-final multiUsersTimelineProvider =
-    StreamProvider.family<RenderList, List<String>>(
+final multiUsersTimelineProvider = StreamProvider.family<RenderList, List<String>>(
   (ref, userIds) {
     ref.watch(localeProvider);
     final timelineService = ref.watch(timelineServiceProvider);
@@ -28,8 +27,7 @@ final multiUsersTimelineProvider =
   dependencies: [localeProvider],
 );
 
-final albumTimelineProvider =
-    StreamProvider.autoDispose.family<RenderList, int>((ref, id) {
+final albumTimelineProvider = StreamProvider.autoDispose.family<RenderList, int>((ref, id) {
   final album = ref.watch(albumWatcher(id)).value;
   final timelineService = ref.watch(timelineServiceProvider);
 
@@ -65,8 +63,7 @@ final assetSelectionTimelineProvider = StreamProvider<RenderList>((ref) {
   return timelineService.watchAssetSelectionTimeline();
 });
 
-final assetsTimelineProvider =
-    FutureProvider.family<RenderList, List<Asset>>((ref, assets) {
+final assetsTimelineProvider = FutureProvider.family<RenderList, List<Asset>>((ref, assets) {
   final timelineService = ref.watch(timelineServiceProvider);
   return timelineService.getTimelineFromAssets(
     assets,

@@ -276,8 +276,7 @@ class ScrollLabel extends StatelessWidget {
   final Text child;
 
   final BoxConstraints? constraints;
-  static const BoxConstraints _defaultConstraints =
-      BoxConstraints.tightFor(width: 72.0, height: 28.0);
+  static const BoxConstraints _defaultConstraints = BoxConstraints.tightFor(width: 72.0, height: 28.0);
 
   const ScrollLabel({
     super.key,
@@ -308,8 +307,7 @@ class ScrollLabel extends StatelessWidget {
   }
 }
 
-class DraggableScrollbarState extends State<DraggableScrollbar>
-    with TickerProviderStateMixin {
+class DraggableScrollbarState extends State<DraggableScrollbar> with TickerProviderStateMixin {
   late double _barOffset;
   late double _viewOffset;
   late bool _isDragInProcess;
@@ -356,8 +354,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
     super.dispose();
   }
 
-  double get barMaxScrollExtent =>
-      context.size!.height - widget.heightScrollThumb;
+  double get barMaxScrollExtent => context.size!.height - widget.heightScrollThumb;
 
   double get barMinScrollExtent => 0;
 
@@ -447,8 +444,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar>
         }
       }
 
-      if (notification is ScrollUpdateNotification ||
-          notification is OverscrollNotification) {
+      if (notification is ScrollUpdateNotification || notification is OverscrollNotification) {
         if (_thumbAnimationController.status != AnimationStatus.forward) {
           _thumbAnimationController.forward();
         }
@@ -627,8 +623,7 @@ class SlideFadeTransition extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: animation,
-      builder: (context, child) =>
-          animation.value == 0.0 ? const SizedBox() : child!,
+      builder: (context, child) => animation.value == 0.0 ? const SizedBox() : child!,
       child: SlideTransition(
         position: Tween(
           begin: const Offset(0.3, 0.0),
