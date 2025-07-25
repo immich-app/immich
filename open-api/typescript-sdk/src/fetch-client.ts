@@ -1199,6 +1199,7 @@ export type SharedLinkResponseDto = {
     key: string;
     password: string | null;
     showMetadata: boolean;
+    slug: string | null;
     token?: string | null;
     "type": SharedLinkType;
     userId: string;
@@ -1208,10 +1209,11 @@ export type SharedLinkCreateDto = {
     allowDownload?: boolean;
     allowUpload?: boolean;
     assetIds?: string[];
-    description?: string;
+    description?: string | null;
     expiresAt?: string | null;
-    password?: string;
+    password?: string | null;
     showMetadata?: boolean;
+    slug?: string | null;
     "type": SharedLinkType;
 };
 export type SharedLinkEditDto = {
@@ -1221,10 +1223,11 @@ export type SharedLinkEditDto = {
     Setting this flag and not sending expiryAt is considered as null instead.
     Clients that can send null values can ignore this. */
     changeExpiryTime?: boolean;
-    description?: string;
+    description?: string | null;
     expiresAt?: string | null;
-    password?: string;
+    password?: string | null;
     showMetadata?: boolean;
+    slug?: string | null;
 };
 export type AssetIdsResponseDto = {
     assetId: string;
