@@ -14403,7 +14403,11 @@
       "SyncUserMetadataDeleteV1": {
         "properties": {
           "key": {
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMetadataKey"
+              }
+            ]
           },
           "userId": {
             "type": "string"
@@ -14418,7 +14422,11 @@
       "SyncUserMetadataV1": {
         "properties": {
           "key": {
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMetadataKey"
+              }
+            ]
           },
           "userId": {
             "type": "string"
@@ -16131,6 +16139,14 @@
           "licenseKey"
         ],
         "type": "object"
+      },
+      "UserMetadataKey": {
+        "enum": [
+          "preferences",
+          "license",
+          "onboarding"
+        ],
+        "type": "string"
       },
       "UserPreferencesResponseDto": {
         "properties": {

@@ -301,14 +301,16 @@ export class SyncAssetFaceDeleteV1 {
 @ExtraModel()
 export class SyncUserMetadataV1 {
   userId!: string;
-  key!: string;
+  @ValidateEnum({ enum: UserMetadataKey, name: 'UserMetadataKey' })
+  key!: UserMetadataKey;
   value!: UserMetadata[UserMetadataKey];
 }
 
 @ExtraModel()
 export class SyncUserMetadataDeleteV1 {
   userId!: string;
-  key!: string;
+  @ValidateEnum({ enum: UserMetadataKey, name: 'UserMetadataKey' })
+  key!: UserMetadataKey;
 }
 
 @ExtraModel()

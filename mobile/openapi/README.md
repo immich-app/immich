@@ -557,6 +557,7 @@ Class | Method | HTTP request | Description
  - [UserAdminUpdateDto](doc//UserAdminUpdateDto.md)
  - [UserAvatarColor](doc//UserAvatarColor.md)
  - [UserLicense](doc//UserLicense.md)
+ - [UserMetadataKey](doc//UserMetadataKey.md)
  - [UserPreferencesResponseDto](doc//UserPreferencesResponseDto.md)
  - [UserPreferencesUpdateDto](doc//UserPreferencesUpdateDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
