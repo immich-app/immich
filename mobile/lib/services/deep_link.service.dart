@@ -1,14 +1,12 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:immich_mobile/domain/services/asset.service.dart'
-    as beta_asset_service;
+import 'package:immich_mobile/domain/services/asset.service.dart' as beta_asset_service;
 import 'package:immich_mobile/domain/services/memory.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart'
-    as beta_asset_provider;
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart' as beta_asset_provider;
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
@@ -69,10 +67,7 @@ class DeepLinkService {
       // we need something to segue back to if the app was cold started
       // TODO: use MainTimelineRoute this when beta is default
 
-      if (isColdStart)
-        (Store.isBetaTimelineEnabled)
-            ? const MainTimelineRoute()
-            : const PhotosRoute(),
+      if (isColdStart) (Store.isBetaTimelineEnabled) ? const MainTimelineRoute() : const PhotosRoute(),
       route,
     ]);
   }
@@ -169,8 +164,7 @@ class DeepLinkService {
       }
 
       _currentAsset.set(asset);
-      final renderList =
-          await RenderList.fromAssets([asset], GroupAssetsBy.auto);
+      final renderList = await RenderList.fromAssets([asset], GroupAssetsBy.auto);
 
       return GalleryViewerRoute(
         renderList: renderList,
