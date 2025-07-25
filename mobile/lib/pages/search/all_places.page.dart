@@ -13,8 +13,7 @@ class AllPlacesPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AsyncValue<List<SearchCuratedContent>> places =
-        ref.watch(getAllPlacesProvider);
+    AsyncValue<List<SearchCuratedContent>> places = ref.watch(getAllPlacesProvider);
 
     return Scaffold(
       appBar: AppBar(

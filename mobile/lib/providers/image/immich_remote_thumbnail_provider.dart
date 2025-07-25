@@ -13,8 +13,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 /// The remote image provider
-class ImmichRemoteThumbnailProvider
-    extends ImageProvider<ImmichRemoteThumbnailProvider> {
+class ImmichRemoteThumbnailProvider extends ImageProvider<ImmichRemoteThumbnailProvider> {
   /// The [Asset.remoteId] of the asset to fetch
   final String assetId;
 

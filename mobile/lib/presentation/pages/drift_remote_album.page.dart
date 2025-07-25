@@ -37,8 +37,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   }
 
   Future<void> addAssets(BuildContext context) async {
-    final albumAssets =
-        await ref.read(remoteAlbumProvider.notifier).getAssets(widget.album.id);
+    final albumAssets = await ref.read(remoteAlbumProvider.notifier).getAssets(widget.album.id);
 
     final newAssets = await context.pushRoute<Set<BaseAsset>>(
       DriftAssetSelectionTimelineRoute(
@@ -82,9 +81,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     }
 
     try {
-      await ref
-          .read(remoteAlbumProvider.notifier)
-          .addUsers(widget.album.id, newUsers);
+      await ref.read(remoteAlbumProvider.notifier).addUsers(widget.album.id, newUsers);
 
       if (newUsers.isNotEmpty) {
         ImmichToast.show(
@@ -157,9 +154,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
     if (confirmed == true) {
       try {
-        await ref
-            .read(remoteAlbumProvider.notifier)
-            .deleteAlbum(widget.album.id);
+        await ref.read(remoteAlbumProvider.notifier).deleteAlbum(widget.album.id);
 
         ImmichToast.show(
           context: context,
@@ -237,9 +232,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       overrides: [
         timelineServiceProvider.overrideWith(
           (ref) {
-            final timelineService = ref
-                .watch(timelineFactoryProvider)
-                .remoteAlbum(albumId: widget.album.id);
+            final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: widget.album.id);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },

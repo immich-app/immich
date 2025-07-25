@@ -18,25 +18,20 @@ class MapThemeOverride extends StatefulHookConsumerWidget {
   ConsumerState createState() => _MapThemeOverrideState();
 }
 
-class _MapThemeOverrideState extends ConsumerState<MapThemeOverride>
-    with WidgetsBindingObserver {
+class _MapThemeOverrideState extends ConsumerState<MapThemeOverride> with WidgetsBindingObserver {
   late ThemeMode _theme;
   bool _isDarkTheme = false;
 
-  bool get _isSystemDark =>
-      WidgetsBinding.instance.platformDispatcher.platformBrightness ==
-      Brightness.dark;
+  bool get _isSystemDark => WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.dark;
 
   bool checkDarkTheme() {
-    return _theme == ThemeMode.dark ||
-        _theme == ThemeMode.system && _isSystemDark;
+    return _theme == ThemeMode.dark || _theme == ThemeMode.system && _isSystemDark;
   }
 
   @override
   void initState() {
     super.initState();
-    _theme = widget.themeMode ??
-        ref.read(mapStateNotifierProvider.select((v) => v.themeMode));
+    _theme = widget.themeMode ?? ref.read(mapStateNotifierProvider.select((v) => v.themeMode));
     setState(() {
       _isDarkTheme = checkDarkTheme();
     });
@@ -70,8 +65,7 @@ class _MapThemeOverrideState extends ConsumerState<MapThemeOverride>
 
   @override
   Widget build(BuildContext context) {
-    _theme = widget.themeMode ??
-        ref.watch(mapStateNotifierProvider.select((v) => v.themeMode));
+    _theme = widget.themeMode ?? ref.watch(mapStateNotifierProvider.select((v) => v.themeMode));
     var appTheme = ref.watch(immichThemeProvider);
     final locale = ref.watch(localeProvider);
 

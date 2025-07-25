@@ -20,8 +20,7 @@ class DriftPlaceDetailPage extends StatelessWidget {
       overrides: [
         timelineServiceProvider.overrideWith(
           (ref) {
-            final timelineService =
-                ref.watch(timelineFactoryProvider).place(place);
+            final timelineService = ref.watch(timelineFactoryProvider).place(place);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },

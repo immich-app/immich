@@ -37,17 +37,13 @@ class FixedSegmentBuilder extends SegmentBuilder {
         GroupAssetsBy.month => HeaderType.month,
         GroupAssetsBy.day ||
         GroupAssetsBy.auto =>
-          bucket is TimeBucket && bucket.date.month != previousDate?.month
-              ? HeaderType.monthAndDay
-              : HeaderType.day,
+          bucket is TimeBucket && bucket.date.month != previousDate?.month ? HeaderType.monthAndDay : HeaderType.day,
         GroupAssetsBy.none => HeaderType.none,
       };
       final headerExtent = SegmentBuilder.headerExtent(timelineHeader);
 
       final segmentStartOffset = startOffset;
-      startOffset += headerExtent +
-          (tileHeight * numberOfRows) +
-          spacing * (numberOfRows - 1);
+      startOffset += headerExtent + (tileHeight * numberOfRows) + spacing * (numberOfRows - 1);
       final segmentEndOffset = startOffset;
 
       segments.add(

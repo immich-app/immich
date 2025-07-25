@@ -18,15 +18,12 @@ class MockHttpOverrides extends HttpOverrides {
 
     // Request mocks
     when(() => request.headers).thenAnswer((_) => headers);
-    when(() => request.close())
-        .thenAnswer((_) => Future<HttpClientResponse>.value(response));
+    when(() => request.close()).thenAnswer((_) => Future<HttpClientResponse>.value(response));
 
     // Response mocks
     when(() => response.statusCode).thenReturn(HttpStatus.ok);
-    when(() => response.compressionState)
-        .thenReturn(HttpClientResponseCompressionState.decompressed);
-    when(() => response.contentLength)
-        .thenAnswer((_) => kTransparentImage.length);
+    when(() => response.compressionState).thenReturn(HttpClientResponseCompressionState.decompressed);
+    when(() => response.contentLength).thenAnswer((_) => kTransparentImage.length);
     when(
       () => response.listen(
         captureAny(),
@@ -35,18 +32,15 @@ class MockHttpOverrides extends HttpOverrides {
         onError: captureAny(named: 'onError'),
       ),
     ).thenAnswer((invocation) {
-      final onData =
-          invocation.positionalArguments[0] as void Function(List<int>);
+      final onData = invocation.positionalArguments[0] as void Function(List<int>);
 
       final onDone = invocation.namedArguments[#onDone] as void Function();
 
-      final onError = invocation.namedArguments[#onError] as void
-          Function(Object, [StackTrace]);
+      final onError = invocation.namedArguments[#onError] as void Function(Object, [StackTrace]);
 
       final cancelOnError = invocation.namedArguments[#cancelOnError] as bool;
 
-      return Stream<List<int>>.fromIterable([kTransparentImage.toList()])
-          .listen(
+      return Stream<List<int>>.fromIterable([kTransparentImage.toList()]).listen(
         onData,
         onDone: onDone,
         onError: onError,

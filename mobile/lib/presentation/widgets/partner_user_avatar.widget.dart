@@ -13,8 +13,7 @@ class PartnerUserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final url =
-        "${Store.get(StoreKey.serverEndpoint)}/users/${partner.id}/profile-image";
+    final url = "${Store.get(StoreKey.serverEndpoint)}/users/${partner.id}/profile-image";
     final nameFirstLetter = partner.name.isNotEmpty ? partner.name[0] : "";
     return CircleAvatar(
       radius: 16,

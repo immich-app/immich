@@ -23,8 +23,7 @@ class BackupVerification extends _$BackupVerification {
       state = true;
       final backupState = ref.read(backupProvider);
 
-      if (backupState.allUniqueAssets.length >
-          backupState.selectedAlbumsBackupAssetsIds.length) {
+      if (backupState.allUniqueAssets.length > backupState.selectedAlbumsBackupAssetsIds.length) {
         if (context.mounted) {
           ImmichToast.show(
             context: context,
@@ -48,9 +47,7 @@ class BackupVerification extends _$BackupVerification {
       WakelockPlus.enable();
 
       const limit = 100;
-      final toDelete = await ref
-          .read(backupVerificationServiceProvider)
-          .findWronglyBackedUpAssets(limit: limit);
+      final toDelete = await ref.read(backupVerificationServiceProvider).findWronglyBackedUpAssets(limit: limit);
       if (toDelete.isEmpty) {
         if (context.mounted) {
           ImmichToast.show(
@@ -67,8 +64,7 @@ class BackupVerification extends _$BackupVerification {
               onOk: () => _performDeletion(context, toDelete),
               title: "Corrupt backups!",
               ok: "Delete",
-              content:
-                  "Found ${toDelete.length} (max $limit at once) corrupt asset backups. "
+              content: "Found ${toDelete.length} (max $limit at once) corrupt asset backups. "
                   "Run the check again to find more.\n"
                   "Do you want to delete the corrupt asset backups now?",
             ),

@@ -13,8 +13,7 @@ class IsarLogRepository extends IsarDatabaseRepository {
   }
 
   Future<List<LogMessage>> getAll() async {
-    final logs =
-        await _db.loggerMessages.where().sortByCreatedAtDesc().findAll();
+    final logs = await _db.loggerMessages.where().sortByCreatedAtDesc().findAll();
     return logs.map((l) => l.toDto()).toList();
   }
 
@@ -28,8 +27,7 @@ class IsarLogRepository extends IsarDatabaseRepository {
 
   Future<bool> insertAll(Iterable<LogMessage> logs) async {
     await transaction(() async {
-      final logEntities =
-          logs.map((log) => LoggerMessage.fromDto(log)).toList();
+      final logEntities = logs.map((log) => LoggerMessage.fromDto(log)).toList();
       await _db.loggerMessages.putAll(logEntities);
     });
     return true;

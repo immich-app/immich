@@ -24,10 +24,7 @@ void handleShareAssets(
   showDialog(
     context: context,
     builder: (BuildContext buildContext) {
-      ref
-          .watch(shareServiceProvider)
-          .shareAssets(selection.toList(), context)
-          .then(
+      ref.watch(shareServiceProvider).shareAssets(selection.toList(), context).then(
         (bool status) {
           if (!status) {
             ImmichToast.show(
@@ -56,14 +53,10 @@ Future<void> handleArchiveAssets(
 }) async {
   if (selection.isNotEmpty) {
     shouldArchive ??= !selection.every((a) => a.isArchived);
-    await ref
-        .read(assetProvider.notifier)
-        .toggleArchive(selection, shouldArchive);
+    await ref.read(assetProvider.notifier).toggleArchive(selection, shouldArchive);
     final message = shouldArchive
-        ? 'moved_to_archive'
-            .t(context: context, args: {'count': selection.length})
-        : 'moved_to_library'
-            .t(context: context, args: {'count': selection.length});
+        ? 'moved_to_archive'.t(context: context, args: {'count': selection.length})
+        : 'moved_to_library'.t(context: context, args: {'count': selection.length});
     if (context.mounted) {
       ImmichToast.show(
         context: context,
@@ -83,9 +76,7 @@ Future<void> handleFavoriteAssets(
 }) async {
   if (selection.isNotEmpty) {
     shouldFavorite ??= !selection.every((a) => a.isFavorite);
-    await ref
-        .watch(assetProvider.notifier)
-        .toggleFavorite(selection, shouldFavorite);
+    await ref.watch(assetProvider.notifier).toggleFavorite(selection, shouldFavorite);
 
     final assetOrAssets = selection.length > 1 ? 'assets' : 'asset';
     final toastMessage = shouldFavorite
@@ -140,8 +131,7 @@ Future<void> handleEditLocation(
   if (selection.length == 1) {
     final asset = selection.first;
     final assetWithExif = await ref.watch(assetServiceProvider).loadExif(asset);
-    if (assetWithExif.exifInfo?.latitude != null &&
-        assetWithExif.exifInfo?.longitude != null) {
+    if (assetWithExif.exifInfo?.latitude != null && assetWithExif.exifInfo?.longitude != null) {
       initialLatLng = LatLng(
         assetWithExif.exifInfo!.latitude!,
         assetWithExif.exifInfo!.longitude!,
@@ -168,9 +158,7 @@ Future<void> handleSetAssetsVisibility(
   List<Asset> selection,
 ) async {
   if (selection.isNotEmpty) {
-    await ref
-        .watch(assetProvider.notifier)
-        .setLockedView(selection, visibility);
+    await ref.watch(assetProvider.notifier).setLockedView(selection, visibility);
 
     final assetOrAssets = selection.length > 1 ? 'assets' : 'asset';
     final toastMessage = visibility == AssetVisibilityEnum.locked

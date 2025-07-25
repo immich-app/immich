@@ -11,8 +11,7 @@ class MemoryEpilogue extends StatefulWidget {
   State<MemoryEpilogue> createState() => _MemoryEpilogueState();
 }
 
-class _MemoryEpilogueState extends State<MemoryEpilogue>
-    with TickerProviderStateMixin {
+class _MemoryEpilogueState extends State<MemoryEpilogue> with TickerProviderStateMixin {
   late final _animationController = AnimationController(
     vsync: this,
     duration: const Duration(
@@ -50,9 +49,7 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
               children: [
                 Icon(
                   Icons.check_circle_outline_sharp,
-                  color: context.isDarkTheme
-                      ? context.colorScheme.primary
-                      : context.colorScheme.inversePrimary,
+                  color: context.isDarkTheme ? context.colorScheme.primary : context.colorScheme.inversePrimary,
                   size: 64.0,
                 ),
                 const SizedBox(height: 16.0),
@@ -75,9 +72,7 @@ class _MemoryEpilogueState extends State<MemoryEpilogue>
                   child: Text(
                     "memories_start_over",
                     style: context.textTheme.displayMedium?.copyWith(
-                      color: context.isDarkTheme
-                          ? context.colorScheme.primary
-                          : context.colorScheme.inversePrimary,
+                      color: context.isDarkTheme ? context.colorScheme.primary : context.colorScheme.inversePrimary,
                     ),
                   ).tr(),
                 ),

@@ -60,8 +60,7 @@ class StackService {
 
         removeAssets.add(asset);
       }
-      await _assetRepository
-          .transaction(() => _assetRepository.updateAll(removeAssets));
+      await _assetRepository.transaction(() => _assetRepository.updateAll(removeAssets));
     } catch (error) {
       debugPrint("Error while deleting stack: $error");
     }

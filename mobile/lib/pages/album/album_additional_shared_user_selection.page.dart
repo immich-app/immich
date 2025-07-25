@@ -21,8 +21,7 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<UserDto>> suggestedShareUsers =
-        ref.watch(otherUsersProvider);
+    final AsyncValue<List<UserDto>> suggestedShareUsers = ref.watch(otherUsersProvider);
     final sharedUsersList = useState<Set<UserDto>>({});
 
     addNewUsersHandler() {
@@ -138,8 +137,7 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed:
-                sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
+            onPressed: sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
             child: const Text(
               "add",
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),

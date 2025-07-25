@@ -43,12 +43,9 @@ class LoginForm extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final emailController =
-        useTextEditingController.fromValue(TextEditingValue.empty);
-    final passwordController =
-        useTextEditingController.fromValue(TextEditingValue.empty);
-    final serverEndpointController =
-        useTextEditingController.fromValue(TextEditingValue.empty);
+    final emailController = useTextEditingController.fromValue(TextEditingValue.empty);
+    final passwordController = useTextEditingController.fromValue(TextEditingValue.empty);
+    final serverEndpointController = useTextEditingController.fromValue(TextEditingValue.empty);
     final emailFocusNode = useFocusNode();
     final passwordFocusNode = useFocusNode();
     final serverEndpointFocusNode = useFocusNode();
@@ -102,8 +99,7 @@ class LoginForm extends HookConsumerWidget {
 
       try {
         isLoadingServer.value = true;
-        final endpoint =
-            await ref.read(authProvider.notifier).validateServerUrl(serverUrl);
+        final endpoint = await ref.read(authProvider.notifier).validateServerUrl(serverUrl);
 
         // Fetch and load server config and features
         await ref.read(serverInfoProvider.notifier).getServerInfo();
@@ -114,9 +110,7 @@ class LoginForm extends HookConsumerWidget {
 
         isOauthEnable.value = features.oauthEnabled;
         isPasswordLoginEnable.value = features.passwordLogin;
-        oAuthButtonLabel.value = config.oauthButtonText.isNotEmpty
-            ? config.oauthButtonText
-            : 'OAuth';
+        oAuthButtonLabel.value = config.oauthButtonText.isNotEmpty ? config.oauthButtonText : 'OAuth';
 
         serverEndpoint.value = endpoint;
       } on ApiException catch (e) {
@@ -196,9 +190,7 @@ class LoginForm extends HookConsumerWidget {
         } else {
           final isBeta = Store.isBetaTimelineEnabled;
           if (isBeta) {
-            await ref
-                .read(galleryPermissionNotifier.notifier)
-                .requestGalleryPermission();
+            await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
             await runNewSync(ref);
             context.replaceRoute(const TabShellRoute());
             return;
@@ -218,8 +210,7 @@ class LoginForm extends HookConsumerWidget {
     }
 
     String generateRandomString(int length) {
-      const chars =
-          'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+      const chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
       final random = Random.secure();
       return String.fromCharCodes(
         Iterable.generate(
@@ -308,9 +299,7 @@ class LoginForm extends HookConsumerWidget {
               ref.watch(backupProvider.notifier).resumeBackup();
             }
             if (isBeta) {
-              await ref
-                  .read(galleryPermissionNotifier.notifier)
-                  .requestGalleryPermission();
+              await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
               await runNewSync(ref);
               context.replaceRoute(const TabShellRoute());
               return;
@@ -383,8 +372,7 @@ class LoginForm extends HookConsumerWidget {
                       ),
                     ),
                   ),
-                  onPressed:
-                      isLoadingServer.value ? null : getServerAuthSettings,
+                  onPressed: isLoadingServer.value ? null : getServerAuthSettings,
                   icon: const Icon(Icons.arrow_forward_rounded),
                   label: const Text(
                     'next',
@@ -412,14 +400,12 @@ class LoginForm extends HookConsumerWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color:
-                context.isDarkTheme ? Colors.red.shade700 : Colors.red.shade100,
+            color: context.isDarkTheme ? Colors.red.shade700 : Colors.red.shade100,
             borderRadius: const BorderRadius.all(
               Radius.circular(8),
             ),
             border: Border.all(
-              color:
-                  context.isDarkTheme ? Colors.red.shade900 : Colors.red[200]!,
+              color: context.isDarkTheme ? Colors.red.shade900 : Colors.red[200]!,
             ),
           ),
           child: Text(
@@ -465,8 +451,7 @@ class LoginForm extends HookConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 18),
-                      if (isPasswordLoginEnable.value)
-                        LoginButton(onPressed: login),
+                      if (isPasswordLoginEnable.value) LoginButton(onPressed: login),
                       if (isOauthEnable.value) ...[
                         if (isPasswordLoginEnable.value)
                           Padding(
@@ -474,9 +459,7 @@ class LoginForm extends HookConsumerWidget {
                               horizontal: 16.0,
                             ),
                             child: Divider(
-                              color: context.isDarkTheme
-                                  ? Colors.white
-                                  : Colors.black,
+                              color: context.isDarkTheme ? Colors.white : Colors.black,
                             ),
                           ),
                         OAuthLoginButton(
@@ -503,8 +486,7 @@ class LoginForm extends HookConsumerWidget {
       );
     }
 
-    final serverSelectionOrLogin =
-        serverEndpoint.value == null ? buildSelectServer() : buildLogin();
+    final serverSelectionOrLogin = serverEndpoint.value == null ? buildSelectServer() : buildLogin();
 
     return LayoutBuilder(
       builder: (context, constraints) {

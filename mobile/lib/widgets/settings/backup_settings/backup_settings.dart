@@ -21,10 +21,8 @@ class BackupSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ignoreIcloudAssets =
-        useAppSettingsState(AppSettingsEnum.ignoreIcloudAssets);
-    final isAdvancedTroubleshooting =
-        useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
+    final ignoreIcloudAssets = useAppSettingsState(AppSettingsEnum.ignoreIcloudAssets);
+    final isAdvancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
     final albumSync = useAppSettingsState(AppSettingsEnum.syncAlbums);
     final isCorruptCheckInProgress = ref.watch(backupVerificationProvider);
     final isAlbumSyncInProgress = useState(false);
@@ -63,14 +61,10 @@ class BackupSettings extends HookConsumerWidget {
                   ],
                 )
               : null,
-          subtileText: !isCorruptCheckInProgress
-              ? 'check_corrupt_asset_backup_description'.tr()
-              : null,
+          subtileText: !isCorruptCheckInProgress ? 'check_corrupt_asset_backup_description'.tr() : null,
           buttonText: 'check_corrupt_asset_backup_button'.tr(),
           onButtonTap: !isCorruptCheckInProgress
-              ? () => ref
-                  .read(backupVerificationProvider.notifier)
-                  .performBackupCheck(context)
+              ? () => ref.read(backupVerificationProvider.notifier).performBackupCheck(context)
               : null,
         ),
       if (albumSync.value)

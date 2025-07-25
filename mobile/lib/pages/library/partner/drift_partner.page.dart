@@ -63,10 +63,8 @@ class DriftPartnerPage extends HookConsumerWidget {
         builder: (BuildContext context) {
           return ConfirmDialog(
             title: "stop_photo_sharing",
-            content: "partner_page_stop_sharing_content"
-                .tr(namedArgs: {'partner': partner.name}),
-            onOk: () =>
-                ref.read(partnerUsersProvider.notifier).removePartner(partner),
+            content: "partner_page_stop_sharing_content".tr(namedArgs: {'partner': partner.name}),
+            onOk: () => ref.read(partnerUsersProvider.notifier).removePartner(partner),
           );
         },
       );

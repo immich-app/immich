@@ -65,8 +65,7 @@ class _AssetDragRegionState extends State<AssetDragRegion> {
   Widget build(BuildContext context) {
     return RawGestureDetector(
       gestures: {
-        _CustomLongPressGestureRecognizer: GestureRecognizerFactoryWithHandlers<
-            _CustomLongPressGestureRecognizer>(
+        _CustomLongPressGestureRecognizer: GestureRecognizerFactoryWithHandlers<_CustomLongPressGestureRecognizer>(
           () => _CustomLongPressGestureRecognizer(),
           _registerCallbacks,
         ),
@@ -89,9 +88,7 @@ class _AssetDragRegionState extends State<AssetDragRegion> {
     final local = box.globalToLocal(position);
     if (!box.hitTest(hitTestResult, position: local)) return null;
 
-    return (hitTestResult.path
-            .firstWhereOrNull((hit) => hit.target is _AssetIndexProxy)
-            ?.target as _AssetIndexProxy?)
+    return (hitTestResult.path.firstWhereOrNull((hit) => hit.target is _AssetIndexProxy)?.target as _AssetIndexProxy?)
         ?.index;
   }
 
@@ -99,8 +96,7 @@ class _AssetDragRegionState extends State<AssetDragRegion> {
     /// Calculate widget height and scroll offset when long press starting instead of in [initState]
     /// or [didChangeDependencies] as the grid might still be rendering into view to get the actual size
     final height = context.size?.height;
-    if (height != null &&
-        (topScrollOffset == null || bottomScrollOffset == null)) {
+    if (height != null && (topScrollOffset == null || bottomScrollOffset == null)) {
       topScrollOffset = height * scrollOffset;
       bottomScrollOffset = height - topScrollOffset!;
     }
@@ -188,8 +184,7 @@ class AssetIndexWrapper extends SingleChildRenderObjectWidget {
     // ignore: library_private_types_in_public_api
     _AssetIndexProxy renderObject,
   ) {
-    renderObject.index =
-        AssetIndex(rowIndex: rowIndex, sectionIndex: sectionIndex);
+    renderObject.index = AssetIndex(rowIndex: rowIndex, sectionIndex: sectionIndex);
   }
 }
 

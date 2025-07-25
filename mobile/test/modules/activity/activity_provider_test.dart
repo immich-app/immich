@@ -58,8 +58,7 @@ void main() {
     container = TestUtils.createContainer(
       overrides: [
         activityServiceProvider.overrideWith((ref) => activityMock),
-        activityStatisticsProvider('test-album', 'test-asset')
-            .overrideWith(() => activityStatisticsMock),
+        activityStatisticsProvider('test-album', 'test-asset').overrideWith(() => activityStatisticsMock),
       ],
     );
 
@@ -90,8 +89,7 @@ void main() {
                 [
                   isA<AsyncData<List<Activity>>>(),
                   predicate(
-                    (AsyncData<List<Activity>> ad) =>
-                        ad.requireValue.every((e) => _activities.contains(e)),
+                    (AsyncData<List<Activity>> ad) => ad.requireValue.every((e) => _activities.contains(e)),
                   ),
                 ],
               ),
@@ -172,8 +170,7 @@ void main() {
 
   group('removeActivity()', () {
     test('Like successfully removed', () async {
-      when(() => activityMock.removeActivity('3'))
-          .thenAnswer((_) async => true);
+      when(() => activityMock.removeActivity('3')).thenAnswer((_) async => true);
 
       await container.read(provider.notifier).removeActivity('3');
 
@@ -192,8 +189,7 @@ void main() {
     });
 
     test('Remove Like failed', () async {
-      when(() => activityMock.removeActivity('3'))
-          .thenAnswer((_) async => false);
+      when(() => activityMock.removeActivity('3')).thenAnswer((_) async => false);
 
       await container.read(provider.notifier).removeActivity('3');
 
@@ -206,8 +202,7 @@ void main() {
     });
 
     test('Comment successfully removed', () async {
-      when(() => activityMock.removeActivity('1'))
-          .thenAnswer((_) async => true);
+      when(() => activityMock.removeActivity('1')).thenAnswer((_) async => true);
 
       await container.read(provider.notifier).removeActivity('1');
 
@@ -229,10 +224,8 @@ void main() {
       container = TestUtils.createContainer(
         overrides: [
           activityServiceProvider.overrideWith((ref) => activityMock),
-          activityStatisticsProvider('test-album', 'test-asset')
-              .overrideWith(() => activityStatisticsMock),
-          activityStatisticsProvider('test-album')
-              .overrideWith(() => albumActivityStatisticsMock),
+          activityStatisticsProvider('test-album', 'test-asset').overrideWith(() => activityStatisticsMock),
+          activityStatisticsProvider('test-album').overrideWith(() => albumActivityStatisticsMock),
         ],
       );
     });
@@ -255,8 +248,7 @@ void main() {
           comment: 'Test-Comment',
         ),
       ).thenAnswer((_) async => AsyncData(comment));
-      when(() => activityStatisticsMock.build('test-album', 'test-asset'))
-          .thenReturn(4);
+      when(() => activityStatisticsMock.build('test-album', 'test-asset')).thenReturn(4);
       when(() => albumActivityStatisticsMock.build('test-album')).thenReturn(2);
 
       await container.read(provider.notifier).addComment('Test-Comment');
@@ -296,8 +288,7 @@ void main() {
         ),
       ).thenAnswer((_) async => AsyncData(comment));
       when(() => albumActivityStatisticsMock.build('test-album')).thenReturn(2);
-      when(() => activityMock.getAllActivities('test-album'))
-          .thenAnswer((_) async => [..._activities]);
+      when(() => activityMock.getAllActivities('test-album')).thenAnswer((_) async => [..._activities]);
 
       final albumProvider = albumActivityProvider('test-album');
       await container.read(albumProvider.notifier).addComment('Test-Comment');

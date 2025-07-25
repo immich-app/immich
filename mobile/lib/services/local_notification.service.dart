@@ -13,8 +13,7 @@ final localNotificationService = Provider(
 );
 
 class LocalNotificationService {
-  final FlutterLocalNotificationsPlugin _localNotificationPlugin =
-      FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localNotificationPlugin = FlutterLocalNotificationsPlugin();
   final PermissionStatus _permissionStatus;
   final Ref ref;
 
@@ -29,17 +28,14 @@ class LocalNotificationService {
   static const cancelUploadActionID = 'cancel_upload';
 
   Future<void> setup() async {
-    const androidSetting =
-        AndroidInitializationSettings('@drawable/notification_icon');
+    const androidSetting = AndroidInitializationSettings('@drawable/notification_icon');
     const iosSetting = DarwinInitializationSettings();
 
-    const initSettings =
-        InitializationSettings(android: androidSetting, iOS: iosSetting);
+    const initSettings = InitializationSettings(android: androidSetting, iOS: iosSetting);
 
     await _localNotificationPlugin.initialize(
       initSettings,
-      onDidReceiveNotificationResponse:
-          _onDidReceiveForegroundNotificationResponse,
+      onDidReceiveNotificationResponse: _onDidReceiveForegroundNotificationResponse,
     );
   }
 

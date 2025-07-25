@@ -15,8 +15,7 @@ class ActivityApiRepository extends ApiRepository {
   ActivityApiRepository(this._api);
 
   Future<List<Activity>> getAll(String albumId, {String? assetId}) async {
-    final response =
-        await checkNull(_api.getActivities(albumId, assetId: assetId));
+    final response = await checkNull(_api.getActivities(albumId, assetId: assetId));
     return response.map(_toActivity).toList();
   }
 
@@ -28,9 +27,7 @@ class ActivityApiRepository extends ApiRepository {
   }) async {
     final dto = ActivityCreateDto(
       albumId: albumId,
-      type: type == ActivityType.comment
-          ? ReactionType.comment
-          : ReactionType.like,
+      type: type == ActivityType.comment ? ReactionType.comment : ReactionType.like,
       assetId: assetId,
       comment: comment,
     );
@@ -43,17 +40,14 @@ class ActivityApiRepository extends ApiRepository {
   }
 
   Future<ActivityStats> getStats(String albumId, {String? assetId}) async {
-    final response =
-        await checkNull(_api.getActivityStatistics(albumId, assetId: assetId));
+    final response = await checkNull(_api.getActivityStatistics(albumId, assetId: assetId));
     return ActivityStats(comments: response.comments);
   }
 
   static Activity _toActivity(ActivityResponseDto dto) => Activity(
         id: dto.id,
         createdAt: dto.createdAt,
-        type: dto.type == ReactionType.comment
-            ? ActivityType.comment
-            : ActivityType.like,
+        type: dto.type == ReactionType.comment ? ActivityType.comment : ActivityType.like,
         user: UserConverter.fromSimpleUserDto(dto.user),
         assetId: dto.assetId,
         comment: dto.comment,

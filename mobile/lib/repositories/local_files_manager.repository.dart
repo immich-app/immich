@@ -2,8 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/services/local_files_manager.service.dart';
 
 final localFilesManagerRepositoryProvider = Provider(
-  (ref) =>
-      LocalFilesManagerRepository(ref.watch(localFileManagerServiceProvider)),
+  (ref) => LocalFilesManagerRepository(ref.watch(localFileManagerServiceProvider)),
 );
 
 class LocalFilesManagerRepository {

@@ -32,8 +32,7 @@ class GroupDividerTitle extends HookConsumerWidget {
 
     useEffect(
       () {
-        groupBy.value = GroupAssetsBy.values[
-            appSettingService.getSetting<int>(AppSettingsEnum.groupAssetsBy)];
+        groupBy.value = GroupAssetsBy.values[appSettingService.getSetting<int>(AppSettingsEnum.groupAssetsBy)];
         return null;
       },
       [],
@@ -75,14 +74,12 @@ class GroupDividerTitle extends HookConsumerWidget {
                 ? Icon(
                     Icons.check_circle_rounded,
                     color: context.primaryColor,
-                    semanticLabel:
-                        "unselect_all_in".tr(namedArgs: {"group": text}),
+                    semanticLabel: "unselect_all_in".tr(namedArgs: {"group": text}),
                   )
                 : Icon(
                     Icons.check_circle_outline_rounded,
                     color: context.colorScheme.onSurfaceSecondary,
-                    semanticLabel:
-                        "select_all_in".tr(namedArgs: {"group": text}),
+                    semanticLabel: "select_all_in".tr(namedArgs: {"group": text}),
                   ),
           ),
         ],

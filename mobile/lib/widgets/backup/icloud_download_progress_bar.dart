@@ -17,20 +17,17 @@ class IcloudDownloadProgressBar extends ConsumerWidget {
 
     final isIcloudAsset = isManualUpload
         ? ref.watch(
-            manualUploadProvider
-                .select((value) => value.currentUploadAsset.isIcloudAsset),
+            manualUploadProvider.select((value) => value.currentUploadAsset.isIcloudAsset),
           )
         : ref.watch(
-            backupProvider
-                .select((value) => value.currentUploadAsset.isIcloudAsset),
+            backupProvider.select((value) => value.currentUploadAsset.isIcloudAsset),
           );
 
     if (!isIcloudAsset) {
       return const SizedBox();
     }
 
-    final iCloudDownloadProgress = ref
-        .watch(backupProvider.select((value) => value.iCloudDownloadProgress));
+    final iCloudDownloadProgress = ref.watch(backupProvider.select((value) => value.iCloudDownloadProgress));
 
     return Padding(
       padding: const EdgeInsets.only(top: 8.0),

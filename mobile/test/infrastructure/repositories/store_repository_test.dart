@@ -66,8 +66,7 @@ void main() {
     });
 
     test('converts datetime', () async {
-      DateTime? backupFailedSince =
-          await sut.tryGet(StoreKey.backupFailedSince);
+      DateTime? backupFailedSince = await sut.tryGet(StoreKey.backupFailedSince);
       expect(backupFailedSince, isNull);
       await sut.insert(StoreKey.backupFailedSince, _kTestBackupFailed);
       backupFailedSince = await sut.tryGet(StoreKey.backupFailedSince);

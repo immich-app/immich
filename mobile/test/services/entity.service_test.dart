@@ -21,8 +21,7 @@ void main() {
   });
 
   group('fillAlbumWithDatabaseEntities', () {
-    test('remote album with owner, thumbnail, sharedUsers and assets',
-        () async {
+    test('remote album with owner, thumbnail, sharedUsers and assets', () async {
       final Album album = Album(
         name: "album-with-two-assets-and-two-users",
         localId: "album-with-two-assets-and-two-users-local",
@@ -41,19 +40,14 @@ void main() {
           [User.fromDto(UserStub.admin), User.fromDto(UserStub.admin)],
         );
 
-      when(() => userRepository.getByUserId(any()))
-          .thenAnswer((_) async => UserStub.admin);
-      when(() => userRepository.getByUserId(any()))
-          .thenAnswer((_) async => UserStub.admin);
+      when(() => userRepository.getByUserId(any())).thenAnswer((_) async => UserStub.admin);
+      when(() => userRepository.getByUserId(any())).thenAnswer((_) async => UserStub.admin);
 
-      when(() => assetRepository.getByRemoteId(AssetStub.image1.remoteId!))
-          .thenAnswer((_) async => AssetStub.image1);
+      when(() => assetRepository.getByRemoteId(AssetStub.image1.remoteId!)).thenAnswer((_) async => AssetStub.image1);
 
-      when(() => userRepository.getByUserIds(any()))
-          .thenAnswer((_) async => [UserStub.user1, UserStub.user2]);
+      when(() => userRepository.getByUserIds(any())).thenAnswer((_) async => [UserStub.user1, UserStub.user2]);
 
-      when(() => assetRepository.getAllByRemoteId(any()))
-          .thenAnswer((_) async => [AssetStub.image1, AssetStub.image2]);
+      when(() => assetRepository.getAllByRemoteId(any())).thenAnswer((_) async => [AssetStub.image1, AssetStub.image2]);
 
       await sut.fillAlbumWithDatabaseEntities(album);
       expect(album.owner.value?.toDto(), UserStub.admin);

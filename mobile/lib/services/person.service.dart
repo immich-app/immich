@@ -40,8 +40,7 @@ class PersonService {
   Future<List<Asset>> getPersonAssets(String id) async {
     try {
       final assets = await _assetApiRepository.search(personIds: [id]);
-      return await _assetRepository
-          .getAllByRemoteId(assets.map((a) => a.remoteId!));
+      return await _assetRepository.getAllByRemoteId(assets.map((a) => a.remoteId!));
     } catch (error, stack) {
       _log.severe("Error while fetching person assets", error, stack);
     }

@@ -17,8 +17,7 @@ class CastActionButton extends ConsumerWidget {
 
     return BaseActionButton(
       iconData: isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
-      iconColor:
-          isCasting ? context.primaryColor : null, // null = default color
+      iconColor: isCasting ? context.primaryColor : null, // null = default color
       label: "cast".t(context: context),
       onPressed: () {
         showDialog(

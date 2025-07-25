@@ -11,8 +11,7 @@ class BiometricStatus {
   });
 
   @override
-  String toString() =>
-      'BiometricStatus(availableBiometrics: $availableBiometrics, canAuthenticate: $canAuthenticate)';
+  String toString() => 'BiometricStatus(availableBiometrics: $availableBiometrics, canAuthenticate: $canAuthenticate)';
 
   BiometricStatus copyWith({
     List<BiometricType>? availableBiometrics,
@@ -29,8 +28,7 @@ class BiometricStatus {
     if (identical(this, other)) return true;
     final listEquals = const DeepCollectionEquality().equals;
 
-    return listEquals(other.availableBiometrics, availableBiometrics) &&
-        other.canAuthenticate == canAuthenticate;
+    return listEquals(other.availableBiometrics, availableBiometrics) && other.canAuthenticate == canAuthenticate;
   }
 
   @override

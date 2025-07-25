@@ -6,16 +6,14 @@ import 'package:isar/isar.dart';
 
 enum BackupAlbumSort { id }
 
-final backupAlbumRepositoryProvider =
-    Provider((ref) => BackupAlbumRepository(ref.watch(dbProvider)));
+final backupAlbumRepositoryProvider = Provider((ref) => BackupAlbumRepository(ref.watch(dbProvider)));
 
 class BackupAlbumRepository extends DatabaseRepository {
   const BackupAlbumRepository(super.db);
 
   Future<List<BackupAlbum>> getAll({BackupAlbumSort? sort}) {
     final baseQuery = db.backupAlbums.where();
-    final QueryBuilder<BackupAlbum, BackupAlbum, QAfterSortBy> query =
-        switch (sort) {
+    final QueryBuilder<BackupAlbum, BackupAlbum, QAfterSortBy> query = switch (sort) {
       null => baseQuery.noOp(),
       BackupAlbumSort.id => baseQuery.sortById(),
     };
@@ -28,9 +26,7 @@ class BackupAlbumRepository extends DatabaseRepository {
   Future<List<BackupAlbum>> getAllBySelection(BackupSelection backup) =>
       db.backupAlbums.filter().selectionEqualTo(backup).findAll();
 
-  Future<void> deleteAll(List<int> ids) =>
-      txn(() => db.backupAlbums.deleteAll(ids));
+  Future<void> deleteAll(List<int> ids) => txn(() => db.backupAlbums.deleteAll(ids));
 
-  Future<void> updateAll(List<BackupAlbum> backupAlbums) =>
-      txn(() => db.backupAlbums.putAll(backupAlbums));
+  Future<void> updateAll(List<BackupAlbum> backupAlbums) => txn(() => db.backupAlbums.putAll(backupAlbums));
 }

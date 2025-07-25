@@ -49,12 +49,9 @@ class TopControlAppBar extends HookConsumerWidget {
     final a = ref.watch(assetWatcher(asset)).value ?? asset;
     final album = ref.watch(currentAlbumProvider);
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
-    final websocketConnected =
-        ref.watch(websocketProvider.select((c) => c.isConnected));
+    final websocketConnected = ref.watch(websocketProvider.select((c) => c.isConnected));
 
-    final comments = album != null &&
-            album.remoteId != null &&
-            asset.remoteId != null
+    final comments = album != null && album.remoteId != null && asset.remoteId != null
         ? ref.watch(activityStatisticsProvider(album.remoteId!, asset.remoteId))
         : 0;
 
@@ -204,24 +201,14 @@ class TopControlAppBar extends HookConsumerWidget {
       shape: const Border(),
       actions: [
         if (asset.isRemote && isOwner) buildFavoriteButton(a),
-        if (isOwner &&
-            !isInHomePage &&
-            !(isInTrash ?? false) &&
-            !isInLockedView)
-          buildLocateButton(),
+        if (isOwner && !isInHomePage && !(isInTrash ?? false) && !isInLockedView) buildLocateButton(),
         if (asset.livePhotoVideoId != null) const MotionPhotoButton(),
         if (asset.isLocal && !asset.isRemote) buildUploadButton(),
         if (asset.isRemote && !asset.isLocal && isOwner) buildDownloadButton(),
-        if (asset.isRemote &&
-            (isOwner || isPartner) &&
-            !asset.isTrashed &&
-            !isInLockedView)
-          buildAddToAlbumButton(),
-        if (isCasting || (asset.isRemote && websocketConnected))
-          buildCastButton(),
+        if (asset.isRemote && (isOwner || isPartner) && !asset.isTrashed && !isInLockedView) buildAddToAlbumButton(),
+        if (isCasting || (asset.isRemote && websocketConnected)) buildCastButton(),
         if (asset.isTrashed) buildRestoreButton(),
-        if (album != null && album.shared && !isInLockedView)
-          buildActivitiesButton(),
+        if (album != null && album.shared && !isInLockedView) buildActivitiesButton(),
         buildMoreInfoButton(),
       ],
     );

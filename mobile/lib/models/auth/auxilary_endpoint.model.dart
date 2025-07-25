@@ -97,8 +97,7 @@ class AuxCheckStatus {
 
   String toJson() => json.encode(toMap());
 
-  factory AuxCheckStatus.fromJson(String source) =>
-      AuxCheckStatus.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory AuxCheckStatus.fromJson(String source) => AuxCheckStatus.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() => 'AuxCheckStatus(name: $name)';

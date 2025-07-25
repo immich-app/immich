@@ -25,8 +25,7 @@ class LibraryPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     context.locale;
-    final trashEnabled =
-        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
+    final trashEnabled = ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
 
     return Scaffold(
       appBar: const ImmichAppBar(),
@@ -388,8 +387,7 @@ class PlacesCollectionCard extends StatelessWidget {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all(Radius.circular(20)),
-                    color:
-                        context.colorScheme.secondaryContainer.withAlpha(100),
+                    color: context.colorScheme.secondaryContainer.withAlpha(100),
                   ),
                   child: IgnorePointer(
                     child: MapThumbnail(
@@ -399,9 +397,7 @@ class PlacesCollectionCard extends StatelessWidget {
                         -157.91959,
                       ),
                       showAttribution: false,
-                      themeMode: context.isDarkTheme
-                          ? ThemeMode.dark
-                          : ThemeMode.light,
+                      themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
                     ),
                   ),
                 ),

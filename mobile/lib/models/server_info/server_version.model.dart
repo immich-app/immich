@@ -37,10 +37,7 @@ class ServerVersion {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is ServerVersion &&
-        other.major == major &&
-        other.minor == minor &&
-        other.patch == patch;
+    return other is ServerVersion && other.major == major && other.minor == minor && other.patch == patch;
   }
 
   @override

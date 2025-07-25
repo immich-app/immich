@@ -97,9 +97,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                                 ),
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: context.isDarkTheme
-                                      ? Colors.white70
-                                      : Colors.grey[800],
+                                  color: context.isDarkTheme ? Colors.white70 : Colors.grey[800],
                                 ),
                               ),
                               Icon(
@@ -125,9 +123,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                             errorAsset.errorMessage,
                             style: TextStyle(
                               fontWeight: FontWeight.w500,
-                              color: context.isDarkTheme
-                                  ? Colors.white70
-                                  : Colors.grey[800],
+                              color: context.isDarkTheme ? Colors.white70 : Colors.grey[800],
                             ),
                           ),
                         ],

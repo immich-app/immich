@@ -41,8 +41,7 @@ class HashService {
     );
 
     for (final album in localAlbums) {
-      final assetsToHash =
-          await _localAlbumRepository.getAssetsToHash(album.id);
+      final assetsToHash = await _localAlbumRepository.getAssetsToHash(album.id);
       if (assetsToHash.isNotEmpty) {
         await _hashAssets(assetsToHash);
       }
@@ -88,8 +87,7 @@ class HashService {
     _log.fine("Hashing ${toHash.length} files");
 
     final hashed = <LocalAsset>[];
-    final hashes =
-        await _nativeSyncApi.hashPaths(toHash.map((e) => e.path).toList());
+    final hashes = await _nativeSyncApi.hashPaths(toHash.map((e) => e.path).toList());
     assert(
       hashes.length == toHash.length,
       "Hashes length does not match toHash length: ${hashes.length} != ${toHash.length}",

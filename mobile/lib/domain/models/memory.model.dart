@@ -39,8 +39,7 @@ class MemoryData {
 
   String toJson() => json.encode(toMap());
 
-  factory MemoryData.fromJson(String source) =>
-      MemoryData.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory MemoryData.fromJson(String source) => MemoryData.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() => 'MemoryData(year: $year)';

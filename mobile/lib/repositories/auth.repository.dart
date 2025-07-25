@@ -80,8 +80,7 @@ class AuthRepository extends DatabaseRepository {
     }
 
     final List<dynamic> jsonList = jsonDecode(jsonString);
-    final endpointList =
-        jsonList.map((e) => AuxilaryEndpoint.fromJson(e)).toList();
+    final endpointList = jsonList.map((e) => AuxilaryEndpoint.fromJson(e)).toList();
 
     return endpointList;
   }

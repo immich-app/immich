@@ -23,8 +23,7 @@ void main() {
 
   group('getAll', () {
     test('sorts albums by backupSelection & isIosSharedAlbum', () async {
-      final localAlbumRepo =
-          mediumFactory.getRepository<DriftLocalAlbumRepository>();
+      final localAlbumRepo = mediumFactory.getRepository<DriftLocalAlbumRepository>();
       await localAlbumRepo.upsert(
         mediumFactory.localAlbum(
           id: '1',

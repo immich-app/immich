@@ -85,8 +85,7 @@ class DriftAlbumApiRepository extends ApiRepository {
   }) async {
     AssetOrder? apiOrder;
     if (order != null) {
-      apiOrder =
-          order == AlbumAssetOrder.asc ? AssetOrder.asc : AssetOrder.desc;
+      apiOrder = order == AlbumAssetOrder.asc ? AssetOrder.asc : AssetOrder.desc;
     }
 
     final responseDto = await checkNull(
@@ -113,8 +112,7 @@ class DriftAlbumApiRepository extends ApiRepository {
     String albumId,
     Iterable<String> userIds,
   ) async {
-    final albumUsers =
-        userIds.map((userId) => AlbumUserAddDto(userId: userId)).toList();
+    final albumUsers = userIds.map((userId) => AlbumUserAddDto(userId: userId)).toList();
     final response = await checkNull(
       _api.addUsersToAlbum(
         albumId,
@@ -136,8 +134,7 @@ extension on AlbumResponseDto {
       updatedAt: updatedAt,
       thumbnailAssetId: albumThumbnailAssetId,
       isActivityEnabled: isActivityEnabled,
-      order:
-          order == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
+      order: order == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
       assetCount: assetCount,
       ownerName: owner.name,
     );

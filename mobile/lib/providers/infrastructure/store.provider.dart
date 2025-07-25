@@ -7,8 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'store.provider.g.dart';
 
 @Riverpod(keepAlive: true)
-IsarStoreRepository storeRepository(Ref ref) =>
-    IsarStoreRepository(ref.watch(isarProvider));
+IsarStoreRepository storeRepository(Ref ref) => IsarStoreRepository(ref.watch(isarProvider));
 
 @Riverpod(keepAlive: true)
 StoreService storeService(Ref _) => StoreService.I;

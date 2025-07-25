@@ -1,6 +1,5 @@
 import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/infrastructure/entities/exif.entity.dart'
-    as entity;
+import 'package:immich_mobile/infrastructure/entities/exif.entity.dart' as entity;
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:isar/isar.dart';
 

@@ -88,7 +88,6 @@ class AlbumViewerNotifier extends StateNotifier<AlbumViewerPageState> {
   }
 }
 
-final albumViewerProvider =
-    StateNotifierProvider<AlbumViewerNotifier, AlbumViewerPageState>((ref) {
+final albumViewerProvider = StateNotifierProvider<AlbumViewerNotifier, AlbumViewerPageState>((ref) {
   return AlbumViewerNotifier(ref);
 });

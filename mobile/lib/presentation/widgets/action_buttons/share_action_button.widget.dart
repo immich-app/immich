@@ -37,8 +37,7 @@ class ShareActionButton extends ConsumerWidget {
     } else if (result.count > 0) {
       ImmichToast.show(
         context: context,
-        msg: 'share_action_prompt'
-            .t(context: context, args: {'count': result.count.toString()}),
+        msg: 'share_action_prompt'.t(context: context, args: {'count': result.count.toString()}),
         gravity: ToastGravity.BOTTOM,
         toastType: ToastType.success,
       );
@@ -48,8 +47,7 @@ class ShareActionButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
-      iconData:
-          Platform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded,
+      iconData: Platform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded,
       label: 'share'.t(context: context),
       onPressed: () => _onTap(context, ref),
     );

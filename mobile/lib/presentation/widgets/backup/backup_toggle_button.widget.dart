@@ -21,8 +21,7 @@ class BackupToggleButton extends ConsumerStatefulWidget {
   ConsumerState<BackupToggleButton> createState() => BackupToggleButtonState();
 }
 
-class BackupToggleButtonState extends ConsumerState<BackupToggleButton>
-    with SingleTickerProviderStateMixin {
+class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _gradientAnimation;
   bool _isEnabled = false;
@@ -42,9 +41,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton>
       ),
     );
 
-    _isEnabled = ref
-        .read(appSettingsServiceProvider)
-        .getSetting(AppSettingsEnum.enableBackup);
+    _isEnabled = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
   }
 
   @override
@@ -54,9 +51,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton>
   }
 
   Future<void> _onToggle(bool value) async {
-    await ref
-        .read(appSettingsServiceProvider)
-        .setSetting(AppSettingsEnum.enableBackup, value);
+    await ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.enableBackup, value);
 
     setState(() {
       _isEnabled = value;
@@ -141,8 +136,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton>
                 borderRadius: const BorderRadius.all(Radius.circular(20.5)),
                 onTap: () => isCanceling ? null : _onToggle(!_isEnabled),
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   child: Row(
                     children: [
                       Container(
@@ -180,8 +174,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton>
                               children: [
                                 Text(
                                   "enable_backup".t(context: context),
-                                  style:
-                                      context.textTheme.titleMedium?.copyWith(
+                                  style: context.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w600,
                                     color: context.primaryColor,
                                   ),
@@ -214,9 +207,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton>
                                     height: 18,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      backgroundColor: context
-                                          .colorScheme.onSurface
-                                          .withValues(alpha: 0.2),
+                                      backgroundColor: context.colorScheme.onSurface.withValues(alpha: 0.2),
                                     ),
                                   ),
                                 ],
@@ -226,8 +217,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton>
                       ),
                       Switch.adaptive(
                         value: _isEnabled,
-                        onChanged: (value) =>
-                            isCanceling ? null : _onToggle(value),
+                        onChanged: (value) => isCanceling ? null : _onToggle(value),
                       ),
                     ],
                   ),

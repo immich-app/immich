@@ -56,8 +56,7 @@ class _LocationPicker extends HookWidget {
             ? _MapPicker(
                 key: ValueKey(latlng),
                 latlng: latlng,
-                onModeSwitch: () =>
-                    pickerMode.value = _LocationPickerMode.manual,
+                onModeSwitch: () => pickerMode.value = _LocationPickerMode.manual,
                 onMapTap: onMapTap,
               )
             : _ManualPicker(
@@ -141,8 +140,7 @@ class _ManualPickerInput extends HookWidget {
         errorText: isValid.value ? null : errorText.tr(),
       ),
       onEditingComplete: onEditingComplete,
-      keyboardType:
-          const TextInputType.numberWithOptions(decimal: true, signed: true),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
       inputFormatters: [LengthLimitingTextInputFormatter(8)],
       onTapOutside: (_) => focusNode.unfocus(),
     );

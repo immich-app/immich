@@ -71,17 +71,13 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
     final hasCoordinates = exifInfo?.hasCoordinates ?? false;
 
     // Guard no lat/lng
-    if (!hasCoordinates ||
-        (asset != null && asset is LocalAsset && asset!.hasRemote)) {
+    if (!hasCoordinates || (asset != null && asset is LocalAsset && asset!.hasRemote)) {
       return const SizedBox.shrink();
     }
 
-    final remoteId = asset is LocalAsset
-        ? (asset as LocalAsset).remoteId
-        : (asset as RemoteAsset).id;
+    final remoteId = asset is LocalAsset ? (asset as LocalAsset).remoteId : (asset as RemoteAsset).id;
     final locationName = _getLocationName(exifInfo);
-    final coordinates =
-        "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo!.longitude!.toStringAsFixed(4)}";
+    final coordinates = "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo!.longitude!.toStringAsFixed(4)}";
 
     return Padding(
       padding: EdgeInsets.symmetric(

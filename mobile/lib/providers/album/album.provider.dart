@@ -18,8 +18,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
       }
     });
 
-    _streamSub =
-        albumService.watchRemoteAlbums().listen((data) => state = data);
+    _streamSub = albumService.watchRemoteAlbums().listen((data) => state = data);
   }
 
   final AlbumService albumService;
@@ -114,8 +113,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   }
 
   Future<Album?> toggleSortOrder(Album album) {
-    final order =
-        album.sortOrder == SortOrder.asc ? SortOrder.desc : SortOrder.asc;
+    final order = album.sortOrder == SortOrder.asc ? SortOrder.desc : SortOrder.asc;
 
     return albumService.updateSortOrder(album, order);
   }
@@ -127,16 +125,14 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   }
 }
 
-final albumProvider =
-    StateNotifierProvider.autoDispose<AlbumNotifier, List<Album>>((ref) {
+final albumProvider = StateNotifierProvider.autoDispose<AlbumNotifier, List<Album>>((ref) {
   return AlbumNotifier(
     ref.watch(albumServiceProvider),
     ref,
   );
 });
 
-final albumWatcher =
-    StreamProvider.autoDispose.family<Album, int>((ref, id) async* {
+final albumWatcher = StreamProvider.autoDispose.family<Album, int>((ref, id) async* {
   final albumService = ref.watch(albumServiceProvider);
 
   final album = await albumService.getAlbumById(id);
@@ -172,7 +168,6 @@ class LocalAlbumsNotifier extends StateNotifier<List<Album>> {
   }
 }
 
-final localAlbumsProvider =
-    StateNotifierProvider.autoDispose<LocalAlbumsNotifier, List<Album>>((ref) {
+final localAlbumsProvider = StateNotifierProvider.autoDispose<LocalAlbumsNotifier, List<Album>>((ref) {
   return LocalAlbumsNotifier(ref.watch(albumServiceProvider));
 });

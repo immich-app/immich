@@ -75,8 +75,7 @@ const VideoPlaybackValue videoPlaybackValueDefault = VideoPlaybackValue(
   volume: 0.0,
 );
 
-final videoPlaybackValueProvider =
-    StateNotifierProvider<VideoPlaybackValueState, VideoPlaybackValue>((ref) {
+final videoPlaybackValueProvider = StateNotifierProvider<VideoPlaybackValueState, VideoPlaybackValue>((ref) {
   return VideoPlaybackValueState(ref);
 });
 

@@ -5,8 +5,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
-final multiSelectProvider =
-    NotifierProvider<MultiSelectNotifier, MultiSelectState>(
+final multiSelectProvider = NotifierProvider<MultiSelectNotifier, MultiSelectState>(
   MultiSelectNotifier.new,
   dependencies: [timelineServiceProvider],
 );
@@ -26,9 +25,7 @@ class MultiSelectState {
 
   /// Cloud only
   bool get hasRemote => selectedAssets.any(
-        (asset) =>
-            asset.storage == AssetState.remote ||
-            asset.storage == AssetState.merged,
+        (asset) => asset.storage == AssetState.remote || asset.storage == AssetState.merged,
       );
 
   bool get hasLocal => selectedAssets.any(
@@ -46,8 +43,7 @@ class MultiSelectState {
   }) {
     return MultiSelectState(
       selectedAssets: selectedAssets ?? this.selectedAssets,
-      lockedSelectionAssets:
-          lockedSelectionAssets ?? this.lockedSelectionAssets,
+      lockedSelectionAssets: lockedSelectionAssets ?? this.lockedSelectionAssets,
       forceEnable: forceEnable ?? this.forceEnable,
     );
   }
@@ -67,10 +63,7 @@ class MultiSelectState {
   }
 
   @override
-  int get hashCode =>
-      selectedAssets.hashCode ^
-      lockedSelectionAssets.hashCode ^
-      forceEnable.hashCode;
+  int get hashCode => selectedAssets.hashCode ^ lockedSelectionAssets.hashCode ^ forceEnable.hashCode;
 }
 
 class MultiSelectNotifier extends Notifier<MultiSelectState> {
@@ -155,8 +148,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     if (bucketAssets.isEmpty) return;
 
     // Check if all assets in this bucket are currently selected
-    final allSelected =
-        bucketAssets.every((asset) => state.selectedAssets.contains(asset));
+    final allSelected = bucketAssets.every((asset) => state.selectedAssets.contains(asset));
 
     final selectedAssets = state.selectedAssets.toSet();
 
@@ -180,8 +172,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
 
 final bucketSelectionProvider = Provider.family<bool, List<BaseAsset>>(
   (ref, bucketAssets) {
-    final selectedAssets =
-        ref.watch(multiSelectProvider.select((s) => s.selectedAssets));
+    final selectedAssets = ref.watch(multiSelectProvider.select((s) => s.selectedAssets));
 
     if (bucketAssets.isEmpty) return false;
 
