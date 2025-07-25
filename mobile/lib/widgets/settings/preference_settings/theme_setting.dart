@@ -20,13 +20,10 @@ class ThemeSetting extends HookConsumerWidget {
     final currentThemeString = useAppSettingsState(AppSettingsEnum.themeMode);
     final currentTheme = useValueNotifier(ref.read(immichThemeModeProvider));
     final isDarkTheme = useValueNotifier(currentTheme.value == ThemeMode.dark);
-    final isSystemTheme =
-        useValueNotifier(currentTheme.value == ThemeMode.system);
+    final isSystemTheme = useValueNotifier(currentTheme.value == ThemeMode.system);
 
-    final applyThemeToBackgroundSetting =
-        useAppSettingsState(AppSettingsEnum.colorfulInterface);
-    final applyThemeToBackgroundProvider =
-        useValueNotifier(ref.read(colorfulInterfaceSettingProvider));
+    final applyThemeToBackgroundSetting = useAppSettingsState(AppSettingsEnum.colorfulInterface);
+    final applyThemeToBackgroundProvider = useValueNotifier(ref.read(colorfulInterfaceSettingProvider));
 
     useValueChanged(
       currentThemeString.value,
@@ -39,8 +36,7 @@ class ThemeSetting extends HookConsumerWidget {
 
     useValueChanged(
       applyThemeToBackgroundSetting.value,
-      (_, __) => applyThemeToBackgroundProvider.value =
-          applyThemeToBackgroundSetting.value,
+      (_, __) => applyThemeToBackgroundProvider.value = applyThemeToBackgroundSetting.value,
     );
 
     void onThemeChange(bool isDark) {
@@ -74,8 +70,7 @@ class ThemeSetting extends HookConsumerWidget {
 
     void onSurfaceColorSettingChange(bool useColorfulInterface) {
       applyThemeToBackgroundSetting.value = useColorfulInterface;
-      ref.watch(colorfulInterfaceSettingProvider.notifier).state =
-          useColorfulInterface;
+      ref.watch(colorfulInterfaceSettingProvider.notifier).state = useColorfulInterface;
     }
 
     return Column(

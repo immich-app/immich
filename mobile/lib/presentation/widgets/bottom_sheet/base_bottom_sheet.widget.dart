@@ -31,12 +31,10 @@ class BaseBottomSheet extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<BaseBottomSheet> createState() =>
-      _BaseDraggableScrollableSheetState();
+  ConsumerState<BaseBottomSheet> createState() => _BaseDraggableScrollableSheetState();
 }
 
-class _BaseDraggableScrollableSheetState
-    extends ConsumerState<BaseBottomSheet> {
+class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> {
   late DraggableScrollableController _controller;
 
   @override
@@ -71,8 +69,7 @@ class _BaseDraggableScrollableSheetState
       shouldCloseOnMinExtent: widget.shouldCloseOnMinExtent,
       builder: (BuildContext context, ScrollController scrollController) {
         return Card(
-          color: widget.backgroundColor ??
-              context.colorScheme.surfaceContainerHigh,
+          color: widget.backgroundColor ?? context.colorScheme.surfaceContainerHigh,
           borderOnForeground: false,
           clipBehavior: Clip.antiAlias,
           elevation: 6.0,

@@ -10,9 +10,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   const DriftLocalAssetRepository(this._db) : super(_db);
 
   Stream<LocalAsset?> watchAsset(String id) {
-    final query = _db.localAssetEntity
-        .select()
-        .addColumns([_db.remoteAssetEntity.id]).join([
+    final query = _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.id]).join([
       leftOuterJoin(
         _db.remoteAssetEntity,
         _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
@@ -58,8 +56,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<LocalAsset?> getById(String id) {
-    final query = _db.localAssetEntity.select()
-      ..where((lae) => lae.id.equals(id));
+    final query = _db.localAssetEntity.select()..where((lae) => lae.id.equals(id));
 
     return query.map((row) => row.toDto()).getSingleOrNull();
   }
@@ -69,8 +66,6 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<int> getHashedCount() {
-    return _db.managers.localAssetEntity
-        .filter((e) => e.checksum.isNull().not())
-        .count();
+    return _db.managers.localAssetEntity.filter((e) => e.checksum.isNull().not()).count();
   }
 }

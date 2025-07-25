@@ -42,16 +42,12 @@ class AlbumDateRange extends ConsumerWidget {
 
   @pragma('vm:prefer-inline')
   String _getDateRangeText(DateTime startDate, DateTime endDate) {
-    if (startDate.day == endDate.day &&
-        startDate.month == endDate.month &&
-        startDate.year == endDate.year) {
+    if (startDate.day == endDate.day && startDate.month == endDate.month && startDate.year == endDate.year) {
       return DateFormat.yMMMd().format(startDate);
     }
 
-    final String startDateText = (startDate.year == endDate.year
-            ? DateFormat.MMMd()
-            : DateFormat.yMMMd())
-        .format(startDate);
+    final String startDateText =
+        (startDate.year == endDate.year ? DateFormat.MMMd() : DateFormat.yMMMd()).format(startDate);
     final String endDateText = DateFormat.yMMMd().format(endDate);
     return "$startDateText - $endDateText";
   }

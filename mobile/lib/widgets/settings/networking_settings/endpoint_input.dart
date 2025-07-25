@@ -61,8 +61,7 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
     final url = controller.text;
     setState(() => auxCheckStatus = AuxCheckStatus.loading);
 
-    final isValid =
-        await ref.read(authProvider.notifier).validateAuxilaryServerUrl(url);
+    final isValid = await ref.read(authProvider.notifier).validateAuxilaryServerUrl(url);
 
     setState(() {
       if (mounted) {
@@ -140,8 +139,7 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
             ),
             disabledBorder: OutlineInputBorder(
               borderSide: BorderSide(
-                color:
-                    context.isDarkTheme ? Colors.grey[900]! : Colors.grey[300]!,
+                color: context.isDarkTheme ? Colors.grey[900]! : Colors.grey[300]!,
               ),
               borderRadius: const BorderRadius.all(Radius.circular(16)),
             ),

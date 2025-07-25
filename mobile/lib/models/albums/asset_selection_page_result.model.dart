@@ -12,8 +12,7 @@ class AssetSelectionPageResult {
     if (identical(this, other)) return true;
     final setEquals = const DeepCollectionEquality().equals;
 
-    return other is AssetSelectionPageResult &&
-        setEquals(other.selectedAssets, selectedAssets);
+    return other is AssetSelectionPageResult && setEquals(other.selectedAssets, selectedAssets);
   }
 
   @override

@@ -25,8 +25,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
         ),
       ])
       ..where(
-        _db.localAlbumEntity.backupSelection
-            .equalsValue(BackupSelection.excluded),
+        _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.excluded),
       );
   }
 
@@ -41,10 +40,8 @@ class DriftBackupRepository extends DriftDatabaseRepository {
         ),
       ])
       ..where(
-        _db.localAlbumEntity.backupSelection
-                .equalsValue(BackupSelection.selected) &
-            _db.localAlbumAssetEntity.assetId
-                .isNotInQuery(_getExcludedSubquery()),
+        _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
+            _db.localAlbumAssetEntity.assetId.isNotInQuery(_getExcludedSubquery()),
       );
 
     return query.get().then((rows) => rows.length);
@@ -66,18 +63,14 @@ class DriftBackupRepository extends DriftDatabaseRepository {
         ),
         leftOuterJoin(
           _db.remoteAssetEntity,
-          _db.localAssetEntity.checksum
-              .equalsExp(_db.remoteAssetEntity.checksum),
+          _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
           useColumns: false,
         ),
       ])
       ..where(
-        _db.localAlbumEntity.backupSelection
-                .equalsValue(BackupSelection.selected) &
-            (_db.remoteAssetEntity.id.isNull() |
-                _db.remoteAssetEntity.ownerId.equals(userId).not()) &
-            _db.localAlbumAssetEntity.assetId
-                .isNotInQuery(_getExcludedSubquery()),
+        _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
+            (_db.remoteAssetEntity.id.isNull() | _db.remoteAssetEntity.ownerId.equals(userId).not()) &
+            _db.localAlbumAssetEntity.assetId.isNotInQuery(_getExcludedSubquery()),
       );
 
     return query.get().then((rows) => rows.length);
@@ -101,18 +94,15 @@ class DriftBackupRepository extends DriftDatabaseRepository {
         ),
         innerJoin(
           _db.remoteAssetEntity,
-          _db.localAssetEntity.checksum
-              .equalsExp(_db.remoteAssetEntity.checksum),
+          _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
           useColumns: false,
         ),
       ])
       ..where(
-        _db.localAlbumEntity.backupSelection
-                .equalsValue(BackupSelection.selected) &
+        _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
             _db.remoteAssetEntity.id.isNotNull() &
             _db.remoteAssetEntity.ownerId.equals(userId) &
-            _db.localAlbumAssetEntity.assetId
-                .isNotInQuery(_getExcludedSubquery()),
+            _db.localAlbumAssetEntity.assetId.isNotInQuery(_getExcludedSubquery()),
       );
 
     return query.get().then((rows) => rows.length);
@@ -122,8 +112,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     final selectedAlbumIds = _db.localAlbumEntity.selectOnly(distinct: true)
       ..addColumns([_db.localAlbumEntity.id])
       ..where(
-        _db.localAlbumEntity.backupSelection
-            .equalsValue(BackupSelection.selected),
+        _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected),
       );
 
     final query = _db.localAssetEntity.select()
@@ -133,8 +122,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
               _db.localAlbumAssetEntity.selectOnly()
                 ..addColumns([_db.localAlbumAssetEntity.assetId])
                 ..where(
-                  _db.localAlbumAssetEntity.albumId
-                          .isInQuery(selectedAlbumIds) &
+                  _db.localAlbumAssetEntity.albumId.isInQuery(selectedAlbumIds) &
                       _db.localAlbumAssetEntity.assetId.equalsExp(lae.id),
                 ),
             ) &

@@ -35,8 +35,7 @@ class DownloadService {
   ) {
     _downloadRepository.onImageDownloadStatus = _onImageDownloadCallback;
     _downloadRepository.onVideoDownloadStatus = _onVideoDownloadCallback;
-    _downloadRepository.onLivePhotoDownloadStatus =
-        _onLivePhotoDownloadCallback;
+    _downloadRepository.onLivePhotoDownloadStatus = _onLivePhotoDownloadCallback;
     _downloadRepository.onTaskProgress = _onTaskProgressCallback;
   }
 
@@ -108,10 +107,8 @@ class DownloadService {
       return false;
     }
 
-    final imageRecord =
-        _findTaskRecord(records, livePhotosId, LivePhotosPart.image);
-    final videoRecord =
-        _findTaskRecord(records, livePhotosId, LivePhotosPart.video);
+    final imageRecord = _findTaskRecord(records, livePhotosId, LivePhotosPart.image);
+    final videoRecord = _findTaskRecord(records, livePhotosId, LivePhotosPart.video);
     final imageFilePath = await imageRecord.task.filePath();
     final videoFilePath = await videoRecord.task.filePath();
 
@@ -126,8 +123,7 @@ class DownloadService {
     } on PlatformException catch (error, stack) {
       // Handle saving MotionPhotos on iOS
       if (error.code == 'PHPhotosErrorDomain (-1)') {
-        final result = await _fileMediaRepository
-            .saveImageWithFile(imageFilePath, title: task.filename);
+        final result = await _fileMediaRepository.saveImageWithFile(imageFilePath, title: task.filename);
         return result != null;
       }
       _log.severe("Error saving live photo", error, stack);
@@ -158,8 +154,7 @@ class DownloadService {
   }
 
   Future<List<bool>> downloadAll(List<Asset> assets) async {
-    return await _downloadRepository
-        .downloadAll(assets.expand(_createDownloadTasks).toList());
+    return await _downloadRepository.downloadAll(assets.expand(_createDownloadTasks).toList());
   }
 
   Future<void> download(Asset asset) async {
@@ -181,9 +176,7 @@ class DownloadService {
         ),
         _buildDownloadTask(
           asset.livePhotoVideoId!,
-          asset.fileName
-              .toUpperCase()
-              .replaceAll(RegExp(r"\.(JPG|HEIC)$"), '.MOV'),
+          asset.fileName.toUpperCase().replaceAll(RegExp(r"\.(JPG|HEIC)$"), '.MOV'),
           group: kDownloadGroupLivePhoto,
           metadata: LivePhotosMetadata(
             part: LivePhotosPart.video,

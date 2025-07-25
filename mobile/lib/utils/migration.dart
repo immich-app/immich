@@ -11,8 +11,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/backup_album.entity.dart'
-    as isar_backup_album;
+import 'package:immich_mobile/entities/backup_album.entity.dart' as isar_backup_album;
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -44,8 +43,7 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
       if (id != null) {
         await db.writeTxn(() async {
           final user = await db.users.get(id);
-          await db.storeValues
-              .put(StoreValue(StoreKey.currentUser.id, strValue: user?.id));
+          await db.storeValues.put(StoreValue(StoreKey.currentUser.id, strValue: user?.id));
         });
       }
     }
@@ -89,9 +87,7 @@ Future<void> _migrateDeviceAsset(Isar db) async {
       ? (await db.androidDeviceAssets.where().findAll())
           .map((a) => _DeviceAsset(assetId: a.id.toString(), hash: a.hash))
           .toList()
-      : (await db.iOSDeviceAssets.where().findAll())
-          .map((i) => _DeviceAsset(assetId: i.id, hash: i.hash))
-          .toList();
+      : (await db.iOSDeviceAssets.where().findAll()).map((i) => _DeviceAsset(assetId: i.id, hash: i.hash)).toList();
 
   final PermissionState ps = await PhotoManager.requestPermissionExtend();
   if (!ps.hasAccess) {
@@ -105,14 +101,10 @@ Future<void> _migrateDeviceAsset(Isar db) async {
   }
 
   List<_DeviceAsset> localAssets = [];
-  final List<AssetPathEntity> paths =
-      await PhotoManager.getAssetPathList(onlyAll: true);
+  final List<AssetPathEntity> paths = await PhotoManager.getAssetPathList(onlyAll: true);
 
   if (paths.isEmpty) {
-    localAssets = (await db.assets
-            .where()
-            .anyOf(ids, (query, id) => query.localIdEqualTo(id.assetId))
-            .findAll())
+    localAssets = (await db.assets.where().anyOf(ids, (query, id) => query.localIdEqualTo(id.assetId)).findAll())
         .map(
           (a) => _DeviceAsset(assetId: a.localId!, dateTime: a.fileModifiedAt),
         )
@@ -121,12 +113,9 @@ Future<void> _migrateDeviceAsset(Isar db) async {
     final AssetPathEntity albumWithAll = paths.first;
     final int assetCount = await albumWithAll.assetCountAsync;
 
-    final List<AssetEntity> allDeviceAssets =
-        await albumWithAll.getAssetListRange(start: 0, end: assetCount);
+    final List<AssetEntity> allDeviceAssets = await albumWithAll.getAssetListRange(start: 0, end: assetCount);
 
-    localAssets = allDeviceAssets
-        .map((a) => _DeviceAsset(assetId: a.id, dateTime: a.modifiedDateTime))
-        .toList();
+    localAssets = allDeviceAssets.map((a) => _DeviceAsset(assetId: a.id, dateTime: a.modifiedDateTime)).toList();
   }
 
   debugPrint("[MIGRATION] Device Asset Ids length - ${ids.length}");
@@ -205,8 +194,7 @@ Future<void> migrateBackupAlbumsToSqlite(
     // Recents is a virtual album on Android, and we don't have it with the new sync
     // If recents is selected previously, select all albums during migration except the excluded ones
     if (Platform.isAndroid) {
-      final recentAlbum =
-          isarBackupAlbums.firstWhereOrNull((album) => album.id == 'isAll');
+      final recentAlbum = isarBackupAlbums.firstWhereOrNull((album) => album.id == 'isAll');
       if (recentAlbum != null) {
         await drift.localAlbumEntity.update().write(
               const LocalAlbumEntityCompanion(
@@ -215,8 +203,7 @@ Future<void> migrateBackupAlbumsToSqlite(
             );
         final excluded = isarBackupAlbums
             .where(
-              (album) =>
-                  album.selection == isar_backup_album.BackupSelection.exclude,
+              (album) => album.selection == isar_backup_album.BackupSelection.exclude,
             )
             .map((album) => album.id)
             .toList();
@@ -231,8 +218,8 @@ Future<void> migrateBackupAlbumsToSqlite(
             );
           }
         });
+        return;
       }
-      return;
     }
 
     await drift.batch((batch) {
@@ -243,10 +230,8 @@ Future<void> migrateBackupAlbumsToSqlite(
             backupSelection: Value(
               switch (album.selection) {
                 isar_backup_album.BackupSelection.none => BackupSelection.none,
-                isar_backup_album.BackupSelection.select =>
-                  BackupSelection.selected,
-                isar_backup_album.BackupSelection.exclude =>
-                  BackupSelection.excluded,
+                isar_backup_album.BackupSelection.select => BackupSelection.selected,
+                isar_backup_album.BackupSelection.exclude => BackupSelection.excluded,
               },
             ),
           ),

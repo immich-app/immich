@@ -107,8 +107,7 @@ class Drift extends $Drift implements IDatabaseRepository {
 
           if (kDebugMode) {
             // Fail if the migration broke foreign keys
-            final wrongFKs =
-                await customSelect('PRAGMA foreign_key_check').get();
+            final wrongFKs = await customSelect('PRAGMA foreign_key_check').get();
             assert(wrongFKs.isEmpty, '${wrongFKs.map((e) => e.data)}');
           }
 
@@ -127,6 +126,5 @@ class DriftDatabaseRepository implements IDatabaseRepository {
   const DriftDatabaseRepository(this._db);
 
   @override
-  Future<T> transaction<T>(Future<T> Function() callback) =>
-      _db.transaction(callback);
+  Future<T> transaction<T>(Future<T> Function() callback) => _db.transaction(callback);
 }

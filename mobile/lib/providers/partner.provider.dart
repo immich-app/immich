@@ -38,8 +38,7 @@ class PartnerSharedWithNotifier extends StateNotifier<List<UserDto>> {
   }
 }
 
-final partnerSharedWithProvider =
-    StateNotifierProvider<PartnerSharedWithNotifier, List<UserDto>>((ref) {
+final partnerSharedWithProvider = StateNotifierProvider<PartnerSharedWithNotifier, List<UserDto>>((ref) {
   return PartnerSharedWithNotifier(
     ref.watch(partnerServiceProvider),
   );
@@ -73,13 +72,11 @@ class PartnerSharedByNotifier extends StateNotifier<List<UserDto>> {
   }
 }
 
-final partnerSharedByProvider =
-    StateNotifierProvider<PartnerSharedByNotifier, List<UserDto>>((ref) {
+final partnerSharedByProvider = StateNotifierProvider<PartnerSharedByNotifier, List<UserDto>>((ref) {
   return PartnerSharedByNotifier(ref.watch(partnerServiceProvider));
 });
 
-final partnerAvailableProvider =
-    FutureProvider.autoDispose<List<UserDto>>((ref) async {
+final partnerAvailableProvider = FutureProvider.autoDispose<List<UserDto>>((ref) async {
   final otherUsers = await ref.watch(otherUsersProvider.future);
   final currentPartners = ref.watch(partnerSharedByProvider);
   final available = Set<UserDto>.of(otherUsers);

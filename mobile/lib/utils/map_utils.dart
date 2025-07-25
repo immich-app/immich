@@ -91,12 +91,9 @@ class MapUtils {
         }
       }
 
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
+      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
         // Open app settings only if you did not request for permission before
-        if (permission == LocationPermission.deniedForever &&
-            !shouldRequestPermission &&
-            !silent) {
+        if (permission == LocationPermission.deniedForever && !shouldRequestPermission && !silent) {
           await Geolocator.openAppSettings();
         }
         return (null, LocationPermission.deniedForever);

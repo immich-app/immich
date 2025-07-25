@@ -47,14 +47,11 @@ class UploadService {
   final StorageRepository _storageRepository;
   final DriftLocalAssetRepository _localAssetRepository;
 
-  final StreamController<TaskStatusUpdate> _taskStatusController =
-      StreamController<TaskStatusUpdate>.broadcast();
-  final StreamController<TaskProgressUpdate> _taskProgressController =
-      StreamController<TaskProgressUpdate>.broadcast();
+  final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
+  final StreamController<TaskProgressUpdate> _taskProgressController = StreamController<TaskProgressUpdate>.broadcast();
 
   Stream<TaskStatusUpdate> get taskStatusStream => _taskStatusController.stream;
-  Stream<TaskProgressUpdate> get taskProgressStream =>
-      _taskProgressController.stream;
+  Stream<TaskProgressUpdate> get taskProgressStream => _taskProgressController.stream;
 
   bool shouldAbortQueuingTasks = false;
 
@@ -203,8 +200,7 @@ class UploadService {
       }
       final response = jsonDecode(update.responseBody!);
 
-      final localAsset =
-          await _localAssetRepository.getById(metadata.localAssetId);
+      final localAsset = await _localAssetRepository.getById(metadata.localAssetId);
       if (localAsset == null) {
         return;
       }
@@ -321,8 +317,7 @@ class UploadService {
     final headers = ApiService.getRequestHeaders();
     final deviceId = Store.get(StoreKey.deviceId);
 
-    final (baseDirectory, directory, filename) =
-        await Task.split(filePath: file.path);
+    final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
     final stats = await file.stat();
     final fileCreatedAt = stats.changed;
     final fileModifiedAt = stats.modified;
@@ -415,6 +410,5 @@ class UploadTaskMetadata {
   }
 
   @override
-  int get hashCode =>
-      localAssetId.hashCode ^ isLivePhotos.hashCode ^ livePhotoVideoId.hashCode;
+  int get hashCode => localAssetId.hashCode ^ isLivePhotos.hashCode ^ livePhotoVideoId.hashCode;
 }

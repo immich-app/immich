@@ -27,8 +27,7 @@ class SearchFilterChip extends StatelessWidget {
             side: BorderSide(color: context.colorScheme.secondaryContainer),
           ),
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 2.0, horizontal: 14.0),
+            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 14.0),
             child: Row(
               children: [
                 Icon(

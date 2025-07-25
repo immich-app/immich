@@ -33,9 +33,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref.read(websocketProvider.notifier).connect();
 
-      final isEnableBackup = ref
-          .read(appSettingsServiceProvider)
-          .getSetting(AppSettingsEnum.enableBackup);
+      final isEnableBackup = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
 
       await runNewSync(ref, full: true).then((_) async {
         if (isEnableBackup) {
@@ -44,9 +42,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
             return;
           }
 
-          await ref
-              .read(driftBackupProvider.notifier)
-              .handleBackupResume(currentUser.id);
+          await ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
         }
       });
     });
@@ -110,8 +106,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
               ),
             )
             .toList(),
-        onDestinationSelected: (index) =>
-            _onNavigationSelected(tabsRouter, index, ref),
+        onDestinationSelected: (index) => _onNavigationSelected(tabsRouter, index, ref),
         selectedIndex: tabsRouter.activeIndex,
         labelType: NavigationRailLabelType.all,
         groupAlignment: 0.0,
@@ -134,8 +129,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         final tabsRouter = AutoTabsRouter.of(context);
         return PopScope(
           canPop: tabsRouter.activeIndex == 0,
-          onPopInvokedWithResult: (didPop, _) =>
-              !didPop ? tabsRouter.setActiveIndex(0) : null,
+          onPopInvokedWithResult: (didPop, _) => !didPop ? tabsRouter.setActiveIndex(0) : null,
           child: Scaffold(
             resizeToAvoidBottomInset: false,
             body: isScreenLandscape
@@ -191,8 +185,7 @@ class _BottomNavigationBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isScreenLandscape = context.orientation == Orientation.landscape;
-    final isMultiselectEnabled =
-        ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final isMultiselectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
     if (isScreenLandscape || isMultiselectEnabled) {
       return const SizedBox.shrink();
@@ -200,8 +193,7 @@ class _BottomNavigationBar extends ConsumerWidget {
 
     return NavigationBar(
       selectedIndex: tabsRouter.activeIndex,
-      onDestinationSelected: (index) =>
-          _onNavigationSelected(tabsRouter, index, ref),
+      onDestinationSelected: (index) => _onNavigationSelected(tabsRouter, index, ref),
       destinations: destinations,
     );
   }

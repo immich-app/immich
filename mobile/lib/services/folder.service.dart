@@ -30,15 +30,13 @@ class FolderService {
         fullPath = '/$fullPath';
       }
 
-      List<String> segments = fullPath.split('/')
-        ..removeWhere((s) => s.isEmpty);
+      List<String> segments = fullPath.split('/')..removeWhere((s) => s.isEmpty);
 
       String currentPath = '';
 
       for (int i = 0; i < segments.length; i++) {
         String parentPath = currentPath.isEmpty ? '_root_' : currentPath;
-        currentPath =
-            i == 0 ? '/${segments[i]}' : '$currentPath/${segments[i]}';
+        currentPath = i == 0 ? '/${segments[i]}' : '$currentPath/${segments[i]}';
 
         if (!folderMap.containsKey(parentPath)) {
           folderMap[parentPath] = [];
@@ -54,26 +52,20 @@ class FolderService {
           );
           // Sort folders based on order parameter
           folderMap[parentPath]!.sort(
-            (a, b) => order == SortOrder.desc
-                ? b.name.compareTo(a.name)
-                : a.name.compareTo(b.name),
+            (a, b) => order == SortOrder.desc ? b.name.compareTo(a.name) : a.name.compareTo(b.name),
           );
         }
       }
     }
 
     void attachSubfolders(RecursiveFolder folder) {
-      String fullPath = folder.path.isEmpty
-          ? '/${folder.name}'
-          : '${folder.path}/${folder.name}';
+      String fullPath = folder.path.isEmpty ? '/${folder.name}' : '${folder.path}/${folder.name}';
 
       if (folderMap.containsKey(fullPath)) {
         folder.subfolders.addAll(folderMap[fullPath]!);
         // Sort subfolders based on order parameter
         folder.subfolders.sort(
-          (a, b) => order == SortOrder.desc
-              ? b.name.compareTo(a.name)
-              : a.name.compareTo(b.name),
+          (a, b) => order == SortOrder.desc ? b.name.compareTo(a.name) : a.name.compareTo(b.name),
         );
         for (var subfolder in folder.subfolders) {
           attachSubfolders(subfolder);
@@ -84,9 +76,7 @@ class FolderService {
     List<RecursiveFolder> rootSubfolders = folderMap['_root_'] ?? [];
     // Sort root subfolders based on order parameter
     rootSubfolders.sort(
-      (a, b) => order == SortOrder.desc
-          ? b.name.compareTo(a.name)
-          : a.name.compareTo(b.name),
+      (a, b) => order == SortOrder.desc ? b.name.compareTo(a.name) : a.name.compareTo(b.name),
     );
 
     for (var folder in rootSubfolders) {
@@ -105,8 +95,7 @@ class FolderService {
   ) async {
     try {
       if (folder is RecursiveFolder) {
-        String fullPath =
-            folder.path.isEmpty ? folder.name : '${folder.path}/${folder.name}';
+        String fullPath = folder.path.isEmpty ? folder.name : '${folder.path}/${folder.name}';
         fullPath = fullPath[0] == '/' ? fullPath.substring(1) : fullPath;
         var result = await _folderApiRepository.getAssetsForPath(fullPath);
 

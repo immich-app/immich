@@ -58,9 +58,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           ),
           Center(
             child: Image.asset(
-              context.isDarkTheme
-                  ? 'assets/immich-text-dark.png'
-                  : 'assets/immich-text-light.png',
+              context.isDarkTheme ? 'assets/immich-text-dark.png' : 'assets/immich-text-light.png',
               height: 16,
             ),
           ),
@@ -131,10 +129,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 ok: "yes",
                 onOk: () async {
                   isLoggingOut.value = true;
-                  await ref
-                      .read(authProvider.notifier)
-                      .logout()
-                      .whenComplete(() => isLoggingOut.value = false);
+                  await ref.read(authProvider.notifier).logout().whenComplete(() => isLoggingOut.value = false);
 
                   ref.read(manualUploadProvider.notifier).cancelBackup();
                   ref.read(backupProvider.notifier).cancelBackup();
@@ -196,14 +191,12 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     child: LinearProgressIndicator(
                       minHeight: 10.0,
                       value: percentage,
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(10.0)),
+                      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 12.0),
-                    child:
-                        const Text('backup_controller_page_storage_format').tr(
+                    child: const Text('backup_controller_page_storage_format').tr(
                       namedArgs: {
                         'used': usedDiskSpace,
                         'total': totalDiskSpace,

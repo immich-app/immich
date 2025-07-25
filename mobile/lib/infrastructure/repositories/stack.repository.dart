@@ -8,8 +8,7 @@ class DriftStackRepository extends DriftDatabaseRepository {
   const DriftStackRepository(this._db) : super(_db);
 
   Future<List<Stack>> getAll(String userId) {
-    final query = _db.stackEntity.select()
-      ..where((e) => e.ownerId.equals(userId));
+    final query = _db.stackEntity.select()..where((e) => e.ownerId.equals(userId));
 
     return query.map((stack) {
       return stack.toDto();

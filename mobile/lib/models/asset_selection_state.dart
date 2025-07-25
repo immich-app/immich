@@ -48,9 +48,5 @@ class AssetSelectionState {
   }
 
   @override
-  int get hashCode =>
-      hasRemote.hashCode ^
-      hasLocal.hashCode ^
-      hasMerged.hashCode ^
-      selectedCount.hashCode;
+  int get hashCode => hasRemote.hashCode ^ hasLocal.hashCode ^ hasMerged.hashCode ^ selectedCount.hashCode;
 }

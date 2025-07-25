@@ -40,9 +40,7 @@ class EditImagePage extends ConsumerWidget {
     image.image.resolve(const ImageConfiguration()).addListener(
           ImageStreamListener(
             (ImageInfo info, bool _) {
-              info.image
-                  .toByteData(format: ImageByteFormat.png)
-                  .then((byteData) {
+              info.image.toByteData(format: ImageByteFormat.png).then((byteData) {
                 if (byteData != null) {
                   completer.complete(byteData.buffer.asUint8List());
                 } else {
@@ -50,8 +48,7 @@ class EditImagePage extends ConsumerWidget {
                 }
               });
             },
-            onError: (exception, stackTrace) =>
-                completer.completeError(exception),
+            onError: (exception, stackTrace) => completer.completeError(exception),
           ),
         );
     return completer.future;
@@ -103,9 +100,7 @@ class EditImagePage extends ConsumerWidget {
         ),
         actions: <Widget>[
           TextButton(
-            onPressed: isEdited
-                ? () => _saveEditedImage(context, asset, image, ref)
-                : null,
+            onPressed: isEdited ? () => _saveEditedImage(context, asset, image, ref) : null,
             child: Text(
               "save_to_gallery".tr(),
               style: TextStyle(

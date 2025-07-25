@@ -89,8 +89,7 @@ class _AssetMarkerIcon extends StatelessWidget {
                     imageUrl,
                     cacheKey: cacheKey,
                     headers: ApiService.getRequestHeaders(),
-                    errorListener: (_) =>
-                        const Icon(Icons.image_not_supported_outlined),
+                    errorListener: (_) => const Icon(Icons.image_not_supported_outlined),
                   ),
                 ),
               ),
@@ -175,7 +174,6 @@ class _PinPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_PinPainter old) {
-    return old.primaryColor != primaryColor ||
-        old.secondaryColor != secondaryColor;
+    return old.primaryColor != primaryColor || old.secondaryColor != secondaryColor;
   }
 }

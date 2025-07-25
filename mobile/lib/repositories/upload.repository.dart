@@ -53,13 +53,7 @@ class UploadRepository {
   }
 
   Future<void> getUploadInfo() async {
-    final [
-      enqueuedTasks,
-      runningTasks,
-      canceledTasks,
-      waitingTasks,
-      pausedTasks
-    ] = await Future.wait([
+    final [enqueuedTasks, runningTasks, canceledTasks, waitingTasks, pausedTasks] = await Future.wait([
       FileDownloader().database.allRecordsWithStatus(
             TaskStatus.enqueued,
             group: kBackupGroup,

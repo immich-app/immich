@@ -13,8 +13,7 @@ import 'package:logging/logging.dart';
 
 /// The local image provider for an asset
 /// Only viable
-class ImmichLocalThumbnailProvider
-    extends ImageProvider<ImmichLocalThumbnailProvider> {
+class ImmichLocalThumbnailProvider extends ImageProvider<ImmichLocalThumbnailProvider> {
   final Asset asset;
   final int height;
   final int width;
@@ -60,13 +59,11 @@ class ImmichLocalThumbnailProvider
     CacheManager cache,
     ImageDecoderCallback decode,
   ) async* {
-    final cacheKey =
-        '$userId${assetData.localId}${assetData.checksum}$width$height';
+    final cacheKey = '$userId${assetData.localId}${assetData.checksum}$width$height';
     final fileFromCache = await cache.getFileFromCache(cacheKey);
     if (fileFromCache != null) {
       try {
-        final buffer =
-            await ui.ImmutableBuffer.fromFilePath(fileFromCache.file.path);
+        final buffer = await ui.ImmutableBuffer.fromFilePath(fileFromCache.file.path);
         final codec = await decode(buffer);
         yield codec;
         return;

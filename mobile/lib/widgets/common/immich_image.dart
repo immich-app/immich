@@ -59,8 +59,7 @@ class ImmichImage extends StatelessWidget {
 
   // Whether to use the local asset image provider or a remote one
   static bool useLocal(Asset asset) =>
-      !asset.isRemote ||
-      asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false);
+      !asset.isRemote || asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false);
 
   @override
   Widget build(BuildContext context) {

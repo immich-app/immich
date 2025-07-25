@@ -51,9 +51,6 @@ class ServerDiskInfo {
 
   @override
   int get hashCode {
-    return diskAvailable.hashCode ^
-        diskSize.hashCode ^
-        diskUse.hashCode ^
-        diskUsagePercentage.hashCode;
+    return diskAvailable.hashCode ^ diskSize.hashCode ^ diskUse.hashCode ^ diskUsagePercentage.hashCode;
   }
 }

@@ -54,8 +54,7 @@ class SearchCuratedContent {
       SearchCuratedContent.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() =>
-      'CuratedContent(label: $label, subtitle: $subtitle, id: $id)';
+  String toString() => 'CuratedContent(label: $label, subtitle: $subtitle, id: $id)';
 
   @override
   bool operator ==(covariant SearchCuratedContent other) {

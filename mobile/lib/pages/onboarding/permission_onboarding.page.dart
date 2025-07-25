@@ -33,10 +33,8 @@ class PermissionOnboardingPage extends HookConsumerWidget {
           ).tr(),
           const SizedBox(height: 18),
           ElevatedButton(
-            onPressed: () => ref
-                .read(galleryPermissionNotifier.notifier)
-                .requestGalleryPermission()
-                .then((permission) async {
+            onPressed: () =>
+                ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission().then((permission) async {
               if (permission.isGranted) {
                 // If permission is limited, we will show the limited
                 // permission page
@@ -139,12 +137,8 @@ class PermissionOnboardingPage extends HookConsumerWidget {
     final Widget child = switch (permission) {
       PermissionStatus.limited => buildPermissionLimited(),
       PermissionStatus.denied => buildRequestPermission(),
-      PermissionStatus.granted ||
-      PermissionStatus.provisional =>
-        buildPermissionGranted(),
-      PermissionStatus.restricted ||
-      PermissionStatus.permanentlyDenied =>
-        buildPermissionDenied()
+      PermissionStatus.granted || PermissionStatus.provisional => buildPermissionGranted(),
+      PermissionStatus.restricted || PermissionStatus.permanentlyDenied => buildPermissionDenied()
     };
 
     return Scaffold(

@@ -13,13 +13,11 @@ class VideoPlaybackControls {
   final bool restarted;
 }
 
-final videoPlayerControlsProvider =
-    StateNotifierProvider<VideoPlayerControls, VideoPlaybackControls>((ref) {
+final videoPlayerControlsProvider = StateNotifierProvider<VideoPlayerControls, VideoPlaybackControls>((ref) {
   return VideoPlayerControls(ref);
 });
 
-const videoPlayerControlsDefault =
-    VideoPlaybackControls(position: 0, pause: false);
+const videoPlayerControlsDefault = VideoPlaybackControls(position: 0, pause: false);
 
 class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   VideoPlayerControls(this.ref) : super(videoPlayerControlsDefault);
@@ -64,17 +62,14 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void togglePlay() {
-    state =
-        VideoPlaybackControls(position: state.position, pause: !state.pause);
+    state = VideoPlaybackControls(position: state.position, pause: !state.pause);
   }
 
   void restart() {
-    state =
-        const VideoPlaybackControls(position: 0, pause: false, restarted: true);
-    ref.read(videoPlaybackValueProvider.notifier).value =
-        ref.read(videoPlaybackValueProvider.notifier).value.copyWith(
-              state: VideoPlaybackState.playing,
-              position: Duration.zero,
-            );
+    state = const VideoPlaybackControls(position: 0, pause: false, restarted: true);
+    ref.read(videoPlaybackValueProvider.notifier).value = ref.read(videoPlaybackValueProvider.notifier).value.copyWith(
+          state: VideoPlaybackState.playing,
+          position: Duration.zero,
+        );
   }
 }

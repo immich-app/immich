@@ -34,8 +34,7 @@ class DownloadPanel extends ConsumerWidget {
         duration: const Duration(milliseconds: 300),
         child: showProgress
             ? ConstrainedBox(
-                constraints:
-                    BoxConstraints.loose(Size(context.width - 32, 300)),
+                constraints: BoxConstraints.loose(Size(context.width - 32, 300)),
                 child: ListView.builder(
                   shrinkWrap: true,
                   itemCount: tasks.length,
@@ -122,8 +121,7 @@ class DownloadTaskTile extends StatelessWidget {
                     child: LinearProgressIndicator(
                       minHeight: 8.0,
                       value: progress,
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(10.0)),
+                      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                     ),
                   ),
                   const SizedBox(width: 8),

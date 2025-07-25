@@ -19,9 +19,7 @@ class LocalTimelinePage extends StatelessWidget {
       overrides: [
         timelineServiceProvider.overrideWith(
           (ref) {
-            final timelineService = ref
-                .watch(timelineFactoryProvider)
-                .localAlbum(albumId: album.id);
+            final timelineService = ref.watch(timelineFactoryProvider).localAlbum(albumId: album.id);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },

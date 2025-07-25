@@ -43,10 +43,8 @@ class TimelineHeader extends StatelessWidget {
 
     final date = (bucket as TimeBucket).date;
 
-    final isMonthHeader =
-        header == HeaderType.month || header == HeaderType.monthAndDay;
-    final isDayHeader =
-        header == HeaderType.day || header == HeaderType.monthAndDay;
+    final isMonthHeader = header == HeaderType.month || header == HeaderType.monthAndDay;
+    final isDayHeader = header == HeaderType.day || header == HeaderType.monthAndDay;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -111,9 +109,7 @@ class _BulkSelectIconButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     List<BaseAsset> bucketAssets;
     try {
-      bucketAssets = ref
-          .watch(timelineServiceProvider)
-          .getAssets(assetOffset, bucket.assetCount);
+      bucketAssets = ref.watch(timelineServiceProvider).getAssets(assetOffset, bucket.assetCount);
     } catch (e) {
       bucketAssets = <BaseAsset>[];
     }

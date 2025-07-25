@@ -14,8 +14,7 @@ class AssetStackRow extends ConsumerWidget {
     int opacity = ref.watch(
       assetViewerProvider.select((state) => state.backgroundOpacity),
     );
-    final showControls =
-        ref.watch(assetViewerProvider.select((s) => s.showingControls));
+    final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
     if (!showControls) {
       opacity = 0;
@@ -68,8 +67,7 @@ class _StackList extends ConsumerWidget {
             child: Container(
               height: 60,
               width: 60,
-              decoration: index ==
-                      ref.watch(assetViewerProvider.select((s) => s.stackIndex))
+              decoration: index == ref.watch(assetViewerProvider.select((s) => s.stackIndex))
                   ? const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.all(Radius.circular(6)),

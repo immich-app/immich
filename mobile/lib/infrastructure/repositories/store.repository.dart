@@ -63,23 +63,17 @@ class IsarStoreRepository extends IsarDatabaseRepository {
   }
 
   Future<StoreDto<Object>> _toUpdateEvent(StoreValue entity) async {
-    final key = StoreKey.values.firstWhere((e) => e.id == entity.id)
-        as StoreKey<Object>;
+    final key = StoreKey.values.firstWhere((e) => e.id == entity.id) as StoreKey<Object>;
     final value = await _toValue(key, entity);
     return StoreDto(key, value);
   }
 
-  Future<T?> _toValue<T>(StoreKey<T> key, StoreValue entity) async =>
-      switch (key.type) {
+  Future<T?> _toValue<T>(StoreKey<T> key, StoreValue entity) async => switch (key.type) {
         const (int) => entity.intValue,
         const (String) => entity.strValue,
         const (bool) => entity.intValue == 1,
-        const (DateTime) => entity.intValue == null
-            ? null
-            : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
-        const (UserDto) => entity.strValue == null
-            ? null
-            : await IsarUserRepository(_db).getByUserId(entity.strValue!),
+        const (DateTime) => entity.intValue == null ? null : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
+        const (UserDto) => entity.strValue == null ? null : await IsarUserRepository(_db).getByUserId(entity.strValue!),
         _ => null,
       } as T?;
 
@@ -101,10 +95,7 @@ class IsarStoreRepository extends IsarDatabaseRepository {
   }
 
   Future<List<StoreDto<Object>>> getAll() async {
-    final entities = await _db.storeValues
-        .filter()
-        .anyOf(validStoreKeys, (query, id) => query.idEqualTo(id))
-        .findAll();
+    final entities = await _db.storeValues.filter().anyOf(validStoreKeys, (query, id) => query.idEqualTo(id)).findAll();
     return Future.wait(entities.map((e) => _toUpdateEvent(e)).toList());
   }
 }

@@ -24,8 +24,7 @@ class IosDebugInfoTile extends HookConsumerWidget {
     if (processes == 0) {
       title = 'ios_debug_info_no_processes_queued'.t(context: context);
     } else {
-      title = 'ios_debug_info_processes_queued'
-          .t(context: context, args: {'count': processes});
+      title = 'ios_debug_info_processes_queued'.t(context: context, args: {'count': processes});
     }
 
     final df = DateFormat.yMd().add_jm();
@@ -33,14 +32,11 @@ class IosDebugInfoTile extends HookConsumerWidget {
     if (fetch == null && processing == null) {
       subtitle = 'ios_debug_info_no_sync_yet'.t(context: context);
     } else if (fetch != null && processing == null) {
-      subtitle = 'ios_debug_info_fetch_ran_at'
-          .t(context: context, args: {'dateTime': df.format(fetch)});
+      subtitle = 'ios_debug_info_fetch_ran_at'.t(context: context, args: {'dateTime': df.format(fetch)});
     } else if (processing != null && fetch == null) {
-      subtitle = 'ios_debug_info_processing_ran_at'
-          .t(context: context, args: {'dateTime': df.format(processing)});
+      subtitle = 'ios_debug_info_processing_ran_at'.t(context: context, args: {'dateTime': df.format(processing)});
     } else {
-      final fetchOrProcessing =
-          fetch!.isAfter(processing!) ? fetch : processing;
+      final fetchOrProcessing = fetch!.isAfter(processing!) ? fetch : processing;
       subtitle = 'ios_debug_info_last_sync_at'.t(
         context: context,
         args: {'dateTime': df.format(fetchOrProcessing)},

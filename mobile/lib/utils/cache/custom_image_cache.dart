@@ -60,15 +60,13 @@ final class CustomImageCache implements ImageCache {
   int get currentSizeBytes => _small.currentSizeBytes + _large.currentSizeBytes;
 
   @override
-  bool evict(Object key, {bool includeLive = true}) =>
-      _cacheForKey(key).evict(key, includeLive: includeLive);
+  bool evict(Object key, {bool includeLive = true}) => _cacheForKey(key).evict(key, includeLive: includeLive);
 
   @override
   int get liveImageCount => _small.liveImageCount + _large.liveImageCount;
 
   @override
-  int get pendingImageCount =>
-      _small.pendingImageCount + _large.pendingImageCount;
+  int get pendingImageCount => _small.pendingImageCount + _large.pendingImageCount;
 
   @override
   ImageStreamCompleter? putIfAbsent(
@@ -79,6 +77,5 @@ final class CustomImageCache implements ImageCache {
       _cacheForKey(key).putIfAbsent(key, loader, onError: onError);
 
   @override
-  ImageCacheStatus statusForKey(Object key) =>
-      _cacheForKey(key).statusForKey(key);
+  ImageCacheStatus statusForKey(Object key) => _cacheForKey(key).statusForKey(key);
 }

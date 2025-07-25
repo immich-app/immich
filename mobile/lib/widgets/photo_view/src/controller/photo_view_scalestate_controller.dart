@@ -20,17 +20,14 @@ typedef ScaleStateListener = void Function(double prevScale, double nextScale);
 ///
 class PhotoViewScaleStateController {
   late final IgnorableValueNotifier<PhotoViewScaleState> _scaleStateNotifier =
-      IgnorableValueNotifier(PhotoViewScaleState.initial)
-        ..addListener(_scaleStateChangeListener);
-  final StreamController<PhotoViewScaleState> _outputScaleStateCtrl =
-      StreamController<PhotoViewScaleState>.broadcast()
-        ..sink.add(PhotoViewScaleState.initial);
+      IgnorableValueNotifier(PhotoViewScaleState.initial)..addListener(_scaleStateChangeListener);
+  final StreamController<PhotoViewScaleState> _outputScaleStateCtrl = StreamController<PhotoViewScaleState>.broadcast()
+    ..sink.add(PhotoViewScaleState.initial);
 
   bool _hasZoomedOutManually = false;
 
   /// The output for state/value updates
-  Stream<PhotoViewScaleState> get outputScaleStateStream =>
-      _outputScaleStateCtrl.stream;
+  Stream<PhotoViewScaleState> get outputScaleStateStream => _outputScaleStateCtrl.stream;
 
   /// The state value before the last change or the initial state if the state has not been changed.
   PhotoViewScaleState prevScaleState = PhotoViewScaleState.initial;
@@ -62,9 +59,7 @@ class PhotoViewScaleStateController {
   bool get hasChanged => prevScaleState != scaleState;
 
   /// Check if is `zoomedIn` & `zoomedOut`
-  bool get isZooming =>
-      scaleState == PhotoViewScaleState.zoomedIn ||
-      scaleState == PhotoViewScaleState.zoomedOut;
+  bool get isZooming => scaleState == PhotoViewScaleState.zoomedIn || scaleState == PhotoViewScaleState.zoomedOut;
 
   /// Resets the state to the initial value;
   void reset() {

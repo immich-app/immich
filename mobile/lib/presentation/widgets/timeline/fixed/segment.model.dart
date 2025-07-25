@@ -39,9 +39,7 @@ class FixedSegment extends Segment {
   @override
   double indexToLayoutOffset(int index) {
     final relativeIndex = index - gridIndex;
-    return relativeIndex < 0
-        ? startOffset
-        : gridOffset + (mainAxisExtend * relativeIndex);
+    return relativeIndex < 0 ? startOffset : gridOffset + (mainAxisExtend * relativeIndex);
   }
 
   @override
@@ -98,8 +96,7 @@ class _FixedSegmentRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isScrubbing =
-        ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
+    final isScrubbing = ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
     final timelineService = ref.read(timelineServiceProvider);
 
     if (isScrubbing) {
@@ -215,11 +212,8 @@ class _AssetTileWidget extends ConsumerWidget {
 
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () => lockSelection
-            ? null
-            : _handleOnTap(context, ref, assetIndex, asset),
-        onLongPress: () =>
-            lockSelection ? null : _handleOnLongPress(ref, asset),
+        onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset),
+        onLongPress: () => lockSelection ? null : _handleOnLongPress(ref, asset),
         child: ThumbnailTile(
           asset,
           lockSelection: lockSelection,

@@ -129,14 +129,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
-    String deviceId =
-        Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;
+    String deviceId = Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;
 
     UserDto? user = _userService.tryGetMyUser();
 
     try {
-      final serverUser =
-          await _userService.refreshMyUser().timeout(_timeoutDuration);
+      final serverUser = await _userService.refreshMyUser().timeout(_timeoutDuration);
       if (serverUser == null) {
         _log.severe("Unable to get user information from the server.");
       } else {

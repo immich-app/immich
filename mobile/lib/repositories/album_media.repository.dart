@@ -7,14 +7,12 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:photo_manager/photo_manager.dart' hide AssetType;
 
-final albumMediaRepositoryProvider =
-    Provider((ref) => const AlbumMediaRepository());
+final albumMediaRepositoryProvider = Provider((ref) => const AlbumMediaRepository());
 
 class AlbumMediaRepository {
   const AlbumMediaRepository();
 
-  bool get useCustomFilter =>
-      Store.get(StoreKey.photoManagerCustomFilter, true);
+  bool get useCustomFilter => Store.get(StoreKey.photoManagerCustomFilter, true);
 
   FilterOptionGroup? _getAlbumFilter({
     DateTimeCond? updateTimeCond,
@@ -34,8 +32,7 @@ class AlbumMediaRepository {
               ),
               containsPathModified: containsPathModified ?? false,
               createTimeCond: DateTimeCond.def().copyWith(ignore: true),
-              updateTimeCond:
-                  updateTimeCond ?? DateTimeCond.def().copyWith(ignore: true),
+              updateTimeCond: updateTimeCond ?? DateTimeCond.def().copyWith(ignore: true),
               orders: orderBy ?? [],
             )
           : null;
@@ -51,16 +48,13 @@ class AlbumMediaRepository {
   }
 
   Future<List<String>> getAssetIds(String albumId) async {
-    final album =
-        await AssetPathEntity.fromId(albumId, filterOption: _getAlbumFilter());
-    final List<AssetEntity> assets =
-        await album.getAssetListRange(start: 0, end: 0x7fffffffffffffff);
+    final album = await AssetPathEntity.fromId(albumId, filterOption: _getAlbumFilter());
+    final List<AssetEntity> assets = await album.getAssetListRange(start: 0, end: 0x7fffffffffffffff);
     return assets.map((e) => e.id).toList();
   }
 
   Future<int> getAssetCount(String albumId) async {
-    final album =
-        await AssetPathEntity.fromId(albumId, filterOption: _getAlbumFilter());
+    final album = await AssetPathEntity.fromId(albumId, filterOption: _getAlbumFilter());
     return album.assetCountAsync;
   }
 
@@ -81,14 +75,11 @@ class AlbumMediaRepository {
                 min: modifiedFrom ?? DateTime.utc(-271820),
                 max: modifiedUntil ?? DateTime.utc(275760),
               ),
-        orderBy: orderByModificationDate
-            ? [const OrderOption(type: OrderOptionType.updateDate)]
-            : [],
+        orderBy: orderByModificationDate ? [const OrderOption(type: OrderOptionType.updateDate)] : [],
       ),
     );
 
-    final List<AssetEntity> assets =
-        await onDevice.getAssetListRange(start: start, end: end);
+    final List<AssetEntity> assets = await onDevice.getAssetListRange(start: start, end: end);
     return assets.map(AssetMediaRepository.toAsset).toList().cast();
   }
 
@@ -103,10 +94,8 @@ class AlbumMediaRepository {
   static Album _toAlbum(AssetPathEntity assetPathEntity) {
     final Album album = Album(
       name: assetPathEntity.name,
-      createdAt:
-          assetPathEntity.lastModified?.toUtc() ?? DateTime.now().toUtc(),
-      modifiedAt:
-          assetPathEntity.lastModified?.toUtc() ?? DateTime.now().toUtc(),
+      createdAt: assetPathEntity.lastModified?.toUtc() ?? DateTime.now().toUtc(),
+      modifiedAt: assetPathEntity.lastModified?.toUtc() ?? DateTime.now().toUtc(),
       shared: false,
       activityEnabled: false,
     );

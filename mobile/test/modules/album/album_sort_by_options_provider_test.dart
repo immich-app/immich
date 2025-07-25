@@ -261,9 +261,7 @@ void main() {
     });
 
     test('Properly saves the correct store index of sort mode', () {
-      container
-          .read(albumSortByOptionsProvider.notifier)
-          .changeSortMode(AlbumSortMode.mostOldest);
+      container.read(albumSortByOptionsProvider.notifier).changeSortMode(AlbumSortMode.mostOldest);
 
       verify(
         () => settingsMock.setSetting(
@@ -286,14 +284,10 @@ void main() {
       );
 
       // Created -> Most Oldest
-      container
-          .read(albumSortByOptionsProvider.notifier)
-          .changeSortMode(AlbumSortMode.mostOldest);
+      container.read(albumSortByOptionsProvider.notifier).changeSortMode(AlbumSortMode.mostOldest);
 
       // Most Oldest -> Title
-      container
-          .read(albumSortByOptionsProvider.notifier)
-          .changeSortMode(AlbumSortMode.title);
+      container.read(albumSortByOptionsProvider.notifier).changeSortMode(AlbumSortMode.title);
 
       verifyInOrder([
         () => listener.call(null, AlbumSortMode.created),
@@ -368,9 +362,7 @@ void main() {
       container.read(albumSortOrderProvider.notifier).changeSortDirection(true);
 
       // true -> false
-      container
-          .read(albumSortOrderProvider.notifier)
-          .changeSortDirection(false);
+      container.read(albumSortOrderProvider.notifier).changeSortDirection(false);
 
       verifyInOrder([
         () => listener.call(null, false),

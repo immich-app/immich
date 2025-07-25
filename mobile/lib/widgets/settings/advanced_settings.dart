@@ -25,23 +25,18 @@ class AdvancedSettings extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     bool isLoggedIn = ref.read(currentUserProvider) != null;
 
-    final advancedTroubleshooting =
-        useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
-    final manageLocalMediaAndroid =
-        useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
+    final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
+    final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
-    final allowSelfSignedSSLCert =
-        useAppSettingsState(AppSettingsEnum.allowSelfSignedSSLCert);
-    final useAlternatePMFilter =
-        useAppSettingsState(AppSettingsEnum.photoManagerCustomFilter);
+    final allowSelfSignedSSLCert = useAppSettingsState(AppSettingsEnum.allowSelfSignedSSLCert);
+    final useAlternatePMFilter = useAppSettingsState(AppSettingsEnum.photoManagerCustomFilter);
 
     final logLevel = Level.LEVELS[levelId.value].name;
 
     useValueChanged(
       levelId.value,
-      (_, __) =>
-          LogService.I.setLogLevel(Level.LEVELS[levelId.value].toLogLevel()),
+      (_, __) => LogService.I.setLogLevel(Level.LEVELS[levelId.value].toLogLevel()),
     );
 
     Future<bool> checkAndroidVersion() async {
@@ -72,9 +67,7 @@ class AdvancedSettings extends HookConsumerWidget {
               subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
               onChanged: (value) async {
                 if (value) {
-                  final result = await ref
-                      .read(localFilesManagerRepositoryProvider)
-                      .requestManageMediaPermission();
+                  final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
                   manageLocalMediaAndroid.value = result;
                 }
               },
@@ -85,8 +78,7 @@ class AdvancedSettings extends HookConsumerWidget {
         },
       ),
       SettingsSliderListTile(
-        text: "advanced_settings_log_level_title"
-            .tr(namedArgs: {'level': logLevel}),
+        text: "advanced_settings_log_level_title".tr(namedArgs: {'level': logLevel}),
         valueNotifier: levelId,
         maxValue: 8,
         minValue: 1,
@@ -111,8 +103,7 @@ class AdvancedSettings extends HookConsumerWidget {
       SettingsSwitchListTile(
         valueNotifier: useAlternatePMFilter,
         title: "advanced_settings_enable_alternate_media_filter_title".tr(),
-        subtitle:
-            "advanced_settings_enable_alternate_media_filter_subtitle".tr(),
+        subtitle: "advanced_settings_enable_alternate_media_filter_subtitle".tr(),
       ),
     ];
 

@@ -24,8 +24,7 @@ class ActivityTextField extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final album = ref.watch(currentAlbumProvider)!;
     final asset = ref.watch(currentAssetProvider);
-    final activityNotifier = ref
-        .read(albumActivityProvider(album.remoteId!, asset?.remoteId).notifier);
+    final activityNotifier = ref.read(albumActivityProvider(album.remoteId!, asset?.remoteId).notifier);
     final user = ref.watch(currentUserProvider);
     final inputController = useTextEditingController();
     final inputFocusNode = useFocusNode();
@@ -88,9 +87,7 @@ class ActivityTextField extends HookConsumerWidget {
             ),
           ),
           suffixIconColor: liked ? Colors.red[700] : null,
-          hintText: !isEnabled
-              ? 'shared_album_activities_input_disable'.tr()
-              : 'say_something'.tr(),
+          hintText: !isEnabled ? 'shared_album_activities_input_disable'.tr() : 'say_something'.tr(),
           hintStyle: TextStyle(
             fontWeight: FontWeight.normal,
             fontSize: 14,

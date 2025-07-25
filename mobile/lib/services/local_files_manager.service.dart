@@ -13,8 +13,7 @@ class LocalFilesManagerService {
 
   Future<bool> moveToTrash(List<String> mediaUrls) async {
     try {
-      return await _channel
-          .invokeMethod('moveToTrash', {'mediaUrls': mediaUrls});
+      return await _channel.invokeMethod('moveToTrash', {'mediaUrls': mediaUrls});
     } catch (e, s) {
       _logger.warning('Error moving file to trash', e, s);
       return false;

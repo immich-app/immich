@@ -11,8 +11,7 @@ class BackupErrorChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hasErrors =
-        ref.watch(errorBackupListProvider.select((value) => value.isNotEmpty));
+    final hasErrors = ref.watch(errorBackupListProvider.select((value) => value.isNotEmpty));
     if (!hasErrors) {
       return const SizedBox();
     }

@@ -58,15 +58,13 @@ List<_Segment> _buildSegments({
   DateTime? lastDate;
   double lastOffset = -offsetThreshold;
   for (final layoutSegment in layoutSegments) {
-    final scrollPercentage =
-        layoutSegment.startOffset / layoutSegments.last.endOffset;
+    final scrollPercentage = layoutSegment.startOffset / layoutSegments.last.endOffset;
     final startOffset = scrollPercentage * timelineHeight;
 
     final date = (layoutSegment.bucket as TimeBucket).date;
     final label = formatter.format(date);
 
-    final showSegment = lastOffset + offsetThreshold <= startOffset &&
-        (lastDate == null || date.year != lastDate.year);
+    final showSegment = lastOffset + offsetThreshold <= startOffset && (lastDate == null || date.year != lastDate.year);
 
     segments.add(
       _Segment(
@@ -85,8 +83,7 @@ List<_Segment> _buildSegments({
   return segments;
 }
 
-class ScrubberState extends ConsumerState<Scrubber>
-    with TickerProviderStateMixin {
+class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixin {
   double _thumbTopOffset = 0.0;
   bool _isDragging = false;
   List<_Segment> _segments = [];
@@ -98,17 +95,14 @@ class ScrubberState extends ConsumerState<Scrubber>
   late AnimationController _labelAnimationController;
   late Animation<double> _labelAnimation;
 
-  double get _scrubberHeight =>
-      widget.timelineHeight - widget.topPadding - widget.bottomPadding;
+  double get _scrubberHeight => widget.timelineHeight - widget.topPadding - widget.bottomPadding;
 
   late ScrollController _scrollController;
 
   double get _currentOffset {
     if (_scrollController.hasClients != true) return 0.0;
 
-    return _scrollController.offset *
-        _scrubberHeight /
-        _scrollController.position.maxScrollExtent;
+    return _scrollController.offset * _scrubberHeight / _scrollController.position.maxScrollExtent;
   }
 
   @override
@@ -148,8 +142,7 @@ class ScrubberState extends ConsumerState<Scrubber>
   void didUpdateWidget(covariant Scrubber oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.layoutSegments.lastOrNull?.endOffset !=
-        widget.layoutSegments.lastOrNull?.endOffset) {
+    if (oldWidget.layoutSegments.lastOrNull?.endOffset != widget.layoutSegments.lastOrNull?.endOffset) {
       _segments = _buildSegments(
         layoutSegments: widget.layoutSegments,
         timelineHeight: _scrubberHeight,
@@ -179,8 +172,7 @@ class ScrubberState extends ConsumerState<Scrubber>
       return false;
     }
 
-    if (notification is ScrollStartNotification ||
-        notification is ScrollUpdateNotification) {
+    if (notification is ScrollStartNotification || notification is ScrollUpdateNotification) {
       ref.read(timelineStateProvider.notifier).setScrolling(true);
     } else if (notification is ScrollEndNotification) {
       ref.read(timelineStateProvider.notifier).setScrolling(false);
@@ -287,8 +279,7 @@ class ScrubberState extends ConsumerState<Scrubber>
     return widget.layoutSegments.indexWhere(
       (layoutSegment) {
         final bucket = layoutSegment.bucket as TimeBucket;
-        return bucket.date.year == segment.date.year &&
-            bucket.date.month == segment.date.month;
+        return bucket.date.year == segment.date.year && bucket.date.month == segment.date.month;
       },
     );
   }
@@ -299,10 +290,7 @@ class ScrubberState extends ConsumerState<Scrubber>
     final viewportHeight = _scrollController.position.viewportDimension;
 
     final targetScrollOffset = layoutSegment.startOffset;
-    final centeredOffset = targetScrollOffset -
-        (viewportHeight / 4) +
-        100 +
-        (widget.monthSegmentSnappingOffset ?? 0.0);
+    final centeredOffset = targetScrollOffset - (viewportHeight / 4) + 100 + (widget.monthSegmentSnappingOffset ?? 0.0);
 
     _scrollController.jumpTo(centeredOffset.clamp(0.0, maxScrollExtent));
   }
@@ -354,8 +342,7 @@ class ScrubberState extends ConsumerState<Scrubber>
               isDragging: _isDragging,
             ),
           ),
-          if (_scrollController.hasClients &&
-              _scrollController.position.maxScrollExtent > 0)
+          if (_scrollController.hasClients && _scrollController.position.maxScrollExtent > 0)
             PositionedDirectional(
               top: _thumbTopOffset + widget.topPadding,
               end: 0,
@@ -492,9 +479,8 @@ class _Scrubber extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = context.isDarkTheme
-        ? context.colorScheme.primary.darken(amount: .5)
-        : context.colorScheme.primary;
+    final backgroundColor =
+        context.isDarkTheme ? context.colorScheme.primary.darken(amount: .5) : context.colorScheme.primary;
 
     return _SlideFadeTransition(
       animation: thumbAnimation,
@@ -590,8 +576,7 @@ class _SlideFadeTransition extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _animation,
-      builder: (context, child) =>
-          _animation.value == 0.0 ? const SizedBox() : child!,
+      builder: (context, child) => _animation.value == 0.0 ? const SizedBox() : child!,
       child: SlideTransition(
         position: Tween(
           begin: const Offset(0.3, 0.0),

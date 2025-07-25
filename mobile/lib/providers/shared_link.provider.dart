@@ -20,9 +20,7 @@ class SharedLinksNotifier extends StateNotifier<AsyncValue<List<SharedLink>>> {
   }
 }
 
-final sharedLinksStateProvider =
-    StateNotifierProvider<SharedLinksNotifier, AsyncValue<List<SharedLink>>>(
-        (ref) {
+final sharedLinksStateProvider = StateNotifierProvider<SharedLinksNotifier, AsyncValue<List<SharedLink>>>((ref) {
   return SharedLinksNotifier(
     ref.watch(sharedLinkServiceProvider),
   );

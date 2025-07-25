@@ -9,8 +9,7 @@ class Throttler {
   Throttler({required this.interval});
 
   T? run<T>(T Function() action) {
-    if (_lastActionTime == null ||
-        (DateTime.now().difference(_lastActionTime!) > interval)) {
+    if (_lastActionTime == null || (DateTime.now().difference(_lastActionTime!) > interval)) {
       final response = action();
       _lastActionTime = DateTime.now();
       return response;

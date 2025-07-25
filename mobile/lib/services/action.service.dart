@@ -192,8 +192,7 @@ class ActionService {
     final result = await _albumApiRepository.removeAssets(albumId, remoteIds);
 
     if (result.removed.isNotEmpty) {
-      removedCount =
-          await _remoteAlbumRepository.removeAssets(albumId, result.removed);
+      removedCount = await _remoteAlbumRepository.removeAssets(albumId, result.removed);
     }
 
     return removedCount;

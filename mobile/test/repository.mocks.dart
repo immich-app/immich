@@ -45,5 +45,4 @@ class MockPartnerRepository extends Mock implements PartnerRepository {}
 
 class MockPartnerApiRepository extends Mock implements PartnerApiRepository {}
 
-class MockLocalFilesManagerRepository extends Mock
-    implements LocalFilesManagerRepository {}
+class MockLocalFilesManagerRepository extends Mock implements LocalFilesManagerRepository {}

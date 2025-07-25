@@ -30,8 +30,7 @@ class EnqueueStatus {
   }
 
   @override
-  String toString() =>
-      'EnqueueStatus(enqueueCount: $enqueueCount, totalCount: $totalCount)';
+  String toString() => 'EnqueueStatus(enqueueCount: $enqueueCount, totalCount: $totalCount)';
 }
 
 class DriftUploadStatus {
@@ -197,8 +196,7 @@ class DriftBackupState {
   }
 }
 
-final driftBackupProvider =
-    StateNotifierProvider<ExpBackupNotifier, DriftBackupState>((ref) {
+final driftBackupProvider = StateNotifierProvider<ExpBackupNotifier, DriftBackupState>((ref) {
   return ExpBackupNotifier(
     ref.watch(uploadServiceProvider),
   );
@@ -231,8 +229,7 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   /// Remove upload item from state
   void _removeUploadItem(String taskId) {
     if (state.uploadItems.containsKey(taskId)) {
-      final updatedItems =
-          Map<String, DriftUploadStatus>.from(state.uploadItems);
+      final updatedItems = Map<String, DriftUploadStatus>.from(state.uploadItems);
       updatedItems.remove(taskId);
       state = state.copyWith(uploadItems: updatedItems);
     }

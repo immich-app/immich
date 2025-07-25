@@ -27,8 +27,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final bool canDeselect;
   final bool? dynamicLayout;
   final bool showMultiSelectIndicator;
-  final void Function(Iterable<ItemPosition> itemPositions)?
-      visibleItemsListener;
+  final void Function(Iterable<ItemPosition> itemPositions)? visibleItemsListener;
   final Widget? topWidget;
   final bool shrinkWrap;
   final bool showDragScroll;
@@ -82,10 +81,8 @@ class ImmichAssetGrid extends HookConsumerWidget {
     Widget buildAssetGridView(RenderList renderList) {
       return RawGestureDetector(
         gestures: {
-          CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<
-                  CustomScaleGestureRecognizer>(
-              () => CustomScaleGestureRecognizer(),
-              (CustomScaleGestureRecognizer scale) {
+          CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomScaleGestureRecognizer>(
+              () => CustomScaleGestureRecognizer(), (CustomScaleGestureRecognizer scale) {
             scale.onStart = (details) {
               baseScaleFactor.value = scaleFactor.value;
             };
@@ -106,15 +103,13 @@ class ImmichAssetGrid extends HookConsumerWidget {
           onRefresh: onRefresh,
           assetsPerRow: perRow.value,
           listener: listener,
-          showStorageIndicator: showStorageIndicator ??
-              settings.getSetting(AppSettingsEnum.storageIndicator),
+          showStorageIndicator: showStorageIndicator ?? settings.getSetting(AppSettingsEnum.storageIndicator),
           renderList: renderList,
           margin: margin,
           selectionActive: selectionActive,
           preselectedAssets: preselectedAssets,
           canDeselect: canDeselect,
-          dynamicLayout: dynamicLayout ??
-              settings.getSetting(AppSettingsEnum.dynamicLayout),
+          dynamicLayout: dynamicLayout ?? settings.getSetting(AppSettingsEnum.dynamicLayout),
           showMultiSelectIndicator: showMultiSelectIndicator,
           visibleItemsListener: visibleItemsListener,
           topWidget: topWidget,

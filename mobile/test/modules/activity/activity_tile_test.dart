@@ -57,8 +57,7 @@ void main() {
     expect(find.byType(ListTile), findsOneWidget);
   });
 
-  testWidgets('No trailing widget when activity assetId == null',
-      (tester) async {
+  testWidgets('No trailing widget when activity assetId == null', (tester) async {
     await tester.pumpConsumerWidget(
       ActivityTile(
         Activity(
@@ -75,9 +74,7 @@ void main() {
     expect(listTile.trailing, isNull);
   });
 
-  testWidgets(
-      'Asset Thumbanil as trailing widget when activity assetId != null',
-      (tester) async {
+  testWidgets('Asset Thumbanil as trailing widget when activity assetId != null', (tester) async {
     await tester.pumpConsumerWidget(
       ActivityTile(
         Activity(
@@ -176,8 +173,7 @@ void main() {
       user: UserStub.admin,
     );
 
-    testWidgets('Comment contains User Circle Avatar as leading',
-        (tester) async {
+    testWidgets('Comment contains User Circle Avatar as leading', (tester) async {
       await tester.pumpConsumerWidget(
         ActivityTile(activity),
         overrides: overrides,

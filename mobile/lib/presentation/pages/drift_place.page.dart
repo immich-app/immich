@@ -91,8 +91,7 @@ class _Map extends StatelessWidget {
                 width: context.width,
                 // TODO: migrate to DriftMapRoute after merging #19898
                 child: MapThumbnail(
-                  onTap: (_, __) => context
-                      .pushRoute(MapRoute(initialLocation: currentLocation)),
+                  onTap: (_, __) => context.pushRoute(MapRoute(initialLocation: currentLocation)),
                   zoom: 8,
                   centre: currentLocation ??
                       const LatLng(
@@ -100,8 +99,7 @@ class _Map extends StatelessWidget {
                         -157.91959,
                       ),
                   showAttribution: false,
-                  themeMode:
-                      context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
+                  themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
                 ),
               ),
             ),

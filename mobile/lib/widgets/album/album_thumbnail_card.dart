@@ -109,9 +109,7 @@ class AlbumThumbnailCard extends ConsumerWidget {
                         borderRadius: const BorderRadius.all(
                           Radius.circular(20),
                         ),
-                        child: album.thumbnail.value == null
-                            ? buildEmptyThumbnail()
-                            : buildAlbumThumbnail(),
+                        child: album.thumbnail.value == null ? buildEmptyThumbnail() : buildAlbumThumbnail(),
                       ),
                     ),
                     if (showTitle) ...[

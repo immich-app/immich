@@ -39,9 +39,7 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
       return;
     }
 
-    await ref
-        .read(driftBackupProvider.notifier)
-        .getBackupStatus(currentUser.id);
+    await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
     await ref.read(driftBackupProvider.notifier).startBackup(currentUser.id);
   }
 
@@ -224,9 +222,7 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
             if (currentUser == null) {
               return;
             }
-            ref
-                .read(driftBackupProvider.notifier)
-                .getBackupStatus(currentUser.id);
+            ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
           },
           child: const Text(
             "select",
@@ -245,8 +241,7 @@ class _TotalCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final totalCount =
-        ref.watch(driftBackupProvider.select((p) => p.totalCount));
+    final totalCount = ref.watch(driftBackupProvider.select((p) => p.totalCount));
 
     return BackupInfoCard(
       title: "total".tr(),
@@ -261,8 +256,7 @@ class _BackupCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final backupCount =
-        ref.watch(driftBackupProvider.select((p) => p.backupCount));
+    final backupCount = ref.watch(driftBackupProvider.select((p) => p.backupCount));
 
     return BackupInfoCard(
       title: "backup_controller_page_backup".tr(),
@@ -277,8 +271,7 @@ class _RemainderCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final remainderCount =
-        ref.watch(driftBackupProvider.select((p) => p.remainderCount));
+    final remainderCount = ref.watch(driftBackupProvider.select((p) => p.remainderCount));
     return BackupInfoCard(
       title: "backup_controller_page_remainder".tr(),
       subtitle: "backup_controller_page_remainder_sub".tr(),

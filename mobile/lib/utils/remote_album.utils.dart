@@ -41,8 +41,7 @@ class _RemoteAlbumSortHandlers {
     List<RemoteAlbum> albums,
     bool isReverse,
   ) {
-    final sorted =
-        albums.sorted((a, b) => a.assetCount.compareTo(b.assetCount));
+    final sorted = albums.sorted((a, b) => a.assetCount.compareTo(b.assetCount));
     return (isReverse ? sorted.reversed : sorted).toList();
   }
 

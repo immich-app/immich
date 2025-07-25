@@ -126,8 +126,7 @@ class ImmichApp extends ConsumerStatefulWidget {
   ImmichAppState createState() => ImmichAppState();
 }
 
-class ImmichAppState extends ConsumerState<ImmichApp>
-    with WidgetsBindingObserver {
+class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
@@ -168,9 +167,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       // Android 8 does not support transparent app bars
       final info = await DeviceInfoPlugin().androidInfo;
       if (info.version.sdkInt <= 26) {
-        overlayStyle = context.isDarkTheme
-            ? SystemUiOverlayStyle.dark
-            : SystemUiOverlayStyle.light;
+        overlayStyle = context.isDarkTheme ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light;
       }
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
@@ -222,8 +219,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     final deepLinkHandler = ref.read(deepLinkServiceProvider);
     final currentRouteName = ref.read(currentRouteNameProvider.notifier).state;
 
-    final isColdStart =
-        currentRouteName == null || currentRouteName == SplashScreenRoute.name;
+    final isColdStart = currentRouteName == null || currentRouteName == SplashScreenRoute.name;
 
     if (deepLink.uri.scheme == "immich") {
       final proposedRoute = await deepLinkHandler.handleScheme(
@@ -299,8 +295,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         ),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
-          navigatorObservers: () =>
-              [AppNavigationObserver(ref: ref), HeroController()],
+          navigatorObservers: () => [AppNavigationObserver(ref: ref), HeroController()],
         ),
       ),
     );

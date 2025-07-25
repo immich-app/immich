@@ -5,8 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
-  GalleryPermissionNotifier()
-      : super(PermissionStatus.denied) // Denied is the initial state
+  GalleryPermissionNotifier() : super(PermissionStatus.denied) // Denied is the initial state
   {
     // Sets the initial state
     getGalleryPermissionStatus();
@@ -36,8 +35,7 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
 
         // Return the joint result of those two permissions
         final PermissionStatus status;
-        if ((photos.isGranted && videos.isGranted) ||
-            (photos.isLimited && videos.isLimited)) {
+        if ((photos.isGranted && videos.isGranted) || (photos.isLimited && videos.isLimited)) {
           status = PermissionStatus.granted;
         } else if (photos.isDenied || videos.isDenied) {
           status = PermissionStatus.denied;
@@ -49,8 +47,7 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
 
         result = status;
       }
-      if (result == PermissionStatus.granted &&
-          androidInfo.version.sdkInt >= 29) {
+      if (result == PermissionStatus.granted && androidInfo.version.sdkInt >= 29) {
         result = await Permission.accessMediaLocation.request();
       }
     } else {
@@ -80,8 +77,7 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
 
         // Return the joint result of those two permissions
         final PermissionStatus status;
-        if ((photos.isGranted && videos.isGranted) ||
-            (photos.isLimited && videos.isLimited)) {
+        if ((photos.isGranted && videos.isGranted) || (photos.isLimited && videos.isLimited)) {
           status = PermissionStatus.granted;
         } else if (photos.isDenied || videos.isDenied) {
           status = PermissionStatus.denied;
@@ -93,8 +89,7 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
 
         result = status;
       }
-      if (state == PermissionStatus.granted &&
-          androidInfo.version.sdkInt >= 29) {
+      if (state == PermissionStatus.granted && androidInfo.version.sdkInt >= 29) {
         result = await Permission.accessMediaLocation.status;
       }
     } else {
@@ -107,7 +102,6 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
   }
 }
 
-final galleryPermissionNotifier =
-    StateNotifierProvider<GalleryPermissionNotifier, PermissionStatus>(
+final galleryPermissionNotifier = StateNotifierProvider<GalleryPermissionNotifier, PermissionStatus>(
   (ref) => GalleryPermissionNotifier(),
 );

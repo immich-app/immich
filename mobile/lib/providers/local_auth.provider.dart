@@ -9,8 +9,7 @@ import 'package:immich_mobile/services/local_auth.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
 import 'package:logging/logging.dart';
 
-final localAuthProvider =
-    StateNotifierProvider<LocalAuthNotifier, BiometricStatus>((ref) {
+final localAuthProvider = StateNotifierProvider<LocalAuthNotifier, BiometricStatus>((ref) {
   return LocalAuthNotifier(
     ref.watch(localAuthServiceProvider),
     ref.watch(secureStorageServiceProvider),
@@ -39,8 +38,7 @@ class LocalAuthNotifier extends StateNotifier<BiometricStatus> {
   }
 
   Future<bool> registerBiometric(BuildContext context, String pinCode) async {
-    final isAuthenticated =
-        await authenticate(context, 'Authenticate to enable biometrics');
+    final isAuthenticated = await authenticate(context, 'Authenticate to enable biometrics');
 
     if (!isAuthenticated) {
       return false;

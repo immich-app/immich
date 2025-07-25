@@ -9,8 +9,7 @@ import 'package:immich_mobile/widgets/photo_view/src/utils/photo_view_hero_attri
 
 export 'src/controller/photo_view_controller.dart';
 export 'src/controller/photo_view_scalestate_controller.dart';
-export 'src/core/photo_view_gesture_detector.dart'
-    show PhotoViewGestureDetectorScope, PhotoViewPageViewScrollPhysics;
+export 'src/core/photo_view_gesture_detector.dart' show PhotoViewGestureDetectorScope, PhotoViewPageViewScrollPhysics;
 export 'src/photo_view_computed_scale.dart';
 export 'src/photo_view_scale_state.dart';
 export 'src/utils/photo_view_hero_attributes.dart';
@@ -461,8 +460,7 @@ class PhotoView extends StatefulWidget {
   }
 }
 
-class _PhotoViewState extends State<PhotoView>
-    with AutomaticKeepAliveClientMixin {
+class _PhotoViewState extends State<PhotoView> with AutomaticKeepAliveClientMixin {
   // image retrieval
 
   // controller
@@ -550,8 +548,7 @@ class _PhotoViewState extends State<PhotoView>
         BoxConstraints constraints,
       ) {
         final computedOuterSize = widget.customSize ?? constraints.biggest;
-        final backgroundDecoration = widget.backgroundDecoration ??
-            const BoxDecoration(color: Colors.black);
+        final backgroundDecoration = widget.backgroundDecoration ?? const BoxDecoration(color: Colors.black);
 
         return widget._isCustomChild
             ? CustomChildWrapper(
@@ -625,14 +622,11 @@ class _PhotoViewState extends State<PhotoView>
 }
 
 /// The default [ScaleStateCycle]
-PhotoViewScaleState defaultScaleStateCycle(PhotoViewScaleState actual) =>
-    switch (actual) {
+PhotoViewScaleState defaultScaleStateCycle(PhotoViewScaleState actual) => switch (actual) {
       PhotoViewScaleState.initial => PhotoViewScaleState.covering,
       PhotoViewScaleState.covering => PhotoViewScaleState.originalSize,
       PhotoViewScaleState.originalSize => PhotoViewScaleState.initial,
-      PhotoViewScaleState.zoomedIn ||
-      PhotoViewScaleState.zoomedOut =>
-        PhotoViewScaleState.initial,
+      PhotoViewScaleState.zoomedIn || PhotoViewScaleState.zoomedOut => PhotoViewScaleState.initial,
     };
 
 /// A type definition for a [Function] that receives the actual [PhotoViewScaleState] and returns the next one

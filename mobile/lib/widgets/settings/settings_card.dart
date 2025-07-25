@@ -37,9 +37,7 @@ class SettingsCard extends StatelessWidget {
           leading: Container(
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.all(Radius.circular(16)),
-              color: context.isDarkTheme
-                  ? Colors.black26
-                  : Colors.white.withAlpha(100),
+              color: context.isDarkTheme ? Colors.black26 : Colors.white.withAlpha(100),
             ),
             padding: const EdgeInsets.all(16.0),
             child: Icon(icon, color: context.primaryColor),

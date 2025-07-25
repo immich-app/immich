@@ -37,10 +37,8 @@ void main() {
 
     registerFallbackValue(_kInfoLog);
 
-    when(() => mockLogRepo.truncate(limit: any(named: 'limit')))
-        .thenAnswer((_) async => {});
-    when(() => mockStoreRepo.tryGet<int>(StoreKey.logLevel))
-        .thenAnswer((_) async => LogLevel.fine.index);
+    when(() => mockLogRepo.truncate(limit: any(named: 'limit'))).thenAnswer((_) async => {});
+    when(() => mockStoreRepo.tryGet<int>(StoreKey.logLevel)).thenAnswer((_) async => LogLevel.fine.index);
     when(() => mockLogRepo.getAll()).thenAnswer((_) async => []);
     when(() => mockLogRepo.insert(any())).thenAnswer((_) async => true);
     when(() => mockLogRepo.insertAll(any())).thenAnswer((_) async => true);
@@ -57,10 +55,7 @@ void main() {
 
   group("Log Service Init:", () {
     test('Truncates the existing logs on init', () {
-      final limit =
-          verify(() => mockLogRepo.truncate(limit: captureAny(named: 'limit')))
-              .captured
-              .firstOrNull as int?;
+      final limit = verify(() => mockLogRepo.truncate(limit: captureAny(named: 'limit'))).captured.firstOrNull as int?;
       expect(limit, kLogTruncateLimit);
     });
 
@@ -72,8 +67,7 @@ void main() {
 
   group("Log Service Set Level:", () {
     setUp(() async {
-      when(() => mockStoreRepo.insert<int>(StoreKey.logLevel, any()))
-          .thenAnswer((_) async => true);
+      when(() => mockStoreRepo.insert<int>(StoreKey.logLevel, any())).thenAnswer((_) async => true);
       await sut.setLogLevel(LogLevel.shout);
     });
 

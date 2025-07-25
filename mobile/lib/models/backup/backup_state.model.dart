@@ -8,13 +8,7 @@ import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 
-enum BackUpProgressEnum {
-  idle,
-  inProgress,
-  manualInProgress,
-  inBackground,
-  done
-}
+enum BackUpProgressEnum { idle, inProgress, manualInProgress, inBackground, done }
 
 class BackUpState {
   // enum
@@ -105,26 +99,21 @@ class BackUpState {
       progressInFileSize: progressInFileSize ?? this.progressInFileSize,
       progressInFileSpeed: progressInFileSpeed ?? this.progressInFileSpeed,
       progressInFileSpeeds: progressInFileSpeeds ?? this.progressInFileSpeeds,
-      progressInFileSpeedUpdateTime:
-          progressInFileSpeedUpdateTime ?? this.progressInFileSpeedUpdateTime,
-      progressInFileSpeedUpdateSentBytes: progressInFileSpeedUpdateSentBytes ??
-          this.progressInFileSpeedUpdateSentBytes,
-      iCloudDownloadProgress:
-          iCloudDownloadProgress ?? this.iCloudDownloadProgress,
+      progressInFileSpeedUpdateTime: progressInFileSpeedUpdateTime ?? this.progressInFileSpeedUpdateTime,
+      progressInFileSpeedUpdateSentBytes: progressInFileSpeedUpdateSentBytes ?? this.progressInFileSpeedUpdateSentBytes,
+      iCloudDownloadProgress: iCloudDownloadProgress ?? this.iCloudDownloadProgress,
       cancelToken: cancelToken ?? this.cancelToken,
       serverInfo: serverInfo ?? this.serverInfo,
       autoBackup: autoBackup ?? this.autoBackup,
       backgroundBackup: backgroundBackup ?? this.backgroundBackup,
       backupRequireWifi: backupRequireWifi ?? this.backupRequireWifi,
-      backupRequireCharging:
-          backupRequireCharging ?? this.backupRequireCharging,
+      backupRequireCharging: backupRequireCharging ?? this.backupRequireCharging,
       backupTriggerDelay: backupTriggerDelay ?? this.backupTriggerDelay,
       availableAlbums: availableAlbums ?? this.availableAlbums,
       selectedBackupAlbums: selectedBackupAlbums ?? this.selectedBackupAlbums,
       excludedBackupAlbums: excludedBackupAlbums ?? this.excludedBackupAlbums,
       allUniqueAssets: allUniqueAssets ?? this.allUniqueAssets,
-      selectedAlbumsBackupAssetsIds:
-          selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
+      selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssetsIds ?? this.selectedAlbumsBackupAssetsIds,
       currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
     );
   }
@@ -146,8 +135,7 @@ class BackUpState {
         other.progressInFileSpeed == progressInFileSpeed &&
         collectionEquals(other.progressInFileSpeeds, progressInFileSpeeds) &&
         other.progressInFileSpeedUpdateTime == progressInFileSpeedUpdateTime &&
-        other.progressInFileSpeedUpdateSentBytes ==
-            progressInFileSpeedUpdateSentBytes &&
+        other.progressInFileSpeedUpdateSentBytes == progressInFileSpeedUpdateSentBytes &&
         other.iCloudDownloadProgress == iCloudDownloadProgress &&
         other.cancelToken == cancelToken &&
         other.serverInfo == serverInfo &&

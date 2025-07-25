@@ -74,9 +74,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
 
     if (context.router.current.name == SplashScreenRoute.name) {
       context.replaceRoute(
-        Store.isBetaTimelineEnabled
-            ? const TabShellRoute()
-            : const TabControllerRoute(),
+        Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute(),
       );
     }
 
@@ -84,8 +82,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       return;
     }
 
-    final hasPermission =
-        await ref.read(galleryPermissionNotifier.notifier).hasPermission;
+    final hasPermission = await ref.read(galleryPermissionNotifier.notifier).hasPermission;
     if (hasPermission) {
       // Resume backup (if enable) then navigate
       ref.watch(backupProvider.notifier).resumeBackup();
