@@ -87,7 +87,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         useColumns: false,
       ),
     ])
-      ..where(_db.remoteAlbumEntity.id.equals(albumId))
+      ..where(_db.remoteAlbumEntity.id.equals(albumId) & _db.remoteAssetEntity.deletedAt.isNull())
       ..addColumns([assetCount])
       ..addColumns([_db.userEntity.name])
       ..groupBy([_db.remoteAlbumEntity.id]);
