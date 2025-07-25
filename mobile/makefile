@@ -1,4 +1,4 @@
-.PHONY: build watch create_app_icon create_splash build_release_android pigeon
+.PHONY: build watch create_app_icon create_splash build_release_android pigeon test analyze format
 
 build:
 	dart run build_runner build --delete-conflicting-outputs
@@ -29,3 +29,14 @@ translation:
 	dart run bin/generate_keys.dart
 	dart format lib/generated/codegen_loader.g.dart
 	dart format lib/generated/intl_keys.g.dart
+
+analyze:
+	dart analyze --fatal-infos
+	dcm analyze lib --fatal-style --fatal-warnings
+
+format:
+# Ignore generated files manually until https://github.com/dart-lang/dart_style/issues/864 is resolved
+	dart format --set-exit-if-changed $$(find lib -name '*.dart' -not \( -name 'generated_plugin_registrant.dart' -o -name '*.g.dart' -o -name '*.drift.dart' \))
+
+test:
+	flutter test
