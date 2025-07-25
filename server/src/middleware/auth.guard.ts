@@ -12,6 +12,7 @@ import { Request } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ImmichQuery, MetadataKey, Permission } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { UserRepository } from 'src/repositories/user.repository';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
 import { UAParser } from 'ua-parser-js';
 
@@ -69,6 +70,7 @@ export class AuthGuard implements CanActivate {
     private logger: LoggingRepository,
     private reflector: Reflector,
     private authService: AuthService,
+    private userRepository: UserRepository,
   ) {
     this.logger.setContext(AuthGuard.name);
   }
@@ -93,6 +95,18 @@ export class AuthGuard implements CanActivate {
       queryParams: request.query as Record<string, string>,
       metadata: { adminRoute, sharedLinkRoute, permission, uri: request.path },
     });
+
+    const userAgent = request.headers['user-agent'];
+    if (userAgent && typeof userAgent === 'string' && request.user?.user?.id) {
+      const match = userAgent.match(/^Immich_(Android|iOS)_(\d+\.\d+\.\d+)/);
+      if (match) {
+        const appVersion = match[2];
+        if (request.user.user.appVersion !== appVersion) {
+          await this.userRepository.update(request.user.user.id, { appVersion });
+          request.user.user.appVersion = appVersion;
+        }
+      }
+    }
 
     return true;
   }

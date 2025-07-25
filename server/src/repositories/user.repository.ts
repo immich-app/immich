@@ -53,7 +53,7 @@ export class UserRepository {
 
     return this.db
       .selectFrom('user')
-      .select(columns.userAdmin)
+      .select([...columns.userAdmin, 'user.appVersion'])
       .select(withMetadata)
       .where('user.id', '=', userId)
       .$if(!options.withDeleted, (eb) => eb.where('user.deletedAt', 'is', null))
@@ -72,7 +72,7 @@ export class UserRepository {
   getAdmin() {
     return this.db
       .selectFrom('user')
-      .select(columns.userAdmin)
+      .select([...columns.userAdmin, 'user.appVersion'])
       .select(withMetadata)
       .where('user.isAdmin', '=', true)
       .where('user.deletedAt', 'is', null)
@@ -125,7 +125,7 @@ export class UserRepository {
   getByEmail(email: string, options?: { withPassword?: boolean }) {
     return this.db
       .selectFrom('user')
-      .select(columns.userAdmin)
+      .select([...columns.userAdmin, 'user.appVersion'])
       .select(withMetadata)
       .$if(!!options?.withPassword, (eb) => eb.select('password'))
       .where('email', '=', email)
@@ -137,7 +137,7 @@ export class UserRepository {
   getByStorageLabel(storageLabel: string) {
     return this.db
       .selectFrom('user')
-      .select(columns.userAdmin)
+      .select([...columns.userAdmin, 'user.appVersion'])
       .where('user.storageLabel', '=', storageLabel)
       .where('user.deletedAt', 'is', null)
       .executeTakeFirst();
@@ -147,7 +147,7 @@ export class UserRepository {
   getByOAuthId(oauthId: string) {
     return this.db
       .selectFrom('user')
-      .select(columns.userAdmin)
+      .select([...columns.userAdmin, 'user.appVersion'])
       .select(withMetadata)
       .where('user.oauthId', '=', oauthId)
       .where('user.deletedAt', 'is', null)
@@ -166,7 +166,7 @@ export class UserRepository {
   getList({ id, withDeleted }: UserListFilter = {}) {
     return this.db
       .selectFrom('user')
-      .select(columns.userAdmin)
+      .select([...columns.userAdmin, 'user.appVersion'])
       .select(withMetadata)
       .$if(!withDeleted, (eb) => eb.where('user.deletedAt', 'is', null))
       .$if(!!id, (eb) => eb.where('user.id', '=', id!))
@@ -178,7 +178,7 @@ export class UserRepository {
     return this.db
       .insertInto('user')
       .values(dto)
-      .returning(columns.userAdmin)
+      .returning([...columns.userAdmin, 'user.appVersion'])
       .returning(withMetadata)
       .executeTakeFirstOrThrow();
   }
@@ -189,7 +189,7 @@ export class UserRepository {
       .set(dto)
       .where('user.id', '=', asUuid(id))
       .where('user.deletedAt', 'is', null)
-      .returning(columns.userAdmin)
+      .returning([...columns.userAdmin, 'user.appVersion'])
       .returning(withMetadata)
       .executeTakeFirstOrThrow();
   }
@@ -199,7 +199,7 @@ export class UserRepository {
       .updateTable('user')
       .set({ status: UserStatus.Active, deletedAt: null })
       .where('user.id', '=', asUuid(id))
-      .returning(columns.userAdmin)
+      .returning([...columns.userAdmin, 'user.appVersion'])
       .returning(withMetadata)
       .executeTakeFirstOrThrow();
   }

@@ -55,14 +55,14 @@ export type ValidateRequest = {
 
 @Injectable()
 export class AuthService extends BaseService {
-  async login(dto: LoginCredentialDto, details: LoginDetails) {
+  async login(dto: LoginCredentialDto, details: LoginDetails, userAgentHeader?: string) {
     const config = await this.getConfig({ withCache: false });
     if (!config.passwordLogin.enabled) {
       throw new UnauthorizedException('Password login has been disabled');
     }
 
-    let user = await this.userRepository.getByEmail(dto.email, { withPassword: true });
-    if (user) {
+    let user = await this.userRepository.getByEmail(dto.email, { withPassword: true }) as (UserAdmin & { password?: string | null; appVersion?: string | null }) | undefined;
+    if (user && user.password) {
       const isAuthenticated = this.validateSecret(dto.password, user.password);
       if (!isAuthenticated) {
         user = undefined;
@@ -72,6 +72,17 @@ export class AuthService extends BaseService {
     if (!user) {
       this.logger.warn(`Failed login attempt for user ${dto.email} from ip address ${details.clientIp}`);
       throw new UnauthorizedException('Incorrect email or password');
+    }
+
+    if (userAgentHeader && typeof userAgentHeader === 'string') {
+      const match = userAgentHeader.match(/^Immich_(Android|iOS)_(\d+\.\d+\.\d+)/);
+      if (match) {
+        const appVersion = match[2];
+        if (user.appVersion !== appVersion) {
+          await this.userRepository.update(user.id, { appVersion });
+          user.appVersion = appVersion;
+        }
+      }
     }
 
     return this.createLoginResponse(user, details);
@@ -191,6 +202,9 @@ export class AuthService extends BaseService {
       throw new ForbiddenException(`Missing required permission: ${requestedPermission}`);
     }
 
+    if ('appVersion' in (authDto.user as any)) {
+      (authDto.user as any).appVersion = (authDto.user as any).appVersion ?? null;
+    }
     return authDto;
   }
 

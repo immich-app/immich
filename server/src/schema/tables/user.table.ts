@@ -37,6 +37,9 @@ export class UserTable {
   @Column({ nullable: true })
   pinCode!: string | null;
 
+  @Column({ nullable: true, default: null })
+  appVersion!: string | null;
+
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 
