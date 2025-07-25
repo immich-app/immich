@@ -1,8 +1,7 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, modalManager } from '@immich/ui';
   import { mdiTagMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';

@@ -1,3 +1,9 @@
 #!/usr/bin/env bash
 
-node /usr/src/app/node_modules/.bin/nest start --debug "0.0.0.0:9230" --watch -- "$@"
+if [ "$IMMICH_ENV" != "development" ]; then
+  echo "This command can only be run in development environments"
+  exit 1
+fi
+
+cd /usr/src/app/server || exit 1
+npm exec nest -- start --debug "0.0.0.0:9230" --watch -- "$@"

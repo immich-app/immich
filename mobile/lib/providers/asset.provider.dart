@@ -81,7 +81,9 @@ class AssetNotifier extends StateNotifier<bool> {
       await _albumService.refreshDeviceAlbums();
     } finally {
       _getAllAssetInProgress = false;
-      state = false;
+      if (mounted) {
+        state = false;
+      }
     }
   }
 

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB } from 'src/db';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserRole, AssetVisibility } from 'src/enum';
+import { DB } from 'src/schema';
 import { asUuid } from 'src/utils/database';
 
 class ActivityAccess {
@@ -35,9 +35,9 @@ class ActivityAccess {
     return this.db
       .selectFrom('activity')
       .select('activity.id')
-      .leftJoin('albums', (join) => join.onRef('activity.albumId', '=', 'albums.id').on('albums.deletedAt', 'is', null))
+      .leftJoin('album', (join) => join.onRef('activity.albumId', '=', 'album.id').on('album.deletedAt', 'is', null))
       .where('activity.id', 'in', [...activityIds])
-      .whereRef('albums.ownerId', '=', asUuid(userId))
+      .whereRef('album.ownerId', '=', asUuid(userId))
       .execute()
       .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
@@ -50,14 +50,14 @@ class ActivityAccess {
     }
 
     return this.db
-      .selectFrom('albums')
-      .select('albums.id')
-      .leftJoin('albums_shared_users_users as albumUsers', 'albumUsers.albumsId', 'albums.id')
-      .leftJoin('users', (join) => join.onRef('users.id', '=', 'albumUsers.usersId').on('users.deletedAt', 'is', null))
-      .where('albums.id', 'in', [...albumIds])
-      .where('albums.isActivityEnabled', '=', true)
-      .where((eb) => eb.or([eb('albums.ownerId', '=', userId), eb('users.id', '=', userId)]))
-      .where('albums.deletedAt', 'is', null)
+      .selectFrom('album')
+      .select('album.id')
+      .leftJoin('album_user as albumUsers', 'albumUsers.albumsId', 'album.id')
+      .leftJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.usersId').on('user.deletedAt', 'is', null))
+      .where('album.id', 'in', [...albumIds])
+      .where('album.isActivityEnabled', '=', true)
+      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('user.id', '=', userId)]))
+      .where('album.deletedAt', 'is', null)
       .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
@@ -74,11 +74,11 @@ class AlbumAccess {
     }
 
     return this.db
-      .selectFrom('albums')
-      .select('albums.id')
-      .where('albums.id', 'in', [...albumIds])
-      .where('albums.ownerId', '=', userId)
-      .where('albums.deletedAt', 'is', null)
+      .selectFrom('album')
+      .select('album.id')
+      .where('album.id', 'in', [...albumIds])
+      .where('album.ownerId', '=', userId)
+      .where('album.deletedAt', 'is', null)
       .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
@@ -91,17 +91,17 @@ class AlbumAccess {
     }
 
     const accessRole =
-      access === AlbumUserRole.EDITOR ? [AlbumUserRole.EDITOR] : [AlbumUserRole.EDITOR, AlbumUserRole.VIEWER];
+      access === AlbumUserRole.Editor ? [AlbumUserRole.Editor] : [AlbumUserRole.Editor, AlbumUserRole.Viewer];
 
     return this.db
-      .selectFrom('albums')
-      .select('albums.id')
-      .leftJoin('albums_shared_users_users as albumUsers', 'albumUsers.albumsId', 'albums.id')
-      .leftJoin('users', (join) => join.onRef('users.id', '=', 'albumUsers.usersId').on('users.deletedAt', 'is', null))
-      .where('albums.id', 'in', [...albumIds])
-      .where('albums.deletedAt', 'is', null)
-      .where('users.id', '=', userId)
-      .where('albumUsers.role', 'in', [...accessRole])
+      .selectFrom('album')
+      .select('album.id')
+      .leftJoin('album_user', 'album_user.albumsId', 'album.id')
+      .leftJoin('user', (join) => join.onRef('user.id', '=', 'album_user.usersId').on('user.deletedAt', 'is', null))
+      .where('album.id', 'in', [...albumIds])
+      .where('album.deletedAt', 'is', null)
+      .where('user.id', '=', userId)
+      .where('album_user.role', 'in', [...accessRole])
       .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
@@ -114,10 +114,10 @@ class AlbumAccess {
     }
 
     return this.db
-      .selectFrom('shared_links')
-      .select('shared_links.albumId')
-      .where('shared_links.id', '=', sharedLinkId)
-      .where('shared_links.albumId', 'in', [...albumIds])
+      .selectFrom('shared_link')
+      .select('shared_link.albumId')
+      .where('shared_link.id', '=', sharedLinkId)
+      .where('shared_link.albumId', 'in', [...albumIds])
       .execute()
       .then(
         (sharedLinks) => new Set(sharedLinks.flatMap((sharedLink) => (sharedLink.albumId ? [sharedLink.albumId] : []))),
@@ -136,21 +136,21 @@ class AssetAccess {
     }
 
     return this.db
-      .selectFrom('albums')
-      .innerJoin('albums_assets_assets as albumAssets', 'albums.id', 'albumAssets.albumsId')
-      .innerJoin('assets', (join) =>
-        join.onRef('assets.id', '=', 'albumAssets.assetsId').on('assets.deletedAt', 'is', null),
+      .selectFrom('album')
+      .innerJoin('album_asset as albumAssets', 'album.id', 'albumAssets.albumsId')
+      .innerJoin('asset', (join) =>
+        join.onRef('asset.id', '=', 'albumAssets.assetsId').on('asset.deletedAt', 'is', null),
       )
-      .leftJoin('albums_shared_users_users as albumUsers', 'albumUsers.albumsId', 'albums.id')
-      .leftJoin('users', (join) => join.onRef('users.id', '=', 'albumUsers.usersId').on('users.deletedAt', 'is', null))
-      .select(['assets.id', 'assets.livePhotoVideoId'])
+      .leftJoin('album_user as albumUsers', 'albumUsers.albumsId', 'album.id')
+      .leftJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.usersId').on('user.deletedAt', 'is', null))
+      .select(['asset.id', 'asset.livePhotoVideoId'])
       .where(
-        sql`array["assets"."id", "assets"."livePhotoVideoId"]`,
+        sql`array["asset"."id", "asset"."livePhotoVideoId"]`,
         '&&',
         sql`array[${sql.join([...assetIds])}]::uuid[] `,
       )
-      .where((eb) => eb.or([eb('albums.ownerId', '=', userId), eb('users.id', '=', userId)]))
-      .where('albums.deletedAt', 'is', null)
+      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('user.id', '=', userId)]))
+      .where('album.deletedAt', 'is', null)
       .execute()
       .then((assets) => {
         const allowedIds = new Set<string>();
@@ -174,11 +174,11 @@ class AssetAccess {
     }
 
     return this.db
-      .selectFrom('assets')
-      .select('assets.id')
-      .where('assets.id', 'in', [...assetIds])
-      .where('assets.ownerId', '=', userId)
-      .$if(!hasElevatedPermission, (eb) => eb.where('assets.visibility', '!=', AssetVisibility.LOCKED))
+      .selectFrom('asset')
+      .select('asset.id')
+      .where('asset.id', 'in', [...assetIds])
+      .where('asset.ownerId', '=', userId)
+      .$if(!hasElevatedPermission, (eb) => eb.where('asset.visibility', '!=', AssetVisibility.Locked))
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
@@ -191,23 +191,21 @@ class AssetAccess {
     }
 
     return this.db
-      .selectFrom('partners as partner')
-      .innerJoin('users as sharedBy', (join) =>
+      .selectFrom('partner')
+      .innerJoin('user as sharedBy', (join) =>
         join.onRef('sharedBy.id', '=', 'partner.sharedById').on('sharedBy.deletedAt', 'is', null),
       )
-      .innerJoin('assets', (join) =>
-        join.onRef('assets.ownerId', '=', 'sharedBy.id').on('assets.deletedAt', 'is', null),
-      )
-      .select('assets.id')
+      .innerJoin('asset', (join) => join.onRef('asset.ownerId', '=', 'sharedBy.id').on('asset.deletedAt', 'is', null))
+      .select('asset.id')
       .where('partner.sharedWithId', '=', userId)
       .where((eb) =>
         eb.or([
-          eb('assets.visibility', '=', sql.lit(AssetVisibility.TIMELINE)),
-          eb('assets.visibility', '=', sql.lit(AssetVisibility.HIDDEN)),
+          eb('asset.visibility', '=', sql.lit(AssetVisibility.Timeline)),
+          eb('asset.visibility', '=', sql.lit(AssetVisibility.Hidden)),
         ]),
       )
 
-      .where('assets.id', 'in', [...assetIds])
+      .where('asset.id', 'in', [...assetIds])
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
@@ -220,27 +218,25 @@ class AssetAccess {
     }
 
     return this.db
-      .selectFrom('shared_links')
-      .leftJoin('albums', (join) =>
-        join.onRef('albums.id', '=', 'shared_links.albumId').on('albums.deletedAt', 'is', null),
+      .selectFrom('shared_link')
+      .leftJoin('album', (join) => join.onRef('album.id', '=', 'shared_link.albumId').on('album.deletedAt', 'is', null))
+      .leftJoin('shared_link_asset', 'shared_link_asset.sharedLinksId', 'shared_link.id')
+      .leftJoin('asset', (join) =>
+        join.onRef('asset.id', '=', 'shared_link_asset.assetsId').on('asset.deletedAt', 'is', null),
       )
-      .leftJoin('shared_link__asset', 'shared_link__asset.sharedLinksId', 'shared_links.id')
-      .leftJoin('assets', (join) =>
-        join.onRef('assets.id', '=', 'shared_link__asset.assetsId').on('assets.deletedAt', 'is', null),
-      )
-      .leftJoin('albums_assets_assets', 'albums_assets_assets.albumsId', 'albums.id')
-      .leftJoin('assets as albumAssets', (join) =>
-        join.onRef('albumAssets.id', '=', 'albums_assets_assets.assetsId').on('albumAssets.deletedAt', 'is', null),
+      .leftJoin('album_asset', 'album_asset.albumsId', 'album.id')
+      .leftJoin('asset as albumAssets', (join) =>
+        join.onRef('albumAssets.id', '=', 'album_asset.assetsId').on('albumAssets.deletedAt', 'is', null),
       )
       .select([
-        'assets.id as assetId',
-        'assets.livePhotoVideoId as assetLivePhotoVideoId',
+        'asset.id as assetId',
+        'asset.livePhotoVideoId as assetLivePhotoVideoId',
         'albumAssets.id as albumAssetId',
         'albumAssets.livePhotoVideoId as albumAssetLivePhotoVideoId',
       ])
-      .where('shared_links.id', '=', sharedLinkId)
+      .where('shared_link.id', '=', sharedLinkId)
       .where(
-        sql`array["assets"."id", "assets"."livePhotoVideoId", "albumAssets"."id", "albumAssets"."livePhotoVideoId"]`,
+        sql`array["asset"."id", "asset"."livePhotoVideoId", "albumAssets"."id", "albumAssets"."livePhotoVideoId"]`,
         '&&',
         sql`array[${sql.join([...assetIds])}]::uuid[] `,
       )
@@ -277,10 +273,10 @@ class AuthDeviceAccess {
     }
 
     return this.db
-      .selectFrom('sessions')
-      .select('sessions.id')
-      .where('sessions.userId', '=', userId)
-      .where('sessions.id', 'in', [...deviceIds])
+      .selectFrom('session')
+      .select('session.id')
+      .where('session.userId', '=', userId)
+      .where('session.id', 'in', [...deviceIds])
       .execute()
       .then((tokens) => new Set(tokens.map((token) => token.id)));
   }
@@ -297,10 +293,10 @@ class NotificationAccess {
     }
 
     return this.db
-      .selectFrom('notifications')
-      .select('notifications.id')
-      .where('notifications.id', 'in', [...notificationIds])
-      .where('notifications.userId', '=', userId)
+      .selectFrom('notification')
+      .select('notification.id')
+      .where('notification.id', 'in', [...notificationIds])
+      .where('notification.userId', '=', userId)
       .execute()
       .then((stacks) => new Set(stacks.map((stack) => stack.id)));
   }
@@ -317,10 +313,10 @@ class SessionAccess {
     }
 
     return this.db
-      .selectFrom('sessions')
-      .select('sessions.id')
-      .where('sessions.id', 'in', [...sessionIds])
-      .where('sessions.userId', '=', userId)
+      .selectFrom('session')
+      .select('session.id')
+      .where('session.id', 'in', [...sessionIds])
+      .where('session.userId', '=', userId)
       .execute()
       .then((sessions) => new Set(sessions.map((session) => session.id)));
   }
@@ -336,10 +332,10 @@ class StackAccess {
     }
 
     return this.db
-      .selectFrom('asset_stack as stacks')
-      .select('stacks.id')
-      .where('stacks.id', 'in', [...stackIds])
-      .where('stacks.ownerId', '=', userId)
+      .selectFrom('stack')
+      .select('stack.id')
+      .where('stack.id', 'in', [...stackIds])
+      .where('stack.ownerId', '=', userId)
       .execute()
       .then((stacks) => new Set(stacks.map((stack) => stack.id)));
   }
@@ -356,10 +352,10 @@ class TimelineAccess {
     }
 
     return this.db
-      .selectFrom('partners')
-      .select('partners.sharedById')
-      .where('partners.sharedById', 'in', [...partnerIds])
-      .where('partners.sharedWithId', '=', userId)
+      .selectFrom('partner')
+      .select('partner.sharedById')
+      .where('partner.sharedById', 'in', [...partnerIds])
+      .where('partner.sharedWithId', '=', userId)
       .execute()
       .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
   }
@@ -376,11 +372,11 @@ class MemoryAccess {
     }
 
     return this.db
-      .selectFrom('memories')
-      .select('memories.id')
-      .where('memories.id', 'in', [...memoryIds])
-      .where('memories.ownerId', '=', userId)
-      .where('memories.deletedAt', 'is', null)
+      .selectFrom('memory')
+      .select('memory.id')
+      .where('memory.id', 'in', [...memoryIds])
+      .where('memory.ownerId', '=', userId)
+      .where('memory.deletedAt', 'is', null)
       .execute()
       .then((memories) => new Set(memories.map((memory) => memory.id)));
   }
@@ -413,13 +409,11 @@ class PersonAccess {
     }
 
     return this.db
-      .selectFrom('asset_faces')
-      .select('asset_faces.id')
-      .leftJoin('assets', (join) =>
-        join.onRef('assets.id', '=', 'asset_faces.assetId').on('assets.deletedAt', 'is', null),
-      )
-      .where('asset_faces.id', 'in', [...assetFaceIds])
-      .where('assets.ownerId', '=', userId)
+      .selectFrom('asset_face')
+      .select('asset_face.id')
+      .leftJoin('asset', (join) => join.onRef('asset.id', '=', 'asset_face.assetId').on('asset.deletedAt', 'is', null))
+      .where('asset_face.id', 'in', [...assetFaceIds])
+      .where('asset.ownerId', '=', userId)
       .execute()
       .then((faces) => new Set(faces.map((face) => face.id)));
   }
@@ -436,10 +430,10 @@ class PartnerAccess {
     }
 
     return this.db
-      .selectFrom('partners')
-      .select('partners.sharedById')
-      .where('partners.sharedById', 'in', [...partnerIds])
-      .where('partners.sharedWithId', '=', userId)
+      .selectFrom('partner')
+      .select('partner.sharedById')
+      .where('partner.sharedById', 'in', [...partnerIds])
+      .where('partner.sharedWithId', '=', userId)
       .execute()
       .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
   }
@@ -456,10 +450,10 @@ class TagAccess {
     }
 
     return this.db
-      .selectFrom('tags')
-      .select('tags.id')
-      .where('tags.id', 'in', [...tagIds])
-      .where('tags.userId', '=', userId)
+      .selectFrom('tag')
+      .select('tag.id')
+      .where('tag.id', 'in', [...tagIds])
+      .where('tag.userId', '=', userId)
       .execute()
       .then((tags) => new Set(tags.map((tag) => tag.id)));
   }

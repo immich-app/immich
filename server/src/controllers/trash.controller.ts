@@ -14,21 +14,21 @@ export class TrashController {
 
   @Post('empty')
   @HttpCode(HttpStatus.OK)
-  @Authenticated({ permission: Permission.ASSET_DELETE })
+  @Authenticated({ permission: Permission.AssetDelete })
   emptyTrash(@Auth() auth: AuthDto): Promise<TrashResponseDto> {
     return this.service.empty(auth);
   }
 
   @Post('restore')
   @HttpCode(HttpStatus.OK)
-  @Authenticated({ permission: Permission.ASSET_DELETE })
+  @Authenticated({ permission: Permission.AssetDelete })
   restoreTrash(@Auth() auth: AuthDto): Promise<TrashResponseDto> {
     return this.service.restore(auth);
   }
 
   @Post('restore/assets')
   @HttpCode(HttpStatus.OK)
-  @Authenticated({ permission: Permission.ASSET_DELETE })
+  @Authenticated({ permission: Permission.AssetDelete })
   restoreAssets(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<TrashResponseDto> {
     return this.service.restoreAssets(auth, dto);
   }

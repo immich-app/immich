@@ -80,7 +80,7 @@ export class AuthService extends BaseService {
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
     if (auth.session) {
       await this.sessionRepository.delete(auth.session.id);
-      await this.eventRepository.emit('session.delete', { sessionId: auth.session.id });
+      await this.eventRepository.emit('SessionDelete', { sessionId: auth.session.id });
     }
 
     return {
@@ -91,11 +91,7 @@ export class AuthService extends BaseService {
 
   async changePassword(auth: AuthDto, dto: ChangePasswordDto): Promise<UserAdminResponseDto> {
     const { password, newPassword } = dto;
-    const user = await this.userRepository.getByEmail(auth.user.email, { withPassword: true });
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
+    const user = await this.userRepository.getForChangePassword(auth.user.id);
     const valid = this.validateSecret(password, user.password);
     if (!valid) {
       throw new BadRequestException('Wrong password');
@@ -178,7 +174,8 @@ export class AuthService extends BaseService {
 
   async authenticate({ headers, queryParams, metadata }: ValidateRequest): Promise<AuthDto> {
     const authDto = await this.validate({ headers, queryParams });
-    const { adminRoute, sharedLinkRoute, permission, uri } = metadata;
+    const { adminRoute, sharedLinkRoute, uri } = metadata;
+    const requestedPermission = metadata.permission ?? Permission.All;
 
     if (!authDto.user.isAdmin && adminRoute) {
       this.logger.warn(`Denied access to admin only route: ${uri}`);
@@ -190,21 +187,21 @@ export class AuthService extends BaseService {
       throw new ForbiddenException('Forbidden');
     }
 
-    if (authDto.apiKey && permission && !isGranted({ requested: [permission], current: authDto.apiKey.permissions })) {
-      throw new ForbiddenException(`Missing required permission: ${permission}`);
+    if (authDto.apiKey && !isGranted({ requested: [requestedPermission], current: authDto.apiKey.permissions })) {
+      throw new ForbiddenException(`Missing required permission: ${requestedPermission}`);
     }
 
     return authDto;
   }
 
   private async validate({ headers, queryParams }: Omit<ValidateRequest, 'metadata'>): Promise<AuthDto> {
-    const shareKey = (headers[ImmichHeader.SHARED_LINK_KEY] || queryParams[ImmichQuery.SHARED_LINK_KEY]) as string;
-    const session = (headers[ImmichHeader.USER_TOKEN] ||
-      headers[ImmichHeader.SESSION_TOKEN] ||
-      queryParams[ImmichQuery.SESSION_KEY] ||
+    const shareKey = (headers[ImmichHeader.SharedLinkKey] || queryParams[ImmichQuery.SharedLinkKey]) as string;
+    const session = (headers[ImmichHeader.UserToken] ||
+      headers[ImmichHeader.SessionToken] ||
+      queryParams[ImmichQuery.SessionKey] ||
       this.getBearerToken(headers) ||
       this.getCookieToken(headers)) as string;
-    const apiKey = (headers[ImmichHeader.API_KEY] || queryParams[ImmichQuery.API_KEY]) as string;
+    const apiKey = (headers[ImmichHeader.ApiKey] || queryParams[ImmichQuery.ApiKey]) as string;
 
     if (shareKey) {
       return this.validateSharedLink(shareKey);
@@ -254,7 +251,7 @@ export class AuthService extends BaseService {
     const { oauth } = await this.getConfig({ withCache: false });
     const url = this.resolveRedirectUri(oauth, dto.url);
     const profile = await this.oauthRepository.getProfile(oauth, url, expectedState, codeVerifier);
-    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim } = oauth;
+    const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
 
@@ -294,6 +291,11 @@ export class AuthService extends BaseService {
         default: defaultStorageQuota,
         isValid: (value: unknown) => Number(value) >= 0,
       });
+      const role = this.getClaim<'admin' | 'user'>(profile, {
+        key: roleClaim,
+        default: 'user',
+        isValid: (value: unknown) => isString(value) && ['admin', 'user'].includes(value),
+      });
 
       const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
       user = await this.createUser({
@@ -302,6 +304,7 @@ export class AuthService extends BaseService {
         oauthId: profile.sub,
         quotaSizeInBytes: storageQuota === null ? null : storageQuota * HumanReadableSize.GiB,
         storageLabel: storageLabel || null,
+        isAdmin: role === 'admin',
       });
     }
 
@@ -319,7 +322,7 @@ export class AuthService extends BaseService {
       const { contentType, data } = await this.oauthRepository.getProfilePicture(url);
       const extensionWithDot = mimeTypes.toExtension(contentType || 'image/jpeg') ?? 'jpg';
       const profileImagePath = join(
-        StorageCore.getFolderLocation(StorageFolder.PROFILE, user.id),
+        StorageCore.getFolderLocation(StorageFolder.Profile, user.id),
         `${this.cryptoRepository.randomUUID()}${extensionWithDot}`,
       );
 
@@ -328,7 +331,7 @@ export class AuthService extends BaseService {
       await this.userRepository.update(user.id, { profileImagePath, profileChangedAt: new Date() });
 
       if (oldPath) {
-        await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [oldPath] } });
+        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [oldPath] } });
       }
     } catch (error: Error | any) {
       this.logger.warn(`Unable to sync oauth profile picture: ${error}`, error?.stack);
@@ -364,7 +367,7 @@ export class AuthService extends BaseService {
   }
 
   private async getLogoutEndpoint(authType: AuthType): Promise<string> {
-    if (authType !== AuthType.OAUTH) {
+    if (authType !== AuthType.OAuth) {
       return LOGIN_URL;
     }
 
@@ -387,17 +390,17 @@ export class AuthService extends BaseService {
 
   private getCookieToken(headers: IncomingHttpHeaders): string | null {
     const cookies = parse(headers.cookie || '');
-    return cookies[ImmichCookie.ACCESS_TOKEN] || null;
+    return cookies[ImmichCookie.AccessToken] || null;
   }
 
   private getCookieOauthState(headers: IncomingHttpHeaders): string | null {
     const cookies = parse(headers.cookie || '');
-    return cookies[ImmichCookie.OAUTH_STATE] || null;
+    return cookies[ImmichCookie.OAuthState] || null;
   }
 
   private getCookieCodeVerifier(headers: IncomingHttpHeaders): string | null {
     const cookies = parse(headers.cookie || '');
-    return cookies[ImmichCookie.OAUTH_CODE_VERIFIER] || null;
+    return cookies[ImmichCookie.OAuthCodeVerifier] || null;
   }
 
   async validateSharedLink(key: string | string[]): Promise<AuthDto> {
@@ -464,6 +467,7 @@ export class AuthService extends BaseService {
         user: session.user,
         session: {
           id: session.id,
+          isPendingSyncReset: session.isPendingSyncReset,
           hasElevatedPermission,
         },
       };

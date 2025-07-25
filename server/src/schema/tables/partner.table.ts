@@ -1,14 +1,22 @@
 import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { partners_delete_audit } from 'src/schema/functions';
+import { partner_delete_audit } from 'src/schema/functions';
 import { UserTable } from 'src/schema/tables/user.table';
-import { AfterDeleteTrigger, Column, CreateDateColumn, ForeignKeyColumn, Table, UpdateDateColumn } from 'src/sql-tools';
+import {
+  AfterDeleteTrigger,
+  Column,
+  CreateDateColumn,
+  ForeignKeyColumn,
+  Generated,
+  Table,
+  Timestamp,
+  UpdateDateColumn,
+} from 'src/sql-tools';
 
-@Table('partners')
-@UpdatedAtTrigger('partners_updated_at')
+@Table('partner')
+@UpdatedAtTrigger('partner_updatedAt')
 @AfterDeleteTrigger({
-  name: 'partners_delete_audit',
   scope: 'statement',
-  function: partners_delete_audit,
+  function: partner_delete_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
 })
@@ -25,17 +33,17 @@ export class PartnerTable {
   sharedWithId!: string;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 
-  @CreateIdColumn({ indexName: 'IDX_partners_create_id' })
-  createId!: string;
+  @CreateIdColumn({ index: true })
+  createId!: Generated<string>;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Generated<Timestamp>;
 
   @Column({ type: 'boolean', default: false })
-  inTimeline!: boolean;
+  inTimeline!: Generated<boolean>;
 
-  @UpdateIdColumn({ indexName: 'IDX_partners_update_id' })
-  updateId!: string;
+  @UpdateIdColumn({ index: true })
+  updateId!: Generated<string>;
 }

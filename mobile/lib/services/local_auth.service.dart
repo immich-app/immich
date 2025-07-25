@@ -11,7 +11,7 @@ final localAuthServiceProvider = Provider(
 class LocalAuthService {
   final BiometricRepository _biometricRepository;
 
-  LocalAuthService(this._biometricRepository);
+  const LocalAuthService(this._biometricRepository);
 
   Future<BiometricStatus> getStatus() {
     return _biometricRepository.getStatus();

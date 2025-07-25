@@ -15,7 +15,6 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { ActionQueryParameterValue, AppRoute, QueryParameter, SessionStorageKey } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
@@ -24,7 +23,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
   import { getAllPeople, getPerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, modalManager } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -203,8 +202,12 @@
         personUpdateDto: { isFavorite: !detail.isFavorite },
       });
 
-      const index = people.findIndex((person) => person.id === detail.id);
-      people[index] = updatedPerson;
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
 
       notificationController.show({
         message: updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'),

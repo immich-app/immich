@@ -20,7 +20,7 @@
     mdiDownload,
     mdiFeatureSearchOutline,
     mdiLockSmart,
-    mdiOnepassword,
+    mdiFormTextboxPassword,
     mdiServerOutline,
     mdiTwoFactorAuthentication,
   } from '@mdi/js';
@@ -122,7 +122,12 @@
     </SettingAccordion>
   {/if}
 
-  <SettingAccordion icon={mdiOnepassword} key="password" title={$t('password')} subtitle={$t('change_your_password')}>
+  <SettingAccordion
+    icon={mdiFormTextboxPassword}
+    key="password"
+    title={$t('password')}
+    subtitle={$t('change_your_password')}
+  >
     <ChangePasswordSettings />
   </SettingAccordion>
 

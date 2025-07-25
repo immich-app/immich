@@ -1,6 +1,5 @@
 import { goto } from '$app/navigation';
 import { AppRoute } from '$lib/constants';
-import { modalManager } from '$lib/managers/modal-manager.svelte';
 import {
   AlbumFilter,
   AlbumGroupBy,
@@ -13,6 +12,7 @@ import {
 import { handleError } from '$lib/utils/handle-error';
 import type { AlbumResponseDto } from '@immich/sdk';
 import * as sdk from '@immich/sdk';
+import { modalManager } from '@immich/ui';
 import { orderBy } from 'lodash-es';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';

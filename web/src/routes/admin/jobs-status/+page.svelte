@@ -2,11 +2,10 @@
   import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import { AppRoute } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import JobCreateModal from '$lib/modals/JobCreateModal.svelte';
   import { asyncTimeout } from '$lib/utils';
   import { getAllJobsStatus, type AllJobStatusResponseDto } from '@immich/sdk';
-  import { Button, HStack, Text } from '@immich/ui';
+  import { Button, HStack, modalManager, Text } from '@immich/ui';
   import { mdiCog, mdiPlus } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';

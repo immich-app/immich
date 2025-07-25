@@ -17,6 +17,7 @@ import {
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
+import { SvelteSet } from 'svelte/reactivity';
 import { DayGroup } from './day-group.svelte';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
 import type { TimelineManager } from './timeline-manager.svelte';
@@ -115,15 +116,15 @@ export class MonthGroup {
     if (ids.size === 0) {
       return {
         moveAssets: [] as MoveAsset[],
-        processedIds: new Set<string>(),
+        processedIds: new SvelteSet<string>(),
         unprocessedIds: ids,
         changedGeometry: false,
       };
     }
     const { dayGroups } = this;
     let combinedChangedGeometry = false;
-    let idsToProcess = new Set(ids);
-    const idsProcessed = new Set<string>();
+    let idsToProcess = new SvelteSet(ids);
+    const idsProcessed = new SvelteSet<string>();
     const combinedMoveAssets: MoveAsset[][] = [];
     let index = dayGroups.length;
     while (index--) {

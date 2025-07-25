@@ -2,66 +2,66 @@
 
 -- StackRepository.search
 select
-  "asset_stack".*,
+  "stack".*,
   (
     select
       coalesce(json_agg(agg), '[]')
     from
       (
         select
-          "assets".*,
+          "asset".*,
           to_json("exifInfo") as "exifInfo"
         from
-          "assets"
+          "asset"
           inner join lateral (
             select
-              "exif"."assetId",
-              "exif"."autoStackId",
-              "exif"."bitsPerSample",
-              "exif"."city",
-              "exif"."colorspace",
-              "exif"."country",
-              "exif"."dateTimeOriginal",
-              "exif"."description",
-              "exif"."exifImageHeight",
-              "exif"."exifImageWidth",
-              "exif"."exposureTime",
-              "exif"."fileSizeInByte",
-              "exif"."fNumber",
-              "exif"."focalLength",
-              "exif"."fps",
-              "exif"."iso",
-              "exif"."latitude",
-              "exif"."lensModel",
-              "exif"."livePhotoCID",
-              "exif"."longitude",
-              "exif"."make",
-              "exif"."model",
-              "exif"."modifyDate",
-              "exif"."orientation",
-              "exif"."profileDescription",
-              "exif"."projectionType",
-              "exif"."rating",
-              "exif"."state",
-              "exif"."timeZone"
+              "asset_exif"."assetId",
+              "asset_exif"."autoStackId",
+              "asset_exif"."bitsPerSample",
+              "asset_exif"."city",
+              "asset_exif"."colorspace",
+              "asset_exif"."country",
+              "asset_exif"."dateTimeOriginal",
+              "asset_exif"."description",
+              "asset_exif"."exifImageHeight",
+              "asset_exif"."exifImageWidth",
+              "asset_exif"."exposureTime",
+              "asset_exif"."fileSizeInByte",
+              "asset_exif"."fNumber",
+              "asset_exif"."focalLength",
+              "asset_exif"."fps",
+              "asset_exif"."iso",
+              "asset_exif"."latitude",
+              "asset_exif"."lensModel",
+              "asset_exif"."livePhotoCID",
+              "asset_exif"."longitude",
+              "asset_exif"."make",
+              "asset_exif"."model",
+              "asset_exif"."modifyDate",
+              "asset_exif"."orientation",
+              "asset_exif"."profileDescription",
+              "asset_exif"."projectionType",
+              "asset_exif"."rating",
+              "asset_exif"."state",
+              "asset_exif"."timeZone"
             from
-              "exif"
+              "asset_exif"
             where
-              "exif"."assetId" = "assets"."id"
+              "asset_exif"."assetId" = "asset"."id"
           ) as "exifInfo" on true
         where
-          "assets"."deletedAt" is null
-          and "assets"."stackId" = "asset_stack"."id"
-          and "assets"."visibility" in ('archive', 'timeline')
+          "asset"."deletedAt" is null
+          and "asset"."stackId" = "stack"."id"
+          and "asset"."visibility" in ('archive', 'timeline')
       ) as agg
   ) as "assets"
 from
-  "asset_stack"
+  "stack"
 where
-  "asset_stack"."ownerId" = $1
+  "stack"."ownerId" = $1
 
 -- StackRepository.delete
-delete from "asset_stack"
+delete from "stack"
 where
   "id" = $1::uuid
 
@@ -74,72 +74,82 @@ select
     from
       (
         select
-          "assets".*,
+          "asset".*,
           (
             select
               coalesce(json_agg(agg), '[]')
             from
               (
                 select
-                  "tags"."id",
-                  "tags"."value",
-                  "tags"."createdAt",
-                  "tags"."updatedAt",
-                  "tags"."color",
-                  "tags"."parentId"
+                  "tag"."id",
+                  "tag"."value",
+                  "tag"."createdAt",
+                  "tag"."updatedAt",
+                  "tag"."color",
+                  "tag"."parentId"
                 from
-                  "tags"
-                  inner join "tag_asset" on "tags"."id" = "tag_asset"."tagsId"
+                  "tag"
+                  inner join "tag_asset" on "tag"."id" = "tag_asset"."tagsId"
                 where
-                  "tag_asset"."assetsId" = "assets"."id"
+                  "tag_asset"."assetsId" = "asset"."id"
               ) as agg
           ) as "tags",
           to_json("exifInfo") as "exifInfo"
         from
-          "assets"
+          "asset"
           inner join lateral (
             select
-              "exif"."assetId",
-              "exif"."autoStackId",
-              "exif"."bitsPerSample",
-              "exif"."city",
-              "exif"."colorspace",
-              "exif"."country",
-              "exif"."dateTimeOriginal",
-              "exif"."description",
-              "exif"."exifImageHeight",
-              "exif"."exifImageWidth",
-              "exif"."exposureTime",
-              "exif"."fileSizeInByte",
-              "exif"."fNumber",
-              "exif"."focalLength",
-              "exif"."fps",
-              "exif"."iso",
-              "exif"."latitude",
-              "exif"."lensModel",
-              "exif"."livePhotoCID",
-              "exif"."longitude",
-              "exif"."make",
-              "exif"."model",
-              "exif"."modifyDate",
-              "exif"."orientation",
-              "exif"."profileDescription",
-              "exif"."projectionType",
-              "exif"."rating",
-              "exif"."state",
-              "exif"."timeZone"
+              "asset_exif"."assetId",
+              "asset_exif"."autoStackId",
+              "asset_exif"."bitsPerSample",
+              "asset_exif"."city",
+              "asset_exif"."colorspace",
+              "asset_exif"."country",
+              "asset_exif"."dateTimeOriginal",
+              "asset_exif"."description",
+              "asset_exif"."exifImageHeight",
+              "asset_exif"."exifImageWidth",
+              "asset_exif"."exposureTime",
+              "asset_exif"."fileSizeInByte",
+              "asset_exif"."fNumber",
+              "asset_exif"."focalLength",
+              "asset_exif"."fps",
+              "asset_exif"."iso",
+              "asset_exif"."latitude",
+              "asset_exif"."lensModel",
+              "asset_exif"."livePhotoCID",
+              "asset_exif"."longitude",
+              "asset_exif"."make",
+              "asset_exif"."model",
+              "asset_exif"."modifyDate",
+              "asset_exif"."orientation",
+              "asset_exif"."profileDescription",
+              "asset_exif"."projectionType",
+              "asset_exif"."rating",
+              "asset_exif"."state",
+              "asset_exif"."timeZone"
             from
-              "exif"
+              "asset_exif"
             where
-              "exif"."assetId" = "assets"."id"
+              "asset_exif"."assetId" = "asset"."id"
           ) as "exifInfo" on true
         where
-          "assets"."deletedAt" is null
-          and "assets"."stackId" = "asset_stack"."id"
-          and "assets"."visibility" in ('archive', 'timeline')
+          "asset"."deletedAt" is null
+          and "asset"."stackId" = "stack"."id"
+          and "asset"."visibility" in ('archive', 'timeline')
       ) as agg
   ) as "assets"
 from
-  "asset_stack"
+  "stack"
 where
   "id" = $1::uuid
+
+-- StackRepository.getForAssetRemoval
+select
+  "stackId" as "id",
+  "stack"."primaryAssetId"
+from
+  "asset"
+  left join "stack" on "stack"."id" = "asset"."stackId"
+where
+  "asset"."id" = $1

@@ -3,9 +3,10 @@ import { Insertable, Kysely, NotNull, sql } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { Activity, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetVisibility } from 'src/enum';
+import { DB } from 'src/schema';
+import { ActivityTable } from 'src/schema/tables/activity.table';
 import { asUuid } from 'src/utils/database';
 
 export interface ActivitySearch {
@@ -26,7 +27,9 @@ export class ActivityRepository {
     return this.db
       .selectFrom('activity')
       .selectAll('activity')
-      .innerJoin('users', (join) => join.onRef('users.id', '=', 'activity.userId').on('users.deletedAt', 'is', null))
+      .innerJoin('user as user2', (join) =>
+        join.onRef('user2.id', '=', 'activity.userId').on('user2.deletedAt', 'is', null),
+      )
       .innerJoinLateral(
         (eb) =>
           eb
@@ -36,25 +39,25 @@ export class ActivityRepository {
         (join) => join.onTrue(),
       )
       .select((eb) => eb.fn.toJson('user').as('user'))
-      .leftJoin('assets', 'assets.id', 'activity.assetId')
+      .leftJoin('asset', 'asset.id', 'activity.assetId')
       .$if(!!userId, (qb) => qb.where('activity.userId', '=', userId!))
       .$if(assetId === null, (qb) => qb.where('assetId', 'is', null))
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
       .$if(!!albumId, (qb) => qb.where('activity.albumId', '=', albumId!))
       .$if(isLiked !== undefined, (qb) => qb.where('activity.isLiked', '=', isLiked!))
-      .where('assets.deletedAt', 'is', null)
+      .where('asset.deletedAt', 'is', null)
       .orderBy('activity.createdAt', 'asc')
       .execute();
   }
 
   @GenerateSql({ params: [{ albumId: DummyValue.UUID, userId: DummyValue.UUID }] })
-  async create(activity: Insertable<Activity>) {
+  async create(activity: Insertable<ActivityTable>) {
     return this.db
       .insertInto('activity')
       .values(activity)
       .returningAll()
       .returning((eb) =>
-        jsonObjectFrom(eb.selectFrom('users').whereRef('users.id', '=', 'activity.userId').select(columns.user)).as(
+        jsonObjectFrom(eb.selectFrom('user').whereRef('user.id', '=', 'activity.userId').select(columns.user)).as(
           'user',
         ),
       )
@@ -81,14 +84,14 @@ export class ActivityRepository {
         eb.fn.countAll<number>().filterWhere('activity.isLiked', '=', false).as('comments'),
         eb.fn.countAll<number>().filterWhere('activity.isLiked', '=', true).as('likes'),
       ])
-      .innerJoin('users', (join) => join.onRef('users.id', '=', 'activity.userId').on('users.deletedAt', 'is', null))
-      .leftJoin('assets', 'assets.id', 'activity.assetId')
+      .innerJoin('user', (join) => join.onRef('user.id', '=', 'activity.userId').on('user.deletedAt', 'is', null))
+      .leftJoin('asset', 'asset.id', 'activity.assetId')
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
       .where('activity.albumId', '=', albumId)
       .where(({ or, and, eb }) =>
         or([
-          and([eb('assets.deletedAt', 'is', null), eb('assets.visibility', '!=', sql.lit(AssetVisibility.LOCKED))]),
-          eb('assets.id', 'is', null),
+          and([eb('asset.deletedAt', 'is', null), eb('asset.visibility', '!=', sql.lit(AssetVisibility.Locked))]),
+          eb('asset.id', 'is', null),
         ]),
       )
       .executeTakeFirstOrThrow();

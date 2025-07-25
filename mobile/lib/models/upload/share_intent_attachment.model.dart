@@ -17,7 +17,7 @@ enum UploadStatus {
   notFound,
   failed,
   canceled,
-  waitingtoRetry,
+  waitingToRetry,
   paused,
 }
 

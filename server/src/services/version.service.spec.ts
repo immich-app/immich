@@ -72,18 +72,18 @@ describe(VersionService.name, () => {
   describe('handQueueVersionCheck', () => {
     it('should queue a version check job', async () => {
       await expect(sut.handleQueueVersionCheck()).resolves.toBeUndefined();
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.VERSION_CHECK, data: {} });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.VersionCheck, data: {} });
     });
   });
 
   describe('handVersionCheck', () => {
     beforeEach(() => {
-      mocks.config.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.PRODUCTION }));
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.Production }));
     });
 
     it('should not run in dev mode', async () => {
-      mocks.config.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.DEVELOPMENT }));
-      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SKIPPED);
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.Development }));
+      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
     });
 
     it('should not run if the last check was < 60 minutes ago', async () => {
@@ -91,12 +91,12 @@ describe(VersionService.name, () => {
         checkedAt: DateTime.utc().minus({ minutes: 5 }).toISO(),
         releaseVersion: '1.0.0',
       });
-      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SKIPPED);
+      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
     });
 
     it('should not run if version check is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ newVersionCheck: { enabled: false } });
-      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SKIPPED);
+      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
     });
 
     it('should run if it has been > 60 minutes', async () => {
@@ -105,7 +105,7 @@ describe(VersionService.name, () => {
         checkedAt: DateTime.utc().minus({ minutes: 65 }).toISO(),
         releaseVersion: '1.0.0',
       });
-      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SUCCESS);
+      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Success);
       expect(mocks.systemMetadata.set).toHaveBeenCalled();
       expect(mocks.logger.log).toHaveBeenCalled();
       expect(mocks.event.clientBroadcast).toHaveBeenCalled();
@@ -113,8 +113,8 @@ describe(VersionService.name, () => {
 
     it('should not notify if the version is equal', async () => {
       mocks.serverInfo.getGitHubRelease.mockResolvedValue(mockRelease(serverVersion.toString()));
-      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SUCCESS);
-      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.VERSION_CHECK_STATE, {
+      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Success);
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.VersionCheckState, {
         checkedAt: expect.any(String),
         releaseVersion: serverVersion.toString(),
       });
@@ -123,7 +123,7 @@ describe(VersionService.name, () => {
 
     it('should handle a github error', async () => {
       mocks.serverInfo.getGitHubRelease.mockRejectedValue(new Error('GitHub is down'));
-      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.FAILED);
+      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Failed);
       expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
       expect(mocks.event.clientBroadcast).not.toHaveBeenCalled();
       expect(mocks.logger.warn).toHaveBeenCalled();

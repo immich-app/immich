@@ -34,7 +34,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `TZ`                                | Timezone                                                                                  |        <sup>\*1</sup>        | server                   | microservices      |
 | `IMMICH_ENV`                        | Environment (production, development)                                                     |         `production`         | server, machine learning | api, microservices |
 | `IMMICH_LOG_LEVEL`                  | Log level (verbose, debug, log, warn, error)                                              |            `log`             | server, machine learning | api, microservices |
-| `IMMICH_MEDIA_LOCATION`             | Media location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ |   `./upload`<sup>\*3</sup>   | server                   | api, microservices |
+| `IMMICH_MEDIA_LOCATION`             | Media location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ |    `/usr/src/app/upload`     | server                   | api, microservices |
 | `IMMICH_CONFIG_FILE`                | Path to config file                                                                       |                              | server                   | api, microservices |
 | `NO_COLOR`                          | Set to `true` to disable color-coded log output                                           |           `false`            | server, machine learning |                    |
 | `CPU_CORES`                         | Number of cores available to the Immich server                                            | auto-detected CPU core count | server                   |                    |
@@ -48,9 +48,6 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 `TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata. It is also used for logfile timestamps and cron job execution.
 
 \*2: This path is where the Immich code looks for the files, which is internal to the docker container. Setting it to a path on your host will certainly break things, you should use the `UPLOAD_LOCATION` variable instead.
-
-\*3: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
-It only needs to be set if the Immich deployment method is changing.
 
 ## Workers
 
@@ -72,21 +69,24 @@ Information on the current workers can be found [here](/docs/administration/jobs
 
 ## Database
 
-| Variable                            | Description                                                                  |  Default   | Containers                     |
-| :---------------------------------- | :--------------------------------------------------------------------------- | :--------: | :----------------------------- |
-| `DB_URL`                            | Database URL                                                                 |            | server                         |
-| `DB_HOSTNAME`                       | Database host                                                                | `database` | server                         |
-| `DB_PORT`                           | Database port                                                                |   `5432`   | server                         |
-| `DB_USERNAME`                       | Database user                                                                | `postgres` | server, database<sup>\*1</sup> |
-| `DB_PASSWORD`                       | Database password                                                            | `postgres` | server, database<sup>\*1</sup> |
-| `DB_DATABASE_NAME`                  | Database name                                                                |  `immich`  | server, database<sup>\*1</sup> |
-| `DB_SSL_MODE`                       | Database SSL mode                                                            |            | server                         |
-| `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database vector extension (one of [`vectorchord`, `pgvector`, `pgvecto.rs`]) |            | server                         |
-| `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`])     |  `false`   | server                         |
+| Variable                            | Description                                                                            |  Default   | Containers                     |
+| :---------------------------------- | :------------------------------------------------------------------------------------- | :--------: | :----------------------------- |
+| `DB_URL`                            | Database URL                                                                           |            | server                         |
+| `DB_HOSTNAME`                       | Database host                                                                          | `database` | server                         |
+| `DB_PORT`                           | Database port                                                                          |   `5432`   | server                         |
+| `DB_USERNAME`                       | Database user                                                                          | `postgres` | server, database<sup>\*1</sup> |
+| `DB_PASSWORD`                       | Database password                                                                      | `postgres` | server, database<sup>\*1</sup> |
+| `DB_DATABASE_NAME`                  | Database name                                                                          |  `immich`  | server, database<sup>\*1</sup> |
+| `DB_SSL_MODE`                       | Database SSL mode                                                                      |            | server                         |
+| `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database vector extension (one of [`vectorchord`, `pgvector`, `pgvecto.rs`])           |            | server                         |
+| `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`])               |  `false`   | server                         |
+| `DB_STORAGE_TYPE`                   | Optimize concurrent IO on SSDs or sequential IO on HDDs ([`SSD`, `HDD`])<sup>\*3</sup> |   `SSD`    | server                         |
 
 \*1: The values of `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE_NAME` are passed to the Postgres container as the variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in `docker-compose.yml`.
 
 \*2: If not provided, the appropriate extension to use is auto-detected at startup by introspecting the database. When multiple extensions are installed, the order of preference is VectorChord, pgvecto.rs, pgvector.
+
+\*3: Uses either [`postgresql.ssd.conf`](https://github.com/immich-app/base-images/blob/main/postgres/postgresql.ssd.conf) or [`postgresql.hdd.conf`](https://github.com/immich-app/base-images/blob/main/postgres/postgresql.hdd.conf) which mainly controls the Postgres `effective_io_concurrency` setting to allow for concurrenct IO on SSDs and sequential IO on HDDs.
 
 :::info
 

@@ -1,7 +1,7 @@
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { Column, ForeignKeyColumn, Index, Table } from 'src/sql-tools';
 
-@Table({ name: 'smart_search', primaryConstraintName: 'smart_search_pkey' })
+@Table({ name: 'smart_search' })
 @Index({
   name: 'clip_index',
   using: 'hnsw',
@@ -10,11 +10,7 @@ import { Column, ForeignKeyColumn, Index, Table } from 'src/sql-tools';
   synchronize: false,
 })
 export class SmartSearchTable {
-  @ForeignKeyColumn(() => AssetTable, {
-    onDelete: 'CASCADE',
-    primary: true,
-    constraintName: 'smart_search_assetId_fkey',
-  })
+  @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', primary: true })
   assetId!: string;
 
   @Column({ type: 'vector', length: 512, storage: 'external', synchronize: false })

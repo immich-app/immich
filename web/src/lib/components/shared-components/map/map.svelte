@@ -7,15 +7,16 @@
 </script>
 
 <script lang="ts">
+  import { afterNavigate } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
+  import { modalManager } from '@immich/ui';
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
@@ -213,6 +214,17 @@
     }
   };
 
+  afterNavigate(() => {
+    if (map) {
+      map.resize();
+
+      if (globalThis.location.hash) {
+        const hashChangeEvent = new HashChangeEvent('hashchange');
+        globalThis.dispatchEvent(hashChangeEvent);
+      }
+    }
+  });
+
   onMount(async () => {
     if (!mapMarkers) {
       mapMarkers = await loadMapMarkers();
@@ -315,7 +327,7 @@
         features: mapMarkers?.map((marker) => asFeature(marker)) ?? [],
       }}
       id="geojson"
-      cluster={{ radius: 35, maxZoom: 17 }}
+      cluster={{ radius: 35, maxZoom: 18 }}
     >
       <MarkerLayer
         applyToClusters

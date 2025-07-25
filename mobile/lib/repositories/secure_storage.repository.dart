@@ -2,12 +2,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 final secureStorageRepositoryProvider =
-    Provider((ref) => SecureStorageRepository(const FlutterSecureStorage()));
+    Provider((ref) => const SecureStorageRepository(FlutterSecureStorage()));
 
 class SecureStorageRepository {
   final FlutterSecureStorage _secureStorage;
 
-  SecureStorageRepository(this._secureStorage);
+  const SecureStorageRepository(this._secureStorage);
 
   Future<String?> read(String key) {
     return _secureStorage.read(key: key);

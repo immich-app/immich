@@ -15,10 +15,11 @@ import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
+import { ValidateEnum } from 'src/validation';
 
 export class SanitizedAssetResponseDto {
   id!: string;
-  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
+  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum' })
   type!: AssetType;
   thumbhash!: string | null;
   originalMimeType?: string;
@@ -72,7 +73,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isArchived!: boolean;
   isTrashed!: boolean;
   isOffline!: boolean;
-  @ApiProperty({ enum: AssetVisibility, enumName: 'AssetVisibility' })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility' })
   visibility!: AssetVisibility;
   exifInfo?: ExifResponseDto;
   tags?: TagResponseDto[];
@@ -204,7 +205,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     localDateTime: entity.localDateTime,
     updatedAt: entity.updatedAt,
     isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
-    isArchived: entity.visibility === AssetVisibility.ARCHIVE,
+    isArchived: entity.visibility === AssetVisibility.Archive,
     isTrashed: !!entity.deletedAt,
     visibility: entity.visibility,
     duration: entity.duration ?? '0:00:00.00000',

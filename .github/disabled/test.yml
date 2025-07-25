@@ -84,6 +84,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run npm install
         run: npm ci
@@ -125,6 +127,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './cli/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Setup typescript-sdk
         run: npm ci && npm run build
@@ -170,6 +174,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './cli/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Setup typescript-sdk
         run: npm ci && npm run build
@@ -208,6 +214,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './web/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -249,6 +257,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './web/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -282,6 +292,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './web/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install dependencies
         run: npm --prefix=web ci
@@ -326,6 +338,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './e2e/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -369,6 +383,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run npm install
         run: npm ci
@@ -402,6 +418,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './e2e/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -450,6 +468,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './e2e/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run setup typescript-sdk
         run: npm ci && npm run build
@@ -461,7 +481,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium --only-shell
         if: ${{ !cancelled() }}
 
       - name: Docker build
@@ -479,7 +499,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - uses: immich-app/devtools/actions/success-check@6b81b1572e466f7f48ba3c823159ce3f4a4d66a6 # success-check-action-0.0.3
+      - uses: immich-app/devtools/actions/success-check@68f10eb389bb02a3cf9d1156111964c549eb421b # 0.0.4
         with:
           needs: ${{ toJSON(needs) }}
 
@@ -496,7 +516,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2.19.0
+        uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2.21.0
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
@@ -568,6 +588,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './.github/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Run npm install
         run: npm ci
@@ -587,7 +609,7 @@ jobs:
           persist-credentials: false
 
       - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@master
+        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
         with:
           ignore_paths: >-
             **/open-api/**
@@ -609,6 +631,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install server dependencies
         run: npm --prefix=server ci
@@ -644,7 +668,7 @@ jobs:
       contents: read
     services:
       postgres:
-        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3
+        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3@sha256:1f5583fe3397210a0fbc7f11b0cec18bacc4a99e3e8ea0548e9bd6bcf26ec37a
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -670,6 +694,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: './server/.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install server dependencies
         run: npm ci

@@ -8,14 +8,20 @@
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
-  import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
-  import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
+  import {
+    closeWebsocketConnection,
+    openWebsocketConnection,
+    websocketStore,
+    type ReleaseEvent,
+  } from '$lib/stores/websocket';
   import { copyToClipboard } from '$lib/utils';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
-  import { setTranslations } from '@immich/ui';
+  import type { ServerVersionResponseDto } from '@immich/sdk';
+  import { modalManager, setTranslations } from '@immich/ui';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { run } from 'svelte/legacy';
@@ -28,8 +34,8 @@
   $effect(() => {
     setTranslations({
       close: $t('close'),
-      showPassword: $t('show_password'),
-      hidePassword: $t('hide_password'),
+      show_password: $t('show_password'),
+      hide_password: $t('hide_password'),
     });
   });
 
@@ -66,6 +72,32 @@
       closeWebsocketConnection();
     }
   });
+
+  const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
+  const { release } = websocketStore;
+
+  const handleRelease = async (release?: ReleaseEvent) => {
+    if (!release?.isAvailable || !$user.isAdmin) {
+      return;
+    }
+
+    const releaseVersion = semverToName(release.releaseVersion);
+    const serverVersion = semverToName(release.serverVersion);
+
+    if (localStorage.getItem('appVersion') === releaseVersion) {
+      return;
+    }
+
+    try {
+      await modalManager.show(VersionAnnouncementModal, { serverVersion, releaseVersion });
+
+      localStorage.setItem('appVersion', releaseVersion);
+    } catch (error) {
+      console.error('Error [VersionAnnouncementBox]:', error);
+    }
+  };
+
+  $effect(() => void handleRelease($release));
 </script>
 
 <svelte:head>
@@ -121,7 +153,3 @@
 <DownloadPanel />
 <UploadPanel />
 <NotificationList />
-
-{#if $user?.isAdmin}
-  <VersionAnnouncementBox />
-{/if}

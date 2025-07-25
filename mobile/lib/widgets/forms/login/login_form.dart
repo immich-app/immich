@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
@@ -17,6 +18,7 @@ import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/utils/version_compatibility.dart';
@@ -192,6 +194,15 @@ class LoginForm extends HookConsumerWidget {
         if (result.shouldChangePassword && !result.isAdmin) {
           context.pushRoute(const ChangePasswordRoute());
         } else {
+          final isBeta = Store.isBetaTimelineEnabled;
+          if (isBeta) {
+            await ref
+                .read(galleryPermissionNotifier.notifier)
+                .requestGalleryPermission();
+            await runNewSync(ref);
+            context.replaceRoute(const TabShellRoute());
+            return;
+          }
           context.replaceRoute(const TabControllerRoute());
         }
       } catch (error) {
@@ -292,8 +303,17 @@ class LoginForm extends HookConsumerWidget {
           if (isSuccess) {
             isLoading.value = false;
             final permission = ref.watch(galleryPermissionNotifier);
-            if (permission.isGranted || permission.isLimited) {
+            final isBeta = Store.isBetaTimelineEnabled;
+            if (!isBeta && (permission.isGranted || permission.isLimited)) {
               ref.watch(backupProvider.notifier).resumeBackup();
+            }
+            if (isBeta) {
+              await ref
+                  .read(galleryPermissionNotifier.notifier)
+                  .requestGalleryPermission();
+              await runNewSync(ref);
+              context.replaceRoute(const TabShellRoute());
+              return;
             }
             context.replaceRoute(const TabControllerRoute());
           }
@@ -394,7 +414,9 @@ class LoginForm extends HookConsumerWidget {
           decoration: BoxDecoration(
             color:
                 context.isDarkTheme ? Colors.red.shade700 : Colors.red.shade100,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(8),
+            ),
             border: Border.all(
               color:
                   context.isDarkTheme ? Colors.red.shade900 : Colors.red[200]!,

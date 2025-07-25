@@ -15,25 +15,25 @@ export class SystemConfigController {
   ) {}
 
   @Get()
-  @Authenticated({ permission: Permission.SYSTEM_CONFIG_READ, admin: true })
+  @Authenticated({ permission: Permission.SystemConfigRead, admin: true })
   getConfig(): Promise<SystemConfigDto> {
     return this.service.getSystemConfig();
   }
 
   @Get('defaults')
-  @Authenticated({ permission: Permission.SYSTEM_CONFIG_READ, admin: true })
+  @Authenticated({ permission: Permission.SystemConfigRead, admin: true })
   getConfigDefaults(): SystemConfigDto {
     return this.service.getDefaults();
   }
 
   @Put()
-  @Authenticated({ permission: Permission.SYSTEM_CONFIG_UPDATE, admin: true })
+  @Authenticated({ permission: Permission.SystemConfigUpdate, admin: true })
   updateConfig(@Body() dto: SystemConfigDto): Promise<SystemConfigDto> {
     return this.service.updateSystemConfig(dto);
   }
 
   @Get('storage-template-options')
-  @Authenticated({ permission: Permission.SYSTEM_CONFIG_READ, admin: true })
+  @Authenticated({ permission: Permission.SystemConfigRead, admin: true })
   getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
     return this.storageTemplateService.getStorageTemplateOptions();
   }

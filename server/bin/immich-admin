@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
 
-/usr/src/app/start.sh immich-admin "$@"
+start.sh immich-admin "$@"

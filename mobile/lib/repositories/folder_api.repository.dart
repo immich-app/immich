@@ -1,6 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/interfaces/folder_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:logging/logging.dart';
@@ -12,14 +11,12 @@ final folderApiRepositoryProvider = Provider(
   ),
 );
 
-class FolderApiRepository extends ApiRepository
-    implements IFolderApiRepository {
+class FolderApiRepository extends ApiRepository {
   final ViewApi _api;
   final Logger _log = Logger("FolderApiRepository");
 
   FolderApiRepository(this._api);
 
-  @override
   Future<List<String>> getAllUniquePaths() async {
     try {
       final list = await _api.getUniqueOriginalPaths();
@@ -30,7 +27,6 @@ class FolderApiRepository extends ApiRepository
     }
   }
 
-  @override
   Future<List<Asset>> getAssetsForPath(String? path) async {
     try {
       final list = await _api.getAssetsByOriginalPath(path ?? '/');

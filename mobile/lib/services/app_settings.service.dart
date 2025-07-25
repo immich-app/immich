@@ -88,8 +88,10 @@ enum AppSettingsEnum<T> {
   photoManagerCustomFilter<bool>(
     StoreKey.photoManagerCustomFilter,
     null,
-    false,
+    true,
   ),
+  betaTimeline<bool>(StoreKey.betaTimeline, null, false),
+  enableBackup<bool>(StoreKey.enableBackup, null, false),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
@@ -100,6 +102,7 @@ enum AppSettingsEnum<T> {
 }
 
 class AppSettingsService {
+  const AppSettingsService();
   T getSetting<T>(AppSettingsEnum<T> setting) {
     return Store.get(setting.storeKey, setting.defaultValue);
   }

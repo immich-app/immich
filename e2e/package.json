@@ -1,6 +1,6 @@
 {
   "name": "immich-e2e",
-  "version": "1.135.3",
+  "version": "1.136.0",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -24,8 +24,9 @@
     "@immich/cli": "file:../cli",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@playwright/test": "^1.44.1",
+    "@socket.io/component-emitter": "^3.1.2",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^22.15.31",
+    "@types/node": "^22.16.4",
     "@types/oidc-provider": "^9.0.0",
     "@types/pg": "^8.15.1",
     "@types/pngjs": "^6.0.4",
@@ -44,6 +45,7 @@
     "pngjs": "^7.0.0",
     "prettier": "^3.2.5",
     "prettier-plugin-organize-imports": "^4.0.0",
+    "sharp": "^0.34.0",
     "socket.io-client": "^4.7.4",
     "supertest": "^7.0.0",
     "typescript": "^5.3.3",
@@ -52,6 +54,6 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.16.0"
+    "node": "22.17.1"
   }
 }

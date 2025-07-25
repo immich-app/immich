@@ -4,9 +4,9 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import ConfirmModal from '$lib/modals/ConfirmModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { createJob, ManualJobName } from '@immich/sdk';
+  import { ConfirmModal } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   type Props = { onClose: (confirmed: boolean) => void };

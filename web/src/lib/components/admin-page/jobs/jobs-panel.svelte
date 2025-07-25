@@ -3,11 +3,11 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { getJobName } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { JobCommand, JobName, sendJobCommand, type AllJobStatusResponseDto, type JobCommandDto } from '@immich/sdk';
+  import { modalManager } from '@immich/ui';
   import {
     mdiContentDuplicate,
     mdiFaceRecognition,

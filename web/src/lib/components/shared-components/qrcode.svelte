@@ -10,7 +10,7 @@
 
   const { value, width, alt = $t('alt_text_qr_code') }: Props = $props();
 
-  let promise = $derived(QRCode.toDataURL(value, { margin: 0, width }));
+  let promise = $derived(QRCode.toDataURL(value, { margin: 4, width }));
 </script>
 
 <div style="width: {width}px; height: {width}px">

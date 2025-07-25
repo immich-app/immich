@@ -36,9 +36,9 @@ export class AuthController {
     return respondWithCookie(res, body, {
       isSecure: loginDetails.isSecure,
       values: [
-        { key: ImmichCookie.ACCESS_TOKEN, value: body.accessToken },
-        { key: ImmichCookie.AUTH_TYPE, value: AuthType.PASSWORD },
-        { key: ImmichCookie.IS_AUTHENTICATED, value: 'true' },
+        { key: ImmichCookie.AccessToken, value: body.accessToken },
+        { key: ImmichCookie.AuthType, value: AuthType.Password },
+        { key: ImmichCookie.IsAuthenticated, value: 'true' },
       ],
     });
   }
@@ -70,13 +70,13 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Auth() auth: AuthDto,
   ): Promise<LogoutResponseDto> {
-    const authType = (request.cookies || {})[ImmichCookie.AUTH_TYPE];
+    const authType = (request.cookies || {})[ImmichCookie.AuthType];
 
     const body = await this.service.logout(auth, authType);
     return respondWithoutCookie(res, body, [
-      ImmichCookie.ACCESS_TOKEN,
-      ImmichCookie.AUTH_TYPE,
-      ImmichCookie.IS_AUTHENTICATED,
+      ImmichCookie.AccessToken,
+      ImmichCookie.AuthType,
+      ImmichCookie.IsAuthenticated,
     ]);
   }
 

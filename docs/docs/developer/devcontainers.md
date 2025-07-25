@@ -7,7 +7,7 @@ sidebar_position: 3
 
 Dev Containers provide a consistent, reproducible development environment using Docker containers. With a single click, you can get started with an Immich development environment on Mac, Linux, Windows, or in the cloud using GitHub Codespaces.
 
-[![Open in VSCode Containers](https://img.shields.io/static/v1?label=VSCode%20DevContainer&message=Immich&color=blue)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/immich-app/immich/)
+Get started fast!
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/immich-app/immich/)
 
@@ -71,7 +71,7 @@ cd immich
 
 The immich dev containers read environment variables from your shell environment, not from `.env` files. This allows them to work in cloud environments without pre-configuration.
 
-:::important Required Configuration
+:::important Configuration
 When running locally, and if you want to create (or use an existing) DB and/or photo storage folder, you must set the `UPLOAD_LOCATION` variable in your shell environment before launching the Dev Container. This determines where uploaded files are stored and also where the DB stores it data.
 
 ```bash
@@ -87,6 +87,10 @@ source ~/.bashrc
 :::
 
 ### Step 3: Launch the Dev Container
+
+:::tip
+Immich development makes extensive use of specialized [base images](https://github.com/immich-app/base-images) for its docker-compose based development. For this reason, you won't be able to use VSCode's **_Clone Repository in a Container Volume_** command.
+:::
 
 #### Using VS Code UI:
 
@@ -199,13 +203,11 @@ To use your SSH key for commit signing, see the [GitHub guide on SSH commit sign
 When the Dev Container starts, it automatically:
 
 1. **Runs post-create script** (`container-server-post-create.sh`):
-
    - Adjusts file permissions for the `node` user
    - Installs dependencies: `npm install` in all packages
    - Builds TypeScript SDK: `npm run build` in `open-api/typescript-sdk`
 
 2. **Starts development servers** via VS Code tasks:
-
    - `Immich API Server (Nest)` - API server with hot-reloading on port 2283
    - `Immich Web Server (Vite)` - Web frontend with hot-reloading on port 3000
    - Both servers watch for file changes and recompile automatically
@@ -335,14 +337,12 @@ make install-all      # Install all dependencies
 The Dev Container is pre-configured for debugging:
 
 1. **API Server Debugging**:
-
    - Set breakpoints in VS Code
    - Press `F5` or use "Run and Debug" panel
    - Select "Attach to Server" configuration
    - Debug port: 9231
 
 2. **Worker Debugging**:
-
    - Use "Attach to Workers" configuration
    - Debug port: 9230
 
@@ -428,7 +428,6 @@ While the Dev Container focuses on server and web development, you can connect m
    ```
 
 2. **Configure mobile app**:
-
    - Server URL: `http://YOUR_IP:2283/api`
    - Ensure firewall allows port 2283
 

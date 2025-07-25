@@ -38,6 +38,9 @@ jobs:
         with:
           node-version-file: './cli/.nvmrc'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
       - name: Prepare SDK
         run: npm ci --prefix ../open-api/typescript-sdk/
       - name: Build SDK
@@ -67,7 +70,7 @@ jobs:
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
@@ -96,7 +99,7 @@ jobs:
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
 
       - name: Build and push image
-        uses: docker/build-push-action@1dc73863535b631f98b2378be8619f83b136f4a0 # v6.17.0
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           file: cli/Dockerfile
           platforms: linux/amd64,linux/arm64

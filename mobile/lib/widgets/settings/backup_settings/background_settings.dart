@@ -97,7 +97,7 @@ class BackgroundBackupSettings extends ConsumerWidget {
             onBatteryInfo: showBatteryOptimizationInfoToUser,
           ),
         if (Platform.isIOS && iosSettings?.appRefreshEnabled != true)
-          _IOSBackgroundRefreshDisabled(),
+          const _IOSBackgroundRefreshDisabled(),
         if (Platform.isIOS && iosSettings != null)
           IosDebugInfoTile(settings: iosSettings),
       ],
@@ -106,6 +106,8 @@ class BackgroundBackupSettings extends ConsumerWidget {
 }
 
 class _IOSBackgroundRefreshDisabled extends StatelessWidget {
+  const _IOSBackgroundRefreshDisabled();
+
   @override
   Widget build(BuildContext context) {
     return SettingsButtonListTile(

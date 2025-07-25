@@ -10,24 +10,41 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/interfaces/auth.interface.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
 
-final authRepositoryProvider = Provider<IAuthRepository>(
-  (ref) =>
-      AuthRepository(ref.watch(dbProvider), drift: ref.watch(driftProvider)),
+final authRepositoryProvider = Provider<AuthRepository>(
+  (ref) => AuthRepository(ref.watch(dbProvider), ref.watch(driftProvider)),
 );
 
-class AuthRepository extends DatabaseRepository implements IAuthRepository {
+class AuthRepository extends DatabaseRepository {
   final Drift _drift;
 
-  AuthRepository(super.db, {required Drift drift}) : _drift = drift;
+  const AuthRepository(super.db, this._drift);
 
-  @override
-  Future<void> clearLocalData() {
+  Future<void> clearLocalData() async {
+    // Drift deletions - child entities first (those with foreign keys)
+    await Future.wait([
+      _drift.memoryAssetEntity.deleteAll(),
+      _drift.remoteAlbumAssetEntity.deleteAll(),
+      _drift.remoteAlbumUserEntity.deleteAll(),
+      _drift.remoteExifEntity.deleteAll(),
+      _drift.userMetadataEntity.deleteAll(),
+      _drift.partnerEntity.deleteAll(),
+      _drift.stackEntity.deleteAll(),
+      _drift.assetFaceEntity.deleteAll(),
+    ]);
+    // Drift deletions - parent entities
+    await Future.wait([
+      _drift.memoryEntity.deleteAll(),
+      _drift.personEntity.deleteAll(),
+      _drift.remoteAlbumEntity.deleteAll(),
+      _drift.remoteAssetEntity.deleteAll(),
+      _drift.userEntity.deleteAll(),
+    ]);
+
     return db.writeTxn(() {
       return Future.wait([
         db.assets.clear(),
@@ -35,33 +52,26 @@ class AuthRepository extends DatabaseRepository implements IAuthRepository {
         db.albums.clear(),
         db.eTags.clear(),
         db.users.clear(),
-        _drift.remoteAssetEntity.deleteAll(),
-        _drift.remoteExifEntity.deleteAll(),
       ]);
     });
   }
 
-  @override
   String getAccessToken() {
     return Store.get(StoreKey.accessToken);
   }
 
-  @override
   bool getEndpointSwitchingFeature() {
     return Store.tryGet(StoreKey.autoEndpointSwitching) ?? false;
   }
 
-  @override
   String? getPreferredWifiName() {
     return Store.tryGet(StoreKey.preferredWifiName);
   }
 
-  @override
   String? getLocalEndpoint() {
     return Store.tryGet(StoreKey.localEndpoint);
   }
 
-  @override
   List<AuxilaryEndpoint> getExternalEndpointList() {
     final jsonString = Store.tryGet(StoreKey.externalEndpointList);
 
