@@ -116,7 +116,8 @@ LoggerMessage _loggerMessageDeserialize(
     context2: reader.readStringOrNull(offsets[1]),
     createdAt: reader.readDateTime(offsets[2]),
     details: reader.readStringOrNull(offsets[3]),
-    level: _LoggerMessagelevelValueEnumMap[reader.readByteOrNull(offsets[4])] ?? LogLevel.info,
+    level: _LoggerMessagelevelValueEnumMap[reader.readByteOrNull(offsets[4])] ??
+        LogLevel.info,
     message: reader.readString(offsets[5]),
   );
   return object;
@@ -138,7 +139,8 @@ P _loggerMessageDeserializeProp<P>(
     case 3:
       return (reader.readStringOrNull(offset)) as P;
     case 4:
-      return (_LoggerMessagelevelValueEnumMap[reader.readByteOrNull(offset)] ?? LogLevel.info) as P;
+      return (_LoggerMessagelevelValueEnumMap[reader.readByteOrNull(offset)] ??
+          LogLevel.info) as P;
     case 5:
       return (reader.readString(offset)) as P;
     default:
@@ -179,9 +181,11 @@ List<IsarLinkBase<dynamic>> _loggerMessageGetLinks(LoggerMessage object) {
   return [];
 }
 
-void _loggerMessageAttach(IsarCollection<dynamic> col, Id id, LoggerMessage object) {}
+void _loggerMessageAttach(
+    IsarCollection<dynamic> col, Id id, LoggerMessage object) {}
 
-extension LoggerMessageQueryWhereSort on QueryBuilder<LoggerMessage, LoggerMessage, QWhere> {
+extension LoggerMessageQueryWhereSort
+    on QueryBuilder<LoggerMessage, LoggerMessage, QWhere> {
   QueryBuilder<LoggerMessage, LoggerMessage, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
@@ -189,8 +193,10 @@ extension LoggerMessageQueryWhereSort on QueryBuilder<LoggerMessage, LoggerMessa
   }
 }
 
-extension LoggerMessageQueryWhere on QueryBuilder<LoggerMessage, LoggerMessage, QWhereClause> {
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterWhereClause> idEqualTo(Id id) {
+extension LoggerMessageQueryWhere
+    on QueryBuilder<LoggerMessage, LoggerMessage, QWhereClause> {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterWhereClause> idEqualTo(
+      Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: id,
@@ -199,7 +205,8 @@ extension LoggerMessageQueryWhere on QueryBuilder<LoggerMessage, LoggerMessage, 
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterWhereClause> idNotEqualTo(Id id) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterWhereClause> idNotEqualTo(
+      Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -221,7 +228,9 @@ extension LoggerMessageQueryWhere on QueryBuilder<LoggerMessage, LoggerMessage, 
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterWhereClause> idGreaterThan(Id id, {bool include = false}) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterWhereClause> idGreaterThan(
+      Id id,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -229,7 +238,9 @@ extension LoggerMessageQueryWhere on QueryBuilder<LoggerMessage, LoggerMessage, 
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterWhereClause> idLessThan(Id id, {bool include = false}) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterWhereClause> idLessThan(
+      Id id,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -254,8 +265,10 @@ extension LoggerMessageQueryWhere on QueryBuilder<LoggerMessage, LoggerMessage, 
   }
 }
 
-extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage, QFilterCondition> {
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context1IsNull() {
+extension LoggerMessageQueryFilter
+    on QueryBuilder<LoggerMessage, LoggerMessage, QFilterCondition> {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context1IsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'context1',
@@ -263,7 +276,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context1IsNotNull() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context1IsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'context1',
@@ -271,7 +285,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context1EqualTo(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context1EqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -284,7 +299,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context1GreaterThan(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context1GreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -299,7 +315,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context1LessThan(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context1LessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -314,7 +331,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context1Between(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context1Between(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -333,7 +351,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context1StartsWith(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context1StartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -346,7 +365,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context1EndsWith(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context1EndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -359,8 +379,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context1Contains(String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context1Contains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'context1',
@@ -370,8 +390,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context1Matches(String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context1Matches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'context1',
@@ -381,7 +401,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context1IsEmpty() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context1IsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'context1',
@@ -390,7 +411,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context1IsNotEmpty() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context1IsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'context1',
@@ -399,7 +421,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context2IsNull() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context2IsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'context2',
@@ -407,7 +430,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context2IsNotNull() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context2IsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'context2',
@@ -415,7 +439,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context2EqualTo(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context2EqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -428,7 +453,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context2GreaterThan(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context2GreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -443,7 +469,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context2LessThan(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context2LessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -458,7 +485,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context2Between(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context2Between(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -477,7 +505,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context2StartsWith(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context2StartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -490,7 +519,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context2EndsWith(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context2EndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -503,8 +533,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context2Contains(String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context2Contains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'context2',
@@ -514,8 +544,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context2Matches(String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context2Matches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'context2',
@@ -525,7 +555,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context2IsEmpty() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context2IsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'context2',
@@ -534,7 +565,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> context2IsNotEmpty() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      context2IsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'context2',
@@ -543,7 +575,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> createdAtEqualTo(DateTime value) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      createdAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'createdAt',
@@ -552,7 +585,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> createdAtGreaterThan(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      createdAtGreaterThan(
     DateTime value, {
     bool include = false,
   }) {
@@ -565,7 +599,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> createdAtLessThan(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      createdAtLessThan(
     DateTime value, {
     bool include = false,
   }) {
@@ -578,7 +613,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> createdAtBetween(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      createdAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
@@ -595,7 +631,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> detailsIsNull() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'details',
@@ -603,7 +640,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> detailsIsNotNull() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'details',
@@ -611,7 +649,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> detailsEqualTo(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -624,7 +663,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> detailsGreaterThan(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -639,7 +679,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> detailsLessThan(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -654,7 +695,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> detailsBetween(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -673,7 +715,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> detailsStartsWith(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -686,7 +729,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> detailsEndsWith(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -699,8 +743,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> detailsContains(String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'details',
@@ -710,8 +754,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> detailsMatches(String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'details',
@@ -721,7 +765,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> detailsIsEmpty() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'details',
@@ -730,7 +775,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> detailsIsNotEmpty() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      detailsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'details',
@@ -739,7 +785,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> idEqualTo(Id value) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> idEqualTo(
+      Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
@@ -748,7 +795,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      idGreaterThan(
     Id value, {
     bool include = false,
   }) {
@@ -791,7 +839,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> levelEqualTo(LogLevel value) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      levelEqualTo(LogLevel value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'level',
@@ -800,7 +849,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> levelGreaterThan(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      levelGreaterThan(
     LogLevel value, {
     bool include = false,
   }) {
@@ -813,7 +863,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> levelLessThan(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      levelLessThan(
     LogLevel value, {
     bool include = false,
   }) {
@@ -826,7 +877,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> levelBetween(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      levelBetween(
     LogLevel lower,
     LogLevel upper, {
     bool includeLower = true,
@@ -843,7 +895,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> messageEqualTo(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      messageEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -856,7 +909,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> messageGreaterThan(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      messageGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -871,7 +925,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> messageLessThan(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      messageLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -886,7 +941,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> messageBetween(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      messageBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -905,7 +961,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> messageStartsWith(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      messageStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -918,7 +975,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> messageEndsWith(
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      messageEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -931,8 +989,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> messageContains(String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      messageContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'message',
@@ -942,8 +1000,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> messageMatches(String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      messageMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'message',
@@ -953,7 +1011,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> messageIsEmpty() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      messageIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'message',
@@ -962,7 +1021,8 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition> messageIsNotEmpty() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterFilterCondition>
+      messageIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'message',
@@ -972,18 +1032,22 @@ extension LoggerMessageQueryFilter on QueryBuilder<LoggerMessage, LoggerMessage,
   }
 }
 
-extension LoggerMessageQueryObject on QueryBuilder<LoggerMessage, LoggerMessage, QFilterCondition> {}
+extension LoggerMessageQueryObject
+    on QueryBuilder<LoggerMessage, LoggerMessage, QFilterCondition> {}
 
-extension LoggerMessageQueryLinks on QueryBuilder<LoggerMessage, LoggerMessage, QFilterCondition> {}
+extension LoggerMessageQueryLinks
+    on QueryBuilder<LoggerMessage, LoggerMessage, QFilterCondition> {}
 
-extension LoggerMessageQuerySortBy on QueryBuilder<LoggerMessage, LoggerMessage, QSortBy> {
+extension LoggerMessageQuerySortBy
+    on QueryBuilder<LoggerMessage, LoggerMessage, QSortBy> {
   QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> sortByContext1() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'context1', Sort.asc);
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> sortByContext1Desc() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy>
+      sortByContext1Desc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'context1', Sort.desc);
     });
@@ -995,7 +1059,8 @@ extension LoggerMessageQuerySortBy on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> sortByContext2Desc() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy>
+      sortByContext2Desc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'context2', Sort.desc);
     });
@@ -1007,7 +1072,8 @@ extension LoggerMessageQuerySortBy on QueryBuilder<LoggerMessage, LoggerMessage,
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> sortByCreatedAtDesc() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy>
+      sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
@@ -1050,14 +1116,16 @@ extension LoggerMessageQuerySortBy on QueryBuilder<LoggerMessage, LoggerMessage,
   }
 }
 
-extension LoggerMessageQuerySortThenBy on QueryBuilder<LoggerMessage, LoggerMessage, QSortThenBy> {
+extension LoggerMessageQuerySortThenBy
+    on QueryBuilder<LoggerMessage, LoggerMessage, QSortThenBy> {
   QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> thenByContext1() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'context1', Sort.asc);
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> thenByContext1Desc() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy>
+      thenByContext1Desc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'context1', Sort.desc);
     });
@@ -1069,7 +1137,8 @@ extension LoggerMessageQuerySortThenBy on QueryBuilder<LoggerMessage, LoggerMess
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> thenByContext2Desc() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy>
+      thenByContext2Desc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'context2', Sort.desc);
     });
@@ -1081,7 +1150,8 @@ extension LoggerMessageQuerySortThenBy on QueryBuilder<LoggerMessage, LoggerMess
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy> thenByCreatedAtDesc() {
+  QueryBuilder<LoggerMessage, LoggerMessage, QAfterSortBy>
+      thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
@@ -1136,14 +1206,17 @@ extension LoggerMessageQuerySortThenBy on QueryBuilder<LoggerMessage, LoggerMess
   }
 }
 
-extension LoggerMessageQueryWhereDistinct on QueryBuilder<LoggerMessage, LoggerMessage, QDistinct> {
-  QueryBuilder<LoggerMessage, LoggerMessage, QDistinct> distinctByContext1({bool caseSensitive = true}) {
+extension LoggerMessageQueryWhereDistinct
+    on QueryBuilder<LoggerMessage, LoggerMessage, QDistinct> {
+  QueryBuilder<LoggerMessage, LoggerMessage, QDistinct> distinctByContext1(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'context1', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QDistinct> distinctByContext2({bool caseSensitive = true}) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QDistinct> distinctByContext2(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'context2', caseSensitive: caseSensitive);
     });
@@ -1155,7 +1228,8 @@ extension LoggerMessageQueryWhereDistinct on QueryBuilder<LoggerMessage, LoggerM
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QDistinct> distinctByDetails({bool caseSensitive = true}) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QDistinct> distinctByDetails(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'details', caseSensitive: caseSensitive);
     });
@@ -1167,14 +1241,16 @@ extension LoggerMessageQueryWhereDistinct on QueryBuilder<LoggerMessage, LoggerM
     });
   }
 
-  QueryBuilder<LoggerMessage, LoggerMessage, QDistinct> distinctByMessage({bool caseSensitive = true}) {
+  QueryBuilder<LoggerMessage, LoggerMessage, QDistinct> distinctByMessage(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'message', caseSensitive: caseSensitive);
     });
   }
 }
 
-extension LoggerMessageQueryProperty on QueryBuilder<LoggerMessage, LoggerMessage, QQueryProperty> {
+extension LoggerMessageQueryProperty
+    on QueryBuilder<LoggerMessage, LoggerMessage, QQueryProperty> {
   QueryBuilder<LoggerMessage, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');

@@ -10,10 +10,12 @@ String _$currentAssetHash() => r'2def10ea594152c984ae2974d687ab6856d7bdd0';
 
 /// See also [CurrentAsset].
 @ProviderFor(CurrentAsset)
-final currentAssetProvider = AutoDisposeNotifierProvider<CurrentAsset, Asset?>.internal(
+final currentAssetProvider =
+    AutoDisposeNotifierProvider<CurrentAsset, Asset?>.internal(
   CurrentAsset.new,
   name: r'currentAssetProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product') ? null : _$currentAssetHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$currentAssetHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

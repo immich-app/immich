@@ -6,7 +6,8 @@ part of 'search_filter.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getSearchSuggestionsHash() => r'bc30a65e8fcb273cbd07bab876baf67bcc794737';
+String _$getSearchSuggestionsHash() =>
+    r'bc30a65e8fcb273cbd07bab876baf67bcc794737';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -76,14 +77,16 @@ class GetSearchSuggestionsFamily extends Family<AsyncValue<List<String>>> {
   static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
 
   @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies => _allTransitiveDependencies;
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
 
   @override
   String? get name => r'getSearchSuggestionsProvider';
 }
 
 /// See also [getSearchSuggestions].
-class GetSearchSuggestionsProvider extends AutoDisposeFutureProvider<List<String>> {
+class GetSearchSuggestionsProvider
+    extends AutoDisposeFutureProvider<List<String>> {
   /// See also [getSearchSuggestions].
   GetSearchSuggestionsProvider(
     SearchSuggestionType type, {
@@ -102,9 +105,13 @@ class GetSearchSuggestionsProvider extends AutoDisposeFutureProvider<List<String
           ),
           from: getSearchSuggestionsProvider,
           name: r'getSearchSuggestionsProvider',
-          debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product') ? null : _$getSearchSuggestionsHash,
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$getSearchSuggestionsHash,
           dependencies: GetSearchSuggestionsFamily._dependencies,
-          allTransitiveDependencies: GetSearchSuggestionsFamily._allTransitiveDependencies,
+          allTransitiveDependencies:
+              GetSearchSuggestionsFamily._allTransitiveDependencies,
           type: type,
           locationCountry: locationCountry,
           locationState: locationState,
@@ -201,16 +208,20 @@ mixin GetSearchSuggestionsRef on AutoDisposeFutureProviderRef<List<String>> {
   String? get model;
 }
 
-class _GetSearchSuggestionsProviderElement extends AutoDisposeFutureProviderElement<List<String>>
+class _GetSearchSuggestionsProviderElement
+    extends AutoDisposeFutureProviderElement<List<String>>
     with GetSearchSuggestionsRef {
   _GetSearchSuggestionsProviderElement(super.provider);
 
   @override
-  SearchSuggestionType get type => (origin as GetSearchSuggestionsProvider).type;
+  SearchSuggestionType get type =>
+      (origin as GetSearchSuggestionsProvider).type;
   @override
-  String? get locationCountry => (origin as GetSearchSuggestionsProvider).locationCountry;
+  String? get locationCountry =>
+      (origin as GetSearchSuggestionsProvider).locationCountry;
   @override
-  String? get locationState => (origin as GetSearchSuggestionsProvider).locationState;
+  String? get locationState =>
+      (origin as GetSearchSuggestionsProvider).locationState;
   @override
   String? get make => (origin as GetSearchSuggestionsProvider).make;
   @override

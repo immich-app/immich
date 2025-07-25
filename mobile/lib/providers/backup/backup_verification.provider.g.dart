@@ -6,14 +6,18 @@ part of 'backup_verification.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$backupVerificationHash() => r'b204e43ab575d5fa5b2ee663297f32bcee9074f5';
+String _$backupVerificationHash() =>
+    r'b204e43ab575d5fa5b2ee663297f32bcee9074f5';
 
 /// See also [BackupVerification].
 @ProviderFor(BackupVerification)
-final backupVerificationProvider = AutoDisposeNotifierProvider<BackupVerification, bool>.internal(
+final backupVerificationProvider =
+    AutoDisposeNotifierProvider<BackupVerification, bool>.internal(
   BackupVerification.new,
   name: r'backupVerificationProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product') ? null : _$backupVerificationHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$backupVerificationHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

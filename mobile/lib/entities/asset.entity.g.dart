@@ -292,9 +292,12 @@ Asset _assetDeserialize(
     stackId: reader.readStringOrNull(offsets[15]),
     stackPrimaryAssetId: reader.readStringOrNull(offsets[16]),
     thumbhash: reader.readStringOrNull(offsets[17]),
-    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[18])] ?? AssetType.other,
+    type: _AssettypeValueEnumMap[reader.readByteOrNull(offsets[18])] ??
+        AssetType.other,
     updatedAt: reader.readDateTime(offsets[19]),
-    visibility: _AssetvisibilityValueEnumMap[reader.readByteOrNull(offsets[20])] ?? AssetVisibilityEnum.timeline,
+    visibility:
+        _AssetvisibilityValueEnumMap[reader.readByteOrNull(offsets[20])] ??
+            AssetVisibilityEnum.timeline,
     width: reader.readIntOrNull(offsets[21]),
   );
   return object;
@@ -344,11 +347,13 @@ P _assetDeserializeProp<P>(
     case 17:
       return (reader.readStringOrNull(offset)) as P;
     case 18:
-      return (_AssettypeValueEnumMap[reader.readByteOrNull(offset)] ?? AssetType.other) as P;
+      return (_AssettypeValueEnumMap[reader.readByteOrNull(offset)] ??
+          AssetType.other) as P;
     case 19:
       return (reader.readDateTime(offset)) as P;
     case 20:
-      return (_AssetvisibilityValueEnumMap[reader.readByteOrNull(offset)] ?? AssetVisibilityEnum.timeline) as P;
+      return (_AssetvisibilityValueEnumMap[reader.readByteOrNull(offset)] ??
+          AssetVisibilityEnum.timeline) as P;
     case 21:
       return (reader.readIntOrNull(offset)) as P;
     default:
@@ -410,9 +415,11 @@ extension AssetByIndex on IsarCollection<Asset> {
     return deleteByIndexSync(r'ownerId_checksum', [ownerId, checksum]);
   }
 
-  Future<List<Asset?>> getAllByOwnerIdChecksum(List<int> ownerIdValues, List<String> checksumValues) {
+  Future<List<Asset?>> getAllByOwnerIdChecksum(
+      List<int> ownerIdValues, List<String> checksumValues) {
     final len = ownerIdValues.length;
-    assert(checksumValues.length == len, 'All index values must have the same length');
+    assert(checksumValues.length == len,
+        'All index values must have the same length');
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
       values.add([ownerIdValues[i], checksumValues[i]]);
@@ -421,9 +428,11 @@ extension AssetByIndex on IsarCollection<Asset> {
     return getAllByIndex(r'ownerId_checksum', values);
   }
 
-  List<Asset?> getAllByOwnerIdChecksumSync(List<int> ownerIdValues, List<String> checksumValues) {
+  List<Asset?> getAllByOwnerIdChecksumSync(
+      List<int> ownerIdValues, List<String> checksumValues) {
     final len = ownerIdValues.length;
-    assert(checksumValues.length == len, 'All index values must have the same length');
+    assert(checksumValues.length == len,
+        'All index values must have the same length');
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
       values.add([ownerIdValues[i], checksumValues[i]]);
@@ -432,9 +441,11 @@ extension AssetByIndex on IsarCollection<Asset> {
     return getAllByIndexSync(r'ownerId_checksum', values);
   }
 
-  Future<int> deleteAllByOwnerIdChecksum(List<int> ownerIdValues, List<String> checksumValues) {
+  Future<int> deleteAllByOwnerIdChecksum(
+      List<int> ownerIdValues, List<String> checksumValues) {
     final len = ownerIdValues.length;
-    assert(checksumValues.length == len, 'All index values must have the same length');
+    assert(checksumValues.length == len,
+        'All index values must have the same length');
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
       values.add([ownerIdValues[i], checksumValues[i]]);
@@ -443,9 +454,11 @@ extension AssetByIndex on IsarCollection<Asset> {
     return deleteAllByIndex(r'ownerId_checksum', values);
   }
 
-  int deleteAllByOwnerIdChecksumSync(List<int> ownerIdValues, List<String> checksumValues) {
+  int deleteAllByOwnerIdChecksumSync(
+      List<int> ownerIdValues, List<String> checksumValues) {
     final len = ownerIdValues.length;
-    assert(checksumValues.length == len, 'All index values must have the same length');
+    assert(checksumValues.length == len,
+        'All index values must have the same length');
     final values = <List<dynamic>>[];
     for (var i = 0; i < len; i++) {
       values.add([ownerIdValues[i], checksumValues[i]]);
@@ -466,8 +479,10 @@ extension AssetByIndex on IsarCollection<Asset> {
     return putAllByIndex(r'ownerId_checksum', objects);
   }
 
-  List<Id> putAllByOwnerIdChecksumSync(List<Asset> objects, {bool saveLinks = true}) {
-    return putAllByIndexSync(r'ownerId_checksum', objects, saveLinks: saveLinks);
+  List<Id> putAllByOwnerIdChecksumSync(List<Asset> objects,
+      {bool saveLinks = true}) {
+    return putAllByIndexSync(r'ownerId_checksum', objects,
+        saveLinks: saveLinks);
   }
 }
 
@@ -511,7 +526,8 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> idGreaterThan(Id id, {bool include = false}) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> idGreaterThan(Id id,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -519,7 +535,8 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> idLessThan(Id id, {bool include = false}) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> idLessThan(Id id,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -563,7 +580,8 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> remoteIdEqualTo(String? remoteId) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> remoteIdEqualTo(
+      String? remoteId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'remoteId',
@@ -572,7 +590,8 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> remoteIdNotEqualTo(String? remoteId) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> remoteIdNotEqualTo(
+      String? remoteId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -626,7 +645,8 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> localIdEqualTo(String? localId) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> localIdEqualTo(
+      String? localId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'localId',
@@ -635,7 +655,8 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> localIdNotEqualTo(String? localId) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> localIdNotEqualTo(
+      String? localId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -669,7 +690,8 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdEqualToAnyChecksum(int ownerId) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdEqualToAnyChecksum(
+      int ownerId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'ownerId_checksum',
@@ -678,7 +700,8 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdNotEqualToAnyChecksum(int ownerId) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdNotEqualToAnyChecksum(
+      int ownerId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -757,7 +780,8 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdChecksumEqualTo(int ownerId, String checksum) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdChecksumEqualTo(
+      int ownerId, String checksum) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'ownerId_checksum',
@@ -766,7 +790,8 @@ extension AssetQueryWhere on QueryBuilder<Asset, Asset, QWhereClause> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> ownerIdEqualToChecksumNotEqualTo(int ownerId, String checksum) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause>
+      ownerIdEqualToChecksumNotEqualTo(int ownerId, String checksum) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -890,7 +915,9 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'checksum',
@@ -900,7 +927,9 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> checksumMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'checksum',
@@ -928,7 +957,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> durationInSecondsEqualTo(int value) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> durationInSecondsEqualTo(
+      int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'durationInSeconds',
@@ -937,7 +967,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> durationInSecondsGreaterThan(
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      durationInSecondsGreaterThan(
     int value, {
     bool include = false,
   }) {
@@ -980,7 +1011,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileCreatedAtEqualTo(DateTime value) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileCreatedAtEqualTo(
+      DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'fileCreatedAt',
@@ -1032,7 +1064,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileModifiedAtEqualTo(DateTime value) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileModifiedAtEqualTo(
+      DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'fileModifiedAt',
@@ -1172,7 +1205,9 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'fileName',
@@ -1182,7 +1217,9 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> fileNameMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'fileName',
@@ -1330,7 +1367,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> isArchivedEqualTo(bool value) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> isArchivedEqualTo(
+      bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isArchived',
@@ -1339,7 +1377,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> isFavoriteEqualTo(bool value) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> isFavoriteEqualTo(
+      bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isFavorite',
@@ -1348,7 +1387,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> isOfflineEqualTo(bool value) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> isOfflineEqualTo(
+      bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isOffline',
@@ -1357,7 +1397,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> isTrashedEqualTo(bool value) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> isTrashedEqualTo(
+      bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isTrashed',
@@ -1374,7 +1415,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> livePhotoVideoIdIsNotNull() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      livePhotoVideoIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'livePhotoVideoId',
@@ -1470,7 +1512,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> livePhotoVideoIdContains(String value,
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> livePhotoVideoIdContains(
+      String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -1481,7 +1524,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> livePhotoVideoIdMatches(String pattern,
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> livePhotoVideoIdMatches(
+      String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -1501,7 +1545,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> livePhotoVideoIdIsNotEmpty() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      livePhotoVideoIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'livePhotoVideoId',
@@ -1614,7 +1659,9 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'localId',
@@ -1624,7 +1671,9 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> localIdMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'localId',
@@ -1808,7 +1857,9 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'remoteId',
@@ -1818,7 +1869,9 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> remoteIdMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'remoteId',
@@ -1846,7 +1899,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountEqualTo(int value) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackCountEqualTo(
+      int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'stackCount',
@@ -2002,7 +2056,9 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'stackId',
@@ -2012,7 +2068,9 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackIdMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'stackId',
@@ -2040,7 +2098,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdIsNull() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      stackPrimaryAssetIdIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'stackPrimaryAssetId',
@@ -2048,7 +2107,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdIsNotNull() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      stackPrimaryAssetIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'stackPrimaryAssetId',
@@ -2069,7 +2129,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdGreaterThan(
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      stackPrimaryAssetIdGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -2118,7 +2179,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdStartsWith(
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      stackPrimaryAssetIdStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -2144,7 +2206,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdContains(String value,
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdContains(
+      String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -2155,7 +2218,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdMatches(String pattern,
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdMatches(
+      String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -2166,7 +2230,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdIsEmpty() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      stackPrimaryAssetIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'stackPrimaryAssetId',
@@ -2175,7 +2240,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> stackPrimaryAssetIdIsNotEmpty() {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition>
+      stackPrimaryAssetIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'stackPrimaryAssetId',
@@ -2288,7 +2354,9 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'thumbhash',
@@ -2298,7 +2366,9 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> thumbhashMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'thumbhash',
@@ -2326,7 +2396,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> typeEqualTo(AssetType value) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> typeEqualTo(
+      AssetType value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'type',
@@ -2378,7 +2449,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> updatedAtEqualTo(DateTime value) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> updatedAtEqualTo(
+      DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'updatedAt',
@@ -2430,7 +2502,8 @@ extension AssetQueryFilter on QueryBuilder<Asset, Asset, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> visibilityEqualTo(AssetVisibilityEnum value) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> visibilityEqualTo(
+      AssetVisibilityEnum value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'visibility',
@@ -3100,7 +3173,8 @@ extension AssetQuerySortThenBy on QueryBuilder<Asset, Asset, QSortThenBy> {
 }
 
 extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
-  QueryBuilder<Asset, Asset, QDistinct> distinctByChecksum({bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByChecksum(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'checksum', caseSensitive: caseSensitive);
     });
@@ -3124,7 +3198,8 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByFileName({bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByFileName(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'fileName', caseSensitive: caseSensitive);
     });
@@ -3160,13 +3235,16 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByLivePhotoVideoId({bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByLivePhotoVideoId(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'livePhotoVideoId', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'livePhotoVideoId',
+          caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByLocalId({bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByLocalId(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'localId', caseSensitive: caseSensitive);
     });
@@ -3178,7 +3256,8 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByRemoteId({bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByRemoteId(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'remoteId', caseSensitive: caseSensitive);
     });
@@ -3190,19 +3269,23 @@ extension AssetQueryWhereDistinct on QueryBuilder<Asset, Asset, QDistinct> {
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByStackId({bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByStackId(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'stackId', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByStackPrimaryAssetId({bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByStackPrimaryAssetId(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'stackPrimaryAssetId', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'stackPrimaryAssetId',
+          caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<Asset, Asset, QDistinct> distinctByThumbhash({bool caseSensitive = true}) {
+  QueryBuilder<Asset, Asset, QDistinct> distinctByThumbhash(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'thumbhash', caseSensitive: caseSensitive);
     });
@@ -3360,7 +3443,8 @@ extension AssetQueryProperty on QueryBuilder<Asset, Asset, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Asset, AssetVisibilityEnum, QQueryOperations> visibilityProperty() {
+  QueryBuilder<Asset, AssetVisibilityEnum, QQueryOperations>
+      visibilityProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'visibility');
     });
