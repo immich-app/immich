@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 @RoutePage()
 class AppLogDetailPage extends HookConsumerWidget {
@@ -124,7 +125,7 @@ class AppLogDetailPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Log Detail"),
+        title: Text("log_detail".tr()),
       ),
       body: SafeArea(
         child: ListView(

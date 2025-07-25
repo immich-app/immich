@@ -5,12 +5,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class BetaTimelineListTile extends ConsumerStatefulWidget {
   const BetaTimelineListTile({
@@ -83,21 +83,23 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
             context: context,
             builder: (context) {
               return AlertDialog(
-                title: value ? const Text("Enable Beta Timeline") : const Text("Disable Beta Timeline"),
-                content: value
-                    ? const Text(
-                        "Are you sure you want to enable the beta timeline?",
-                      )
-                    : const Text(
-                        "Are you sure you want to disable the beta timeline?",
-                      ),
+                title: Text(
+                  value
+                      ? "advanced_settings_beta_timeline_enable_title".tr()
+                      : "advanced_settings_beta_timeline_disable_title".tr(),
+                ),
+                content: Text(
+                  value
+                      ? "advanced_settings_beta_timeline_enable_subtitle".tr()
+                      : "advanced_settings_beta_timeline_disable_subtitle".tr(),
+                ),
                 actions: [
                   TextButton(
                     onPressed: () {
                       context.pop();
                     },
                     child: Text(
-                      "cancel".t(context: context),
+                      "cancel".tr(context: context),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -117,7 +119,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
                       );
                     },
                     child: Text(
-                      "ok".t(context: context),
+                      "ok".tr(context: context),
                     ),
                   ),
                 ],
@@ -210,7 +212,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
-                                  "advanced_settings_beta_timeline_title".t(context: context),
+                                  "advanced_settings_beta_timeline_title".tr(),
                                   style: context.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -246,7 +248,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              "advanced_settings_beta_timeline_subtitle".t(context: context),
+                              "advanced_settings_beta_timeline_subtitle".tr(),
                               style: context.textTheme.labelLarge?.copyWith(
                                 color: context.textTheme.labelLarge?.color?.withValues(alpha: 0.9),
                               ),

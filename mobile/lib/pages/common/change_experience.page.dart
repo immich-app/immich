@@ -16,6 +16,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 @RoutePage()
 class ChangeExperiencePage extends ConsumerStatefulWidget {
@@ -119,12 +120,12 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
                       duration: Durations.long4,
                       child: hasMigrated
                           ? Text(
-                              "Migration success!",
+                              "migration_success".tr(),
                               style: context.textTheme.titleMedium,
                               textAlign: TextAlign.center,
                             )
                           : Text(
-                              "Data migration in progress...\nPlease wait and don't close this page",
+                              "migration_in_progress".tr(),
                               style: context.textTheme.titleMedium,
                               textAlign: TextAlign.center,
                             ),
@@ -139,7 +140,9 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
                             widget.switchingToBeta ? const TabShellRoute() : const TabControllerRoute(),
                           );
                         },
-                        child: const Text("Continue"),
+                        child: Text(
+                          "continue".tr(),
+                        ),
                       ),
                     ),
                 ],

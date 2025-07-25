@@ -10,12 +10,12 @@ class ImmichTestLoginHelper {
   const ImmichTestLoginHelper(this.tester);
 
   Future<void> waitForLoginScreen() async {
-    await pumpUntilFound(tester, find.text("Login"));
+    await pumpUntilFound(tester, find.byKey(const Key('login_text')));
   }
 
   Future<bool> acknowledgeNewServerVersion() async {
-    await pumpUntilFound(tester, find.text("Acknowledge"));
-    final result = find.text("Acknowledge");
+    await pumpUntilFound(tester, find.byKey(const Key('acknowledge_text')));
+    final result = find.byKey(const Key('acknowledge_text'));
 
     await tester.tap(result);
     await tester.pump();
