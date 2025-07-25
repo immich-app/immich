@@ -40,7 +40,7 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
     }
 
     await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
-    await ref.read(driftBackupProvider.notifier).backup(currentUser.id);
+    await ref.read(driftBackupProvider.notifier).startBackup(currentUser.id);
   }
 
   Future<void> stopBackup() async {

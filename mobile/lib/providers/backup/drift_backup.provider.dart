@@ -8,7 +8,6 @@ import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/services/drift_backup.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 
 class EnqueueStatus {
@@ -199,14 +198,12 @@ class DriftBackupState {
 
 final driftBackupProvider = StateNotifierProvider<ExpBackupNotifier, DriftBackupState>((ref) {
   return ExpBackupNotifier(
-    ref.watch(driftBackupServiceProvider),
     ref.watch(uploadServiceProvider),
   );
 });
 
 class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   ExpBackupNotifier(
-    this._backupService,
     this._uploadService,
   ) : super(
           const DriftBackupState(
@@ -225,7 +222,6 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
     }
   }
 
-  final DriftBackupService _backupService;
   final UploadService _uploadService;
   StreamSubscription<TaskStatusUpdate>? _statusSubscription;
   StreamSubscription<TaskProgressUpdate>? _progressSubscription;
@@ -328,9 +324,9 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
 
   Future<void> getBackupStatus(String userId) async {
     final [totalCount, backupCount, remainderCount] = await Future.wait([
-      _backupService.getTotalCount(),
-      _backupService.getBackupCount(userId),
-      _backupService.getRemainderCount(userId),
+      _uploadService.getBackupTotalCount(),
+      _uploadService.getBackupFinishedCount(userId),
+      _uploadService.getBackupRemainderCount(userId),
     ]);
 
     state = state.copyWith(
@@ -340,8 +336,8 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
-  Future<void> backup(String userId) {
-    return _backupService.backup(userId, _updateEnqueueCount);
+  Future<void> startBackup(String userId) {
+    return _uploadService.startBackup(userId, _updateEnqueueCount);
   }
 
   void _updateEnqueueCount(EnqueueStatus status) {
@@ -352,22 +348,22 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> cancel() async {
+    debugPrint("Canceling backup tasks...");
     state = state.copyWith(
       enqueueCount: 0,
       enqueueTotalCount: 0,
       isCanceling: true,
     );
 
-    await _backupService.cancel();
+    final activeTaskCount = await _uploadService.cancelBackup();
 
-    // Check if there are any tasks left in the queue
-    final tasks = await FileDownloader().allTasks(group: kBackupGroup);
-
-    debugPrint("Tasks left to cancel: ${tasks.length}");
-
-    if (tasks.isNotEmpty) {
+    if (activeTaskCount > 0) {
+      debugPrint(
+        "$activeTaskCount tasks left, continuing to cancel...",
+      );
       await cancel();
     } else {
+      debugPrint("All tasks canceled successfully.");
       // Clear all upload items when cancellation is complete
       state = state.copyWith(
         isCanceling: false,
@@ -377,14 +373,18 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> handleBackupResume(String userId) async {
-    final tasks = await FileDownloader().allTasks(group: kBackupGroup);
+    debugPrint("handleBackupResume");
+    final tasks = await _uploadService.getActiveTasks(kBackupGroup);
+    debugPrint("Found ${tasks.length} tasks");
+
     if (tasks.isEmpty) {
       // Start a new backup queue
-      await backup(userId);
+      debugPrint("Start a new backup queue");
+      await startBackup(userId);
     }
 
     debugPrint("Tasks to resume: ${tasks.length}");
-    await FileDownloader().start();
+    await _uploadService.resumeBackup();
   }
 
   @override

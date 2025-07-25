@@ -27,8 +27,8 @@ class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttac
     this._uploadService,
     this._shareIntentService,
   ) : super([]) {
-    _uploadService.onUploadStatus = _updateUploadStatus;
-    _uploadService.onTaskProgress = _taskProgressCallback;
+    _uploadService.taskStatusStream.listen(_updateUploadStatus);
+    _uploadService.taskProgressStream.listen(_taskProgressCallback);
   }
 
   void init() {
