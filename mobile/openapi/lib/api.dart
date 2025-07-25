@@ -338,6 +338,7 @@ part 'model/user_admin_response_dto.dart';
 part 'model/user_admin_update_dto.dart';
 part 'model/user_avatar_color.dart';
 part 'model/user_license.dart';
+part 'model/user_metadata_key.dart';
 part 'model/user_preferences_response_dto.dart';
 part 'model/user_preferences_update_dto.dart';
 part 'model/user_response_dto.dart';
