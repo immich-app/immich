@@ -218,7 +218,8 @@ extension ETagQueryWhere on QueryBuilder<ETag, ETag, QWhereClause> {
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterWhereClause> isarIdGreaterThan(Id isarId, {bool include = false}) {
+  QueryBuilder<ETag, ETag, QAfterWhereClause> isarIdGreaterThan(Id isarId,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: isarId, includeLower: include),
@@ -226,7 +227,8 @@ extension ETagQueryWhere on QueryBuilder<ETag, ETag, QWhereClause> {
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterWhereClause> isarIdLessThan(Id isarId, {bool include = false}) {
+  QueryBuilder<ETag, ETag, QAfterWhereClause> isarIdLessThan(Id isarId,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: isarId, includeUpper: include),
@@ -311,7 +313,8 @@ extension ETagQueryFilter on QueryBuilder<ETag, ETag, QFilterCondition> {
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountEqualTo(int? value) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> assetCountEqualTo(
+      int? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'assetCount',
@@ -451,7 +454,8 @@ extension ETagQueryFilter on QueryBuilder<ETag, ETag, QFilterCondition> {
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> idContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> idContains(String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'id',
@@ -461,7 +465,8 @@ extension ETagQueryFilter on QueryBuilder<ETag, ETag, QFilterCondition> {
     });
   }
 
-  QueryBuilder<ETag, ETag, QAfterFilterCondition> idMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<ETag, ETag, QAfterFilterCondition> idMatches(String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'id',
@@ -709,7 +714,8 @@ extension ETagQueryWhereDistinct on QueryBuilder<ETag, ETag, QDistinct> {
     });
   }
 
-  QueryBuilder<ETag, ETag, QDistinct> distinctById({bool caseSensitive = true}) {
+  QueryBuilder<ETag, ETag, QDistinct> distinctById(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
     });

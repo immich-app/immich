@@ -90,9 +90,11 @@ List<IsarLinkBase<dynamic>> _duplicatedAssetGetLinks(DuplicatedAsset object) {
   return [];
 }
 
-void _duplicatedAssetAttach(IsarCollection<dynamic> col, Id id, DuplicatedAsset object) {}
+void _duplicatedAssetAttach(
+    IsarCollection<dynamic> col, Id id, DuplicatedAsset object) {}
 
-extension DuplicatedAssetQueryWhereSort on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QWhere> {
+extension DuplicatedAssetQueryWhereSort
+    on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QWhere> {
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhere> anyIsarId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
@@ -100,8 +102,10 @@ extension DuplicatedAssetQueryWhereSort on QueryBuilder<DuplicatedAsset, Duplica
   }
 }
 
-extension DuplicatedAssetQueryWhere on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QWhereClause> {
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause> isarIdEqualTo(Id isarId) {
+extension DuplicatedAssetQueryWhere
+    on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QWhereClause> {
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause>
+      isarIdEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: isarId,
@@ -110,7 +114,8 @@ extension DuplicatedAssetQueryWhere on QueryBuilder<DuplicatedAsset, DuplicatedA
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause> isarIdNotEqualTo(Id isarId) {
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause>
+      isarIdNotEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -132,8 +137,8 @@ extension DuplicatedAssetQueryWhere on QueryBuilder<DuplicatedAsset, DuplicatedA
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause> isarIdGreaterThan(Id isarId,
-      {bool include = false}) {
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause>
+      isarIdGreaterThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: isarId, includeLower: include),
@@ -141,7 +146,8 @@ extension DuplicatedAssetQueryWhere on QueryBuilder<DuplicatedAsset, DuplicatedA
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause> isarIdLessThan(Id isarId, {bool include = false}) {
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause>
+      isarIdLessThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: isarId, includeUpper: include),
@@ -149,7 +155,8 @@ extension DuplicatedAssetQueryWhere on QueryBuilder<DuplicatedAsset, DuplicatedA
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause> isarIdBetween(
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause>
+      isarIdBetween(
     Id lowerIsarId,
     Id upperIsarId, {
     bool includeLower = true,
@@ -166,8 +173,10 @@ extension DuplicatedAssetQueryWhere on QueryBuilder<DuplicatedAsset, DuplicatedA
   }
 }
 
-extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QFilterCondition> {
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> idEqualTo(
+extension DuplicatedAssetQueryFilter
+    on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QFilterCondition> {
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      idEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -180,7 +189,8 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      idGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -195,7 +205,8 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> idLessThan(
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      idLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -210,7 +221,8 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> idBetween(
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      idBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -229,7 +241,8 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> idStartsWith(
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      idStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -242,7 +255,8 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> idEndsWith(
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      idEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -255,8 +269,8 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> idContains(String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      idContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'id',
@@ -266,8 +280,8 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> idMatches(String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      idMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'id',
@@ -277,7 +291,8 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> idIsEmpty() {
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      idIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
@@ -286,7 +301,8 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> idIsNotEmpty() {
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      idIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'id',
@@ -295,7 +311,8 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> isarIdEqualTo(Id value) {
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      isarIdEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isarId',
@@ -304,7 +321,8 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> isarIdGreaterThan(
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      isarIdGreaterThan(
     Id value, {
     bool include = false,
   }) {
@@ -317,7 +335,8 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> isarIdLessThan(
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      isarIdLessThan(
     Id value, {
     bool include = false,
   }) {
@@ -330,7 +349,8 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition> isarIdBetween(
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+      isarIdBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -348,11 +368,14 @@ extension DuplicatedAssetQueryFilter on QueryBuilder<DuplicatedAsset, Duplicated
   }
 }
 
-extension DuplicatedAssetQueryObject on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QFilterCondition> {}
+extension DuplicatedAssetQueryObject
+    on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QFilterCondition> {}
 
-extension DuplicatedAssetQueryLinks on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QFilterCondition> {}
+extension DuplicatedAssetQueryLinks
+    on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QFilterCondition> {}
 
-extension DuplicatedAssetQuerySortBy on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QSortBy> {
+extension DuplicatedAssetQuerySortBy
+    on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QSortBy> {
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterSortBy> sortById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -366,7 +389,8 @@ extension DuplicatedAssetQuerySortBy on QueryBuilder<DuplicatedAsset, Duplicated
   }
 }
 
-extension DuplicatedAssetQuerySortThenBy on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QSortThenBy> {
+extension DuplicatedAssetQuerySortThenBy
+    on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QSortThenBy> {
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -385,22 +409,26 @@ extension DuplicatedAssetQuerySortThenBy on QueryBuilder<DuplicatedAsset, Duplic
     });
   }
 
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterSortBy> thenByIsarIdDesc() {
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterSortBy>
+      thenByIsarIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.desc);
     });
   }
 }
 
-extension DuplicatedAssetQueryWhereDistinct on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QDistinct> {
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QDistinct> distinctById({bool caseSensitive = true}) {
+extension DuplicatedAssetQueryWhereDistinct
+    on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QDistinct> {
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QDistinct> distinctById(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
     });
   }
 }
 
-extension DuplicatedAssetQueryProperty on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QQueryProperty> {
+extension DuplicatedAssetQueryProperty
+    on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QQueryProperty> {
   QueryBuilder<DuplicatedAsset, int, QQueryOperations> isarIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isarId');

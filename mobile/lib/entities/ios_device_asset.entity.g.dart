@@ -127,7 +127,8 @@ List<IsarLinkBase<dynamic>> _iOSDeviceAssetGetLinks(IOSDeviceAsset object) {
   return [];
 }
 
-void _iOSDeviceAssetAttach(IsarCollection<dynamic> col, Id id, IOSDeviceAsset object) {}
+void _iOSDeviceAssetAttach(
+    IsarCollection<dynamic> col, Id id, IOSDeviceAsset object) {}
 
 extension IOSDeviceAssetByIndex on IsarCollection<IOSDeviceAsset> {
   Future<IOSDeviceAsset?> getById(String id) {
@@ -178,12 +179,14 @@ extension IOSDeviceAssetByIndex on IsarCollection<IOSDeviceAsset> {
     return putAllByIndex(r'id', objects);
   }
 
-  List<Id> putAllByIdSync(List<IOSDeviceAsset> objects, {bool saveLinks = true}) {
+  List<Id> putAllByIdSync(List<IOSDeviceAsset> objects,
+      {bool saveLinks = true}) {
     return putAllByIndexSync(r'id', objects, saveLinks: saveLinks);
   }
 }
 
-extension IOSDeviceAssetQueryWhereSort on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QWhere> {
+extension IOSDeviceAssetQueryWhereSort
+    on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QWhere> {
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhere> anyIsarId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
@@ -191,8 +194,10 @@ extension IOSDeviceAssetQueryWhereSort on QueryBuilder<IOSDeviceAsset, IOSDevice
   }
 }
 
-extension IOSDeviceAssetQueryWhere on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QWhereClause> {
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> isarIdEqualTo(Id isarId) {
+extension IOSDeviceAssetQueryWhere
+    on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QWhereClause> {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> isarIdEqualTo(
+      Id isarId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: isarId,
@@ -201,7 +206,8 @@ extension IOSDeviceAssetQueryWhere on QueryBuilder<IOSDeviceAsset, IOSDeviceAsse
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> isarIdNotEqualTo(Id isarId) {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause>
+      isarIdNotEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -223,7 +229,8 @@ extension IOSDeviceAssetQueryWhere on QueryBuilder<IOSDeviceAsset, IOSDeviceAsse
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> isarIdGreaterThan(Id isarId, {bool include = false}) {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause>
+      isarIdGreaterThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: isarId, includeLower: include),
@@ -231,7 +238,8 @@ extension IOSDeviceAssetQueryWhere on QueryBuilder<IOSDeviceAsset, IOSDeviceAsse
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> isarIdLessThan(Id isarId, {bool include = false}) {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause>
+      isarIdLessThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: isarId, includeUpper: include),
@@ -255,7 +263,8 @@ extension IOSDeviceAssetQueryWhere on QueryBuilder<IOSDeviceAsset, IOSDeviceAsse
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> idEqualTo(String id) {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> idEqualTo(
+      String id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'id',
@@ -264,7 +273,8 @@ extension IOSDeviceAssetQueryWhere on QueryBuilder<IOSDeviceAsset, IOSDeviceAsse
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> idNotEqualTo(String id) {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> idNotEqualTo(
+      String id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -298,7 +308,8 @@ extension IOSDeviceAssetQueryWhere on QueryBuilder<IOSDeviceAsset, IOSDeviceAsse
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> hashEqualTo(List<int> hash) {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> hashEqualTo(
+      List<int> hash) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'hash',
@@ -307,7 +318,8 @@ extension IOSDeviceAssetQueryWhere on QueryBuilder<IOSDeviceAsset, IOSDeviceAsse
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> hashNotEqualTo(List<int> hash) {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause>
+      hashNotEqualTo(List<int> hash) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -342,8 +354,10 @@ extension IOSDeviceAssetQueryWhere on QueryBuilder<IOSDeviceAsset, IOSDeviceAsse
   }
 }
 
-extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QFilterCondition> {
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> hashElementEqualTo(int value) {
+extension IOSDeviceAssetQueryFilter
+    on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QFilterCondition> {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      hashElementEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'hash',
@@ -352,7 +366,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> hashElementGreaterThan(
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      hashElementGreaterThan(
     int value, {
     bool include = false,
   }) {
@@ -365,7 +380,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> hashElementLessThan(
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      hashElementLessThan(
     int value, {
     bool include = false,
   }) {
@@ -378,7 +394,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> hashElementBetween(
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      hashElementBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -395,7 +412,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> hashLengthEqualTo(int length) {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      hashLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'hash',
@@ -407,7 +425,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> hashIsEmpty() {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      hashIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'hash',
@@ -419,7 +438,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> hashIsNotEmpty() {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      hashIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'hash',
@@ -431,7 +451,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> hashLengthLessThan(
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      hashLengthLessThan(
     int length, {
     bool include = false,
   }) {
@@ -446,7 +467,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> hashLengthGreaterThan(
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      hashLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
@@ -461,7 +483,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> hashLengthBetween(
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      hashLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -491,7 +514,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      idGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -506,7 +530,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> idLessThan(
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      idLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -540,7 +565,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> idStartsWith(
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      idStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -553,7 +579,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> idEndsWith(
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      idEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -566,8 +593,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> idContains(String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      idContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'id',
@@ -577,7 +604,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> idMatches(String pattern,
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> idMatches(
+      String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -588,7 +616,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> idIsEmpty() {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      idIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
@@ -597,7 +626,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> idIsNotEmpty() {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      idIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'id',
@@ -606,7 +636,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> isarIdEqualTo(Id value) {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      isarIdEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isarId',
@@ -615,7 +646,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> isarIdGreaterThan(
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      isarIdGreaterThan(
     Id value, {
     bool include = false,
   }) {
@@ -628,7 +660,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> isarIdLessThan(
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      isarIdLessThan(
     Id value, {
     bool include = false,
   }) {
@@ -641,7 +674,8 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> isarIdBetween(
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+      isarIdBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -659,11 +693,14 @@ extension IOSDeviceAssetQueryFilter on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
   }
 }
 
-extension IOSDeviceAssetQueryObject on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QFilterCondition> {}
+extension IOSDeviceAssetQueryObject
+    on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QFilterCondition> {}
 
-extension IOSDeviceAssetQueryLinks on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QFilterCondition> {}
+extension IOSDeviceAssetQueryLinks
+    on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QFilterCondition> {}
 
-extension IOSDeviceAssetQuerySortBy on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QSortBy> {
+extension IOSDeviceAssetQuerySortBy
+    on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QSortBy> {
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterSortBy> sortById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -677,7 +714,8 @@ extension IOSDeviceAssetQuerySortBy on QueryBuilder<IOSDeviceAsset, IOSDeviceAss
   }
 }
 
-extension IOSDeviceAssetQuerySortThenBy on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QSortThenBy> {
+extension IOSDeviceAssetQuerySortThenBy
+    on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QSortThenBy> {
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -696,28 +734,32 @@ extension IOSDeviceAssetQuerySortThenBy on QueryBuilder<IOSDeviceAsset, IOSDevic
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterSortBy> thenByIsarIdDesc() {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterSortBy>
+      thenByIsarIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.desc);
     });
   }
 }
 
-extension IOSDeviceAssetQueryWhereDistinct on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QDistinct> {
+extension IOSDeviceAssetQueryWhereDistinct
+    on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QDistinct> {
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QDistinct> distinctByHash() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'hash');
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QDistinct> distinctById({bool caseSensitive = true}) {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QDistinct> distinctById(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
     });
   }
 }
 
-extension IOSDeviceAssetQueryProperty on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QQueryProperty> {
+extension IOSDeviceAssetQueryProperty
+    on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QQueryProperty> {
   QueryBuilder<IOSDeviceAsset, int, QQueryOperations> isarIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isarId');
