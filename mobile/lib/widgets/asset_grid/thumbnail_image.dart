@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
@@ -47,21 +47,11 @@ class ThumbnailImage extends StatelessWidget {
 
     return Stack(
       children: [
+        Container(color: canDeselect ? assetContainerColor : Colors.grey),
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.decelerate,
-          decoration: BoxDecoration(
-            border: multiselectEnabled && isSelected
-                ? canDeselect
-                      ? Border.all(color: assetContainerColor, width: 8)
-                      : const Border(
-                          top: BorderSide(color: Colors.grey, width: 8),
-                          right: BorderSide(color: Colors.grey, width: 8),
-                          bottom: BorderSide(color: Colors.grey, width: 8),
-                          left: BorderSide(color: Colors.grey, width: 8),
-                        )
-                : const Border(),
-          ),
+          padding: EdgeInsets.all(multiselectEnabled && isSelected ? 8 : 0),
           child: Stack(
             children: [
               _ImageIcon(
@@ -80,13 +70,30 @@ class ThumbnailImage extends StatelessWidget {
             ],
           ),
         ),
-        if (multiselectEnabled)
-          isSelected
-              ? const Padding(
-                  padding: EdgeInsets.all(3.0),
-                  child: Align(alignment: Alignment.topLeft, child: _SelectedIcon()),
-                )
-              : const Icon(Icons.circle_outlined, color: Colors.white),
+        TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0.0, end: multiselectEnabled ? 1.0 : 0.0),
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.decelerate,
+          builder: (context, value, child) {
+            final double outlineCircleScale = 0.6 + (0.4 * value);
+            return Padding(
+              padding: EdgeInsets.all(isSelected ? value * 3.0 : 3.0),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Opacity(
+                  opacity: isSelected ? 1 : value,
+                  child: Transform.scale(
+                    scale: isSelected ? value : outlineCircleScale,
+                    alignment: isSelected ? Alignment.topLeft : Alignment.center,
+                    child: isSelected
+                        ? const _SelectedIcon()
+                        : Icon(Icons.circle_outlined, color: Colors.white.withValues(alpha: 0.8)),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
       ],
     );
   }
@@ -247,13 +254,14 @@ class _ImageIcon extends StatelessWidget {
       ),
     );
 
-    if (!multiselectEnabled || !isSelected) {
-      return image;
-    }
-
-    return DecoratedBox(
-      decoration: canDeselect ? BoxDecoration(color: assetContainerColor) : const BoxDecoration(color: Colors.grey),
-      child: ClipRRect(borderRadius: const BorderRadius.all(Radius.circular(15.0)), child: image),
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: (multiselectEnabled && isSelected) ? 15.0 : 0.0),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.decelerate,
+      builder: (context, value, child) {
+        return ClipRRect(borderRadius: BorderRadius.all(Radius.circular(value)), child: child);
+      },
+      child: image,
     );
   }
 }
