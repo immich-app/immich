@@ -1,0 +1,157 @@
+name: 'Pre-Job'
+description: 'Determines which jobs should run based on changed paths'
+inputs:
+  filters:
+    description: 'Path filters as YAML string'
+    required: true
+  force-filters:
+    description: 'Additional path filters that trigger force-run (e.g., workflow files)'
+    required: false
+    default: ''
+  force-events:
+    description: 'Events that should force all jobs to run (comma-separated)'
+    required: false
+    default: 'workflow_dispatch'
+  force-branches:
+    description: 'Branches that should force all jobs to run (comma-separated)'
+    required: false
+    default: ''
+  exclude-branches:
+    description: 'Branches to exclude from running (comma-separated)'
+    required: false
+    default: ''
+  skip-force-logic:
+    description: 'Skip the standard force logic'
+    required: false
+    default: 'false'
+
+outputs:
+  should_run:
+    description: 'Nested object with filter results (access via fromJSON(steps.pre-job.outputs.should_run).filter_name)'
+    value: ${{ steps.generate-outputs.outputs.should_run }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: List filter keys as comma-separated string
+      id: list-filters
+      shell: python
+      env:
+        FILTERS: ${{ inputs.filters }}
+      run: |
+        import json
+        import os
+        import yaml
+
+        filters_yaml = os.environ['FILTERS']
+
+        try:
+            filters_dict = yaml.safe_load(filters_yaml)
+
+            if not filters_dict:
+                raise ValueError("No valid filters found")
+
+            if not isinstance(filters_dict, dict):
+                raise ValueError("Filters must be a YAML dictionary")
+
+            filter_names = ','.join(filters_dict.keys())
+
+            print(f"Filter names: {filter_names}")
+
+            with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                f.write(f"filters={filter_names}\n")
+
+        except Exception as e:
+            print(f"Error converting filters: {e}")
+            exit(1)
+
+    - name: Check conditions and determine if path filtering is needed
+      id: check-conditions
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      with:
+        force-events: ${{ inputs.force-events }}
+        force-branches: ${{ inputs.force-branches }}
+        exclude-branches: ${{ inputs.exclude-branches }}
+        skip-force-logic: ${{ inputs.skip-force-logic }}
+        filters-list: ${{ steps.list-filters.outputs.filters }}
+        script: |
+          const script = require('./.github/actions/pre-job/check-conditions.js')
+          script({ core, context })
+
+    - name: Checkout code
+      if: ${{ steps.check-conditions.outputs.needs_path_filtering == 'true' }}
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      with:
+        persist-credentials: false
+
+    - name: Check force paths
+      if: ${{ steps.check-conditions.outputs.needs_path_filtering == 'true' && inputs.force-filters != '' }}
+      id: force_paths
+      shell: python
+      env:
+        FORCE_FILTERS: ${{ inputs.force-filters }}
+        GITHUB_OUTPUT: ${{ env.GITHUB_OUTPUT }}
+      run: |
+        import os
+        import yaml
+
+        force_filters_input = os.environ.get('FORCE_FILTERS', '').strip()
+
+        if not force_filters_input:
+            print("No force filters provided")
+            exit(0)
+
+        try:
+            force_paths_list = yaml.safe_load(force_filters_input)
+
+            if not isinstance(force_paths_list, list):
+                raise ValueError("force-filters must be a YAML array of paths")
+
+            if not force_paths_list:
+                print("No valid paths found in force-filters")
+                exit(0)
+
+            force_paths_config = {
+                'force-paths': force_paths_list
+            }
+
+            force_paths_yaml = yaml.dump(force_paths_config, default_flow_style=False)
+
+            print(f"Generated force paths YAML: {force_paths_yaml}")
+
+            with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                f.write(f"force-paths-yaml<<EOF\n{force_paths_yaml}EOF\n")
+
+        except Exception as e:
+            print(f"Error processing force filters: {e}")
+            print(f"Input was: {repr(force_filters_input)}")
+            exit(1)
+
+    - name: Run force paths filter
+      if: ${{ steps.check-conditions.outputs.needs_path_filtering == 'true' && inputs.force-filters != '' }}
+      id: force_paths_filter
+      uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+      with:
+        filters: ${{ steps.force_paths.outputs.force-paths-yaml }}
+
+    - name: Check main paths
+      if: ${{ steps.check-conditions.outputs.needs_path_filtering == 'true' && (inputs.force-filters == '' || steps.force_paths_filter.outputs.force-paths != 'true') }}
+      id: main_paths
+      uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+      with:
+        filters: ${{ inputs.filters }}
+
+    - name: Generate final outputs
+      id: generate-outputs
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      with:
+        filters-list: ${{ steps.list-filters.outputs.filters }}
+        skip-force-logic: ${{ inputs.skip-force-logic }}
+        force-triggered: ${{ steps.check-conditions.outputs.force_triggered }}
+        should-skip: ${{ steps.check-conditions.outputs.should_skip }}
+        needs-path-filtering: ${{ steps.check-conditions.outputs.needs_path_filtering }}
+        force-path-results: ${{ toJSON(steps.force_paths_filter.outputs) }}
+        main-path-results: ${{ toJSON(steps.main_paths.outputs) }}
+        script: |
+          const script = require('./.github/actions/pre-job/generate-outputs.js')
+          script({ core })
