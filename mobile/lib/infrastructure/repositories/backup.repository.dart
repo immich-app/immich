@@ -63,13 +63,14 @@ class DriftBackupRepository extends DriftDatabaseRepository {
         ),
         leftOuterJoin(
           _db.remoteAssetEntity,
-          _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+          _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum) &
+              _db.remoteAssetEntity.ownerId.equals(userId),
           useColumns: false,
         ),
       ])
       ..where(
         _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
-            (_db.remoteAssetEntity.id.isNull() | _db.remoteAssetEntity.ownerId.equals(userId).not()) &
+            _db.remoteAssetEntity.id.isNull() &
             _db.localAlbumAssetEntity.assetId.isNotInQuery(_getExcludedSubquery()),
       );
 
