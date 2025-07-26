@@ -31,8 +31,10 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isInLockedView = ref.watch(inLockedViewProvider);
-    final currentRouteName = ref.watch(currentRouteNameProvider);
-    final showViewInTimelineButton = currentRouteName != 'MainTimelineRoute' && currentRouteName != null;
+
+    final previousRouteName = ref.watch(previousRouteNameProvider);
+    print("previousRouteName: $previousRouteName");
+    final showViewInTimelineButton = previousRouteName != TabShellRoute.name && previousRouteName != null;
 
     final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
     int opacity = ref.watch(
