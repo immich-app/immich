@@ -335,6 +335,7 @@
         }
         break;
       }
+      case AssetAction.STACK:
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
         stack = action.stack;
         break;
