@@ -6,7 +6,7 @@
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
-  import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
@@ -19,6 +19,7 @@
     assetId: string;
     loopVideo: boolean;
     cacheKey: string | null;
+    playOriginalVideo: boolean;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
@@ -30,6 +31,7 @@
     assetId,
     loopVideo,
     cacheKey,
+    playOriginalVideo,
     onPreviousAsset = () => {},
     onNextAsset = () => {},
     onVideoEnded = () => {},
@@ -47,7 +49,12 @@
   onMount(() => {
     // Show video after mount to ensure fading in.
     showVideo = true;
-    assetFileUrl = getAssetPlaybackUrl({ id: assetId, cacheKey });
+  });
+
+  $effect(() => {
+    assetFileUrl = playOriginalVideo
+      ? getAssetOriginalUrl({ id: assetId, cacheKey })
+      : getAssetPlaybackUrl({ id: assetId, cacheKey });
     if (videoPlayer) {
       forceMuted = false;
       videoPlayer.load();
