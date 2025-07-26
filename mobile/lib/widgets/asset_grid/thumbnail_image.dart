@@ -62,7 +62,10 @@ class ThumbnailImage extends StatelessWidget {
                         bottom: BorderSide(color: Colors.grey, width: 8),
                         left: BorderSide(color: Colors.grey, width: 8),
                       )
-                : const Border(),
+                : Border.all(
+                    color: assetContainerColor,
+                    width: 0.001,
+                  ),
           ),
           child: Stack(
             children: [
@@ -315,16 +318,22 @@ class _ImageIcon extends StatelessWidget {
       ),
     );
 
-    if (!multiselectEnabled || !isSelected) {
-      return image;
-    }
-
-    return DecoratedBox(
-      decoration: canDeselect ? BoxDecoration(color: assetContainerColor) : const BoxDecoration(color: Colors.grey),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.all(Radius.circular(15.0)),
-        child: image,
-      ),
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: (multiselectEnabled && isSelected) ? 15.0 : 0.0),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.decelerate,
+      builder: (context, value, child) {
+        return DecoratedBox(
+          decoration: (multiselectEnabled && isSelected)
+              ? BoxDecoration(color: canDeselect ? assetContainerColor : Colors.grey)
+              : BoxDecoration(color: assetContainerColor),
+          child: ClipRRect(
+            borderRadius: BorderRadius.all(Radius.circular(value)),
+            child: child,
+          ),
+        );
+      },
+      child: image,
     );
   }
 }
