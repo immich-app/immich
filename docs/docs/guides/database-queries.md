@@ -39,11 +39,11 @@ SELECT * FROM "asset" WHERE "id" = '9f94e60f-65b6-47b7-ae44-a4df7b57f0e9';
 SELECT * FROM "asset" WHERE "id"::text LIKE '%ab431d3a%';
 ```
 
+### Checksum
+
 :::note
 You can calculate the checksum for a particular file by using the command `sha1sum <filename>`.
 :::
-
-### Checksum
 
 ```sql title="Find by checksum (SHA-1)"
 SELECT encode("checksum", 'hex') FROM "asset";
