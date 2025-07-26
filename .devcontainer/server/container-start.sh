@@ -3,9 +3,6 @@
 # shellcheck disable=SC1091
 source /immich-devcontainer/container-common.sh
 
-log "Setting up Immich dev container..."
-fix_permissions
-
 log "Installing npm dependencies (node_modules)..."
 install_dependencies
 

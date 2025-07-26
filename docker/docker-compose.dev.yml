@@ -22,6 +22,9 @@ services:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
     build:
+      args:
+        - SERVER_USER=${SERVER_USER:-0}
+        - SERVER_GROUP=${SERVER_GROUP:-0}
       context: ../
       dockerfile: server/Dockerfile
       target: dev
@@ -70,6 +73,9 @@ services:
     # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
     # user: 0:0
     build:
+      args:
+        - WEB_USER=${WEB_USER:-1000}
+        - WEB_GROUP=${WEB_GROUP:-1000}
       context: ../
       dockerfile: web/Dockerfile
     command: ['immich-web']
