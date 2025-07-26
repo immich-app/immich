@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -16,6 +15,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/migration.dart';
+import 'package:immich_mobile/utils/timeline_util.dart';
 
 @RoutePage()
 class TabShellPage extends ConsumerStatefulWidget {
@@ -155,7 +155,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
 void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
   // On Photos page menu tapped
   if (router.activeIndex == 0 && index == 0) {
-    scrollToTopNotifierProvider.scrollToTop();
+    TimelineUtil.scrollToTop();
   }
 
   // On Search page tapped

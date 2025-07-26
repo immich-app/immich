@@ -18,8 +18,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart'
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/scroll_to_date_notifier.provider.dart';
+import 'package:immich_mobile/utils/timeline_util.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
@@ -100,13 +99,16 @@ class _SliverTimeline extends ConsumerStatefulWidget {
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   final _scrollController = ScrollController();
   StreamSubscription? _reloadSubscription;
+  StreamSubscription? _scrollToTopSubscription;
+  StreamSubscription? _scrollToDateSubscription;
 
   @override
   void initState() {
     super.initState();
     _reloadSubscription = EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
-    scrollToTopNotifierProvider.addListener(_handleScrollToTop);
-    scrollToDateNotifierProvider.addListener(_handleScrollToDate);
+    
+    _scrollToTopSubscription = EventStream.shared.listen<ScrollToTopEvent>((_) => _handleScrollToTop());
+    _scrollToDateSubscription = EventStream.shared.listen<ScrollToDateEvent>((event) => _handleScrollToDate(event.date));
   }
 
   void _handleScrollToTop() {
@@ -117,17 +119,14 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     );
   }
 
-  void _handleScrollToDate() {
-    final date = scrollToDateNotifierProvider.value;
-    if (date != null) {
-      _scrollToDate(date);
-    }
+  void _handleScrollToDate(DateTime date) {
+    _scrollToDate(date);
   }
 
   @override
   void dispose() {
-    scrollToTopNotifierProvider.removeListener(_handleScrollToTop);
-    scrollToDateNotifierProvider.removeListener(_handleScrollToDate);
+    _scrollToTopSubscription?.cancel();
+    _scrollToDateSubscription?.cancel();
     _scrollController.dispose();
     _reloadSubscription?.cancel();
     super.dispose();
