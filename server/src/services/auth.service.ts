@@ -61,7 +61,9 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException('Password login has been disabled');
     }
 
-    let user = await this.userRepository.getByEmail(dto.email, { withPassword: true }) as (UserAdmin & { password?: string | null; appVersion?: string | null }) | undefined;
+    let user = (await this.userRepository.getByEmail(dto.email, { withPassword: true })) as
+      | (UserAdmin & { password?: string | null; appVersion?: string | null })
+      | undefined;
     if (user && user.password) {
       const isAuthenticated = this.validateSecret(dto.password, user.password);
       if (!isAuthenticated) {
