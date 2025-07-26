@@ -92,7 +92,7 @@ enum AppSettingsEnum<T> {
   ),
   betaTimeline<bool>(StoreKey.betaTimeline, null, false),
   enableBackup<bool>(StoreKey.enableBackup, null, false),
-  uploadRequredWifi<bool>(StoreKey.uploadRequredWifi, null, false),
+  uploadRequredWifi<bool>(StoreKey.uploadRequiredWifi, null, false),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

@@ -1298,6 +1298,8 @@
   "my_albums": "My albums",
   "name": "Name",
   "name_or_nickname": "Name or nickname",
+  "network_requirements": "Network Requirements",
+  "network_requirements_description": "Upload photos and videos only when connected to Wi-Fi",
   "networking_settings": "Networking",
   "networking_subtitle": "Manage the server endpoint settings",
   "never": "Never",

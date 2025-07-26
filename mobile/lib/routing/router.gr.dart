@@ -750,22 +750,6 @@ class DriftBackupAlbumSelectionRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [DriftBackupOptionPage]
-class DriftBackupOptionRoute extends PageRouteInfo<void> {
-  const DriftBackupOptionRoute({List<PageRouteInfo>? children})
-      : super(DriftBackupOptionRoute.name, initialChildren: children);
-
-  static const String name = 'DriftBackupOptionRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const DriftBackupOptionPage();
-    },
-  );
-}
-
-/// generated route for
 /// [DriftBackupPage]
 class DriftBackupRoute extends PageRouteInfo<void> {
   const DriftBackupRoute({List<PageRouteInfo>? children}) : super(DriftBackupRoute.name, initialChildren: children);
