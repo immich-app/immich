@@ -348,7 +348,7 @@ class BackgroundService {
       ],
     );
 
-    HttpSSLOptions.apply();
+    await HttpSSLOptions.apply();
     ref.read(apiServiceProvider).setAccessToken(Store.get(StoreKey.accessToken));
     await ref.read(authServiceProvider).setOpenApiServiceEndpoint();
     if (kDebugMode) {
