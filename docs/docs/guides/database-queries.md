@@ -12,6 +12,8 @@ Run `docker exec -it immich_postgres psql --dbname=<DB_DATABASE_NAME> --username
 
 ## Assets
 
+### Name
+
 :::note
 The `"originalFileName"` column is the name of the file at time of upload, including the extension.
 :::
@@ -27,6 +29,8 @@ SELECT * FROM "asset" WHERE "originalPath" = 'upload/library/admin/2023/2023-09-
 SELECT * FROM "asset" WHERE "originalPath" LIKE 'upload/library/admin/2023/%';
 ```
 
+### ID
+
 ```sql title="Find by ID"
 SELECT * FROM "asset" WHERE "id" = '9f94e60f-65b6-47b7-ae44-a4df7b57f0e9';
 ```
@@ -34,6 +38,8 @@ SELECT * FROM "asset" WHERE "id" = '9f94e60f-65b6-47b7-ae44-a4df7b57f0e9';
 ```sql title="Find by partial ID"
 SELECT * FROM "asset" WHERE "id"::text LIKE '%ab431d3a%';
 ```
+
+### Checksum
 
 :::note
 You can calculate the checksum for a particular file by using the command `sha1sum <filename>`.
@@ -50,6 +56,8 @@ SELECT T1."checksum", array_agg(T2."id") ids FROM "asset" T1
   INNER JOIN "asset" T2 ON T1."checksum" = T2."checksum" AND T1."id" != T2."id" AND T2."deletedAt" IS NULL
   WHERE T1."deletedAt" IS NULL GROUP BY T1."checksum";
 ```
+
+### Metadata
 
 ```sql title="Live photos"
 SELECT * FROM "asset" WHERE "livePhotoVideoId" IS NOT NULL;
@@ -77,9 +85,7 @@ SELECT * FROM "asset"
   ORDER BY "asset_exif"."fileSizeInByte" ASC;
 ```
 
-```sql title="Without thumbnails"
-SELECT * FROM "asset" WHERE "asset"."previewPath" IS NULL OR "asset"."thumbnailPath" IS NULL;
-```
+### Type
 
 ```sql title="By type"
 SELECT * FROM "asset" WHERE "asset"."type" = 'VIDEO';
@@ -87,17 +93,29 @@ SELECT * FROM "asset" WHERE "asset"."type" = 'IMAGE';
 ```
 
 ```sql title="Count by type"
-SELECT "asset"."type", COUNT(1) FROM "asset" GROUP BY "asset"."type";
+SELECT "asset"."type", COUNT(*) FROM "asset" GROUP BY "asset"."type";
 ```
 
 ```sql title="Count by type (per user)"
-SELECT "user"."email", "asset"."type", COUNT(1) FROM "asset"
+SELECT "user"."email", "asset"."type", COUNT(*) FROM "asset"
   JOIN "user" ON "asset"."ownerId" = "user"."id"
   GROUP BY "asset"."type", "user"."email" ORDER BY "user"."email";
 ```
 
-```sql title="Failed file movements"
-SELECT * FROM "move_history";
+## Tags
+
+```sql title="Count by tag"
+SELECT "t"."value" AS "tag_name", COUNT(*) AS "number_assets" FROM "tag" "t"
+  JOIN "tag_asset" "ta" ON "t"."id" = "ta"."tagsId" JOIN "asset" "a" ON "ta"."assetsId" = "a"."id"
+  WHERE "a"."visibility" != 'hidden'
+  GROUP BY "t"."value" ORDER BY "number_assets" DESC;
+```
+
+```sql title="Count by tag (per user)"
+SELECT "t"."value" AS "tag_name", "u"."email" as "user_email", COUNT(*) AS "number_assets" FROM "tag" "t"
+  JOIN "tag_asset" "ta" ON "t"."id" = "ta"."tagsId" JOIN "asset" "a" ON "ta"."assetsId" = "a"."id" JOIN "user" "u" ON "a"."ownerId" = "u"."id"
+  WHERE "a"."visibility" != 'hidden'
+  GROUP BY "t"."value", "u"."email" ORDER BY "number_assets" DESC;
 ```
 
 ## Users
@@ -110,7 +128,15 @@ SELECT * FROM "user";
 SELECT "user".* FROM "user" JOIN "asset" ON "user"."id" = "asset"."ownerId" WHERE "asset"."id" = 'fa310b01-2f26-4b7a-9042-d578226e021f';
 ```
 
-## System Config
+## Persons
+
+```sql title="Delete person and unset it for the faces it was associated with"
+DELETE FROM "person" WHERE "name" = 'PersonNameHere';
+```
+
+## System
+
+### Config
 
 ```sql title="Custom settings"
 SELECT "key", "value" FROM "system_metadata" WHERE "key" = 'system-config';
@@ -118,10 +144,14 @@ SELECT "key", "value" FROM "system_metadata" WHERE "key" = 'system-config';
 
 (Only used when not using the [config file](/docs/install/config-file))
 
-## Persons
+### File properties
 
-```sql title="Delete person and unset it for the faces it was associated with"
-DELETE FROM "person" WHERE "name" = 'PersonNameHere';
+```sql title="Without thumbnails"
+SELECT * FROM "asset" WHERE "asset"."previewPath" IS NULL OR "asset"."thumbnailPath" IS NULL;
+```
+
+```sql title="Failed file movements"
+SELECT * FROM "move_history";
 ```
 
 ## Postgres internal
