@@ -3,14 +3,18 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.widget.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 
 @RoutePage()
@@ -45,6 +49,19 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
 
   Future<void> stopBackup() async {
     await ref.read(driftBackupProvider.notifier).cancel();
+  }
+
+  Future<void> onNetworkRequirementToggled() async {
+    final isBackupEnable = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
+    if (!isBackupEnable) {
+      return;
+    }
+
+    // Stop backup if it is running to clear all tasks
+    await stopBackup();
+
+    // Start queueing tasks again with the new network requirement
+    await startBackup();
   }
 
   @override
@@ -89,6 +106,9 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                   const _BackupCard(),
                   const _RemainderCard(),
                   const Divider(),
+                  BackupWifiRequirementButton(
+                    onToggled: onNetworkRequirementToggled,
+                  ),
                   BackupToggleButton(
                     onStart: () async => await startBackup(),
                     onStop: () async => await stopBackup(),
@@ -105,6 +125,42 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class BackupWifiRequirementButton extends ConsumerWidget {
+  final VoidCallback onToggled;
+  const BackupWifiRequirementButton({super.key, required this.onToggled});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final valueStream = Store.watch(StoreKey.uploadRequredWifi);
+
+    return ListTile(
+      title: Text(
+        "Network Requirement",
+        style: context.textTheme.titleMedium,
+      ).tr(),
+      subtitle: Text(
+        "Upload photos and videos only when connected to Wi-Fi.",
+        style: context.textTheme.bodyMedium?.copyWith(
+          color: context.colorScheme.onSurfaceSecondary,
+        ),
+      ).tr(),
+      trailing: StreamBuilder(
+        stream: valueStream,
+        builder: (context, snapshot) {
+          final value = snapshot.data ?? false;
+          return Switch(
+            value: value,
+            onChanged: (bool newValue) async {
+              await ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.uploadRequredWifi, newValue);
+              onToggled.call();
+            },
+          );
+        },
       ),
     );
   }

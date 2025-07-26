@@ -12,11 +12,13 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:path/path.dart' as p;
 
 final uploadServiceProvider = Provider((ref) {
@@ -25,6 +27,7 @@ final uploadServiceProvider = Provider((ref) {
     ref.watch(backupRepositoryProvider),
     ref.watch(storageRepositoryProvider),
     ref.watch(localAssetRepository),
+    ref.watch(appSettingsServiceProvider),
   );
 
   ref.onDispose(service.dispose);
@@ -37,6 +40,7 @@ class UploadService {
     this._backupRepository,
     this._storageRepository,
     this._localAssetRepository,
+    this._appSettingsService,
   ) {
     _uploadRepository.onUploadStatus = _onUploadCallback;
     _uploadRepository.onTaskProgress = _onTaskProgressCallback;
@@ -46,6 +50,7 @@ class UploadService {
   final DriftBackupRepository _backupRepository;
   final StorageRepository _storageRepository;
   final DriftLocalAssetRepository _localAssetRepository;
+  final AppSettingsService _appSettingsService;
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
   final StreamController<TaskProgressUpdate> _taskProgressController = StreamController<TaskProgressUpdate>.broadcast();
@@ -316,7 +321,7 @@ class UploadService {
     final url = Uri.parse('$serverEndpoint/assets').toString();
     final headers = ApiService.getRequestHeaders();
     final deviceId = Store.get(StoreKey.deviceId);
-
+    final requiresWiFi = _appSettingsService.getSetting(AppSettingsEnum.uploadRequredWifi);
     final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
     final stats = await file.stat();
     final fileCreatedAt = stats.changed;
@@ -345,6 +350,7 @@ class UploadService {
       fileField: 'assetData',
       metaData: metadata ?? '',
       group: group,
+      requiresWiFi: requiresWiFi,
       priority: priority ?? 5,
       updates: Updates.statusAndProgress,
       retries: 3,

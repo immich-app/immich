@@ -196,14 +196,14 @@ class DriftBackupState {
   }
 }
 
-final driftBackupProvider = StateNotifierProvider<ExpBackupNotifier, DriftBackupState>((ref) {
-  return ExpBackupNotifier(
+final driftBackupProvider = StateNotifierProvider<DriftBackupNotifier, DriftBackupState>((ref) {
+  return DriftBackupNotifier(
     ref.watch(uploadServiceProvider),
   );
 });
 
-class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
-  ExpBackupNotifier(
+class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
+  DriftBackupNotifier(
     this._uploadService,
   ) : super(
           const DriftBackupState(
