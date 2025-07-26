@@ -16,7 +16,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 
 @RoutePage()
 class ChangeExperiencePage extends ConsumerStatefulWidget {
@@ -120,12 +120,12 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
                       duration: Durations.long4,
                       child: hasMigrated
                           ? Text(
-                              "migration_success".tr(),
+                              "migration_success".t(context: context),
                               style: context.textTheme.titleMedium,
                               textAlign: TextAlign.center,
                             )
                           : Text(
-                              "migration_in_progress".tr(),
+                              "migration_in_progress".t(context: context),
                               style: context.textTheme.titleMedium,
                               textAlign: TextAlign.center,
                             ),
@@ -141,7 +141,7 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
                           );
                         },
                         child: Text(
-                          "continue".tr(),
+                          "continue".t(context: context),
                         ),
                       ),
                     ),

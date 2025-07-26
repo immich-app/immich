@@ -10,7 +10,7 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 
 class BetaTimelineListTile extends ConsumerStatefulWidget {
   const BetaTimelineListTile({
@@ -85,13 +85,13 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
               return AlertDialog(
                 title: Text(
                   value
-                      ? "advanced_settings_beta_timeline_enable_title".tr()
-                      : "advanced_settings_beta_timeline_disable_title".tr(),
+                      ? "advanced_settings_beta_timeline_enable_title".t(context: context)
+                      : "advanced_settings_beta_timeline_disable_title".t(context: context),
                 ),
                 content: Text(
                   value
-                      ? "advanced_settings_beta_timeline_enable_subtitle".tr()
-                      : "advanced_settings_beta_timeline_disable_subtitle".tr(),
+                      ? "advanced_settings_beta_timeline_enable_subtitle".t(context: context)
+                      : "advanced_settings_beta_timeline_disable_subtitle".t(context: context),
                 ),
                 actions: [
                   TextButton(
@@ -99,7 +99,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
                       context.pop();
                     },
                     child: Text(
-                      "cancel".tr(),
+                      "cancel".t(context: context),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -119,7 +119,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
                       );
                     },
                     child: Text(
-                      "ok".tr(),
+                      "ok".t(context: context),
                     ),
                   ),
                 ],
@@ -212,7 +212,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
-                                  "advanced_settings_beta_timeline_title".tr(),
+                                  "advanced_settings_beta_timeline_title".t(context: context),
                                   style: context.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -248,7 +248,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              "advanced_settings_beta_timeline_subtitle".tr(),
+                              "advanced_settings_beta_timeline_subtitle".t(context: context),
                               style: context.textTheme.labelLarge?.copyWith(
                                 color: context.textTheme.labelLarge?.color?.withValues(alpha: 0.9),
                               ),
