@@ -18,7 +18,6 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart'
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/utils/timeline_util.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
@@ -98,37 +97,35 @@ class _SliverTimeline extends ConsumerStatefulWidget {
 
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   final _scrollController = ScrollController();
-  StreamSubscription? _reloadSubscription;
-  StreamSubscription? _scrollToTopSubscription;
-  StreamSubscription? _scrollToDateSubscription;
+  StreamSubscription? _eventSubscription;
 
   @override
   void initState() {
     super.initState();
-    _reloadSubscription = EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
-    
-    _scrollToTopSubscription = EventStream.shared.listen<ScrollToTopEvent>((_) => _handleScrollToTop());
-    _scrollToDateSubscription = EventStream.shared.listen<ScrollToDateEvent>((event) => _handleScrollToDate(event.date));
+    _eventSubscription = EventStream.shared.listen(_onEvent);
   }
 
-  void _handleScrollToTop() {
-    _scrollController.animateTo(
-      0,
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeInOut,
-    );
-  }
-
-  void _handleScrollToDate(DateTime date) {
-    _scrollToDate(date);
+  void _onEvent(Event event) {
+    switch (event) {
+      case ScrollToTopEvent():
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+        );
+      case ScrollToDateEvent scrollToDateEvent:
+        _scrollToDate(scrollToDateEvent.date);
+      case TimelineReloadEvent():
+        setState(() {});
+      default:
+        break;
+    }
   }
 
   @override
   void dispose() {
-    _scrollToTopSubscription?.cancel();
-    _scrollToDateSubscription?.cancel();
     _scrollController.dispose();
-    _reloadSubscription?.cancel();
+    _eventSubscription?.cancel();
     super.dispose();
   }
 
