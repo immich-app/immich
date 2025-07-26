@@ -5,6 +5,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
@@ -80,6 +81,7 @@ class GeneralBottomSheet extends ConsumerWidget {
               : const DeletePermanentActionButton(
                   source: ActionSource.timeline,
                 ),
+          const DeleteActionButton(source: ActionSource.timeline),
           if (multiselect.hasLocal || multiselect.hasMerged) ...[
             const DeleteLocalActionButton(source: ActionSource.timeline),
           ],

@@ -34,11 +34,13 @@ import 'package:platform/platform.dart';
 class AssetViewerPage extends StatelessWidget {
   final int initialIndex;
   final TimelineService timelineService;
+  final int? heroOffset;
 
   const AssetViewerPage({
     super.key,
     required this.initialIndex,
     required this.timelineService,
+    this.heroOffset,
   });
 
   @override
@@ -47,7 +49,7 @@ class AssetViewerPage extends StatelessWidget {
     // since the Timeline and AssetViewer are on different routes / Widget subtrees.
     return ProviderScope(
       overrides: [timelineServiceProvider.overrideWithValue(timelineService)],
-      child: AssetViewer(initialIndex: initialIndex),
+      child: AssetViewer(initialIndex: initialIndex, heroOffset: heroOffset),
     );
   }
 }
@@ -55,11 +57,13 @@ class AssetViewerPage extends StatelessWidget {
 class AssetViewer extends ConsumerStatefulWidget {
   final int initialIndex;
   final Platform? platform;
+  final int? heroOffset;
 
   const AssetViewer({
     super.key,
     required this.initialIndex,
     this.platform,
+    this.heroOffset,
   });
 
   @override
@@ -108,7 +112,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       _onAssetChanged(widget.initialIndex);
     });
     reloadSubscription = EventStream.shared.listen(_onEvent);
-    heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+    heroOffset = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
   }
 
   @override
