@@ -382,8 +382,29 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     ref.read(assetViewerProvider.notifier).setOpacity(backgroundOpacity);
   }
 
-  void _onTapDown(_, __, ___) {
-    if (!showingBottomSheet) {
+  void _onTapDown(BuildContext context, TapDownDetails details, PhotoViewControllerValue controllerValue) {
+    double tapX = details.globalPosition.dx;
+    double screenWidth = context.width;
+
+    // We want to change images if the user taps in the leftmost or
+    // rightmost quarter of the screen
+    bool tappedLeftSide = tapX < screenWidth / 4;
+    bool tappedRightSide = tapX > screenWidth * (3 / 4);
+
+    int? currentPage = pageController.page?.toInt();
+    int maxPage = totalAssets - 1;
+
+    if (tappedLeftSide && currentPage != null) {
+      // Nested if because we don't want to fallback to show/hide controls
+      if (currentPage != 0) {
+        pageController.jumpToPage(currentPage - 1);
+      }
+    } else if (tappedRightSide && currentPage != null) {
+      // Nested if because we don't want to fallback to show/hide controls
+      if (currentPage != maxPage) {
+        pageController.jumpToPage(currentPage + 1);
+      }
+    } else if (!showingBottomSheet) {
       ref.read(assetViewerProvider.notifier).toggleControls();
     }
   }
