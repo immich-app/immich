@@ -120,12 +120,12 @@ class _ThumbnailState extends State<Thumbnail> {
 
   void _loadImage() {
     _stopListeningToStream();
-    if (widget.thumbhashMode != ThumbhashMode.disabled && widget.blurhash != null) {
-      _decodeThumbhash();
-    }
-
     if (widget.thumbhashMode != ThumbhashMode.only && widget.imageProvider != null) {
       _loadFromProvider();
+    }
+    
+    if (widget.thumbhashMode != ThumbhashMode.disabled && widget.blurhash != null) {
+      _decodeThumbhash();
     }
   }
 
