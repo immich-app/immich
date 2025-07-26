@@ -15,6 +15,8 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asse
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/timeline_util.dart';
 
 class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const ViewerTopAppBar({super.key});
@@ -29,6 +31,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isInLockedView = ref.watch(inLockedViewProvider);
+    final currentRouteName = ref.watch(currentRouteNameProvider);
+    final showViewInTimelineButton = currentRouteName != 'MainTimelineRoute' && currentRouteName != null;
 
     final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
     int opacity = ref.watch(
@@ -49,6 +53,16 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
       if (isCasting || (asset.hasRemote && websocketConnected))
         const CastActionButton(
           menuItem: true,
+        ),
+      if (showViewInTimelineButton)
+        IconButton(
+          onPressed: () async {
+            await context.maybePop();
+            await context.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
+            TimelineUtil.scrollToDate(asset.createdAt);
+          },
+          icon: const Icon(Icons.image_search),
+          tooltip: 'view_in_timeline',
         ),
       if (asset.hasRemote && isOwner && !asset.isFavorite)
         const FavoriteActionButton(source: ActionSource.viewer, menuItem: true),

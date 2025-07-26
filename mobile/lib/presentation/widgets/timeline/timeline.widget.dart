@@ -18,6 +18,8 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart'
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/scroll_to_date_notifier.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
@@ -103,13 +105,67 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   void initState() {
     super.initState();
     _reloadSubscription = EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
+    scrollToTopNotifierProvider.addListener(_handleScrollToTop);
+    scrollToDateNotifierProvider.addListener(_handleScrollToDate);
+  }
+
+  void _handleScrollToTop() {
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _handleScrollToDate() {
+    final date = scrollToDateNotifierProvider.value;
+    if (date != null) {
+      _scrollToDate(date);
+    }
   }
 
   @override
   void dispose() {
+    scrollToTopNotifierProvider.removeListener(_handleScrollToTop);
+    scrollToDateNotifierProvider.removeListener(_handleScrollToDate);
     _scrollController.dispose();
     _reloadSubscription?.cancel();
     super.dispose();
+  }
+
+  void _scrollToDate(DateTime date) {
+    final asyncSegments = ref.read(timelineSegmentProvider);
+    asyncSegments.whenData((segments) {
+      // Find the segment that contains assets from the target date
+      final targetSegment = segments.firstWhereOrNull((segment) {
+        if (segment.bucket is TimeBucket) {
+          final segmentDate = (segment.bucket as TimeBucket).date;
+          // Check if the segment date matches the target date (year, month, day)
+          return segmentDate.year == date.year && segmentDate.month == date.month && segmentDate.day == date.day;
+        }
+        return false;
+      });
+
+      // If exact date not found, try to find the closest month
+      final fallbackSegment = targetSegment ??
+          segments.firstWhereOrNull((segment) {
+            if (segment.bucket is TimeBucket) {
+              final segmentDate = (segment.bucket as TimeBucket).date;
+              return segmentDate.year == date.year && segmentDate.month == date.month;
+            }
+            return false;
+          });
+
+      if (fallbackSegment != null) {
+        // Scroll to the segment with a small offset to show the header
+        final targetOffset = fallbackSegment.startOffset - 50;
+        _scrollController.animateTo(
+          targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   @override
