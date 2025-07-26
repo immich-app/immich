@@ -13963,6 +13963,10 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "libraryId": {
+            "nullable": true,
+            "type": "string"
+          },
           "livePhotoVideoId": {
             "nullable": true,
             "type": "string"
@@ -14009,6 +14013,7 @@
           "fileModifiedAt",
           "id",
           "isFavorite",
+          "libraryId",
           "livePhotoVideoId",
           "localDateTime",
           "originalFileName",

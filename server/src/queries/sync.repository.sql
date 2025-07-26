@@ -66,6 +66,7 @@ select
   "asset"."duration",
   "asset"."livePhotoVideoId",
   "asset"."stackId",
+  "asset"."libraryId",
   "asset"."updateId"
 from
   "asset"
@@ -95,6 +96,7 @@ select
   "asset"."duration",
   "asset"."livePhotoVideoId",
   "asset"."stackId",
+  "asset"."libraryId",
   "asset"."updateId"
 from
   "asset"
@@ -357,6 +359,7 @@ select
   "asset"."duration",
   "asset"."livePhotoVideoId",
   "asset"."stackId",
+  "asset"."libraryId",
   "asset"."updateId"
 from
   "asset"
@@ -605,6 +608,7 @@ select
   "asset"."duration",
   "asset"."livePhotoVideoId",
   "asset"."stackId",
+  "asset"."libraryId",
   "asset"."updateId"
 from
   "asset"
@@ -652,6 +656,7 @@ select
   "asset"."duration",
   "asset"."livePhotoVideoId",
   "asset"."stackId",
+  "asset"."libraryId",
   "asset"."updateId"
 from
   "asset"

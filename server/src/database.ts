@@ -353,6 +353,7 @@ export const columns = {
     'asset.duration',
     'asset.livePhotoVideoId',
     'asset.stackId',
+    'asset.libraryId',
   ],
   syncAlbumUser: ['album_user.albumsId as albumId', 'album_user.usersId as userId', 'album_user.role'],
   syncStack: ['stack.id', 'stack.createdAt', 'stack.updatedAt', 'stack.primaryAssetId', 'stack.ownerId'],

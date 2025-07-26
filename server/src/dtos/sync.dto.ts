@@ -115,6 +115,7 @@ export class SyncAssetV1 {
   visibility!: AssetVisibility;
   livePhotoVideoId!: string | null;
   stackId!: string | null;
+  libraryId!: string | null;
 }
 
 @ExtraModel()

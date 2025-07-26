@@ -30,6 +30,7 @@ typedef $$RemoteAssetEntityTableCreateCompanionBuilder
   i0.Value<String?> livePhotoVideoId,
   required i2.AssetVisibility visibility,
   i0.Value<String?> stackId,
+  i0.Value<String?> libraryId,
 });
 typedef $$RemoteAssetEntityTableUpdateCompanionBuilder
     = i1.RemoteAssetEntityCompanion Function({
@@ -50,6 +51,7 @@ typedef $$RemoteAssetEntityTableUpdateCompanionBuilder
   i0.Value<String?> livePhotoVideoId,
   i0.Value<i2.AssetVisibility> visibility,
   i0.Value<String?> stackId,
+  i0.Value<String?> libraryId,
 });
 
 final class $$RemoteAssetEntityTableReferences extends i0.BaseReferences<
@@ -150,6 +152,9 @@ class $$RemoteAssetEntityTableFilterComposer
   i0.ColumnFilters<String> get stackId => $composableBuilder(
       column: $table.stackId, builder: (column) => i0.ColumnFilters(column));
 
+  i0.ColumnFilters<String> get libraryId => $composableBuilder(
+      column: $table.libraryId, builder: (column) => i0.ColumnFilters(column));
+
   i5.$$UserEntityTableFilterComposer get ownerId {
     final i5.$$UserEntityTableFilterComposer composer = $composerBuilder(
         composer: this,
@@ -239,6 +244,10 @@ class $$RemoteAssetEntityTableOrderingComposer
   i0.ColumnOrderings<String> get stackId => $composableBuilder(
       column: $table.stackId, builder: (column) => i0.ColumnOrderings(column));
 
+  i0.ColumnOrderings<String> get libraryId => $composableBuilder(
+      column: $table.libraryId,
+      builder: (column) => i0.ColumnOrderings(column));
+
   i5.$$UserEntityTableOrderingComposer get ownerId {
     final i5.$$UserEntityTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -320,6 +329,9 @@ class $$RemoteAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<String> get stackId =>
       $composableBuilder(column: $table.stackId, builder: (column) => column);
 
+  i0.GeneratedColumn<String> get libraryId =>
+      $composableBuilder(column: $table.libraryId, builder: (column) => column);
+
   i5.$$UserEntityTableAnnotationComposer get ownerId {
     final i5.$$UserEntityTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -385,6 +397,7 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
             i0.Value<String?> livePhotoVideoId = const i0.Value.absent(),
             i0.Value<i2.AssetVisibility> visibility = const i0.Value.absent(),
             i0.Value<String?> stackId = const i0.Value.absent(),
+            i0.Value<String?> libraryId = const i0.Value.absent(),
           }) =>
               i1.RemoteAssetEntityCompanion(
             name: name,
@@ -404,6 +417,7 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
             livePhotoVideoId: livePhotoVideoId,
             visibility: visibility,
             stackId: stackId,
+            libraryId: libraryId,
           ),
           createCompanionCallback: ({
             required String name,
@@ -423,6 +437,7 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
             i0.Value<String?> livePhotoVideoId = const i0.Value.absent(),
             required i2.AssetVisibility visibility,
             i0.Value<String?> stackId = const i0.Value.absent(),
+            i0.Value<String?> libraryId = const i0.Value.absent(),
           }) =>
               i1.RemoteAssetEntityCompanion.insert(
             name: name,
@@ -442,6 +457,7 @@ class $$RemoteAssetEntityTableTableManager extends i0.RootTableManager<
             livePhotoVideoId: livePhotoVideoId,
             visibility: visibility,
             stackId: stackId,
+            libraryId: libraryId,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
@@ -501,9 +517,8 @@ typedef $$RemoteAssetEntityTableProcessedTableManager
         (i1.RemoteAssetEntityData, i1.$$RemoteAssetEntityTableReferences),
         i1.RemoteAssetEntityData,
         i0.PrefetchHooks Function({bool ownerId})>;
-i0.Index get uQRemoteAssetOwnerChecksum => i0.Index(
-    'UQ_remote_asset_owner_checksum',
-    'CREATE UNIQUE INDEX UQ_remote_asset_owner_checksum ON remote_asset_entity (checksum, owner_id)');
+i0.Index get uQAssetsOwnerChecksum => i0.Index('UQ_assets_owner_checksum',
+    'CREATE UNIQUE INDEX IF NOT EXISTS UQ_assets_owner_checksum ON remote_asset_entity (owner_id, checksum) WHERE(library_id IS NULL)');
 
 class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
     with i0.TableInfo<$RemoteAssetEntityTable, i1.RemoteAssetEntityData> {
@@ -623,6 +638,12 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
   late final i0.GeneratedColumn<String> stackId = i0.GeneratedColumn<String>(
       'stack_id', aliasedName, true,
       type: i0.DriftSqlType.string, requiredDuringInsert: false);
+  static const i0.VerificationMeta _libraryIdMeta =
+      const i0.VerificationMeta('libraryId');
+  @override
+  late final i0.GeneratedColumn<String> libraryId = i0.GeneratedColumn<String>(
+      'library_id', aliasedName, true,
+      type: i0.DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<i0.GeneratedColumn> get $columns => [
         name,
@@ -641,7 +662,8 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
         deletedAt,
         livePhotoVideoId,
         visibility,
-        stackId
+        stackId,
+        libraryId
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -729,6 +751,10 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
       context.handle(_stackIdMeta,
           stackId.isAcceptableOrUnknown(data['stack_id']!, _stackIdMeta));
     }
+    if (data.containsKey('library_id')) {
+      context.handle(_libraryIdMeta,
+          libraryId.isAcceptableOrUnknown(data['library_id']!, _libraryIdMeta));
+    }
     return context;
   }
 
@@ -776,6 +802,8 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
               i0.DriftSqlType.int, data['${effectivePrefix}visibility'])!),
       stackId: attachedDatabase.typeMapping
           .read(i0.DriftSqlType.string, data['${effectivePrefix}stack_id']),
+      libraryId: attachedDatabase.typeMapping
+          .read(i0.DriftSqlType.string, data['${effectivePrefix}library_id']),
     );
   }
 
@@ -814,6 +842,7 @@ class RemoteAssetEntityData extends i0.DataClass
   final String? livePhotoVideoId;
   final i2.AssetVisibility visibility;
   final String? stackId;
+  final String? libraryId;
   const RemoteAssetEntityData(
       {required this.name,
       required this.type,
@@ -831,7 +860,8 @@ class RemoteAssetEntityData extends i0.DataClass
       this.deletedAt,
       this.livePhotoVideoId,
       required this.visibility,
-      this.stackId});
+      this.stackId,
+      this.libraryId});
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
@@ -874,6 +904,9 @@ class RemoteAssetEntityData extends i0.DataClass
     if (!nullToAbsent || stackId != null) {
       map['stack_id'] = i0.Variable<String>(stackId);
     }
+    if (!nullToAbsent || libraryId != null) {
+      map['library_id'] = i0.Variable<String>(libraryId);
+    }
     return map;
   }
 
@@ -900,6 +933,7 @@ class RemoteAssetEntityData extends i0.DataClass
       visibility: i1.$RemoteAssetEntityTable.$convertervisibility
           .fromJson(serializer.fromJson<int>(json['visibility'])),
       stackId: serializer.fromJson<String?>(json['stackId']),
+      libraryId: serializer.fromJson<String?>(json['libraryId']),
     );
   }
   @override
@@ -925,6 +959,7 @@ class RemoteAssetEntityData extends i0.DataClass
       'visibility': serializer.toJson<int>(
           i1.$RemoteAssetEntityTable.$convertervisibility.toJson(visibility)),
       'stackId': serializer.toJson<String?>(stackId),
+      'libraryId': serializer.toJson<String?>(libraryId),
     };
   }
 
@@ -945,7 +980,8 @@ class RemoteAssetEntityData extends i0.DataClass
           i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
           i0.Value<String?> livePhotoVideoId = const i0.Value.absent(),
           i2.AssetVisibility? visibility,
-          i0.Value<String?> stackId = const i0.Value.absent()}) =>
+          i0.Value<String?> stackId = const i0.Value.absent(),
+          i0.Value<String?> libraryId = const i0.Value.absent()}) =>
       i1.RemoteAssetEntityData(
         name: name ?? this.name,
         type: type ?? this.type,
@@ -969,6 +1005,7 @@ class RemoteAssetEntityData extends i0.DataClass
             : this.livePhotoVideoId,
         visibility: visibility ?? this.visibility,
         stackId: stackId.present ? stackId.value : this.stackId,
+        libraryId: libraryId.present ? libraryId.value : this.libraryId,
       );
   RemoteAssetEntityData copyWithCompanion(i1.RemoteAssetEntityCompanion data) {
     return RemoteAssetEntityData(
@@ -997,6 +1034,7 @@ class RemoteAssetEntityData extends i0.DataClass
       visibility:
           data.visibility.present ? data.visibility.value : this.visibility,
       stackId: data.stackId.present ? data.stackId.value : this.stackId,
+      libraryId: data.libraryId.present ? data.libraryId.value : this.libraryId,
     );
   }
 
@@ -1019,7 +1057,8 @@ class RemoteAssetEntityData extends i0.DataClass
           ..write('deletedAt: $deletedAt, ')
           ..write('livePhotoVideoId: $livePhotoVideoId, ')
           ..write('visibility: $visibility, ')
-          ..write('stackId: $stackId')
+          ..write('stackId: $stackId, ')
+          ..write('libraryId: $libraryId')
           ..write(')'))
         .toString();
   }
@@ -1042,7 +1081,8 @@ class RemoteAssetEntityData extends i0.DataClass
       deletedAt,
       livePhotoVideoId,
       visibility,
-      stackId);
+      stackId,
+      libraryId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1063,7 +1103,8 @@ class RemoteAssetEntityData extends i0.DataClass
           other.deletedAt == this.deletedAt &&
           other.livePhotoVideoId == this.livePhotoVideoId &&
           other.visibility == this.visibility &&
-          other.stackId == this.stackId);
+          other.stackId == this.stackId &&
+          other.libraryId == this.libraryId);
 }
 
 class RemoteAssetEntityCompanion
@@ -1085,6 +1126,7 @@ class RemoteAssetEntityCompanion
   final i0.Value<String?> livePhotoVideoId;
   final i0.Value<i2.AssetVisibility> visibility;
   final i0.Value<String?> stackId;
+  final i0.Value<String?> libraryId;
   const RemoteAssetEntityCompanion({
     this.name = const i0.Value.absent(),
     this.type = const i0.Value.absent(),
@@ -1103,6 +1145,7 @@ class RemoteAssetEntityCompanion
     this.livePhotoVideoId = const i0.Value.absent(),
     this.visibility = const i0.Value.absent(),
     this.stackId = const i0.Value.absent(),
+    this.libraryId = const i0.Value.absent(),
   });
   RemoteAssetEntityCompanion.insert({
     required String name,
@@ -1122,6 +1165,7 @@ class RemoteAssetEntityCompanion
     this.livePhotoVideoId = const i0.Value.absent(),
     required i2.AssetVisibility visibility,
     this.stackId = const i0.Value.absent(),
+    this.libraryId = const i0.Value.absent(),
   })  : name = i0.Value(name),
         type = i0.Value(type),
         id = i0.Value(id),
@@ -1146,6 +1190,7 @@ class RemoteAssetEntityCompanion
     i0.Expression<String>? livePhotoVideoId,
     i0.Expression<int>? visibility,
     i0.Expression<String>? stackId,
+    i0.Expression<String>? libraryId,
   }) {
     return i0.RawValuesInsertable({
       if (name != null) 'name': name,
@@ -1165,6 +1210,7 @@ class RemoteAssetEntityCompanion
       if (livePhotoVideoId != null) 'live_photo_video_id': livePhotoVideoId,
       if (visibility != null) 'visibility': visibility,
       if (stackId != null) 'stack_id': stackId,
+      if (libraryId != null) 'library_id': libraryId,
     });
   }
 
@@ -1185,7 +1231,8 @@ class RemoteAssetEntityCompanion
       i0.Value<DateTime?>? deletedAt,
       i0.Value<String?>? livePhotoVideoId,
       i0.Value<i2.AssetVisibility>? visibility,
-      i0.Value<String?>? stackId}) {
+      i0.Value<String?>? stackId,
+      i0.Value<String?>? libraryId}) {
     return i1.RemoteAssetEntityCompanion(
       name: name ?? this.name,
       type: type ?? this.type,
@@ -1204,6 +1251,7 @@ class RemoteAssetEntityCompanion
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       visibility: visibility ?? this.visibility,
       stackId: stackId ?? this.stackId,
+      libraryId: libraryId ?? this.libraryId,
     );
   }
 
@@ -1264,6 +1312,9 @@ class RemoteAssetEntityCompanion
     if (stackId.present) {
       map['stack_id'] = i0.Variable<String>(stackId.value);
     }
+    if (libraryId.present) {
+      map['library_id'] = i0.Variable<String>(libraryId.value);
+    }
     return map;
   }
 
@@ -1286,11 +1337,15 @@ class RemoteAssetEntityCompanion
           ..write('deletedAt: $deletedAt, ')
           ..write('livePhotoVideoId: $livePhotoVideoId, ')
           ..write('visibility: $visibility, ')
-          ..write('stackId: $stackId')
+          ..write('stackId: $stackId, ')
+          ..write('libraryId: $libraryId')
           ..write(')'))
         .toString();
   }
 }
 
+i0.Index get uQAssetsOwnerLibraryChecksum => i0.Index(
+    'UQ_assets_owner_library_checksum',
+    'CREATE UNIQUE INDEX IF NOT EXISTS UQ_assets_owner_library_checksum ON remote_asset_entity (owner_id, library_id, checksum) WHERE(library_id IS NOT NULL)');
 i0.Index get idxRemoteAssetChecksum => i0.Index('idx_remote_asset_checksum',
     'CREATE INDEX idx_remote_asset_checksum ON remote_asset_entity (checksum)');

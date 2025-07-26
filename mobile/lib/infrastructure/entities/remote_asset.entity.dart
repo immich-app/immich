@@ -5,11 +5,16 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/asset.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
-@TableIndex(
-  name: 'UQ_remote_asset_owner_checksum',
-  columns: {#checksum, #ownerId},
-  unique: true,
-)
+@TableIndex.sql('''
+CREATE UNIQUE INDEX IF NOT EXISTS UQ_assets_owner_checksum
+ON remote_asset_entity (owner_id, checksum)
+WHERE (library_id IS NULL);
+''')
+@TableIndex.sql('''
+CREATE UNIQUE INDEX IF NOT EXISTS UQ_assets_owner_library_checksum
+ON remote_asset_entity (owner_id, library_id, checksum)
+WHERE (library_id IS NOT NULL);
+''')
 @TableIndex(name: 'idx_remote_asset_checksum', columns: {#checksum})
 class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   const RemoteAssetEntity();
@@ -33,6 +38,8 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
   IntColumn get visibility => intEnum<AssetVisibility>()();
 
   TextColumn get stackId => text().nullable()();
+
+  TextColumn get libraryId => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
