@@ -105,8 +105,9 @@ class _ThumbnailState extends State<Thumbnail> {
   void didUpdateWidget(Thumbnail oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.imageProvider != widget.imageProvider ||
-        oldWidget.blurhash != widget.blurhash ||
-        (oldWidget.thumbhashMode == ThumbhashMode.disabled && oldWidget.thumbhashMode != ThumbhashMode.disabled)) {
+        (_providerImage == null &&
+                (widget.thumbhashMode != ThumbhashMode.disabled && oldWidget.blurhash != widget.blurhash) ||
+            (oldWidget.thumbhashMode == ThumbhashMode.disabled && widget.thumbhashMode != ThumbhashMode.disabled))) {
       _loadImage();
     }
   }
