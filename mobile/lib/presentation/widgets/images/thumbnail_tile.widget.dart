@@ -40,8 +40,7 @@ class ThumbnailTile extends ConsumerWidget {
     final isSelected = ref.watch(
       multiSelectProvider.select((multiselect) => multiselect.selectedAssets.contains(asset)),
     );
-    final isScrubbing =
-        ref.watch(timelineStateProvider.select((state) => state.isScrubbing));
+    final isScrubbing = ref.watch(timelineStateProvider.select((state) => state.isScrubbing));
 
     final borderStyle = lockSelection
         ? BoxDecoration(
@@ -74,9 +73,7 @@ class ThumbnailTile extends ConsumerWidget {
                     tag: '${asset?.heroTag ?? ''}_$heroIndex',
                     child: Thumbnail.fromBaseAsset(
                       asset: asset,
-                      thumbhashMode: isScrubbing
-                          ? ThumbhashMode.only
-                          : ThumbhashMode.enabled,
+                      thumbhashMode: isScrubbing ? ThumbhashMode.only : ThumbhashMode.enabled,
                     ),
                   ),
                 ),
