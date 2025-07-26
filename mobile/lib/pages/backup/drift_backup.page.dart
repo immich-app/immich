@@ -3,14 +3,18 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.widget.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 
 @RoutePage()
@@ -71,6 +75,15 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
             Icons.arrow_back_ios_rounded,
           ),
         ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.pushRoute(const DriftBackupOptionRoute());
+            },
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: "backup_controller_page_options".t(),
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -89,6 +102,7 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                   const _BackupCard(),
                   const _RemainderCard(),
                   const Divider(),
+                  const BackupWifiRequirementButton(),
                   BackupToggleButton(
                     onStart: () async => await startBackup(),
                     onStop: () async => await stopBackup(),
@@ -105,6 +119,53 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class BackupWifiRequirementButton extends ConsumerWidget {
+  const BackupWifiRequirementButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final valueStream = Store.watch(StoreKey.uploadRequredWifi);
+
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
+        side: BorderSide(
+          color: context.colorScheme.outlineVariant,
+          width: 1,
+        ),
+      ),
+      elevation: 0,
+      borderOnForeground: false,
+      child: ListTile(
+        minVerticalPadding: 18,
+        title: Text(
+          "backup_controller_page_wifi_requirement",
+          style: context.textTheme.titleMedium,
+        ).tr(),
+        subtitle: Text(
+          "backup_controller_page_wifi_requirement_sub",
+          style: context.textTheme.bodyMedium?.copyWith(
+            color: context.colorScheme.onSurfaceSecondary,
+          ),
+        ).tr(),
+        trailing: StreamBuilder(
+          stream: valueStream,
+          builder: (context, snapshot) {
+            print("BackupWifiRequirementButton: ${snapshot.data}");
+            final value = snapshot.data ?? false;
+            return Switch(
+              value: value,
+              onChanged: (bool newValue) {
+                ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.uploadRequredWifi, newValue);
+              },
+            );
+          },
+        ),
       ),
     );
   }
