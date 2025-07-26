@@ -322,15 +322,18 @@ describe(AuthService.name, () => {
       mocks.sharedLink.getByKey.mockResolvedValue(sharedLink);
       mocks.user.get.mockResolvedValue(user);
 
+      const buffer = sharedLink.key;
+      const key = buffer.toString('base64url');
+
       await expect(
         sut.authenticate({
-          headers: { 'x-immich-share-key': sharedLink.key.toString('base64url') },
+          headers: { 'x-immich-share-key': key },
           queryParams: {},
           metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
         }),
       ).resolves.toEqual({ user, sharedLink });
 
-      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(sharedLink.key);
+      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(buffer, key);
     });
 
     it('should accept a hex key', async () => {
@@ -340,15 +343,18 @@ describe(AuthService.name, () => {
       mocks.sharedLink.getByKey.mockResolvedValue(sharedLink);
       mocks.user.get.mockResolvedValue(user);
 
+      const buffer = sharedLink.key;
+      const key = buffer.toString('hex');
+
       await expect(
         sut.authenticate({
-          headers: { 'x-immich-share-key': sharedLink.key.toString('hex') },
+          headers: { 'x-immich-share-key': key },
           queryParams: {},
           metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
         }),
       ).resolves.toEqual({ user, sharedLink });
 
-      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(sharedLink.key);
+      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(buffer, key);
     });
   });
 

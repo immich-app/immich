@@ -257,8 +257,9 @@ export const copyToClipboard = async (secret: string) => {
   }
 };
 
-export const makeSharedLinkUrl = (key: string) => {
-  return new URL(`share/${key}`, get(serverConfig).externalDomain || globalThis.location.origin).href;
+export const makeSharedLinkUrl = (sharedLink: SharedLinkResponseDto) => {
+  const slugOrKey = sharedLink.slug || sharedLink.key;
+  return new URL(`share/${slugOrKey}`, get(serverConfig).externalDomain || globalThis.location.origin).href;
 };
 
 export const oauth = {

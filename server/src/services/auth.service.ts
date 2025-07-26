@@ -407,7 +407,7 @@ export class AuthService extends BaseService {
     key = Array.isArray(key) ? key[0] : key;
 
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
-    const sharedLink = await this.sharedLinkRepository.getByKey(bytes);
+    const sharedLink = await this.sharedLinkRepository.getByKey(bytes, key);
     if (sharedLink?.user && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date())) {
       return {
         user: sharedLink.user,

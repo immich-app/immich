@@ -173,10 +173,14 @@ export class SharedLinkRepository {
   }
 
   @GenerateSql({ params: [DummyValue.BUFFER] })
-  async getByKey(key: Buffer) {
+  getByKey(key: Buffer, slug?: string) {
     return this.db
       .selectFrom('shared_link')
-      .where('shared_link.key', '=', key)
+      .where((eb) =>
+        slug
+          ? eb.or([eb('shared_link.slug', '=', slug), eb('shared_link.key', '=', key)])
+          : eb('shared_link.key', '=', key),
+      )
       .leftJoin('album', 'album.id', 'shared_link.albumId')
       .where('album.deletedAt', 'is', null)
       .select((eb) => [
