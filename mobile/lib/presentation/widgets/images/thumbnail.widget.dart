@@ -88,7 +88,6 @@ class Thumbnail extends StatefulWidget {
 }
 
 class _ThumbnailState extends State<Thumbnail> {
-  ui.Image? _thumbhashImage;
   ui.Image? _providerImage;
   ImageStream? _imageStream;
   ImageStreamListener? _imageStreamListener;
@@ -104,9 +103,17 @@ class _ThumbnailState extends State<Thumbnail> {
   @override
   void didUpdateWidget(Thumbnail oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.imageProvider != widget.imageProvider ||
-        oldWidget.blurhash != widget.blurhash ||
-        (oldWidget.thumbhashMode == ThumbhashMode.disabled && oldWidget.thumbhashMode != ThumbhashMode.disabled)) {
+    if (widget.imageProvider != oldWidget.imageProvider) {
+      return _loadImage();
+    }
+
+    if (_providerImage != null) {
+      return;
+    }
+
+    if ((oldWidget.thumbhashMode == ThumbhashMode.disabled && widget.thumbhashMode != ThumbhashMode.disabled) ||
+        (oldWidget.thumbhashMode == ThumbhashMode.only && widget.thumbhashMode != ThumbhashMode.only) ||
+        (widget.thumbhashMode != ThumbhashMode.disabled && oldWidget.blurhash != widget.blurhash)) {
       _loadImage();
     }
   }
@@ -119,12 +126,12 @@ class _ThumbnailState extends State<Thumbnail> {
 
   void _loadImage() {
     _stopListeningToStream();
-    if (widget.thumbhashMode != ThumbhashMode.disabled && widget.blurhash != null) {
-      _decodeThumbhash();
-    }
-
     if (widget.thumbhashMode != ThumbhashMode.only && widget.imageProvider != null) {
       _loadFromProvider();
+    }
+
+    if (widget.thumbhashMode != ThumbhashMode.disabled && widget.blurhash != null) {
+      _decodeThumbhash();
     }
   }
 
@@ -137,7 +144,6 @@ class _ThumbnailState extends State<Thumbnail> {
       (ImageInfo imageInfo, bool synchronousCall) {
         if (!mounted) return;
 
-        _thumbhashImage?.dispose();
         if (_providerImage != imageInfo.image) {
           setState(() {
             _providerImage = imageInfo.image;
@@ -220,7 +226,7 @@ class _ThumbnailState extends State<Thumbnail> {
     );
 
     return _ThumbnailLeaf(
-      image: _providerImage ?? _thumbhashImage,
+      image: _providerImage,
       fit: widget.fit,
       placeholderGradient: gradient,
     );
@@ -229,7 +235,7 @@ class _ThumbnailState extends State<Thumbnail> {
   @override
   void dispose() {
     _stopListeningToStream();
-    _thumbhashImage?.dispose();
+    _providerImage?.dispose();
     super.dispose();
   }
 }
@@ -302,7 +308,7 @@ class _ThumbnailRenderBox extends RenderBox {
           markNeedsPaint();
         });
       } else {
-        // _previousImage?.dispose();
+        _previousImage?.dispose();
         _previousImage = null;
         _fadeStartTime = null;
       }
@@ -347,7 +353,7 @@ class _ThumbnailRenderBox extends RenderBox {
 
     final time = DateTime.now();
     if (time.difference(_lastImageRequest).inMilliseconds >= 16) {
-      _fadeStartTime = DateTime.now();
+      _fadeStartTime = time;
       _previousImage = _image;
     }
     _image = value;
@@ -375,5 +381,11 @@ class _ThumbnailRenderBox extends RenderBox {
     if (_image == null) {
       markNeedsPaint();
     }
+  }
+
+  @override
+  dispose() {
+    _previousImage?.dispose();
+    super.dispose();
   }
 }
