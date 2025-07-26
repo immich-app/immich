@@ -18,6 +18,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart'
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
@@ -103,10 +104,21 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   void initState() {
     super.initState();
     _reloadSubscription = EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
+
+    scrollToTopNotifierProvider.addListener(_scrollToTop);
+  }
+
+  void _scrollToTop() {
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
   void dispose() {
+    scrollToTopNotifierProvider.removeListener(_scrollToTop);
     _scrollController.dispose();
     _reloadSubscription?.cancel();
     super.dispose();
