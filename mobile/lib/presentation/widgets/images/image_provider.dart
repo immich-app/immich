@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
@@ -13,12 +14,7 @@ ImageProvider getFullImageProvider(
   final ImageProvider provider;
   if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    provider = LocalFullImageProvider(
-      id: id,
-      name: asset.name,
-      size: size,
-      type: asset.type,
-    );
+    provider = LocalFullImageProvider(id: id, size: size);
   } else {
     final String assetId;
     if (asset is LocalAsset && asset.hasRemote) {
@@ -37,7 +33,7 @@ ImageProvider getFullImageProvider(
 ImageProvider getThumbnailImageProvider({
   BaseAsset? asset,
   String? remoteId,
-  Size size = const Size.square(256),
+  Size size = const Size.square(kTimelineThumbnailSize),
 }) {
   assert(
     asset != null || remoteId != null,
@@ -52,8 +48,7 @@ ImageProvider getThumbnailImageProvider({
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
     return LocalThumbProvider(
       id: id,
-      updatedAt: asset.updatedAt,
-      name: asset.name,
+      // updatedAt: asset.updatedAt, TODO
       size: size,
     );
   }

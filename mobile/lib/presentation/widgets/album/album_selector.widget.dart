@@ -12,6 +12,7 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -533,7 +534,7 @@ class _AlbumList extends ConsumerWidget {
                         width: 80,
                         height: 80,
                         child: Thumbnail(
-                          remoteId: album.thumbnailAssetId,
+                          imageProvider: RemoteThumbProvider(assetId: album.thumbnailAssetId!),
                         ),
                       ),
                     )
@@ -654,7 +655,7 @@ class _GridAlbumCard extends ConsumerWidget {
                   width: double.infinity,
                   child: album.thumbnailAssetId != null
                       ? Thumbnail(
-                          remoteId: album.thumbnailAssetId,
+                          imageProvider: RemoteThumbProvider(assetId: album.thumbnailAssetId!),
                         )
                       : Container(
                           color: context.colorScheme.surfaceContainerHighest,

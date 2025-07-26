@@ -43,12 +43,12 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
         ),
         borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Badge(
-          label: Container(
+          label: const DecoratedBox(
             decoration: BoxDecoration(
               color: Colors.black,
-              borderRadius: BorderRadius.circular(widgetSize / 2),
+              borderRadius: BorderRadius.all(Radius.circular(widgetSize / 2)),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.info,
               color: Color.fromARGB(255, 243, 188, 106),
               size: widgetSize / 2,

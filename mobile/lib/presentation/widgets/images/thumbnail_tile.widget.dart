@@ -1,17 +1,19 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class ThumbnailTile extends ConsumerWidget {
   const ThumbnailTile(
     this.asset, {
-    this.size = const Size.square(256),
+    this.size = const Size.square(kTimelineThumbnailTileSize),
     this.fit = BoxFit.cover,
     this.showStorageIndicator = true,
     this.lockSelection = false,
@@ -19,7 +21,7 @@ class ThumbnailTile extends ConsumerWidget {
     super.key,
   });
 
-  final BaseAsset asset;
+  final BaseAsset? asset;
   final Size size;
   final BoxFit fit;
   final bool showStorageIndicator;
@@ -28,6 +30,7 @@ class ThumbnailTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final asset = this.asset;
     final heroIndex = heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
 
     final assetContainerColor =
@@ -38,6 +41,7 @@ class ThumbnailTile extends ConsumerWidget {
         (multiselect) => multiselect.selectedAssets.contains(asset),
       ),
     );
+    final isScrubbing = ref.watch(timelineStateProvider.select((state) => state.isScrubbing));
 
     final borderStyle = lockSelection
         ? BoxDecoration(
@@ -54,7 +58,7 @@ class ThumbnailTile extends ConsumerWidget {
               )
             : const BoxDecoration();
 
-    final hasStack = asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
+    final hasStack = asset is RemoteAsset && asset.stackId != null;
 
     return Stack(
       children: [
@@ -69,26 +73,40 @@ class ThumbnailTile extends ConsumerWidget {
               children: [
                 Positioned.fill(
                   child: Hero(
-                    tag: '${asset.heroTag}_$heroIndex',
-                    child: Thumbnail(
+                    tag: '${asset?.heroTag ?? ''}_$heroIndex',
+                    child: Thumbnail.fromBaseAsset(
                       asset: asset,
-                      fit: fit,
-                      size: size,
+                      thumbhashMode: isScrubbing
+                              ? ThumbhashMode.only
+                          : asset != null && asset.hasLocal
+                              ? ThumbhashMode.disabled
+                              : ThumbhashMode.enabled,
                     ),
                   ),
                 ),
                 if (hasStack)
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        right: 10.0,
-                        top: asset.isVideo ? 24.0 : 6.0,
-                      ),
-                      child: const _TileOverlayIcon(Icons.burst_mode_rounded),
+                  asset.isVideo
+                      ? const Align(
+                          alignment: Alignment.topRight,
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              right: 10.0,
+                              top: 24.0,
+                            ),
+                            child: _TileOverlayIcon(Icons.burst_mode_rounded),
+                          ),
+                        )
+                      : const Align(
+                          alignment: Alignment.topRight,
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              right: 10.0,
+                              top: 6.0,
+                            ),
+                            child: _TileOverlayIcon(Icons.burst_mode_rounded),
                     ),
                   ),
-                if (asset.isVideo)
+                if (asset != null && asset.isVideo)
                   Align(
                     alignment: Alignment.topRight,
                     child: Padding(
@@ -96,7 +114,7 @@ class ThumbnailTile extends ConsumerWidget {
                       child: _VideoIndicator(asset.duration),
                     ),
                   ),
-                if (showStorageIndicator)
+                if (showStorageIndicator && asset != null)
                   switch (asset.storage) {
                     AssetState.local => const Align(
                         alignment: Alignment.bottomRight,
@@ -120,7 +138,7 @@ class ThumbnailTile extends ConsumerWidget {
                         ),
                       ),
                   },
-                if (asset.isFavorite)
+                if (asset != null && asset.isFavorite)
                   const Align(
                     alignment: Alignment.bottomLeft,
                     child: Padding(

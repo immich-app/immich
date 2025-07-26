@@ -1,4 +1,5 @@
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment_builder.dart';
@@ -6,6 +7,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/segment_builder.dart
 class FixedSegmentBuilder extends SegmentBuilder {
   final double tileHeight;
   final int columnCount;
+  static final DateTime _dummyDate = DateTime.fromMicrosecondsSinceEpoch(0);
 
   const FixedSegmentBuilder({
     required super.buckets,
@@ -16,12 +18,11 @@ class FixedSegmentBuilder extends SegmentBuilder {
   });
 
   List<Segment> generate() {
-    final segments = <Segment>[];
+    final segments = List.filled(buckets.length, const FixedSegment.empty());
     int firstIndex = 0;
     double startOffset = 0;
     int assetIndex = 0;
-    DateTime? previousDate;
-
+    DateTime previousDate = _dummyDate;
     for (int i = 0; i < buckets.length; i++) {
       final bucket = buckets[i];
 
@@ -32,12 +33,11 @@ class FixedSegmentBuilder extends SegmentBuilder {
       final segmentFirstIndex = firstIndex;
       firstIndex += segmentCount;
       final segmentLastIndex = firstIndex - 1;
-
       final timelineHeader = switch (groupBy) {
         GroupAssetsBy.month => HeaderType.month,
         GroupAssetsBy.day ||
         GroupAssetsBy.auto =>
-          bucket is TimeBucket && bucket.date.month != previousDate?.month ? HeaderType.monthAndDay : HeaderType.day,
+          bucket is TimeBucket && !previousDate.isSameMonth(bucket.date) ? HeaderType.monthAndDay : HeaderType.day,
         GroupAssetsBy.none => HeaderType.none,
       };
       final headerExtent = SegmentBuilder.headerExtent(timelineHeader);
@@ -46,20 +46,18 @@ class FixedSegmentBuilder extends SegmentBuilder {
       startOffset += headerExtent + (tileHeight * numberOfRows) + spacing * (numberOfRows - 1);
       final segmentEndOffset = startOffset;
 
-      segments.add(
-        FixedSegment(
-          firstIndex: segmentFirstIndex,
-          lastIndex: segmentLastIndex,
-          startOffset: segmentStartOffset,
-          endOffset: segmentEndOffset,
-          firstAssetIndex: assetIndex,
-          bucket: bucket,
-          tileHeight: tileHeight,
-          columnCount: columnCount,
-          headerExtent: headerExtent,
-          spacing: spacing,
-          header: timelineHeader,
-        ),
+      segments[i] = FixedSegment(
+        firstIndex: segmentFirstIndex,
+        lastIndex: segmentLastIndex,
+        startOffset: segmentStartOffset,
+        endOffset: segmentEndOffset,
+        firstAssetIndex: assetIndex,
+        bucket: bucket,
+        tileHeight: tileHeight,
+        columnCount: columnCount,
+        headerExtent: headerExtent,
+        spacing: spacing,
+        header: timelineHeader,
       );
 
       assetIndex += assetCount;

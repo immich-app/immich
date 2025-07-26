@@ -98,6 +98,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   final _scrollController = ScrollController();
   StreamSubscription? _reloadSubscription;
+  // late final KeepAliveLink asyncSegmentsLink;
 
   @override
   void initState() {

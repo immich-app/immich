@@ -4,14 +4,17 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
-import 'package:immich_mobile/presentation/widgets/timeline/segment_builder.dart';
-import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -79,6 +82,21 @@ class FixedSegment extends Segment {
       spacing: spacing,
     );
   }
+
+  const FixedSegment.empty()
+      : this(
+          firstIndex: 0,
+          lastIndex: 0,
+          startOffset: 0,
+          endOffset: 0,
+          firstAssetIndex: 0,
+          bucket: const Bucket(assetCount: 0),
+          tileHeight: 1,
+          columnCount: 0,
+          headerExtent: 0,
+          spacing: 0,
+          header: HeaderType.none,
+        );
 }
 
 class _FixedSegmentRow extends ConsumerWidget {
@@ -96,12 +114,7 @@ class _FixedSegmentRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isScrubbing = ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
     final timelineService = ref.read(timelineServiceProvider);
-
-    if (isScrubbing) {
-      return _buildPlaceholder(context);
-    }
 
     if (timelineService.hasRange(assetIndex, assetCount)) {
       return _buildAssetRow(
@@ -110,36 +123,35 @@ class _FixedSegmentRow extends ConsumerWidget {
       );
     }
 
-    return FutureBuilder<List<BaseAsset>>(
-      future: timelineService.loadAssets(assetIndex, assetCount),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return _buildPlaceholder(context);
-        }
-        return _buildAssetRow(context, snapshot.requireData);
-      },
-    );
+    try {
+      final assets = timelineService.getAssets(assetIndex, assetCount);
+      return FutureBuilder<List<BaseAsset>>(
+        future: null,
+        initialData: assets,
+        builder: (context, snapshot) {
+          return _buildAssetRow(context, snapshot.data);
+        },
+      );
+    } catch (e) {
+      return FutureBuilder<List<BaseAsset>>(
+        future: timelineService.loadAssets(assetIndex, assetCount),
+        builder: (context, snapshot) {
+          return _buildAssetRow(context, snapshot.data);
+        },
+      );
+    }
   }
 
-  Widget _buildPlaceholder(BuildContext context) {
-    return SegmentBuilder.buildPlaceholder(
-      context,
-      assetCount,
-      size: Size.square(tileHeight),
-      spacing: spacing,
-    );
-  }
-
-  Widget _buildAssetRow(BuildContext context, List<BaseAsset> assets) {
+  Widget _buildAssetRow(BuildContext context, List<BaseAsset>? assets) {
     return FixedTimelineRow(
       dimension: tileHeight,
       spacing: spacing,
       textDirection: Directionality.of(context),
       children: [
-        for (int i = 0; i < assets.length; i++)
+        for (int i = 0; i < assetCount; i++)
           _AssetTileWidget(
-            key: ValueKey(assets[i].heroTag),
-            asset: assets[i],
+            key: ValueKey(i),
+            asset: assets == null ? null : assets[i],
             assetIndex: assetIndex + i,
           ),
       ],
@@ -148,7 +160,7 @@ class _FixedSegmentRow extends ConsumerWidget {
 }
 
 class _AssetTileWidget extends ConsumerWidget {
-  final BaseAsset asset;
+  final BaseAsset? asset;
   final int assetIndex;
 
   const _AssetTileWidget({
@@ -171,6 +183,12 @@ class _AssetTileWidget extends ConsumerWidget {
     } else {
       await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
+      ref.read(assetViewerProvider.notifier).setAsset(asset);
+      ref.read(currentAssetNotifier.notifier).setAsset(asset);
+      if (asset.isVideo || asset.isMotionPhoto) {
+        ref.read(videoPlaybackValueProvider.notifier).reset();
+        ref.read(videoPlayerControlsProvider.notifier).pause();
+      }
       ctx.pushRoute(
         AssetViewerRoute(
           initialIndex: assetIndex,
@@ -213,17 +231,16 @@ class _AssetTileWidget extends ConsumerWidget {
     final showStorageIndicator = ref.watch(
       timelineArgsProvider.select((args) => args.showStorageIndicator),
     );
+    final asset = this.asset;
 
-    return RepaintBoundary(
-      child: GestureDetector(
-        onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset),
-        onLongPress: () => lockSelection ? null : _handleOnLongPress(ref, asset),
-        child: ThumbnailTile(
-          asset,
-          lockSelection: lockSelection,
-          showStorageIndicator: showStorageIndicator,
-          heroOffset: heroOffset,
-        ),
+    return GestureDetector(
+      onTap: () => lockSelection || asset == null ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset),
+      onLongPress: () => lockSelection || asset == null ? null : _handleOnLongPress(ref, asset),
+      child: ThumbnailTile(
+        asset,
+        lockSelection: lockSelection,
+        showStorageIndicator: showStorageIndicator,
+        heroOffset: heroOffset,
       ),
     );
   }

@@ -138,7 +138,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
             final asset = selectedAssets.elementAt(index);
             return GestureDetector(
               onTap: onBackgroundTapped,
-              child: Thumbnail(asset: asset),
+              child: Thumbnail.fromBaseAsset(asset: asset),
             );
           },
           childCount: selectedAssets.length,

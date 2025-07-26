@@ -89,3 +89,13 @@ extension DateRangeFormatting on DateTime {
     }
   }
 }
+
+extension IsSameExtension on DateTime {
+  bool isSameDay(DateTime other) {
+    return day == other.day && month == other.month && year == other.year;
+  }
+
+  bool isSameMonth(DateTime other) {
+    return month == other.month && year == other.year;
+  }
+}
