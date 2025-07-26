@@ -55,7 +55,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     }
 
     return _db.mergedAssetDrift
-        .mergedBucket(userIds, groupBy: groupBy.index)
+        .mergedBucket(userIds: userIds, groupBy: groupBy.index)
         .map((row) {
           final date = row.bucketDate.dateFmt(groupBy);
           return TimeBucket(date: date, assetCount: row.assetCount);
@@ -70,7 +70,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     required int count,
   }) {
     return _db.mergedAssetDrift
-        .mergedAsset(userIds, limit: (_) => Limit(count, offset))
+        .mergedAsset(userIds: userIds, limit: (_) => Limit(count, offset))
         .map(
           (row) => row.remoteId != null && row.ownerId != null
               ? RemoteAsset(
