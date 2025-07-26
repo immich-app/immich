@@ -73,16 +73,34 @@ class ThumbnailTile extends ConsumerWidget {
                     tag: '${asset?.heroTag ?? ''}_$heroIndex',
                     child: Thumbnail.fromBaseAsset(
                       asset: asset,
-                      thumbhashMode: isScrubbing ? ThumbhashMode.only : ThumbhashMode.enabled,
+                      thumbhashMode: asset != null && asset.hasLocal
+                          ? ThumbhashMode.disabled
+                          : isScrubbing
+                              ? ThumbhashMode.only
+                              : ThumbhashMode.enabled,
                     ),
                   ),
                 ),
                 if (hasStack)
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: EdgeInsets.only(right: 10.0, top: asset.isVideo ? 24.0 : 6.0),
-                      child: const _TileOverlayIcon(Icons.burst_mode_rounded),
+                  asset.isVideo
+                      ? const Align(
+                          alignment: Alignment.topRight,
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              right: 10.0,
+                              top: 24.0,
+                            ),
+                            child: _TileOverlayIcon(Icons.burst_mode_rounded),
+                          ),
+                        )
+                      : const Align(
+                          alignment: Alignment.topRight,
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              right: 10.0,
+                              top: 6.0,
+                            ),
+                            child: _TileOverlayIcon(Icons.burst_mode_rounded),
                     ),
                   ),
                 if (asset != null && asset.isVideo)
