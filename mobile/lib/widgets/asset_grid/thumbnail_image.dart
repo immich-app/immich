@@ -87,18 +87,18 @@ class ThumbnailImage extends StatelessWidget {
           ),
         ),
         if (multiselectEnabled)
-          isSelected
-              ? const Padding(
-                  padding: EdgeInsets.all(3.0),
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: _SelectedIcon(),
-                  ),
-                )
-              : const Icon(
-                  Icons.circle_outlined,
-                  color: Colors.white,
-                ),
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: isSelected
+                  ? const _SelectedIcon()
+                  : Icon(
+                      Icons.circle_outlined,
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
+            ),
+          ),
       ],
     );
   }
