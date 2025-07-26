@@ -15,6 +15,7 @@ class ThumbnailTile extends ConsumerWidget {
     this.fit = BoxFit.cover,
     this.showStorageIndicator = true,
     this.lockSelection = false,
+    this.heroOffset,
     super.key,
   });
 
@@ -23,10 +24,11 @@ class ThumbnailTile extends ConsumerWidget {
   final BoxFit fit;
   final bool showStorageIndicator;
   final bool lockSelection;
+  final int? heroOffset;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+    final heroIndex = heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
 
     final assetContainerColor =
         context.isDarkTheme ? context.primaryColor.darken(amount: 0.4) : context.primaryColor.lighten(amount: 0.75);
@@ -67,7 +69,7 @@ class ThumbnailTile extends ConsumerWidget {
               children: [
                 Positioned.fill(
                   child: Hero(
-                    tag: '${asset.heroTag}_$heroOffset',
+                    tag: '${asset.heroTag}_$heroIndex',
                     child: Thumbnail(
                       asset: asset,
                       fit: fit,

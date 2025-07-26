@@ -3,6 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
@@ -11,26 +12,53 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 /// This delete action has the following behavior:
-/// - Delete permanently on the server
+/// - Set the deletedAt information, put the asset in the trash in the server
+/// which will be permanently deleted after the number of days configure by the admin
 /// - Prompt to delete the asset locally
-class DeletePermanentActionButton extends ConsumerWidget {
+class DeleteActionButton extends ConsumerWidget {
   final ActionSource source;
-
-  const DeletePermanentActionButton({super.key, required this.source});
+  final bool showConfirmation;
+  const DeleteActionButton({super.key, required this.source, this.showConfirmation = false});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
 
-    final result = await ref.read(actionProvider.notifier).deleteRemoteAndLocal(source);
+    if (showConfirmation) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('delete'.t(context: context)),
+          content: Text('delete_action_confirmation_message'.t(context: context)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('cancel'.t(context: context)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                'confirm'.t(context: context),
+                style: TextStyle(
+                  color: context.colorScheme.error,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true) return;
+    }
+
+    final result = await ref.read(actionProvider.notifier).trashRemoteAndDeleteLocal(source);
     ref.read(multiSelectProvider.notifier).reset();
 
     if (source == ActionSource.viewer) {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
 
-    final successMessage = 'delete_permanently_action_prompt'.t(
+    final successMessage = 'delete_action_prompt'.t(
       context: context,
       args: {'count': result.count.toString()},
     );
@@ -49,8 +77,8 @@ class DeletePermanentActionButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
       maxWidth: 110.0,
-      iconData: Icons.delete_forever,
-      label: "delete_permanently".t(context: context),
+      iconData: Icons.delete_sweep_outlined,
+      label: "delete".t(context: context),
       onPressed: () => _onTap(context, ref),
     );
   }

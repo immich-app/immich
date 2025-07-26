@@ -13,6 +13,10 @@ class DriftMemoryService {
     return _repository.getAll(ownerId);
   }
 
+  Future<DriftMemory?> get(String memoryId) {
+    return _repository.get(memoryId);
+  }
+
   Future<int> getCount() {
     return _repository.getCount();
   }

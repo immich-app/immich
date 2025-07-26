@@ -1,5 +1,5 @@
 {
-  "dart.flutterSdkPath": ".fvm/versions/3.32.6",
+  "dart.flutterSdkPath": ".fvm/versions/3.32.8",
   "dart.lineLength": 120,
   "[dart]": {
     "editor.rulers": [120],

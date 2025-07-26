@@ -162,6 +162,7 @@ class _AssetTileWidget extends ConsumerWidget {
     WidgetRef ref,
     int assetIndex,
     BaseAsset asset,
+    int? heroOffset,
   ) async {
     final multiSelectState = ref.read(multiSelectProvider);
 
@@ -174,6 +175,7 @@ class _AssetTileWidget extends ConsumerWidget {
         AssetViewerRoute(
           initialIndex: assetIndex,
           timelineService: ref.read(timelineServiceProvider),
+          heroOffset: heroOffset,
         ),
       );
     }
@@ -205,6 +207,8 @@ class _AssetTileWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+
     final lockSelection = _getLockSelectionStatus(ref);
     final showStorageIndicator = ref.watch(
       timelineArgsProvider.select((args) => args.showStorageIndicator),
@@ -212,12 +216,13 @@ class _AssetTileWidget extends ConsumerWidget {
 
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset),
+        onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset),
         onLongPress: () => lockSelection ? null : _handleOnLongPress(ref, asset),
         child: ThumbnailTile(
           asset,
           lockSelection: lockSelection,
           showStorageIndicator: showStorageIndicator,
+          heroOffset: heroOffset,
         ),
       ),
     );

@@ -12,6 +12,7 @@ import {
   SyncAckSetDto,
   SyncStreamDto,
 } from 'src/dtos/sync.dto';
+import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { SyncService } from 'src/services/sync.service';
@@ -41,7 +42,7 @@ export class SyncController {
   @Post('stream')
   @Header('Content-Type', 'application/jsonlines+json')
   @HttpCode(HttpStatus.OK)
-  @Authenticated()
+  @Authenticated({ permission: Permission.SyncStream })
   async getSyncStream(@Auth() auth: AuthDto, @Res() res: Response, @Body() dto: SyncStreamDto) {
     try {
       await this.service.stream(auth, res, dto);
@@ -52,21 +53,21 @@ export class SyncController {
   }
 
   @Get('ack')
-  @Authenticated()
+  @Authenticated({ permission: Permission.SyncCheckpointRead })
   getSyncAck(@Auth() auth: AuthDto): Promise<SyncAckDto[]> {
     return this.service.getAcks(auth);
   }
 
   @Post('ack')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated()
+  @Authenticated({ permission: Permission.SyncCheckpointUpdate })
   sendSyncAck(@Auth() auth: AuthDto, @Body() dto: SyncAckSetDto) {
     return this.service.setAcks(auth, dto);
   }
 
   @Delete('ack')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated()
+  @Authenticated({ permission: Permission.SyncCheckpointDelete })
   deleteSyncAck(@Auth() auth: AuthDto, @Body() dto: SyncAckDeleteDto) {
     return this.service.deleteAcks(auth, dto);
   }

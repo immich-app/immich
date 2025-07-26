@@ -158,7 +158,7 @@ export class AlbumService extends BaseService {
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
     const album = await this.findOrFail(id, { withAssets: false });
-    await this.requireAccess({ auth, permission: Permission.AlbumAddAsset, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AlbumAssetCreate, ids: [id] });
 
     const results = await addAssets(
       auth,
@@ -187,7 +187,7 @@ export class AlbumService extends BaseService {
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await this.requireAccess({ auth, permission: Permission.AlbumRemoveAsset, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AlbumAssetDelete, ids: [id] });
 
     const album = await this.findOrFail(id, { withAssets: false });
     const results = await removeAssets(

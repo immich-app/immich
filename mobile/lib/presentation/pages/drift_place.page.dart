@@ -22,12 +22,17 @@ class DriftPlacePage extends StatelessWidget {
     final ValueNotifier<String?> search = ValueNotifier(null);
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          _PlaceSliverAppBar(search: search),
-          _Map(search: search, currentLocation: currentLocation),
-          _PlaceList(search: search),
-        ],
+      body: ValueListenableBuilder(
+        valueListenable: search,
+        builder: (context, searchValue, child) {
+          return CustomScrollView(
+            slivers: [
+              _PlaceSliverAppBar(search: search),
+              _Map(search: search, currentLocation: currentLocation),
+              _PlaceList(search: search),
+            ],
+          );
+        },
       ),
     );
   }
@@ -104,7 +109,9 @@ class _Map extends StatelessWidget {
               ),
             ),
           )
-        : const SizedBox.shrink();
+        : const SliverToBoxAdapter(
+            child: SizedBox.shrink(),
+          );
   }
 }
 

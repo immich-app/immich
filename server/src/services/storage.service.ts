@@ -65,10 +65,26 @@ export class StorageService extends BaseService {
     await this.databaseRepository.withLock(DatabaseLock.MediaLocation, async () => {
       const current = APP_MEDIA_LOCATION;
       const savedValue = await this.systemMetadataRepository.get(SystemMetadataKey.MediaLocation);
-      const previous = savedValue?.location || '';
+      let previous = savedValue?.location || '';
 
       if (previous !== current) {
         this.logger.log(`Media location changed (from=${previous}, to=${current})`);
+
+        const samples = await this.assetRepository.getFileSamples();
+        if (samples.length > 0) {
+          const originalPath = samples[0].originalPath;
+          if (!previous) {
+            previous = originalPath.startsWith('upload/') ? 'upload' : '/usr/src/app/upload';
+          }
+
+          if (previous && originalPath.startsWith(previous)) {
+            this.logger.warn(
+              `Detected a change to IMMICH_MEDIA_LOCATION, performing an automatic migration of file paths from ${previous} to ${current}, this may take awhile`,
+            );
+            await this.databaseRepository.migrateFilePaths(previous, current);
+          }
+        }
+
         await this.systemMetadataRepository.set(SystemMetadataKey.MediaLocation, { location: current });
       }
     });

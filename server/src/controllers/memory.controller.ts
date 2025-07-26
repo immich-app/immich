@@ -32,7 +32,7 @@ export class MemoryController {
   }
 
   @Get('statistics')
-  @Authenticated({ permission: Permission.MemoryRead })
+  @Authenticated({ permission: Permission.MemoryStatistics })
   memoriesStatistics(@Auth() auth: AuthDto, @Query() dto: MemorySearchDto): Promise<MemoryStatisticsResponseDto> {
     return this.service.statistics(auth, dto);
   }
@@ -61,7 +61,7 @@ export class MemoryController {
   }
 
   @Put(':id/assets')
-  @Authenticated()
+  @Authenticated({ permission: Permission.MemoryAssetCreate })
   addMemoryAssets(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -72,7 +72,7 @@ export class MemoryController {
 
   @Delete(':id/assets')
   @HttpCode(HttpStatus.OK)
-  @Authenticated()
+  @Authenticated({ permission: Permission.MemoryAssetDelete })
   removeMemoryAssets(
     @Auth() auth: AuthDto,
     @Body() dto: BulkIdsDto,

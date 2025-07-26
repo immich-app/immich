@@ -652,7 +652,7 @@ class DriftSearchPage extends HookConsumerWidget {
       body: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.only(top: 12.0),
+            padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
             sliver: SliverToBoxAdapter(
               child: SizedBox(
                 height: 50,
