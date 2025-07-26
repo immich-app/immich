@@ -19,9 +19,13 @@ class IsarLogRepository extends IsarDatabaseRepository {
 
   Future<bool> insert(LogMessage log) async {
     final logEntity = LoggerMessage.fromDto(log);
-    await transaction(() async {
-      await _db.loggerMessages.put(logEntity);
-    });
+
+    try {
+      await transaction(() => _db.loggerMessages.put(logEntity));
+    } catch (e) {
+      return false;
+    }
+
     return true;
   }
 
