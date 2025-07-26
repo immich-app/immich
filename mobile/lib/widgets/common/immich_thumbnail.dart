@@ -68,8 +68,7 @@ class ImmichThumbnail extends HookConsumerWidget {
         fadeInDuration: Duration.zero,
         fadeOutDuration: const Duration(milliseconds: 100),
         octoSet: OctoSet(
-          placeholderBuilder:
-              blurHashPlaceholderBuilder(asset?.thumbhash, fit: fit),
+          placeholderBuilder: blurHashPlaceholderBuilder(asset?.thumbhash, fit: fit),
           errorBuilder: customErrorBuilder,
         ),
         image: thumbnailProviderInstance,

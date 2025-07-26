@@ -577,10 +577,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Using multiple selectors to avoid unnecessary rebuilds for other state changes
     ref.watch(
       assetViewerProvider.select(
-        (s) =>
-            s.showingBottomSheet.hashCode ^
-            s.backgroundOpacity.hashCode ^
-            s.stackIndex.hashCode,
+        (s) => s.showingBottomSheet.hashCode ^ s.backgroundOpacity.hashCode ^ s.stackIndex.hashCode,
       ),
     );
     ref.watch(isPlayingMotionVideoProvider);
