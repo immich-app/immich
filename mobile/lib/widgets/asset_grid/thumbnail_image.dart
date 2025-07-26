@@ -86,19 +86,35 @@ class ThumbnailImage extends StatelessWidget {
             ],
           ),
         ),
-        if (multiselectEnabled)
-          Padding(
-            padding: const EdgeInsets.all(3.0),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: isSelected
-                  ? const _SelectedIcon()
-                  : Icon(
-                      Icons.circle_outlined,
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-            ),
-          ),
+        TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0.0, end: multiselectEnabled ? 1.0 : 0.0),
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.decelerate,
+          builder: (context, value, child) {
+            final double opacity = value;
+            final double scale = 0.6 + (0.4 * value);
+
+            return Padding(
+              padding: EdgeInsets.all(isSelected ? value * 3.0 : 3.0),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Opacity(
+                  opacity: isSelected ? 1 : opacity,
+                  child: Transform.scale(
+                    scale: isSelected ? value : scale,
+                    alignment: isSelected ? Alignment.topLeft : Alignment.center,
+                    child: isSelected
+                        ? const _SelectedIcon()
+                        : Icon(
+                            Icons.circle_outlined,
+                            color: Colors.white.withValues(alpha: 0.8),
+                          ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
       ],
     );
   }
