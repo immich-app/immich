@@ -46,26 +46,15 @@ class ThumbnailImage extends StatelessWidget {
 
     return Stack(
       children: [
+        Container(color: canDeselect ? assetContainerColor : Colors.grey),
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.decelerate,
           decoration: BoxDecoration(
-            border: multiselectEnabled && isSelected
-                ? canDeselect
-                    ? Border.all(
-                        color: assetContainerColor,
-                        width: 8,
-                      )
-                    : const Border(
-                        top: BorderSide(color: Colors.grey, width: 8),
-                        right: BorderSide(color: Colors.grey, width: 8),
-                        bottom: BorderSide(color: Colors.grey, width: 8),
-                        left: BorderSide(color: Colors.grey, width: 8),
-                      )
-                : Border.all(
-                    color: assetContainerColor,
-                    width: 0.001,
-                  ),
+            border: Border.all(
+              color: Colors.transparent,
+              width: multiselectEnabled && isSelected ? 8 : 0.0001,
+            ),
           ),
           child: Stack(
             children: [
@@ -324,9 +313,7 @@ class _ImageIcon extends StatelessWidget {
       curve: Curves.decelerate,
       builder: (context, value, child) {
         return DecoratedBox(
-          decoration: (multiselectEnabled && isSelected)
-              ? BoxDecoration(color: canDeselect ? assetContainerColor : Colors.grey)
-              : BoxDecoration(color: assetContainerColor),
+          decoration: const BoxDecoration(color: Colors.transparent),
           child: ClipRRect(
             borderRadius: BorderRadius.all(Radius.circular(value)),
             child: child,
