@@ -399,6 +399,7 @@ class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
     Key? key,
     required int initialIndex,
     required TimelineService timelineService,
+    int? heroOffset,
     List<PageRouteInfo>? children,
   }) : super(
           AssetViewerRoute.name,
@@ -406,6 +407,7 @@ class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
             key: key,
             initialIndex: initialIndex,
             timelineService: timelineService,
+            heroOffset: heroOffset,
           ),
           initialChildren: children,
         );
@@ -420,6 +422,7 @@ class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
         key: args.key,
         initialIndex: args.initialIndex,
         timelineService: args.timelineService,
+        heroOffset: args.heroOffset,
       );
     },
   );
@@ -430,6 +433,7 @@ class AssetViewerRouteArgs {
     this.key,
     required this.initialIndex,
     required this.timelineService,
+    this.heroOffset,
   });
 
   final Key? key;
@@ -438,9 +442,11 @@ class AssetViewerRouteArgs {
 
   final TimelineService timelineService;
 
+  final int? heroOffset;
+
   @override
   String toString() {
-    return 'AssetViewerRouteArgs{key: $key, initialIndex: $initialIndex, timelineService: $timelineService}';
+    return 'AssetViewerRouteArgs{key: $key, initialIndex: $initialIndex, timelineService: $timelineService, heroOffset: $heroOffset}';
   }
 }
 
