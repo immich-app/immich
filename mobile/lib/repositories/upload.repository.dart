@@ -22,8 +22,8 @@ class UploadRepository {
     );
     FileDownloader().registerCallbacks(
       group: kManualUploadGroup,
-      taskStatusCallback: (_) => {},
-      taskProgressCallback: (_) => {},
+      taskStatusCallback: (update) => onUploadStatus?.call(update),
+      taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
   }
 
