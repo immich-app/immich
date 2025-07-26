@@ -73,10 +73,10 @@ class ThumbnailTile extends ConsumerWidget {
                     tag: '${asset?.heroTag ?? ''}_$heroIndex',
                     child: Thumbnail.fromBaseAsset(
                       asset: asset,
-                      thumbhashMode: asset != null && asset.hasLocal
-                          ? ThumbhashMode.disabled
-                          : isScrubbing
+                      thumbhashMode: isScrubbing
                               ? ThumbhashMode.only
+                          : asset != null && asset.hasLocal
+                              ? ThumbhashMode.disabled
                               : ThumbhashMode.enabled,
                     ),
                   ),
