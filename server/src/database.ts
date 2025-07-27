@@ -308,7 +308,15 @@ export const columns = {
     'asset.type',
   ],
   assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type'],
-  authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes', 'user.appVersion'],
+  authUser: [
+    'user.id',
+    'user.name',
+    'user.email',
+    'user.isAdmin',
+    'user.quotaUsageInBytes',
+    'user.quotaSizeInBytes',
+    'user.appVersion',
+  ],
   authApiKey: ['api_key.id', 'api_key.permissions'],
   authSession: ['session.id', 'session.isPendingSyncReset', 'session.updatedAt', 'session.pinExpiresAt'],
   authSharedLink: [
