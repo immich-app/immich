@@ -738,6 +738,8 @@ class ApiClient {
           return UserAvatarColorTypeTransformer().decode(value);
         case 'UserLicense':
           return UserLicense.fromJson(value);
+        case 'UserMetadataKey':
+          return UserMetadataKeyTypeTransformer().decode(value);
         case 'UserPreferencesResponseDto':
           return UserPreferencesResponseDto.fromJson(value);
         case 'UserPreferencesUpdateDto':
