@@ -4,12 +4,38 @@ import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
 import 'package:worker_manager/worker_manager.dart';
 
+typedef SyncCallback = void Function();
+typedef SyncErrorCallback = void Function(String error);
+
 class BackgroundSyncManager {
+  final SyncCallback? onRemoteSyncStart;
+  final SyncCallback? onRemoteSyncComplete;
+  final SyncErrorCallback? onRemoteSyncError;
+
+  final SyncCallback? onLocalSyncStart;
+  final SyncCallback? onLocalSyncComplete;
+  final SyncErrorCallback? onLocalSyncError;
+
+  final SyncCallback? onHashingStart;
+  final SyncCallback? onHashingComplete;
+  final SyncErrorCallback? onHashingError;
+
   Cancelable<void>? _syncTask;
+  Cancelable<void>? _syncWebsocketTask;
   Cancelable<void>? _deviceAlbumSyncTask;
   Cancelable<void>? _hashTask;
 
-  BackgroundSyncManager();
+  BackgroundSyncManager({
+    this.onRemoteSyncStart,
+    this.onRemoteSyncComplete,
+    this.onRemoteSyncError,
+    this.onLocalSyncStart,
+    this.onLocalSyncComplete,
+    this.onLocalSyncError,
+    this.onHashingStart,
+    this.onHashingComplete,
+    this.onHashingError,
+  });
 
   Future<void> cancel() {
     final futures = <Future>[];
@@ -20,6 +46,12 @@ class BackgroundSyncManager {
     _syncTask?.cancel();
     _syncTask = null;
 
+    if (_syncWebsocketTask != null) {
+      futures.add(_syncWebsocketTask!.future);
+    }
+    _syncWebsocketTask?.cancel();
+    _syncWebsocketTask = null;
+
     return Future.wait(futures);
   }
 
@@ -29,19 +61,23 @@ class BackgroundSyncManager {
       return _deviceAlbumSyncTask!.future;
     }
 
+    onLocalSyncStart?.call();
+
     // We use a ternary operator to avoid [_deviceAlbumSyncTask] from being
     // captured by the closure passed to [runInIsolateGentle].
     _deviceAlbumSyncTask = full
         ? runInIsolateGentle(
-            computation: (ref) =>
-                ref.read(localSyncServiceProvider).sync(full: true),
+            computation: (ref) => ref.read(localSyncServiceProvider).sync(full: true),
           )
         : runInIsolateGentle(
-            computation: (ref) =>
-                ref.read(localSyncServiceProvider).sync(full: false),
+            computation: (ref) => ref.read(localSyncServiceProvider).sync(full: false),
           );
 
     return _deviceAlbumSyncTask!.whenComplete(() {
+      _deviceAlbumSyncTask = null;
+      onLocalSyncComplete?.call();
+    }).catchError((error) {
+      onLocalSyncError?.call(error.toString());
       _deviceAlbumSyncTask = null;
     });
   }
@@ -52,10 +88,17 @@ class BackgroundSyncManager {
       return _hashTask!.future;
     }
 
+    onHashingStart?.call();
+
     _hashTask = runInIsolateGentle(
       computation: (ref) => ref.read(hashServiceProvider).hashAssets(),
     );
+
     return _hashTask!.whenComplete(() {
+      onHashingComplete?.call();
+      _hashTask = null;
+    }).catchError((error) {
+      onHashingError?.call(error.toString());
       _hashTask = null;
     });
   }
@@ -65,11 +108,34 @@ class BackgroundSyncManager {
       return _syncTask!.future;
     }
 
+    onRemoteSyncStart?.call();
+
     _syncTask = runInIsolateGentle(
       computation: (ref) => ref.read(syncStreamServiceProvider).sync(),
     );
     return _syncTask!.whenComplete(() {
+      onRemoteSyncComplete?.call();
+      _syncTask = null;
+    }).catchError((error) {
+      onRemoteSyncError?.call(error.toString());
       _syncTask = null;
     });
   }
+
+  Future<void> syncWebsocketBatch(List<dynamic> batchData) {
+    if (_syncWebsocketTask != null) {
+      return _syncWebsocketTask!.future;
+    }
+    _syncWebsocketTask = _handleWsAssetUploadReadyV1Batch(batchData);
+    return _syncWebsocketTask!.whenComplete(() {
+      _syncWebsocketTask = null;
+    });
+  }
 }
+
+Cancelable<void> _handleWsAssetUploadReadyV1Batch(
+  List<dynamic> batchData,
+) =>
+    runInIsolateGentle(
+      computation: (ref) => ref.read(syncStreamServiceProvider).handleWsAssetUploadReadyV1Batch(batchData),
+    );

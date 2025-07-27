@@ -43,12 +43,7 @@ class LogMessage {
 
   @override
   int get hashCode {
-    return message.hashCode ^
-        level.hashCode ^
-        createdAt.hashCode ^
-        logger.hashCode ^
-        error.hashCode ^
-        stack.hashCode;
+    return message.hashCode ^ level.hashCode ^ createdAt.hashCode ^ logger.hashCode ^ error.hashCode ^ stack.hashCode;
   }
 
   @override

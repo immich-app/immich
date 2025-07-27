@@ -71,15 +71,11 @@ class ControlBottomAppBar extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hasRemote =
-        selectionAssetState.hasRemote || selectionAssetState.hasMerged;
-    final hasLocal =
-        selectionAssetState.hasLocal || selectionAssetState.hasMerged;
-    final trashEnabled =
-        ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
+    final hasRemote = selectionAssetState.hasRemote || selectionAssetState.hasMerged;
+    final hasLocal = selectionAssetState.hasLocal || selectionAssetState.hasMerged;
+    final trashEnabled = ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
-    final sharedAlbums =
-        ref.watch(albumProvider).where((a) => a.shared).toList();
+    final sharedAlbums = ref.watch(albumProvider).where((a) => a.shared).toList();
     const bottomPadding = 0.24;
     final scrollController = useDraggableScrollController();
     final isInLockedView = ref.watch(inLockedViewProvider);
@@ -132,9 +128,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
     List<Widget> renderActionButtons() {
       return [
         ControlBoxButton(
-          iconData: Platform.isAndroid
-              ? Icons.share_rounded
-              : Icons.ios_share_rounded,
+          iconData: Platform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded,
           label: "share".tr(),
           onPressed: enabled ? () => onShare(true) : null,
         ),
@@ -146,16 +140,13 @@ class ControlBottomAppBar extends HookConsumerWidget {
           ),
         if (hasRemote && onArchive != null)
           ControlBoxButton(
-            iconData:
-                unarchive ? Icons.unarchive_outlined : Icons.archive_outlined,
+            iconData: unarchive ? Icons.unarchive_outlined : Icons.archive_outlined,
             label: (unarchive ? "unarchive" : "archive").tr(),
             onPressed: enabled ? onArchive : null,
           ),
         if (hasRemote && onFavorite != null)
           ControlBoxButton(
-            iconData: unfavorite
-                ? Icons.favorite_border_rounded
-                : Icons.favorite_rounded,
+            iconData: unfavorite ? Icons.favorite_border_rounded : Icons.favorite_rounded,
             label: (unfavorite ? "unfavorite" : "favorite").tr(),
             onPressed: enabled ? onFavorite : null,
           ),
@@ -174,11 +165,8 @@ class ControlBottomAppBar extends HookConsumerWidget {
             child: ControlBoxButton(
               iconData: Icons.delete_sweep_outlined,
               label: "delete".tr(),
-              onPressed: enabled
-                  ? () => handleRemoteDelete(!trashEnabled, onDelete!)
-                  : null,
-              onLongPressed:
-                  enabled ? () => showForceDeleteDialog(onDelete!) : null,
+              onPressed: enabled ? () => handleRemoteDelete(!trashEnabled, onDelete!) : null,
+              onLongPressed: enabled ? () => showForceDeleteDialog(onDelete!) : null,
             ),
           ),
         if (hasRemote && onDeleteServer != null && !isInLockedView)
@@ -264,18 +252,12 @@ class ControlBottomAppBar extends HookConsumerWidget {
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 100),
             child: ControlBoxButton(
-              iconData: isInLockedView
-                  ? Icons.lock_open_rounded
-                  : Icons.lock_outline_rounded,
-              label: isInLockedView
-                  ? "remove_from_locked_folder".tr()
-                  : "move_to_locked_folder".tr(),
+              iconData: isInLockedView ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
+              label: isInLockedView ? "remove_from_locked_folder".tr() : "move_to_locked_folder".tr(),
               onPressed: enabled ? onToggleLocked : null,
             ),
           ),
-        if (!selectionAssetState.hasLocal &&
-            selectionAssetState.selectedCount > 1 &&
-            onStack != null)
+        if (!selectionAssetState.hasLocal && selectionAssetState.selectedCount > 1 && onStack != null)
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 90),
             child: ControlBoxButton(

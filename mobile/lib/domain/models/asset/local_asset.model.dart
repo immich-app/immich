@@ -22,8 +22,7 @@ class LocalAsset extends BaseAsset {
   });
 
   @override
-  AssetState get storage =>
-      remoteId == null ? AssetState.local : AssetState.merged;
+  AssetState get storage => remoteId == null ? AssetState.local : AssetState.merged;
 
   @override
   String get heroTag => '${id}_${remoteId ?? checksum}';
@@ -45,6 +44,7 @@ class LocalAsset extends BaseAsset {
  }''';
   }
 
+  // Not checking for remoteId here
   @override
   bool operator ==(Object other) {
     if (other is! LocalAsset) return false;
@@ -53,8 +53,7 @@ class LocalAsset extends BaseAsset {
   }
 
   @override
-  int get hashCode =>
-      super.hashCode ^ id.hashCode ^ remoteId.hashCode ^ orientation.hashCode;
+  int get hashCode => super.hashCode ^ id.hashCode ^ remoteId.hashCode ^ orientation.hashCode;
 
   LocalAsset copyWith({
     String? id,

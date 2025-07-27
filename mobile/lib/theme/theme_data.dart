@@ -45,8 +45,7 @@ ThemeData getThemeData({
         fontWeight: FontWeight.w600,
         fontSize: 18,
       ),
-      backgroundColor:
-          isDark ? colorScheme.surfaceContainer : colorScheme.surface,
+      backgroundColor: isDark ? colorScheme.surfaceContainer : colorScheme.surface,
       foregroundColor: colorScheme.primary,
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -100,8 +99,7 @@ ThemeData getThemeData({
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor:
-          isDark ? colorScheme.surfaceContainer : colorScheme.surface,
+      backgroundColor: isDark ? colorScheme.surfaceContainer : colorScheme.surface,
       labelTextStyle: const WidgetStatePropertyAll(
         TextStyle(
           fontSize: 14,

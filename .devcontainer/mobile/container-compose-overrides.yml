@@ -4,6 +4,7 @@ services:
       target: dev-container-mobile
     environment:
       - IMMICH_SERVER_URL=http://127.0.0.1:2283/
+      - IMMICH_MEDIA_LOCATION=/data
     volumes: !override # bind mount host to /workspaces/immich
       - ..:/workspaces/immich
       - cli_node_modules:/workspaces/immich/cli/node_modules
@@ -11,8 +12,8 @@ services:
       - open_api_node_modules:/workspaces/immich/open-api/typescript-sdk/node_modules
       - server_node_modules:/workspaces/immich/server/node_modules
       - web_node_modules:/workspaces/immich/web/node_modules
-      - ${UPLOAD_LOCATION}/photos:/workspaces/immich/server/upload
-      - ${UPLOAD_LOCATION}/photos/upload:/workspaces/immich/server/upload/upload
+      - ${UPLOAD_LOCATION}/photos:/data
+      - ${UPLOAD_LOCATION}/photos/upload:/data/upload
       - /etc/localtime:/etc/localtime:ro
 
   database:

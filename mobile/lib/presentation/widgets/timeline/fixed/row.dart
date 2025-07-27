@@ -90,8 +90,7 @@ class RenderFixedRow extends RenderBox
     }
   }
 
-  double get intrinsicWidth =>
-      dimension * childCount + spacing * (childCount - 1);
+  double get intrinsicWidth => dimension * childCount + spacing * (childCount - 1);
 
   @override
   double computeMinIntrinsicWidth(double height) => intrinsicWidth;

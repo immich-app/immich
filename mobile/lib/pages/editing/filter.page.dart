@@ -34,18 +34,14 @@ class FilterImagePage extends HookWidget {
       ColorFilter filter,
     ) {
       final completer = Completer<ui.Image>();
-      final size =
-          Size(inputImage.width.toDouble(), inputImage.height.toDouble());
+      final size = Size(inputImage.width.toDouble(), inputImage.height.toDouble());
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(recorder);
 
       final paint = Paint()..colorFilter = filter;
       canvas.drawImage(inputImage, Offset.zero, paint);
 
-      recorder
-          .endRecording()
-          .toImage(size.width.round(), size.height.round())
-          .then((image) {
+      recorder.endRecording().toImage(size.width.round(), size.height.round()).then((image) {
         completer.complete(image);
       });
 
@@ -67,8 +63,7 @@ class FilterImagePage extends HookWidget {
       final uiImage = await completer.future;
 
       final filteredUiImage = await createFilteredImage(uiImage, filter);
-      final byteData =
-          await filteredUiImage.toByteData(format: ui.ImageByteFormat.png);
+      final byteData = await filteredUiImage.toByteData(format: ui.ImageByteFormat.png);
       final pngBytes = byteData!.buffer.asUint8List();
 
       return Image.memory(pngBytes, fit: BoxFit.contain);
@@ -87,8 +82,7 @@ class FilterImagePage extends HookWidget {
               size: 24,
             ),
             onPressed: () async {
-              final filteredImage =
-                  await applyFilterAndConvert(colorFilter.value);
+              final filteredImage = await applyFilterAndConvert(colorFilter.value);
               context.pushRoute(
                 EditImageRoute(
                   asset: asset,
@@ -165,9 +159,7 @@ class _FilterButton extends StatelessWidget {
               borderRadius: const BorderRadius.all(
                 Radius.circular(10),
               ),
-              border: isSelected
-                  ? Border.all(color: context.primaryColor, width: 3)
-                  : null,
+              border: isSelected ? Border.all(color: context.primaryColor, width: 3) : null,
             ),
             child: ClipRRect(
               borderRadius: const BorderRadius.all(

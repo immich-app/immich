@@ -57,14 +57,11 @@ void main() {
     final MockExifInfoRepository exifInfoRepository = MockExifInfoRepository();
     final MockIsarUserRepository userRepository = MockIsarUserRepository();
     final MockETagRepository eTagRepository = MockETagRepository();
-    final MockAlbumMediaRepository albumMediaRepository =
-        MockAlbumMediaRepository();
+    final MockAlbumMediaRepository albumMediaRepository = MockAlbumMediaRepository();
     final MockAlbumApiRepository albumApiRepository = MockAlbumApiRepository();
     final MockAppSettingService appSettingService = MockAppSettingService();
-    final MockLocalFilesManagerRepository localFilesManagerRepository =
-        MockLocalFilesManagerRepository();
-    final MockPartnerApiRepository partnerApiRepository =
-        MockPartnerApiRepository();
+    final MockLocalFilesManagerRepository localFilesManagerRepository = MockLocalFilesManagerRepository();
+    final MockPartnerApiRepository partnerApiRepository = MockPartnerApiRepository();
     final MockUserApiRepository userApiRepository = MockUserApiRepository();
     final MockPartnerRepository partnerRepository = MockPartnerRepository();
     final MockUserService userService = MockUserService();
@@ -115,13 +112,11 @@ void main() {
         userApiRepository,
       );
       when(() => userService.getMyUser()).thenReturn(owner);
-      when(() => eTagRepository.get(owner.id))
-          .thenAnswer((_) async => ETag(id: owner.id, time: DateTime.now()));
+      when(() => eTagRepository.get(owner.id)).thenAnswer((_) async => ETag(id: owner.id, time: DateTime.now()));
       when(() => eTagRepository.deleteByIds(["1"])).thenAnswer((_) async {});
       when(() => eTagRepository.upsertAll(any())).thenAnswer((_) async {});
       when(() => partnerRepository.getSharedWith()).thenAnswer((_) async => []);
-      when(() => userRepository.getAll(sortBy: SortUserBy.id))
-          .thenAnswer((_) async => [owner]);
+      when(() => userRepository.getAll(sortBy: SortUserBy.id)).thenAnswer((_) async => [owner]);
       when(() => userRepository.getAll()).thenAnswer((_) async => [owner]);
       when(
         () => assetRepository.getAll(
@@ -133,8 +128,7 @@ void main() {
           .thenAnswer((_) async => [initialAssets[3], null, null]);
       when(() => assetRepository.updateAll(any())).thenAnswer((_) async => []);
       when(() => assetRepository.deleteByIds(any())).thenAnswer((_) async {});
-      when(() => exifInfoRepository.updateAll(any()))
-          .thenAnswer((_) async => []);
+      when(() => exifInfoRepository.updateAll(any())).thenAnswer((_) async => []);
       when(() => assetRepository.transaction<void>(any())).thenAnswer(
         (call) => (call.positionalArguments.first as Function).call(),
       );
@@ -143,8 +137,7 @@ void main() {
       );
       when(() => userApiRepository.getAll()).thenAnswer((_) async => [owner]);
       registerFallbackValue(Direction.sharedByMe);
-      when(() => partnerApiRepository.getAll(any()))
-          .thenAnswer((_) async => []);
+      when(() => partnerApiRepository.getAll(any())).thenAnswer((_) async => []);
     });
     test('test inserting existing assets', () async {
       final List<Asset> remoteAssets = [
@@ -178,8 +171,7 @@ void main() {
       expect(c1, isTrue);
       final updatedAsset = initialAssets[3].updatedCopy(remoteAssets[3]);
       verify(
-        () => assetRepository
-            .updateAll([remoteAssets[4], remoteAssets[5], updatedAsset]),
+        () => assetRepository.updateAll([remoteAssets[4], remoteAssets[5], updatedAsset]),
       );
     });
 
@@ -244,8 +236,7 @@ void main() {
         return;
       });
       when(
-        () => assetRepository
-            .getAllByRemoteId(["2-1", "1-1"], state: AssetState.merged),
+        () => assetRepository.getAllByRemoteId(["2-1", "1-1"], state: AssetState.merged),
       ).thenAnswer((_) async => [initialAssets[2]]);
       when(() => assetRepository.getAllByOwnerIdChecksum(any(), any()))
           .thenAnswer((_) async => [initialAssets[0], null, null]); //afg

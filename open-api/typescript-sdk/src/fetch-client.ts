@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.135.3
+ * 1.136.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -1389,6 +1389,14 @@ export type SystemConfigMetadataDto = {
 export type SystemConfigNewVersionCheckDto = {
     enabled: boolean;
 };
+export type SystemConfigNightlyTasksDto = {
+    clusterNewFaces: boolean;
+    databaseCleanup: boolean;
+    generateMemories: boolean;
+    missingThumbnails: boolean;
+    startTime: string;
+    syncQuotaUsage: boolean;
+};
 export type SystemConfigNotificationsDto = {
     smtp: SystemConfigSmtpDto;
 };
@@ -1457,6 +1465,7 @@ export type SystemConfigDto = {
     map: SystemConfigMapDto;
     metadata: SystemConfigMetadataDto;
     newVersionCheck: SystemConfigNewVersionCheckDto;
+    nightlyTasks: SystemConfigNightlyTasksDto;
     notifications: SystemConfigNotificationsDto;
     oauth: SystemConfigOAuthDto;
     passwordLogin: SystemConfigPasswordLoginDto;
@@ -3364,6 +3373,15 @@ export function updateStack({ id, stackUpdateDto }: {
         body: stackUpdateDto
     })));
 }
+export function removeAssetFromStack({ assetId, id }: {
+    assetId: string;
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/stacks/${encodeURIComponent(id)}/assets/${encodeURIComponent(assetId)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
 export function deleteSyncAck({ syncAckDeleteDto }: {
     syncAckDeleteDto: SyncAckDeleteDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -3929,25 +3947,35 @@ export enum Permission {
     AssetRead = "asset.read",
     AssetUpdate = "asset.update",
     AssetDelete = "asset.delete",
+    AssetStatistics = "asset.statistics",
     AssetShare = "asset.share",
     AssetView = "asset.view",
     AssetDownload = "asset.download",
     AssetUpload = "asset.upload",
+    AssetReplace = "asset.replace",
     AlbumCreate = "album.create",
     AlbumRead = "album.read",
     AlbumUpdate = "album.update",
     AlbumDelete = "album.delete",
     AlbumStatistics = "album.statistics",
-    AlbumAddAsset = "album.addAsset",
-    AlbumRemoveAsset = "album.removeAsset",
     AlbumShare = "album.share",
     AlbumDownload = "album.download",
+    AlbumAssetCreate = "albumAsset.create",
+    AlbumAssetDelete = "albumAsset.delete",
+    AlbumUserCreate = "albumUser.create",
+    AlbumUserUpdate = "albumUser.update",
+    AlbumUserDelete = "albumUser.delete",
+    AuthChangePassword = "auth.changePassword",
     AuthDeviceDelete = "authDevice.delete",
     ArchiveRead = "archive.read",
+    DuplicateRead = "duplicate.read",
+    DuplicateDelete = "duplicate.delete",
     FaceCreate = "face.create",
     FaceRead = "face.read",
     FaceUpdate = "face.update",
     FaceDelete = "face.delete",
+    JobCreate = "job.create",
+    JobRead = "job.read",
     LibraryCreate = "library.create",
     LibraryRead = "library.read",
     LibraryUpdate = "library.update",
@@ -3959,6 +3987,9 @@ export enum Permission {
     MemoryRead = "memory.read",
     MemoryUpdate = "memory.update",
     MemoryDelete = "memory.delete",
+    MemoryStatistics = "memory.statistics",
+    MemoryAssetCreate = "memoryAsset.create",
+    MemoryAssetDelete = "memoryAsset.delete",
     NotificationCreate = "notification.create",
     NotificationRead = "notification.read",
     NotificationUpdate = "notification.update",
@@ -3974,6 +4005,16 @@ export enum Permission {
     PersonStatistics = "person.statistics",
     PersonMerge = "person.merge",
     PersonReassign = "person.reassign",
+    PinCodeCreate = "pinCode.create",
+    PinCodeUpdate = "pinCode.update",
+    PinCodeDelete = "pinCode.delete",
+    ServerAbout = "server.about",
+    ServerApkLinks = "server.apkLinks",
+    ServerStorage = "server.storage",
+    ServerStatistics = "server.statistics",
+    ServerLicenseRead = "serverLicense.read",
+    ServerLicenseUpdate = "serverLicense.update",
+    ServerLicenseDelete = "serverLicense.delete",
     SessionCreate = "session.create",
     SessionRead = "session.read",
     SessionUpdate = "session.update",
@@ -3987,6 +4028,10 @@ export enum Permission {
     StackRead = "stack.read",
     StackUpdate = "stack.update",
     StackDelete = "stack.delete",
+    SyncStream = "sync.stream",
+    SyncCheckpointRead = "syncCheckpoint.read",
+    SyncCheckpointUpdate = "syncCheckpoint.update",
+    SyncCheckpointDelete = "syncCheckpoint.delete",
     SystemConfigRead = "systemConfig.read",
     SystemConfigUpdate = "systemConfig.update",
     SystemMetadataRead = "systemMetadata.read",
@@ -3996,10 +4041,25 @@ export enum Permission {
     TagUpdate = "tag.update",
     TagDelete = "tag.delete",
     TagAsset = "tag.asset",
-    AdminUserCreate = "admin.user.create",
-    AdminUserRead = "admin.user.read",
-    AdminUserUpdate = "admin.user.update",
-    AdminUserDelete = "admin.user.delete"
+    UserRead = "user.read",
+    UserUpdate = "user.update",
+    UserLicenseCreate = "userLicense.create",
+    UserLicenseRead = "userLicense.read",
+    UserLicenseUpdate = "userLicense.update",
+    UserLicenseDelete = "userLicense.delete",
+    UserOnboardingRead = "userOnboarding.read",
+    UserOnboardingUpdate = "userOnboarding.update",
+    UserOnboardingDelete = "userOnboarding.delete",
+    UserPreferenceRead = "userPreference.read",
+    UserPreferenceUpdate = "userPreference.update",
+    UserProfileImageCreate = "userProfileImage.create",
+    UserProfileImageRead = "userProfileImage.read",
+    UserProfileImageUpdate = "userProfileImage.update",
+    UserProfileImageDelete = "userProfileImage.delete",
+    AdminUserCreate = "adminUser.create",
+    AdminUserRead = "adminUser.read",
+    AdminUserUpdate = "adminUser.update",
+    AdminUserDelete = "adminUser.delete"
 }
 export enum AssetMediaStatus {
     Created = "created",
@@ -4081,6 +4141,7 @@ export enum Error2 {
     NotFound = "not_found"
 }
 export enum SyncEntityType {
+    AuthUserV1 = "AuthUserV1",
     UserV1 = "UserV1",
     UserDeleteV1 = "UserDeleteV1",
     AssetV1 = "AssetV1",
@@ -4116,6 +4177,10 @@ export enum SyncEntityType {
     StackDeleteV1 = "StackDeleteV1",
     PersonV1 = "PersonV1",
     PersonDeleteV1 = "PersonDeleteV1",
+    AssetFaceV1 = "AssetFaceV1",
+    AssetFaceDeleteV1 = "AssetFaceDeleteV1",
+    UserMetadataV1 = "UserMetadataV1",
+    UserMetadataDeleteV1 = "UserMetadataDeleteV1",
     SyncAckV1 = "SyncAckV1",
     SyncResetV1 = "SyncResetV1"
 }
@@ -4127,6 +4192,7 @@ export enum SyncRequestType {
     AlbumAssetExifsV1 = "AlbumAssetExifsV1",
     AssetsV1 = "AssetsV1",
     AssetExifsV1 = "AssetExifsV1",
+    AuthUsersV1 = "AuthUsersV1",
     MemoriesV1 = "MemoriesV1",
     MemoryToAssetsV1 = "MemoryToAssetsV1",
     PartnersV1 = "PartnersV1",
@@ -4135,7 +4201,9 @@ export enum SyncRequestType {
     PartnerStacksV1 = "PartnerStacksV1",
     StacksV1 = "StacksV1",
     UsersV1 = "UsersV1",
-    PeopleV1 = "PeopleV1"
+    PeopleV1 = "PeopleV1",
+    AssetFacesV1 = "AssetFacesV1",
+    UserMetadataV1 = "UserMetadataV1"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",

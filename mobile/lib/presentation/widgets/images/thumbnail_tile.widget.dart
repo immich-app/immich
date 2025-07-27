@@ -15,6 +15,7 @@ class ThumbnailTile extends ConsumerWidget {
     this.fit = BoxFit.cover,
     this.showStorageIndicator = true,
     this.lockSelection = false,
+    this.heroOffset,
     super.key,
   });
 
@@ -23,14 +24,14 @@ class ThumbnailTile extends ConsumerWidget {
   final BoxFit fit;
   final bool showStorageIndicator;
   final bool lockSelection;
+  final int? heroOffset;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+    final heroIndex = heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
 
-    final assetContainerColor = context.isDarkTheme
-        ? context.primaryColor.darken(amount: 0.4)
-        : context.primaryColor.lighten(amount: 0.75);
+    final assetContainerColor =
+        context.isDarkTheme ? context.primaryColor.darken(amount: 0.4) : context.primaryColor.lighten(amount: 0.75);
 
     final isSelected = ref.watch(
       multiSelectProvider.select(
@@ -53,6 +54,8 @@ class ThumbnailTile extends ConsumerWidget {
               )
             : const BoxDecoration();
 
+    final hasStack = asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
+
     return Stack(
       children: [
         AnimatedContainer(
@@ -60,14 +63,13 @@ class ThumbnailTile extends ConsumerWidget {
           curve: Curves.decelerate,
           decoration: borderStyle,
           child: ClipRRect(
-            borderRadius: isSelected || lockSelection
-                ? const BorderRadius.all(Radius.circular(15.0))
-                : BorderRadius.zero,
+            borderRadius:
+                isSelected || lockSelection ? const BorderRadius.all(Radius.circular(15.0)) : BorderRadius.zero,
             child: Stack(
               children: [
                 Positioned.fill(
                   child: Hero(
-                    tag: '${asset.heroTag}_$heroOffset',
+                    tag: '${asset.heroTag}_$heroIndex',
                     child: Thumbnail(
                       asset: asset,
                       fit: fit,
@@ -75,6 +77,17 @@ class ThumbnailTile extends ConsumerWidget {
                     ),
                   ),
                 ),
+                if (hasStack)
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        right: 10.0,
+                        top: asset.isVideo ? 24.0 : 6.0,
+                      ),
+                      child: const _TileOverlayIcon(Icons.burst_mode_rounded),
+                    ),
+                  ),
                 if (asset.isVideo)
                   Align(
                     alignment: Alignment.topRight,
@@ -127,9 +140,7 @@ class ThumbnailTile extends ConsumerWidget {
               child: _SelectionIndicator(
                 isSelected: isSelected,
                 isLocked: lockSelection,
-                color: lockSelection
-                    ? context.colorScheme.surfaceContainerHighest
-                    : assetContainerColor,
+                color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor,
               ),
             ),
           ),
@@ -192,8 +203,8 @@ class _VideoIndicator extends StatelessWidget {
       spacing: 3,
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.end,
-      // CrossAxisAlignment.end looks more centered vertically than CrossAxisAlignment.center
-      crossAxisAlignment: CrossAxisAlignment.end,
+      // CrossAxisAlignment.start looks more centered vertically than CrossAxisAlignment.center
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           duration.format(),

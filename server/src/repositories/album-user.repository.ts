@@ -18,16 +18,16 @@ export class AlbumUserRepository {
   @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }] })
   create(albumUser: Insertable<AlbumUserTable>) {
     return this.db
-      .insertInto('albums_shared_users_users')
+      .insertInto('album_user')
       .values(albumUser)
       .returning(['usersId', 'albumsId', 'role'])
       .executeTakeFirstOrThrow();
   }
 
-  @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }, { role: AlbumUserRole.VIEWER }] })
+  @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }, { role: AlbumUserRole.Viewer }] })
   update({ usersId, albumsId }: AlbumPermissionId, dto: Updateable<AlbumUserTable>) {
     return this.db
-      .updateTable('albums_shared_users_users')
+      .updateTable('album_user')
       .set(dto)
       .where('usersId', '=', usersId)
       .where('albumsId', '=', albumsId)
@@ -37,10 +37,6 @@ export class AlbumUserRepository {
 
   @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }] })
   async delete({ usersId, albumsId }: AlbumPermissionId): Promise<void> {
-    await this.db
-      .deleteFrom('albums_shared_users_users')
-      .where('usersId', '=', usersId)
-      .where('albumsId', '=', albumsId)
-      .execute();
+    await this.db.deleteFrom('album_user').where('usersId', '=', usersId).where('albumsId', '=', albumsId).execute();
   }
 }

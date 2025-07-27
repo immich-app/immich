@@ -1,15 +1,7 @@
 import 'dart:async';
 
-sealed class Event {
+class Event {
   const Event();
-}
-
-class TimelineReloadEvent extends Event {
-  const TimelineReloadEvent();
-}
-
-class ViewerOpenBottomSheetEvent extends Event {
-  const ViewerOpenBottomSheetEvent();
 }
 
 class EventStream {
@@ -17,8 +9,7 @@ class EventStream {
 
   static final EventStream shared = EventStream._();
 
-  final StreamController<Event> _controller =
-      StreamController<Event>.broadcast();
+  final StreamController<Event> _controller = StreamController<Event>.broadcast();
 
   void emit(Event event) {
     _controller.add(event);

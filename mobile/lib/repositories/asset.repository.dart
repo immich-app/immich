@@ -11,8 +11,7 @@ import 'package:isar/isar.dart';
 
 enum AssetSort { checksum, ownerIdChecksum }
 
-final assetRepositoryProvider =
-    Provider((ref) => AssetRepository(ref.watch(dbProvider)));
+final assetRepositoryProvider = Provider((ref) => AssetRepository(ref.watch(dbProvider)));
 
 class AssetRepository extends DatabaseRepository {
   const AssetRepository(super.db);
@@ -29,8 +28,7 @@ class AssetRepository extends DatabaseRepository {
     if (notOwnedBy.length == 1) {
       query = query.not().ownerIdEqualTo(isarUserIds.first);
     } else if (notOwnedBy.isNotEmpty) {
-      query =
-          query.not().anyOf(isarUserIds, (q, int id) => q.ownerIdEqualTo(id));
+      query = query.not().anyOf(isarUserIds, (q, int id) => q.ownerIdEqualTo(id));
     }
     if (ownerId != null) {
       query = query.ownerIdEqualTo(fastHash(ownerId));
@@ -44,8 +42,7 @@ class AssetRepository extends DatabaseRepository {
       };
     }
 
-    final QueryBuilder<Asset, Asset, QAfterSortBy> sortedQuery =
-        switch (sortBy) {
+    final QueryBuilder<Asset, Asset, QAfterSortBy> sortedQuery = switch (sortBy) {
       null => query.noOp(),
       AssetSort.checksum => query.sortByChecksum(),
       AssetSort.ownerIdChecksum => query.sortByOwnerId().thenByChecksum(),
@@ -93,31 +90,18 @@ class AssetRepository extends DatabaseRepository {
   }) {
     final baseQuery = db.assets.where();
     final isarUserIds = fastHash(ownerId);
-    final QueryBuilder<Asset, Asset, QAfterFilterCondition> filteredQuery =
-        switch (state) {
+    final QueryBuilder<Asset, Asset, QAfterFilterCondition> filteredQuery = switch (state) {
       null => baseQuery.ownerIdEqualToAnyChecksum(isarUserIds).noOp(),
-      AssetState.local => baseQuery
-          .remoteIdIsNull()
-          .filter()
-          .localIdIsNotNull()
-          .ownerIdEqualTo(isarUserIds),
-      AssetState.remote => baseQuery
-          .localIdIsNull()
-          .filter()
-          .remoteIdIsNotNull()
-          .ownerIdEqualTo(isarUserIds),
-      AssetState.merged => baseQuery
-          .ownerIdEqualToAnyChecksum(isarUserIds)
-          .filter()
-          .remoteIdIsNotNull()
-          .localIdIsNotNull(),
+      AssetState.local => baseQuery.remoteIdIsNull().filter().localIdIsNotNull().ownerIdEqualTo(isarUserIds),
+      AssetState.remote => baseQuery.localIdIsNull().filter().remoteIdIsNotNull().ownerIdEqualTo(isarUserIds),
+      AssetState.merged =>
+        baseQuery.ownerIdEqualToAnyChecksum(isarUserIds).filter().remoteIdIsNotNull().localIdIsNotNull(),
     };
 
     final QueryBuilder<Asset, Asset, QAfterSortBy> query = switch (sortBy) {
       null => filteredQuery.noOp(),
       AssetSort.checksum => filteredQuery.sortByChecksum(),
-      AssetSort.ownerIdChecksum =>
-        filteredQuery.sortByOwnerId().thenByChecksum(),
+      AssetSort.ownerIdChecksum => filteredQuery.sortByOwnerId().thenByChecksum(),
     };
 
     return limit == null ? query.findAll() : query.limit(limit).findAll();
@@ -135,15 +119,11 @@ class AssetRepository extends DatabaseRepository {
     int limit = 100,
   }) {
     final baseQuery = db.assets.where();
-    final QueryBuilder<Asset, Asset, QAfterFilterCondition> query =
-        switch (state) {
+    final QueryBuilder<Asset, Asset, QAfterFilterCondition> query = switch (state) {
       null => baseQuery.noOp(),
-      AssetState.local =>
-        baseQuery.remoteIdIsNull().filter().localIdIsNotNull(),
-      AssetState.remote =>
-        baseQuery.localIdIsNull().filter().remoteIdIsNotNull(),
-      AssetState.merged =>
-        baseQuery.localIdIsNotNull().filter().remoteIdIsNotNull(),
+      AssetState.local => baseQuery.remoteIdIsNull().filter().localIdIsNotNull(),
+      AssetState.remote => baseQuery.localIdIsNull().filter().remoteIdIsNotNull(),
+      AssetState.merged => baseQuery.localIdIsNotNull().filter().remoteIdIsNotNull(),
     };
     return _getMatchesImpl(query, fastHash(ownerId), assets, limit);
   }
@@ -154,12 +134,10 @@ class AssetRepository extends DatabaseRepository {
   }
 
   Future<void> upsertDuplicatedAssets(Iterable<String> duplicatedAssets) => txn(
-        () => db.duplicatedAssets
-            .putAll(duplicatedAssets.map(DuplicatedAsset.new).toList()),
+        () => db.duplicatedAssets.putAll(duplicatedAssets.map(DuplicatedAsset.new).toList()),
       );
 
-  Future<List<String>> getAllDuplicatedAssetIds() =>
-      db.duplicatedAssets.where().idProperty().findAll();
+  Future<List<String>> getAllDuplicatedAssetIds() => db.duplicatedAssets.where().idProperty().findAll();
 
   Future<Asset?> getByOwnerIdChecksum(int ownerId, String checksum) =>
       db.assets.getByOwnerIdChecksum(ownerId, checksum);
@@ -170,8 +148,7 @@ class AssetRepository extends DatabaseRepository {
   ) =>
       db.assets.getAllByOwnerIdChecksum(ownerIds, checksums);
 
-  Future<List<Asset>> getAllLocal() =>
-      db.assets.where().localIdIsNotNull().findAll();
+  Future<List<Asset>> getAllLocal() => db.assets.where().localIdIsNotNull().findAll();
 
   Future<void> deleteAllByRemoteId(List<String> ids, {AssetState? state}) =>
       txn(() => _getAllByRemoteIdImpl(ids, state).deleteAll());

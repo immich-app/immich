@@ -6746,6 +6746,50 @@
         ]
       }
     },
+    "/stacks/{id}/assets/{assetId}": {
+      "delete": {
+        "operationId": "removeAssetFromStack",
+        "parameters": [
+          {
+            "name": "assetId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      }
+    },
     "/sync/ack": {
       "delete": {
         "operationId": "deleteSyncAck",
@@ -8619,7 +8663,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.135.3",
+    "version": "1.136.0",
     "contact": {}
   },
   "tags": [],
@@ -11716,25 +11760,35 @@
           "asset.read",
           "asset.update",
           "asset.delete",
+          "asset.statistics",
           "asset.share",
           "asset.view",
           "asset.download",
           "asset.upload",
+          "asset.replace",
           "album.create",
           "album.read",
           "album.update",
           "album.delete",
           "album.statistics",
-          "album.addAsset",
-          "album.removeAsset",
           "album.share",
           "album.download",
+          "albumAsset.create",
+          "albumAsset.delete",
+          "albumUser.create",
+          "albumUser.update",
+          "albumUser.delete",
+          "auth.changePassword",
           "authDevice.delete",
           "archive.read",
+          "duplicate.read",
+          "duplicate.delete",
           "face.create",
           "face.read",
           "face.update",
           "face.delete",
+          "job.create",
+          "job.read",
           "library.create",
           "library.read",
           "library.update",
@@ -11746,6 +11800,9 @@
           "memory.read",
           "memory.update",
           "memory.delete",
+          "memory.statistics",
+          "memoryAsset.create",
+          "memoryAsset.delete",
           "notification.create",
           "notification.read",
           "notification.update",
@@ -11761,6 +11818,16 @@
           "person.statistics",
           "person.merge",
           "person.reassign",
+          "pinCode.create",
+          "pinCode.update",
+          "pinCode.delete",
+          "server.about",
+          "server.apkLinks",
+          "server.storage",
+          "server.statistics",
+          "serverLicense.read",
+          "serverLicense.update",
+          "serverLicense.delete",
           "session.create",
           "session.read",
           "session.update",
@@ -11774,6 +11841,10 @@
           "stack.read",
           "stack.update",
           "stack.delete",
+          "sync.stream",
+          "syncCheckpoint.read",
+          "syncCheckpoint.update",
+          "syncCheckpoint.delete",
           "systemConfig.read",
           "systemConfig.update",
           "systemMetadata.read",
@@ -11783,10 +11854,25 @@
           "tag.update",
           "tag.delete",
           "tag.asset",
-          "admin.user.create",
-          "admin.user.read",
-          "admin.user.update",
-          "admin.user.delete"
+          "user.read",
+          "user.update",
+          "userLicense.create",
+          "userLicense.read",
+          "userLicense.update",
+          "userLicense.delete",
+          "userOnboarding.read",
+          "userOnboarding.update",
+          "userOnboarding.delete",
+          "userPreference.read",
+          "userPreference.update",
+          "userProfileImage.create",
+          "userProfileImage.read",
+          "userProfileImage.update",
+          "userProfileImage.delete",
+          "adminUser.create",
+          "adminUser.read",
+          "adminUser.update",
+          "adminUser.delete"
         ],
         "type": "string"
       },
@@ -13788,6 +13874,65 @@
         ],
         "type": "object"
       },
+      "SyncAssetFaceDeleteV1": {
+        "properties": {
+          "assetFaceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetFaceId"
+        ],
+        "type": "object"
+      },
+      "SyncAssetFaceV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "boundingBoxX1": {
+            "type": "integer"
+          },
+          "boundingBoxX2": {
+            "type": "integer"
+          },
+          "boundingBoxY1": {
+            "type": "integer"
+          },
+          "boundingBoxY2": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "imageHeight": {
+            "type": "integer"
+          },
+          "imageWidth": {
+            "type": "integer"
+          },
+          "personId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "sourceType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "boundingBoxX1",
+          "boundingBoxX2",
+          "boundingBoxY1",
+          "boundingBoxY2",
+          "id",
+          "imageHeight",
+          "imageWidth",
+          "personId",
+          "sourceType"
+        ],
+        "type": "object"
+      },
       "SyncAssetV1": {
         "properties": {
           "checksum": {
@@ -13818,6 +13963,10 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "livePhotoVideoId": {
+            "nullable": true,
+            "type": "string"
+          },
           "localDateTime": {
             "format": "date-time",
             "nullable": true,
@@ -13827,6 +13976,10 @@
             "type": "string"
           },
           "ownerId": {
+            "type": "string"
+          },
+          "stackId": {
+            "nullable": true,
             "type": "string"
           },
           "thumbhash": {
@@ -13856,17 +14009,90 @@
           "fileModifiedAt",
           "id",
           "isFavorite",
+          "livePhotoVideoId",
           "localDateTime",
           "originalFileName",
           "ownerId",
+          "stackId",
           "thumbhash",
           "type",
           "visibility"
         ],
         "type": "object"
       },
+      "SyncAuthUserV1": {
+        "properties": {
+          "avatarColor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "nullable": true
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "hasProfileImage": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "oauthId": {
+            "type": "string"
+          },
+          "pinCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "quotaSizeInBytes": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "quotaUsageInBytes": {
+            "type": "integer"
+          },
+          "storageLabel": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "avatarColor",
+          "deletedAt",
+          "email",
+          "hasProfileImage",
+          "id",
+          "isAdmin",
+          "name",
+          "oauthId",
+          "pinCode",
+          "profileChangedAt",
+          "quotaSizeInBytes",
+          "quotaUsageInBytes",
+          "storageLabel"
+        ],
+        "type": "object"
+      },
       "SyncEntityType": {
         "enum": [
+          "AuthUserV1",
           "UserV1",
           "UserDeleteV1",
           "AssetV1",
@@ -13902,6 +14128,10 @@
           "StackDeleteV1",
           "PersonV1",
           "PersonDeleteV1",
+          "AssetFaceV1",
+          "AssetFaceDeleteV1",
+          "UserMetadataV1",
+          "UserMetadataDeleteV1",
           "SyncAckV1",
           "SyncResetV1"
         ],
@@ -14097,9 +14327,6 @@
           "ownerId": {
             "type": "string"
           },
-          "thumbnailPath": {
-            "type": "string"
-          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -14115,7 +14342,6 @@
           "isHidden",
           "name",
           "ownerId",
-          "thumbnailPath",
           "updatedAt"
         ],
         "type": "object"
@@ -14129,6 +14355,7 @@
           "AlbumAssetExifsV1",
           "AssetsV1",
           "AssetExifsV1",
+          "AuthUsersV1",
           "MemoriesV1",
           "MemoryToAssetsV1",
           "PartnersV1",
@@ -14137,7 +14364,9 @@
           "PartnerStacksV1",
           "StacksV1",
           "UsersV1",
-          "PeopleV1"
+          "PeopleV1",
+          "AssetFacesV1",
+          "UserMetadataV1"
         ],
         "type": "string"
       },
@@ -14213,8 +14442,58 @@
         ],
         "type": "object"
       },
+      "SyncUserMetadataDeleteV1": {
+        "properties": {
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMetadataKey"
+              }
+            ]
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "userId"
+        ],
+        "type": "object"
+      },
+      "SyncUserMetadataV1": {
+        "properties": {
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMetadataKey"
+              }
+            ]
+          },
+          "userId": {
+            "type": "string"
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "key",
+          "userId",
+          "value"
+        ],
+        "type": "object"
+      },
       "SyncUserV1": {
         "properties": {
+          "avatarColor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "nullable": true
+          },
           "deletedAt": {
             "format": "date-time",
             "nullable": true,
@@ -14231,6 +14510,7 @@
           }
         },
         "required": [
+          "avatarColor",
           "deletedAt",
           "email",
           "id",
@@ -14281,6 +14561,9 @@
           "newVersionCheck": {
             "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
           },
+          "nightlyTasks": {
+            "$ref": "#/components/schemas/SystemConfigNightlyTasksDto"
+          },
           "notifications": {
             "$ref": "#/components/schemas/SystemConfigNotificationsDto"
           },
@@ -14323,6 +14606,7 @@
           "map",
           "metadata",
           "newVersionCheck",
+          "nightlyTasks",
           "notifications",
           "oauth",
           "passwordLogin",
@@ -14750,6 +15034,37 @@
         },
         "required": [
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigNightlyTasksDto": {
+        "properties": {
+          "clusterNewFaces": {
+            "type": "boolean"
+          },
+          "databaseCleanup": {
+            "type": "boolean"
+          },
+          "generateMemories": {
+            "type": "boolean"
+          },
+          "missingThumbnails": {
+            "type": "boolean"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "syncQuotaUsage": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "clusterNewFaces",
+          "databaseCleanup",
+          "generateMemories",
+          "missingThumbnails",
+          "startTime",
+          "syncQuotaUsage"
         ],
         "type": "object"
       },
@@ -15866,6 +16181,14 @@
           "licenseKey"
         ],
         "type": "object"
+      },
+      "UserMetadataKey": {
+        "enum": [
+          "preferences",
+          "license",
+          "onboarding"
+        ],
+        "type": "string"
       },
       "UserPreferencesResponseDto": {
         "properties": {

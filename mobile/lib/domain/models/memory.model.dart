@@ -39,8 +39,7 @@ class MemoryData {
 
   String toJson() => json.encode(toMap());
 
-  factory MemoryData.fromJson(String source) =>
-      MemoryData.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory MemoryData.fromJson(String source) => MemoryData.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() => 'MemoryData(year: $year)';
@@ -124,7 +123,21 @@ class DriftMemory {
 
   @override
   String toString() {
-    return 'Memory(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, ownerId: $ownerId, type: $type, data: $data, isSaved: $isSaved, memoryAt: $memoryAt, seenAt: $seenAt, showAt: $showAt, hideAt: $hideAt, assets: $assets)';
+    return '''Memory {
+    id: $id,
+    createdAt: $createdAt,
+    updatedAt: $updatedAt,
+    deletedAt: ${deletedAt ?? "<NA>"},
+    ownerId: $ownerId,
+    type: $type,
+    data: $data,
+    isSaved: $isSaved,
+    memoryAt: $memoryAt,
+    seenAt: ${seenAt ?? "<NA>"},
+    showAt: ${showAt ?? "<NA>"},
+    hideAt: ${hideAt ?? "<NA>"},
+    assets: $assets
+}''';
   }
 
   @override

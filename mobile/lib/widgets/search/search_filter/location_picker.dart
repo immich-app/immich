@@ -15,8 +15,7 @@ class LocationPicker extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final countryTextController =
-        useTextEditingController(text: filter?.country);
+    final countryTextController = useTextEditingController(text: filter?.country);
     final stateTextController = useTextEditingController(text: filter?.state);
     final cityTextController = useTextEditingController(text: filter?.city);
 

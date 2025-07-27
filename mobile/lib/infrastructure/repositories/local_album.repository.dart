@@ -5,9 +5,10 @@ import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.d
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/utils/database.utils.dart';
 import 'package:platform/platform.dart';
 
-enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum }
+enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum, name, assetCount }
 
 class DriftLocalAlbumRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -36,10 +37,10 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
         orderings.add(
           switch (sort) {
             SortLocalAlbumsBy.id => OrderingTerm.asc(_db.localAlbumEntity.id),
-            SortLocalAlbumsBy.backupSelection =>
-              OrderingTerm.asc(_db.localAlbumEntity.backupSelection),
-            SortLocalAlbumsBy.isIosSharedAlbum =>
-              OrderingTerm.asc(_db.localAlbumEntity.isIosSharedAlbum),
+            SortLocalAlbumsBy.backupSelection => OrderingTerm.asc(_db.localAlbumEntity.backupSelection),
+            SortLocalAlbumsBy.isIosSharedAlbum => OrderingTerm.asc(_db.localAlbumEntity.isIosSharedAlbum),
+            SortLocalAlbumsBy.name => OrderingTerm.asc(_db.localAlbumEntity.name),
+            SortLocalAlbumsBy.assetCount => OrderingTerm.desc(assetCount),
           },
         );
       }
@@ -48,9 +49,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
 
     return query
         .map(
-          (row) => row
-              .readTable(_db.localAlbumEntity)
-              .toDto(assetCount: row.read(assetCount) ?? 0),
+          (row) => row.readTable(_db.localAlbumEntity).toDto(assetCount: row.read(assetCount) ?? 0),
         )
         .get();
   }
@@ -59,15 +58,11 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
         // Remove all assets that are only in this particular album
         // We cannot remove all assets in the album because they might be in other albums in iOS
         // That is not the case on Android since asset <-> album has one:one mapping
-        final assetsToDelete = _platform.isIOS
-            ? await _getUniqueAssetsInAlbum(albumId)
-            : await getAssetIds(albumId);
+        final assetsToDelete = _platform.isIOS ? await _getUniqueAssetsInAlbum(albumId) : await getAssetIds(albumId);
         await _deleteAssets(assetsToDelete);
 
         // All the other assets that are still associated will be unlinked automatically on-cascade
-        await _db.managers.localAlbumEntity
-            .filter((a) => a.id.equals(albumId))
-            .delete();
+        await _db.managers.localAlbumEntity.filter((a) => a.id.equals(albumId)).delete();
       });
 
   Future<void> syncDeletes(
@@ -85,13 +80,11 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
         ..join([
           innerJoin(
             _db.localAlbumEntity,
-            _db.localAlbumAssetEntity.albumId
-                .equalsExp(_db.localAlbumEntity.id),
+            _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
           ),
         ]);
       subQuery.where(
-        _db.localAlbumEntity.id.equals(albumId) &
-            _db.localAlbumAssetEntity.assetId.isNotIn(assetIdsToKeep),
+        _db.localAlbumEntity.id.equals(albumId) & _db.localAlbumAssetEntity.assetId.isNotIn(assetIdsToKeep),
       );
       return localAsset.id.isInQuery(subQuery);
     });
@@ -112,8 +105,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     );
 
     return _db.transaction(() async {
-      await _db.localAlbumEntity
-          .insertOne(companion, onConflict: DoUpdate((_) => companion));
+      await _db.localAlbumEntity.insertOne(companion, onConflict: DoUpdate((_) => companion));
       if (toUpsert.isNotEmpty) {
         await _upsertAssets(toUpsert);
         await _db.localAlbumAssetEntity.insertAll(
@@ -132,9 +124,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
 
   Future<void> updateAll(Iterable<LocalAlbum> albums) {
     return _db.transaction(() async {
-      await _db.localAlbumEntity
-          .update()
-          .write(const LocalAlbumEntityCompanion(marker_: Value(true)));
+      await _db.localAlbumEntity.update().write(const LocalAlbumEntityCompanion(marker_: Value(true)));
 
       await _db.batch((batch) {
         for (final album in albums) {
@@ -150,7 +140,15 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           batch.insert(
             _db.localAlbumEntity,
             companion,
-            onConflict: DoUpdate((_) => companion),
+            onConflict: DoUpdate(
+              (old) => LocalAlbumEntityCompanion(
+                id: companion.id,
+                name: companion.name,
+                updatedAt: companion.updatedAt,
+                isIosSharedAlbum: companion.isIosSharedAlbum,
+                marker_: companion.marker_,
+              ),
+            ),
           );
         }
       });
@@ -166,8 +164,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
             ..join([
               innerJoin(
                 _db.localAlbumEntity,
-                _db.localAlbumAssetEntity.albumId
-                    .equalsExp(_db.localAlbumEntity.id),
+                _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
               ),
             ]);
           subQuery.where(_db.localAlbumEntity.marker_.isNotNull());
@@ -191,18 +188,14 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     )
       ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
       ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)]);
-    return query
-        .map((row) => row.readTable(_db.localAssetEntity).toDto())
-        .get();
+    return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
   }
 
   Future<List<String>> getAssetIds(String albumId) {
     final query = _db.localAlbumAssetEntity.selectOnly()
       ..addColumns([_db.localAlbumAssetEntity.assetId])
       ..where(_db.localAlbumAssetEntity.albumId.equals(albumId));
-    return query
-        .map((row) => row.read(_db.localAlbumAssetEntity.assetId)!)
-        .get();
+    return query.map((row) => row.read(_db.localAlbumAssetEntity.assetId)!).get();
   }
 
   Future<void> processDelta({
@@ -222,9 +215,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
         assetAlbums.cast<String, List<Object?>>().forEach((assetId, albumIds) {
           batch.deleteWhere(
             _db.localAlbumAssetEntity,
-            (f) =>
-                f.albumId.isNotIn(albumIds.cast<String?>().nonNulls) &
-                f.assetId.equals(assetId),
+            (f) => f.albumId.isNotIn(albumIds.cast<String?>().nonNulls) & f.assetId.equals(assetId),
           );
         });
       });
@@ -255,14 +246,11 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       ],
     )
       ..where(
-        _db.localAlbumAssetEntity.albumId.equals(albumId) &
-            _db.localAssetEntity.checksum.isNull(),
+        _db.localAlbumAssetEntity.albumId.equals(albumId) & _db.localAssetEntity.checksum.isNull(),
       )
       ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)]);
 
-    return query
-        .map((row) => row.readTable(_db.localAssetEntity).toDto())
-        .get();
+    return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
   }
 
   Future<void> _upsertAssets(Iterable<LocalAsset> localAssets) {
@@ -346,8 +334,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       ..addColumns([assetId])
       ..groupBy(
         [assetId],
-        having: _db.localAlbumAssetEntity.albumId.count().equals(1) &
-            _db.localAlbumAssetEntity.albumId.equals(albumId),
+        having: _db.localAlbumAssetEntity.albumId.count().equals(1) & _db.localAlbumAssetEntity.albumId.equals(albumId),
       );
 
     return query.map((row) => row.read(assetId)!).get();
@@ -374,37 +361,12 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)])
       ..limit(1);
 
-    final results = await query
-        .map((row) => row.readTable(_db.localAssetEntity).toDto())
-        .get();
+    final results = await query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
 
     return results.isNotEmpty ? results.first : null;
   }
-}
 
-extension on LocalAlbumEntityData {
-  LocalAlbum toDto({int assetCount = 0}) {
-    return LocalAlbum(
-      id: id,
-      name: name,
-      updatedAt: updatedAt,
-      assetCount: assetCount,
-      backupSelection: backupSelection,
-    );
-  }
-}
-
-extension on LocalAssetEntityData {
-  LocalAsset toDto() {
-    return LocalAsset(
-      id: id,
-      name: name,
-      checksum: checksum,
-      type: type,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      durationInSeconds: durationInSeconds,
-      isFavorite: isFavorite,
-    );
+  Future<int> getCount() {
+    return _db.managers.localAlbumEntity.count();
   }
 }

@@ -6,11 +6,14 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/partner_detail_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 
 @RoutePage()
 class DriftPartnerDetailPage extends StatelessWidget {
-  final UserDto partner;
+  final PartnerUserDto partner;
 
   const DriftPartnerDetailPage({
     super.key,
@@ -23,8 +26,7 @@ class DriftPartnerDetailPage extends StatelessWidget {
       overrides: [
         timelineServiceProvider.overrideWith(
           (ref) {
-            final timelineService =
-                ref.watch(timelineFactoryProvider).remoteAssets(partner.id);
+            final timelineService = ref.watch(timelineFactoryProvider).remoteAssets(partner.id);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },
@@ -35,12 +37,7 @@ class DriftPartnerDetailPage extends StatelessWidget {
           title: partner.name,
           icon: Icons.person_outline,
         ),
-        topSliverWidget: _InfoBox(
-          onTap: () => {
-            // TODO: Create DriftUserProvider/DriftUserService to handle this action
-          },
-          inTimeline: partner.inTimeline,
-        ),
+        topSliverWidget: _InfoBox(partner: partner),
         topSliverWidgetHeight: 110,
         bottomSheet: const PartnerDetailBottomSheet(),
       ),
@@ -48,14 +45,52 @@ class DriftPartnerDetailPage extends StatelessWidget {
   }
 }
 
-class _InfoBox extends StatelessWidget {
-  final VoidCallback onTap;
-  final bool inTimeline;
+class _InfoBox extends ConsumerStatefulWidget {
+  final PartnerUserDto partner;
 
   const _InfoBox({
-    required this.onTap,
-    required this.inTimeline,
+    required this.partner,
   });
+
+  @override
+  ConsumerState<_InfoBox> createState() => _InfoBoxState();
+}
+
+class _InfoBoxState extends ConsumerState<_InfoBox> {
+  bool _inTimeline = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _inTimeline = widget.partner.inTimeline;
+  }
+
+  _toggleInTimeline() async {
+    final user = ref.read(currentUserProvider);
+    if (user == null) {
+      return;
+    }
+
+    try {
+      await ref.read(partnerUsersProvider.notifier).toggleShowInTimeline(
+            widget.partner.id,
+            user.id,
+          );
+
+      setState(() {
+        _inTimeline = !_inTimeline;
+      });
+    } catch (error, stack) {
+      debugPrint("Failed to toggle in timeline: $error $stack");
+      ImmichToast.show(
+        context: context,
+        toastType: ToastType.error,
+        durationInSecond: 1,
+        msg: "Failed to toggle the timeline setting",
+      );
+      return;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,8 +131,8 @@ class _InfoBox extends StatelessWidget {
                   style: context.textTheme.bodyMedium,
                 ),
                 trailing: Switch(
-                  value: inTimeline,
-                  onChanged: (_) => onTap(),
+                  value: _inTimeline,
+                  onChanged: (_) => _toggleInTimeline(),
                 ),
               ),
             ),

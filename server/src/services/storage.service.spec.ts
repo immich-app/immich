@@ -19,10 +19,11 @@ describe(StorageService.name, () => {
   describe('onBootstrap', () => {
     it('should enable mount folder checking', async () => {
       mocks.systemMetadata.get.mockResolvedValue(null);
+      mocks.asset.getFileSamples.mockResolvedValue([]);
 
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
-      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.SYSTEM_FLAGS, {
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.SystemFlags, {
         mountChecks: {
           backups: true,
           'encoded-video': true,
@@ -32,18 +33,36 @@ describe(StorageService.name, () => {
           upload: true,
         },
       });
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/encoded-video');
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/library');
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/profile');
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/thumbs');
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/upload');
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/backups');
-      expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/encoded-video/.immich', expect.any(Buffer));
-      expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/library/.immich', expect.any(Buffer));
-      expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/profile/.immich', expect.any(Buffer));
-      expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/thumbs/.immich', expect.any(Buffer));
-      expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/upload/.immich', expect.any(Buffer));
-      expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/backups/.immich', expect.any(Buffer));
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/encoded-video'));
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/library'));
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/profile'));
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/thumbs'));
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/upload'));
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/backups'));
+      expect(mocks.storage.createFile).toHaveBeenCalledWith(
+        expect.stringContaining('upload/encoded-video/.immich'),
+        expect.any(Buffer),
+      );
+      expect(mocks.storage.createFile).toHaveBeenCalledWith(
+        expect.stringContaining('upload/library/.immich'),
+        expect.any(Buffer),
+      );
+      expect(mocks.storage.createFile).toHaveBeenCalledWith(
+        expect.stringContaining('upload/profile/.immich'),
+        expect.any(Buffer),
+      );
+      expect(mocks.storage.createFile).toHaveBeenCalledWith(
+        expect.stringContaining('upload/thumbs/.immich'),
+        expect.any(Buffer),
+      );
+      expect(mocks.storage.createFile).toHaveBeenCalledWith(
+        expect.stringContaining('upload/upload/.immich'),
+        expect.any(Buffer),
+      );
+      expect(mocks.storage.createFile).toHaveBeenCalledWith(
+        expect.stringContaining('upload/backups/.immich'),
+        expect.any(Buffer),
+      );
     });
 
     it('should enable mount folder checking for a new folder type', async () => {
@@ -57,10 +76,11 @@ describe(StorageService.name, () => {
           upload: true,
         },
       });
+      mocks.asset.getFileSamples.mockResolvedValue([]);
 
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
-      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.SYSTEM_FLAGS, {
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.SystemFlags, {
         mountChecks: {
           backups: true,
           'encoded-video': true,
@@ -71,11 +91,17 @@ describe(StorageService.name, () => {
         },
       });
       expect(mocks.storage.mkdirSync).toHaveBeenCalledTimes(2);
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/library');
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/backups');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/library'));
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('upload/backups'));
       expect(mocks.storage.createFile).toHaveBeenCalledTimes(2);
-      expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/library/.immich', expect.any(Buffer));
-      expect(mocks.storage.createFile).toHaveBeenCalledWith('upload/backups/.immich', expect.any(Buffer));
+      expect(mocks.storage.createFile).toHaveBeenCalledWith(
+        expect.stringContaining('upload/library/.immich'),
+        expect.any(Buffer),
+      );
+      expect(mocks.storage.createFile).toHaveBeenCalledWith(
+        expect.stringContaining('upload/backups/.immich'),
+        expect.any(Buffer),
+      );
     });
 
     it('should throw an error if .immich is missing', async () => {
@@ -104,6 +130,7 @@ describe(StorageService.name, () => {
       error.code = 'EEXIST';
       mocks.systemMetadata.get.mockResolvedValue({ mountChecks: {} });
       mocks.storage.createFile.mockRejectedValue(error);
+      mocks.asset.getFileSamples.mockResolvedValue([]);
 
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
@@ -125,13 +152,14 @@ describe(StorageService.name, () => {
           storage: { ignoreMountCheckErrors: true },
         }),
       );
+      mocks.asset.getFileSamples.mockResolvedValue([]);
       mocks.storage.overwriteFile.mockRejectedValue(
         new Error("ENOENT: no such file or directory, open '/app/.immich'"),
       );
 
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
-      expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
+      expect(mocks.systemMetadata.set).not.toHaveBeenCalledWith(SystemMetadataKey.SystemFlags, expect.anything());
     });
   });
 

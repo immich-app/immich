@@ -11,6 +11,7 @@ export enum AssetAction {
   UNSTACK = 'unstack',
   KEEP_THIS_DELETE_OTHERS = 'keep-this-delete-others',
   SET_STACK_PRIMARY_ASSET = 'set-stack-primary-asset',
+  REMOVE_ASSET_FROM_STACK = 'remove-asset-from-stack',
   SET_VISIBILITY_LOCKED = 'set-visibility-locked',
   SET_VISIBILITY_TIMELINE = 'set-visibility-timeline',
 }

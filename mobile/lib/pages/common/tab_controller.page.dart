@@ -20,8 +20,7 @@ class TabControllerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isRefreshingAssets = ref.watch(assetProvider);
     final isRefreshingRemoteAlbums = ref.watch(isRefreshingRemoteAlbumProvider);
-    final isScreenLandscape =
-        MediaQuery.orientationOf(context) == Orientation.landscape;
+    final isScreenLandscape = MediaQuery.orientationOf(context) == Orientation.landscape;
 
     Widget buildIcon({required Widget icon, required bool isProcessing}) {
       if (!isProcessing) return icon;
@@ -118,8 +117,7 @@ class TabControllerPage extends HookConsumerWidget {
     Widget bottomNavigationBar(TabsRouter tabsRouter) {
       return NavigationBar(
         selectedIndex: tabsRouter.activeIndex,
-        onDestinationSelected: (index) =>
-            onNavigationSelected(tabsRouter, index),
+        onDestinationSelected: (index) => onNavigationSelected(tabsRouter, index),
         destinations: navigationDestinations,
       );
     }
@@ -135,8 +133,7 @@ class TabControllerPage extends HookConsumerWidget {
               ),
             )
             .toList(),
-        onDestinationSelected: (index) =>
-            onNavigationSelected(tabsRouter, index),
+        onDestinationSelected: (index) => onNavigationSelected(tabsRouter, index),
         selectedIndex: tabsRouter.activeIndex,
         labelType: NavigationRailLabelType.all,
         groupAlignment: 0.0,
@@ -160,8 +157,7 @@ class TabControllerPage extends HookConsumerWidget {
         final tabsRouter = AutoTabsRouter.of(context);
         return PopScope(
           canPop: tabsRouter.activeIndex == 0,
-          onPopInvokedWithResult: (didPop, _) =>
-              !didPop ? tabsRouter.setActiveIndex(0) : null,
+          onPopInvokedWithResult: (didPop, _) => !didPop ? tabsRouter.setActiveIndex(0) : null,
           child: Scaffold(
             resizeToAvoidBottomInset: false,
             body: isScreenLandscape
@@ -173,9 +169,7 @@ class TabControllerPage extends HookConsumerWidget {
                     ],
                   )
                 : child,
-            bottomNavigationBar: multiselectEnabled || isScreenLandscape
-                ? null
-                : bottomNavigationBar(tabsRouter),
+            bottomNavigationBar: multiselectEnabled || isScreenLandscape ? null : bottomNavigationBar(tabsRouter),
           ),
         );
       },

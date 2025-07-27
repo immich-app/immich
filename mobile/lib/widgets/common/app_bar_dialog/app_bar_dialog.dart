@@ -17,6 +17,8 @@ import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_profile_info.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_server_info.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
+import 'package:immich_mobile/widgets/common/immich_logo.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ImmichAppBarDialog extends HookConsumerWidget {
@@ -56,9 +58,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           ),
           Center(
             child: Image.asset(
-              context.isDarkTheme
-                  ? 'assets/immich-text-dark.png'
-                  : 'assets/immich-text-light.png',
+              context.isDarkTheme ? 'assets/immich-text-dark.png' : 'assets/immich-text-light.png',
               height: 16,
             ),
           ),
@@ -129,10 +129,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 ok: "yes",
                 onOk: () async {
                   isLoggingOut.value = true;
-                  await ref
-                      .read(authProvider.notifier)
-                      .logout()
-                      .whenComplete(() => isLoggingOut.value = false);
+                  await ref.read(authProvider.notifier).logout().whenComplete(() => isLoggingOut.value = false);
 
                   ref.read(manualUploadProvider.notifier).cancelBackup();
                   ref.read(backupProvider.notifier).cancelBackup();
@@ -194,14 +191,12 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     child: LinearProgressIndicator(
                       minHeight: 10.0,
                       value: percentage,
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(10.0)),
+                      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 12.0),
-                    child:
-                        const Text('backup_controller_page_storage_format').tr(
+                    child: const Text('backup_controller_page_storage_format').tr(
                       namedArgs: {
                         'used': usedDiskSpace,
                         'total': totalDiskSpace,
@@ -254,6 +249,28 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 "profile_drawer_github",
                 style: context.textTheme.bodySmall,
               ).tr(),
+            ),
+            const SizedBox(
+              width: 20,
+              child: Text(
+                "•",
+                textAlign: TextAlign.center,
+              ),
+            ),
+            InkWell(
+              onTap: () async {
+                context.pop();
+                final packageInfo = await PackageInfo.fromPlatform();
+                showLicensePage(
+                  context: context,
+                  applicationIcon: const Padding(
+                    padding: EdgeInsetsGeometry.symmetric(vertical: 10),
+                    child: ImmichLogo(size: 40),
+                  ),
+                  applicationVersion: packageInfo.version,
+                );
+              },
+              child: Text("licenses", style: context.textTheme.bodySmall).tr(),
             ),
           ],
         ),

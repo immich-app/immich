@@ -54,8 +54,7 @@ class VideoPosition extends HookConsumerWidget {
                       activeColor: Colors.white,
                       inactiveColor: whiteOpacity75,
                       onChangeStart: (value) {
-                        final state =
-                            ref.read(videoPlaybackValueProvider).state;
+                        final state = ref.read(videoPlaybackValueProvider).state;
                         wasPlaying.value = state != VideoPlaybackState.paused;
                         ref.read(videoPlayerControlsProvider.notifier).pause();
                       },
@@ -68,19 +67,14 @@ class VideoPosition extends HookConsumerWidget {
                         final seekToDuration = (duration * (value / 100.0));
 
                         if (isCasting) {
-                          ref
-                              .read(castProvider.notifier)
-                              .seekTo(seekToDuration);
+                          ref.read(castProvider.notifier).seekTo(seekToDuration);
                           return;
                         }
 
-                        ref
-                            .read(videoPlayerControlsProvider.notifier)
-                            .position = seekToDuration.inSeconds.toDouble();
+                        ref.read(videoPlayerControlsProvider.notifier).position = seekToDuration.inSeconds.toDouble();
 
                         // This immediately updates the slider position without waiting for the video to update
-                        ref.read(videoPlaybackValueProvider.notifier).position =
-                            seekToDuration;
+                        ref.read(videoPlaybackValueProvider.notifier).position = seekToDuration;
                       },
                     ),
                   ),

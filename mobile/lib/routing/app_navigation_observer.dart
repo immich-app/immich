@@ -25,24 +25,40 @@ class AppNavigationObserver extends AutoRouterObserver {
   @override
   void didPush(Route route, Route? previousRoute) {
     _handleLockedViewState(route, previousRoute);
-
+    _handleDriftLockedFolderState(route, previousRoute);
     Future(
-      () => ref.read(currentRouteNameProvider.notifier).state =
-          route.settings.name,
+      () => ref.read(currentRouteNameProvider.notifier).state = route.settings.name,
     );
   }
 
   _handleLockedViewState(Route route, Route? previousRoute) {
     final isInLockedView = ref.read(inLockedViewProvider);
     final isFromLockedViewToDetailView =
-        route.settings.name == GalleryViewerRoute.name &&
-            previousRoute?.settings.name == LockedRoute.name;
+        route.settings.name == GalleryViewerRoute.name && previousRoute?.settings.name == LockedRoute.name;
 
-    final isFromDetailViewToInfoPanelView = route.settings.name == null &&
-        previousRoute?.settings.name == GalleryViewerRoute.name &&
-        isInLockedView;
+    final isFromDetailViewToInfoPanelView =
+        route.settings.name == null && previousRoute?.settings.name == GalleryViewerRoute.name && isInLockedView;
 
-    if (route.settings.name == LockedRoute.name ||
+    if (route.settings.name == LockedRoute.name || isFromLockedViewToDetailView || isFromDetailViewToInfoPanelView) {
+      Future(
+        () => ref.read(inLockedViewProvider.notifier).state = true,
+      );
+    } else {
+      Future(
+        () => ref.read(inLockedViewProvider.notifier).state = false,
+      );
+    }
+  }
+
+  _handleDriftLockedFolderState(Route route, Route? previousRoute) {
+    final isInLockedView = ref.read(inLockedViewProvider);
+    final isFromLockedViewToDetailView =
+        route.settings.name == AssetViewerRoute.name && previousRoute?.settings.name == DriftLockedFolderRoute.name;
+
+    final isFromDetailViewToInfoPanelView =
+        route.settings.name == null && previousRoute?.settings.name == AssetViewerRoute.name && isInLockedView;
+
+    if (route.settings.name == DriftLockedFolderRoute.name ||
         isFromLockedViewToDetailView ||
         isFromDetailViewToInfoPanelView) {
       Future(

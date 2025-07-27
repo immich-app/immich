@@ -154,19 +154,19 @@ export const utils = {
 
       tables = tables || [
         // TODO e2e test for deleting a stack, since it is quite complex
-        'asset_stack',
-        'libraries',
-        'shared_links',
+        'stack',
+        'library',
+        'shared_link',
         'person',
-        'albums',
-        'assets',
-        'asset_faces',
+        'album',
+        'asset',
+        'asset_face',
         'activity',
-        'api_keys',
-        'sessions',
-        'users',
+        'api_key',
+        'session',
+        'user',
         'system_metadata',
-        'tags',
+        'tag',
       ];
 
       const sql: string[] = [];
@@ -175,7 +175,7 @@ export const utils = {
         if (table === 'system_metadata') {
           sql.push(`DELETE FROM "system_metadata" where "key" NOT IN ('reverse-geocoding-state', 'system-flags');`);
         } else {
-          sql.push(`DELETE FROM ${table} CASCADE;`);
+          sql.push(`DELETE FROM "${table}" CASCADE;`);
         }
       }
 
@@ -451,7 +451,7 @@ export const utils = {
       return;
     }
 
-    await client.query('INSERT INTO asset_faces ("assetId", "personId") VALUES ($1, $2)', [assetId, personId]);
+    await client.query('INSERT INTO asset_face ("assetId", "personId") VALUES ($1, $2)', [assetId, personId]);
   },
 
   setPersonThumbnail: async (personId: string) => {

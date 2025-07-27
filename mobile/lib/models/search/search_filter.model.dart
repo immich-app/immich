@@ -48,16 +48,13 @@ class SearchLocationFilter {
       SearchLocationFilter.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() =>
-      'SearchLocationFilter(country: $country, state: $state, city: $city)';
+  String toString() => 'SearchLocationFilter(country: $country, state: $state, city: $city)';
 
   @override
   bool operator ==(covariant SearchLocationFilter other) {
     if (identical(this, other)) return true;
 
-    return other.country == country &&
-        other.state == state &&
-        other.city == city;
+    return other.country == country && other.state == state && other.city == city;
   }
 
   @override
@@ -142,12 +139,8 @@ class SearchDateFilter {
 
   factory SearchDateFilter.fromMap(Map<String, dynamic> map) {
     return SearchDateFilter(
-      takenBefore: map['takenBefore'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['takenBefore'] as int)
-          : null,
-      takenAfter: map['takenAfter'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['takenAfter'] as int)
-          : null,
+      takenBefore: map['takenBefore'] != null ? DateTime.fromMillisecondsSinceEpoch(map['takenBefore'] as int) : null,
+      takenAfter: map['takenAfter'] != null ? DateTime.fromMillisecondsSinceEpoch(map['takenAfter'] as int) : null,
     );
   }
 
@@ -157,8 +150,7 @@ class SearchDateFilter {
       SearchDateFilter.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() =>
-      'SearchDateFilter(takenBefore: $takenBefore, takenAfter: $takenAfter)';
+  String toString() => 'SearchDateFilter(takenBefore: $takenBefore, takenAfter: $takenAfter)';
 
   @override
   bool operator ==(covariant SearchDateFilter other) {
@@ -222,14 +214,11 @@ class SearchDisplayFilters {
   bool operator ==(covariant SearchDisplayFilters other) {
     if (identical(this, other)) return true;
 
-    return other.isNotInAlbum == isNotInAlbum &&
-        other.isArchive == isArchive &&
-        other.isFavorite == isFavorite;
+    return other.isNotInAlbum == isNotInAlbum && other.isArchive == isArchive && other.isFavorite == isFavorite;
   }
 
   @override
-  int get hashCode =>
-      isNotInAlbum.hashCode ^ isArchive.hashCode ^ isFavorite.hashCode;
+  int get hashCode => isNotInAlbum.hashCode ^ isArchive.hashCode ^ isFavorite.hashCode;
 }
 
 class SearchFilter {
@@ -237,7 +226,7 @@ class SearchFilter {
   String? filename;
   String? description;
   String? language;
-  Set<Person> people;
+  Set<PersonDto> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
   SearchDateFilter date;
@@ -282,7 +271,7 @@ class SearchFilter {
     String? filename,
     String? description,
     String? language,
-    Set<Person>? people,
+    Set<PersonDto>? people,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
     SearchDateFilter? date,

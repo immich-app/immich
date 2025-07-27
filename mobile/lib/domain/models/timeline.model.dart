@@ -1,6 +1,9 @@
+import 'package:immich_mobile/domain/utils/event_stream.dart';
+
 enum GroupAssetsBy {
   day,
   month,
+  auto,
   none;
 }
 
@@ -37,4 +40,8 @@ class TimeBucket extends Bucket {
 
   @override
   int get hashCode => super.hashCode ^ date.hashCode;
+}
+
+class TimelineReloadEvent extends Event {
+  const TimelineReloadEvent();
 }

@@ -30,8 +30,7 @@ class PinVerificationForm extends HookConsumerWidget {
     final isVerified = useState(false);
 
     verifyPin(String pinCode) async {
-      final isUnlocked =
-          await ref.read(authProvider.notifier).unlockPinCode(pinCode);
+      final isUnlocked = await ref.read(authProvider.notifier).unlockPinCode(pinCode);
 
       if (isUnlocked) {
         isVerified.value = true;
@@ -58,9 +57,7 @@ class PinVerificationForm extends HookConsumerWidget {
                 : Icon(
                     icon ?? Icons.lock_outline_rounded,
                     size: 64,
-                    color: hasError.value
-                        ? context.colorScheme.error
-                        : context.primaryColor,
+                    color: hasError.value ? context.colorScheme.error : context.primaryColor,
                   ),
           ),
           const SizedBox(height: 36),

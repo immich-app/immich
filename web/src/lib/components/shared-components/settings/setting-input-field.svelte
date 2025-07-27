@@ -49,6 +49,11 @@
     value = e.currentTarget.value;
 
     if (inputType === SettingInputFieldType.NUMBER) {
+      if (value === '' && !required) {
+        value = null;
+        return;
+      }
+
       let newValue = Number(value) || 0;
       if (newValue < min) {
         newValue = min;

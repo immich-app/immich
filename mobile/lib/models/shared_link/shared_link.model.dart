@@ -66,9 +66,7 @@ class SharedLink {
         expiresAt = dto.expiresAt,
         key = dto.key,
         showMetadata = dto.showMetadata,
-        type = dto.type == SharedLinkType.ALBUM
-            ? SharedLinkSource.album
-            : SharedLinkSource.individual,
+        type = dto.type == SharedLinkType.ALBUM ? SharedLinkSource.album : SharedLinkSource.individual,
         title = dto.type == SharedLinkType.ALBUM
             ? dto.album?.albumName.toUpperCase() ?? "UNKNOWN SHARE"
             : "INDIVIDUAL SHARE",

@@ -15,8 +15,7 @@ class VideoViewerSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final useLoopVideo = useAppSettingsState(AppSettingsEnum.loopVideo);
-    final useOriginalVideo =
-        useAppSettingsState(AppSettingsEnum.loadOriginalVideo);
+    final useOriginalVideo = useAppSettingsState(AppSettingsEnum.loadOriginalVideo);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

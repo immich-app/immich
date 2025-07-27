@@ -82,9 +82,7 @@ class BackupAssetInfoTable extends ConsumerWidget {
                     ),
                   ).tr(
                     namedArgs: {
-                      'date': isUploadInProgress
-                          ? _getAssetCreationDate(asset)
-                          : "-",
+                      'date': isUploadInProgress ? _getAssetCreationDate(asset) : "-",
                     },
                   ),
                 ),

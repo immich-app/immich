@@ -1,5 +1,6 @@
 import { setDifference, type TimelinePlainDate } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
+import { SvelteSet } from 'svelte/reactivity';
 import type { DayGroup } from './day-group.svelte';
 import type { MonthGroup } from './month-group.svelte';
 import type { TimelineAsset } from './types';
@@ -9,8 +10,8 @@ export class GroupInsertionCache {
     [year: number]: { [month: number]: { [day: number]: DayGroup } };
   } = {};
   unprocessedAssets: TimelineAsset[] = [];
-  changedDayGroups = new Set<DayGroup>();
-  newDayGroups = new Set<DayGroup>();
+  changedDayGroups = new SvelteSet<DayGroup>();
+  newDayGroups = new SvelteSet<DayGroup>();
 
   getDayGroup({ year, month, day }: TimelinePlainDate): DayGroup | undefined {
     return this.#lookupCache[year]?.[month]?.[day];
@@ -31,7 +32,7 @@ export class GroupInsertionCache {
   }
 
   get updatedBuckets() {
-    const updated = new Set<MonthGroup>();
+    const updated = new SvelteSet<MonthGroup>();
     for (const group of this.changedDayGroups) {
       updated.add(group.monthGroup);
     }
@@ -39,7 +40,7 @@ export class GroupInsertionCache {
   }
 
   get bucketsWithNewDayGroups() {
-    const updated = new Set<MonthGroup>();
+    const updated = new SvelteSet<MonthGroup>();
     for (const group of this.newDayGroups) {
       updated.add(group.monthGroup);
     }

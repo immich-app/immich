@@ -52,10 +52,6 @@ class SearchResultPageState {
 
   @override
   int get hashCode {
-    return isLoading.hashCode ^
-        isSuccess.hashCode ^
-        isError.hashCode ^
-        isSmart.hashCode ^
-        searchResult.hashCode;
+    return isLoading.hashCode ^ isSuccess.hashCode ^ isError.hashCode ^ isSmart.hashCode ^ searchResult.hashCode;
   }
 }

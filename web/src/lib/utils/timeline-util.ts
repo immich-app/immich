@@ -3,6 +3,7 @@ import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 import { DateTime, type LocaleOptions } from 'luxon';
+import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
 
 // Move type definitions to the top
@@ -230,8 +231,9 @@ export const plainDateTimeWithFileNameCompare = (
   return ascending ? a.originalFileName.localeCompare(b.originalFileName) : b.originalFileName.localeCompare(a.originalFileName);
 };
 
-export function setDifference<T>(setA: Set<T>, setB: Set<T>): Set<T> {
-  const result = new Set<T>();
+
+export function setDifference<T>(setA: Set<T>, setB: Set<T>): SvelteSet<T> {
+  const result = new SvelteSet<T>();
   for (const value of setA) {
     if (!setB.has(value)) {
       result.add(value);

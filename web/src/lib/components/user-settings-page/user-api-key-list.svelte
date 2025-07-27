@@ -1,11 +1,10 @@
 <script lang="ts">
   import { dateFormats } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import ApiKeyModal from '$lib/modals/ApiKeyModal.svelte';
   import ApiKeySecretModal from '$lib/modals/ApiKeySecretModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { createApiKey, deleteApiKey, getApiKeys, updateApiKey, type ApiKeyResponseDto } from '@immich/sdk';
-  import { Button, IconButton } from '@immich/ui';
+  import { Button, IconButton, modalManager } from '@immich/ui';
   import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';

@@ -10,6 +10,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment_builder.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
+import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -38,9 +39,7 @@ class FixedSegment extends Segment {
   @override
   double indexToLayoutOffset(int index) {
     final relativeIndex = index - gridIndex;
-    return relativeIndex < 0
-        ? startOffset
-        : gridOffset + (mainAxisExtend * relativeIndex);
+    return relativeIndex < 0 ? startOffset : gridOffset + (mainAxisExtend * relativeIndex);
   }
 
   @override
@@ -97,8 +96,7 @@ class _FixedSegmentRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isScrubbing =
-        ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
+    final isScrubbing = ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
     final timelineService = ref.read(timelineServiceProvider);
 
     if (isScrubbing) {
@@ -164,6 +162,7 @@ class _AssetTileWidget extends ConsumerWidget {
     WidgetRef ref,
     int assetIndex,
     BaseAsset asset,
+    int? heroOffset,
   ) async {
     final multiSelectState = ref.read(multiSelectProvider);
 
@@ -171,10 +170,12 @@ class _AssetTileWidget extends ConsumerWidget {
       ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
     } else {
       await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
+      ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
       ctx.pushRoute(
         AssetViewerRoute(
           initialIndex: assetIndex,
           timelineService: ref.read(timelineServiceProvider),
+          heroOffset: heroOffset,
         ),
       );
     }
@@ -206,6 +207,8 @@ class _AssetTileWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+
     final lockSelection = _getLockSelectionStatus(ref);
     final showStorageIndicator = ref.watch(
       timelineArgsProvider.select((args) => args.showStorageIndicator),
@@ -213,15 +216,13 @@ class _AssetTileWidget extends ConsumerWidget {
 
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () => lockSelection
-            ? null
-            : _handleOnTap(context, ref, assetIndex, asset),
-        onLongPress: () =>
-            lockSelection ? null : _handleOnLongPress(ref, asset),
+        onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset),
+        onLongPress: () => lockSelection ? null : _handleOnLongPress(ref, asset),
         child: ThumbnailTile(
           asset,
           lockSelection: lockSelection,
           showStorageIndicator: showStorageIndicator,
+          heroOffset: heroOffset,
         ),
       ),
     );

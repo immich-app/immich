@@ -1,9 +1,9 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import AlbumPickerModal from '$lib/modals/AlbumPickerModal.svelte';
   import type { OnAddToAlbum } from '$lib/utils/actions';
   import { addAssetsToAlbum } from '$lib/utils/asset-utils';
+  import { modalManager } from '@immich/ui';
   import { mdiImageAlbum, mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';

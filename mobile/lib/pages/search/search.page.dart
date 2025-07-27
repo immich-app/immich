@@ -48,8 +48,7 @@ class SearchPage extends HookConsumerWidget {
               isFavorite: false,
             ),
         mediaType: prefilter?.mediaType ?? AssetType.other,
-        language:
-            "${context.locale.languageCode}-${context.locale.countryCode}",
+        language: "${context.locale.languageCode}-${context.locale.countryCode}",
       ),
     );
 
@@ -87,9 +86,7 @@ class SearchPage extends HookConsumerWidget {
 
       isSearching.value = true;
       ref.watch(paginatedSearchProvider.notifier).clear();
-      final hasResult = await ref
-          .watch(paginatedSearchProvider.notifier)
-          .search(filter.value);
+      final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
 
       if (!hasResult) {
         context.showSnackBar(
@@ -103,9 +100,7 @@ class SearchPage extends HookConsumerWidget {
 
     loadMoreSearchResult() async {
       isSearching.value = true;
-      final hasResult = await ref
-          .watch(paginatedSearchProvider.notifier)
-          .search(filter.value);
+      final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
 
       if (!hasResult) {
         context.showSnackBar(
@@ -147,7 +142,7 @@ class SearchPage extends HookConsumerWidget {
     );
 
     showPeoplePicker() {
-      handleOnSelect(Set<Person> value) {
+      handleOnSelect(Set<PersonDto> value) {
         filter.value = filter.value.copyWith(
           people: value,
         );
@@ -416,8 +411,7 @@ class SearchPage extends HookConsumerWidget {
                 ),
               );
               if (value) {
-                filterText
-                    .add('search_filter_display_option_not_in_album'.tr());
+                filterText.add('search_filter_display_option_not_in_album'.tr());
               }
               break;
             case DisplayOption.archive:
@@ -563,9 +557,7 @@ class SearchPage extends HookConsumerWidget {
                       'search_by_context'.tr(),
                       style: context.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
-                        color: textSearchType.value == TextSearchType.context
-                            ? context.colorScheme.primary
-                            : null,
+                        color: textSearchType.value == TextSearchType.context ? context.colorScheme.primary : null,
                       ),
                     ),
                     selectedColor: context.colorScheme.primary,
@@ -583,9 +575,7 @@ class SearchPage extends HookConsumerWidget {
                       'search_filter_filename'.tr(),
                       style: context.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
-                        color: textSearchType.value == TextSearchType.filename
-                            ? context.colorScheme.primary
-                            : null,
+                        color: textSearchType.value == TextSearchType.filename ? context.colorScheme.primary : null,
                       ),
                     ),
                     selectedColor: context.colorScheme.primary,
@@ -603,15 +593,11 @@ class SearchPage extends HookConsumerWidget {
                       'search_by_description'.tr(),
                       style: context.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
-                        color:
-                            textSearchType.value == TextSearchType.description
-                                ? context.colorScheme.primary
-                                : null,
+                        color: textSearchType.value == TextSearchType.description ? context.colorScheme.primary : null,
                       ),
                     ),
                     selectedColor: context.colorScheme.primary,
-                    selected:
-                        textSearchType.value == TextSearchType.description,
+                    selected: textSearchType.value == TextSearchType.description,
                   ),
                   onPressed: () {
                     textSearchType.value = TextSearchType.description;
@@ -645,9 +631,7 @@ class SearchPage extends HookConsumerWidget {
             hintText: searchHintText.value,
             key: const Key('search_text_field'),
             controller: textSearchController,
-            contentPadding: prefilter != null
-                ? const EdgeInsets.only(left: 24)
-                : const EdgeInsets.all(8),
+            contentPadding: prefilter != null ? const EdgeInsets.only(left: 24) : const EdgeInsets.all(8),
             prefixIcon: prefilter != null
                 ? null
                 : Icon(
@@ -744,17 +728,13 @@ class SearchResultGrid extends StatelessWidget {
         padding: const EdgeInsets.only(top: 8.0),
         child: NotificationListener<ScrollEndNotification>(
           onNotification: (notification) {
-            final isBottomSheetNotification = notification.context
-                    ?.findAncestorWidgetOfExactType<
-                        DraggableScrollableSheet>() !=
-                null;
+            final isBottomSheetNotification =
+                notification.context?.findAncestorWidgetOfExactType<DraggableScrollableSheet>() != null;
 
             final metrics = notification.metrics;
             final isVerticalScroll = metrics.axis == Axis.vertical;
 
-            if (metrics.pixels >= metrics.maxScrollExtent &&
-                isVerticalScroll &&
-                !isBottomSheetNotification) {
+            if (metrics.pixels >= metrics.maxScrollExtent && isVerticalScroll && !isBottomSheetNotification) {
               onScrollEnd();
             }
 
@@ -770,9 +750,7 @@ class SearchResultGrid extends StatelessWidget {
             dragScrollLabelEnabled: false,
             emptyIndicator: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: !isSearching
-                  ? const SearchEmptyContent()
-                  : const SizedBox.shrink(),
+              child: !isSearching ? const SearchEmptyContent() : const SizedBox.shrink(),
             ),
           ),
         ),
@@ -794,9 +772,7 @@ class SearchEmptyContent extends StatelessWidget {
           const SizedBox(height: 40),
           Center(
             child: Image.asset(
-              context.isDarkTheme
-                  ? 'assets/polaroid-dark.png'
-                  : 'assets/polaroid-light.png',
+              context.isDarkTheme ? 'assets/polaroid-dark.png' : 'assets/polaroid-light.png',
               height: 125,
             ),
           ),

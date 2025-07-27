@@ -14,8 +14,8 @@ import 'package:immich_mobile/widgets/common/search_field.dart';
 class PeoplePicker extends HookConsumerWidget {
   const PeoplePicker({super.key, required this.onSelect, this.filter});
 
-  final Function(Set<Person>) onSelect;
-  final Set<Person>? filter;
+  final Function(Set<PersonDto>) onSelect;
+  final Set<PersonDto>? filter;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,7 +24,7 @@ class PeoplePicker extends HookConsumerWidget {
     final searchQuery = useState('');
     final people = ref.watch(getAllPeopleProvider);
     final headers = ApiService.getRequestHeaders();
-    final selectedPeople = useState<Set<Person>>(filter ?? {});
+    final selectedPeople = useState<Set<PersonDto>>(filter ?? {});
 
     return Column(
       children: [
@@ -52,18 +52,14 @@ class PeoplePicker extends HookConsumerWidget {
                 shrinkWrap: true,
                 itemCount: people
                     .where(
-                      (person) => person.name
-                          .toLowerCase()
-                          .contains(searchQuery.value.toLowerCase()),
+                      (person) => person.name.toLowerCase().contains(searchQuery.value.toLowerCase()),
                     )
                     .length,
                 padding: const EdgeInsets.all(8),
                 itemBuilder: (context, index) {
                   final person = people
                       .where(
-                        (person) => person.name
-                            .toLowerCase()
-                            .contains(searchQuery.value.toLowerCase()),
+                        (person) => person.name.toLowerCase().contains(searchQuery.value.toLowerCase()),
                       )
                       .toList()[index];
                   final isSelected = selectedPeople.value.contains(person);
@@ -76,9 +72,7 @@ class PeoplePicker extends HookConsumerWidget {
                         style: context.textTheme.bodyLarge?.copyWith(
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
-                          color: isSelected
-                              ? context.colorScheme.onPrimary
-                              : context.colorScheme.onSurface,
+                          color: isSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
                         ),
                       ),
                       leading: SizedBox(

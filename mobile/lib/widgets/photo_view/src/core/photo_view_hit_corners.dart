@@ -35,8 +35,7 @@ mixin HitCornersDetector on PhotoViewControllerDelegate {
     if (!hitCorners.hasHitAny) {
       return true;
     }
-    final axisBlocked = hitCorners.hasHitBoth ||
-        (hitCorners.hasHitMax ? mainAxisMove > 0 : mainAxisMove < 0);
+    final axisBlocked = hitCorners.hasHitBoth || (hitCorners.hasHitMax ? mainAxisMove > 0 : mainAxisMove < 0);
     if (axisBlocked) {
       return false;
     }

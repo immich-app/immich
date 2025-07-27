@@ -23,15 +23,12 @@ class VideoViewerControls extends HookConsumerWidget {
     final assetIsVideo = ref.watch(
       currentAssetNotifier.select((asset) => asset != null && asset.isVideo),
     );
-    bool showControls =
-        ref.watch(assetViewerProvider.select((s) => s.showingControls));
-    final showBottomSheet =
-        ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
+    bool showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
+    final showBottomSheet = ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
     if (showBottomSheet) {
       showControls = false;
     }
-    final VideoPlaybackState state =
-        ref.watch(videoPlaybackValueProvider.select((value) => value.state));
+    final VideoPlaybackState state = ref.watch(videoPlaybackValueProvider.select((value) => value.state));
 
     final cast = ref.watch(castProvider);
 
@@ -45,15 +42,12 @@ class VideoViewerControls extends HookConsumerWidget {
         final state = ref.read(videoPlaybackValueProvider).state;
 
         // Do not hide on paused
-        if (state != VideoPlaybackState.paused &&
-            state != VideoPlaybackState.completed &&
-            assetIsVideo) {
+        if (state != VideoPlaybackState.paused && state != VideoPlaybackState.completed && assetIsVideo) {
           ref.read(assetViewerProvider.notifier).setControls(false);
         }
       },
     );
-    final showBuffering =
-        state == VideoPlaybackState.buffering && !cast.isCasting;
+    final showBuffering = state == VideoPlaybackState.buffering && !cast.isCasting;
 
     /// Shows the controls and starts the timer to hide them
     void showControlsAndStartHideTimer() {
@@ -62,8 +56,7 @@ class VideoViewerControls extends HookConsumerWidget {
     }
 
     // When we change position, show or hide timer
-    ref.listen(videoPlayerControlsProvider.select((v) => v.position),
-        (previous, next) {
+    ref.listen(videoPlayerControlsProvider.select((v) => v.position), (previous, next) {
       showControlsAndStartHideTimer();
     });
 
@@ -111,14 +104,13 @@ class VideoViewerControls extends HookConsumerWidget {
               )
             else
               GestureDetector(
-                onTap: () =>
-                    ref.read(assetViewerProvider.notifier).setControls(false),
+                onTap: () => ref.read(assetViewerProvider.notifier).setControls(false),
                 child: CenterPlayButton(
                   backgroundColor: Colors.black54,
                   iconColor: Colors.white,
                   isFinished: state == VideoPlaybackState.completed,
-                  isPlaying: state == VideoPlaybackState.playing ||
-                      (cast.isCasting && cast.castState == CastState.playing),
+                  isPlaying:
+                      state == VideoPlaybackState.playing || (cast.isCasting && cast.castState == CastState.playing),
                   show: assetIsVideo && showControls,
                   onPressed: togglePlay,
                 ),

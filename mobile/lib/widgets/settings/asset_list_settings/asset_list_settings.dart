@@ -16,8 +16,7 @@ class AssetListSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final showStorageIndicator =
-        useAppSettingsState(AppSettingsEnum.storageIndicator);
+    final showStorageIndicator = useAppSettingsState(AppSettingsEnum.storageIndicator);
 
     final assetListSetting = [
       SettingsSwitchListTile(

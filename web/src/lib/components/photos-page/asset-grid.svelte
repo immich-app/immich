@@ -13,7 +13,6 @@
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -37,6 +36,7 @@
     type TimelinePlainYearMonth,
   } from '$lib/utils/timeline-util';
   import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { modalManager } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
@@ -523,6 +523,23 @@
         updateUnstackedAssetInTimeline(timelineManager, action.assets);
         break;
       }
+      case AssetAction.REMOVE_ASSET_FROM_STACK: {
+        timelineManager.addAssets([toTimelineAsset(action.asset)]);
+        if (action.stack) {
+          //Have to unstack then restack assets in timeline in order to update the stack count in the timeline.
+          updateUnstackedAssetInTimeline(
+            timelineManager,
+            action.stack.assets.map((asset) => toTimelineAsset(asset)),
+          );
+          updateStackedAssetInTimeline(timelineManager, {
+            stack: action.stack,
+            toDeleteIds: action.stack.assets
+              .filter((asset) => asset.id !== action.stack?.primaryAssetId)
+              .map((asset) => asset.id),
+          });
+        }
+        break;
+      }
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
         //Have to unstack then restack assets in timeline in order for the currently removed new primary asset to be made visible.
         updateUnstackedAssetInTimeline(
@@ -712,7 +729,7 @@
     }
 
     isShortcutModalOpen = true;
-    await modalManager.show(ShortcutsModal);
+    await modalManager.show(ShortcutsModal, {});
     isShortcutModalOpen = false;
   };
 

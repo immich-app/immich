@@ -48,8 +48,7 @@ class MapPage extends HookConsumerWidget {
     final layerDebouncer = useDebouncer(interval: const Duration(seconds: 1));
     final isLoading = useProcessingOverlay();
     final scrollController = useScrollController();
-    final markerDebouncer =
-        useDebouncer(interval: const Duration(milliseconds: 800));
+    final markerDebouncer = useDebouncer(interval: const Duration(milliseconds: 800));
     final selectedAssets = useValueNotifier<Set<Asset>>({});
     const mapZoomToAssetLevel = 12.0;
 
@@ -64,8 +63,7 @@ class MapPage extends HookConsumerWidget {
       final bounds = await mapController.value!.getVisibleRegion();
       final inBounds = markers.value
           .where(
-            (m) =>
-                bounds.contains(LatLng(m.latLng.latitude, m.latLng.longitude)),
+            (m) => bounds.contains(LatLng(m.latLng.latitude, m.latLng.longitude)),
           )
           .toList();
       // Notify bottom sheet to update asset grid only when there are new assets
@@ -101,8 +99,7 @@ class MapPage extends HookConsumerWidget {
 
     useEffect(
       () {
-        final currentAssetLink =
-            ref.read(currentAssetProvider.notifier).ref.keepAlive();
+        final currentAssetLink = ref.read(currentAssetProvider.notifier).ref.keepAlive();
 
         loadMarkers();
         return currentAssetLink.close;
@@ -128,8 +125,7 @@ class MapPage extends HookConsumerWidget {
       MapMarker marker, {
       bool shouldAnimate = true,
     }) async {
-      final assetPoint =
-          await mapController.value!.toScreenLocation(marker.latLng);
+      final assetPoint = await mapController.value!.toScreenLocation(marker.latLng);
       selectedMarker.value = _AssetMarkerMeta(
         point: assetPoint,
         marker: marker,
@@ -144,11 +140,9 @@ class MapPage extends HookConsumerWidget {
       if (mapController.value == null) {
         return;
       }
-      final latlngBound =
-          await mapController.value!.getBoundsFromPoint(point, 50);
+      final latlngBound = await mapController.value!.getBoundsFromPoint(point, 50);
       final marker = markersInBounds.value.firstWhereOrNull(
-        (m) =>
-            latlngBound.contains(LatLng(m.latLng.latitude, m.latLng.longitude)),
+        (m) => latlngBound.contains(LatLng(m.latLng.latitude, m.latLng.longitude)),
       );
 
       if (marker != null) {
@@ -211,16 +205,14 @@ class MapPage extends HookConsumerWidget {
     }
 
     void onBottomSheetScrolled(String assetRemoteId) {
-      final assetMarker = markersInBounds.value
-          .firstWhereOrNull((m) => m.assetRemoteId == assetRemoteId);
+      final assetMarker = markersInBounds.value.firstWhereOrNull((m) => m.assetRemoteId == assetRemoteId);
       if (assetMarker != null) {
         updateAssetMarkerPosition(assetMarker);
       }
     }
 
     void onZoomToAsset(String assetRemoteId) {
-      final assetMarker = markersInBounds.value
-          .firstWhereOrNull((m) => m.assetRemoteId == assetRemoteId);
+      final assetMarker = markersInBounds.value.firstWhereOrNull((m) => m.assetRemoteId == assetRemoteId);
       if (mapController.value != null && assetMarker != null) {
         // Offset the latitude a little to show the marker just above the viewports center
         final offset = context.isMobile ? 0.02 : 0;
@@ -236,8 +228,7 @@ class MapPage extends HookConsumerWidget {
     }
 
     void onZoomToLocation() async {
-      final (location, error) =
-          await MapUtils.checkPermAndGetLocation(context: context);
+      final (location, error) = await MapUtils.checkPermAndGetLocation(context: context);
       if (error != null) {
         if (error == LocationPermission.unableToDetermine && context.mounted) {
           ImmichToast.show(
@@ -360,8 +351,7 @@ class _AssetMarkerMeta {
   });
 
   @override
-  String toString() =>
-      '_AssetMarkerMeta(point: $point, marker: $marker, shouldAnimate: $shouldAnimate)';
+  String toString() => '_AssetMarkerMeta(point: $point, marker: $marker, shouldAnimate: $shouldAnimate)';
 }
 
 class _MapWithMarker extends StatelessWidget {

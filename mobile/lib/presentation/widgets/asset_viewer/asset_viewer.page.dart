@@ -1,13 +1,17 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.widget.dart';
@@ -15,10 +19,13 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/top_app_bar.widg
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
+import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view_gallery.dart';
 import 'package:platform/platform.dart';
@@ -27,11 +34,13 @@ import 'package:platform/platform.dart';
 class AssetViewerPage extends StatelessWidget {
   final int initialIndex;
   final TimelineService timelineService;
+  final int? heroOffset;
 
   const AssetViewerPage({
     super.key,
     required this.initialIndex,
     required this.timelineService,
+    this.heroOffset,
   });
 
   @override
@@ -40,7 +49,7 @@ class AssetViewerPage extends StatelessWidget {
     // since the Timeline and AssetViewer are on different routes / Widget subtrees.
     return ProviderScope(
       overrides: [timelineServiceProvider.overrideWithValue(timelineService)],
-      child: AssetViewer(initialIndex: initialIndex),
+      child: AssetViewer(initialIndex: initialIndex, heroOffset: heroOffset),
     );
   }
 }
@@ -48,11 +57,13 @@ class AssetViewerPage extends StatelessWidget {
 class AssetViewer extends ConsumerStatefulWidget {
   final int initialIndex;
   final Platform? platform;
+  final int? heroOffset;
 
   const AssetViewer({
     super.key,
     required this.initialIndex,
     this.platform,
+    this.heroOffset,
   });
 
   @override
@@ -78,10 +89,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   bool blockGestures = false;
   bool dragInProgress = false;
   bool shouldPopOnDrag = false;
+  bool assetReloadRequested = false;
   double? initialScale;
   double previousExtent = _kBottomSheetMinimumExtent;
   Offset dragDownPosition = Offset.zero;
   int totalAssets = 0;
+  int stackIndex = 0;
   BuildContext? scaffoldContext;
   Map<String, GlobalKey> videoPlayerKeys = {};
 
@@ -99,7 +112,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       _onAssetChanged(widget.initialIndex);
     });
     reloadSubscription = EventStream.shared.listen(_onEvent);
-    heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+    heroOffset = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
   }
 
   @override
@@ -111,12 +124,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     super.dispose();
   }
 
-  bool get showingBottomSheet =>
-      ref.read(assetViewerProvider.select((s) => s.showingBottomSheet));
+  bool get showingBottomSheet => ref.read(assetViewerProvider.select((s) => s.showingBottomSheet));
 
   Color get backgroundColor {
-    final opacity =
-        ref.read(assetViewerProvider.select((s) => s.backgroundOpacity));
+    final opacity = ref.read(assetViewerProvider.select((s) => s.backgroundOpacity));
     return Colors.black.withAlpha(opacity);
   }
 
@@ -130,9 +141,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   // This is used to calculate the scale of the asset when the bottom sheet is showing.
   // It is a small increment to ensure that the asset is slightly zoomed in when the
   // bottom sheet is showing, which emulates the zoom effect.
-  double get _getScaleForBottomSheet =>
-      (viewController?.prevValue.scale ?? viewController?.value.scale ?? 1.0) +
-      0.01;
+  double get _getScaleForBottomSheet => (viewController?.prevValue.scale ?? viewController?.value.scale ?? 1.0) + 0.01;
 
   double _getVerticalOffsetForBottomSheet(double extent) =>
       (context.height * extent) - (context.height * _kBottomSheetMinimumExtent);
@@ -164,8 +173,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onAssetChanged(int index) {
     final asset = ref.read(timelineServiceProvider).getAsset(index);
+    // Always holds the current asset from the timeline
+    ref.read(assetViewerProvider.notifier).setAsset(asset);
+    // The currentAssetNotifier actually holds the current asset that is displayed
+    // which could be stack children as well
     ref.read(currentAssetNotifier.notifier).setAsset(asset);
-    if (asset.isVideo) {
+    if (asset.isVideo || asset.isMotionPhoto) {
       ref.read(videoPlaybackValueProvider.notifier).reset();
       ref.read(videoPlayerControlsProvider.notifier).pause();
     }
@@ -183,13 +196,47 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       }
     });
     _delayedOperations.add(timer);
+
+    _handleCasting(asset);
+  }
+
+  void _handleCasting(BaseAsset asset) {
+    if (!ref.read(castProvider).isCasting) return;
+
+    // hide any casting snackbars if they exist
+    context.scaffoldMessenger.hideCurrentSnackBar();
+
+    // send image to casting if the server has it
+    if (asset.hasRemote) {
+      final remoteAsset = asset as RemoteAsset;
+
+      ref.read(castProvider.notifier).loadMedia(remoteAsset, false);
+    } else {
+      // casting cannot show local assets
+      context.scaffoldMessenger.clearSnackBars();
+
+      if (ref.read(castProvider).isCasting) {
+        ref.read(castProvider.notifier).stop();
+        context.scaffoldMessenger.showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 2),
+            content: Text(
+              "local_asset_cast_failed".tr(),
+              style: context.textTheme.bodyLarge?.copyWith(
+                color: context.primaryColor,
+              ),
+            ),
+          ),
+        );
+      }
+    }
   }
 
   void _onPageBuild(PhotoViewControllerBase controller) {
     viewController ??= controller;
     if (showingBottomSheet) {
-      final verticalOffset = (context.height * bottomSheetController.size) -
-          (context.height * _kBottomSheetMinimumExtent);
+      final verticalOffset =
+          (context.height * bottomSheetController.size) - (context.height * _kBottomSheetMinimumExtent);
       controller.position = Offset(0, -verticalOffset);
     }
   }
@@ -215,9 +262,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     viewController = controller;
     dragDownPosition = details.localPosition;
     initialPhotoViewState = controller.value;
-    final isZoomed =
-        scaleStateController.scaleState == PhotoViewScaleState.zoomedIn ||
-            scaleStateController.scaleState == PhotoViewScaleState.covering;
+    final isZoomed = scaleStateController.scaleState == PhotoViewScaleState.zoomedIn ||
+        scaleStateController.scaleState == PhotoViewScaleState.covering;
     if (!showingBottomSheet && isZoomed) {
       blockGestures = true;
     }
@@ -302,8 +348,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       updatedScale = initialPhotoViewState.scale! * (1.0 - scaleReduction);
     }
 
-    final backgroundOpacity =
-        (255 * (1.0 - (scaleReduction / dragRatio))).round();
+    final backgroundOpacity = (255 * (1.0 - (scaleReduction / dragRatio))).round();
 
     viewController?.updateMultiple(
       position: initialPhotoViewState.position + delta,
@@ -358,7 +403,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onEvent(Event event) {
     if (event is TimelineReloadEvent) {
-      _onTimelineReload(event);
+      _onTimelineReloadEvent();
+      return;
+    }
+
+    if (event is ViewerReloadAssetEvent) {
+      assetReloadRequested = true;
       return;
     }
 
@@ -371,14 +421,22 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  void _onTimelineReload(_) {
-    setState(() {
-      totalAssets = ref.read(timelineServiceProvider).totalAssets;
-      if (totalAssets == 0) {
-        context.maybePop();
-        return;
-      }
+  void _onTimelineReloadEvent() {
+    totalAssets = ref.read(timelineServiceProvider).totalAssets;
+    if (totalAssets == 0) {
+      context.maybePop();
+      return;
+    }
 
+    if (assetReloadRequested) {
+      assetReloadRequested = false;
+      _onAssetReloadEvent();
+      return;
+    }
+  }
+
+  void _onAssetReloadEvent() {
+    setState(() {
       final index = pageController.page?.round() ?? 0;
       final newAsset = ref.read(timelineServiceProvider).getAsset(index);
       final currentAsset = ref.read(currentAssetNotifier);
@@ -434,8 +492,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _snapBottomSheet() {
-    if (bottomSheetController.size > _kBottomSheetSnapExtent ||
-        bottomSheetController.size < 0.4) {
+    if (bottomSheetController.size > _kBottomSheetSnapExtent || bottomSheetController.size < 0.4) {
       return;
     }
     isSnapping = true;
@@ -451,7 +508,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     ImageChunkEvent? progress,
     int index,
   ) {
-    final asset = ref.read(timelineServiceProvider).getAsset(index);
+    BaseAsset asset = ref.read(timelineServiceProvider).getAsset(index);
+    final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
+    if (stackChildren != null && stackChildren.isNotEmpty) {
+      asset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
+    }
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -473,11 +534,20 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
+  void _onLongPress(_, __, ___) {
+    ref.read(isPlayingMotionVideoProvider.notifier).playing = true;
+  }
+
   PhotoViewGalleryPageOptions _assetBuilder(BuildContext ctx, int index) {
     scaffoldContext ??= ctx;
-    final asset = ref.read(timelineServiceProvider).getAsset(index);
+    BaseAsset asset = ref.read(timelineServiceProvider).getAsset(index);
+    final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
+    if (stackChildren != null && stackChildren.isNotEmpty) {
+      asset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
+    }
 
-    if (asset.isImage) {
+    final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
+    if (asset.isImage && !isPlayingMotionVideo) {
       return _imageBuilder(ctx, asset);
     }
 
@@ -489,8 +559,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     return PhotoViewGalleryPageOptions(
       key: ValueKey(asset.heroTag),
       imageProvider: getFullImageProvider(asset, size: size),
-      heroAttributes:
-          PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
+      heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       tightMode: true,
       initialScale: PhotoViewComputedScale.contained * 0.999,
@@ -500,6 +569,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onTapDown: _onTapDown,
+      onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
       errorBuilder: (_, __, ___) => Container(
         width: ctx.width,
         height: ctx.height,
@@ -524,8 +594,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onTapDown: _onTapDown,
-      heroAttributes:
-          PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
+      heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       initialScale: PhotoViewComputedScale.contained * 0.99,
       maxScale: 1.0,
@@ -539,8 +608,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           asset: asset,
           image: Image(
             key: ValueKey(asset),
-            image:
-                getFullImageProvider(asset, size: Size(ctx.width, ctx.height)),
+            image: getFullImageProvider(asset, size: Size(ctx.width, ctx.height)),
             fit: BoxFit.contain,
             height: ctx.height,
             width: ctx.width,
@@ -561,6 +629,22 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Using multiple selectors to avoid unnecessary rebuilds for other state changes
     ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
     ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
+    ref.watch(assetViewerProvider.select((s) => s.stackIndex));
+    ref.watch(isPlayingMotionVideoProvider);
+
+    // Listen for casting changes and send initial asset to the cast provider
+    ref.listen(castProvider.select((value) => value.isCasting), (_, isCasting) async {
+      if (!isCasting) return;
+
+      final asset = ref.read(currentAssetNotifier);
+      if (asset == null) return;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _handleCasting(asset);
+      });
+    });
+
+    final isInLockedView = ref.watch(inLockedViewProvider);
 
     // Currently it is not possible to scroll the asset when the bottom sheet is open all the way.
     // Issue: https://github.com/flutter/flutter/issues/109037
@@ -588,7 +672,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           backgroundDecoration: BoxDecoration(color: backgroundColor),
           enablePanAlways: true,
         ),
-        bottomNavigationBar: const ViewerBottomBar(),
+        bottomNavigationBar: showingBottomSheet
+            ? const SizedBox.shrink()
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const AssetStackRow(),
+                  if (!isInLockedView) const ViewerBottomBar(),
+                ],
+              ),
       ),
     );
   }

@@ -24,8 +24,7 @@ class IsarDeviceAssetRepository extends IsarDatabaseRepository {
 
   Future<bool> updateAll(List<DeviceAsset> assetHash) {
     return transaction(() async {
-      await _db.deviceAssetEntitys
-          .putAll(assetHash.map(DeviceAssetEntity.fromDto).toList());
+      await _db.deviceAssetEntitys.putAll(assetHash.map(DeviceAssetEntity.fromDto).toList());
       return true;
     });
   }

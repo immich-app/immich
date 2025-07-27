@@ -8,20 +8,21 @@ extension Album: @unchecked Sendable, AppEntity, Identifiable {
 
   struct AlbumQuery: EntityQuery {
     func entities(for identifiers: [Album.ID]) async throws -> [Album] {
-      // use cached albums to search
-      var albums = (try? await AlbumCache.shared.getAlbums()) ?? []
-      albums.insert(NO_ALBUM, at: 0)
-
-      return albums.filter {
+      return await suggestedEntities().filter {
         identifiers.contains($0.id)
       }
     }
 
-    func suggestedEntities() async throws -> [Album] {
-      var albums = (try? await AlbumCache.shared.getAlbums(refresh: true)) ?? []
-      albums.insert(NO_ALBUM, at: 0)
+    func suggestedEntities() async -> [Album] {
+      let albums = (try? await AlbumCache.shared.getAlbums()) ?? []
 
-      return albums
+      let options =
+        [
+          NONE,
+          FAVORITES,
+        ] + albums
+
+      return options
     }
   }
 
@@ -34,8 +35,6 @@ extension Album: @unchecked Sendable, AppEntity, Identifiable {
     DisplayRepresentation(title: "\(albumName)")
   }
 }
-
-let NO_ALBUM = Album(id: "NONE", albumName: "None")
 
 struct RandomConfigurationAppIntent: WidgetConfigurationIntent {
   static var title: LocalizedStringResource { "Select Album" }
@@ -64,25 +63,24 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     -> ImageEntry
   {
     let cacheKey = "random_none_\(context.family.rawValue)"
-    
+
     guard let api = try? await ImmichAPI() else {
-      return ImageEntry.handleCacheFallback(for: cacheKey, error: .noLogin).entries.first!
+      return ImageEntry.handleError(for: cacheKey, error: .noLogin).entries
+        .first!
     }
 
     guard
       let randomImage = try? await api.fetchSearchResults(
-        with: SearchFilters(size: 1)
+        with: Album.NONE.filter
       ).first,
-      var entry = try? await ImageEntry.build(
+      let entry = try? await ImageEntry.build(
         api: api,
         asset: randomImage,
         dateOffset: 0
       )
     else {
-      return ImageEntry.handleCacheFallback(for: cacheKey).entries.first!
+      return ImageEntry.handleError(for: cacheKey).entries.first!
     }
-
-    entry.resize()
 
     return entry
   }
@@ -97,52 +95,36 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     let now = Date()
 
     // nil if album is NONE or nil
-    let albumId =
-      configuration.album?.id != "NONE" ? configuration.album?.id : nil
-    let albumName: String? =
-      albumId != nil ? configuration.album?.albumName : nil
+    let album = configuration.album ?? Album.NONE
+    let albumName = album.isVirtual ? nil : album.albumName
 
-    let cacheKey = "random_\(albumId ?? "none")_\(context.family.rawValue)"
+    let cacheKey = "random_\(album.id)_\(context.family.rawValue)"
 
     // If we don't have a server config, return an entry with an error
     guard let api = try? await ImmichAPI() else {
-      return ImageEntry.handleCacheFallback(for: cacheKey, error: .noLogin)
-    }
-
-    if albumId != nil {
-      // make sure the album exists on server, otherwise show error
-      guard let albums = try? await api.fetchAlbums() else {
-        return ImageEntry.handleCacheFallback(for: cacheKey)
-      }
-
-      if !albums.contains(where: { $0.id == albumId }) {
-        return ImageEntry.handleCacheFallback(
-          for: cacheKey,
-          error: .albumNotFound
-        )
-      }
+      return ImageEntry.handleError(for: cacheKey, error: .noLogin)
     }
 
     // build entries
-    entries.append(
-      contentsOf: (try? await generateRandomEntries(
+    // this must be a do/catch since we need to
+    // distinguish between a network fail and an empty search
+    do {
+      let search = try await generateRandomEntries(
         api: api,
         now: now,
         count: 12,
-        albumId: albumId,
+        filter: album.filter,
         subtitle: configuration.showAlbumName ? albumName : nil
-      ))
-        ?? []
-    )
+      )
 
-    // Load or save a cached asset for when network conditions are bad
-    if entries.count == 0 {
-      return ImageEntry.handleCacheFallback(for: cacheKey)
-    }
+      // Load or save a cached asset for when network conditions are bad
+      if search.count == 0 {
+        return ImageEntry.handleError(for: cacheKey, error: .noAssetsAvailable)
+      }
 
-    // Resize all images to something that can be stored by iOS
-    for i in entries.indices {
-      entries[i].resize()
+      entries.append(contentsOf: search)
+    } catch {
+      return ImageEntry.handleError(for: cacheKey)
     }
 
     // cache the last image

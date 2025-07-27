@@ -17,11 +17,8 @@ class FileInfo extends StatelessWidget {
 
     final height = asset.orientatedHeight ?? asset.height;
     final width = asset.orientatedWidth ?? asset.width;
-    String resolution =
-        height != null && width != null ? "$width x $height  " : "";
-    String fileSize = asset.exifInfo?.fileSize != null
-        ? formatBytes(asset.exifInfo!.fileSize!)
-        : "";
+    String resolution = height != null && width != null ? "$width x $height  " : "";
+    String fileSize = asset.exifInfo?.fileSize != null ? formatBytes(asset.exifInfo!.fileSize!) : "";
     String text = resolution + fileSize;
     final imgSizeString = text.isNotEmpty ? text : null;
 

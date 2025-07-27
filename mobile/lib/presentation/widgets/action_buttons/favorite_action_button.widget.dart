@@ -39,9 +39,7 @@ class FavoriteActionButton extends ConsumerWidget {
     if (context.mounted) {
       ImmichToast.show(
         context: context,
-        msg: result.success
-            ? successMessage
-            : 'scaffold_body_error_occurred'.t(context: context),
+        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
         gravity: ToastGravity.BOTTOM,
         toastType: result.success ? ToastType.success : ToastType.error,
       );

@@ -17,7 +17,7 @@ enum UploadStatus {
   notFound,
   failed,
   canceled,
-  waitingtoRetry,
+  waitingToRetry,
   paused,
 }
 
@@ -90,8 +90,7 @@ class ShareIntentAttachment {
 
   String toJson() => json.encode(toMap());
 
-  factory ShareIntentAttachment.fromJson(String source) =>
-      ShareIntentAttachment.fromMap(
+  factory ShareIntentAttachment.fromJson(String source) => ShareIntentAttachment.fromMap(
         json.decode(source) as Map<String, dynamic>,
       );
 

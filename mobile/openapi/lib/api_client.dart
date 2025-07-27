@@ -570,8 +570,14 @@ class ApiClient {
           return SyncAssetDeleteV1.fromJson(value);
         case 'SyncAssetExifV1':
           return SyncAssetExifV1.fromJson(value);
+        case 'SyncAssetFaceDeleteV1':
+          return SyncAssetFaceDeleteV1.fromJson(value);
+        case 'SyncAssetFaceV1':
+          return SyncAssetFaceV1.fromJson(value);
         case 'SyncAssetV1':
           return SyncAssetV1.fromJson(value);
+        case 'SyncAuthUserV1':
+          return SyncAuthUserV1.fromJson(value);
         case 'SyncEntityType':
           return SyncEntityTypeTypeTransformer().decode(value);
         case 'SyncMemoryAssetDeleteV1':
@@ -600,6 +606,10 @@ class ApiClient {
           return SyncStreamDto.fromJson(value);
         case 'SyncUserDeleteV1':
           return SyncUserDeleteV1.fromJson(value);
+        case 'SyncUserMetadataDeleteV1':
+          return SyncUserMetadataDeleteV1.fromJson(value);
+        case 'SyncUserMetadataV1':
+          return SyncUserMetadataV1.fromJson(value);
         case 'SyncUserV1':
           return SyncUserV1.fromJson(value);
         case 'SystemConfigBackupsDto':
@@ -634,6 +644,8 @@ class ApiClient {
           return SystemConfigMetadataDto.fromJson(value);
         case 'SystemConfigNewVersionCheckDto':
           return SystemConfigNewVersionCheckDto.fromJson(value);
+        case 'SystemConfigNightlyTasksDto':
+          return SystemConfigNightlyTasksDto.fromJson(value);
         case 'SystemConfigNotificationsDto':
           return SystemConfigNotificationsDto.fromJson(value);
         case 'SystemConfigOAuthDto':
@@ -720,6 +732,8 @@ class ApiClient {
           return UserAvatarColorTypeTransformer().decode(value);
         case 'UserLicense':
           return UserLicense.fromJson(value);
+        case 'UserMetadataKey':
+          return UserMetadataKeyTypeTransformer().decode(value);
         case 'UserPreferencesResponseDto':
           return UserPreferencesResponseDto.fromJson(value);
         case 'UserPreferencesUpdateDto':

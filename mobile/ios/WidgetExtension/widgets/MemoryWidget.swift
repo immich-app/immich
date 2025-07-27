@@ -23,26 +23,27 @@ struct ImmichMemoryProvider: TimelineProvider {
 
     Task {
       guard let api = try? await ImmichAPI() else {
-        completion(ImageEntry.handleCacheFallback(for: cacheKey, error: .noLogin).entries.first!)
+        completion(
+          ImageEntry.handleError(for: cacheKey, error: .noLogin).entries.first!
+        )
         return
       }
 
       guard let memories = try? await api.fetchMemory(for: Date.now)
       else {
-        completion(ImageEntry.handleCacheFallback(for: cacheKey).entries.first!)
+        completion(ImageEntry.handleError(for: cacheKey).entries.first!)
         return
       }
 
       for memory in memories {
         if let asset = memory.assets.first(where: { $0.type == .image }),
-          var entry = try? await ImageEntry.build(
+          let entry = try? await ImageEntry.build(
             api: api,
             asset: asset,
             dateOffset: 0,
             subtitle: getYearDifferenceSubtitle(assetYear: memory.data.year)
           )
         {
-          entry.resize()
           completion(entry)
           return
         }
@@ -50,20 +51,17 @@ struct ImmichMemoryProvider: TimelineProvider {
 
       // fallback to random image
       guard
-        let randomImage = try? await api.fetchSearchResults(
-          with: SearchFilters(size: 1)
-        ).first,
-        var imageEntry = try? await ImageEntry.build(
+        let randomImage = try? await api.fetchSearchResults().first,
+        let imageEntry = try? await ImageEntry.build(
           api: api,
           asset: randomImage,
           dateOffset: 0
         )
       else {
-        completion(ImageEntry.handleCacheFallback(for: cacheKey).entries.first!)
+        completion(ImageEntry.handleError(for: cacheKey).entries.first!)
         return
       }
 
-      imageEntry.resize()
       completion(imageEntry)
     }
   }
@@ -80,7 +78,7 @@ struct ImmichMemoryProvider: TimelineProvider {
 
       guard let api = try? await ImmichAPI() else {
         completion(
-          ImageEntry.handleCacheFallback(for: cacheKey, error: .noLogin)
+          ImageEntry.handleError(for: cacheKey, error: .noLogin)
         )
         return
       }
@@ -119,25 +117,28 @@ struct ImmichMemoryProvider: TimelineProvider {
       // If we didnt add any memory images (some failure occured or no images in memory),
       // default to 12 hours of random photos
       if entries.count == 0 {
-        entries.append(
-          contentsOf: (try? await generateRandomEntries(
+        // this must be a do/catch since we need to
+        // distinguish between a network fail and an empty search
+        do {
+          let search = try await generateRandomEntries(
             api: api,
             now: now,
             count: 12
-          )) ?? []
-        )
-      }
+          )
 
-      // If we fail to fetch images, we still want to add an entry
-      // with a nil image and an error
-      if entries.count == 0 {
-        completion(ImageEntry.handleCacheFallback(for: cacheKey))
-        return
-      }
+          // Load or save a cached asset for when network conditions are bad
+          if search.count == 0 {
+            completion(
+              ImageEntry.handleError(for: cacheKey, error: .noAssetsAvailable)
+            )
+            return
+          }
 
-      // Resize all images to something that can be stored by iOS
-      for i in entries.indices {
-        entries[i].resize()
+          entries.append(contentsOf: search)
+        } catch {
+          completion(ImageEntry.handleError(for: cacheKey))
+          return
+        }
       }
 
       // cache the last image

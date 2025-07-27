@@ -37,8 +37,7 @@ class DriftAssetSelectionTimelinePage extends ConsumerWidget {
               );
             }
 
-            final timelineService =
-                ref.watch(timelineFactoryProvider).remoteAssets(user.id);
+            final timelineService = ref.watch(timelineFactoryProvider).remoteAssets(user.id);
             ref.onDispose(timelineService.dispose);
             return timelineService;
           },

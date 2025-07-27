@@ -1,11 +1,12 @@
-import { IsBoolean } from 'class-validator';
+import { ValidateBoolean } from 'src/validation';
 
 export class AdminOnboardingUpdateDto {
-  @IsBoolean()
+  @ValidateBoolean()
   isOnboarded!: boolean;
 }
 
 export class AdminOnboardingResponseDto {
+  @ValidateBoolean()
   isOnboarded!: boolean;
 }
 

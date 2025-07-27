@@ -50,6 +50,5 @@ class ServerConfig {
   }
 
   @override
-  int get hashCode =>
-      trashDays.hashCode ^ oauthButtonText.hashCode ^ externalDomain.hashCode;
+  int get hashCode => trashDays.hashCode ^ oauthButtonText.hashCode ^ externalDomain.hashCode;
 }

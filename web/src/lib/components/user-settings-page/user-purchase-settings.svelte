@@ -5,7 +5,6 @@
   import PurchaseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { dateFormats } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { purchaseStore } from '$lib/stores/purchase.store';
   import { preferences, user } from '$lib/stores/user.store';
@@ -20,7 +19,7 @@
     isHttpError,
     type LicenseResponseDto,
   } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, modalManager } from '@immich/ui';
   import { mdiKey } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';

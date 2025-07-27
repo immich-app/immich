@@ -9,30 +9,17 @@ import 'package:immich_mobile/utils/hash.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:isar/isar.dart';
 
-final timelineRepositoryProvider =
-    Provider((ref) => TimelineRepository(ref.watch(dbProvider)));
+final timelineRepositoryProvider = Provider((ref) => TimelineRepository(ref.watch(dbProvider)));
 
 class TimelineRepository extends DatabaseRepository {
   const TimelineRepository(super.db);
 
   Future<List<String>> getTimelineUserIds(String id) {
-    return db.users
-        .filter()
-        .inTimelineEqualTo(true)
-        .or()
-        .idEqualTo(id)
-        .idProperty()
-        .findAll();
+    return db.users.filter().inTimelineEqualTo(true).or().idEqualTo(id).idProperty().findAll();
   }
 
   Stream<List<String>> watchTimelineUsers(String id) {
-    return db.users
-        .filter()
-        .inTimelineEqualTo(true)
-        .or()
-        .idEqualTo(id)
-        .idProperty()
-        .watch();
+    return db.users.filter().inTimelineEqualTo(true).or().idEqualTo(id).idProperty().watch();
   }
 
   Stream<RenderList> watchArchiveTimeline(String userId) {
@@ -67,11 +54,7 @@ class TimelineRepository extends DatabaseRepository {
     Album album,
     GroupAssetsBy groupAssetByOption,
   ) {
-    final query = album.assets
-        .filter()
-        .isTrashedEqualTo(false)
-        .not()
-        .visibilityEqualTo(AssetVisibilityEnum.locked);
+    final query = album.assets.filter().isTrashedEqualTo(false).not().visibilityEqualTo(AssetVisibilityEnum.locked);
 
     final withSortedOption = switch (album.sortOrder) {
       SortOrder.asc => query.sortByFileCreatedAt().thenByFileName(),
@@ -82,12 +65,7 @@ class TimelineRepository extends DatabaseRepository {
   }
 
   Stream<RenderList> watchTrashTimeline(String userId) {
-    final query = db.assets
-        .filter()
-        .ownerIdEqualTo(fastHash(userId))
-        .isTrashedEqualTo(true)
-        .sortByFileCreatedAtDesc()
-        .thenByFileNameDesc();
+    final query = db.assets.filter().ownerIdEqualTo(fastHash(userId)).isTrashedEqualTo(true).sortByFileCreatedAtDesc().thenByFileNameDesc();
 
     return _watchRenderList(query, GroupAssetsBy.none);
   }

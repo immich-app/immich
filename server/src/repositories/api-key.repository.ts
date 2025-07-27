@@ -13,45 +13,45 @@ export class ApiKeyRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   create(dto: Insertable<ApiKeyTable>) {
-    return this.db.insertInto('api_keys').values(dto).returning(columns.apiKey).executeTakeFirstOrThrow();
+    return this.db.insertInto('api_key').values(dto).returning(columns.apiKey).executeTakeFirstOrThrow();
   }
 
   async update(userId: string, id: string, dto: Updateable<ApiKeyTable>) {
     return this.db
-      .updateTable('api_keys')
+      .updateTable('api_key')
       .set(dto)
-      .where('api_keys.userId', '=', userId)
+      .where('api_key.userId', '=', userId)
       .where('id', '=', asUuid(id))
       .returning(columns.apiKey)
       .executeTakeFirstOrThrow();
   }
 
   async delete(userId: string, id: string) {
-    await this.db.deleteFrom('api_keys').where('userId', '=', userId).where('id', '=', asUuid(id)).execute();
+    await this.db.deleteFrom('api_key').where('userId', '=', userId).where('id', '=', asUuid(id)).execute();
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
   getKey(hashedToken: string) {
     return this.db
-      .selectFrom('api_keys')
+      .selectFrom('api_key')
       .select((eb) => [
         ...columns.authApiKey,
         jsonObjectFrom(
           eb
-            .selectFrom('users')
+            .selectFrom('user')
             .select(columns.authUser)
-            .whereRef('users.id', '=', 'api_keys.userId')
-            .where('users.deletedAt', 'is', null),
+            .whereRef('user.id', '=', 'api_key.userId')
+            .where('user.deletedAt', 'is', null),
         ).as('user'),
       ])
-      .where('api_keys.key', '=', hashedToken)
+      .where('api_key.key', '=', hashedToken)
       .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   getById(userId: string, id: string) {
     return this.db
-      .selectFrom('api_keys')
+      .selectFrom('api_key')
       .select(columns.apiKey)
       .where('id', '=', asUuid(id))
       .where('userId', '=', userId)
@@ -61,7 +61,7 @@ export class ApiKeyRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getByUserId(userId: string) {
     return this.db
-      .selectFrom('api_keys')
+      .selectFrom('api_key')
       .select(columns.apiKey)
       .where('userId', '=', userId)
       .orderBy('createdAt', 'desc')

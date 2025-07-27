@@ -1,13 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' show useState;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/local_auth.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/forms/pin_registration_form.dart';
 import 'package:immich_mobile/widgets/forms/pin_verification_form.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 
 @RoutePage()
 class PinAuthPage extends HookConsumerWidget {
@@ -19,13 +20,13 @@ class PinAuthPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final localAuthState = ref.watch(localAuthProvider);
     final showPinRegistrationForm = useState(createPinCode);
+    final isBetaTimeline = Store.isBetaTimelineEnabled;
 
     Future<void> registerBiometric(String pinCode) async {
-      final isRegistered =
-          await ref.read(localAuthProvider.notifier).registerBiometric(
-                context,
-                pinCode,
-              );
+      final isRegistered = await ref.read(localAuthProvider.notifier).registerBiometric(
+            context,
+            pinCode,
+          );
 
       if (isRegistered) {
         context.showSnackBar(
@@ -39,7 +40,11 @@ class PinAuthPage extends HookConsumerWidget {
           ),
         );
 
-        context.replaceRoute(const LockedRoute());
+        if (isBetaTimeline) {
+          context.replaceRoute(const DriftLockedFolderRoute());
+        } else {
+          context.replaceRoute(const LockedRoute());
+        }
       }
     }
 
@@ -93,8 +98,13 @@ class PinAuthPage extends HookConsumerWidget {
                       Center(
                         child: PinVerificationForm(
                           autoFocus: true,
-                          onSuccess: (_) =>
-                              context.replaceRoute(const LockedRoute()),
+                          onSuccess: (_) {
+                            if (isBetaTimeline) {
+                              context.replaceRoute(const DriftLockedFolderRoute());
+                            } else {
+                              context.replaceRoute(const LockedRoute());
+                            }
+                          },
                         ),
                       ),
                       const SizedBox(height: 24),

@@ -26,10 +26,8 @@ class Thumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thumbHash =
-        asset is RemoteAsset ? (asset as RemoteAsset).thumbHash : null;
-    final provider =
-        getThumbnailImageProvider(asset: asset, remoteId: remoteId, size: size);
+    final thumbHash = asset is RemoteAsset ? (asset as RemoteAsset).thumbHash : null;
+    final provider = getThumbnailImageProvider(asset: asset, remoteId: remoteId, size: size);
 
     return OctoImage.fromSet(
       image: provider,
@@ -72,8 +70,7 @@ OctoErrorBuilder _blurHashErrorBuilder(
   BoxFit? fit,
 }) =>
     (context, e, s) {
-      Logger("ImThumbnail")
-          .warning("Error loading thumbnail for ${asset?.name}", e, s);
+      Logger("ImThumbnail").warning("Error loading thumbnail for ${asset?.name}", e, s);
       provider?.evict();
       return Stack(
         alignment: Alignment.center,

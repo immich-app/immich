@@ -1,3 +1,6 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:convert';
+
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 
 // TODO: Rename to User once Isar is removed
@@ -122,4 +125,82 @@ quotaSizeInBytes: $quotaSizeInBytes,
       isPartnerSharedWith.hashCode ^
       quotaUsageInBytes.hashCode ^
       quotaSizeInBytes.hashCode;
+}
+
+class PartnerUserDto {
+  final String id;
+  final String email;
+  final String name;
+  final bool inTimeline;
+
+  final String? profileImagePath;
+
+  const PartnerUserDto({
+    required this.id,
+    required this.email,
+    required this.name,
+    required this.inTimeline,
+    this.profileImagePath,
+  });
+
+  PartnerUserDto copyWith({
+    String? id,
+    String? email,
+    String? name,
+    bool? inTimeline,
+    String? profileImagePath,
+  }) {
+    return PartnerUserDto(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      name: name ?? this.name,
+      inTimeline: inTimeline ?? this.inTimeline,
+      profileImagePath: profileImagePath ?? this.profileImagePath,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'id': id,
+      'email': email,
+      'name': name,
+      'inTimeline': inTimeline,
+      'profileImagePath': profileImagePath,
+    };
+  }
+
+  factory PartnerUserDto.fromMap(Map<String, dynamic> map) {
+    return PartnerUserDto(
+      id: map['id'] as String,
+      email: map['email'] as String,
+      name: map['name'] as String,
+      inTimeline: map['inTimeline'] as bool,
+      profileImagePath: map['profileImagePath'] != null ? map['profileImagePath'] as String : null,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory PartnerUserDto.fromJson(String source) => PartnerUserDto.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  @override
+  String toString() {
+    return 'PartnerUserDto(id: $id, email: $email, name: $name, inTimeline: $inTimeline, profileImagePath: $profileImagePath)';
+  }
+
+  @override
+  bool operator ==(covariant PartnerUserDto other) {
+    if (identical(this, other)) return true;
+
+    return other.id == id &&
+        other.email == email &&
+        other.name == name &&
+        other.inTimeline == inTimeline &&
+        other.profileImagePath == profileImagePath;
+  }
+
+  @override
+  int get hashCode {
+    return id.hashCode ^ email.hashCode ^ name.hashCode ^ inTimeline.hashCode ^ profileImagePath.hashCode;
+  }
 }

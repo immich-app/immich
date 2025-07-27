@@ -10,7 +10,6 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
   import LibraryRenameModal from '$lib/modals/LibraryRenameModal.svelte';
   import LibraryUserPickerModal from '$lib/modals/LibraryUserPickerModal.svelte';
@@ -32,7 +31,7 @@
     type LibraryStatsResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, Text } from '@immich/ui';
+  import { Button, modalManager, Text } from '@immich/ui';
   import { mdiDotsVertical, mdiPlusBoxOutline, mdiSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';

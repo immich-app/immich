@@ -55,9 +55,7 @@ void main() {
     expect(find.byType(ConfirmDialog), findsOneWidget);
   });
 
-  testWidgets(
-      'Ok action in ConfirmDialog should call onDismiss with activityId',
-      (tester) async {
+  testWidgets('Ok action in ConfirmDialog should call onDismiss with activityId', (tester) async {
     String? receivedActivityId;
     await tester.pumpConsumerWidget(
       DismissibleActivity(

@@ -46,41 +46,33 @@ class DriftMemoryCard extends StatelessWidget {
               BoxFit fit = BoxFit.contain;
               if (asset.width != null && asset.height != null) {
                 final aspectRatio = asset.width! / asset.height!;
-                final phoneAspectRatio =
-                    constraints.maxWidth / constraints.maxHeight;
+                final phoneAspectRatio = constraints.maxWidth / constraints.maxHeight;
                 // Look for a 25% difference in either direction
-                if (phoneAspectRatio * .75 < aspectRatio &&
-                    phoneAspectRatio * 1.25 > aspectRatio) {
+                if (phoneAspectRatio * .75 < aspectRatio && phoneAspectRatio * 1.25 > aspectRatio) {
                   // Cover to look nice if we have nearly the same aspect ratio
                   fit = BoxFit.cover;
                 }
               }
 
               if (asset.isImage) {
-                return Hero(
-                  tag: 'memory-${asset.id}',
-                  child: FullImage(
-                    asset,
-                    fit: fit,
-                    size: const Size(double.infinity, double.infinity),
-                  ),
+                return FullImage(
+                  asset,
+                  fit: fit,
+                  size: const Size(double.infinity, double.infinity),
                 );
               } else {
-                return Hero(
-                  tag: 'memory-${asset.id}',
-                  child: SizedBox(
-                    width: context.width,
-                    height: context.height,
-                    child: NativeVideoViewer(
-                      key: ValueKey(asset.id),
-                      asset: asset,
-                      showControls: false,
-                      playbackDelayFactor: 2,
-                      image: FullImage(
-                        asset,
-                        size: Size(context.width, context.height),
-                        fit: BoxFit.contain,
-                      ),
+                return SizedBox(
+                  width: context.width,
+                  height: context.height,
+                  child: NativeVideoViewer(
+                    key: ValueKey(asset.id),
+                    asset: asset,
+                    showControls: false,
+                    playbackDelayFactor: 2,
+                    image: FullImage(
+                      asset,
+                      size: Size(context.width, context.height),
+                      fit: BoxFit.contain,
                     ),
                   ),
                 );

@@ -34,8 +34,7 @@ import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
-final backupProvider =
-    StateNotifierProvider<BackupNotifier, BackUpState>((ref) {
+final backupProvider = StateNotifierProvider<BackupNotifier, BackUpState>((ref) {
   return BackupNotifier(
     ref.watch(backupServiceProvider),
     ref.watch(serverInfoServiceProvider),
@@ -74,8 +73,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
             autoBackup: Store.get(StoreKey.autoBackup, false),
             backgroundBackup: Store.get(StoreKey.backgroundBackup, false),
             backupRequireWifi: Store.get(StoreKey.backupRequireWifi, true),
-            backupRequireCharging:
-                Store.get(StoreKey.backupRequireCharging, false),
+            backupRequireCharging: Store.get(StoreKey.backupRequireCharging, false),
             backupTriggerDelay: Store.get(StoreKey.backupTriggerDelay, 5000),
             serverInfo: const ServerDiskInfo(
               diskAvailable: "0",
@@ -124,16 +122,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       removeExcludedAlbumForBackup(album);
     }
 
-    state = state
-        .copyWith(selectedBackupAlbums: {...state.selectedBackupAlbums, album});
+    state = state.copyWith(selectedBackupAlbums: {...state.selectedBackupAlbums, album});
   }
 
   void addExcludedAlbumForBackup(AvailableAlbum album) {
     if (state.selectedBackupAlbums.contains(album)) {
       removeAlbumForBackup(album);
     }
-    state = state
-        .copyWith(excludedBackupAlbums: {...state.excludedBackupAlbums, album});
+    state = state.copyWith(excludedBackupAlbums: {...state.excludedBackupAlbums, album});
   }
 
   void removeAlbumForBackup(AvailableAlbum album) {
@@ -180,10 +176,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     required void Function() onBatteryInfo,
   }) async {
     assert(
-      enabled != null ||
-          requireWifi != null ||
-          requireCharging != null ||
-          triggerDelay != null,
+      enabled != null || requireWifi != null || requireCharging != null || triggerDelay != null,
     );
     final bool wasEnabled = state.backgroundBackup;
     final bool wasWifi = state.backupRequireWifi;
@@ -257,9 +250,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     for (Album album in albums) {
       AvailableAlbum availableAlbum = AvailableAlbum(
         album: album,
-        assetCount: await ref
-            .read(albumMediaRepositoryProvider)
-            .getAssetCount(album.localId!),
+        assetCount: await ref.read(albumMediaRepositoryProvider).getAssetCount(album.localId!),
       );
 
       availableAlbums.add(availableAlbum);
@@ -268,10 +259,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
     state = state.copyWith(availableAlbums: availableAlbums);
 
-    final List<BackupAlbum> excludedBackupAlbums =
-        await _backupAlbumService.getAllBySelection(BackupSelection.exclude);
-    final List<BackupAlbum> selectedBackupAlbums =
-        await _backupAlbumService.getAllBySelection(BackupSelection.select);
+    final List<BackupAlbum> excludedBackupAlbums = await _backupAlbumService.getAllBySelection(BackupSelection.exclude);
+    final List<BackupAlbum> selectedBackupAlbums = await _backupAlbumService.getAllBySelection(BackupSelection.select);
 
     final Set<AvailableAlbum> selectedAlbums = {};
     for (final BackupAlbum ba in selectedBackupAlbums) {
@@ -281,8 +270,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         selectedAlbums.add(
           AvailableAlbum(
             album: albumAsset,
-            assetCount:
-                await _albumMediaRepository.getAssetCount(albumAsset.localId!),
+            assetCount: await _albumMediaRepository.getAssetCount(albumAsset.localId!),
             lastBackup: ba.lastBackup,
           ),
         );
@@ -299,9 +287,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         excludedAlbums.add(
           AvailableAlbum(
             album: albumAsset,
-            assetCount: await ref
-                .read(albumMediaRepositoryProvider)
-                .getAssetCount(albumAsset.localId!),
+            assetCount: await ref.read(albumMediaRepositoryProvider).getAssetCount(albumAsset.localId!),
             lastBackup: ba.lastBackup,
           ),
         );
@@ -335,17 +321,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final Set<BackupCandidate> assetsFromExcludedAlbums = {};
 
     for (final album in state.selectedBackupAlbums) {
-      final assetCount = await ref
-          .read(albumMediaRepositoryProvider)
-          .getAssetCount(album.album.localId!);
+      final assetCount = await ref.read(albumMediaRepositoryProvider).getAssetCount(album.album.localId!);
 
       if (assetCount == 0) {
         continue;
       }
 
-      final assets = await ref
-          .read(albumMediaRepositoryProvider)
-          .getAssets(album.album.localId!);
+      final assets = await ref.read(albumMediaRepositoryProvider).getAssets(album.album.localId!);
 
       // Add album's name to the asset info
       for (final asset in assets) {
@@ -370,17 +352,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     for (final album in state.excludedBackupAlbums) {
-      final assetCount = await ref
-          .read(albumMediaRepositoryProvider)
-          .getAssetCount(album.album.localId!);
+      final assetCount = await ref.read(albumMediaRepositoryProvider).getAssetCount(album.album.localId!);
 
       if (assetCount == 0) {
         continue;
       }
 
-      final assets = await ref
-          .read(albumMediaRepositoryProvider)
-          .getAssets(album.album.localId!);
+      final assets = await ref.read(albumMediaRepositoryProvider).getAssets(album.album.localId!);
 
       for (final asset in assets) {
         assetsFromExcludedAlbums.add(
@@ -389,8 +367,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       }
     }
 
-    final Set<BackupCandidate> allUniqueAssets =
-        assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
+    final Set<BackupCandidate> allUniqueAssets = assetsFromSelectedAlbums.difference(assetsFromExcludedAlbums);
 
     final allAssetsInDatabase = await _backupService.getDeviceBackupAsset();
 
@@ -399,11 +376,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     // Find asset that were backup from selected albums
-    final Set<String> selectedAlbumsBackupAssets =
-        Set.from(allUniqueAssets.map((e) => e.asset.localId));
+    final Set<String> selectedAlbumsBackupAssets = Set.from(allUniqueAssets.map((e) => e.asset.localId));
 
-    selectedAlbumsBackupAssets
-        .removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
+    selectedAlbumsBackupAssets.removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
 
     // Remove duplicated asset from all unique assets
     allUniqueAssets.removeWhere(
@@ -459,8 +434,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     final candidates = selected.followedBy(excluded).toList();
     candidates.sortBy((e) => e.id);
 
-    final savedBackupAlbums =
-        await _backupAlbumService.getAll(sort: BackupAlbumSort.id);
+    final savedBackupAlbums = await _backupAlbumService.getAll(sort: BackupAlbumSort.id);
     final List<int> toDelete = [];
     final List<BackupAlbum> toUpsert = [];
 
@@ -469,8 +443,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       candidates,
       compare: (BackupAlbum a, BackupAlbum b) => a.id.compareTo(b.id),
       both: (BackupAlbum a, BackupAlbum b) {
-        b.lastBackup =
-            a.lastBackup.isAfter(b.lastBackup) ? a.lastBackup : b.lastBackup;
+        b.lastBackup = a.lastBackup.isAfter(b.lastBackup) ? a.lastBackup : b.lastBackup;
         toUpsert.add(b);
         return true;
       },
@@ -569,8 +542,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       state = state.copyWith(
         allUniqueAssets: state.allUniqueAssets
             .where(
-              (candidate) =>
-                  candidate.asset.localId != result.candidate.asset.localId,
+              (candidate) => candidate.asset.localId != result.candidate.asset.localId,
             )
             .toSet(),
       );
@@ -587,21 +559,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       );
     }
 
-    if (state.allUniqueAssets.length -
-            state.selectedAlbumsBackupAssetsIds.length ==
-        0) {
-      final latestAssetBackup = state.allUniqueAssets
-          .map((candidate) => candidate.asset.fileModifiedAt)
-          .reduce(
+    if (state.allUniqueAssets.length - state.selectedAlbumsBackupAssetsIds.length == 0) {
+      final latestAssetBackup = state.allUniqueAssets.map((candidate) => candidate.asset.fileModifiedAt).reduce(
             (v, e) => e.isAfter(v) ? e : v,
           );
       state = state.copyWith(
-        selectedBackupAlbums: state.selectedBackupAlbums
-            .map((e) => e.copyWith(lastBackup: latestAssetBackup))
-            .toSet(),
-        excludedBackupAlbums: state.excludedBackupAlbums
-            .map((e) => e.copyWith(lastBackup: latestAssetBackup))
-            .toSet(),
+        selectedBackupAlbums: state.selectedBackupAlbums.map((e) => e.copyWith(lastBackup: latestAssetBackup)).toSet(),
+        excludedBackupAlbums: state.excludedBackupAlbums.map((e) => e.copyWith(lastBackup: latestAssetBackup)).toSet(),
         backupProgress: BackUpProgressEnum.done,
         progressInPercentage: 0.0,
         progressInFileSize: "0 B / 0 B",
@@ -696,10 +660,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   Future<void> resumeBackup() async {
-    final List<BackupAlbum> selectedBackupAlbums =
-        await _backupAlbumService.getAllBySelection(BackupSelection.select);
-    final List<BackupAlbum> excludedBackupAlbums =
-        await _backupAlbumService.getAllBySelection(BackupSelection.exclude);
+    final List<BackupAlbum> selectedBackupAlbums = await _backupAlbumService.getAllBySelection(BackupSelection.select);
+    final List<BackupAlbum> excludedBackupAlbums = await _backupAlbumService.getAllBySelection(BackupSelection.exclude);
     Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
     Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
     if (selectedAlbums.isNotEmpty) {

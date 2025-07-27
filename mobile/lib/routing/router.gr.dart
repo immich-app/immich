@@ -13,8 +13,7 @@ part of 'router.dart';
 /// generated route for
 /// [ActivitiesPage]
 class ActivitiesRoute extends PageRouteInfo<void> {
-  const ActivitiesRoute({List<PageRouteInfo>? children})
-      : super(ActivitiesRoute.name, initialChildren: children);
+  const ActivitiesRoute({List<PageRouteInfo>? children}) : super(ActivitiesRoute.name, initialChildren: children);
 
   static const String name = 'ActivitiesRoute';
 
@@ -28,8 +27,7 @@ class ActivitiesRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [AlbumAdditionalSharedUserSelectionPage]
-class AlbumAdditionalSharedUserSelectionRoute
-    extends PageRouteInfo<AlbumAdditionalSharedUserSelectionRouteArgs> {
+class AlbumAdditionalSharedUserSelectionRoute extends PageRouteInfo<AlbumAdditionalSharedUserSelectionRouteArgs> {
   AlbumAdditionalSharedUserSelectionRoute({
     Key? key,
     required Album album,
@@ -75,8 +73,7 @@ class AlbumAdditionalSharedUserSelectionRouteArgs {
 
 /// generated route for
 /// [AlbumAssetSelectionPage]
-class AlbumAssetSelectionRoute
-    extends PageRouteInfo<AlbumAssetSelectionRouteArgs> {
+class AlbumAssetSelectionRoute extends PageRouteInfo<AlbumAssetSelectionRouteArgs> {
   AlbumAssetSelectionRoute({
     Key? key,
     required Set<Asset> existingAssets,
@@ -129,8 +126,7 @@ class AlbumAssetSelectionRouteArgs {
 /// generated route for
 /// [AlbumOptionsPage]
 class AlbumOptionsRoute extends PageRouteInfo<void> {
-  const AlbumOptionsRoute({List<PageRouteInfo>? children})
-      : super(AlbumOptionsRoute.name, initialChildren: children);
+  const AlbumOptionsRoute({List<PageRouteInfo>? children}) : super(AlbumOptionsRoute.name, initialChildren: children);
 
   static const String name = 'AlbumOptionsRoute';
 
@@ -181,8 +177,7 @@ class AlbumPreviewRouteArgs {
 
 /// generated route for
 /// [AlbumSharedUserSelectionPage]
-class AlbumSharedUserSelectionRoute
-    extends PageRouteInfo<AlbumSharedUserSelectionRouteArgs> {
+class AlbumSharedUserSelectionRoute extends PageRouteInfo<AlbumSharedUserSelectionRouteArgs> {
   AlbumSharedUserSelectionRoute({
     Key? key,
     required Set<Asset> assets,
@@ -257,8 +252,7 @@ class AlbumViewerRouteArgs {
 /// generated route for
 /// [AlbumsPage]
 class AlbumsRoute extends PageRouteInfo<void> {
-  const AlbumsRoute({List<PageRouteInfo>? children})
-      : super(AlbumsRoute.name, initialChildren: children);
+  const AlbumsRoute({List<PageRouteInfo>? children}) : super(AlbumsRoute.name, initialChildren: children);
 
   static const String name = 'AlbumsRoute';
 
@@ -289,8 +283,7 @@ class AllMotionPhotosRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [AllPeoplePage]
 class AllPeopleRoute extends PageRouteInfo<void> {
-  const AllPeopleRoute({List<PageRouteInfo>? children})
-      : super(AllPeopleRoute.name, initialChildren: children);
+  const AllPeopleRoute({List<PageRouteInfo>? children}) : super(AllPeopleRoute.name, initialChildren: children);
 
   static const String name = 'AllPeopleRoute';
 
@@ -305,8 +298,7 @@ class AllPeopleRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [AllPlacesPage]
 class AllPlacesRoute extends PageRouteInfo<void> {
-  const AllPlacesRoute({List<PageRouteInfo>? children})
-      : super(AllPlacesRoute.name, initialChildren: children);
+  const AllPlacesRoute({List<PageRouteInfo>? children}) : super(AllPlacesRoute.name, initialChildren: children);
 
   static const String name = 'AllPlacesRoute';
 
@@ -321,8 +313,7 @@ class AllPlacesRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [AllVideosPage]
 class AllVideosRoute extends PageRouteInfo<void> {
-  const AllVideosRoute({List<PageRouteInfo>? children})
-      : super(AllVideosRoute.name, initialChildren: children);
+  const AllVideosRoute({List<PageRouteInfo>? children}) : super(AllVideosRoute.name, initialChildren: children);
 
   static const String name = 'AllVideosRoute';
 
@@ -374,8 +365,7 @@ class AppLogDetailRouteArgs {
 /// generated route for
 /// [AppLogPage]
 class AppLogRoute extends PageRouteInfo<void> {
-  const AppLogRoute({List<PageRouteInfo>? children})
-      : super(AppLogRoute.name, initialChildren: children);
+  const AppLogRoute({List<PageRouteInfo>? children}) : super(AppLogRoute.name, initialChildren: children);
 
   static const String name = 'AppLogRoute';
 
@@ -390,8 +380,7 @@ class AppLogRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [ArchivePage]
 class ArchiveRoute extends PageRouteInfo<void> {
-  const ArchiveRoute({List<PageRouteInfo>? children})
-      : super(ArchiveRoute.name, initialChildren: children);
+  const ArchiveRoute({List<PageRouteInfo>? children}) : super(ArchiveRoute.name, initialChildren: children);
 
   static const String name = 'ArchiveRoute';
 
@@ -410,6 +399,7 @@ class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
     Key? key,
     required int initialIndex,
     required TimelineService timelineService,
+    int? heroOffset,
     List<PageRouteInfo>? children,
   }) : super(
           AssetViewerRoute.name,
@@ -417,6 +407,7 @@ class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
             key: key,
             initialIndex: initialIndex,
             timelineService: timelineService,
+            heroOffset: heroOffset,
           ),
           initialChildren: children,
         );
@@ -431,6 +422,7 @@ class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
         key: args.key,
         initialIndex: args.initialIndex,
         timelineService: args.timelineService,
+        heroOffset: args.heroOffset,
       );
     },
   );
@@ -441,6 +433,7 @@ class AssetViewerRouteArgs {
     this.key,
     required this.initialIndex,
     required this.timelineService,
+    this.heroOffset,
   });
 
   final Key? key;
@@ -449,9 +442,11 @@ class AssetViewerRouteArgs {
 
   final TimelineService timelineService;
 
+  final int? heroOffset;
+
   @override
   String toString() {
-    return 'AssetViewerRouteArgs{key: $key, initialIndex: $initialIndex, timelineService: $timelineService}';
+    return 'AssetViewerRouteArgs{key: $key, initialIndex: $initialIndex, timelineService: $timelineService, heroOffset: $heroOffset}';
   }
 }
 
@@ -490,8 +485,7 @@ class BackupControllerRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [BackupOptionsPage]
 class BackupOptionsRoute extends PageRouteInfo<void> {
-  const BackupOptionsRoute({List<PageRouteInfo>? children})
-      : super(BackupOptionsRoute.name, initialChildren: children);
+  const BackupOptionsRoute({List<PageRouteInfo>? children}) : super(BackupOptionsRoute.name, initialChildren: children);
 
   static const String name = 'BackupOptionsRoute';
 
@@ -501,6 +495,65 @@ class BackupOptionsRoute extends PageRouteInfo<void> {
       return const BackupOptionsPage();
     },
   );
+}
+
+/// generated route for
+/// [BetaSyncSettingsPage]
+class BetaSyncSettingsRoute extends PageRouteInfo<void> {
+  const BetaSyncSettingsRoute({List<PageRouteInfo>? children})
+      : super(BetaSyncSettingsRoute.name, initialChildren: children);
+
+  static const String name = 'BetaSyncSettingsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const BetaSyncSettingsPage();
+    },
+  );
+}
+
+/// generated route for
+/// [ChangeExperiencePage]
+class ChangeExperienceRoute extends PageRouteInfo<ChangeExperienceRouteArgs> {
+  ChangeExperienceRoute({
+    Key? key,
+    required bool switchingToBeta,
+    List<PageRouteInfo>? children,
+  }) : super(
+          ChangeExperienceRoute.name,
+          args: ChangeExperienceRouteArgs(
+            key: key,
+            switchingToBeta: switchingToBeta,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'ChangeExperienceRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<ChangeExperienceRouteArgs>();
+      return ChangeExperiencePage(
+        key: args.key,
+        switchingToBeta: args.switchingToBeta,
+      );
+    },
+  );
+}
+
+class ChangeExperienceRouteArgs {
+  const ChangeExperienceRouteArgs({this.key, required this.switchingToBeta});
+
+  final Key? key;
+
+  final bool switchingToBeta;
+
+  @override
+  String toString() {
+    return 'ChangeExperienceRouteArgs{key: $key, switchingToBeta: $switchingToBeta}';
+  }
 }
 
 /// generated route for
@@ -605,8 +658,7 @@ class CropImageRouteArgs {
 /// generated route for
 /// [DriftAlbumsPage]
 class DriftAlbumsRoute extends PageRouteInfo<void> {
-  const DriftAlbumsRoute({List<PageRouteInfo>? children})
-      : super(DriftAlbumsRoute.name, initialChildren: children);
+  const DriftAlbumsRoute({List<PageRouteInfo>? children}) : super(DriftAlbumsRoute.name, initialChildren: children);
 
   static const String name = 'DriftAlbumsRoute';
 
@@ -621,8 +673,7 @@ class DriftAlbumsRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [DriftArchivePage]
 class DriftArchiveRoute extends PageRouteInfo<void> {
-  const DriftArchiveRoute({List<PageRouteInfo>? children})
-      : super(DriftArchiveRoute.name, initialChildren: children);
+  const DriftArchiveRoute({List<PageRouteInfo>? children}) : super(DriftArchiveRoute.name, initialChildren: children);
 
   static const String name = 'DriftArchiveRoute';
 
@@ -636,8 +687,7 @@ class DriftArchiveRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [DriftAssetSelectionTimelinePage]
-class DriftAssetSelectionTimelineRoute
-    extends PageRouteInfo<DriftAssetSelectionTimelineRouteArgs> {
+class DriftAssetSelectionTimelineRoute extends PageRouteInfo<DriftAssetSelectionTimelineRouteArgs> {
   DriftAssetSelectionTimelineRoute({
     Key? key,
     Set<BaseAsset> lockedSelectionAssets = const {},
@@ -684,6 +734,37 @@ class DriftAssetSelectionTimelineRouteArgs {
 }
 
 /// generated route for
+/// [DriftBackupAlbumSelectionPage]
+class DriftBackupAlbumSelectionRoute extends PageRouteInfo<void> {
+  const DriftBackupAlbumSelectionRoute({List<PageRouteInfo>? children})
+      : super(DriftBackupAlbumSelectionRoute.name, initialChildren: children);
+
+  static const String name = 'DriftBackupAlbumSelectionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftBackupAlbumSelectionPage();
+    },
+  );
+}
+
+/// generated route for
+/// [DriftBackupPage]
+class DriftBackupRoute extends PageRouteInfo<void> {
+  const DriftBackupRoute({List<PageRouteInfo>? children}) : super(DriftBackupRoute.name, initialChildren: children);
+
+  static const String name = 'DriftBackupRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftBackupPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftCreateAlbumPage]
 class DriftCreateAlbumRoute extends PageRouteInfo<void> {
   const DriftCreateAlbumRoute({List<PageRouteInfo>? children})
@@ -702,8 +783,7 @@ class DriftCreateAlbumRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [DriftFavoritePage]
 class DriftFavoriteRoute extends PageRouteInfo<void> {
-  const DriftFavoriteRoute({List<PageRouteInfo>? children})
-      : super(DriftFavoriteRoute.name, initialChildren: children);
+  const DriftFavoriteRoute({List<PageRouteInfo>? children}) : super(DriftFavoriteRoute.name, initialChildren: children);
 
   static const String name = 'DriftFavoriteRoute';
 
@@ -718,8 +798,7 @@ class DriftFavoriteRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [DriftLibraryPage]
 class DriftLibraryRoute extends PageRouteInfo<void> {
-  const DriftLibraryRoute({List<PageRouteInfo>? children})
-      : super(DriftLibraryRoute.name, initialChildren: children);
+  const DriftLibraryRoute({List<PageRouteInfo>? children}) : super(DriftLibraryRoute.name, initialChildren: children);
 
   static const String name = 'DriftLibraryRoute';
 
@@ -817,11 +896,10 @@ class DriftMemoryRouteArgs {
 
 /// generated route for
 /// [DriftPartnerDetailPage]
-class DriftPartnerDetailRoute
-    extends PageRouteInfo<DriftPartnerDetailRouteArgs> {
+class DriftPartnerDetailRoute extends PageRouteInfo<DriftPartnerDetailRouteArgs> {
   DriftPartnerDetailRoute({
     Key? key,
-    required UserDto partner,
+    required PartnerUserDto partner,
     List<PageRouteInfo>? children,
   }) : super(
           DriftPartnerDetailRoute.name,
@@ -845,11 +923,105 @@ class DriftPartnerDetailRouteArgs {
 
   final Key? key;
 
-  final UserDto partner;
+  final PartnerUserDto partner;
 
   @override
   String toString() {
     return 'DriftPartnerDetailRouteArgs{key: $key, partner: $partner}';
+  }
+}
+
+/// generated route for
+/// [DriftPartnerPage]
+class DriftPartnerRoute extends PageRouteInfo<void> {
+  const DriftPartnerRoute({List<PageRouteInfo>? children}) : super(DriftPartnerRoute.name, initialChildren: children);
+
+  static const String name = 'DriftPartnerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftPartnerPage();
+    },
+  );
+}
+
+/// generated route for
+/// [DriftPlaceDetailPage]
+class DriftPlaceDetailRoute extends PageRouteInfo<DriftPlaceDetailRouteArgs> {
+  DriftPlaceDetailRoute({
+    Key? key,
+    required String place,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftPlaceDetailRoute.name,
+          args: DriftPlaceDetailRouteArgs(key: key, place: place),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftPlaceDetailRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftPlaceDetailRouteArgs>();
+      return DriftPlaceDetailPage(key: args.key, place: args.place);
+    },
+  );
+}
+
+class DriftPlaceDetailRouteArgs {
+  const DriftPlaceDetailRouteArgs({this.key, required this.place});
+
+  final Key? key;
+
+  final String place;
+
+  @override
+  String toString() {
+    return 'DriftPlaceDetailRouteArgs{key: $key, place: $place}';
+  }
+}
+
+/// generated route for
+/// [DriftPlacePage]
+class DriftPlaceRoute extends PageRouteInfo<DriftPlaceRouteArgs> {
+  DriftPlaceRoute({
+    Key? key,
+    LatLng? currentLocation,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftPlaceRoute.name,
+          args: DriftPlaceRouteArgs(key: key, currentLocation: currentLocation),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftPlaceRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftPlaceRouteArgs>(
+        orElse: () => const DriftPlaceRouteArgs(),
+      );
+      return DriftPlacePage(
+        key: args.key,
+        currentLocation: args.currentLocation,
+      );
+    },
+  );
+}
+
+class DriftPlaceRouteArgs {
+  const DriftPlaceRouteArgs({this.key, this.currentLocation});
+
+  final Key? key;
+
+  final LatLng? currentLocation;
+
+  @override
+  String toString() {
+    return 'DriftPlaceRouteArgs{key: $key, currentLocation: $currentLocation}';
   }
 }
 
@@ -870,10 +1042,48 @@ class DriftRecentlyTakenRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftSearchPage]
+class DriftSearchRoute extends PageRouteInfo<DriftSearchRouteArgs> {
+  DriftSearchRoute({
+    Key? key,
+    SearchFilter? preFilter,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftSearchRoute.name,
+          args: DriftSearchRouteArgs(key: key, preFilter: preFilter),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftSearchRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftSearchRouteArgs>(
+        orElse: () => const DriftSearchRouteArgs(),
+      );
+      return DriftSearchPage(key: args.key, preFilter: args.preFilter);
+    },
+  );
+}
+
+class DriftSearchRouteArgs {
+  const DriftSearchRouteArgs({this.key, this.preFilter});
+
+  final Key? key;
+
+  final SearchFilter? preFilter;
+
+  @override
+  String toString() {
+    return 'DriftSearchRouteArgs{key: $key, preFilter: $preFilter}';
+  }
+}
+
+/// generated route for
 /// [DriftTrashPage]
 class DriftTrashRoute extends PageRouteInfo<void> {
-  const DriftTrashRoute({List<PageRouteInfo>? children})
-      : super(DriftTrashRoute.name, initialChildren: children);
+  const DriftTrashRoute({List<PageRouteInfo>? children}) : super(DriftTrashRoute.name, initialChildren: children);
 
   static const String name = 'DriftTrashRoute';
 
@@ -886,10 +1096,62 @@ class DriftTrashRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftUploadDetailPage]
+class DriftUploadDetailRoute extends PageRouteInfo<void> {
+  const DriftUploadDetailRoute({List<PageRouteInfo>? children})
+      : super(DriftUploadDetailRoute.name, initialChildren: children);
+
+  static const String name = 'DriftUploadDetailRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftUploadDetailPage();
+    },
+  );
+}
+
+/// generated route for
+/// [DriftUserSelectionPage]
+class DriftUserSelectionRoute extends PageRouteInfo<DriftUserSelectionRouteArgs> {
+  DriftUserSelectionRoute({
+    Key? key,
+    required RemoteAlbum album,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftUserSelectionRoute.name,
+          args: DriftUserSelectionRouteArgs(key: key, album: album),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftUserSelectionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftUserSelectionRouteArgs>();
+      return DriftUserSelectionPage(key: args.key, album: args.album);
+    },
+  );
+}
+
+class DriftUserSelectionRouteArgs {
+  const DriftUserSelectionRouteArgs({this.key, required this.album});
+
+  final Key? key;
+
+  final RemoteAlbum album;
+
+  @override
+  String toString() {
+    return 'DriftUserSelectionRouteArgs{key: $key, album: $album}';
+  }
+}
+
+/// generated route for
 /// [DriftVideoPage]
 class DriftVideoRoute extends PageRouteInfo<void> {
-  const DriftVideoRoute({List<PageRouteInfo>? children})
-      : super(DriftVideoRoute.name, initialChildren: children);
+  const DriftVideoRoute({List<PageRouteInfo>? children}) : super(DriftVideoRoute.name, initialChildren: children);
 
   static const String name = 'DriftVideoRoute';
 
@@ -978,8 +1240,7 @@ class FailedBackupStatusRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [FavoritesPage]
 class FavoritesRoute extends PageRouteInfo<void> {
-  const FavoritesRoute({List<PageRouteInfo>? children})
-      : super(FavoritesRoute.name, initialChildren: children);
+  const FavoritesRoute({List<PageRouteInfo>? children}) : super(FavoritesRoute.name, initialChildren: children);
 
   static const String name = 'FavoritesRoute';
 
@@ -994,8 +1255,7 @@ class FavoritesRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [FeatInDevPage]
 class FeatInDevRoute extends PageRouteInfo<void> {
-  const FeatInDevRoute({List<PageRouteInfo>? children})
-      : super(FeatInDevRoute.name, initialChildren: children);
+  const FeatInDevRoute({List<PageRouteInfo>? children}) : super(FeatInDevRoute.name, initialChildren: children);
 
   static const String name = 'FeatInDevRoute';
 
@@ -1177,8 +1437,7 @@ class HeaderSettingsRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [LibraryPage]
 class LibraryRoute extends PageRouteInfo<void> {
-  const LibraryRoute({List<PageRouteInfo>? children})
-      : super(LibraryRoute.name, initialChildren: children);
+  const LibraryRoute({List<PageRouteInfo>? children}) : super(LibraryRoute.name, initialChildren: children);
 
   static const String name = 'LibraryRoute';
 
@@ -1193,8 +1452,7 @@ class LibraryRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [LocalAlbumsPage]
 class LocalAlbumsRoute extends PageRouteInfo<void> {
-  const LocalAlbumsRoute({List<PageRouteInfo>? children})
-      : super(LocalAlbumsRoute.name, initialChildren: children);
+  const LocalAlbumsRoute({List<PageRouteInfo>? children}) : super(LocalAlbumsRoute.name, initialChildren: children);
 
   static const String name = 'LocalAlbumsRoute';
 
@@ -1262,8 +1520,7 @@ class LocalTimelineRouteArgs {
 /// generated route for
 /// [LockedPage]
 class LockedRoute extends PageRouteInfo<void> {
-  const LockedRoute({List<PageRouteInfo>? children})
-      : super(LockedRoute.name, initialChildren: children);
+  const LockedRoute({List<PageRouteInfo>? children}) : super(LockedRoute.name, initialChildren: children);
 
   static const String name = 'LockedRoute';
 
@@ -1278,8 +1535,7 @@ class LockedRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [LoginPage]
 class LoginRoute extends PageRouteInfo<void> {
-  const LoginRoute({List<PageRouteInfo>? children})
-      : super(LoginRoute.name, initialChildren: children);
+  const LoginRoute({List<PageRouteInfo>? children}) : super(LoginRoute.name, initialChildren: children);
 
   static const String name = 'LoginRoute';
 
@@ -1294,8 +1550,7 @@ class LoginRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [MainTimelinePage]
 class MainTimelineRoute extends PageRouteInfo<void> {
-  const MainTimelineRoute({List<PageRouteInfo>? children})
-      : super(MainTimelineRoute.name, initialChildren: children);
+  const MainTimelineRoute({List<PageRouteInfo>? children}) : super(MainTimelineRoute.name, initialChildren: children);
 
   static const String name = 'MainTimelineRoute';
 
@@ -1547,8 +1802,7 @@ class PartnerDetailRouteArgs {
 /// generated route for
 /// [PartnerPage]
 class PartnerRoute extends PageRouteInfo<void> {
-  const PartnerRoute({List<PageRouteInfo>? children})
-      : super(PartnerRoute.name, initialChildren: children);
+  const PartnerRoute({List<PageRouteInfo>? children}) : super(PartnerRoute.name, initialChildren: children);
 
   static const String name = 'PartnerRoute';
 
@@ -1647,8 +1901,7 @@ class PersonResultRouteArgs {
 /// generated route for
 /// [PhotosPage]
 class PhotosRoute extends PageRouteInfo<void> {
-  const PhotosRoute({List<PageRouteInfo>? children})
-      : super(PhotosRoute.name, initialChildren: children);
+  const PhotosRoute({List<PageRouteInfo>? children}) : super(PhotosRoute.name, initialChildren: children);
 
   static const String name = 'PhotosRoute';
 
@@ -1747,8 +2000,7 @@ class PlacesCollectionRouteArgs {
 /// generated route for
 /// [RecentlyTakenPage]
 class RecentlyTakenRoute extends PageRouteInfo<void> {
-  const RecentlyTakenRoute({List<PageRouteInfo>? children})
-      : super(RecentlyTakenRoute.name, initialChildren: children);
+  const RecentlyTakenRoute({List<PageRouteInfo>? children}) : super(RecentlyTakenRoute.name, initialChildren: children);
 
   static const String name = 'RecentlyTakenRoute';
 
@@ -1855,8 +2107,7 @@ class SearchRouteArgs {
 /// generated route for
 /// [SettingsPage]
 class SettingsRoute extends PageRouteInfo<void> {
-  const SettingsRoute({List<PageRouteInfo>? children})
-      : super(SettingsRoute.name, initialChildren: children);
+  const SettingsRoute({List<PageRouteInfo>? children}) : super(SettingsRoute.name, initialChildren: children);
 
   static const String name = 'SettingsRoute';
 
@@ -2005,8 +2256,7 @@ class SharedLinkEditRouteArgs {
 /// generated route for
 /// [SharedLinkPage]
 class SharedLinkRoute extends PageRouteInfo<void> {
-  const SharedLinkRoute({List<PageRouteInfo>? children})
-      : super(SharedLinkRoute.name, initialChildren: children);
+  const SharedLinkRoute({List<PageRouteInfo>? children}) : super(SharedLinkRoute.name, initialChildren: children);
 
   static const String name = 'SharedLinkRoute';
 
@@ -2021,8 +2271,7 @@ class SharedLinkRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [SplashScreenPage]
 class SplashScreenRoute extends PageRouteInfo<void> {
-  const SplashScreenRoute({List<PageRouteInfo>? children})
-      : super(SplashScreenRoute.name, initialChildren: children);
+  const SplashScreenRoute({List<PageRouteInfo>? children}) : super(SplashScreenRoute.name, initialChildren: children);
 
   static const String name = 'SplashScreenRoute';
 
@@ -2037,8 +2286,7 @@ class SplashScreenRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [TabControllerPage]
 class TabControllerRoute extends PageRouteInfo<void> {
-  const TabControllerRoute({List<PageRouteInfo>? children})
-      : super(TabControllerRoute.name, initialChildren: children);
+  const TabControllerRoute({List<PageRouteInfo>? children}) : super(TabControllerRoute.name, initialChildren: children);
 
   static const String name = 'TabControllerRoute';
 
@@ -2053,8 +2301,7 @@ class TabControllerRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [TabShellPage]
 class TabShellRoute extends PageRouteInfo<void> {
-  const TabShellRoute({List<PageRouteInfo>? children})
-      : super(TabShellRoute.name, initialChildren: children);
+  const TabShellRoute({List<PageRouteInfo>? children}) : super(TabShellRoute.name, initialChildren: children);
 
   static const String name = 'TabShellRoute';
 
@@ -2069,8 +2316,7 @@ class TabShellRoute extends PageRouteInfo<void> {
 /// generated route for
 /// [TrashPage]
 class TrashRoute extends PageRouteInfo<void> {
-  const TrashRoute({List<PageRouteInfo>? children})
-      : super(TrashRoute.name, initialChildren: children);
+  const TrashRoute({List<PageRouteInfo>? children}) : super(TrashRoute.name, initialChildren: children);
 
   static const String name = 'TrashRoute';
 

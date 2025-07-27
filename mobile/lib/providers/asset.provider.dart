@@ -81,7 +81,9 @@ class AssetNotifier extends StateNotifier<bool> {
       await _albumService.refreshDeviceAlbums();
     } finally {
       _getAllAssetInProgress = false;
-      state = false;
+      if (mounted) {
+        state = false;
+      }
     }
   }
 
@@ -180,8 +182,7 @@ class AssetNotifier extends StateNotifier<bool> {
   }
 }
 
-final assetDetailProvider =
-    StreamProvider.autoDispose.family<Asset, Asset>((ref, asset) async* {
+final assetDetailProvider = StreamProvider.autoDispose.family<Asset, Asset>((ref, asset) async* {
   final assetService = ref.watch(assetServiceProvider);
   yield await assetService.loadExif(asset);
 
@@ -192,8 +193,7 @@ final assetDetailProvider =
   }
 });
 
-final assetWatcher =
-    StreamProvider.autoDispose.family<Asset?, Asset>((ref, asset) {
+final assetWatcher = StreamProvider.autoDispose.family<Asset?, Asset>((ref, asset) {
   final assetService = ref.watch(assetServiceProvider);
   return assetService.watchAsset(asset.id, fireImmediately: true);
 });

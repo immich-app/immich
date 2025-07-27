@@ -17,15 +17,18 @@ import 'package:immich_mobile/providers/image/exceptions/image_loading_exception
 import 'package:logging/logging.dart';
 
 class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
-  final AssetMediaRepository _assetMediaRepository =
-      const AssetMediaRepository();
+  final AssetMediaRepository _assetMediaRepository = const AssetMediaRepository();
   final CacheManager? cacheManager;
 
-  final LocalAsset asset;
+  final String id;
+  final DateTime updatedAt;
+  final String name;
   final Size size;
 
   const LocalThumbProvider({
-    required this.asset,
+    required this.id,
+    required this.updatedAt,
+    required this.name,
     this.size = const Size.square(kTimelineFixedTileExtent),
     this.cacheManager,
   });
@@ -46,7 +49,10 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
       scale: 1.0,
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
-        DiagnosticsProperty<LocalAsset>('Asset', key.asset),
+        DiagnosticsProperty<String>('Id', key.id),
+        DiagnosticsProperty<DateTime>('Updated at', key.updatedAt),
+        DiagnosticsProperty<String>('Name', key.name),
+        DiagnosticsProperty<Size>('Size', key.size),
       ],
     );
   }
@@ -56,24 +62,21 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
     CacheManager cache,
     ImageDecoderCallback decode,
   ) async {
-    final cacheKey =
-        '${key.asset.id}-${key.asset.updatedAt}-${key.size.width}x${key.size.height}';
+    final cacheKey = '${key.id}-${key.updatedAt}-${key.size.width}x${key.size.height}';
 
     final fileFromCache = await cache.getFileFromCache(cacheKey);
     if (fileFromCache != null) {
       try {
-        final buffer =
-            await ImmutableBuffer.fromFilePath(fileFromCache.file.path);
+        final buffer = await ImmutableBuffer.fromFilePath(fileFromCache.file.path);
         return decode(buffer);
       } catch (_) {}
     }
 
-    final thumbnailBytes =
-        await _assetMediaRepository.getThumbnail(key.asset.id, size: key.size);
+    final thumbnailBytes = await _assetMediaRepository.getThumbnail(key.id, size: key.size);
     if (thumbnailBytes == null) {
       PaintingBinding.instance.imageCache.evict(key);
       throw StateError(
-        "Loading thumb for local photo ${key.asset.name} failed",
+        "Loading thumb for local photo ${key.name} failed",
       );
     }
 
@@ -86,27 +89,29 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is LocalThumbProvider) {
-      return asset.id == other.asset.id &&
-          asset.updatedAt == other.asset.updatedAt;
+      return id == other.id && updatedAt == other.updatedAt;
     }
     return false;
   }
 
   @override
-  int get hashCode => asset.id.hashCode ^ asset.updatedAt.hashCode;
+  int get hashCode => id.hashCode ^ updatedAt.hashCode;
 }
 
 class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
-  final AssetMediaRepository _assetMediaRepository =
-      const AssetMediaRepository();
+  final AssetMediaRepository _assetMediaRepository = const AssetMediaRepository();
   final StorageRepository _storageRepository = const StorageRepository();
 
-  final LocalAsset asset;
+  final String id;
+  final String name;
   final Size size;
+  final AssetType type;
 
   const LocalFullImageProvider({
-    required this.asset,
+    required this.id,
+    required this.name,
     required this.size,
+    required this.type,
   });
 
   @override
@@ -123,7 +128,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
       codec: _codec(key, decode),
       scale: 1.0,
       informationCollector: () sync* {
-        yield ErrorDescription(asset.name);
+        yield ErrorDescription(name);
       },
     );
   }
@@ -134,24 +139,23 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
     ImageDecoderCallback decode,
   ) async* {
     try {
-      switch (key.asset.type) {
+      switch (key.type) {
         case AssetType.image:
           yield* _decodeProgressive(key, decode);
           break;
         case AssetType.video:
           final codec = await _getThumbnailCodec(key, decode);
           if (codec == null) {
-            throw StateError("Failed to load preview for ${key.asset.name}");
+            throw StateError("Failed to load preview for ${key.name}");
           }
           yield codec;
           break;
         case AssetType.other:
         case AssetType.audio:
-          throw StateError('Unsupported asset type ${key.asset.type}');
+          throw StateError('Unsupported asset type ${key.type}');
       }
     } catch (error, stack) {
-      Logger('ImmichLocalImageProvider')
-          .severe('Error loading local image ${key.asset.name}', error, stack);
+      Logger('ImmichLocalImageProvider').severe('Error loading local image ${key.name}', error, stack);
       throw const ImageLoadingException(
         'Could not load image from local storage',
       );
@@ -162,8 +166,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
     LocalFullImageProvider key,
     ImageDecoderCallback decode,
   ) async {
-    final thumbBytes =
-        await _assetMediaRepository.getThumbnail(key.asset.id, size: key.size);
+    final thumbBytes = await _assetMediaRepository.getThumbnail(key.id, size: key.size);
     if (thumbBytes == null) {
       return null;
     }
@@ -175,14 +178,13 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
     LocalFullImageProvider key,
     ImageDecoderCallback decode,
   ) async* {
-    final file = await _storageRepository.getFileForAsset(key.asset.id);
+    final file = await _storageRepository.getFileForAsset(key.id);
     if (file == null) {
-      throw StateError("Opening file for asset ${key.asset.name} failed");
+      throw StateError("Opening file for asset ${key.name} failed");
     }
 
     final fileSize = await file.length();
-    final devicePixelRatio =
-        PlatformDispatcher.instance.views.first.devicePixelRatio;
+    final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
     final isLargeFile = fileSize > 20 * 1024 * 1024; // 20MB
     final isHEIC = file.path.toLowerCase().contains(RegExp(r'\.(heic|heif)$'));
     final isProgressive = isLargeFile || (isHEIC && !Platform.isIOS);
@@ -194,8 +196,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
           (key.size.width * progressiveMultiplier).clamp(256, 1024),
           (key.size.height * progressiveMultiplier).clamp(256, 1024),
         );
-        final mediumThumb =
-            await _assetMediaRepository.getThumbnail(key.asset.id, size: size);
+        final mediumThumb = await _assetMediaRepository.getThumbnail(key.id, size: size);
         if (mediumThumb != null) {
           final mediumBuffer = await ImmutableBuffer.fromUint8List(mediumThumb);
           yield await decode(mediumBuffer);
@@ -211,8 +212,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
         (key.size.width * progressiveMultiplier).clamp(512, 2048),
         (key.size.height * progressiveMultiplier).clamp(512, 2048),
       );
-      final highThumb =
-          await _assetMediaRepository.getThumbnail(key.asset.id, size: size);
+      final highThumb = await _assetMediaRepository.getThumbnail(key.id, size: size);
       if (highThumb != null) {
         final highBuffer = await ImmutableBuffer.fromUint8List(highThumb);
         yield await decode(highBuffer);
@@ -228,14 +228,11 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is LocalFullImageProvider) {
-      return asset.id == other.asset.id &&
-          asset.updatedAt == other.asset.updatedAt &&
-          size == other.size;
+      return id == other.id && size == other.size && type == other.type && name == other.name;
     }
     return false;
   }
 
   @override
-  int get hashCode =>
-      asset.id.hashCode ^ asset.updatedAt.hashCode ^ size.hashCode;
+  int get hashCode => id.hashCode ^ size.hashCode ^ type.hashCode ^ name.hashCode;
 }

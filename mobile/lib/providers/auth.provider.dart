@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
+import 'package:immich_mobile/services/upload.service.dart';
 import 'package:immich_mobile/services/widget.service.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
@@ -23,6 +24,7 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
     ref.watch(authServiceProvider),
     ref.watch(apiServiceProvider),
     ref.watch(userServiceProvider),
+    ref.watch(uploadServiceProvider),
     ref.watch(secureStorageServiceProvider),
     ref.watch(widgetServiceProvider),
   );
@@ -32,6 +34,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
   final ApiService _apiService;
   final UserService _userService;
+  final UploadService _uploadService;
   final SecureStorageService _secureStorageService;
   final WidgetService _widgetService;
   final _log = Logger("AuthenticationNotifier");
@@ -42,6 +45,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     this._authService,
     this._apiService,
     this._userService,
+    this._uploadService,
     this._secureStorageService,
     this._widgetService,
   ) : super(
@@ -83,6 +87,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _widgetService.clearCredentials();
 
       await _authService.logout();
+      await _uploadService.cancelBackup();
     } finally {
       await _cleanUp();
     }
@@ -124,14 +129,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
-    String deviceId =
-        Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;
+    String deviceId = Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;
 
     UserDto? user = _userService.tryGetMyUser();
 
     try {
-      final serverUser =
-          await _userService.refreshMyUser().timeout(_timeoutDuration);
+      final serverUser = await _userService.refreshMyUser().timeout(_timeoutDuration);
       if (serverUser == null) {
         _log.severe("Unable to get user information from the server.");
       } else {
