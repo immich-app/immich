@@ -159,6 +159,8 @@ export class UserAdminResponseDto extends UserResponseDto {
   deletedAt!: Date | null;
   updatedAt!: Date;
   oauthId!: string;
+  @ApiProperty({ type: 'string', required: false, nullable: true })
+  appVersion!: string | null;
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes!: number | null;
   @ApiProperty({ type: 'integer', format: 'int64' })
@@ -182,6 +184,7 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     deletedAt: entity.deletedAt,
     updatedAt: entity.updatedAt,
     oauthId: entity.oauthId,
+    appVersion: entity.appVersion ?? null,
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,
