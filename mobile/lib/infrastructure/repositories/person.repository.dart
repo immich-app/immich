@@ -23,6 +23,32 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
       return person.toDto();
     }).get();
   }
+
+  Future<List<DriftPeople>> getAllPeople() async {
+    final query = _db.select(_db.personEntity).join([
+      leftOuterJoin(
+        _db.assetFaceEntity,
+        _db.assetFaceEntity.personId.equalsExp(_db.personEntity.id),
+      ),
+    ])
+      ..where(_db.personEntity.isHidden.equals(false))
+      ..groupBy([_db.personEntity.id])
+      ..orderBy([
+        OrderingTerm(
+          expression: _db.personEntity.name.equals('').not(),
+          mode: OrderingMode.desc,
+        ),
+        OrderingTerm(
+          expression: _db.assetFaceEntity.id.count(),
+          mode: OrderingMode.desc,
+        ),
+      ]);
+
+    return query.map((row) {
+      final person = row.readTable(_db.personEntity);
+      return person.toDto();
+    }).get();
+  }
 }
 
 extension on PersonEntityData {

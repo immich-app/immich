@@ -10,4 +10,9 @@ class DriftPeopleService {
     final people = await _repository.getAssetPeople(assetId);
     return people;
   }
+
+  Future<List<DriftPeople>> getAllPeople() async {
+    final people = await _repository.getAllPeople();
+    return people;
+  }
 }

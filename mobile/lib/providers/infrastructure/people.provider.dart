@@ -18,3 +18,10 @@ final driftPeopleAssetProvider = FutureProvider.family<List<DriftPeople>, String
     return peopleService.getAssetPeople(assetId);
   },
 );
+
+final driftGetAllPeopleProvider = FutureProvider<List<DriftPeople>>(
+  (ref) async {
+    final peopleService = ref.watch(driftPeopleServiceProvider);
+    return peopleService.getAllPeople();
+  },
+);

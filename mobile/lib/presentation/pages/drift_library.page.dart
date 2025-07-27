@@ -9,7 +9,7 @@ import 'package:immich_mobile/presentation/widgets/images/local_album_thumbnail.
 import 'package:immich_mobile/presentation/widgets/partner_user_avatar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/partner.provider.dart';
-import 'package:immich_mobile/providers/search/people.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -171,7 +171,7 @@ class _PeopleCollectionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final people = ref.watch(getAllPeopleProvider);
+    final people = ref.watch(driftGetAllPeopleProvider);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -180,7 +180,7 @@ class _PeopleCollectionCard extends ConsumerWidget {
         final size = context.width * widthFactor - 20.0;
 
         return GestureDetector(
-          onTap: () => context.pushRoute(const PeopleCollectionRoute()),
+          onTap: () => context.pushRoute(const DriftPeopleRoute()),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
