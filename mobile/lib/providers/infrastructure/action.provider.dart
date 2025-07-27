@@ -230,6 +230,22 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> trashRemoteAndDeleteLocal(ActionSource source) async {
+    final ids = _getOwnedRemoteIdsForSource(source);
+    final localIds = _getLocalIdsForSource(source);
+    try {
+      await _service.trashRemoteAndDeleteLocal(ids, localIds);
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to delete assets', error, stack);
+      return ActionResult(
+        count: ids.length,
+        success: false,
+        error: error.toString(),
+      );
+    }
+  }
+
   Future<ActionResult> deleteRemoteAndLocal(ActionSource source) async {
     final ids = _getOwnedRemoteIdsForSource(source);
     final localIds = _getLocalIdsForSource(source);
@@ -249,8 +265,8 @@ class ActionNotifier extends Notifier<void> {
   Future<ActionResult> deleteLocal(ActionSource source) async {
     final ids = _getLocalIdsForSource(source);
     try {
-      await _service.deleteLocal(ids);
-      return ActionResult(count: ids.length, success: true);
+      final deletedCount = await _service.deleteLocal(ids);
+      return ActionResult(count: deletedCount, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to delete assets', error, stack);
       return ActionResult(

@@ -17,22 +17,22 @@ The `"originalFileName"` column is the name of the file at time of upload, inclu
 :::
 
 ```sql title="Find by original filename"
-SELECT * FROM "assets" WHERE "originalFileName" = 'PXL_20230903_232542848.jpg';
-SELECT * FROM "assets" WHERE "originalFileName" LIKE 'PXL_%'; -- all files starting with PXL_
-SELECT * FROM "assets" WHERE "originalFileName" LIKE '%_2023_%'; -- all files with _2023_ in the middle
+SELECT * FROM "asset" WHERE "originalFileName" = 'PXL_20230903_232542848.jpg';
+SELECT * FROM "asset" WHERE "originalFileName" LIKE 'PXL_%'; -- all files starting with PXL_
+SELECT * FROM "asset" WHERE "originalFileName" LIKE '%_2023_%'; -- all files with _2023_ in the middle
 ```
 
 ```sql title="Find by path"
-SELECT * FROM "assets" WHERE "originalPath" = 'upload/library/admin/2023/2023-09-03/PXL_2023.jpg';
-SELECT * FROM "assets" WHERE "originalPath" LIKE 'upload/library/admin/2023/%';
+SELECT * FROM "asset" WHERE "originalPath" = 'upload/library/admin/2023/2023-09-03/PXL_2023.jpg';
+SELECT * FROM "asset" WHERE "originalPath" LIKE 'upload/library/admin/2023/%';
 ```
 
 ```sql title="Find by ID"
-SELECT * FROM "assets" WHERE "id" = '9f94e60f-65b6-47b7-ae44-a4df7b57f0e9';
+SELECT * FROM "asset" WHERE "id" = '9f94e60f-65b6-47b7-ae44-a4df7b57f0e9';
 ```
 
 ```sql title="Find by partial ID"
-SELECT * FROM "assets" WHERE "id"::text LIKE '%ab431d3a%';
+SELECT * FROM "asset" WHERE "id"::text LIKE '%ab431d3a%';
 ```
 
 :::note
@@ -40,60 +40,60 @@ You can calculate the checksum for a particular file by using the command `sha1s
 :::
 
 ```sql title="Find by checksum (SHA-1)"
-SELECT encode("checksum", 'hex') FROM "assets";
-SELECT * FROM "assets" WHERE "checksum" = decode('69de19c87658c4c15d9cacb9967b8e033bf74dd1', 'hex');
-SELECT * FROM "assets" WHERE "checksum" = '\x69de19c87658c4c15d9cacb9967b8e033bf74dd1'; -- alternate notation
+SELECT encode("checksum", 'hex') FROM "asset";
+SELECT * FROM "asset" WHERE "checksum" = decode('69de19c87658c4c15d9cacb9967b8e033bf74dd1', 'hex');
+SELECT * FROM "asset" WHERE "checksum" = '\x69de19c87658c4c15d9cacb9967b8e033bf74dd1'; -- alternate notation
 ```
 
 ```sql title="Find duplicate assets with identical checksum (SHA-1) (excluding trashed files)"
-SELECT T1."checksum", array_agg(T2."id") ids FROM "assets" T1
-  INNER JOIN "assets" T2 ON T1."checksum" = T2."checksum" AND T1."id" != T2."id" AND T2."deletedAt" IS NULL
+SELECT T1."checksum", array_agg(T2."id") ids FROM "asset" T1
+  INNER JOIN "asset" T2 ON T1."checksum" = T2."checksum" AND T1."id" != T2."id" AND T2."deletedAt" IS NULL
   WHERE T1."deletedAt" IS NULL GROUP BY T1."checksum";
 ```
 
 ```sql title="Live photos"
-SELECT * FROM "assets" WHERE "livePhotoVideoId" IS NOT NULL;
+SELECT * FROM "asset" WHERE "livePhotoVideoId" IS NOT NULL;
 ```
 
 ```sql title="By description"
-SELECT "assets".*, "exif"."description" FROM "exif"
-  JOIN "assets" ON "assets"."id" = "exif"."assetId"
-  WHERE TRIM("exif"."description") <> ''; -- all files with a description
-SELECT "assets".*, "exif"."description" FROM "exif"
-  JOIN "assets" ON "assets"."id" = "exif"."assetId"
-  WHERE "exif"."description" ILIKE '%string to match%'; -- search by string
+SELECT "asset".*, "asset_exif"."description" FROM "asset_exif"
+  JOIN "asset" ON "asset"."id" = "asset_exif"."assetId"
+  WHERE TRIM("asset_exif"."description") <> ''; -- all files with a description
+SELECT "asset".*, "asset_exif"."description" FROM "asset_exif"
+  JOIN "asset" ON "asset"."id" = "asset_exif"."assetId"
+  WHERE "asset_exif"."description" ILIKE '%string to match%'; -- search by string
 ```
 
 ```sql title="Without metadata"
-SELECT "assets".* FROM "exif"
-  LEFT JOIN "assets" ON "assets"."id" = "exif"."assetId"
-  WHERE "exif"."assetId" IS NULL;
+SELECT "asset".* FROM "asset_exif"
+  LEFT JOIN "asset" ON "asset"."id" = "asset_exif"."assetId"
+  WHERE "asset_exif"."assetId" IS NULL;
 ```
 
 ```sql title="size < 100,000 bytes, smallest to largest"
-SELECT * FROM "assets"
-  JOIN "exif" ON "assets"."id" = "exif"."assetId"
-  WHERE "exif"."fileSizeInByte" < 100000
-  ORDER BY "exif"."fileSizeInByte" ASC;
+SELECT * FROM "asset"
+  JOIN "asset_exif" ON "asset"."id" = "asset_exif"."assetId"
+  WHERE "asset_exif"."fileSizeInByte" < 100000
+  ORDER BY "asset_exif"."fileSizeInByte" ASC;
 ```
 
 ```sql title="Without thumbnails"
-SELECT * FROM "assets" WHERE "assets"."previewPath" IS NULL OR "assets"."thumbnailPath" IS NULL;
+SELECT * FROM "asset" WHERE "asset"."previewPath" IS NULL OR "asset"."thumbnailPath" IS NULL;
 ```
 
 ```sql title="By type"
-SELECT * FROM "assets" WHERE "assets"."type" = 'VIDEO';
-SELECT * FROM "assets" WHERE "assets"."type" = 'IMAGE';
+SELECT * FROM "asset" WHERE "asset"."type" = 'VIDEO';
+SELECT * FROM "asset" WHERE "asset"."type" = 'IMAGE';
 ```
 
 ```sql title="Count by type"
-SELECT "assets"."type", COUNT(*) FROM "assets" GROUP BY "assets"."type";
+SELECT "asset"."type", COUNT(1) FROM "asset" GROUP BY "asset"."type";
 ```
 
 ```sql title="Count by type (per user)"
-SELECT "users"."email", "assets"."type", COUNT(*) FROM "assets"
-  JOIN "users" ON "assets"."ownerId" = "users"."id"
-  GROUP BY "assets"."type", "users"."email" ORDER BY "users"."email";
+SELECT "user"."email", "asset"."type", COUNT(1) FROM "asset"
+  JOIN "user" ON "asset"."ownerId" = "user"."id"
+  GROUP BY "asset"."type", "user"."email" ORDER BY "user"."email";
 ```
 
 ```sql title="Failed file movements"
@@ -103,11 +103,11 @@ SELECT * FROM "move_history";
 ## Users
 
 ```sql title="List all users"
-SELECT * FROM "users";
+SELECT * FROM "user";
 ```
 
 ```sql title="Get owner info from asset ID"
-SELECT "users".* FROM "users" JOIN "assets" ON "users"."id" = "assets"."ownerId" WHERE "assets"."id" = 'fa310b01-2f26-4b7a-9042-d578226e021f';
+SELECT "user".* FROM "user" JOIN "asset" ON "user"."id" = "asset"."ownerId" WHERE "asset"."id" = 'fa310b01-2f26-4b7a-9042-d578226e021f';
 ```
 
 ## System Config
