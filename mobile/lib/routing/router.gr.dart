@@ -967,7 +967,7 @@ class DriftPeopleCollectionRoute extends PageRouteInfo<void> {
 class DriftPersonRoute extends PageRouteInfo<DriftPersonRouteArgs> {
   DriftPersonRoute({
     Key? key,
-    required DriftPeople person,
+    required DriftPerson person,
     List<PageRouteInfo>? children,
   }) : super(
           DriftPersonRoute.name,
@@ -991,7 +991,7 @@ class DriftPersonRouteArgs {
 
   final Key? key;
 
-  final DriftPeople person;
+  final DriftPerson person;
 
   @override
   String toString() {

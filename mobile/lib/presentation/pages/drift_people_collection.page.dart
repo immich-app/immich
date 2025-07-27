@@ -29,7 +29,7 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
     super.dispose();
   }
 
-  Future<void> showNameEditModal(DriftPeople person) {
+  Future<void> showNameEditModal(DriftPerson person) {
     return showDialog(
       context: context,
       useRootNavigator: false,

@@ -6,7 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 
 class DriftPersonNameEditForm extends ConsumerStatefulWidget {
-  final DriftPeople person;
+  final DriftPerson person;
 
   const DriftPersonNameEditForm({
     super.key,

@@ -13,14 +13,14 @@ final driftPeopleServiceProvider = Provider<DriftPeopleService>(
   (ref) => DriftPeopleService(ref.watch(driftPeopleRepositoryProvider), ref.watch(personApiRepositoryProvider)),
 );
 
-final driftPeopleAssetProvider = FutureProvider.family<List<DriftPeople>, String>(
+final driftPeopleAssetProvider = FutureProvider.family<List<DriftPerson>, String>(
   (ref, assetId) async {
     final service = ref.watch(driftPeopleServiceProvider);
     return service.getAssetPeople(assetId);
   },
 );
 
-final driftGetAllPeopleProvider = FutureProvider<List<DriftPeople>>(
+final driftGetAllPeopleProvider = FutureProvider<List<DriftPerson>>(
   (ref) async {
     final service = ref.watch(driftPeopleServiceProvider);
     return service.getAllPeople();

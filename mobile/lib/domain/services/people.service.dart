@@ -10,12 +10,12 @@ class DriftPeopleService {
 
   const DriftPeopleService(this._repository, this._personApiRepository);
 
-  Future<List<DriftPeople>> getAssetPeople(String assetId) async {
+  Future<List<DriftPerson>> getAssetPeople(String assetId) async {
     final people = await _repository.getAssetPeople(assetId);
     return people;
   }
 
-  Future<List<DriftPeople>> getAllPeople() async {
+  Future<List<DriftPerson>> getAllPeople() async {
     final people = await _repository.getAllPeople();
     return people;
   }

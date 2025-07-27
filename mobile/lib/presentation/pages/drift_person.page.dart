@@ -8,7 +8,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 
 @RoutePage()
 class DriftPersonPage extends StatelessWidget {
-  final DriftPeople person;
+  final DriftPerson person;
 
   const DriftPersonPage({super.key, required this.person});
 

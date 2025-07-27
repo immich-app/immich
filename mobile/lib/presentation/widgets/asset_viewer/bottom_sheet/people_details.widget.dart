@@ -30,7 +30,7 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
 
     final peopleFuture = ref.watch(driftPeopleAssetProvider(asset.id));
 
-    Future<void> showNameEditModal(DriftPeople person) async {
+    Future<void> showNameEditModal(DriftPerson person) async {
       await showDialog(
         context: context,
         useRootNavigator: false,
@@ -95,7 +95,7 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
 }
 
 class _PeopleAvatar extends StatelessWidget {
-  final DriftPeople person;
+  final DriftPerson person;
   final DateTime assetFileCreatedAt;
   final VoidCallback? onTap;
   final VoidCallback? onNameTap;

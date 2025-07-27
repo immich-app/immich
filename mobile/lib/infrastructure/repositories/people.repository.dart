@@ -7,7 +7,7 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftPeopleRepository(this._db) : super(_db);
 
-  Future<List<DriftPeople>> getAssetPeople(String assetId) async {
+  Future<List<DriftPerson>> getAssetPeople(String assetId) async {
     final query = _db.select(_db.assetFaceEntity).join([
       innerJoin(
         _db.personEntity,
@@ -24,7 +24,7 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
     }).get();
   }
 
-  Future<List<DriftPeople>> getAllPeople() async {
+  Future<List<DriftPerson>> getAllPeople() async {
     final query = _db.select(_db.personEntity).join([
       leftOuterJoin(
         _db.assetFaceEntity,
@@ -63,8 +63,8 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
 }
 
 extension on PersonEntityData {
-  DriftPeople toDto() {
-    return DriftPeople(
+  DriftPerson toDto() {
+    return DriftPerson(
       id: id,
       createdAt: createdAt,
       updatedAt: updatedAt,
