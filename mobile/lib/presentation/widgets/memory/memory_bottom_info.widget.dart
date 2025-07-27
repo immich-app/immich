@@ -49,9 +49,9 @@ class DriftMemoryBottomInfo extends StatelessWidget {
           message: 'view_in_timeline'.tr(),
           child: MaterialButton(
             minWidth: 0,
-            onPressed: () {
-              context.maybePop();
-              context.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
+            onPressed: () async {
+              await context.maybePop();
+              await context.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
               EventStream.shared.emit(ScrollToDateEvent(fileCreatedDate));
             },
             shape: const CircleBorder(),
