@@ -23,6 +23,7 @@ export type AuthUser = {
   email: string;
   quotaUsageInBytes: number;
   quotaSizeInBytes: number | null;
+  appVersion?: string | null;
 };
 
 export type AlbumUser = {
@@ -142,6 +143,7 @@ export type UserAdmin = User & {
   quotaUsageInBytes: number;
   status: UserStatus;
   metadata: UserMetadataItem[];
+  appVersion?: string | null;
 };
 
 export type StorageAsset = {
@@ -306,7 +308,7 @@ export const columns = {
     'asset.type',
   ],
   assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type'],
-  authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
+  authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes', 'user.appVersion'],
   authApiKey: ['api_key.id', 'api_key.permissions'],
   authSession: ['session.id', 'session.isPendingSyncReset', 'session.updatedAt', 'session.pinExpiresAt'],
   authSharedLink: [
@@ -333,6 +335,7 @@ export const columns = {
     'storageLabel',
     'quotaSizeInBytes',
     'quotaUsageInBytes',
+    'appVersion',
   ],
   tag: ['tag.id', 'tag.value', 'tag.createdAt', 'tag.updatedAt', 'tag.color', 'tag.parentId'],
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
