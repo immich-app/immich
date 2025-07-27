@@ -179,9 +179,9 @@ export class AuthService extends BaseService {
 
     if (authDto.user && headers['user-agent']) {
       const userAgent = Array.isArray(headers['user-agent']) ? headers['user-agent'][0] : headers['user-agent'];
-      const match = /^Immich_(Android|iOS)_(.+)$/.exec(userAgent);
-      if (match) {
-        const appVersion = match[2];
+      const match = /^Immich_(?<platform>Android|iOS)_(?<version>.+)$/.exec(userAgent);
+      if (match && match.groups) {
+        const { version: appVersion } = match.groups;
         if (authDto.user.appVersion !== appVersion) {
           await this.userRepository.update(authDto.user.id, { appVersion });
           authDto.user.appVersion = appVersion;

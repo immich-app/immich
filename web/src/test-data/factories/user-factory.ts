@@ -32,6 +32,6 @@ export const userAdminFactory = Sync.makeFactory<UserAdminResponseDto>({
     activationKey: 'activation-key',
     activatedAt: new Date().toISOString(),
   },
-  appVersion: '1.0.0',
+  appVersion: '1.136.0',
   profileChangedAt: Sync.each(() => faker.date.recent().toISOString()),
 });

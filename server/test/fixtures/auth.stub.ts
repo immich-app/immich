@@ -9,7 +9,7 @@ const authUser = {
     isAdmin: true,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
-    appVersion: '1.0.0',
+    appVersion: '1.136.0',
   },
   user1: {
     id: 'user-id',
@@ -18,7 +18,7 @@ const authUser = {
     isAdmin: false,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
-    appVersion: '1.0.0',
+    appVersion: '1.136.0',
   },
 };
 
@@ -38,7 +38,7 @@ export const authStub = {
       isAdmin: false,
       quotaSizeInBytes: null,
       quotaUsageInBytes: 0,
-      appVersion: '1.0.0',
+      appVersion: '1.136.0',
     },
     session: {
       id: 'token-id',
