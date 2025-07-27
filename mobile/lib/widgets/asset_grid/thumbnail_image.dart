@@ -50,12 +50,7 @@ class ThumbnailImage extends StatelessWidget {
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.decelerate,
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.transparent,
-              width: multiselectEnabled && isSelected ? 8 : 0.0001,
-            ),
-          ),
+          padding: EdgeInsets.all(multiselectEnabled && isSelected ? 8 : 0),
           child: Stack(
             children: [
               _ImageIcon(
@@ -91,17 +86,15 @@ class ThumbnailImage extends StatelessWidget {
           duration: const Duration(milliseconds: 300),
           curve: Curves.decelerate,
           builder: (context, value, child) {
-            final double opacity = value;
-            final double scale = 0.6 + (0.4 * value);
-
+            final double outlineCircleScale = 0.6 + (0.4 * value);
             return Padding(
               padding: EdgeInsets.all(isSelected ? value * 3.0 : 3.0),
               child: Align(
                 alignment: Alignment.topLeft,
                 child: Opacity(
-                  opacity: isSelected ? 1 : opacity,
+                  opacity: isSelected ? 1 : value,
                   child: Transform.scale(
-                    scale: isSelected ? value : scale,
+                    scale: isSelected ? value : outlineCircleScale,
                     alignment: isSelected ? Alignment.topLeft : Alignment.center,
                     child: isSelected
                         ? const _SelectedIcon()
@@ -328,12 +321,9 @@ class _ImageIcon extends StatelessWidget {
       duration: const Duration(milliseconds: 300),
       curve: Curves.decelerate,
       builder: (context, value, child) {
-        return DecoratedBox(
-          decoration: const BoxDecoration(color: Colors.transparent),
-          child: ClipRRect(
-            borderRadius: BorderRadius.all(Radius.circular(value)),
-            child: child,
-          ),
+        return ClipRRect(
+          borderRadius: BorderRadius.all(Radius.circular(value)),
+          child: child,
         );
       },
       child: image,
