@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/widgets/common/person_sliver_app_bar.dart';
 
 @RoutePage()
 class DriftPersonPage extends StatelessWidget {
@@ -30,15 +31,7 @@ class DriftPersonPage extends StatelessWidget {
         ),
       ],
       child: Timeline(
-        showStorageIndicator: true,
-        appBar: SliverAppBar(
-          title: Text(person.name),
-          floating: true,
-          snap: true,
-          pinned: true,
-          centerTitle: true,
-          elevation: 0,
-        ),
+        appBar: PersonSliverAppBar(person: person),
       ),
     );
   }

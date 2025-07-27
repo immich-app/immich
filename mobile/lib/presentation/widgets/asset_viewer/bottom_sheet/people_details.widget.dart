@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -11,6 +10,7 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asse
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/utils/age.utils.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class SheetPeopleDetails extends ConsumerStatefulWidget {
@@ -173,7 +173,7 @@ class _PeopleAvatar extends StatelessWidget {
                   ),
                   if (person.birthDate != null)
                     Text(
-                      _formatAge(person.birthDate!, assetFileCreatedAt),
+                      formatAge(person.birthDate!, assetFileCreatedAt),
                       textAlign: TextAlign.center,
                       style: context.textTheme.bodyMedium?.copyWith(
                         color: context.textTheme.bodyMedium?.color?.withAlpha(175),
@@ -185,34 +185,5 @@ class _PeopleAvatar extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatAge(DateTime birthDate, DateTime referenceDate) {
-    int ageInYears = _calculateAge(birthDate, referenceDate);
-    int ageInMonths = _calculateAgeInMonths(birthDate, referenceDate);
-
-    if (ageInMonths <= 11) {
-      return "exif_bottom_sheet_person_age_months".tr(namedArgs: {'months': ageInMonths.toString()});
-    } else if (ageInMonths > 12 && ageInMonths <= 23) {
-      return "exif_bottom_sheet_person_age_year_months".tr(namedArgs: {'months': (ageInMonths - 12).toString()});
-    } else {
-      return "exif_bottom_sheet_person_age_years".tr(namedArgs: {'years': ageInYears.toString()});
-    }
-  }
-
-  int _calculateAge(DateTime birthDate, DateTime referenceDate) {
-    int age = referenceDate.year - birthDate.year;
-    if (referenceDate.month < birthDate.month ||
-        (referenceDate.month == birthDate.month && referenceDate.day < birthDate.day)) {
-      age--;
-    }
-    return age;
-  }
-
-  int _calculateAgeInMonths(DateTime birthDate, DateTime referenceDate) {
-    return (referenceDate.year - birthDate.year) * 12 +
-        referenceDate.month -
-        birthDate.month -
-        (referenceDate.day < birthDate.day ? 1 : 0);
   }
 }
