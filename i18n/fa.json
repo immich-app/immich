@@ -493,7 +493,6 @@
   "manage_your_devices": "مدیریت دستگاه‌های متصل",
   "manage_your_oauth_connection": "مدیریت اتصال OAuth",
   "map": "نقشه",
-  "map_assets_in_bound": "{count} عکس",
   "map_assets_in_bounds": "{count} عکس ها",
   "map_cannot_get_user_location": "موقعیت مکانی در دسترس نیست",
   "map_location_dialog_yes": "بله",
