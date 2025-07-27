@@ -45,3 +45,13 @@ class TimeBucket extends Bucket {
 class TimelineReloadEvent extends Event {
   const TimelineReloadEvent();
 }
+
+class ScrollToTopEvent extends Event {
+  const ScrollToTopEvent();
+}
+
+class ScrollToDateEvent extends Event {
+  final DateTime date;
+
+  const ScrollToDateEvent(this.date);
+}

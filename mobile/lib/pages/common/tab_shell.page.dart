@@ -2,9 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -155,7 +156,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
 void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
   // On Photos page menu tapped
   if (router.activeIndex == 0 && index == 0) {
-    scrollToTopNotifierProvider.scrollToTop();
+    EventStream.shared.emit(const ScrollToTopEvent());
   }
 
   // On Search page tapped

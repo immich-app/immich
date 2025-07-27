@@ -97,19 +97,71 @@ class _SliverTimeline extends ConsumerStatefulWidget {
 
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   final _scrollController = ScrollController();
-  StreamSubscription? _reloadSubscription;
+  StreamSubscription? _eventSubscription;
 
   @override
   void initState() {
     super.initState();
-    _reloadSubscription = EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
+    _eventSubscription = EventStream.shared.listen(_onEvent);
+  }
+
+  void _onEvent(Event event) {
+    switch (event) {
+      case ScrollToTopEvent():
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+        );
+      case ScrollToDateEvent scrollToDateEvent:
+        _scrollToDate(scrollToDateEvent.date);
+      case TimelineReloadEvent():
+        setState(() {});
+      default:
+        break;
+    }
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
-    _reloadSubscription?.cancel();
+    _eventSubscription?.cancel();
     super.dispose();
+  }
+
+  void _scrollToDate(DateTime date) {
+    final asyncSegments = ref.read(timelineSegmentProvider);
+    asyncSegments.whenData((segments) {
+      // Find the segment that contains assets from the target date
+      final targetSegment = segments.firstWhereOrNull((segment) {
+        if (segment.bucket is TimeBucket) {
+          final segmentDate = (segment.bucket as TimeBucket).date;
+          // Check if the segment date matches the target date (year, month, day)
+          return segmentDate.year == date.year && segmentDate.month == date.month && segmentDate.day == date.day;
+        }
+        return false;
+      });
+
+      // If exact date not found, try to find the closest month
+      final fallbackSegment = targetSegment ??
+          segments.firstWhereOrNull((segment) {
+            if (segment.bucket is TimeBucket) {
+              final segmentDate = (segment.bucket as TimeBucket).date;
+              return segmentDate.year == date.year && segmentDate.month == date.month;
+            }
+            return false;
+          });
+
+      if (fallbackSegment != null) {
+        // Scroll to the segment with a small offset to show the header
+        final targetOffset = fallbackSegment.startOffset - 50;
+        _scrollController.animateTo(
+          targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   @override
