@@ -17,6 +17,7 @@
     strokeWidth?: number;
     strokeColor?: string;
     spin?: boolean;
+    onClick?: (e?: MouseEvent) => void;
   }
 
   let {
@@ -35,6 +36,7 @@
     strokeWidth = 0,
     strokeColor = 'currentColor',
     spin = false,
+    onClick = undefined,
   }: Props = $props();
 </script>
 
@@ -49,6 +51,7 @@
   aria-label={ariaLabel}
   aria-hidden={ariaHidden}
   aria-labelledby={ariaLabelledby}
+  onclick={onClick}
 >
   {#if title}
     <title>{title}</title>

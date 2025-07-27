@@ -65,6 +65,13 @@ describe(AlbumController.name, () => {
     });
   });
 
+  describe('PUT /albums/assets', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).put(`/albums/assets`);
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
   describe('PATCH /albums/:id', () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).patch(`/albums/${factory.uuid()}`).send({ albumName: 'New album name' });

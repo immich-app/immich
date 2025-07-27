@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsString, ValidateNested } from 'class-validator';
 import _ from 'lodash';
 import { AlbumUser, AuthSharedLink, User } from 'src/database';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { AssetResponseDto, MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
@@ -52,6 +53,24 @@ export class CreateAlbumDto {
 
   @ValidateUUID({ optional: true, each: true })
   assetIds?: string[];
+}
+
+export class AlbumsAddAssetsDto {
+  @ValidateUUID({ each: true })
+  albumIds!: string[];
+
+  @ValidateUUID({ each: true })
+  assetIds!: string[];
+}
+
+export class AlbumsAddAssetsResponseDto {
+  success!: boolean;
+  @ApiProperty({ type: 'integer' })
+  albumSuccessCount!: number;
+  @ApiProperty({ type: 'integer' })
+  assetSuccessCount!: number;
+  @ValidateEnum({ enum: BulkIdErrorReason, name: 'BulkIdErrorReason', optional: true })
+  error?: BulkIdErrorReason;
 }
 
 export class UpdateAlbumDto {

@@ -15,7 +15,9 @@ import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
 import {
   addAssetsToAlbum as addAssets,
+  addAssetsToAlbums as addToAlbums,
   AssetVisibility,
+  BulkIdErrorReason,
   bulkTagAssets,
   createStack,
   deleteAssets,
@@ -70,6 +72,54 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
         },
       },
     });
+  }
+};
+
+export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], showNotification = true) => {
+  const result = await addToAlbums({
+    albumsAddAssetsDto: {
+      albumIds,
+      assetIds,
+    },
+    key: authManager.key,
+  });
+
+  if (!showNotification) {
+    return result;
+  }
+
+  if (showNotification) {
+    const $t = get(t);
+
+    if (result.error === BulkIdErrorReason.Duplicate) {
+      notificationController.show({
+        type: NotificationType.Info,
+        timeout: 5000,
+        message: $t('assets_were_part_of_albums_count', { values: { count: assetIds.length } }),
+      });
+      return result;
+    }
+    if (result.error) {
+      notificationController.show({
+        type: NotificationType.Info,
+        timeout: 5000,
+        message: $t('assets_cannot_be_added_to_albums', { values: { count: assetIds.length } }),
+      });
+      return result;
+    }
+    notificationController.show({
+      type: NotificationType.Info,
+      timeout: 5000,
+      message: $t('assets_added_to_albums_count', {
+        values: {
+          albumCount: result.albumSuccessCount,
+          albumTotal: albumIds.length,
+          assetCount: result.assetSuccessCount,
+          assetTotal: assetIds.length,
+        },
+      }),
+    });
+    return result;
   }
 };
 

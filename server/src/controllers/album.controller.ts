@@ -4,6 +4,8 @@ import {
   AddUsersDto,
   AlbumInfoDto,
   AlbumResponseDto,
+  AlbumsAddAssetsDto,
+  AlbumsAddAssetsResponseDto,
   AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
@@ -74,6 +76,12 @@ export class AlbumController {
     @Body() dto: BulkIdsDto,
   ): Promise<BulkIdResponseDto[]> {
     return this.service.addAssets(auth, id, dto);
+  }
+
+  @Put('assets')
+  @Authenticated({ sharedLink: true })
+  addAssetsToAlbums(@Auth() auth: AuthDto, @Body() dto: AlbumsAddAssetsDto): Promise<AlbumsAddAssetsResponseDto> {
+    return this.service.addAssetsToAlbums(auth, dto);
   }
 
   @Delete(':id/assets')
