@@ -165,7 +165,7 @@ export class MapRepository {
       return { country, state, city };
     }
 
-    this.logger.warn(
+    this.logger.log(
       `Empty response from database for reverse geocoding lat: ${point.latitude}, lon: ${point.longitude}. Likely cause: no nearby large populated place (500+ within 25km)`,
     );
 
