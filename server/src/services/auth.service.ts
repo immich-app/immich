@@ -177,6 +177,18 @@ export class AuthService extends BaseService {
     const { adminRoute, sharedLinkRoute, uri } = metadata;
     const requestedPermission = metadata.permission ?? Permission.All;
 
+    if (authDto.user && headers['user-agent']) {
+      const userAgent = Array.isArray(headers['user-agent']) ? headers['user-agent'][0] : headers['user-agent'];
+      const match = /^Immich_(Android|iOS)_(.+)$/.exec(userAgent);
+      if (match) {
+        const appVersion = match[2];
+        if (authDto.user.appVersion !== appVersion) {
+          await this.userRepository.update(authDto.user.id, { appVersion });
+          authDto.user.appVersion = appVersion;
+        }
+      }
+    }
+
     if (!authDto.user.isAdmin && adminRoute) {
       this.logger.warn(`Denied access to admin only route: ${uri}`);
       throw new ForbiddenException('Forbidden');

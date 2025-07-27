@@ -27,7 +27,8 @@ select
           "user"."email",
           "user"."isAdmin",
           "user"."quotaUsageInBytes",
-          "user"."quotaSizeInBytes"
+          "user"."quotaSizeInBytes",
+          "user"."appVersion"
         from
           "user"
         where
