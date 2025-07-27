@@ -58,8 +58,7 @@ If both `.jpg.xmp` and `.xmp` are present, Immich uses the **`.jpg.xmp`** file.
 1. **Detect** – The `DISCOVER` job automatically associates `.xmp` files that sit next to existing media files in your mounted folder. No files are moved or renamed.
 2. **Extract** – Immich reads and saves the same metadata fields from the sidecar to the database.
 3. **Write-back** – If Immich has **write access** to the mount, any future metadata edits (e.g., rating or tags) are also written back to the original `.xmp` file on disk.  
-   ❗ If the mount is **read-only**, Immich cannot update either the sidecar **or** the database — **metadata edits will silently fail** with no warning.  
-   See [Issue #10538](https://github.com/immich-app/immich/issues/10538) for details.
+   ❗ If the mount is **read-only**, Immich cannot update either the sidecar **or** the database — **metadata edits will silently fail** with no warning [issue #10538](https://github.com/immich-app/immich/issues/10538).
 
 ---
 
