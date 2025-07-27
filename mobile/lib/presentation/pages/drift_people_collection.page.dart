@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
@@ -12,17 +11,34 @@ import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/search/person_name_edit_form.dart';
 
 @RoutePage()
-class DriftPeopleCollectionPage extends HookConsumerWidget {
+class DriftPeopleCollectionPage extends ConsumerStatefulWidget {
   const DriftPeopleCollectionPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DriftPeopleCollectionPage> createState() => _DriftPeopleCollectionPageState();
+}
+
+class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectionPage> {
+  final FocusNode _formFocus = FocusNode();
+  String? _search;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _formFocus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final people = ref.watch(driftGetAllPeopleProvider);
     final headers = ApiService.getRequestHeaders();
-    final formFocus = useFocusNode();
-    final ValueNotifier<String?> search = useState(null);
 
-    showNameEditModel(
+    Future<void> showNameEditModel(
       String personId,
       String personName,
     ) {
@@ -42,12 +58,12 @@ class DriftPeopleCollectionPage extends HookConsumerWidget {
 
         return Scaffold(
           appBar: AppBar(
-            automaticallyImplyLeading: search.value == null,
-            title: search.value != null
+            automaticallyImplyLeading: _search == null,
+            title: _search != null
                 ? SearchField(
-                    focusNode: formFocus,
-                    onTapOutside: (_) => formFocus.unfocus(),
-                    onChanged: (value) => search.value = value,
+                    focusNode: _formFocus,
+                    onTapOutside: (_) => _formFocus.unfocus(),
+                    onChanged: (value) => setState(() => _search = value),
                     filled: true,
                     hintText: 'filter_people'.tr(),
                     autofocus: true,
@@ -55,9 +71,9 @@ class DriftPeopleCollectionPage extends HookConsumerWidget {
                 : Text('people'.tr()),
             actions: [
               IconButton(
-                icon: Icon(search.value != null ? Icons.close : Icons.search),
+                icon: Icon(_search != null ? Icons.close : Icons.search),
                 onPressed: () {
-                  search.value = search.value == null ? '' : null;
+                  setState(() => _search = _search == null ? '' : null);
                 },
               ),
             ],
@@ -65,9 +81,9 @@ class DriftPeopleCollectionPage extends HookConsumerWidget {
           body: SafeArea(
             child: people.when(
               data: (people) {
-                if (search.value != null) {
+                if (_search != null) {
                   people = people.where((person) {
-                    return person.name.toLowerCase().contains(search.value!.toLowerCase());
+                    return person.name.toLowerCase().contains(_search!.toLowerCase());
                   }).toList();
                 }
                 return GridView.builder(

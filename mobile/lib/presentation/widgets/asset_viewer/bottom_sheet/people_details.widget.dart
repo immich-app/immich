@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -7,6 +8,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
@@ -50,7 +52,7 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
                 ),
               ),
               SizedBox(
-                height: 170,
+                height: 150,
                 child: ListView(
                   padding: const EdgeInsets.only(left: 16.0),
                   scrollDirection: Axis.horizontal,
@@ -59,7 +61,9 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
                       _PeopleAvatar(
                         person: person,
                         assetFileCreatedAt: asset.createdAt,
-                        onTap: () {},
+                        onTap: () {
+                          context.pushRoute(DriftPersonRoute(person: person));
+                        },
                         onNameTap: (id) {},
                       ),
                   ],
@@ -86,7 +90,7 @@ class _PeopleAvatar extends StatelessWidget {
   final VoidCallback? onTap;
 
   final Function(String)? onNameTap;
-  final double imageSize = 120;
+  final double imageSize = 96;
 
   const _PeopleAvatar({
     required this.person,
@@ -101,7 +105,7 @@ class _PeopleAvatar extends StatelessWidget {
 
     return ConstrainedBox(
       constraints: const BoxConstraints(
-        maxWidth: 120,
+        maxWidth: 96,
       ),
       child: Padding(
         padding: const EdgeInsets.only(right: 16.0),

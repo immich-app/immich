@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/services/people.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/person.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/people.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 
 final driftPeopleRepositoryProvider = Provider<DriftPeopleRepository>(

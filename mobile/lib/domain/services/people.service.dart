@@ -1,5 +1,5 @@
 import 'package:immich_mobile/domain/models/person.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/person.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/people.repository.dart';
 
 class DriftPeopleService {
   final DriftPeopleRepository _repository;
