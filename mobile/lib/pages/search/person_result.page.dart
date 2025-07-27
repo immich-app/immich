@@ -120,7 +120,7 @@ class PersonResultPage extends HookConsumerWidget {
                       )
                     : (favoriteStatus.value ? const Icon(Icons.favorite) : const Icon(Icons.favorite_border)),
                   title: Text(
-                    favoriteStatus.value ? 'Von Favoriten entfernen' : 'Zu Favoriten hinzufügen',
+                    favoriteStatus.value ? 'unfavorite' : 'favorite',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ).tr(),
                   onTap: isTogglingFavorite.value ? null : () {
