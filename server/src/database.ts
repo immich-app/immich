@@ -23,7 +23,7 @@ export type AuthUser = {
   email: string;
   quotaUsageInBytes: number;
   quotaSizeInBytes: number | null;
-  appVersion: string | null;
+  appVersion?: string | null;
 };
 
 export type AlbumUser = {
@@ -143,7 +143,7 @@ export type UserAdmin = User & {
   quotaUsageInBytes: number;
   status: UserStatus;
   metadata: UserMetadataItem[];
-  appVersion: string | null;
+  appVersion?: string | null;
 };
 
 export type StorageAsset = {
