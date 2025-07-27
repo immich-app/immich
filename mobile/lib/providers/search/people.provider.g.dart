@@ -320,5 +320,155 @@ class _UpdatePersonNameProviderElement
   @override
   String get updatedName => (origin as UpdatePersonNameProvider).updatedName;
 }
+
+String _$togglePersonFavoriteHash() =>
+    r'4e8c2fee327b6c3bee26630876468e327c7b5b58';
+
+/// See also [togglePersonFavorite].
+@ProviderFor(togglePersonFavorite)
+const togglePersonFavoriteProvider = TogglePersonFavoriteFamily();
+
+/// See also [togglePersonFavorite].
+class TogglePersonFavoriteFamily extends Family<AsyncValue<bool>> {
+  /// See also [togglePersonFavorite].
+  const TogglePersonFavoriteFamily();
+
+  /// See also [togglePersonFavorite].
+  TogglePersonFavoriteProvider call(
+    String personId,
+    bool currentFavoriteStatus,
+  ) {
+    return TogglePersonFavoriteProvider(
+      personId,
+      currentFavoriteStatus,
+    );
+  }
+
+  @override
+  TogglePersonFavoriteProvider getProviderOverride(
+    covariant TogglePersonFavoriteProvider provider,
+  ) {
+    return call(
+      provider.personId,
+      provider.currentFavoriteStatus,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'togglePersonFavoriteProvider';
+}
+
+/// See also [togglePersonFavorite].
+class TogglePersonFavoriteProvider extends AutoDisposeFutureProvider<bool> {
+  /// See also [togglePersonFavorite].
+  TogglePersonFavoriteProvider(
+    String personId,
+    bool currentFavoriteStatus,
+  ) : this._internal(
+          (ref) => togglePersonFavorite(
+            ref as TogglePersonFavoriteRef,
+            personId,
+            currentFavoriteStatus,
+          ),
+          from: togglePersonFavoriteProvider,
+          name: r'togglePersonFavoriteProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$togglePersonFavoriteHash,
+          dependencies: TogglePersonFavoriteFamily._dependencies,
+          allTransitiveDependencies:
+              TogglePersonFavoriteFamily._allTransitiveDependencies,
+          personId: personId,
+          currentFavoriteStatus: currentFavoriteStatus,
+        );
+
+  TogglePersonFavoriteProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.personId,
+    required this.currentFavoriteStatus,
+  }) : super.internal();
+
+  final String personId;
+  final bool currentFavoriteStatus;
+
+  @override
+  Override overrideWith(
+    FutureOr<bool> Function(TogglePersonFavoriteRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: TogglePersonFavoriteProvider._internal(
+        (ref) => create(ref as TogglePersonFavoriteRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        personId: personId,
+        currentFavoriteStatus: currentFavoriteStatus,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<bool> createElement() {
+    return _TogglePersonFavoriteProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is TogglePersonFavoriteProvider &&
+        other.personId == personId &&
+        other.currentFavoriteStatus == currentFavoriteStatus;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, personId.hashCode);
+    hash = _SystemHash.combine(hash, currentFavoriteStatus.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin TogglePersonFavoriteRef on AutoDisposeFutureProviderRef<bool> {
+  /// The parameter `personId` of this provider.
+  String get personId;
+
+  /// The parameter `currentFavoriteStatus` of this provider.
+  bool get currentFavoriteStatus;
+}
+
+class _TogglePersonFavoriteProviderElement
+    extends AutoDisposeFutureProviderElement<bool>
+    with TogglePersonFavoriteRef {
+  _TogglePersonFavoriteProviderElement(super.provider);
+
+  @override
+  String get personId => (origin as TogglePersonFavoriteProvider).personId;
+  @override
+  bool get currentFavoriteStatus =>
+      (origin as TogglePersonFavoriteProvider).currentFavoriteStatus;
+}
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

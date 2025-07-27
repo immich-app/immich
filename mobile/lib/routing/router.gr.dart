@@ -1847,6 +1847,7 @@ class PersonResultRoute extends PageRouteInfo<PersonResultRouteArgs> {
     Key? key,
     required String personId,
     required String personName,
+    required bool isFavorite,
     List<PageRouteInfo>? children,
   }) : super(
           PersonResultRoute.name,
@@ -1854,6 +1855,7 @@ class PersonResultRoute extends PageRouteInfo<PersonResultRouteArgs> {
             key: key,
             personId: personId,
             personName: personName,
+            isFavorite: isFavorite,
           ),
           initialChildren: children,
         );
@@ -1868,6 +1870,7 @@ class PersonResultRoute extends PageRouteInfo<PersonResultRouteArgs> {
         key: args.key,
         personId: args.personId,
         personName: args.personName,
+        isFavorite: args.isFavorite,
       );
     },
   );
@@ -1878,6 +1881,7 @@ class PersonResultRouteArgs {
     this.key,
     required this.personId,
     required this.personName,
+    required this.isFavorite,
   });
 
   final Key? key;
@@ -1886,9 +1890,11 @@ class PersonResultRouteArgs {
 
   final String personName;
 
+  final bool isFavorite;
+
   @override
   String toString() {
-    return 'PersonResultRouteArgs{key: $key, personId: $personId, personName: $personName}';
+    return 'PersonResultRouteArgs{key: $key, personId: $personId, personName: $personName, isFavorite: $isFavorite}';
   }
 }
 

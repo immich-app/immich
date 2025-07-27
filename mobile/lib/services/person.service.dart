@@ -55,4 +55,13 @@ class PersonService {
     }
     return null;
   }
+
+  Future<PersonDto?> toggleFavorite(String id, bool isFavorite) async {
+    try {
+      return await _personApiRepository.update(id, isFavorite: !isFavorite);
+    } catch (error, stack) {
+      _log.severe("Error while toggling person favorite", error, stack);
+    }
+    return null;
+  }
 }

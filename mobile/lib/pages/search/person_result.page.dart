@@ -9,21 +9,27 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/widgets/search/person_name_edit_form.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 @RoutePage()
 class PersonResultPage extends HookConsumerWidget {
   final String personId;
   final String personName;
+  final bool isFavorite;
 
   const PersonResultPage({
     super.key,
     required this.personId,
     required this.personName,
+    required this.isFavorite,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final name = useState(personName);
+    final favoriteStatus = useState(isFavorite);
+    final isTogglingFavorite = useState(false);
 
     showEditNameDialog() {
       showDialog(
@@ -40,6 +46,50 @@ class PersonResultPage extends HookConsumerWidget {
           name.value = result.updatedName;
         }
       });
+    }
+
+    toggleFavorite() async {
+      if (isTogglingFavorite.value) return; // Prevent multiple calls
+      
+      isTogglingFavorite.value = true;
+      try {
+        final success = await ref.read(togglePersonFavoriteProvider(personId, favoriteStatus.value).future);
+        if (success == true) {
+          favoriteStatus.value = !favoriteStatus.value;
+          if (context.mounted) {
+            final message = favoriteStatus.value 
+              ? 'Person added to favorites' 
+              : 'Person removed from favorites';
+            ImmichToast.show(
+              context: context,
+              msg: message,
+              toastType: ToastType.success,
+              gravity: ToastGravity.BOTTOM,
+            );
+          }
+        } else {
+          if (context.mounted) {
+            ImmichToast.show(
+              context: context,
+              msg: 'Failed to toggle favorite status',
+              toastType: ToastType.error,
+              gravity: ToastGravity.BOTTOM,
+            );
+          }
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ImmichToast.show(
+            context: context,
+            msg: 'Error toggling favorite: ${e.toString()}',
+            toastType: ToastType.error,
+            gravity: ToastGravity.BOTTOM,
+          );
+        }
+        debugPrint('Error toggling favorite: $e');
+      } finally {
+        isTogglingFavorite.value = false;
+      }
     }
 
     void buildBottomSheet() {
@@ -60,6 +110,23 @@ class PersonResultPage extends HookConsumerWidget {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ).tr(),
                   onTap: showEditNameDialog,
+                ),
+                ListTile(
+                  leading: isTogglingFavorite.value 
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : (favoriteStatus.value ? const Icon(Icons.favorite) : const Icon(Icons.favorite_border)),
+                  title: Text(
+                    favoriteStatus.value ? 'Von Favoriten entfernen' : 'Zu Favoriten hinzufügen',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ).tr(),
+                  onTap: isTogglingFavorite.value ? null : () {
+                    Navigator.of(context).pop();
+                    toggleFavorite();
+                  },
                 ),
               ],
             ),

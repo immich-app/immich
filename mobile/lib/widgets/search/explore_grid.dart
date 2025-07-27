@@ -57,6 +57,7 @@ class ExploreGrid extends StatelessWidget {
                     PersonResultRoute(
                       personId: content.id,
                       personName: content.label,
+                      isFavorite: false, // Default to false for explore/discovery views
                     ),
                   )
                 : context.pushRoute(

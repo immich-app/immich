@@ -18,9 +18,9 @@ class PersonApiRepository extends ApiRepository {
     return dto.people.map(_toPerson).toList();
   }
 
-  Future<PersonDto> update(String id, {String? name}) async {
+  Future<PersonDto> update(String id, {String? name, bool? isFavorite}) async {
     final dto = await checkNull(
-      _api.updatePerson(id, PersonUpdateDto(name: name)),
+      _api.updatePerson(id, PersonUpdateDto(name: name, isFavorite: isFavorite)),
     );
     return _toPerson(dto);
   }
@@ -31,5 +31,6 @@ class PersonApiRepository extends ApiRepository {
         isHidden: dto.isHidden,
         name: dto.name,
         thumbnailPath: dto.thumbnailPath,
+        isFavorite: dto.isFavorite ?? false,
       );
 }

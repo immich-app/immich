@@ -44,3 +44,19 @@ Future<bool> updatePersonName(
   }
   return false;
 }
+
+@riverpod
+Future<bool> togglePersonFavorite(
+  Ref ref,
+  String personId,
+  bool currentFavoriteStatus,
+) async {
+  final PersonService personService = ref.read(personServiceProvider);
+  final person = await personService.toggleFavorite(personId, currentFavoriteStatus);
+
+  if (person != null && person.isFavorite != currentFavoriteStatus) {
+    ref.invalidate(getAllPeopleProvider);
+    return true;
+  }
+  return false;
+}

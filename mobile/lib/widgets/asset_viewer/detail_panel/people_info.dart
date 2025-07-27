@@ -77,11 +77,14 @@ class PeopleInfo extends ConsumerWidget {
                 padding: padding,
                 content: curatedPeople,
                 onTap: (content, index) {
+                  // Get the original person data to access the isFavorite property
+                  final person = people?.elementAtOrNull(index);
                   context
                       .pushRoute(
                         PersonResultRoute(
                           personId: content.id,
                           personName: content.label,
+                          isFavorite: person?.isFavorite ?? false,
                         ),
                       )
                       .then((_) => peopleProvider.refresh());

@@ -88,6 +88,7 @@ class PeopleCollectionPage extends HookConsumerWidget {
                               PersonResultRoute(
                                 personId: person.id,
                                 personName: person.name,
+                                isFavorite: person.isFavorite,
                               ),
                             );
                           },

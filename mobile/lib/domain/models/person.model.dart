@@ -8,6 +8,7 @@ class PersonDto {
     required this.isHidden,
     required this.name,
     required this.thumbnailPath,
+    required this.isFavorite,
     this.updatedAt,
   });
 
@@ -16,6 +17,7 @@ class PersonDto {
   final bool isHidden;
   final String name;
   final String thumbnailPath;
+  final bool isFavorite;
   final DateTime? updatedAt;
 
   @override
@@ -29,6 +31,7 @@ class PersonDto {
     bool? isHidden,
     String? name,
     String? thumbnailPath,
+    bool? isFavorite,
     DateTime? updatedAt,
   }) {
     return PersonDto(
@@ -37,6 +40,7 @@ class PersonDto {
       isHidden: isHidden ?? this.isHidden,
       name: name ?? this.name,
       thumbnailPath: thumbnailPath ?? this.thumbnailPath,
+      isFavorite: isFavorite ?? this.isFavorite,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -48,6 +52,7 @@ class PersonDto {
       'isHidden': isHidden,
       'name': name,
       'thumbnailPath': thumbnailPath,
+      'isFavorite': isFavorite,
       'updatedAt': updatedAt?.millisecondsSinceEpoch,
     };
   }
@@ -59,6 +64,7 @@ class PersonDto {
       isHidden: map['isHidden'] as bool,
       name: map['name'] as String,
       thumbnailPath: map['thumbnailPath'] as String,
+      isFavorite: map['isFavorite'] as bool,
       updatedAt: map['updatedAt'] != null ? DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int) : null,
     );
   }
@@ -76,6 +82,7 @@ class PersonDto {
         other.isHidden == isHidden &&
         other.name == name &&
         other.thumbnailPath == thumbnailPath &&
+        other.isFavorite == isFavorite &&
         other.updatedAt == updatedAt;
   }
 
@@ -86,6 +93,7 @@ class PersonDto {
         isHidden.hashCode ^
         name.hashCode ^
         thumbnailPath.hashCode ^
+        isFavorite.hashCode ^
         updatedAt.hashCode;
   }
 }
