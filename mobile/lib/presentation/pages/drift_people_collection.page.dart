@@ -86,9 +86,8 @@ class DriftPeopleCollectionPage extends HookConsumerWidget {
                         GestureDetector(
                           onTap: () {
                             context.pushRoute(
-                              PersonResultRoute(
-                                personId: person.id,
-                                personName: person.name,
+                              DriftPersonRoute(
+                                person: person,
                               ),
                             );
                           },

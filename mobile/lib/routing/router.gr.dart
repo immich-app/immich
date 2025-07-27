@@ -947,18 +947,56 @@ class DriftPartnerRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [DriftPeoplePage]
-class DriftPeopleRoute extends PageRouteInfo<void> {
-  const DriftPeopleRoute({List<PageRouteInfo>? children}) : super(DriftPeopleRoute.name, initialChildren: children);
+/// [DriftPeopleCollectionPage]
+class DriftPeopleCollectionRoute extends PageRouteInfo<void> {
+  const DriftPeopleCollectionRoute({List<PageRouteInfo>? children})
+      : super(DriftPeopleCollectionRoute.name, initialChildren: children);
 
-  static const String name = 'DriftPeopleRoute';
+  static const String name = 'DriftPeopleCollectionRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const DriftPeoplePage();
+      return const DriftPeopleCollectionPage();
     },
   );
+}
+
+/// generated route for
+/// [DriftPersonPage]
+class DriftPersonRoute extends PageRouteInfo<DriftPersonRouteArgs> {
+  DriftPersonRoute({
+    Key? key,
+    required DriftPeople person,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DriftPersonRoute.name,
+          args: DriftPersonRouteArgs(key: key, person: person),
+          initialChildren: children,
+        );
+
+  static const String name = 'DriftPersonRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftPersonRouteArgs>();
+      return DriftPersonPage(key: args.key, person: args.person);
+    },
+  );
+}
+
+class DriftPersonRouteArgs {
+  const DriftPersonRouteArgs({this.key, required this.person});
+
+  final Key? key;
+
+  final DriftPeople person;
+
+  @override
+  String toString() {
+    return 'DriftPersonRouteArgs{key: $key, person: $person}';
+  }
 }
 
 /// generated route for
