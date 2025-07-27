@@ -442,12 +442,12 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
           ),
         ])
         ..where(
-          _db.remoteAssetEntity.deletedAt.isNull() & 
-          _db.remoteAssetEntity.ownerId.equals(userId) & 
-          _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
-          _db.assetFaceEntity.personId.equals(personId),
+          _db.remoteAssetEntity.deletedAt.isNull() &
+              _db.remoteAssetEntity.ownerId.equals(userId) &
+              _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
+              _db.assetFaceEntity.personId.equals(personId),
         );
-      
+
       return query.map((row) {
         final count = row.read(_db.remoteAssetEntity.id.count())!;
         return _generateBuckets(count);
@@ -468,9 +468,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ])
       ..where(
         _db.remoteAssetEntity.deletedAt.isNull() &
-        _db.remoteAssetEntity.ownerId.equals(userId) &
-        _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
-        _db.assetFaceEntity.personId.equals(personId),
+            _db.remoteAssetEntity.ownerId.equals(userId) &
+            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
+            _db.assetFaceEntity.personId.equals(personId),
       )
       ..groupBy([dateExp])
       ..orderBy([OrderingTerm.desc(dateExp)]);
@@ -499,9 +499,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     )
       ..where(
         _db.remoteAssetEntity.deletedAt.isNull() &
-        _db.remoteAssetEntity.ownerId.equals(userId) &
-        _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
-        _db.assetFaceEntity.personId.equals(personId),
+            _db.remoteAssetEntity.ownerId.equals(userId) &
+            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
+            _db.assetFaceEntity.personId.equals(personId),
       )
       ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
       ..limit(count, offset: offset);
