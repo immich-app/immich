@@ -3,22 +3,31 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
-class DriftPersonRepository extends DriftDatabaseRepository {
+class DriftPeopleRepository extends DriftDatabaseRepository {
   final Drift _db;
-  const DriftPersonRepository(this._db) : super(_db);
+  const DriftPeopleRepository(this._db) : super(_db);
 
-  Future<List<Person>> getAll(String userId) {
-    final query = _db.personEntity.select()..where((e) => e.ownerId.equals(userId));
+  Future<List<DriftPeople>> getAssetPeople(String assetId) async {
+    final query = _db.select(_db.assetFaceEntity).join([
+      innerJoin(
+        _db.personEntity,
+        _db.personEntity.id.equalsExp(_db.assetFaceEntity.personId),
+      ),
+    ])
+      ..where(
+        _db.assetFaceEntity.assetId.equals(assetId) & _db.personEntity.isHidden.equals(false),
+      );
 
-    return query.map((person) {
+    return query.map((row) {
+      final person = row.readTable(_db.personEntity);
       return person.toDto();
     }).get();
   }
 }
 
 extension on PersonEntityData {
-  Person toDto() {
-    return Person(
+  DriftPeople toDto() {
+    return DriftPeople(
       id: id,
       createdAt: createdAt,
       updatedAt: updatedAt,
