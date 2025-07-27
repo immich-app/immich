@@ -100,7 +100,7 @@ void main() {
   group('createProfileImage', () {
     test('should return profile image path', () async {
       const profileImagePath = 'profile.jpg';
-      final updatedUser = UserStub.admin.copyWith(profileImagePath: profileImagePath);
+      final updatedUser = UserStub.admin;
 
       when(
         () => mockUserApiRepo.createProfileImage(
@@ -120,7 +120,7 @@ void main() {
 
     test('should return null if profile image creation fails', () async {
       const profileImagePath = 'profile.jpg';
-      final updatedUser = UserStub.admin.copyWith(profileImagePath: profileImagePath);
+      final updatedUser = UserStub.admin;
 
       when(
         () => mockUserApiRepo.createProfileImage(

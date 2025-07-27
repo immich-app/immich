@@ -375,16 +375,7 @@ class AuthUserSync extends BaseSync {
     return this.db
       .selectFrom('user')
       .select(columns.syncUser)
-      .select([
-        'isAdmin',
-        'pinCode',
-        'oauthId',
-        'storageLabel',
-        'quotaSizeInBytes',
-        'quotaUsageInBytes',
-        'profileImagePath',
-        'profileChangedAt',
-      ])
+      .select(['isAdmin', 'pinCode', 'oauthId', 'storageLabel', 'quotaSizeInBytes', 'quotaUsageInBytes'])
       .$call(this.upsertTableFilters(ack))
       .stream();
   }

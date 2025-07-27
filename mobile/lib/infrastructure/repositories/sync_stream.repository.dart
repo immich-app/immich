@@ -45,6 +45,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           final companion = UserEntityCompanion(
             name: Value(user.name),
             email: Value(user.email),
+            hasProfileImage: Value(user.hasProfileImage),
+            profileChangedAt: Value(user.profileChangedAt),
           );
 
           batch.insert(

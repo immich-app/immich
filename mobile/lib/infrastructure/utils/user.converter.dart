@@ -11,7 +11,8 @@ abstract final class UserConverter {
         name: dto.name,
         isAdmin: false,
         updatedAt: DateTime.now(),
-        profileImagePath: dto.profileImagePath,
+        hasProfileImage: dto.profileImagePath.isNotEmpty,
+        profileChangedAt: dto.profileChangedAt,
         avatarColor: dto.avatarColor.toAvatarColor(),
       );
 
@@ -25,14 +26,13 @@ abstract final class UserConverter {
         name: adminDto.name,
         isAdmin: adminDto.isAdmin,
         updatedAt: adminDto.updatedAt,
-        profileImagePath: adminDto.profileImagePath,
         avatarColor: adminDto.avatarColor.toAvatarColor(),
         memoryEnabled: preferenceDto?.memories.enabled ?? true,
         inTimeline: false,
         isPartnerSharedBy: false,
         isPartnerSharedWith: false,
-        quotaUsageInBytes: adminDto.quotaUsageInBytes ?? 0,
-        quotaSizeInBytes: adminDto.quotaSizeInBytes ?? 0,
+        profileChangedAt: adminDto.profileChangedAt,
+        hasProfileImage: adminDto.profileImagePath.isNotEmpty,
       );
 
   static UserDto fromPartnerDto(PartnerResponseDto dto) => UserDto(
@@ -41,14 +41,13 @@ abstract final class UserConverter {
         name: dto.name,
         isAdmin: false,
         updatedAt: DateTime.now(),
-        profileImagePath: dto.profileImagePath,
         avatarColor: dto.avatarColor.toAvatarColor(),
         memoryEnabled: false,
         inTimeline: dto.inTimeline ?? false,
         isPartnerSharedBy: false,
         isPartnerSharedWith: false,
-        quotaUsageInBytes: 0,
-        quotaSizeInBytes: 0,
+        profileChangedAt: dto.profileChangedAt,
+        hasProfileImage: dto.profileImagePath.isNotEmpty,
       );
 }
 

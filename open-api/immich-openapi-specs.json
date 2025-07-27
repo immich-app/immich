@@ -14502,10 +14502,17 @@
           "email": {
             "type": "string"
           },
+          "hasProfileImage": {
+            "type": "boolean"
+          },
           "id": {
             "type": "string"
           },
           "name": {
+            "type": "string"
+          },
+          "profileChangedAt": {
+            "format": "date-time",
             "type": "string"
           }
         },
@@ -14513,8 +14520,10 @@
           "avatarColor",
           "deletedAt",
           "email",
+          "hasProfileImage",
           "id",
-          "name"
+          "name",
+          "profileChangedAt"
         ],
         "type": "object"
       },

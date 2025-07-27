@@ -48,7 +48,7 @@ class UserService {
         name: name,
         data: image,
       );
-      final updatedUser = getMyUser().copyWith(profileImagePath: path);
+      final updatedUser = getMyUser();
       await _storeService.put(StoreKey.currentUser, updatedUser);
       await _isarUserRepository.update(updatedUser);
       return path;

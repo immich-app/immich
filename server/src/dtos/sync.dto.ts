@@ -62,6 +62,8 @@ export class SyncUserV1 {
   @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', nullable: true })
   avatarColor!: UserAvatarColor | null;
   deletedAt!: Date | null;
+  hasProfileImage!: boolean;
+  profileChangedAt!: Date;
 }
 
 @ExtraModel()
@@ -74,8 +76,6 @@ export class SyncAuthUserV1 extends SyncUserV1 {
   quotaSizeInBytes!: number | null;
   @ApiProperty({ type: 'integer' })
   quotaUsageInBytes!: number;
-  hasProfileImage!: boolean;
-  profileChangedAt!: Date;
 }
 
 @ExtraModel()

@@ -38,6 +38,7 @@ class UserCircleAvatar extends ConsumerWidget {
       ),
       child: Text(user.name[0].toUpperCase()),
     );
+
     return Tooltip(
       message: user.name,
       child: Container(
@@ -53,13 +54,12 @@ class UserCircleAvatar extends ConsumerWidget {
         child: CircleAvatar(
           backgroundColor: userAvatarColor,
           radius: radius,
-          child: user.profileImagePath == null
-              ? textIcon
-              : ClipRRect(
+          child: user.hasProfileImage
+              ? ClipRRect(
                   borderRadius: const BorderRadius.all(Radius.circular(50)),
                   child: CachedNetworkImage(
                     fit: BoxFit.cover,
-                    cacheKey: user.profileImagePath,
+                    cacheKey: user.profileChangedAt.toIso8601String(),
                     width: size,
                     height: size,
                     placeholder: (_, __) => Image.memory(kTransparentImage),
@@ -68,7 +68,8 @@ class UserCircleAvatar extends ConsumerWidget {
                     fadeInDuration: const Duration(milliseconds: 300),
                     errorWidget: (context, error, stackTrace) => textIcon,
                   ),
-                ),
+                )
+              : textIcon,
         ),
       ),
     );

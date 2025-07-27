@@ -72,6 +72,7 @@ void main() {
       email: "a@b.c",
       name: "first last",
       isAdmin: false,
+      profileChangedAt: DateTime(2021),
     );
     late SyncService s;
     setUpAll(() async {

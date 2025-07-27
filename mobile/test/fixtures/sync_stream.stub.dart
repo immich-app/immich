@@ -10,6 +10,8 @@ abstract final class SyncStreamStub {
       id: "1",
       name: "Admin",
       avatarColor: null,
+      hasProfileImage: false,
+      profileChangedAt: DateTime(2025),
     ),
     ack: "1",
   );
@@ -21,6 +23,8 @@ abstract final class SyncStreamStub {
       id: "5",
       name: "User",
       avatarColor: null,
+      hasProfileImage: false,
+      profileChangedAt: DateTime(2025),
     ),
     ack: "5",
   );
