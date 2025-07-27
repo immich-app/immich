@@ -41,23 +41,25 @@ If both `.jpg.xmp` and `.xmp` are present, Immich uses the **`.jpg.xmp`** file.
 
 ## 3 · How Sidecars Are Handled
 
-### A · Imported via CLI
+### A · Uploaded via CLI
 
-When uploading media via the CLI:
+1. **Detect** – Immich looks for a `.xmp` file placed next to each media file during upload.
+2. **Copy** – Both the media and the sidecar file are copied into Immich’s internal library folder.  
+   The sidecar is renamed to match the internal filename template, e.g.:  
+   `upload/library/<user>/YYYY/YYYY-MM-DD/IMG_0001.jpg`  
+   `upload/library/<user>/YYYY/YYYY-MM-DD/IMG_0001.jpg.xmp`
+3. **Extract** – Selected metadata (title, description, date, rating, tags) is parsed from the sidecar and saved to the database.
+4. **Write-back** – If you later update tags, rating, or description in the web UI, Immich will update **both** the database *and* the copied `.xmp` file to stay in sync.
 
-1. **Detect** – Immich looks for a `.xmp` file next to each media file
-2. **Copy** – Both media and sidecar are copied into Immich's internal storage. The `.xmp` file is renamed to follow the same naming pattern as the media based on storage template eg. `upload/library/<user>/YYYY/YYYY-MM-DD/IMG_0001.jpg` and corresponding `upload/library/<user>/YYYY/YYYY-MM-DD/IMG_0001.jpg.xmp`
-3. **Extract** – Metadata (title, description, date, rating, tags) is saved to the database
-4. **Write-back** – If you later change tags, rating, etc. in the web UI, Immich updates **both** the database *and* the sidecar file
+---
 
 ### B · External Library (Mounted Folder)
 
-For read-only or externally mounted libraries:
-
-1. **Detect** – The `DISCOVER` job links `.xmp` files that sit next to media (they are **not** copied)
-2. **Extract** – Metadata is imported into the database
-3. **Write-back** – If Immich has **write access**, sidecar files are updated with your changes  
-- If the mount is **read-only**, changes only affect the database
+1. **Detect** – The `DISCOVER` job automatically associates `.xmp` files that sit next to existing media files in your mounted folder. No files are moved or renamed.
+2. **Extract** – Immich reads and saves the same metadata fields from the sidecar to the database.
+3. **Write-back** – If Immich has **write access** to the mount, any future metadata edits (e.g., rating or tags) are also written back to the original `.xmp` file on disk.  
+   ❗ If the mount is **read-only**, Immich cannot update either the sidecar **or** the database — **metadata edits will silently fail** with no warning.  
+   See [Issue #10538](https://github.com/immich-app/immich/issues/10538) for details.
 
 ---
 
