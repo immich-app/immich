@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
+import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, RandomMemoriesSearchDto, mapMemory } from 'src/dtos/memory.dto';
 import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, getMyPartnerIds, removeAssets } from 'src/utils/asset.util';
@@ -79,6 +79,11 @@ export class MemoryService extends BaseService {
 
   async search(auth: AuthDto, dto: MemorySearchDto) {
     const memories = await this.memoryRepository.search(auth.user.id, dto);
+    return memories.map((memory) => mapMemory(memory, auth));
+  }
+
+  async getRandom(auth: AuthDto, dto: RandomMemoriesSearchDto): Promise<MemoryResponseDto[]> {
+    const memories = await this.memoryRepository.getRandom(auth.user.id, dto, dto.size);
     return memories.map((memory) => mapMemory(memory, auth));
   }
 
