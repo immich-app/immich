@@ -23,7 +23,7 @@ beforeAll(async () => {
 describe('Asset Sorting by EXIF Creation Date', () => {
   describe('Secondary sort by filename', () => {
     it('should sort assets with same fileCreatedAt by originalFileName in ascending order', async () => {
-      const { sut, ctx } = setup();
+      const { sut: _sut, ctx } = setup();
       const { user } = await ctx.newUser();
 
       // Create a common timestamp for all assets
@@ -67,7 +67,7 @@ describe('Asset Sorting by EXIF Creation Date', () => {
     });
 
     it('should sort assets with same fileCreatedAt by originalFileName in descending order', async () => {
-      const { sut, ctx } = setup();
+      const { sut: _sut, ctx } = setup();
       const { user } = await ctx.newUser();
 
       // Create a common timestamp for all assets
@@ -111,7 +111,7 @@ describe('Asset Sorting by EXIF Creation Date', () => {
     });
 
     it('should maintain primary sort by fileCreatedAt when timestamps differ', async () => {
-      const { sut, ctx } = setup();
+      const { sut: _sut, ctx } = setup();
       const { user } = await ctx.newUser();
 
       // Create assets with different timestamps
@@ -152,7 +152,7 @@ describe('Asset Sorting by EXIF Creation Date', () => {
     });
 
     it('should handle mixed timestamps with secondary filename sort', async () => {
-      const { sut, ctx } = setup();
+      const { sut: _sut, ctx } = setup();
       const { user } = await ctx.newUser();
 
       // Create assets with some same timestamps and some different
