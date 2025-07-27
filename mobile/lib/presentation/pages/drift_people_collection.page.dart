@@ -2,13 +2,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/person_edit_name_modal.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
-import 'package:immich_mobile/widgets/search/person_name_edit_form.dart';
 
 @RoutePage()
 class DriftPeopleCollectionPage extends ConsumerStatefulWidget {
@@ -23,33 +24,27 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
   String? _search;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void dispose() {
     _formFocus.dispose();
     super.dispose();
+  }
+
+  Future<void> showNameEditModal(DriftPeople person) {
+    return showDialog(
+      context: context,
+      useRootNavigator: false,
+      builder: (BuildContext context) {
+        return DriftPersonNameEditForm(
+          person: person,
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final people = ref.watch(driftGetAllPeopleProvider);
     final headers = ApiService.getRequestHeaders();
-
-    Future<void> showNameEditModel(
-      String personId,
-      String personName,
-    ) {
-      return showDialog(
-        context: context,
-        useRootNavigator: false,
-        builder: (BuildContext context) {
-          return PersonNameEditForm(personId: personId, personName: personName);
-        },
-      );
-    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -121,7 +116,7 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
                         ),
                         const SizedBox(height: 12),
                         GestureDetector(
-                          onTap: () => showNameEditModel(person.id, person.name),
+                          onTap: () => showNameEditModal(person),
                           child: person.name.isEmpty
                               ? Text(
                                   'add_a_name'.tr(),

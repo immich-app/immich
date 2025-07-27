@@ -3,25 +3,43 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/services/people.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/people.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/repositories/person_api.repository.dart';
 
 final driftPeopleRepositoryProvider = Provider<DriftPeopleRepository>(
   (ref) => DriftPeopleRepository(ref.watch(driftProvider)),
 );
 
 final driftPeopleServiceProvider = Provider<DriftPeopleService>(
-  (ref) => DriftPeopleService(ref.watch(driftPeopleRepositoryProvider)),
+  (ref) => DriftPeopleService(ref.watch(driftPeopleRepositoryProvider), ref.watch(personApiRepositoryProvider)),
 );
 
 final driftPeopleAssetProvider = FutureProvider.family<List<DriftPeople>, String>(
   (ref, assetId) async {
-    final peopleService = ref.watch(driftPeopleServiceProvider);
-    return peopleService.getAssetPeople(assetId);
+    final service = ref.watch(driftPeopleServiceProvider);
+    return service.getAssetPeople(assetId);
   },
 );
 
 final driftGetAllPeopleProvider = FutureProvider<List<DriftPeople>>(
   (ref) async {
-    final peopleService = ref.watch(driftPeopleServiceProvider);
-    return peopleService.getAllPeople();
+    final service = ref.watch(driftPeopleServiceProvider);
+    return service.getAllPeople();
+  },
+);
+
+class UpdateNamePayload {
+  final String personId;
+  final String newName;
+
+  const UpdateNamePayload(this.personId, this.newName);
+}
+
+final driftUpdatePersonNameProvider = FutureProvider.family<int, UpdateNamePayload>(
+  (ref, payload) async {
+    final service = ref.watch(driftPeopleServiceProvider);
+    final changes = await service.updateName(payload.personId, payload.newName);
+    ref.invalidate(driftGetAllPeopleProvider);
+
+    return changes;
   },
 );

@@ -49,6 +49,17 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
       return person.toDto();
     }).get();
   }
+
+  Future<int> updateName(String personId, String name) {
+    final query = _db.update(_db.personEntity)..where((row) => row.id.equals(personId));
+
+    return query.write(
+      PersonEntityCompanion(
+        name: Value(name),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
 }
 
 extension on PersonEntityData {

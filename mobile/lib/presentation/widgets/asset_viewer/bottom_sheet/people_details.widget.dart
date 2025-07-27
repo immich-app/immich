@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/person_edit_name_modal.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -21,11 +22,6 @@ class SheetPeopleDetails extends ConsumerStatefulWidget {
 
 class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final asset = ref.watch(currentAssetNotifier);
     if (asset is! RemoteAsset) {
@@ -33,6 +29,20 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
     }
 
     final peopleFuture = ref.watch(driftPeopleAssetProvider(asset.id));
+
+    Future<void> showNameEditModal(DriftPeople person) async {
+      await showDialog(
+        context: context,
+        useRootNavigator: false,
+        builder: (BuildContext context) {
+          return DriftPersonNameEditForm(
+            person: person,
+          );
+        },
+      );
+
+      ref.invalidate(driftPeopleAssetProvider(asset.id));
+    }
 
     return peopleFuture.when(
       data: (people) {
@@ -64,7 +74,7 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
                         onTap: () {
                           context.pushRoute(DriftPersonRoute(person: person));
                         },
-                        onNameTap: (id) {},
+                        onNameTap: () => showNameEditModal(person),
                       ),
                   ],
                 ),
@@ -88,8 +98,7 @@ class _PeopleAvatar extends StatelessWidget {
   final DriftPeople person;
   final DateTime assetFileCreatedAt;
   final VoidCallback? onTap;
-
-  final Function(String)? onNameTap;
+  final VoidCallback? onNameTap;
   final double imageSize = 96;
 
   const _PeopleAvatar({
@@ -140,7 +149,7 @@ class _PeopleAvatar extends StatelessWidget {
             ),
             if (person.name.isEmpty)
               GestureDetector(
-                onTap: () => onNameTap?.call(person.id),
+                onTap: () => onNameTap?.call(),
                 child: Text(
                   "add_a_name".t(context: context),
                   style: context.textTheme.labelLarge?.copyWith(
