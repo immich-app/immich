@@ -228,9 +228,11 @@ export const plainDateTimeWithFileNameCompare = (
     return dateTimeComparison;
   }
   // If dates are equal, sort by filename in the same direction
-  return ascending ? a.originalFileName.localeCompare(b.originalFileName) : b.originalFileName.localeCompare(a.originalFileName);
+  // Add fallback for undefined/null originalFileName
+  const aFileName = a.originalFileName || '';
+  const bFileName = b.originalFileName || '';
+  return ascending ? aFileName.localeCompare(bFileName) : bFileName.localeCompare(aFileName);
 };
-
 
 export function setDifference<T>(setA: Set<T>, setB: Set<T>): SvelteSet<T> {
   const result = new SvelteSet<T>();

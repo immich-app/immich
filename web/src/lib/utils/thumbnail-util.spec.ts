@@ -82,6 +82,7 @@ describe('getAltText', () => {
         },
 
         visibility: AssetVisibility.Timeline,
+        originalFileName: 'test-file.jpg',
         isFavorite: false,
         isTrashed: false,
         isVideo,
