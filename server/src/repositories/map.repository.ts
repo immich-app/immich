@@ -166,7 +166,7 @@ export class MapRepository {
     }
 
     this.logger.warn(
-      `Response from database for reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
+      `Empty response from database for reverse geocoding lat: ${point.latitude}, lon: ${point.longitude}. Likely cause: no nearby large populated place (500+ within 25km)`,
     );
 
     const ne_response = await this.db
