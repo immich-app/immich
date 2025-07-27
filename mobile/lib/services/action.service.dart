@@ -132,6 +132,19 @@ class ActionService {
     await _remoteAssetRepository.restoreTrash(ids);
   }
 
+  Future<void> trashRemoteAndDeleteLocal(List<String> remoteIds, List<String> localIds) async {
+    await _assetApiRepository.delete(remoteIds, false);
+    await _remoteAssetRepository.trash(remoteIds);
+
+    if (localIds.isNotEmpty) {
+      final deletedIds = await _assetMediaRepository.deleteAll(localIds);
+
+      if (deletedIds.isNotEmpty) {
+        await _localAssetRepository.delete(deletedIds);
+      }
+    }
+  }
+
   Future<void> deleteRemoteAndLocal(
     List<String> remoteIds,
     List<String> localIds,
@@ -148,9 +161,14 @@ class ActionService {
     }
   }
 
-  Future<void> deleteLocal(List<String> localIds) async {
-    await _assetMediaRepository.deleteAll(localIds);
-    await _localAssetRepository.delete(localIds);
+  Future<int> deleteLocal(List<String> localIds) async {
+    final deletedIds = await _assetMediaRepository.deleteAll(localIds);
+    if (deletedIds.isNotEmpty) {
+      await _localAssetRepository.delete(deletedIds);
+      return deletedIds.length;
+    }
+
+    return 0;
   }
 
   Future<bool> editLocation(

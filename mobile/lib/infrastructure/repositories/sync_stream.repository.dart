@@ -20,8 +20,8 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart' as api show AssetVisibility, AlbumUserRole;
-import 'package:openapi/api.dart' hide AssetVisibility, AlbumUserRole;
+import 'package:openapi/api.dart' as api show AssetVisibility, AlbumUserRole, UserMetadataKey;
+import 'package:openapi/api.dart' hide AssetVisibility, AlbumUserRole, UserMetadataKey;
 
 class SyncStreamRepository extends DriftDatabaseRepository {
   final Logger _logger = Logger('DriftSyncStreamRepository');
@@ -647,11 +647,11 @@ extension on api.AssetVisibility {
       };
 }
 
-extension on String {
+extension on api.UserMetadataKey {
   UserMetadataKey toUserMetadataKey() => switch (this) {
-        "onboarding" => UserMetadataKey.onboarding,
-        "preferences" => UserMetadataKey.preferences,
-        "license" => UserMetadataKey.license,
+        api.UserMetadataKey.onboarding => UserMetadataKey.onboarding,
+        api.UserMetadataKey.preferences => UserMetadataKey.preferences,
+        api.UserMetadataKey.license => UserMetadataKey.license,
         _ => throw Exception('Unknown UserMetadataKey value: $this'),
       };
 }

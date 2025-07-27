@@ -218,8 +218,8 @@ Future<void> migrateBackupAlbumsToSqlite(
             );
           }
         });
+        return;
       }
-      return;
     }
 
     await drift.batch((batch) {

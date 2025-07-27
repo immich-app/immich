@@ -83,7 +83,6 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
         if (didPop && !_hasPopped) {
           _hasPopped = true;
 
-          super.initState();
           final currentUser = ref.read(currentUserProvider);
           if (currentUser == null) {
             return;
@@ -101,7 +100,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
             final backupNotifier = ref.read(driftBackupProvider.notifier);
 
             backupNotifier.cancel().then((_) {
-              backupNotifier.backup(currentUser.id);
+              backupNotifier.startBackup(currentUser.id);
             });
           }
         }
