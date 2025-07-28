@@ -168,7 +168,7 @@
           <Input bind:value={slug} placeholder="immich-10000" />
         </Field>
         {#if slug}
-          <Text size="tiny" color="muted" class="pt-2">/share/{encodeURIComponent(slug)}</Text>
+          <Text size="tiny" color="muted" class="pt-2">/s/{encodeURIComponent(slug)}</Text>
         {/if}
       </div>
 

@@ -173,14 +173,18 @@ export class SharedLinkRepository {
   }
 
   @GenerateSql({ params: [DummyValue.BUFFER] })
-  getByKey(key: Buffer, slug?: string) {
+  getByKey(key: Buffer) {
+    return this.authBuilder().where('shared_link.key', '=', key).executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.BUFFER] })
+  getBySlug(slug: string) {
+    return this.authBuilder().where('shared_link.slug', '=', slug).executeTakeFirst();
+  }
+
+  private authBuilder() {
     return this.db
       .selectFrom('shared_link')
-      .where((eb) =>
-        slug
-          ? eb.or([eb('shared_link.slug', '=', slug), eb('shared_link.key', '=', key)])
-          : eb('shared_link.key', '=', key),
-      )
       .leftJoin('album', 'album.id', 'shared_link.albumId')
       .where('album.deletedAt', 'is', null)
       .select((eb) => [
@@ -189,8 +193,7 @@ export class SharedLinkRepository {
           eb.selectFrom('user').select(columns.authUser).whereRef('user.id', '=', 'shared_link.userId'),
         ).as('user'),
       ])
-      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]))
-      .executeTakeFirst();
+      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]));
   }
 
   async create(entity: Insertable<SharedLinkTable> & { assetIds?: string[] }) {

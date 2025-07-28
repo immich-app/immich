@@ -333,7 +333,7 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({ user, sharedLink });
 
-      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(buffer, key);
+      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(buffer);
     });
 
     it('should accept a hex key', async () => {
@@ -354,7 +354,39 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({ user, sharedLink });
 
-      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(buffer, key);
+      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(buffer);
+    });
+  });
+
+  describe('validate - shared link slug', () => {
+    it('should not accept a non-existent slug', async () => {
+      mocks.sharedLink.getBySlug.mockResolvedValue(void 0);
+
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-share-slug': 'slug' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
+        }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('should accept a valid slug', async () => {
+      const user = factory.userAdmin();
+      const sharedLink = { ...sharedLinkStub.valid, slug: 'slug-123', user } as any;
+
+      mocks.sharedLink.getBySlug.mockResolvedValue(sharedLink);
+      mocks.user.get.mockResolvedValue(user);
+
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-share-slug': 'slug-123' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
+        }),
+      ).resolves.toEqual({ user, sharedLink });
+
+      expect(mocks.sharedLink.getBySlug).toHaveBeenCalledWith('slug-123');
     });
   });
 
