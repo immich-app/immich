@@ -10,6 +10,7 @@ import {
   MemoryType,
   SyncEntityType,
   SyncRequestType,
+  UserAvatarColor,
   UserMetadataKey,
 } from 'src/enum';
 import { UserMetadata } from 'src/types';
@@ -58,7 +59,23 @@ export class SyncUserV1 {
   id!: string;
   name!: string;
   email!: string;
+  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', nullable: true })
+  avatarColor!: UserAvatarColor | null;
   deletedAt!: Date | null;
+}
+
+@ExtraModel()
+export class SyncAuthUserV1 extends SyncUserV1 {
+  isAdmin!: boolean;
+  pinCode!: string | null;
+  oauthId!: string;
+  storageLabel!: string | null;
+  @ApiProperty({ type: 'integer' })
+  quotaSizeInBytes!: number | null;
+  @ApiProperty({ type: 'integer' })
+  quotaUsageInBytes!: number;
+  hasProfileImage!: boolean;
+  profileChangedAt!: Date;
 }
 
 @ExtraModel()
@@ -245,7 +262,6 @@ export class SyncPersonV1 {
   ownerId!: string;
   name!: string;
   birthDate!: Date | null;
-  thumbnailPath!: string;
   isHidden!: boolean;
   isFavorite!: boolean;
   color!: string | null;
@@ -258,16 +274,43 @@ export class SyncPersonDeleteV1 {
 }
 
 @ExtraModel()
+export class SyncAssetFaceV1 {
+  id!: string;
+  assetId!: string;
+  personId!: string | null;
+  @ApiProperty({ type: 'integer' })
+  imageWidth!: number;
+  @ApiProperty({ type: 'integer' })
+  imageHeight!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX1!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY1!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX2!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY2!: number;
+  sourceType!: string;
+}
+
+@ExtraModel()
+export class SyncAssetFaceDeleteV1 {
+  assetFaceId!: string;
+}
+
+@ExtraModel()
 export class SyncUserMetadataV1 {
   userId!: string;
-  key!: string;
+  @ValidateEnum({ enum: UserMetadataKey, name: 'UserMetadataKey' })
+  key!: UserMetadataKey;
   value!: UserMetadata[UserMetadataKey];
 }
 
 @ExtraModel()
 export class SyncUserMetadataDeleteV1 {
   userId!: string;
-  key!: string;
+  @ValidateEnum({ enum: UserMetadataKey, name: 'UserMetadataKey' })
+  key!: UserMetadataKey;
 }
 
 @ExtraModel()
@@ -277,6 +320,7 @@ export class SyncAckV1 {}
 export class SyncResetV1 {}
 
 export type SyncItem = {
+  [SyncEntityType.AuthUserV1]: SyncAuthUserV1;
   [SyncEntityType.UserV1]: SyncUserV1;
   [SyncEntityType.UserDeleteV1]: SyncUserDeleteV1;
   [SyncEntityType.PartnerV1]: SyncPartnerV1;
@@ -312,6 +356,8 @@ export type SyncItem = {
   [SyncEntityType.PartnerStackV1]: SyncStackV1;
   [SyncEntityType.PersonV1]: SyncPersonV1;
   [SyncEntityType.PersonDeleteV1]: SyncPersonDeleteV1;
+  [SyncEntityType.AssetFaceV1]: SyncAssetFaceV1;
+  [SyncEntityType.AssetFaceDeleteV1]: SyncAssetFaceDeleteV1;
   [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
   [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;
   [SyncEntityType.SyncAckV1]: SyncAckV1;

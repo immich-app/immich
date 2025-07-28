@@ -34,11 +34,12 @@ class AuthRepository extends DatabaseRepository {
       _drift.userMetadataEntity.deleteAll(),
       _drift.partnerEntity.deleteAll(),
       _drift.stackEntity.deleteAll(),
-      _drift.personEntity.deleteAll(),
+      _drift.assetFaceEntity.deleteAll(),
     ]);
     // Drift deletions - parent entities
     await Future.wait([
       _drift.memoryEntity.deleteAll(),
+      _drift.personEntity.deleteAll(),
       _drift.remoteAlbumEntity.deleteAll(),
       _drift.remoteAssetEntity.deleteAll(),
       _drift.userEntity.deleteAll(),
@@ -79,8 +80,7 @@ class AuthRepository extends DatabaseRepository {
     }
 
     final List<dynamic> jsonList = jsonDecode(jsonString);
-    final endpointList =
-        jsonList.map((e) => AuxilaryEndpoint.fromJson(e)).toList();
+    final endpointList = jsonList.map((e) => AuxilaryEndpoint.fromJson(e)).toList();
 
     return endpointList;
   }

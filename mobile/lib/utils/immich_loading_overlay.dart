@@ -7,13 +7,9 @@ final _loadingEntry = OverlayEntry(
   builder: (context) => SizedBox.square(
     dimension: double.infinity,
     child: DecoratedBox(
-      decoration:
-          BoxDecoration(color: context.colorScheme.surface.withAlpha(200)),
+      decoration: BoxDecoration(color: context.colorScheme.surface.withAlpha(200)),
       child: const Center(
-        child: DelayedLoadingIndicator(
-          delay: Duration(seconds: 1),
-          fadeInDuration: Duration(milliseconds: 400),
-        ),
+        child: DelayedLoadingIndicator(delay: Duration(seconds: 1), fadeInDuration: Duration(milliseconds: 400)),
       ),
     ),
   ),
@@ -30,8 +26,7 @@ class _LoadingOverlay extends Hook<ValueNotifier<bool>> {
   _LoadingOverlayState createState() => _LoadingOverlayState();
 }
 
-class _LoadingOverlayState
-    extends HookState<ValueNotifier<bool>, _LoadingOverlay> {
+class _LoadingOverlayState extends HookState<ValueNotifier<bool>, _LoadingOverlay> {
   late final _isLoading = ValueNotifier(false)..addListener(_listener);
   OverlayEntry? _loadingOverlay;
 

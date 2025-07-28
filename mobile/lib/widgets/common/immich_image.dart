@@ -28,39 +28,25 @@ class ImmichImage extends StatelessWidget {
   // either by using the asset ID or the asset itself
   /// [asset] is the Asset to request, or else use [assetId] to get a remote
   /// image provider
-  static ImageProvider imageProvider({
-    Asset? asset,
-    String? assetId,
-    double width = 1080,
-    double height = 1920,
-  }) {
+  static ImageProvider imageProvider({Asset? asset, String? assetId, double width = 1080, double height = 1920}) {
     if (asset == null && assetId == null) {
       throw Exception('Must supply either asset or assetId');
     }
 
     if (asset == null) {
-      return ImmichRemoteImageProvider(
-        assetId: assetId!,
-      );
+      return ImmichRemoteImageProvider(assetId: assetId!);
     }
 
     if (useLocal(asset)) {
-      return ImmichLocalImageProvider(
-        asset: asset,
-        width: width,
-        height: height,
-      );
+      return ImmichLocalImageProvider(asset: asset, width: width, height: height);
     } else {
-      return ImmichRemoteImageProvider(
-        assetId: asset.remoteId!,
-      );
+      return ImmichRemoteImageProvider(assetId: asset.remoteId!);
     }
   }
 
   // Whether to use the local asset image provider or a remote one
   static bool useLocal(Asset asset) =>
-      !asset.isRemote ||
-      asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false);
+      !asset.isRemote || asset.isLocal && !Store.get(StoreKey.preferRemoteImage, false);
 
   @override
   Widget build(BuildContext context) {
@@ -69,17 +55,11 @@ class ImmichImage extends StatelessWidget {
         color: Colors.grey,
         width: width,
         height: height,
-        child: const Center(
-          child: Icon(Icons.no_photography),
-        ),
+        child: const Center(child: Icon(Icons.no_photography)),
       );
     }
 
-    final imageProviderInstance = ImmichImage.imageProvider(
-      asset: asset,
-      width: context.width,
-      height: context.height,
-    );
+    final imageProviderInstance = ImmichImage.imageProvider(asset: asset, width: context.width, height: context.height);
 
     return OctoImage(
       fadeInDuration: const Duration(milliseconds: 0),
@@ -97,11 +77,7 @@ class ImmichImage extends StatelessWidget {
       errorBuilder: (context, error, stackTrace) {
         imageProviderInstance.evict();
 
-        return Icon(
-          Icons.image_not_supported_outlined,
-          size: 32,
-          color: Colors.red[200],
-        );
+        return Icon(Icons.image_not_supported_outlined, size: 32, color: Colors.red[200]);
       },
     );
   }

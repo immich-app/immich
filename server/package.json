@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.135.3",
+  "version": "1.136.0",
   "description": "",
   "author": "",
   "private": true,
@@ -55,7 +55,7 @@
     "@opentelemetry/sdk-metrics": "^2.0.1",
     "@opentelemetry/sdk-node": "^0.203.0",
     "@opentelemetry/semantic-conventions": "^1.34.0",
-    "@react-email/components": "^0.2.0",
+    "@react-email/components": "^0.3.0",
     "@react-email/render": "^1.1.2",
     "@socket.io/redis-adapter": "^8.3.0",
     "archiver": "^7.0.0",
@@ -79,7 +79,7 @@
     "i18n-iso-countries": "^7.6.0",
     "ioredis": "^5.3.2",
     "js-yaml": "^4.1.0",
-    "kysely": "^0.28.0",
+    "kysely": "^0.28.2",
     "kysely-postgres-js": "^2.0.0",
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
@@ -113,7 +113,6 @@
     "validator": "^13.12.0"
   },
   "devDependencies": {
-    "canvas": "^3.1.0",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.8.0",
     "@nestjs/cli": "^11.0.2",
@@ -134,8 +133,8 @@
     "@types/lodash": "^4.14.197",
     "@types/luxon": "^3.6.2",
     "@types/mock-fs": "^4.13.1",
-    "@types/multer": "^1.4.7",
-    "@types/node": "^22.15.33",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^22.16.4",
     "@types/nodemailer": "^6.4.14",
     "@types/picomatch": "^4.0.0",
     "@types/pngjs": "^6.0.5",
@@ -146,6 +145,7 @@
     "@types/ua-parser-js": "^0.7.36",
     "@types/validator": "^13.15.2",
     "@vitest/coverage-v8": "^3.0.0",
+    "canvas": "^3.1.0",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-prettier": "^5.1.3",
@@ -172,7 +172,7 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.17.0"
+    "node": "22.17.1"
   },
   "overrides": {
     "sharp": "^0.34.2"

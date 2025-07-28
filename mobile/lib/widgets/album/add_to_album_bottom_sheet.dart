@@ -17,46 +17,33 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
   /// The asset to add to an album
   final List<Asset> assets;
 
-  const AddToAlbumBottomSheet({
-    super.key,
-    required this.assets,
-  });
+  const AddToAlbumBottomSheet({super.key, required this.assets});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final albums = ref.watch(albumProvider).where((a) => a.isRemote).toList();
     final albumService = ref.watch(albumServiceProvider);
 
-    useEffect(
-      () {
-        // Fetch album updates, e.g., cover image
-        ref.read(albumProvider.notifier).refreshRemoteAlbums();
+    useEffect(() {
+      // Fetch album updates, e.g., cover image
+      ref.read(albumProvider.notifier).refreshRemoteAlbums();
 
-        return null;
-      },
-      [],
-    );
+      return null;
+    }, []);
 
     void addToAlbum(Album album) async {
-      final result = await albumService.addAssets(
-        album,
-        assets,
-      );
+      final result = await albumService.addAssets(album, assets);
 
       if (result != null) {
         if (result.alreadyInAlbum.isNotEmpty) {
           ImmichToast.show(
             context: context,
-            msg: 'add_to_album_bottom_sheet_already_exists'.tr(
-              namedArgs: {"album": album.name},
-            ),
+            msg: 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {"album": album.name}),
           );
         } else {
           ImmichToast.show(
             context: context,
-            msg: 'add_to_album_bottom_sheet_added'.tr(
-              namedArgs: {"album": album.name},
-            ),
+            msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {"album": album.name}),
           );
         }
       }
@@ -66,10 +53,7 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
     return Card(
       elevation: 0,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(15),
-          topRight: Radius.circular(15),
-        ),
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(15), topRight: Radius.circular(15)),
       ),
       child: CustomScrollView(
         slivers: [
@@ -80,33 +64,17 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 12),
-                  const Align(
-                    alignment: Alignment.center,
-                    child: CustomDraggingHandle(),
-                  ),
+                  const Align(alignment: Alignment.center, child: CustomDraggingHandle()),
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'add_to_album'.tr(),
-                        style: context.textTheme.displayMedium,
-                      ),
+                      Text('add_to_album'.tr(), style: context.textTheme.displayMedium),
                       TextButton.icon(
-                        icon: Icon(
-                          Icons.add,
-                          color: context.primaryColor,
-                        ),
-                        label: Text(
-                          'common_create_new_album'.tr(),
-                          style: TextStyle(color: context.primaryColor),
-                        ),
+                        icon: Icon(Icons.add, color: context.primaryColor),
+                        label: Text('common_create_new_album'.tr(), style: TextStyle(color: context.primaryColor)),
                         onPressed: () {
-                          context.pushRoute(
-                            CreateAlbumRoute(
-                              assets: assets,
-                            ),
-                          );
+                          context.pushRoute(CreateAlbumRoute(assets: assets));
                         },
                       ),
                     ],

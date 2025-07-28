@@ -15,10 +15,7 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
   final String assetId;
   final CacheManager? cacheManager;
 
-  const RemoteThumbProvider({
-    required this.assetId,
-    this.cacheManager,
-  });
+  const RemoteThumbProvider({required this.assetId, this.cacheManager});
 
   @override
   Future<RemoteThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -26,10 +23,7 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    RemoteThumbProvider key,
-    ImageDecoderCallback decode,
-  ) {
+  ImageStreamCompleter loadImage(RemoteThumbProvider key, ImageDecoderCallback decode) {
     final cache = cacheManager ?? RemoteImageCacheManager();
     final chunkController = StreamController<ImageChunkEvent>();
     return MultiFrameImageStreamCompleter(
@@ -49,9 +43,7 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
     ImageDecoderCallback decode,
     StreamController<ImageChunkEvent> chunkController,
   ) async {
-    final preview = getThumbnailUrlForRemoteId(
-      key.assetId,
-    );
+    final preview = getThumbnailUrlForRemoteId(key.assetId);
 
     return ImageLoader.loadImageFromCache(
       preview,
@@ -79,10 +71,7 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
   final String assetId;
   final CacheManager? cacheManager;
 
-  const RemoteFullImageProvider({
-    required this.assetId,
-    this.cacheManager,
-  });
+  const RemoteFullImageProvider({required this.assetId, this.cacheManager});
 
   @override
   Future<RemoteFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -90,10 +79,7 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    RemoteFullImageProvider key,
-    ImageDecoderCallback decode,
-  ) {
+  ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
     final cache = cacheManager ?? RemoteImageCacheManager();
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(

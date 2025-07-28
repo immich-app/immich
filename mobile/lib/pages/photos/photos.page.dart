@@ -29,17 +29,14 @@ class PhotosPage extends HookConsumerWidget {
     final tipOneOpacity = useState(0.0);
     final refreshCount = useState(0);
 
-    useEffect(
-      () {
-        ref.read(websocketProvider.notifier).connect();
-        Future(() => ref.read(assetProvider.notifier).getAllAsset());
-        Future(() => ref.read(albumProvider.notifier).refreshRemoteAlbums());
-        ref.read(serverInfoProvider.notifier).getServerInfo();
+    useEffect(() {
+      ref.read(websocketProvider.notifier).connect();
+      Future(() => ref.read(assetProvider.notifier).getAllAsset());
+      Future(() => ref.read(albumProvider.notifier).refreshRemoteAlbums());
+      ref.read(serverInfoProvider.notifier).getServerInfo();
 
-        return;
-      },
-      [],
-    );
+      return;
+    }, []);
 
     Widget buildLoadingIndicator() {
       Timer(const Duration(seconds: 2), () => tipOneOpacity.value = 1);
@@ -53,9 +50,7 @@ class PhotosPage extends HookConsumerWidget {
               padding: const EdgeInsets.only(top: 16.0),
               child: Text(
                 'home_page_building_timeline',
-                style: context.textTheme.titleMedium?.copyWith(
-                  color: context.primaryColor,
-                ),
+                style: context.textTheme.titleMedium?.copyWith(color: context.primaryColor),
               ).tr(),
             ),
             const SizedBox(height: 8),
@@ -106,9 +101,7 @@ class PhotosPage extends HookConsumerWidget {
     return Stack(
       children: [
         MultiselectGrid(
-          topWidget: (currentUser != null && currentUser.memoryEnabled)
-              ? const MemoryLane()
-              : const SizedBox(),
+          topWidget: (currentUser != null && currentUser.memoryEnabled) ? const MemoryLane() : const SizedBox(),
           renderListProvider: timelineUsers.length > 1
               ? multiUsersTimelineProvider(timelineUsers)
               : singleUserTimelineProvider(currentUser?.id),
@@ -120,9 +113,7 @@ class PhotosPage extends HookConsumerWidget {
         ),
         AnimatedPositioned(
           duration: const Duration(milliseconds: 300),
-          top: ref.watch(multiselectProvider)
-              ? -(kToolbarHeight + context.padding.top)
-              : 0,
+          top: ref.watch(multiselectProvider) ? -(kToolbarHeight + context.padding.top) : 0,
           left: 0,
           right: 0,
           child: Container(

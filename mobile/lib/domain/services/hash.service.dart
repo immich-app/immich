@@ -25,24 +25,20 @@ class HashService {
     required NativeSyncApi nativeSyncApi,
     this.batchSizeLimit = kBatchHashSizeLimit,
     this.batchFileLimit = kBatchHashFileLimit,
-  })  : _localAlbumRepository = localAlbumRepository,
-        _localAssetRepository = localAssetRepository,
-        _storageRepository = storageRepository,
-        _nativeSyncApi = nativeSyncApi;
+  }) : _localAlbumRepository = localAlbumRepository,
+       _localAssetRepository = localAssetRepository,
+       _storageRepository = storageRepository,
+       _nativeSyncApi = nativeSyncApi;
 
   Future<void> hashAssets() async {
     final Stopwatch stopwatch = Stopwatch()..start();
     // Sorted by backupSelection followed by isCloud
     final localAlbums = await _localAlbumRepository.getAll(
-      sortBy: {
-        SortLocalAlbumsBy.backupSelection,
-        SortLocalAlbumsBy.isIosSharedAlbum,
-      },
+      sortBy: {SortLocalAlbumsBy.backupSelection, SortLocalAlbumsBy.isIosSharedAlbum},
     );
 
     for (final album in localAlbums) {
-      final assetsToHash =
-          await _localAlbumRepository.getAssetsToHash(album.id);
+      final assetsToHash = await _localAlbumRepository.getAssetsToHash(album.id);
       if (assetsToHash.isNotEmpty) {
         await _hashAssets(assetsToHash);
       }
@@ -88,8 +84,7 @@ class HashService {
     _log.fine("Hashing ${toHash.length} files");
 
     final hashed = <LocalAsset>[];
-    final hashes =
-        await _nativeSyncApi.hashPaths(toHash.map((e) => e.path).toList());
+    final hashes = await _nativeSyncApi.hashPaths(toHash.map((e) => e.path).toList());
     assert(
       hashes.length == toHash.length,
       "Hashes length does not match toHash length: ${hashes.length} != ${toHash.length}",

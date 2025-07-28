@@ -38,20 +38,13 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
     _mapController = controller;
   }
 
-  void _onExifChanged(
-    AsyncValue<ExifInfo?>? previous,
-    AsyncValue<ExifInfo?> current,
-  ) {
+  void _onExifChanged(AsyncValue<ExifInfo?>? previous, AsyncValue<ExifInfo?> current) {
     asset = ref.read(currentAssetNotifier);
     setState(() {
       exifInfo = current.valueOrNull;
       final hasCoordinates = exifInfo?.hasCoordinates ?? false;
       if (exifInfo != null && hasCoordinates) {
-        _mapController?.moveCamera(
-          CameraUpdate.newLatLng(
-            LatLng(exifInfo!.latitude!, exifInfo!.longitude!),
-          ),
-        );
+        _mapController?.moveCamera(CameraUpdate.newLatLng(LatLng(exifInfo!.latitude!, exifInfo!.longitude!)));
       }
     });
   }
@@ -59,11 +52,7 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
   @override
   void initState() {
     super.initState();
-    ref.listenManual(
-      currentAssetExifProvider,
-      _onExifChanged,
-      fireImmediately: true,
-    );
+    ref.listenManual(currentAssetExifProvider, _onExifChanged, fireImmediately: true);
   }
 
   @override
@@ -71,23 +60,16 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
     final hasCoordinates = exifInfo?.hasCoordinates ?? false;
 
     // Guard no lat/lng
-    if (!hasCoordinates ||
-        (asset != null && asset is LocalAsset && asset!.hasRemote)) {
+    if (!hasCoordinates || (asset != null && asset is LocalAsset && asset!.hasRemote)) {
       return const SizedBox.shrink();
     }
 
-    final remoteId = asset is LocalAsset
-        ? (asset as LocalAsset).remoteId
-        : (asset as RemoteAsset).id;
+    final remoteId = asset is LocalAsset ? (asset as LocalAsset).remoteId : (asset as RemoteAsset).id;
     final locationName = _getLocationName(exifInfo);
-    final coordinates =
-        "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo!.longitude!.toStringAsFixed(4)}";
+    final coordinates = "${exifInfo!.latitude!.toStringAsFixed(4)}, ${exifInfo!.longitude!.toStringAsFixed(4)}";
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        vertical: 16.0,
-        horizontal: context.isMobile ? 16.0 : 56.0,
-      ),
+      padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: context.isMobile ? 16.0 : 56.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -101,25 +83,16 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
               ),
             ),
           ),
-          ExifMap(
-            exifInfo: exifInfo!,
-            markerId: remoteId,
-            onMapCreated: _onMapCreated,
-          ),
+          ExifMap(exifInfo: exifInfo!, markerId: remoteId, onMapCreated: _onMapCreated),
           const SizedBox(height: 15),
           if (locationName != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 4.0),
-              child: Text(
-                locationName,
-                style: context.textTheme.labelLarge,
-              ),
+              child: Text(locationName, style: context.textTheme.labelLarge),
             ),
           Text(
             coordinates,
-            style: context.textTheme.labelMedium?.copyWith(
-              color: context.textTheme.labelMedium?.color?.withAlpha(150),
-            ),
+            style: context.textTheme.labelMedium?.copyWith(color: context.textTheme.labelMedium?.color?.withAlpha(150)),
           ),
         ],
       ),

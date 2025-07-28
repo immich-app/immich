@@ -16,7 +16,7 @@ import {
   ValidateAccessTokenResponseDto,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto } from 'src/dtos/user.dto';
-import { AuthType, ImmichCookie } from 'src/enum';
+import { AuthType, ImmichCookie, Permission } from 'src/enum';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
 import { respondWithCookie, respondWithoutCookie } from 'src/utils/response';
@@ -57,7 +57,7 @@ export class AuthController {
 
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
-  @Authenticated()
+  @Authenticated({ permission: Permission.AuthChangePassword })
   changePassword(@Auth() auth: AuthDto, @Body() dto: ChangePasswordDto): Promise<UserAdminResponseDto> {
     return this.service.changePassword(auth, dto);
   }
@@ -87,19 +87,19 @@ export class AuthController {
   }
 
   @Post('pin-code')
-  @Authenticated()
+  @Authenticated({ permission: Permission.PinCodeCreate })
   setupPinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeSetupDto): Promise<void> {
     return this.service.setupPinCode(auth, dto);
   }
 
   @Put('pin-code')
-  @Authenticated()
+  @Authenticated({ permission: Permission.PinCodeUpdate })
   async changePinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeChangeDto): Promise<void> {
     return this.service.changePinCode(auth, dto);
   }
 
   @Delete('pin-code')
-  @Authenticated()
+  @Authenticated({ permission: Permission.PinCodeDelete })
   async resetPinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeResetDto): Promise<void> {
     return this.service.resetPinCode(auth, dto);
   }

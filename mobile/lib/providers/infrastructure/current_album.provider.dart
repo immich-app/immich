@@ -4,8 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 
-final currentRemoteAlbumProvider =
-    AutoDisposeNotifierProvider<CurrentAlbumNotifier, RemoteAlbum?>(
+final currentRemoteAlbumProvider = AutoDisposeNotifierProvider<CurrentAlbumNotifier, RemoteAlbum?>(
   CurrentAlbumNotifier.new,
 );
 
@@ -21,10 +20,7 @@ class CurrentAlbumNotifier extends AutoDisposeNotifier<RemoteAlbum?> {
     _assetSubscription?.cancel();
     state = album;
 
-    _assetSubscription = ref
-        .watch(remoteAlbumServiceProvider)
-        .watchAlbum(album.id)
-        .listen((updatedAlbum) {
+    _assetSubscription = ref.watch(remoteAlbumServiceProvider).watchAlbum(album.id).listen((updatedAlbum) {
       if (updatedAlbum != null) {
         state = updatedAlbum;
       }

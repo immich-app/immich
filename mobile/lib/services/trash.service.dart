@@ -20,17 +20,11 @@ class TrashService {
   final AssetRepository _assetRepository;
   final UserService _userService;
 
-  const TrashService(
-    this._apiService,
-    this._assetRepository,
-    this._userService,
-  );
+  const TrashService(this._apiService, this._assetRepository, this._userService);
 
   Future<void> restoreAssets(Iterable<Asset> assetList) async {
     final remoteAssets = assetList.where((a) => a.isRemote);
-    await _apiService.trashApi.restoreAssets(
-      BulkIdsDto(ids: remoteAssets.map((e) => e.remoteId!).toList()),
-    );
+    await _apiService.trashApi.restoreAssets(BulkIdsDto(ids: remoteAssets.map((e) => e.remoteId!).toList()));
 
     final updatedAssets = remoteAssets.map((asset) {
       asset.isTrashed = false;
@@ -49,15 +43,9 @@ class TrashService {
     final ids = trashedAssets.map((e) => e.remoteId!).toList();
 
     await _assetRepository.transaction(() async {
-      await _assetRepository.deleteAllByRemoteId(
-        ids,
-        state: AssetState.remote,
-      );
+      await _assetRepository.deleteAllByRemoteId(ids, state: AssetState.remote);
 
-      final merged = await _assetRepository.getAllByRemoteId(
-        ids,
-        state: AssetState.merged,
-      );
+      final merged = await _assetRepository.getAllByRemoteId(ids, state: AssetState.merged);
       if (merged.isEmpty) {
         return;
       }

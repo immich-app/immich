@@ -17,7 +17,6 @@ class ErrorBackupListNotifier extends StateNotifier<Set<ErrorUploadAsset>> {
   }
 }
 
-final errorBackupListProvider =
-    StateNotifierProvider<ErrorBackupListNotifier, Set<ErrorUploadAsset>>(
+final errorBackupListProvider = StateNotifierProvider<ErrorBackupListNotifier, Set<ErrorUploadAsset>>(
   (ref) => ErrorBackupListNotifier(),
 );

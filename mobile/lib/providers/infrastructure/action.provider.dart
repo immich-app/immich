@@ -6,15 +6,13 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
+import 'package:immich_mobile/services/upload.service.dart';
 import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final actionProvider = NotifierProvider<ActionNotifier, void>(
   ActionNotifier.new,
-  dependencies: [
-    multiSelectProvider,
-    timelineServiceProvider,
-  ],
+  dependencies: [multiSelectProvider, timelineServiceProvider],
 );
 
 class ActionResult {
@@ -25,26 +23,24 @@ class ActionResult {
   const ActionResult({required this.count, required this.success, this.error});
 
   @override
-  String toString() =>
-      'ActionResult(count: $count, success: $success, error: $error)';
+  String toString() => 'ActionResult(count: $count, success: $success, error: $error)';
 }
 
 class ActionNotifier extends Notifier<void> {
   final Logger _logger = Logger('ActionNotifier');
   late ActionService _service;
+  late UploadService _uploadService;
 
   ActionNotifier() : super();
 
   @override
   void build() {
+    _uploadService = ref.watch(uploadServiceProvider);
     _service = ref.watch(actionServiceProvider);
   }
 
   List<String> _getRemoteIdsForSource(ActionSource source) {
-    return _getAssets(source)
-        .whereType<RemoteAsset>()
-        .toIds()
-        .toList(growable: false);
+    return _getAssets(source).whereType<RemoteAsset>().toIds().toList(growable: false);
   }
 
   List<String> _getLocalIdsForSource(ActionSource source) {
@@ -64,11 +60,7 @@ class ActionNotifier extends Notifier<void> {
 
   List<String> _getOwnedRemoteIdsForSource(ActionSource source) {
     final ownerId = ref.read(currentUserProvider)?.id;
-    return _getAssets(source)
-        .whereType<RemoteAsset>()
-        .ownedAssets(ownerId)
-        .toIds()
-        .toList(growable: false);
+    return _getAssets(source).whereType<RemoteAsset>().ownedAssets(ownerId).toIds().toList(growable: false);
   }
 
   List<RemoteAsset> _getOwnedRemoteAssetsForSource(ActionSource source) {
@@ -79,37 +71,31 @@ class ActionNotifier extends Notifier<void> {
   Iterable<T> _getIdsForSource<T extends BaseAsset>(ActionSource source) {
     final Set<BaseAsset> assets = _getAssets(source);
     return switch (T) {
-      const (RemoteAsset) => assets.whereType<RemoteAsset>(),
-      const (LocalAsset) => assets.whereType<LocalAsset>(),
-      _ => const [],
-    } as Iterable<T>;
+          const (RemoteAsset) => assets.whereType<RemoteAsset>(),
+          const (LocalAsset) => assets.whereType<LocalAsset>(),
+          _ => const [],
+        }
+        as Iterable<T>;
   }
 
   Set<BaseAsset> _getAssets(ActionSource source) {
     return switch (source) {
       ActionSource.timeline => ref.read(multiSelectProvider).selectedAssets,
       ActionSource.viewer => switch (ref.read(currentAssetNotifier)) {
-          BaseAsset asset => {asset},
-          null => const {},
-        },
+        BaseAsset asset => {asset},
+        null => const {},
+      },
     };
   }
 
-  Future<ActionResult> shareLink(
-    ActionSource source,
-    BuildContext context,
-  ) async {
+  Future<ActionResult> shareLink(ActionSource source, BuildContext context) async {
     final ids = _getRemoteIdsForSource(source);
     try {
       await _service.shareLink(ids, context);
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to create shared link for assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -120,11 +106,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to favorite assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -135,11 +117,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to unfavorite assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -150,11 +128,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to archive assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -165,11 +139,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to unarchive assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -181,11 +151,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to move assets to lock folder', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -196,63 +162,69 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to remove assets from lock folder', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
   Future<ActionResult> trash(ActionSource source) async {
     final ids = _getOwnedRemoteIdsForSource(source);
+
     try {
       await _service.trash(ids);
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to trash assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
-  Future<ActionResult> delete(ActionSource source) async {
+  Future<ActionResult> restoreTrash(ActionSource source) async {
     final ids = _getOwnedRemoteIdsForSource(source);
     try {
-      await _service.delete(ids);
+      await _service.restoreTrash(ids);
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to restore trash assets', error, stack);
+      return ActionResult(count: ids.length, success: false, error: error.toString());
+    }
+  }
+
+  Future<ActionResult> trashRemoteAndDeleteLocal(ActionSource source) async {
+    final ids = _getOwnedRemoteIdsForSource(source);
+    final localIds = _getLocalIdsForSource(source);
+    try {
+      await _service.trashRemoteAndDeleteLocal(ids, localIds);
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to delete assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
+    }
+  }
+
+  Future<ActionResult> deleteRemoteAndLocal(ActionSource source) async {
+    final ids = _getOwnedRemoteIdsForSource(source);
+    final localIds = _getLocalIdsForSource(source);
+    try {
+      await _service.deleteRemoteAndLocal(ids, localIds);
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to delete assets', error, stack);
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
   Future<ActionResult> deleteLocal(ActionSource source) async {
     final ids = _getLocalIdsForSource(source);
     try {
-      await _service.deleteLocal(ids);
-      return ActionResult(count: ids.length, success: true);
+      final deletedCount = await _service.deleteLocal(ids);
+      return ActionResult(count: deletedCount, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to delete assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
-  Future<ActionResult?> editLocation(
-    ActionSource source,
-    BuildContext context,
-  ) async {
+  Future<ActionResult?> editLocation(ActionSource source, BuildContext context) async {
     final ids = _getOwnedRemoteIdsForSource(source);
     try {
       final isEdited = await _service.editLocation(ids, context);
@@ -263,29 +235,18 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to edit location for assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
-  Future<ActionResult> removeFromAlbum(
-    ActionSource source,
-    String albumId,
-  ) async {
+  Future<ActionResult> removeFromAlbum(ActionSource source, String albumId) async {
     final ids = _getRemoteIdsForSource(source);
     try {
       final removedCount = await _service.removeFromAlbum(ids, albumId);
       return ActionResult(count: removedCount, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to remove assets from album', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -296,11 +257,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to stack assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -311,10 +268,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: assets.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to unstack assets', error, stack);
-      return ActionResult(
-        count: assets.length,
-        success: false,
-      );
+      return ActionResult(count: assets.length, success: false);
     }
   }
 
@@ -326,17 +280,12 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: count, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to share assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
   Future<ActionResult> downloadAll(ActionSource source) async {
-    final assets =
-        _getAssets(source).whereType<RemoteAsset>().toList(growable: false);
+    final assets = _getAssets(source).whereType<RemoteAsset>().toList(growable: false);
 
     try {
       final didEnqueue = await _service.downloadAll(assets);
@@ -344,11 +293,18 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: enqueueCount, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to download assets', error, stack);
-      return ActionResult(
-        count: assets.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: assets.length, success: false, error: error.toString());
+    }
+  }
+
+  Future<ActionResult> upload(ActionSource source) async {
+    final assets = _getAssets(source).whereType<LocalAsset>().toList();
+    try {
+      await _uploadService.manualBackup(assets);
+      return ActionResult(count: assets.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed manually upload assets', error, stack);
+      return ActionResult(count: assets.length, success: false, error: error.toString());
     }
   }
 }

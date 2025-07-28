@@ -43,10 +43,7 @@ class Scrubber extends ConsumerStatefulWidget {
   ConsumerState createState() => ScrubberState();
 }
 
-List<_Segment> _buildSegments({
-  required List<Segment> layoutSegments,
-  required double timelineHeight,
-}) {
+List<_Segment> _buildSegments({required List<Segment> layoutSegments, required double timelineHeight}) {
   const double offsetThreshold = 20.0;
 
   final segments = <_Segment>[];
@@ -58,24 +55,15 @@ List<_Segment> _buildSegments({
   DateTime? lastDate;
   double lastOffset = -offsetThreshold;
   for (final layoutSegment in layoutSegments) {
-    final scrollPercentage =
-        layoutSegment.startOffset / layoutSegments.last.endOffset;
+    final scrollPercentage = layoutSegment.startOffset / layoutSegments.last.endOffset;
     final startOffset = scrollPercentage * timelineHeight;
 
     final date = (layoutSegment.bucket as TimeBucket).date;
     final label = formatter.format(date);
 
-    final showSegment = lastOffset + offsetThreshold <= startOffset &&
-        (lastDate == null || date.year != lastDate.year);
+    final showSegment = lastOffset + offsetThreshold <= startOffset && (lastDate == null || date.year != lastDate.year);
 
-    segments.add(
-      _Segment(
-        date: date,
-        startOffset: startOffset,
-        scrollLabel: label,
-        showSegment: showSegment,
-      ),
-    );
+    segments.add(_Segment(date: date, startOffset: startOffset, scrollLabel: label, showSegment: showSegment));
     lastDate = date;
     if (showSegment) {
       lastOffset = startOffset;
@@ -85,8 +73,7 @@ List<_Segment> _buildSegments({
   return segments;
 }
 
-class ScrubberState extends ConsumerState<Scrubber>
-    with TickerProviderStateMixin {
+class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixin {
   double _thumbTopOffset = 0.0;
   bool _isDragging = false;
   List<_Segment> _segments = [];
@@ -98,44 +85,26 @@ class ScrubberState extends ConsumerState<Scrubber>
   late AnimationController _labelAnimationController;
   late Animation<double> _labelAnimation;
 
-  double get _scrubberHeight =>
-      widget.timelineHeight - widget.topPadding - widget.bottomPadding;
+  double get _scrubberHeight => widget.timelineHeight - widget.topPadding - widget.bottomPadding;
 
   late ScrollController _scrollController;
 
   double get _currentOffset {
     if (_scrollController.hasClients != true) return 0.0;
 
-    return _scrollController.offset *
-        _scrubberHeight /
-        _scrollController.position.maxScrollExtent;
+    return _scrollController.offset * _scrubberHeight / _scrollController.position.maxScrollExtent;
   }
 
   @override
   void initState() {
     super.initState();
     _isDragging = false;
-    _segments = _buildSegments(
-      layoutSegments: widget.layoutSegments,
-      timelineHeight: _scrubberHeight,
-    );
-    _thumbAnimationController = AnimationController(
-      vsync: this,
-      duration: kTimelineScrubberFadeInDuration,
-    );
-    _thumbAnimation = CurvedAnimation(
-      parent: _thumbAnimationController,
-      curve: Curves.fastEaseInToSlowEaseOut,
-    );
-    _labelAnimationController = AnimationController(
-      vsync: this,
-      duration: kTimelineScrubberFadeInDuration,
-    );
+    _segments = _buildSegments(layoutSegments: widget.layoutSegments, timelineHeight: _scrubberHeight);
+    _thumbAnimationController = AnimationController(vsync: this, duration: kTimelineScrubberFadeInDuration);
+    _thumbAnimation = CurvedAnimation(parent: _thumbAnimationController, curve: Curves.fastEaseInToSlowEaseOut);
+    _labelAnimationController = AnimationController(vsync: this, duration: kTimelineScrubberFadeInDuration);
 
-    _labelAnimation = CurvedAnimation(
-      parent: _labelAnimationController,
-      curve: Curves.fastOutSlowIn,
-    );
+    _labelAnimation = CurvedAnimation(parent: _labelAnimationController, curve: Curves.fastOutSlowIn);
   }
 
   @override
@@ -148,12 +117,8 @@ class ScrubberState extends ConsumerState<Scrubber>
   void didUpdateWidget(covariant Scrubber oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.layoutSegments.lastOrNull?.endOffset !=
-        widget.layoutSegments.lastOrNull?.endOffset) {
-      _segments = _buildSegments(
-        layoutSegments: widget.layoutSegments,
-        timelineHeight: _scrubberHeight,
-      );
+    if (oldWidget.layoutSegments.lastOrNull?.endOffset != widget.layoutSegments.lastOrNull?.endOffset) {
+      _segments = _buildSegments(layoutSegments: widget.layoutSegments, timelineHeight: _scrubberHeight);
     }
   }
 
@@ -179,8 +144,7 @@ class ScrubberState extends ConsumerState<Scrubber>
       return false;
     }
 
-    if (notification is ScrollStartNotification ||
-        notification is ScrollUpdateNotification) {
+    if (notification is ScrollStartNotification || notification is ScrollUpdateNotification) {
       ref.read(timelineStateProvider.notifier).setScrolling(true);
     } else if (notification is ScrollEndNotification) {
       ref.read(timelineStateProvider.notifier).setScrolling(false);
@@ -284,13 +248,10 @@ class ScrubberState extends ConsumerState<Scrubber>
   }
 
   int _findLayoutSegmentIndex(_Segment segment) {
-    return widget.layoutSegments.indexWhere(
-      (layoutSegment) {
-        final bucket = layoutSegment.bucket as TimeBucket;
-        return bucket.date.year == segment.date.year &&
-            bucket.date.month == segment.date.month;
-      },
-    );
+    return widget.layoutSegments.indexWhere((layoutSegment) {
+      final bucket = layoutSegment.bucket as TimeBucket;
+      return bucket.date.year == segment.date.year && bucket.date.month == segment.date.month;
+    });
   }
 
   void _scrollToLayoutSegment(int layoutSegmentIndex) {
@@ -299,10 +260,7 @@ class ScrubberState extends ConsumerState<Scrubber>
     final viewportHeight = _scrollController.position.viewportDimension;
 
     final targetScrollOffset = layoutSegment.startOffset;
-    final centeredOffset = targetScrollOffset -
-        (viewportHeight / 4) +
-        100 +
-        (widget.monthSegmentSnappingOffset ?? 0.0);
+    final centeredOffset = targetScrollOffset - (viewportHeight / 4) + 100 + (widget.monthSegmentSnappingOffset ?? 0.0);
 
     _scrollController.jumpTo(centeredOffset.clamp(0.0, maxScrollExtent));
   }
@@ -323,19 +281,13 @@ class ScrubberState extends ConsumerState<Scrubber>
     if (_scrollController.hasClients == true) {
       // Cache to avoid multiple calls to [_currentOffset]
       final scrollOffset = _currentOffset;
-      final labelText = _segments
-              .lastWhereOrNull(
-                (segment) => segment.startOffset <= scrollOffset,
-              )
-              ?.scrollLabel ??
+      final labelText =
+          _segments.lastWhereOrNull((segment) => segment.startOffset <= scrollOffset)?.scrollLabel ??
           _segments.firstOrNull?.scrollLabel;
       label = labelText != null
           ? Text(
               labelText,
-              style: ctx.textTheme.bodyLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+              style: ctx.textTheme.bodyLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
             )
           : null;
     }
@@ -354,8 +306,7 @@ class ScrubberState extends ConsumerState<Scrubber>
               isDragging: _isDragging,
             ),
           ),
-          if (_scrollController.hasClients &&
-              _scrollController.position.maxScrollExtent > 0)
+          if (_scrollController.hasClients && _scrollController.position.maxScrollExtent > 0)
             PositionedDirectional(
               top: _thumbTopOffset + widget.topPadding,
               end: 0,
@@ -364,11 +315,7 @@ class ScrubberState extends ConsumerState<Scrubber>
                   onVerticalDragStart: _onDragStart,
                   onVerticalDragUpdate: _onDragUpdate,
                   onVerticalDragEnd: _onDragEnd,
-                  child: _Scrubber(
-                    thumbAnimation: _thumbAnimation,
-                    labelAnimation: _labelAnimation,
-                    label: label,
-                  ),
+                  child: _Scrubber(thumbAnimation: _thumbAnimation, labelAnimation: _labelAnimation, label: label),
                 ),
               ),
             ),
@@ -383,12 +330,7 @@ class _SegmentsLayer extends StatelessWidget {
   final double topPadding;
   final bool isDragging;
 
-  const _SegmentsLayer({
-    super.key,
-    required this.segments,
-    required this.topPadding,
-    required this.isDragging,
-  });
+  const _SegmentsLayer({super.key, required this.segments, required this.topPadding, required this.isDragging});
 
   @override
   Widget build(BuildContext context) {
@@ -402,9 +344,7 @@ class _SegmentsLayer extends StatelessWidget {
                 key: ValueKey('segment_${segment.date.millisecondsSinceEpoch}'),
                 top: topPadding + segment.startOffset,
                 end: 100,
-                child: RepaintBoundary(
-                  child: _SegmentWidget(segment),
-                ),
+                child: RepaintBoundary(child: _SegmentWidget(segment)),
               ),
             )
             .toList(),
@@ -432,10 +372,7 @@ class _SegmentWidget extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               _segment.date.year.toString(),
-              style: context.textTheme.labelMedium?.copyWith(
-                fontFamily: "OverpassMono",
-                fontWeight: FontWeight.w600,
-              ),
+              style: context.textTheme.labelMedium?.copyWith(fontFamily: "OverpassMono", fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -449,11 +386,7 @@ class _ScrollLabel extends StatelessWidget {
   final Color backgroundColor;
   final Animation<double> animation;
 
-  const _ScrollLabel({
-    required this.label,
-    required this.backgroundColor,
-    required this.animation,
-  });
+  const _ScrollLabel({required this.label, required this.backgroundColor, required this.animation});
 
   @override
   Widget build(BuildContext context) {
@@ -484,11 +417,7 @@ class _Scrubber extends StatelessWidget {
   final Animation<double> thumbAnimation;
   final Animation<double> labelAnimation;
 
-  const _Scrubber({
-    this.label,
-    required this.thumbAnimation,
-    required this.labelAnimation,
-  });
+  const _Scrubber({this.label, required this.thumbAnimation, required this.labelAnimation});
 
   @override
   Widget build(BuildContext context) {
@@ -502,12 +431,7 @@ class _Scrubber extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          if (label != null)
-            _ScrollLabel(
-              label: label!,
-              backgroundColor: backgroundColor,
-              animation: labelAnimation,
-            ),
+          if (label != null) _ScrollLabel(label: label!, backgroundColor: backgroundColor, animation: labelAnimation),
           _CircularThumb(backgroundColor),
         ],
       ),
@@ -533,9 +457,7 @@ class _CircularThumb extends StatelessWidget {
           topRight: Radius.circular(4.0),
           bottomRight: Radius.circular(4.0),
         ),
-        child: Container(
-          constraints: BoxConstraints.tight(const Size(48.0 * 0.6, 48.0)),
-        ),
+        child: Container(constraints: BoxConstraints.tight(const Size(48.0 * 0.6, 48.0))),
       ),
     );
   }
@@ -557,14 +479,8 @@ class _ArrowPainter extends CustomPainter {
     final baseX = size.width / 2;
     final baseY = size.height / 2;
 
-    canvas.drawPath(
-      _trianglePath(Offset(baseX, baseY - 2.0), width, height, true),
-      paint,
-    );
-    canvas.drawPath(
-      _trianglePath(Offset(baseX, baseY + 2.0), width, height, false),
-      paint,
-    );
+    canvas.drawPath(_trianglePath(Offset(baseX, baseY - 2.0), width, height, true), paint);
+    canvas.drawPath(_trianglePath(Offset(baseX, baseY + 2.0), width, height, false), paint);
   }
 
   static Path _trianglePath(Offset o, double width, double height, bool isUp) {
@@ -580,27 +496,18 @@ class _SlideFadeTransition extends StatelessWidget {
   final Animation<double> _animation;
   final Widget _child;
 
-  const _SlideFadeTransition({
-    required Animation<double> animation,
-    required Widget child,
-  })  : _animation = animation,
-        _child = child;
+  const _SlideFadeTransition({required Animation<double> animation, required Widget child})
+    : _animation = animation,
+      _child = child;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _animation,
-      builder: (context, child) =>
-          _animation.value == 0.0 ? const SizedBox() : child!,
+      builder: (context, child) => _animation.value == 0.0 ? const SizedBox() : child!,
       child: SlideTransition(
-        position: Tween(
-          begin: const Offset(0.3, 0.0),
-          end: const Offset(0.0, 0.0),
-        ).animate(_animation),
-        child: FadeTransition(
-          opacity: _animation,
-          child: _child,
-        ),
+        position: Tween(begin: const Offset(0.3, 0.0), end: const Offset(0.0, 0.0)).animate(_animation),
+        child: FadeTransition(opacity: _animation, child: _child),
       ),
     );
   }
@@ -612,19 +519,9 @@ class _Segment {
   final String scrollLabel;
   final bool showSegment;
 
-  const _Segment({
-    required this.date,
-    required this.startOffset,
-    required this.scrollLabel,
-    this.showSegment = false,
-  });
+  const _Segment({required this.date, required this.startOffset, required this.scrollLabel, this.showSegment = false});
 
-  _Segment copyWith({
-    DateTime? date,
-    double? startOffset,
-    String? scrollLabel,
-    bool? showSegment,
-  }) {
+  _Segment copyWith({DateTime? date, double? startOffset, String? scrollLabel, bool? showSegment}) {
     return _Segment(
       date: date ?? this.date,
       startOffset: startOffset ?? this.startOffset,

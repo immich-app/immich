@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
@@ -24,9 +24,7 @@ class ArchiveBottomSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final multiselect = ref.watch(multiSelectProvider);
-    final isTrashEnable = ref.watch(
-      serverInfoProvider.select((state) => state.serverFeatures.trash),
-    );
+    final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
 
     return BaseBottomSheet(
       initialChildSize: 0.25,
@@ -41,19 +39,15 @@ class ArchiveBottomSheet extends ConsumerWidget {
           const DownloadActionButton(source: ActionSource.timeline),
           isTrashEnable
               ? const TrashActionButton(source: ActionSource.timeline)
-              : const DeletePermanentActionButton(
-                  source: ActionSource.timeline,
-                ),
+              : const DeletePermanentActionButton(source: ActionSource.timeline),
           const EditDateTimeActionButton(),
           const EditLocationActionButton(source: ActionSource.timeline),
-          const MoveToLockFolderActionButton(
-            source: ActionSource.timeline,
-          ),
+          const MoveToLockFolderActionButton(source: ActionSource.timeline),
           const StackActionButton(source: ActionSource.timeline),
         ],
         if (multiselect.hasLocal) ...[
           const DeleteLocalActionButton(source: ActionSource.timeline),
-          const UploadActionButton(),
+          const UploadActionButton(source: ActionSource.timeline),
         ],
       ],
     );

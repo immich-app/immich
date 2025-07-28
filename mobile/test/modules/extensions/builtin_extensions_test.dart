@@ -5,10 +5,7 @@ import 'package:immich_mobile/extensions/string_extensions.dart';
 void main() {
   group('Test toDuration', () {
     test('ok', () {
-      expect(
-        "1:02:33".toDuration(),
-        const Duration(hours: 1, minutes: 2, seconds: 33),
-      );
+      expect("1:02:33".toDuration(), const Duration(hours: 1, minutes: 2, seconds: 33));
     });
     test('malformed', () {
       expect("".toDuration(), isNull);
@@ -45,9 +42,7 @@ void main() {
     test('withKey', () {
       final a = ["a", "bb", "cc", "ddd"];
       expect(
-        a.uniqueConsecutive(
-          compare: (s1, s2) => s1.length.compareTo(s2.length),
-        ),
+        a.uniqueConsecutive(compare: (s1, s2) => s1.length.compareTo(s2.length)),
         orderedEquals(["a", "bb", "ddd"]),
       );
     });

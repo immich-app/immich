@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.135.3
+ * 1.136.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -1199,6 +1199,7 @@ export type SharedLinkResponseDto = {
     key: string;
     password: string | null;
     showMetadata: boolean;
+    slug: string | null;
     token?: string | null;
     "type": SharedLinkType;
     userId: string;
@@ -1208,10 +1209,11 @@ export type SharedLinkCreateDto = {
     allowDownload?: boolean;
     allowUpload?: boolean;
     assetIds?: string[];
-    description?: string;
+    description?: string | null;
     expiresAt?: string | null;
-    password?: string;
+    password?: string | null;
     showMetadata?: boolean;
+    slug?: string | null;
     "type": SharedLinkType;
 };
 export type SharedLinkEditDto = {
@@ -1221,10 +1223,11 @@ export type SharedLinkEditDto = {
     Setting this flag and not sending expiryAt is considered as null instead.
     Clients that can send null values can ignore this. */
     changeExpiryTime?: boolean;
-    description?: string;
+    description?: string | null;
     expiresAt?: string | null;
-    password?: string;
+    password?: string | null;
     showMetadata?: boolean;
+    slug?: string | null;
 };
 export type AssetIdsResponseDto = {
     assetId: string;
@@ -1821,9 +1824,10 @@ export function deleteAlbum({ id }: {
         method: "DELETE"
     }));
 }
-export function getAlbumInfo({ id, key, withoutAssets }: {
+export function getAlbumInfo({ id, key, slug, withoutAssets }: {
     id: string;
     key?: string;
+    slug?: string;
     withoutAssets?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -1831,6 +1835,7 @@ export function getAlbumInfo({ id, key, withoutAssets }: {
         data: AlbumResponseDto;
     }>(`/albums/${encodeURIComponent(id)}${QS.query(QS.explode({
         key,
+        slug,
         withoutAssets
     }))}`, {
         ...opts
@@ -1862,16 +1867,18 @@ export function removeAssetFromAlbum({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function addAssetsToAlbum({ id, key, bulkIdsDto }: {
+export function addAssetsToAlbum({ id, key, slug, bulkIdsDto }: {
     id: string;
     key?: string;
+    slug?: string;
     bulkIdsDto: BulkIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: BulkIdResponseDto[];
     }>(`/albums/${encodeURIComponent(id)}/assets${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.json({
         ...opts,
         method: "PUT",
@@ -1971,8 +1978,9 @@ export function deleteAssets({ assetBulkDeleteDto }: {
         body: assetBulkDeleteDto
     })));
 }
-export function uploadAsset({ key, xImmichChecksum, assetMediaCreateDto }: {
+export function uploadAsset({ key, slug, xImmichChecksum, assetMediaCreateDto }: {
     key?: string;
+    slug?: string;
     xImmichChecksum?: string;
     assetMediaCreateDto: AssetMediaCreateDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -1980,7 +1988,8 @@ export function uploadAsset({ key, xImmichChecksum, assetMediaCreateDto }: {
         status: 201;
         data: AssetMediaResponseDto;
     }>(`/assets${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.multipart({
         ...opts,
         method: "POST",
@@ -2082,15 +2091,17 @@ export function getAssetStatistics({ isFavorite, isTrashed, visibility }: {
         ...opts
     }));
 }
-export function getAssetInfo({ id, key }: {
+export function getAssetInfo({ id, key, slug }: {
     id: string;
     key?: string;
+    slug?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetResponseDto;
     }>(`/assets/${encodeURIComponent(id)}${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, {
         ...opts
     }));
@@ -2108,15 +2119,17 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
-export function downloadAsset({ id, key }: {
+export function downloadAsset({ id, key, slug }: {
     id: string;
     key?: string;
+    slug?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/original${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, {
         ...opts
     }));
@@ -2124,46 +2137,52 @@ export function downloadAsset({ id, key }: {
 /**
  * replaceAsset
  */
-export function replaceAsset({ id, key, assetMediaReplaceDto }: {
+export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
     id: string;
     key?: string;
+    slug?: string;
     assetMediaReplaceDto: AssetMediaReplaceDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetMediaResponseDto;
     }>(`/assets/${encodeURIComponent(id)}/original${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.multipart({
         ...opts,
         method: "PUT",
         body: assetMediaReplaceDto
     })));
 }
-export function viewAsset({ id, key, size }: {
+export function viewAsset({ id, key, size, slug }: {
     id: string;
     key?: string;
     size?: AssetMediaSize;
+    slug?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/thumbnail${QS.query(QS.explode({
         key,
-        size
+        size,
+        slug
     }))}`, {
         ...opts
     }));
 }
-export function playAssetVideo({ id, key }: {
+export function playAssetVideo({ id, key, slug }: {
     id: string;
     key?: string;
+    slug?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/video/playback${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, {
         ...opts
     }));
@@ -2272,30 +2291,34 @@ export function validateAccessToken(opts?: Oazapfts.RequestOpts) {
         method: "POST"
     }));
 }
-export function downloadArchive({ key, assetIdsDto }: {
+export function downloadArchive({ key, slug, assetIdsDto }: {
     key?: string;
+    slug?: string;
     assetIdsDto: AssetIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
     }>(`/download/archive${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.json({
         ...opts,
         method: "POST",
         body: assetIdsDto
     })));
 }
-export function getDownloadInfo({ key, downloadInfoDto }: {
+export function getDownloadInfo({ key, slug, downloadInfoDto }: {
     key?: string;
+    slug?: string;
     downloadInfoDto: DownloadInfoDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: DownloadResponseDto;
     }>(`/download/info${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.json({
         ...opts,
         method: "POST",
@@ -3230,9 +3253,10 @@ export function createSharedLink({ sharedLinkCreateDto }: {
         body: sharedLinkCreateDto
     })));
 }
-export function getMySharedLink({ key, password, token }: {
+export function getMySharedLink({ key, password, slug, token }: {
     key?: string;
     password?: string;
+    slug?: string;
     token?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3241,6 +3265,7 @@ export function getMySharedLink({ key, password, token }: {
     }>(`/shared-links/me${QS.query(QS.explode({
         key,
         password,
+        slug,
         token
     }))}`, {
         ...opts
@@ -3277,32 +3302,36 @@ export function updateSharedLink({ id, sharedLinkEditDto }: {
         body: sharedLinkEditDto
     })));
 }
-export function removeSharedLinkAssets({ id, key, assetIdsDto }: {
+export function removeSharedLinkAssets({ id, key, slug, assetIdsDto }: {
     id: string;
     key?: string;
+    slug?: string;
     assetIdsDto: AssetIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetIdsResponseDto[];
     }>(`/shared-links/${encodeURIComponent(id)}/assets${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.json({
         ...opts,
         method: "DELETE",
         body: assetIdsDto
     })));
 }
-export function addSharedLinkAssets({ id, key, assetIdsDto }: {
+export function addSharedLinkAssets({ id, key, slug, assetIdsDto }: {
     id: string;
     key?: string;
+    slug?: string;
     assetIdsDto: AssetIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetIdsResponseDto[];
     }>(`/shared-links/${encodeURIComponent(id)}/assets${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.json({
         ...opts,
         method: "PUT",
@@ -3372,6 +3401,15 @@ export function updateStack({ id, stackUpdateDto }: {
         method: "PUT",
         body: stackUpdateDto
     })));
+}
+export function removeAssetFromStack({ assetId, id }: {
+    assetId: string;
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/stacks/${encodeURIComponent(id)}/assets/${encodeURIComponent(assetId)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
 }
 export function deleteSyncAck({ syncAckDeleteDto }: {
     syncAckDeleteDto: SyncAckDeleteDto;
@@ -3602,13 +3640,14 @@ export function tagAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
     personId?: string;
+    slug?: string;
     tagId?: string;
     timeBucket: string;
     userId?: string;
@@ -3626,6 +3665,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
         key,
         order,
         personId,
+        slug,
         tagId,
         timeBucket,
         userId,
@@ -3636,13 +3676,14 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
         ...opts
     }));
 }
-export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, tagId, userId, visibility, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
     personId?: string;
+    slug?: string;
     tagId?: string;
     userId?: string;
     visibility?: AssetVisibility;
@@ -3659,6 +3700,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
         key,
         order,
         personId,
+        slug,
         tagId,
         userId,
         visibility,
@@ -3938,25 +3980,35 @@ export enum Permission {
     AssetRead = "asset.read",
     AssetUpdate = "asset.update",
     AssetDelete = "asset.delete",
+    AssetStatistics = "asset.statistics",
     AssetShare = "asset.share",
     AssetView = "asset.view",
     AssetDownload = "asset.download",
     AssetUpload = "asset.upload",
+    AssetReplace = "asset.replace",
     AlbumCreate = "album.create",
     AlbumRead = "album.read",
     AlbumUpdate = "album.update",
     AlbumDelete = "album.delete",
     AlbumStatistics = "album.statistics",
-    AlbumAddAsset = "album.addAsset",
-    AlbumRemoveAsset = "album.removeAsset",
     AlbumShare = "album.share",
     AlbumDownload = "album.download",
+    AlbumAssetCreate = "albumAsset.create",
+    AlbumAssetDelete = "albumAsset.delete",
+    AlbumUserCreate = "albumUser.create",
+    AlbumUserUpdate = "albumUser.update",
+    AlbumUserDelete = "albumUser.delete",
+    AuthChangePassword = "auth.changePassword",
     AuthDeviceDelete = "authDevice.delete",
     ArchiveRead = "archive.read",
+    DuplicateRead = "duplicate.read",
+    DuplicateDelete = "duplicate.delete",
     FaceCreate = "face.create",
     FaceRead = "face.read",
     FaceUpdate = "face.update",
     FaceDelete = "face.delete",
+    JobCreate = "job.create",
+    JobRead = "job.read",
     LibraryCreate = "library.create",
     LibraryRead = "library.read",
     LibraryUpdate = "library.update",
@@ -3968,6 +4020,9 @@ export enum Permission {
     MemoryRead = "memory.read",
     MemoryUpdate = "memory.update",
     MemoryDelete = "memory.delete",
+    MemoryStatistics = "memory.statistics",
+    MemoryAssetCreate = "memoryAsset.create",
+    MemoryAssetDelete = "memoryAsset.delete",
     NotificationCreate = "notification.create",
     NotificationRead = "notification.read",
     NotificationUpdate = "notification.update",
@@ -3983,6 +4038,16 @@ export enum Permission {
     PersonStatistics = "person.statistics",
     PersonMerge = "person.merge",
     PersonReassign = "person.reassign",
+    PinCodeCreate = "pinCode.create",
+    PinCodeUpdate = "pinCode.update",
+    PinCodeDelete = "pinCode.delete",
+    ServerAbout = "server.about",
+    ServerApkLinks = "server.apkLinks",
+    ServerStorage = "server.storage",
+    ServerStatistics = "server.statistics",
+    ServerLicenseRead = "serverLicense.read",
+    ServerLicenseUpdate = "serverLicense.update",
+    ServerLicenseDelete = "serverLicense.delete",
     SessionCreate = "session.create",
     SessionRead = "session.read",
     SessionUpdate = "session.update",
@@ -3996,6 +4061,10 @@ export enum Permission {
     StackRead = "stack.read",
     StackUpdate = "stack.update",
     StackDelete = "stack.delete",
+    SyncStream = "sync.stream",
+    SyncCheckpointRead = "syncCheckpoint.read",
+    SyncCheckpointUpdate = "syncCheckpoint.update",
+    SyncCheckpointDelete = "syncCheckpoint.delete",
     SystemConfigRead = "systemConfig.read",
     SystemConfigUpdate = "systemConfig.update",
     SystemMetadataRead = "systemMetadata.read",
@@ -4005,10 +4074,25 @@ export enum Permission {
     TagUpdate = "tag.update",
     TagDelete = "tag.delete",
     TagAsset = "tag.asset",
-    AdminUserCreate = "admin.user.create",
-    AdminUserRead = "admin.user.read",
-    AdminUserUpdate = "admin.user.update",
-    AdminUserDelete = "admin.user.delete"
+    UserRead = "user.read",
+    UserUpdate = "user.update",
+    UserLicenseCreate = "userLicense.create",
+    UserLicenseRead = "userLicense.read",
+    UserLicenseUpdate = "userLicense.update",
+    UserLicenseDelete = "userLicense.delete",
+    UserOnboardingRead = "userOnboarding.read",
+    UserOnboardingUpdate = "userOnboarding.update",
+    UserOnboardingDelete = "userOnboarding.delete",
+    UserPreferenceRead = "userPreference.read",
+    UserPreferenceUpdate = "userPreference.update",
+    UserProfileImageCreate = "userProfileImage.create",
+    UserProfileImageRead = "userProfileImage.read",
+    UserProfileImageUpdate = "userProfileImage.update",
+    UserProfileImageDelete = "userProfileImage.delete",
+    AdminUserCreate = "adminUser.create",
+    AdminUserRead = "adminUser.read",
+    AdminUserUpdate = "adminUser.update",
+    AdminUserDelete = "adminUser.delete"
 }
 export enum AssetMediaStatus {
     Created = "created",
@@ -4090,6 +4174,7 @@ export enum Error2 {
     NotFound = "not_found"
 }
 export enum SyncEntityType {
+    AuthUserV1 = "AuthUserV1",
     UserV1 = "UserV1",
     UserDeleteV1 = "UserDeleteV1",
     AssetV1 = "AssetV1",
@@ -4125,6 +4210,8 @@ export enum SyncEntityType {
     StackDeleteV1 = "StackDeleteV1",
     PersonV1 = "PersonV1",
     PersonDeleteV1 = "PersonDeleteV1",
+    AssetFaceV1 = "AssetFaceV1",
+    AssetFaceDeleteV1 = "AssetFaceDeleteV1",
     UserMetadataV1 = "UserMetadataV1",
     UserMetadataDeleteV1 = "UserMetadataDeleteV1",
     SyncAckV1 = "SyncAckV1",
@@ -4138,6 +4225,7 @@ export enum SyncRequestType {
     AlbumAssetExifsV1 = "AlbumAssetExifsV1",
     AssetsV1 = "AssetsV1",
     AssetExifsV1 = "AssetExifsV1",
+    AuthUsersV1 = "AuthUsersV1",
     MemoriesV1 = "MemoriesV1",
     MemoryToAssetsV1 = "MemoryToAssetsV1",
     PartnersV1 = "PartnersV1",
@@ -4147,6 +4235,7 @@ export enum SyncRequestType {
     StacksV1 = "StacksV1",
     UsersV1 = "UsersV1",
     PeopleV1 = "PeopleV1",
+    AssetFacesV1 = "AssetFacesV1",
     UserMetadataV1 = "UserMetadataV1"
 }
 export enum TranscodeHWAccel {

@@ -3,10 +3,7 @@ import 'package:immich_mobile/repositories/network.repository.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 
 final networkServiceProvider = Provider((ref) {
-  return NetworkService(
-    ref.watch(networkRepositoryProvider),
-    ref.watch(permissionRepositoryProvider),
-  );
+  return NetworkService(ref.watch(networkRepositoryProvider), ref.watch(permissionRepositoryProvider));
 });
 
 class NetworkService {

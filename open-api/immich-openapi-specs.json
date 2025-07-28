@@ -957,6 +957,14 @@
             }
           },
           {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "withoutAssets",
             "required": false,
             "in": "query",
@@ -1111,6 +1119,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -1551,6 +1567,14 @@
             }
           },
           {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "x-immich-checksum",
             "in": "header",
             "description": "sha1 checksum that can be used for duplicate detection before the file is uploaded",
@@ -1929,6 +1953,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2029,6 +2061,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2074,6 +2114,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -2151,6 +2199,14 @@
             "schema": {
               "$ref": "#/components/schemas/AssetMediaSize"
             }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2197,6 +2253,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -2605,6 +2669,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -2652,6 +2724,14 @@
         "parameters": [
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -6218,6 +6298,14 @@
             }
           },
           {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "token",
             "required": false,
             "in": "query",
@@ -6399,6 +6487,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -6455,6 +6551,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -6727,6 +6831,50 @@
                 }
               }
             },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Stacks"
+        ]
+      }
+    },
+    "/stacks/{id}/assets/{assetId}": {
+      "delete": {
+        "operationId": "removeAssetFromStack",
+        "parameters": [
+          {
+            "name": "assetId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
             "description": ""
           }
         },
@@ -7687,6 +7835,14 @@
             }
           },
           {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "tagId",
             "required": false,
             "in": "query",
@@ -7828,6 +7984,14 @@
             "description": "Filter assets containing a specific person (face recognition)",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
               "type": "string"
             }
           },
@@ -8619,7 +8783,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.135.3",
+    "version": "1.136.0",
     "contact": {}
   },
   "tags": [],
@@ -11716,25 +11880,35 @@
           "asset.read",
           "asset.update",
           "asset.delete",
+          "asset.statistics",
           "asset.share",
           "asset.view",
           "asset.download",
           "asset.upload",
+          "asset.replace",
           "album.create",
           "album.read",
           "album.update",
           "album.delete",
           "album.statistics",
-          "album.addAsset",
-          "album.removeAsset",
           "album.share",
           "album.download",
+          "albumAsset.create",
+          "albumAsset.delete",
+          "albumUser.create",
+          "albumUser.update",
+          "albumUser.delete",
+          "auth.changePassword",
           "authDevice.delete",
           "archive.read",
+          "duplicate.read",
+          "duplicate.delete",
           "face.create",
           "face.read",
           "face.update",
           "face.delete",
+          "job.create",
+          "job.read",
           "library.create",
           "library.read",
           "library.update",
@@ -11746,6 +11920,9 @@
           "memory.read",
           "memory.update",
           "memory.delete",
+          "memory.statistics",
+          "memoryAsset.create",
+          "memoryAsset.delete",
           "notification.create",
           "notification.read",
           "notification.update",
@@ -11761,6 +11938,16 @@
           "person.statistics",
           "person.merge",
           "person.reassign",
+          "pinCode.create",
+          "pinCode.update",
+          "pinCode.delete",
+          "server.about",
+          "server.apkLinks",
+          "server.storage",
+          "server.statistics",
+          "serverLicense.read",
+          "serverLicense.update",
+          "serverLicense.delete",
           "session.create",
           "session.read",
           "session.update",
@@ -11774,6 +11961,10 @@
           "stack.read",
           "stack.update",
           "stack.delete",
+          "sync.stream",
+          "syncCheckpoint.read",
+          "syncCheckpoint.update",
+          "syncCheckpoint.delete",
           "systemConfig.read",
           "systemConfig.update",
           "systemMetadata.read",
@@ -11783,10 +11974,25 @@
           "tag.update",
           "tag.delete",
           "tag.asset",
-          "admin.user.create",
-          "admin.user.read",
-          "admin.user.update",
-          "admin.user.delete"
+          "user.read",
+          "user.update",
+          "userLicense.create",
+          "userLicense.read",
+          "userLicense.update",
+          "userLicense.delete",
+          "userOnboarding.read",
+          "userOnboarding.update",
+          "userOnboarding.delete",
+          "userPreference.read",
+          "userPreference.update",
+          "userProfileImage.create",
+          "userProfileImage.read",
+          "userProfileImage.update",
+          "userProfileImage.delete",
+          "adminUser.create",
+          "adminUser.read",
+          "adminUser.update",
+          "adminUser.delete"
         ],
         "type": "string"
       },
@@ -12941,6 +13147,7 @@
             "type": "array"
           },
           "description": {
+            "nullable": true,
             "type": "string"
           },
           "expiresAt": {
@@ -12950,11 +13157,16 @@
             "type": "string"
           },
           "password": {
+            "nullable": true,
             "type": "string"
           },
           "showMetadata": {
             "default": true,
             "type": "boolean"
+          },
+          "slug": {
+            "nullable": true,
+            "type": "string"
           },
           "type": {
             "allOf": [
@@ -12982,6 +13194,7 @@
             "type": "boolean"
           },
           "description": {
+            "nullable": true,
             "type": "string"
           },
           "expiresAt": {
@@ -12990,10 +13203,15 @@
             "type": "string"
           },
           "password": {
+            "nullable": true,
             "type": "string"
           },
           "showMetadata": {
             "type": "boolean"
+          },
+          "slug": {
+            "nullable": true,
+            "type": "string"
           }
         },
         "type": "object"
@@ -13041,6 +13259,10 @@
           "showMetadata": {
             "type": "boolean"
           },
+          "slug": {
+            "nullable": true,
+            "type": "string"
+          },
           "token": {
             "nullable": true,
             "type": "string"
@@ -13067,6 +13289,7 @@
           "key",
           "password",
           "showMetadata",
+          "slug",
           "type",
           "userId"
         ],
@@ -13788,6 +14011,65 @@
         ],
         "type": "object"
       },
+      "SyncAssetFaceDeleteV1": {
+        "properties": {
+          "assetFaceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetFaceId"
+        ],
+        "type": "object"
+      },
+      "SyncAssetFaceV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "boundingBoxX1": {
+            "type": "integer"
+          },
+          "boundingBoxX2": {
+            "type": "integer"
+          },
+          "boundingBoxY1": {
+            "type": "integer"
+          },
+          "boundingBoxY2": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "imageHeight": {
+            "type": "integer"
+          },
+          "imageWidth": {
+            "type": "integer"
+          },
+          "personId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "sourceType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "boundingBoxX1",
+          "boundingBoxX2",
+          "boundingBoxY1",
+          "boundingBoxY2",
+          "id",
+          "imageHeight",
+          "imageWidth",
+          "personId",
+          "sourceType"
+        ],
+        "type": "object"
+      },
       "SyncAssetV1": {
         "properties": {
           "checksum": {
@@ -13875,8 +14157,79 @@
         ],
         "type": "object"
       },
+      "SyncAuthUserV1": {
+        "properties": {
+          "avatarColor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "nullable": true
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "hasProfileImage": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "oauthId": {
+            "type": "string"
+          },
+          "pinCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "quotaSizeInBytes": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "quotaUsageInBytes": {
+            "type": "integer"
+          },
+          "storageLabel": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "avatarColor",
+          "deletedAt",
+          "email",
+          "hasProfileImage",
+          "id",
+          "isAdmin",
+          "name",
+          "oauthId",
+          "pinCode",
+          "profileChangedAt",
+          "quotaSizeInBytes",
+          "quotaUsageInBytes",
+          "storageLabel"
+        ],
+        "type": "object"
+      },
       "SyncEntityType": {
         "enum": [
+          "AuthUserV1",
           "UserV1",
           "UserDeleteV1",
           "AssetV1",
@@ -13912,6 +14265,8 @@
           "StackDeleteV1",
           "PersonV1",
           "PersonDeleteV1",
+          "AssetFaceV1",
+          "AssetFaceDeleteV1",
           "UserMetadataV1",
           "UserMetadataDeleteV1",
           "SyncAckV1",
@@ -14109,9 +14464,6 @@
           "ownerId": {
             "type": "string"
           },
-          "thumbnailPath": {
-            "type": "string"
-          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -14127,7 +14479,6 @@
           "isHidden",
           "name",
           "ownerId",
-          "thumbnailPath",
           "updatedAt"
         ],
         "type": "object"
@@ -14141,6 +14492,7 @@
           "AlbumAssetExifsV1",
           "AssetsV1",
           "AssetExifsV1",
+          "AuthUsersV1",
           "MemoriesV1",
           "MemoryToAssetsV1",
           "PartnersV1",
@@ -14150,6 +14502,7 @@
           "StacksV1",
           "UsersV1",
           "PeopleV1",
+          "AssetFacesV1",
           "UserMetadataV1"
         ],
         "type": "string"
@@ -14229,7 +14582,11 @@
       "SyncUserMetadataDeleteV1": {
         "properties": {
           "key": {
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMetadataKey"
+              }
+            ]
           },
           "userId": {
             "type": "string"
@@ -14244,7 +14601,11 @@
       "SyncUserMetadataV1": {
         "properties": {
           "key": {
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMetadataKey"
+              }
+            ]
           },
           "userId": {
             "type": "string"
@@ -14262,6 +14623,14 @@
       },
       "SyncUserV1": {
         "properties": {
+          "avatarColor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ],
+            "nullable": true
+          },
           "deletedAt": {
             "format": "date-time",
             "nullable": true,
@@ -14278,6 +14647,7 @@
           }
         },
         "required": [
+          "avatarColor",
           "deletedAt",
           "email",
           "id",
@@ -15948,6 +16318,14 @@
           "licenseKey"
         ],
         "type": "object"
+      },
+      "UserMetadataKey": {
+        "enum": [
+          "preferences",
+          "license",
+          "onboarding"
+        ],
+        "type": "string"
       },
       "UserPreferencesResponseDto": {
         "properties": {

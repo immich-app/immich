@@ -55,22 +55,17 @@ class PersonDto {
   factory PersonDto.fromMap(Map<String, dynamic> map) {
     return PersonDto(
       id: map['id'] as String,
-      birthDate: map['birthDate'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['birthDate'] as int)
-          : null,
+      birthDate: map['birthDate'] != null ? DateTime.fromMillisecondsSinceEpoch(map['birthDate'] as int) : null,
       isHidden: map['isHidden'] as bool,
       name: map['name'] as String,
       thumbnailPath: map['thumbnailPath'] as String,
-      updatedAt: map['updatedAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int)
-          : null,
+      updatedAt: map['updatedAt'] != null ? DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int) : null,
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory PersonDto.fromJson(String source) =>
-      PersonDto.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory PersonDto.fromJson(String source) => PersonDto.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   bool operator ==(covariant PersonDto other) {
@@ -103,7 +98,6 @@ class Person {
   final String ownerId;
   final String name;
   final String? faceAssetId;
-  final String thumbnailPath;
   final bool isFavorite;
   final bool isHidden;
   final String? color;
@@ -116,7 +110,6 @@ class Person {
     required this.ownerId,
     required this.name,
     this.faceAssetId,
-    required this.thumbnailPath,
     required this.isFavorite,
     required this.isHidden,
     required this.color,
@@ -130,7 +123,6 @@ class Person {
     String? ownerId,
     String? name,
     String? faceAssetId,
-    String? thumbnailPath,
     bool? isFavorite,
     bool? isHidden,
     String? color,
@@ -143,7 +135,6 @@ class Person {
       ownerId: ownerId ?? this.ownerId,
       name: name ?? this.name,
       faceAssetId: faceAssetId ?? this.faceAssetId,
-      thumbnailPath: thumbnailPath ?? this.thumbnailPath,
       isFavorite: isFavorite ?? this.isFavorite,
       isHidden: isHidden ?? this.isHidden,
       color: color ?? this.color,
@@ -160,7 +151,6 @@ class Person {
     ownerId: $ownerId,
     name: $name,
     faceAssetId: ${faceAssetId ?? "<NA>"},
-    thumbnailPath: $thumbnailPath,
     isFavorite: $isFavorite,
     isHidden: $isHidden,
     color: ${color ?? "<NA>"},
@@ -178,7 +168,6 @@ class Person {
         other.ownerId == ownerId &&
         other.name == name &&
         other.faceAssetId == faceAssetId &&
-        other.thumbnailPath == thumbnailPath &&
         other.isFavorite == isFavorite &&
         other.isHidden == isHidden &&
         other.color == color &&
@@ -193,7 +182,6 @@ class Person {
         ownerId.hashCode ^
         name.hashCode ^
         faceAssetId.hashCode ^
-        thumbnailPath.hashCode ^
         isFavorite.hashCode ^
         isHidden.hashCode ^
         color.hashCode ^

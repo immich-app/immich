@@ -11,15 +11,11 @@ class PersonEntity extends Table with DriftDefaultsMixin {
 
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
-  TextColumn get ownerId =>
-      text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
+  TextColumn get ownerId => text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
   TextColumn get name => text()();
 
-  // TODO: foreign key refering to asset faces
   TextColumn get faceAssetId => text().nullable()();
-
-  TextColumn get thumbnailPath => text()();
 
   BoolColumn get isFavorite => boolean()();
 

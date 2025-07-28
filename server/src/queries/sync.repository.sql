@@ -409,6 +409,64 @@ where
 order by
   "updateId" asc
 
+-- SyncRepository.assetFace.getDeletes
+select
+  "asset_face_audit"."id",
+  "assetFaceId"
+from
+  "asset_face_audit"
+  left join "asset" on "asset"."id" = "asset_face_audit"."assetId"
+where
+  "asset"."ownerId" = $1
+  and "asset_face_audit"."deletedAt" < now() - interval '1 millisecond'
+order by
+  "asset_face_audit"."id" asc
+
+-- SyncRepository.assetFace.getUpserts
+select
+  "asset_face"."id",
+  "assetId",
+  "personId",
+  "imageWidth",
+  "imageHeight",
+  "boundingBoxX1",
+  "boundingBoxY1",
+  "boundingBoxX2",
+  "boundingBoxY2",
+  "sourceType",
+  "asset_face"."updateId"
+from
+  "asset_face"
+  left join "asset" on "asset"."id" = "asset_face"."assetId"
+where
+  "asset_face"."updatedAt" < now() - interval '1 millisecond'
+  and "asset"."ownerId" = $1
+order by
+  "asset_face"."updateId" asc
+
+-- SyncRepository.authUser.getUpserts
+select
+  "id",
+  "name",
+  "email",
+  "avatarColor",
+  "deletedAt",
+  "updateId",
+  "isAdmin",
+  "pinCode",
+  "oauthId",
+  "storageLabel",
+  "quotaSizeInBytes",
+  "quotaUsageInBytes",
+  "profileImagePath",
+  "profileChangedAt"
+from
+  "user"
+where
+  "updatedAt" < now() - interval '1 millisecond'
+order by
+  "updateId" asc
+
 -- SyncRepository.memory.getDeletes
 select
   "id",
@@ -779,7 +837,6 @@ select
   "ownerId",
   "name",
   "birthDate",
-  "thumbnailPath",
   "isHidden",
   "isFavorite",
   "color",
@@ -837,6 +894,7 @@ select
   "id",
   "name",
   "email",
+  "avatarColor",
   "deletedAt",
   "updateId"
 from

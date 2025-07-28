@@ -15,11 +15,7 @@ class ScaffoldErrorBody extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          "scaffold_body_error_occurred",
-          style: context.textTheme.displayMedium,
-          textAlign: TextAlign.center,
-        ).tr(),
+        Text("scaffold_body_error_occurred", style: context.textTheme.displayMedium, textAlign: TextAlign.center).tr(),
         if (withIcon)
           Center(
             child: Padding(
@@ -27,19 +23,14 @@ class ScaffoldErrorBody extends StatelessWidget {
               child: Icon(
                 Icons.error_outline,
                 size: 100,
-                color:
-                    context.themeData.iconTheme.color?.withValues(alpha: 0.5),
+                color: context.themeData.iconTheme.color?.withValues(alpha: 0.5),
               ),
             ),
           ),
         if (withIcon && errorMsg != null)
           Padding(
             padding: const EdgeInsets.all(20),
-            child: Text(
-              errorMsg!,
-              style: context.textTheme.displaySmall,
-              textAlign: TextAlign.center,
-            ),
+            child: Text(errorMsg!, style: context.textTheme.displaySmall, textAlign: TextAlign.center),
           ),
       ],
     );

@@ -6,7 +6,7 @@ import { CancellableTask } from '$lib/utils/cancellable-task';
 import { toTimelineAsset, type TimelinePlainDateTime, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
 
 import { clamp, debounce, isEqual } from 'lodash-es';
-import { SvelteSet } from 'svelte/reactivity';
+import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
 import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
@@ -288,12 +288,12 @@ export class TimelineManager {
 
   async #initializeMonthGroups() {
     const timebuckets = await getTimeBuckets({
+      ...authManager.params,
       ...this.#options,
-      key: authManager.key,
     });
 
     this.months = timebuckets.map((timeBucket) => {
-      const date = new Date(timeBucket.timeBucket);
+      const date = new SvelteDate(timeBucket.timeBucket);
       return new MonthGroup(
         this,
         { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1 },
@@ -423,7 +423,7 @@ export class TimelineManager {
     if (monthGroup) {
       return monthGroup;
     }
-    const asset = toTimelineAsset(await getAssetInfo({ id, key: authManager.key }));
+    const asset = toTimelineAsset(await getAssetInfo({ ...authManager.params, id }));
     if (!asset || this.isExcluded(asset)) {
       return;
     }
@@ -456,14 +456,14 @@ export class TimelineManager {
   }
 
   updateAssetOperation(ids: string[], operation: AssetOperation) {
-    runAssetOperation(this, new Set(ids), operation, { order: this.#options.order ?? AssetOrder.Desc });
+    runAssetOperation(this, new SvelteSet(ids), operation, { order: this.#options.order ?? AssetOrder.Desc });
   }
 
   updateAssets(assets: TimelineAsset[]) {
-    const lookup = new Map<string, TimelineAsset>(assets.map((asset) => [asset.id, asset]));
+    const lookup = new SvelteMap<string, TimelineAsset>(assets.map((asset) => [asset.id, asset]));
     const { unprocessedIds } = runAssetOperation(
       this,
-      new Set(lookup.keys()),
+      new SvelteSet(lookup.keys()),
       (asset) => {
         updateObject(asset, lookup.get(asset.id));
         return { remove: false };
@@ -480,7 +480,7 @@ export class TimelineManager {
   removeAssets(ids: string[]) {
     const { unprocessedIds } = runAssetOperation(
       this,
-      new Set(ids),
+      new SvelteSet(ids),
       () => {
         return { remove: true };
       },
@@ -539,5 +539,9 @@ export class TimelineManager {
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
       isMismatched(this.#options.isTrashed, asset.isTrashed)
     );
+  }
+
+  getAssetOrder() {
+    return this.#options.order ?? AssetOrder.Desc;
   }
 }

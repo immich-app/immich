@@ -90,7 +90,7 @@ jobs:
         env:
           CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
-          echo "ERROR: Generated files not up to date! Run make_build inside the mobile directory"
+          echo "ERROR: Generated files not up to date! Run 'make build' and 'make pigeon' inside the mobile directory"
           echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
@@ -98,7 +98,7 @@ jobs:
         run: dart analyze --fatal-infos
 
       - name: Run dart format
-        run: dart format lib/ --set-exit-if-changed
+        run: make format
 
       - name: Run dart custom_lint
         run: dart run custom_lint

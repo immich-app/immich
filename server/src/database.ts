@@ -192,6 +192,7 @@ export type SharedLink = {
   showExif: boolean;
   type: SharedLinkType;
   userId: string;
+  slug: string | null;
 };
 
 export type Album = Selectable<AlbumTable> & {
@@ -272,6 +273,8 @@ export type AssetFace = {
   personId: string | null;
   sourceType: SourceType;
   person?: Person | null;
+  updatedAt: Date;
+  updateId: string;
 };
 
 const userColumns = ['id', 'name', 'email', 'avatarColor', 'profileImagePath', 'profileChangedAt'] as const;
@@ -354,6 +357,7 @@ export const columns = {
   ],
   syncAlbumUser: ['album_user.albumsId as albumId', 'album_user.usersId as userId', 'album_user.role'],
   syncStack: ['stack.id', 'stack.createdAt', 'stack.updatedAt', 'stack.primaryAssetId', 'stack.ownerId'],
+  syncUser: ['id', 'name', 'email', 'avatarColor', 'deletedAt', 'updateId'],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],
   syncAssetExif: [
     'asset_exif.assetId',

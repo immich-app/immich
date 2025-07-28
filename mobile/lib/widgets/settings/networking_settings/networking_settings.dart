@@ -18,8 +18,7 @@ class NetworkingSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentEndpoint = getServerUrl();
-    final featureEnabled =
-        useAppSettingsState(AppSettingsEnum.autoEndpointSwitching);
+    final featureEnabled = useAppSettingsState(AppSettingsEnum.autoEndpointSwitching);
 
     Future<void> checkWifiReadPermission() async {
       final [hasLocationInUse, hasLocationAlways] = await Future.wait([
@@ -39,9 +38,7 @@ class NetworkingSettings extends HookConsumerWidget {
               actions: [
                 TextButton(
                   onPressed: () async {
-                    final isGrant = await ref
-                        .read(networkProvider.notifier)
-                        .requestWifiReadPermission();
+                    final isGrant = await ref.read(networkProvider.notifier).requestWifiReadPermission();
 
                     Navigator.pop(context, isGrant);
                   },
@@ -63,9 +60,7 @@ class NetworkingSettings extends HookConsumerWidget {
               actions: [
                 TextButton(
                   onPressed: () async {
-                    final isGrant = await ref
-                        .read(networkProvider.notifier)
-                        .requestWifiReadBackgroundPermission();
+                    final isGrant = await ref.read(networkProvider.notifier).requestWifiReadBackgroundPermission();
 
                     Navigator.pop(context, isGrant);
                   },
@@ -77,21 +72,17 @@ class NetworkingSettings extends HookConsumerWidget {
         );
       }
 
-      if (isGrantLocationAlwaysPermission != null &&
-          !isGrantLocationAlwaysPermission) {
+      if (isGrantLocationAlwaysPermission != null && !isGrantLocationAlwaysPermission) {
         await ref.read(networkProvider.notifier).openSettings();
       }
     }
 
-    useEffect(
-      () {
-        if (featureEnabled.value == true) {
-          checkWifiReadPermission();
-        }
-        return null;
-      },
-      [featureEnabled.value],
-    );
+    useEffect(() {
+      if (featureEnabled.value == true) {
+        checkWifiReadPermission();
+      }
+      return null;
+    }, [featureEnabled.value]);
 
     return ListView(
       padding: const EdgeInsets.only(bottom: 96),
@@ -101,9 +92,7 @@ class NetworkingSettings extends HookConsumerWidget {
           padding: const EdgeInsets.only(top: 8, left: 16, bottom: 8),
           child: NetworkPreferenceTitle(
             title: "current_server_address".tr().toUpperCase(),
-            icon: (currentEndpoint?.startsWith('https') ?? false)
-                ? Icons.https_outlined
-                : Icons.http_outlined,
+            icon: (currentEndpoint?.startsWith('https') ?? false) ? Icons.https_outlined : Icons.http_outlined,
           ),
         ),
         Padding(
@@ -112,20 +101,12 @@ class NetworkingSettings extends HookConsumerWidget {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: const BorderRadius.all(Radius.circular(16)),
-              side: BorderSide(
-                color: context.colorScheme.surfaceContainerHighest,
-                width: 1,
-              ),
+              side: BorderSide(color: context.colorScheme.surfaceContainerHighest, width: 1),
             ),
             child: ListTile(
               leading: currentEndpoint != null
-                  ? const Icon(
-                      Icons.check_circle_rounded,
-                      color: Colors.green,
-                    )
-                  : const Icon(
-                      Icons.circle_outlined,
-                    ),
+                  ? const Icon(Icons.check_circle_rounded, color: Colors.green)
+                  : const Icon(Icons.circle_outlined),
               title: Text(
                 currentEndpoint ?? "--",
                 style: TextStyle(
@@ -140,9 +121,7 @@ class NetworkingSettings extends HookConsumerWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(top: 10.0),
-          child: Divider(
-            color: context.colorScheme.surfaceContainerHighest,
-          ),
+          child: Divider(color: context.colorScheme.surfaceContainerHighest),
         ),
         SettingsSwitchListTile(
           enabled: true,
@@ -152,35 +131,21 @@ class NetworkingSettings extends HookConsumerWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8, left: 16, bottom: 16),
-          child: NetworkPreferenceTitle(
-            title: "local_network".tr().toUpperCase(),
-            icon: Icons.home_outlined,
-          ),
+          child: NetworkPreferenceTitle(title: "local_network".tr().toUpperCase(), icon: Icons.home_outlined),
         ),
-        LocalNetworkPreference(
-          enabled: featureEnabled.value,
-        ),
+        LocalNetworkPreference(enabled: featureEnabled.value),
         Padding(
           padding: const EdgeInsets.only(top: 32, left: 16, bottom: 16),
-          child: NetworkPreferenceTitle(
-            title: "external_network".tr().toUpperCase(),
-            icon: Icons.dns_outlined,
-          ),
+          child: NetworkPreferenceTitle(title: "external_network".tr().toUpperCase(), icon: Icons.dns_outlined),
         ),
-        ExternalNetworkPreference(
-          enabled: featureEnabled.value,
-        ),
+        ExternalNetworkPreference(enabled: featureEnabled.value),
       ],
     );
   }
 }
 
 class NetworkPreferenceTitle extends StatelessWidget {
-  const NetworkPreferenceTitle({
-    super.key,
-    required this.icon,
-    required this.title,
-  });
+  const NetworkPreferenceTitle({super.key, required this.icon, required this.title});
 
   final IconData icon;
   final String title;
@@ -189,10 +154,7 @@ class NetworkPreferenceTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icon,
-          color: context.colorScheme.onSurface.withAlpha(150),
-        ),
+        Icon(icon, color: context.colorScheme.onSurface.withAlpha(150)),
         const SizedBox(width: 8),
         Text(
           title,
@@ -207,58 +169,37 @@ class NetworkPreferenceTitle extends StatelessWidget {
 }
 
 class NetworkStatusIcon extends StatelessWidget {
-  const NetworkStatusIcon({
-    super.key,
-    required this.status,
-    this.enabled = true,
-  }) : super();
+  const NetworkStatusIcon({super.key, required this.status, this.enabled = true}) : super();
 
   final AuxCheckStatus status;
   final bool enabled;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 200),
-      child: _buildIcon(context),
-    );
+    return AnimatedSwitcher(duration: const Duration(milliseconds: 200), child: _buildIcon(context));
   }
 
   Widget _buildIcon(BuildContext context) => switch (status) {
-        AuxCheckStatus.loading => Padding(
-            padding: const EdgeInsets.only(left: 4.0),
-            child: SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(
-                color: context.primaryColor,
-                strokeWidth: 2,
-                key: const ValueKey('loading'),
-              ),
+    AuxCheckStatus.loading => Padding(
+      padding: const EdgeInsets.only(left: 4.0),
+      child: SizedBox(
+        width: 18,
+        height: 18,
+        child: CircularProgressIndicator(color: context.primaryColor, strokeWidth: 2, key: const ValueKey('loading')),
+      ),
+    ),
+    AuxCheckStatus.valid =>
+      enabled
+          ? const Icon(Icons.check_circle_rounded, color: Colors.green, key: ValueKey('success'))
+          : Icon(
+              Icons.check_circle_rounded,
+              color: context.colorScheme.onSurface.withAlpha(100),
+              key: const ValueKey('success'),
             ),
-          ),
-        AuxCheckStatus.valid => enabled
-            ? const Icon(
-                Icons.check_circle_rounded,
-                color: Colors.green,
-                key: ValueKey('success'),
-              )
-            : Icon(
-                Icons.check_circle_rounded,
-                color: context.colorScheme.onSurface.withAlpha(100),
-                key: const ValueKey('success'),
-              ),
-        AuxCheckStatus.error => enabled
-            ? const Icon(
-                Icons.error_rounded,
-                color: Colors.red,
-                key: ValueKey('error'),
-              )
-            : const Icon(
-                Icons.error_rounded,
-                color: Colors.grey,
-                key: ValueKey('error'),
-              ),
-        _ => const Icon(Icons.circle_outlined, key: ValueKey('unknown')),
-      };
+    AuxCheckStatus.error =>
+      enabled
+          ? const Icon(Icons.error_rounded, color: Colors.red, key: ValueKey('error'))
+          : const Icon(Icons.error_rounded, color: Colors.grey, key: ValueKey('error')),
+    _ => const Icon(Icons.circle_outlined, key: ValueKey('unknown')),
+  };
 }

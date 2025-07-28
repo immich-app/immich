@@ -1,7 +1,6 @@
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
-    as entity;
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart' as entity;
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:isar/isar.dart';
 

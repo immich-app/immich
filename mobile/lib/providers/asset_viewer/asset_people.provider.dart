@@ -17,9 +17,7 @@ class AssetPeopleNotifier extends _$AssetPeopleNotifier {
       return [];
     }
 
-    final list = await ref
-        .watch(assetServiceProvider)
-        .getRemotePeopleOfAsset(asset.remoteId!);
+    final list = await ref.watch(assetServiceProvider).getRemotePeopleOfAsset(asset.remoteId!);
     if (list == null) {
       return [];
     }

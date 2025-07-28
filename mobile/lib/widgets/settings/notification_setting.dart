@@ -12,20 +12,15 @@ import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class NotificationSetting extends HookConsumerWidget {
-  const NotificationSetting({
-    super.key,
-  });
+  const NotificationSetting({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final permissionService = ref.watch(notificationPermissionProvider);
 
-    final sliderValue =
-        useAppSettingsState(AppSettingsEnum.uploadErrorNotificationGracePeriod);
-    final totalProgressValue =
-        useAppSettingsState(AppSettingsEnum.backgroundBackupTotalProgress);
-    final singleProgressValue =
-        useAppSettingsState(AppSettingsEnum.backgroundBackupSingleProgress);
+    final sliderValue = useAppSettingsState(AppSettingsEnum.uploadErrorNotificationGracePeriod);
+    final totalProgressValue = useAppSettingsState(AppSettingsEnum.backgroundBackupTotalProgress);
+    final singleProgressValue = useAppSettingsState(AppSettingsEnum.backgroundBackupSingleProgress);
 
     final hasPermission = permissionService == PermissionStatus.granted;
 
@@ -42,21 +37,14 @@ class NotificationSetting extends HookConsumerWidget {
         builder: (ctx) => AlertDialog(
           content: const Text('notification_permission_dialog_content').tr(),
           actions: [
-            TextButton(
-              child: const Text('cancel').tr(),
-              onPressed: () => ctx.pop(),
-            ),
-            TextButton(
-              onPressed: () => openAppNotificationSettings(ctx),
-              child: const Text('settings').tr(),
-            ),
+            TextButton(child: const Text('cancel').tr(), onPressed: () => ctx.pop()),
+            TextButton(onPressed: () => openAppNotificationSettings(ctx), child: const Text('settings').tr()),
           ],
         ),
       );
     }
 
-    final String formattedValue =
-        _formatSliderValue(sliderValue.value.toDouble());
+    final String formattedValue = _formatSliderValue(sliderValue.value.toDouble());
 
     final notificationSettings = [
       if (!hasPermission)
@@ -65,14 +53,12 @@ class NotificationSetting extends HookConsumerWidget {
           title: 'notification_permission_list_tile_title'.tr(),
           subtileText: 'notification_permission_list_tile_content'.tr(),
           buttonText: 'notification_permission_list_tile_enable_button'.tr(),
-          onButtonTap: () => ref
-              .watch(notificationPermissionProvider.notifier)
-              .requestNotificationPermission()
-              .then((permission) {
-            if (permission == PermissionStatus.permanentlyDenied) {
-              showPermissionsDialog();
-            }
-          }),
+          onButtonTap: () =>
+              ref.watch(notificationPermissionProvider.notifier).requestNotificationPermission().then((permission) {
+                if (permission == PermissionStatus.permanentlyDenied) {
+                  showPermissionsDialog();
+                }
+              }),
         ),
       SettingsSwitchListTile(
         enabled: hasPermission,
@@ -89,8 +75,7 @@ class NotificationSetting extends HookConsumerWidget {
       SettingsSliderListTile(
         enabled: hasPermission,
         valueNotifier: sliderValue,
-        text: 'setting_notifications_notify_failures_grace_period'
-            .tr(namedArgs: {'duration': formattedValue}),
+        text: 'setting_notifications_notify_failures_grace_period'.tr(namedArgs: {'duration': formattedValue}),
         maxValue: 5.0,
         noDivisons: 5,
         label: formattedValue,
@@ -105,8 +90,7 @@ String _formatSliderValue(double v) {
   if (v == 0.0) {
     return 'setting_notifications_notify_immediately'.tr();
   } else if (v == 1.0) {
-    return 'setting_notifications_notify_minutes'
-        .tr(namedArgs: {'count': '30'});
+    return 'setting_notifications_notify_minutes'.tr(namedArgs: {'count': '30'});
   } else if (v == 2.0) {
     return 'setting_notifications_notify_hours'.tr(namedArgs: {'count': '2'});
   } else if (v == 3.0) {

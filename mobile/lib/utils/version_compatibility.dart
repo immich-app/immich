@@ -1,9 +1,4 @@
-String? getVersionCompatibilityMessage(
-  int appMajor,
-  int appMinor,
-  int serverMajor,
-  int serverMinor,
-) {
+String? getVersionCompatibilityMessage(int appMajor, int appMinor, int serverMajor, int serverMinor) {
   if (serverMajor != appMajor) {
     return 'Your app major version is not compatible with the server!';
   }

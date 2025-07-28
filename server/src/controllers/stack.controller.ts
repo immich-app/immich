@@ -6,7 +6,7 @@ import { StackCreateDto, StackResponseDto, StackSearchDto, StackUpdateDto } from
 import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { StackService } from 'src/services/stack.service';
-import { UUIDParamDto } from 'src/validation';
+import { UUIDAssetIDParamDto, UUIDParamDto } from 'src/validation';
 
 @ApiTags('Stacks')
 @Controller('stacks')
@@ -53,5 +53,12 @@ export class StackController {
   @Authenticated({ permission: Permission.StackDelete })
   deleteStack(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
+  }
+
+  @Delete(':id/assets/:assetId')
+  @Authenticated({ permission: Permission.StackUpdate })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeAssetFromStack(@Auth() auth: AuthDto, @Param() dto: UUIDAssetIDParamDto): Promise<void> {
+    return this.service.removeAsset(auth, dto);
   }
 }

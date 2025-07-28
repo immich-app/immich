@@ -9,11 +9,7 @@ enum AssetType {
   audio,
 }
 
-enum AssetState {
-  local,
-  remote,
-  merged,
-}
+enum AssetState { local, remote, merged }
 
 sealed class BaseAsset {
   final String name;
@@ -53,10 +49,8 @@ sealed class BaseAsset {
     return const Duration();
   }
 
-  bool get hasRemote =>
-      storage == AssetState.remote || storage == AssetState.merged;
-  bool get hasLocal =>
-      storage == AssetState.local || storage == AssetState.merged;
+  bool get hasRemote => storage == AssetState.remote || storage == AssetState.merged;
+  bool get hasLocal => storage == AssetState.local || storage == AssetState.merged;
   bool get isLocalOnly => storage == AssetState.local;
   bool get isRemoteOnly => storage == AssetState.remote;
 

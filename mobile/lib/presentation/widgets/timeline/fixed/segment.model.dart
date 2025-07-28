@@ -33,15 +33,13 @@ class FixedSegment extends Segment {
     required super.headerExtent,
     required super.spacing,
     required super.header,
-  })  : assert(tileHeight != 0),
-        mainAxisExtend = tileHeight + spacing;
+  }) : assert(tileHeight != 0),
+       mainAxisExtend = tileHeight + spacing;
 
   @override
   double indexToLayoutOffset(int index) {
     final relativeIndex = index - gridIndex;
-    return relativeIndex < 0
-        ? startOffset
-        : gridOffset + (mainAxisExtend * relativeIndex);
+    return relativeIndex < 0 ? startOffset : gridOffset + (mainAxisExtend * relativeIndex);
   }
 
   @override
@@ -66,12 +64,7 @@ class FixedSegment extends Segment {
     final numberOfAssets = math.min(columnCount, assetCount - assetIndex);
 
     if (index == firstIndex) {
-      return TimelineHeader(
-        bucket: bucket,
-        header: header,
-        height: headerExtent,
-        assetOffset: firstAssetIndex,
-      );
+      return TimelineHeader(bucket: bucket, header: header, height: headerExtent, assetOffset: firstAssetIndex);
     }
 
     return _FixedSegmentRow(
@@ -98,8 +91,7 @@ class _FixedSegmentRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isScrubbing =
-        ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
+    final isScrubbing = ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
     final timelineService = ref.read(timelineServiceProvider);
 
     if (isScrubbing) {
@@ -107,10 +99,7 @@ class _FixedSegmentRow extends ConsumerWidget {
     }
 
     if (timelineService.hasRange(assetIndex, assetCount)) {
-      return _buildAssetRow(
-        context,
-        timelineService.getAssets(assetIndex, assetCount),
-      );
+      return _buildAssetRow(context, timelineService.getAssets(assetIndex, assetCount));
     }
 
     return FutureBuilder<List<BaseAsset>>(
@@ -125,12 +114,7 @@ class _FixedSegmentRow extends ConsumerWidget {
   }
 
   Widget _buildPlaceholder(BuildContext context) {
-    return SegmentBuilder.buildPlaceholder(
-      context,
-      assetCount,
-      size: Size.square(tileHeight),
-      spacing: spacing,
-    );
+    return SegmentBuilder.buildPlaceholder(context, assetCount, size: Size.square(tileHeight), spacing: spacing);
   }
 
   Widget _buildAssetRow(BuildContext context, List<BaseAsset> assets) {
@@ -140,11 +124,7 @@ class _FixedSegmentRow extends ConsumerWidget {
       textDirection: Directionality.of(context),
       children: [
         for (int i = 0; i < assets.length; i++)
-          _AssetTileWidget(
-            key: ValueKey(assets[i].heroTag),
-            asset: assets[i],
-            assetIndex: assetIndex + i,
-          ),
+          _AssetTileWidget(key: ValueKey(assets[i].heroTag), asset: assets[i], assetIndex: assetIndex + i),
       ],
     );
   }
@@ -154,18 +134,9 @@ class _AssetTileWidget extends ConsumerWidget {
   final BaseAsset asset;
   final int assetIndex;
 
-  const _AssetTileWidget({
-    super.key,
-    required this.asset,
-    required this.assetIndex,
-  });
+  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex});
 
-  Future _handleOnTap(
-    BuildContext ctx,
-    WidgetRef ref,
-    int assetIndex,
-    BaseAsset asset,
-  ) async {
+  Future _handleOnTap(BuildContext ctx, WidgetRef ref, int assetIndex, BaseAsset asset, int? heroOffset) async {
     final multiSelectState = ref.read(multiSelectProvider);
 
     if (multiSelectState.forceEnable || multiSelectState.isEnabled) {
@@ -177,6 +148,7 @@ class _AssetTileWidget extends ConsumerWidget {
         AssetViewerRoute(
           initialIndex: assetIndex,
           timelineService: ref.read(timelineServiceProvider),
+          heroOffset: heroOffset,
         ),
       );
     }
@@ -193,11 +165,7 @@ class _AssetTileWidget extends ConsumerWidget {
   }
 
   bool _getLockSelectionStatus(WidgetRef ref) {
-    final lockSelectionAssets = ref.read(
-      multiSelectProvider.select(
-        (state) => state.lockedSelectionAssets,
-      ),
-    );
+    final lockSelectionAssets = ref.read(multiSelectProvider.select((state) => state.lockedSelectionAssets));
 
     if (lockSelectionAssets.isEmpty) {
       return false;
@@ -208,22 +176,20 @@ class _AssetTileWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+
     final lockSelection = _getLockSelectionStatus(ref);
-    final showStorageIndicator = ref.watch(
-      timelineArgsProvider.select((args) => args.showStorageIndicator),
-    );
+    final showStorageIndicator = ref.watch(timelineArgsProvider.select((args) => args.showStorageIndicator));
 
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () => lockSelection
-            ? null
-            : _handleOnTap(context, ref, assetIndex, asset),
-        onLongPress: () =>
-            lockSelection ? null : _handleOnLongPress(ref, asset),
+        onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset),
+        onLongPress: () => lockSelection ? null : _handleOnLongPress(ref, asset),
         child: ThumbnailTile(
           asset,
           lockSelection: lockSelection,
           showStorageIndicator: showStorageIndicator,
+          heroOffset: heroOffset,
         ),
       ),
     );

@@ -31,12 +31,10 @@ class BaseBottomSheet extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<BaseBottomSheet> createState() =>
-      _BaseDraggableScrollableSheetState();
+  ConsumerState<BaseBottomSheet> createState() => _BaseDraggableScrollableSheetState();
 }
 
-class _BaseDraggableScrollableSheetState
-    extends ConsumerState<BaseBottomSheet> {
+class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> {
   late DraggableScrollableController _controller;
 
   @override
@@ -71,14 +69,11 @@ class _BaseDraggableScrollableSheetState
       shouldCloseOnMinExtent: widget.shouldCloseOnMinExtent,
       builder: (BuildContext context, ScrollController scrollController) {
         return Card(
-          color: widget.backgroundColor ??
-              context.colorScheme.surfaceContainerHigh,
+          color: widget.backgroundColor ?? context.colorScheme.surfaceContainerHigh,
           borderOnForeground: false,
           clipBehavior: Clip.antiAlias,
           elevation: 6.0,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-          ),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
           margin: const EdgeInsets.symmetric(horizontal: 0),
           child: CustomScrollView(
             controller: scrollController,
@@ -92,11 +87,7 @@ class _BaseDraggableScrollableSheetState
                     if (widget.actions.isNotEmpty)
                       SizedBox(
                         height: 115,
-                        child: ListView(
-                          shrinkWrap: true,
-                          scrollDirection: Axis.horizontal,
-                          children: widget.actions,
-                        ),
+                        child: ListView(shrinkWrap: true, scrollDirection: Axis.horizontal, children: widget.actions),
                       ),
                     if (widget.actions.isNotEmpty) ...[
                       const Divider(indent: 16, endIndent: 16),

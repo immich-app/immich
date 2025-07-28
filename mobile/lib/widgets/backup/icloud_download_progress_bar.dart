@@ -10,39 +10,24 @@ class IcloudDownloadProgressBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isManualUpload = ref.watch(
-      backupProvider.select(
-        (value) => value.backupProgress == BackUpProgressEnum.manualInProgress,
-      ),
+      backupProvider.select((value) => value.backupProgress == BackUpProgressEnum.manualInProgress),
     );
 
     final isIcloudAsset = isManualUpload
-        ? ref.watch(
-            manualUploadProvider
-                .select((value) => value.currentUploadAsset.isIcloudAsset),
-          )
-        : ref.watch(
-            backupProvider
-                .select((value) => value.currentUploadAsset.isIcloudAsset),
-          );
+        ? ref.watch(manualUploadProvider.select((value) => value.currentUploadAsset.isIcloudAsset))
+        : ref.watch(backupProvider.select((value) => value.currentUploadAsset.isIcloudAsset));
 
     if (!isIcloudAsset) {
       return const SizedBox();
     }
 
-    final iCloudDownloadProgress = ref
-        .watch(backupProvider.select((value) => value.iCloudDownloadProgress));
+    final iCloudDownloadProgress = ref.watch(backupProvider.select((value) => value.iCloudDownloadProgress));
 
     return Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: Row(
         children: [
-          SizedBox(
-            width: 110,
-            child: Text(
-              "iCloud Download",
-              style: context.textTheme.labelSmall,
-            ),
-          ),
+          SizedBox(width: 110, child: Text("iCloud Download", style: context.textTheme.labelSmall)),
           Expanded(
             child: LinearProgressIndicator(
               minHeight: 10.0,
@@ -50,10 +35,7 @@ class IcloudDownloadProgressBar extends ConsumerWidget {
               borderRadius: const BorderRadius.all(Radius.circular(10.0)),
             ),
           ),
-          Text(
-            " ${iCloudDownloadProgress ~/ 1}%",
-            style: const TextStyle(fontSize: 12),
-          ),
+          Text(" ${iCloudDownloadProgress ~/ 1}%", style: const TextStyle(fontSize: 12)),
         ],
       ),
     );

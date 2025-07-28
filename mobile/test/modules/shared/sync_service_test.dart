@@ -57,25 +57,16 @@ void main() {
     final MockExifInfoRepository exifInfoRepository = MockExifInfoRepository();
     final MockIsarUserRepository userRepository = MockIsarUserRepository();
     final MockETagRepository eTagRepository = MockETagRepository();
-    final MockAlbumMediaRepository albumMediaRepository =
-        MockAlbumMediaRepository();
+    final MockAlbumMediaRepository albumMediaRepository = MockAlbumMediaRepository();
     final MockAlbumApiRepository albumApiRepository = MockAlbumApiRepository();
     final MockAppSettingService appSettingService = MockAppSettingService();
-    final MockLocalFilesManagerRepository localFilesManagerRepository =
-        MockLocalFilesManagerRepository();
-    final MockPartnerApiRepository partnerApiRepository =
-        MockPartnerApiRepository();
+    final MockLocalFilesManagerRepository localFilesManagerRepository = MockLocalFilesManagerRepository();
+    final MockPartnerApiRepository partnerApiRepository = MockPartnerApiRepository();
     final MockUserApiRepository userApiRepository = MockUserApiRepository();
     final MockPartnerRepository partnerRepository = MockPartnerRepository();
     final MockUserService userService = MockUserService();
 
-    final owner = UserDto(
-      id: "1",
-      updatedAt: DateTime.now(),
-      email: "a@b.c",
-      name: "first last",
-      isAdmin: false,
-    );
+    final owner = UserDto(id: "1", updatedAt: DateTime.now(), email: "a@b.c", name: "first last", isAdmin: false);
     late SyncService s;
     setUpAll(() async {
       WidgetsFlutterBinding.ensureInitialized();
@@ -84,10 +75,7 @@ void main() {
       db.writeTxnSync(() => db.clearSync());
       await StoreService.init(storeRepository: IsarStoreRepository(db));
       await Store.put(StoreKey.currentUser, owner);
-      await LogService.init(
-        logRepository: IsarLogRepository(db),
-        storeRepository: IsarStoreRepository(db),
-      );
+      await LogService.init(logRepository: IsarLogRepository(db), storeRepository: IsarStoreRepository(db));
     });
     final List<Asset> initialAssets = [
       makeAsset(checksum: "a", remoteId: "0-1"),
@@ -115,36 +103,30 @@ void main() {
         userApiRepository,
       );
       when(() => userService.getMyUser()).thenReturn(owner);
-      when(() => eTagRepository.get(owner.id))
-          .thenAnswer((_) async => ETag(id: owner.id, time: DateTime.now()));
+      when(() => eTagRepository.get(owner.id)).thenAnswer((_) async => ETag(id: owner.id, time: DateTime.now()));
       when(() => eTagRepository.deleteByIds(["1"])).thenAnswer((_) async {});
       when(() => eTagRepository.upsertAll(any())).thenAnswer((_) async {});
       when(() => partnerRepository.getSharedWith()).thenAnswer((_) async => []);
-      when(() => userRepository.getAll(sortBy: SortUserBy.id))
-          .thenAnswer((_) async => [owner]);
+      when(() => userRepository.getAll(sortBy: SortUserBy.id)).thenAnswer((_) async => [owner]);
       when(() => userRepository.getAll()).thenAnswer((_) async => [owner]);
       when(
-        () => assetRepository.getAll(
-          ownerId: owner.id,
-          sortBy: AssetSort.checksum,
-        ),
+        () => assetRepository.getAll(ownerId: owner.id, sortBy: AssetSort.checksum),
       ).thenAnswer((_) async => initialAssets);
-      when(() => assetRepository.getAllByOwnerIdChecksum(any(), any()))
-          .thenAnswer((_) async => [initialAssets[3], null, null]);
+      when(
+        () => assetRepository.getAllByOwnerIdChecksum(any(), any()),
+      ).thenAnswer((_) async => [initialAssets[3], null, null]);
       when(() => assetRepository.updateAll(any())).thenAnswer((_) async => []);
       when(() => assetRepository.deleteByIds(any())).thenAnswer((_) async {});
-      when(() => exifInfoRepository.updateAll(any()))
-          .thenAnswer((_) async => []);
-      when(() => assetRepository.transaction<void>(any())).thenAnswer(
-        (call) => (call.positionalArguments.first as Function).call(),
-      );
-      when(() => assetRepository.transaction<Null>(any())).thenAnswer(
-        (call) => (call.positionalArguments.first as Function).call(),
-      );
+      when(() => exifInfoRepository.updateAll(any())).thenAnswer((_) async => []);
+      when(
+        () => assetRepository.transaction<void>(any()),
+      ).thenAnswer((call) => (call.positionalArguments.first as Function).call());
+      when(
+        () => assetRepository.transaction<Null>(any()),
+      ).thenAnswer((call) => (call.positionalArguments.first as Function).call());
       when(() => userApiRepository.getAll()).thenAnswer((_) async => [owner]);
       registerFallbackValue(Direction.sharedByMe);
-      when(() => partnerApiRepository.getAll(any()))
-          .thenAnswer((_) async => []);
+      when(() => partnerApiRepository.getAll(any())).thenAnswer((_) async => []);
     });
     test('test inserting existing assets', () async {
       final List<Asset> remoteAssets = [
@@ -177,10 +159,7 @@ void main() {
       );
       expect(c1, isTrue);
       final updatedAsset = initialAssets[3].updatedCopy(remoteAssets[3]);
-      verify(
-        () => assetRepository
-            .updateAll([remoteAssets[4], remoteAssets[5], updatedAsset]),
-      );
+      verify(() => assetRepository.updateAll([remoteAssets[4], remoteAssets[5], updatedAsset]));
     });
 
     test('test syncing duplicate assets', () async {
@@ -199,10 +178,7 @@ void main() {
       );
       expect(c1, isTrue);
       when(
-        () => assetRepository.getAll(
-          ownerId: owner.id,
-          sortBy: AssetSort.checksum,
-        ),
+        () => assetRepository.getAll(ownerId: owner.id, sortBy: AssetSort.checksum),
       ).thenAnswer((_) async => remoteAssets);
       final bool c2 = await s.syncRemoteAssetsToDb(
         users: [owner],
@@ -212,10 +188,7 @@ void main() {
       expect(c2, isFalse);
       final currentState = [...remoteAssets];
       when(
-        () => assetRepository.getAll(
-          ownerId: owner.id,
-          sortBy: AssetSort.checksum,
-        ),
+        () => assetRepository.getAll(ownerId: owner.id, sortBy: AssetSort.checksum),
       ).thenAnswer((_) async => currentState);
       remoteAssets.removeAt(4);
       final bool c3 = await s.syncRemoteAssetsToDb(
@@ -236,19 +209,19 @@ void main() {
 
     test('test efficient sync', () async {
       when(
-        () => assetRepository.deleteAllByRemoteId(
-          [initialAssets[1].remoteId!, initialAssets[2].remoteId!],
-          state: AssetState.remote,
-        ),
+        () => assetRepository.deleteAllByRemoteId([
+          initialAssets[1].remoteId!,
+          initialAssets[2].remoteId!,
+        ], state: AssetState.remote),
       ).thenAnswer((_) async {
         return;
       });
       when(
-        () => assetRepository
-            .getAllByRemoteId(["2-1", "1-1"], state: AssetState.merged),
+        () => assetRepository.getAllByRemoteId(["2-1", "1-1"], state: AssetState.merged),
       ).thenAnswer((_) async => [initialAssets[2]]);
-      when(() => assetRepository.getAllByOwnerIdChecksum(any(), any()))
-          .thenAnswer((_) async => [initialAssets[0], null, null]); //afg
+      when(
+        () => assetRepository.getAllByOwnerIdChecksum(any(), any()),
+      ).thenAnswer((_) async => [initialAssets[0], null, null]); //afg
       final List<Asset> toUpsert = [
         makeAsset(checksum: "a", remoteId: "0-1"), // changed
         makeAsset(checksum: "f", remoteId: "0-2"), // new
@@ -271,18 +244,11 @@ void main() {
       test('test upsert with EXIF data', () async {
         final assets = [AssetStub.image1, AssetStub.image2];
 
-        expect(
-          assets.map((a) => a.exifInfo?.assetId),
-          List.filled(assets.length, null),
-        );
+        expect(assets.map((a) => a.exifInfo?.assetId), List.filled(assets.length, null));
         await s.upsertAssetsWithExif(assets);
         verify(
           () => exifInfoRepository.updateAll(
-            any(
-              that: containsAll(
-                assets.map((a) => a.exifInfo!.copyWith(assetId: a.id)),
-              ),
-            ),
+            any(that: containsAll(assets.map((a) => a.exifInfo!.copyWith(assetId: a.id)))),
           ),
         );
         expect(assets.map((a) => a.exifInfo?.assetId), assets.map((a) => a.id));
@@ -291,8 +257,4 @@ void main() {
   });
 }
 
-Future<(List<Asset>?, List<String>?)> _failDiff(
-  List<UserDto> user,
-  DateTime time,
-) =>
-    Future.value((null, null));
+Future<(List<Asset>?, List<String>?)> _failDiff(List<UserDto> user, DateTime time) => Future.value((null, null));

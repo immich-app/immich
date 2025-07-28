@@ -31,8 +31,7 @@ class _AlbumSortHandlers {
 
   static const AlbumSortFn assetCount = _sortByAssetCount;
   static List<Album> _sortByAssetCount(List<Album> albums, bool isReverse) {
-    final sorted =
-        albums.sorted((a, b) => a.assetCount.compareTo(b.assetCount));
+    final sorted = albums.sorted((a, b) => a.assetCount.compareTo(b.assetCount));
     return (isReverse ? sorted.reversed : sorted).toList();
   }
 
@@ -76,22 +75,10 @@ class _AlbumSortHandlers {
 enum AlbumSortMode {
   title(1, "library_page_sort_title", _AlbumSortHandlers.title),
   assetCount(4, "library_page_sort_asset_count", _AlbumSortHandlers.assetCount),
-  lastModified(
-    3,
-    "library_page_sort_last_modified",
-    _AlbumSortHandlers.lastModified,
-  ),
+  lastModified(3, "library_page_sort_last_modified", _AlbumSortHandlers.lastModified),
   created(0, "library_page_sort_created", _AlbumSortHandlers.created),
-  mostRecent(
-    2,
-    "sort_recent",
-    _AlbumSortHandlers.mostRecent,
-  ),
-  mostOldest(
-    5,
-    "sort_oldest",
-    _AlbumSortHandlers.mostOldest,
-  );
+  mostRecent(2, "sort_recent", _AlbumSortHandlers.mostRecent),
+  mostOldest(5, "sort_oldest", _AlbumSortHandlers.mostOldest);
 
   final int storeIndex;
   final String label;
@@ -104,21 +91,13 @@ enum AlbumSortMode {
 class AlbumSortByOptions extends _$AlbumSortByOptions {
   @override
   AlbumSortMode build() {
-    final sortOpt = ref
-        .watch(appSettingsServiceProvider)
-        .getSetting(AppSettingsEnum.selectedAlbumSortOrder);
-    return AlbumSortMode.values.firstWhere(
-      (e) => e.storeIndex == sortOpt,
-      orElse: () => AlbumSortMode.title,
-    );
+    final sortOpt = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.selectedAlbumSortOrder);
+    return AlbumSortMode.values.firstWhere((e) => e.storeIndex == sortOpt, orElse: () => AlbumSortMode.title);
   }
 
   void changeSortMode(AlbumSortMode sortOption) {
     state = sortOption;
-    ref.watch(appSettingsServiceProvider).setSetting(
-          AppSettingsEnum.selectedAlbumSortOrder,
-          sortOption.storeIndex,
-        );
+    ref.watch(appSettingsServiceProvider).setSetting(AppSettingsEnum.selectedAlbumSortOrder, sortOption.storeIndex);
   }
 }
 
@@ -126,15 +105,11 @@ class AlbumSortByOptions extends _$AlbumSortByOptions {
 class AlbumSortOrder extends _$AlbumSortOrder {
   @override
   bool build() {
-    return ref
-        .watch(appSettingsServiceProvider)
-        .getSetting(AppSettingsEnum.selectedAlbumSortReverse);
+    return ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.selectedAlbumSortReverse);
   }
 
   void changeSortDirection(bool isReverse) {
     state = isReverse;
-    ref
-        .watch(appSettingsServiceProvider)
-        .setSetting(AppSettingsEnum.selectedAlbumSortReverse, isReverse);
+    ref.watch(appSettingsServiceProvider).setSetting(AppSettingsEnum.selectedAlbumSortReverse, isReverse);
   }
 }

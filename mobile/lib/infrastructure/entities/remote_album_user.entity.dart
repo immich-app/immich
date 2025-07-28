@@ -7,11 +7,9 @@ import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 class RemoteAlbumUserEntity extends Table with DriftDefaultsMixin {
   const RemoteAlbumUserEntity();
 
-  TextColumn get albumId =>
-      text().references(RemoteAlbumEntity, #id, onDelete: KeyAction.cascade)();
+  TextColumn get albumId => text().references(RemoteAlbumEntity, #id, onDelete: KeyAction.cascade)();
 
-  TextColumn get userId =>
-      text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
+  TextColumn get userId => text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
   IntColumn get role => intEnum<AlbumUserRole>()();
 

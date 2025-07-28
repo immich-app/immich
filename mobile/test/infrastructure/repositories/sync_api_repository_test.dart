@@ -39,23 +39,19 @@ void main() {
     mockSyncApi = MockSyncApi();
     mockHttpClient = MockHttpClient();
     mockStreamedResponse = MockStreamedResponse();
-    responseStreamController =
-        StreamController<List<int>>.broadcast(sync: true);
+    responseStreamController = StreamController<List<int>>.broadcast(sync: true);
 
     registerFallbackValue(FakeBaseRequest());
 
     when(() => mockApiService.apiClient).thenReturn(mockApiClient);
     when(() => mockApiService.syncApi).thenReturn(mockSyncApi);
     when(() => mockApiClient.basePath).thenReturn('http://demo.immich.app/api');
-    when(() => mockApiService.applyToParams(any(), any()))
-        .thenAnswer((_) async => {});
+    when(() => mockApiService.applyToParams(any(), any())).thenAnswer((_) async => {});
 
     // Mock HTTP client behavior
-    when(() => mockHttpClient.send(any()))
-        .thenAnswer((_) async => mockStreamedResponse);
+    when(() => mockHttpClient.send(any())).thenAnswer((_) async => mockStreamedResponse);
     when(() => mockStreamedResponse.statusCode).thenReturn(200);
-    when(() => mockStreamedResponse.stream)
-        .thenAnswer((_) => http.ByteStream(responseStreamController.stream));
+    when(() => mockStreamedResponse.stream).thenAnswer((_) => http.ByteStream(responseStreamController.stream));
     when(() => mockHttpClient.close()).thenAnswer((_) => {});
 
     sut = SyncApiRepository(mockApiService);
@@ -67,14 +63,8 @@ void main() {
     }
   });
 
-  Future<void> streamChanges(
-    Function(List<SyncEvent>, Function() abort) onDataCallback,
-  ) {
-    return sut.streamChanges(
-      onDataCallback,
-      batchSize: testBatchSize,
-      httpClient: mockHttpClient,
-    );
+  Future<void> streamChanges(Function(List<SyncEvent>, Function() abort) onDataCallback) {
+    return sut.streamChanges(onDataCallback, batchSize: testBatchSize, httpClient: mockHttpClient);
   }
 
   test('streamChanges stops processing stream when abort is called', () async {
@@ -100,11 +90,7 @@ void main() {
     for (int i = 0; i < testBatchSize; i++) {
       responseStreamController.add(
         utf8.encode(
-          _createJsonLine(
-            SyncEntityType.userDeleteV1.toString(),
-            SyncUserDeleteV1(userId: "user$i").toJson(),
-            'ack$i',
-          ),
+          _createJsonLine(SyncEntityType.userDeleteV1.toString(), SyncUserDeleteV1(userId: "user$i").toJson(), 'ack$i'),
         ),
       );
     }
@@ -112,11 +98,7 @@ void main() {
     for (int i = testBatchSize; i < testBatchSize * 2; i++) {
       responseStreamController.add(
         utf8.encode(
-          _createJsonLine(
-            SyncEntityType.userDeleteV1.toString(),
-            SyncUserDeleteV1(userId: "user$i").toJson(),
-            'ack$i',
-          ),
+          _createJsonLine(SyncEntityType.userDeleteV1.toString(), SyncUserDeleteV1(userId: "user$i").toJson(), 'ack$i'),
         ),
       );
     }
@@ -130,113 +112,91 @@ void main() {
     verify(() => mockHttpClient.close()).called(1);
   });
 
-  test(
-    'streamChanges does not process remaining lines in finally block if aborted',
-    () async {
-      int onDataCallCount = 0;
-      bool abortWasCalledInCallback = false;
+  test('streamChanges does not process remaining lines in finally block if aborted', () async {
+    int onDataCallCount = 0;
+    bool abortWasCalledInCallback = false;
 
-      onDataCallback(List<SyncEvent> events, Function() abort) {
-        onDataCallCount++;
-        if (onDataCallCount == 1) {
-          abort();
-          abortWasCalledInCallback = true;
-        } else {
-          fail("onData called more than once after abort was invoked");
-        }
+    onDataCallback(List<SyncEvent> events, Function() abort) {
+      onDataCallCount++;
+      if (onDataCallCount == 1) {
+        abort();
+        abortWasCalledInCallback = true;
+      } else {
+        fail("onData called more than once after abort was invoked");
       }
+    }
 
-      final streamChangesFuture = streamChanges(onDataCallback);
+    final streamChangesFuture = streamChanges(onDataCallback);
 
-      await pumpEventQueue();
+    await pumpEventQueue();
 
-      for (int i = 0; i < testBatchSize; i++) {
-        responseStreamController.add(
-          utf8.encode(
-            _createJsonLine(
-              SyncEntityType.userDeleteV1.toString(),
-              SyncUserDeleteV1(userId: "user$i").toJson(),
-              'ack$i',
-            ),
-          ),
-        );
-      }
-
-      // emit a single event to skip batching and trigger finally
+    for (int i = 0; i < testBatchSize; i++) {
       responseStreamController.add(
         utf8.encode(
-          _createJsonLine(
-            SyncEntityType.userDeleteV1.toString(),
-            SyncUserDeleteV1(userId: "user100").toJson(),
-            'ack100',
-          ),
+          _createJsonLine(SyncEntityType.userDeleteV1.toString(), SyncUserDeleteV1(userId: "user$i").toJson(), 'ack$i'),
         ),
       );
+    }
 
-      await responseStreamController.close();
-      await expectLater(streamChangesFuture, completes);
+    // emit a single event to skip batching and trigger finally
+    responseStreamController.add(
+      utf8.encode(
+        _createJsonLine(SyncEntityType.userDeleteV1.toString(), SyncUserDeleteV1(userId: "user100").toJson(), 'ack100'),
+      ),
+    );
 
-      expect(onDataCallCount, 1);
-      expect(abortWasCalledInCallback, isTrue);
-      verify(() => mockHttpClient.close()).called(1);
-    },
-  );
+    await responseStreamController.close();
+    await expectLater(streamChangesFuture, completes);
 
-  test(
-    'streamChanges processes remaining lines in finally block if not aborted',
-    () async {
-      int onDataCallCount = 0;
-      List<SyncEvent> receivedEventsBatch1 = [];
-      List<SyncEvent> receivedEventsBatch2 = [];
+    expect(onDataCallCount, 1);
+    expect(abortWasCalledInCallback, isTrue);
+    verify(() => mockHttpClient.close()).called(1);
+  });
 
-      onDataCallback(List<SyncEvent> events, Function() _) {
-        onDataCallCount++;
-        if (onDataCallCount == 1) {
-          receivedEventsBatch1 = events;
-        } else if (onDataCallCount == 2) {
-          receivedEventsBatch2 = events;
-        } else {
-          fail("onData called more than expected");
-        }
+  test('streamChanges processes remaining lines in finally block if not aborted', () async {
+    int onDataCallCount = 0;
+    List<SyncEvent> receivedEventsBatch1 = [];
+    List<SyncEvent> receivedEventsBatch2 = [];
+
+    onDataCallback(List<SyncEvent> events, Function() _) {
+      onDataCallCount++;
+      if (onDataCallCount == 1) {
+        receivedEventsBatch1 = events;
+      } else if (onDataCallCount == 2) {
+        receivedEventsBatch2 = events;
+      } else {
+        fail("onData called more than expected");
       }
+    }
 
-      final streamChangesFuture = streamChanges(onDataCallback);
+    final streamChangesFuture = streamChanges(onDataCallback);
 
-      await pumpEventQueue();
+    await pumpEventQueue();
 
-      // Batch 1
-      for (int i = 0; i < testBatchSize; i++) {
-        responseStreamController.add(
-          utf8.encode(
-            _createJsonLine(
-              SyncEntityType.userDeleteV1.toString(),
-              SyncUserDeleteV1(userId: "user$i").toJson(),
-              'ack$i',
-            ),
-          ),
-        );
-      }
-
-      // Partial Batch 2
+    // Batch 1
+    for (int i = 0; i < testBatchSize; i++) {
       responseStreamController.add(
         utf8.encode(
-          _createJsonLine(
-            SyncEntityType.userDeleteV1.toString(),
-            SyncUserDeleteV1(userId: "user100").toJson(),
-            'ack100',
-          ),
+          _createJsonLine(SyncEntityType.userDeleteV1.toString(), SyncUserDeleteV1(userId: "user$i").toJson(), 'ack$i'),
         ),
       );
+    }
 
-      await responseStreamController.close();
-      await expectLater(streamChangesFuture, completes);
+    // Partial Batch 2
+    responseStreamController.add(
+      utf8.encode(
+        _createJsonLine(SyncEntityType.userDeleteV1.toString(), SyncUserDeleteV1(userId: "user100").toJson(), 'ack100'),
+      ),
+    );
 
-      expect(onDataCallCount, 2);
-      expect(receivedEventsBatch1.length, testBatchSize);
-      expect(receivedEventsBatch2.length, 1);
-      verify(() => mockHttpClient.close()).called(1);
-    },
-  );
+    await responseStreamController.close();
+    await expectLater(streamChangesFuture, completes);
+
+    expect(onDataCallCount, 2);
+    expect(receivedEventsBatch1.length, testBatchSize);
+    expect(receivedEventsBatch2.length, 1);
+    verify(() => mockHttpClient.close()).called(1);
+  });
 
   test('streamChanges handles stream error gracefully', () async {
     final streamError = Exception("Network Error");
@@ -252,11 +212,7 @@ void main() {
 
     responseStreamController.add(
       utf8.encode(
-        _createJsonLine(
-          SyncEntityType.userDeleteV1.toString(),
-          SyncUserDeleteV1(userId: "user1").toJson(),
-          'ack1',
-        ),
+        _createJsonLine(SyncEntityType.userDeleteV1.toString(), SyncUserDeleteV1(userId: "user1").toJson(), 'ack1'),
       ),
     );
 
@@ -270,8 +226,7 @@ void main() {
   test('streamChanges throws ApiException on non-200 status code', () async {
     when(() => mockStreamedResponse.statusCode).thenReturn(401);
     final errorBodyController = StreamController<List<int>>(sync: true);
-    when(() => mockStreamedResponse.stream)
-        .thenAnswer((_) => http.ByteStream(errorBodyController.stream));
+    when(() => mockStreamedResponse.stream).thenAnswer((_) => http.ByteStream(errorBodyController.stream));
 
     int onDataCallCount = 0;
 

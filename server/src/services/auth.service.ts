@@ -6,7 +6,7 @@ import { IncomingHttpHeaders } from 'node:http';
 import { join } from 'node:path';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { UserAdmin } from 'src/database';
+import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
 import {
   AuthDto,
   AuthStatusResponseDto,
@@ -174,7 +174,8 @@ export class AuthService extends BaseService {
 
   async authenticate({ headers, queryParams, metadata }: ValidateRequest): Promise<AuthDto> {
     const authDto = await this.validate({ headers, queryParams });
-    const { adminRoute, sharedLinkRoute, permission, uri } = metadata;
+    const { adminRoute, sharedLinkRoute, uri } = metadata;
+    const requestedPermission = metadata.permission ?? Permission.All;
 
     if (!authDto.user.isAdmin && adminRoute) {
       this.logger.warn(`Denied access to admin only route: ${uri}`);
@@ -186,8 +187,8 @@ export class AuthService extends BaseService {
       throw new ForbiddenException('Forbidden');
     }
 
-    if (authDto.apiKey && permission && !isGranted({ requested: [permission], current: authDto.apiKey.permissions })) {
-      throw new ForbiddenException(`Missing required permission: ${permission}`);
+    if (authDto.apiKey && !isGranted({ requested: [requestedPermission], current: authDto.apiKey.permissions })) {
+      throw new ForbiddenException(`Missing required permission: ${requestedPermission}`);
     }
 
     return authDto;
@@ -195,6 +196,7 @@ export class AuthService extends BaseService {
 
   private async validate({ headers, queryParams }: Omit<ValidateRequest, 'metadata'>): Promise<AuthDto> {
     const shareKey = (headers[ImmichHeader.SharedLinkKey] || queryParams[ImmichQuery.SharedLinkKey]) as string;
+    const shareSlug = (headers[ImmichHeader.SharedLinkSlug] || queryParams[ImmichQuery.SharedLinkSlug]) as string;
     const session = (headers[ImmichHeader.UserToken] ||
       headers[ImmichHeader.SessionToken] ||
       queryParams[ImmichQuery.SessionKey] ||
@@ -203,7 +205,11 @@ export class AuthService extends BaseService {
     const apiKey = (headers[ImmichHeader.ApiKey] || queryParams[ImmichQuery.ApiKey]) as string;
 
     if (shareKey) {
-      return this.validateSharedLink(shareKey);
+      return this.validateSharedLinkKey(shareKey);
+    }
+
+    if (shareSlug) {
+      return this.validateSharedLinkSlug(shareSlug);
     }
 
     if (session) {
@@ -402,18 +408,33 @@ export class AuthService extends BaseService {
     return cookies[ImmichCookie.OAuthCodeVerifier] || null;
   }
 
-  async validateSharedLink(key: string | string[]): Promise<AuthDto> {
+  async validateSharedLinkKey(key: string | string[]): Promise<AuthDto> {
     key = Array.isArray(key) ? key[0] : key;
 
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
     const sharedLink = await this.sharedLinkRepository.getByKey(bytes);
-    if (sharedLink?.user && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date())) {
-      return {
-        user: sharedLink.user,
-        sharedLink,
-      };
+    if (!this.isValidSharedLink(sharedLink)) {
+      throw new UnauthorizedException('Invalid share key');
     }
-    throw new UnauthorizedException('Invalid share key');
+
+    return { user: sharedLink.user, sharedLink };
+  }
+
+  async validateSharedLinkSlug(slug: string | string[]): Promise<AuthDto> {
+    slug = Array.isArray(slug) ? slug[0] : slug;
+
+    const sharedLink = await this.sharedLinkRepository.getBySlug(slug);
+    if (!this.isValidSharedLink(sharedLink)) {
+      throw new UnauthorizedException('Invalid share slug');
+    }
+
+    return { user: sharedLink.user, sharedLink };
+  }
+
+  private isValidSharedLink(
+    sharedLink?: AuthSharedLink & { user: AuthUser | null },
+  ): sharedLink is AuthSharedLink & { user: AuthUser } {
+    return !!sharedLink?.user && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date());
   }
 
   private async validateApiKey(key: string): Promise<AuthDto> {

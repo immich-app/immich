@@ -10,14 +10,11 @@ import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'asset_list_layout_settings.dart';
 
 class AssetListSettings extends HookConsumerWidget {
-  const AssetListSettings({
-    super.key,
-  });
+  const AssetListSettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final showStorageIndicator =
-        useAppSettingsState(AppSettingsEnum.storageIndicator);
+    final showStorageIndicator = useAppSettingsState(AppSettingsEnum.storageIndicator);
 
     final assetListSetting = [
       SettingsSwitchListTile(
@@ -29,9 +26,6 @@ class AssetListSettings extends HookConsumerWidget {
       const GroupSettings(),
     ];
 
-    return SettingsSubPageScaffold(
-      settings: assetListSetting,
-      showDivider: true,
-    );
+    return SettingsSubPageScaffold(settings: assetListSetting, showDivider: true);
   }
 }
