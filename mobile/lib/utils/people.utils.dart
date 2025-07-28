@@ -43,8 +43,8 @@ Future<String?> showNameEditModal(BuildContext context, DriftPerson person) {
   );
 }
 
-Future<String?> showBirthdayEditModal(BuildContext context, DriftPerson person) {
-  return showDialog<String?>(
+Future<DateTime?> showBirthdayEditModal(BuildContext context, DriftPerson person) {
+  return showDialog<DateTime?>(
     context: context,
     useRootNavigator: false,
     builder: (BuildContext context) {

@@ -28,11 +28,11 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
   void saveBirthday() async {
     final payload = UpdateBirthdayPayload(widget.person.id, _selectedDate);
 
-    print("Saving birthday for ${widget.person.name}: $_selectedDate");
-    // final result = await ref.read(driftUpdatePersonNameProvider(payload).future);
-    // if (result != 0) {
-    //   context.pop<String>(newName);
-    // }
+    final result = await ref.read(driftUpdatePersonBirthdayProvider(payload).future);
+
+    if (result != 0) {
+      context.pop<DateTime>(_selectedDate);
+    }
   }
 
   @override
@@ -47,6 +47,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
         height: 300,
         child: ClipRRect(
           borderRadius: const BorderRadius.all(Radius.circular(16.0)),
+
           child: ScrollDatePicker(
             options: DatePickerOptions(
               backgroundColor: context.colorScheme.surfaceContainerHigh,
@@ -69,6 +70,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
             ),
             selectedDate: _selectedDate,
             locale: context.locale,
+            minimumDate: DateTime(1800, 1, 1),
             onDateTimeChanged: (DateTime value) {
               setState(() {
                 _selectedDate = value;

@@ -35,7 +35,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("add_a_name", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+      title: const Text("edit_name", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
       content: SingleChildScrollView(
         child: TextFormField(
           controller: _formController,

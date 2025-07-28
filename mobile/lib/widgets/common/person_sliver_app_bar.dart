@@ -20,10 +20,17 @@ import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class PersonSliverAppBar extends ConsumerStatefulWidget {
-  const PersonSliverAppBar({super.key, required this.person, required this.onNameTap, required this.onShowOptions});
+  const PersonSliverAppBar({
+    super.key,
+    required this.person,
+    required this.onNameTap,
+    required this.onShowOptions,
+    required this.onBirthdayTap,
+  });
 
   final DriftPerson person;
   final VoidCallback onNameTap;
+  final VoidCallback onBirthdayTap;
   final VoidCallback onShowOptions;
 
   @override
@@ -119,6 +126,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
                     scrollProgress: scrollProgress,
                     person: widget.person,
                     onNameTap: widget.onNameTap,
+                    onBirthdayTap: widget.onBirthdayTap,
                   ),
                 );
               },
@@ -131,8 +139,14 @@ class _ExpandedBackground extends ConsumerStatefulWidget {
   final double scrollProgress;
   final DriftPerson person;
   final VoidCallback onNameTap;
+  final VoidCallback onBirthdayTap;
 
-  const _ExpandedBackground({required this.scrollProgress, required this.person, required this.onNameTap});
+  const _ExpandedBackground({
+    required this.scrollProgress,
+    required this.person,
+    required this.onNameTap,
+    required this.onBirthdayTap,
+  });
 
   @override
   ConsumerState<_ExpandedBackground> createState() => _ExpandedBackgroundState();
@@ -250,8 +264,9 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                                 : Text(
                                     'add_a_name'.tr(),
                                     style: context.textTheme.titleLarge?.copyWith(
-                                      color: Colors.grey[200],
+                                      color: Colors.grey[400],
                                       fontSize: 36,
+                                      decoration: TextDecoration.underline,
                                     ),
                                   ),
                           ),
@@ -259,22 +274,36 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                       ),
                       AnimatedContainer(duration: const Duration(milliseconds: 300), child: const _ItemCountText()),
                       const SizedBox(height: 8),
-                      if (widget.person.birthDate != null)
-                        Row(
+                      GestureDetector(
+                        onTap: widget.onBirthdayTap,
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Icon(Icons.cake_rounded, color: Colors.white, size: 14),
                             const SizedBox(width: 4),
-                            Text(
-                              "${DateFormat.yMMMd(context.locale.toString()).format(widget.person.birthDate!)} (${formatAge(widget.person.birthDate!, DateTime.now())})",
-                              style: context.textTheme.labelLarge?.copyWith(
-                                color: Colors.white,
-                                height: 1.2,
-                                fontSize: 14,
+
+                            if (widget.person.birthDate != null)
+                              Text(
+                                "${DateFormat.yMMMd(context.locale.toString()).format(widget.person.birthDate!)} (${formatAge(widget.person.birthDate!, DateTime.now())})",
+                                style: context.textTheme.labelLarge?.copyWith(
+                                  color: Colors.white,
+                                  height: 1.2,
+                                  fontSize: 14,
+                                ),
+                              )
+                            else
+                              Text(
+                                'add_birthday'.tr(),
+                                style: context.textTheme.labelLarge?.copyWith(
+                                  color: Colors.grey[400],
+                                  height: 1.2,
+                                  fontSize: 14,
+                                  decoration: TextDecoration.underline,
+                                ),
                               ),
-                            ),
                           ],
                         ),
+                      ),
                     ],
                   ),
                 ),

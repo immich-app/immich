@@ -40,13 +40,13 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
   }
 
   Future<void> handleEditBirthday(BuildContext context) async {
-    final newName = await showBirthdayEditModal(context, _person);
+    final birthday = await showBirthdayEditModal(context, _person);
 
-    // if (newName != null && newName.isNotEmpty) {
-    //   setState(() {
-    //     _person = _person.copyWith(name: newName);
-    //   });
-    // }
+    if (birthday != null) {
+      setState(() {
+        _person = _person.copyWith(birthDate: birthday);
+      });
+    }
   }
 
   void showOptionSheet(BuildContext context) {
@@ -56,8 +56,14 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
       isScrollControlled: false,
       builder: (context) {
         return PersonOptionSheet(
-          onEditName: () => handleEditName(context),
-          onEditBirthday: () => handleEditBirthday(context),
+          onEditName: () async {
+            await handleEditName(context);
+            context.pop();
+          },
+          onEditBirthday: () async {
+            await handleEditBirthday(context);
+            context.pop();
+          },
         );
       },
     );
@@ -82,6 +88,7 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
         appBar: PersonSliverAppBar(
           person: _person,
           onNameTap: () => handleEditName(context),
+          onBirthdayTap: () => handleEditBirthday(context),
           onShowOptions: () => showOptionSheet(context),
         ),
       ),
