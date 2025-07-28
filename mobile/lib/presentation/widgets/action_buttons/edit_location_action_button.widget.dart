@@ -25,10 +25,7 @@ class EditLocationActionButton extends ConsumerWidget {
 
     ref.read(multiSelectProvider.notifier).reset();
 
-    final successMessage = 'edit_location_action_prompt'.t(
-      context: context,
-      args: {'count': result.count.toString()},
-    );
+    final successMessage = 'edit_location_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 
     if (context.mounted) {
       ImmichToast.show(

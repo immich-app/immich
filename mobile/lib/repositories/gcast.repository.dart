@@ -33,19 +33,13 @@ class GCastRepository {
     });
 
     // open the default receiver
-    sendMessage(CastSession.kNamespaceReceiver, {
-      'type': 'LAUNCH',
-      'appId': 'CC1AD845',
-    });
+    sendMessage(CastSession.kNamespaceReceiver, {'type': 'LAUNCH', 'appId': 'CC1AD845'});
   }
 
   Future<void> disconnect() async {
     final sessionID = getSessionId();
 
-    sendMessage(CastSession.kNamespaceReceiver, {
-      'type': "STOP",
-      "sessionId": sessionID,
-    });
+    sendMessage(CastSession.kNamespaceReceiver, {'type': "STOP", "sessionId": sessionID});
 
     // wait 500ms to ensure the stop command is processed
     await Future.delayed(const Duration(milliseconds: 500));

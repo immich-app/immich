@@ -17,10 +17,7 @@ class BackupErrorChip extends ConsumerWidget {
     }
 
     return ActionChip(
-      avatar: const Icon(
-        Icons.info,
-        color: red400,
-      ),
+      avatar: const Icon(Icons.info, color: red400),
       elevation: 1,
       visualDensity: VisualDensity.compact,
       label: const BackupErrorChipText(),

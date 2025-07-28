@@ -5,9 +5,7 @@ import 'package:immich_mobile/infrastructure/repositories/local_album.repository
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 
 final backupAlbumProvider = StateNotifierProvider<BackupAlbumNotifier, List<LocalAlbum>>(
-  (ref) => BackupAlbumNotifier(
-    ref.watch(localAlbumServiceProvider),
-  ),
+  (ref) => BackupAlbumNotifier(ref.watch(localAlbumServiceProvider)),
 );
 
 class BackupAlbumNotifier extends StateNotifier<List<LocalAlbum>> {

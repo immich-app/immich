@@ -22,23 +22,14 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
-enum PendingAction {
-  assetDelete,
-  assetUploaded,
-  assetHidden,
-  assetTrash,
-}
+enum PendingAction { assetDelete, assetUploaded, assetHidden, assetTrash }
 
 class PendingChange {
   final String id;
   final PendingAction action;
   final dynamic value;
 
-  const PendingChange(
-    this.id,
-    this.action,
-    this.value,
-  );
+  const PendingChange(this.id, this.action, this.value);
 
   @override
   String toString() => 'PendingChange(id: $id, action: $action, value: $value)';
@@ -59,17 +50,9 @@ class WebsocketState {
   final bool isConnected;
   final List<PendingChange> pendingChanges;
 
-  const WebsocketState({
-    this.socket,
-    required this.isConnected,
-    required this.pendingChanges,
-  });
+  const WebsocketState({this.socket, required this.isConnected, required this.pendingChanges});
 
-  WebsocketState copyWith({
-    Socket? socket,
-    bool? isConnected,
-    List<PendingChange>? pendingChanges,
-  }) {
+  WebsocketState copyWith({Socket? socket, bool? isConnected, List<PendingChange>? pendingChanges}) {
     return WebsocketState(
       socket: socket ?? this.socket,
       isConnected: isConnected ?? this.isConnected,
@@ -92,14 +75,7 @@ class WebsocketState {
 }
 
 class WebsocketNotifier extends StateNotifier<WebsocketState> {
-  WebsocketNotifier(this._ref)
-      : super(
-          const WebsocketState(
-            socket: null,
-            isConnected: false,
-            pendingChanges: [],
-          ),
-        );
+  WebsocketNotifier(this._ref) : super(const WebsocketState(socket: null, isConnected: false, pendingChanges: []));
 
   final _log = Logger('WebsocketNotifier');
   final Ref _ref;
@@ -147,29 +123,17 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
         socket.onConnect((_) {
           debugPrint("Established Websocket Connection");
-          state = WebsocketState(
-            isConnected: true,
-            socket: socket,
-            pendingChanges: state.pendingChanges,
-          );
+          state = WebsocketState(isConnected: true, socket: socket, pendingChanges: state.pendingChanges);
         });
 
         socket.onDisconnect((_) {
           debugPrint("Disconnect to Websocket Connection");
-          state = WebsocketState(
-            isConnected: false,
-            socket: null,
-            pendingChanges: state.pendingChanges,
-          );
+          state = WebsocketState(isConnected: false, socket: null, pendingChanges: state.pendingChanges);
         });
 
         socket.on('error', (errorMessage) {
           _log.severe("Websocket Error - $errorMessage");
-          state = WebsocketState(
-            isConnected: false,
-            socket: null,
-            pendingChanges: state.pendingChanges,
-          );
+          state = WebsocketState(isConnected: false, socket: null, pendingChanges: state.pendingChanges);
         });
 
         if (!Store.isBetaTimelineEnabled) {
@@ -200,11 +164,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     var socket = state.socket?.disconnect();
 
     if (socket?.disconnected == true) {
-      state = WebsocketState(
-        isConnected: false,
-        socket: null,
-        pendingChanges: state.pendingChanges,
-      );
+      state = WebsocketState(isConnected: false, socket: null, pendingChanges: state.pendingChanges);
     }
   }
 
@@ -248,10 +208,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   void addPendingChange(PendingAction action, dynamic value) {
     final now = DateTime.now();
     state = state.copyWith(
-      pendingChanges: [
-        ...state.pendingChanges,
-        PendingChange(now.millisecondsSinceEpoch.toString(), action, value),
-      ],
+      pendingChanges: [...state.pendingChanges, PendingChange(now.millisecondsSinceEpoch.toString(), action, value)],
     );
     _debounce.run(handlePendingChanges);
   }
@@ -264,9 +221,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       await _ref.read(syncServiceProvider).handleRemoteAssetRemoval(remoteIds);
       await _ref.read(assetProvider.notifier).getAllAsset();
 
-      state = state.copyWith(
-        pendingChanges: state.pendingChanges.whereNot((c) => trashChanges.contains(c)).toList(),
-      );
+      state = state.copyWith(pendingChanges: state.pendingChanges.whereNot((c) => trashChanges.contains(c)).toList());
     }
   }
 
@@ -275,9 +230,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     if (deleteChanges.isNotEmpty) {
       List<String> remoteIds = deleteChanges.map((a) => a.value.toString()).toList();
       await _ref.read(syncServiceProvider).handleRemoteAssetRemoval(remoteIds);
-      state = state.copyWith(
-        pendingChanges: state.pendingChanges.whereNot((c) => deleteChanges.contains(c)).toList(),
-      );
+      state = state.copyWith(pendingChanges: state.pendingChanges.whereNot((c) => deleteChanges.contains(c)).toList());
     }
   }
 
@@ -304,9 +257,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       final db = _ref.watch(dbProvider);
       await db.writeTxn(() => db.assets.deleteAllByRemoteId(remoteIds));
 
-      state = state.copyWith(
-        pendingChanges: state.pendingChanges.whereNot((c) => hiddenChanges.contains(c)).toList(),
-      );
+      state = state.copyWith(pendingChanges: state.pendingChanges.whereNot((c) => hiddenChanges.contains(c)).toList());
     }
   }
 
@@ -372,9 +323,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     }
 
     try {
-      unawaited(
-        _ref.read(backgroundSyncProvider).syncWebsocketBatch(_batchedAssetUploadReady.toList()),
-      );
+      unawaited(_ref.read(backgroundSyncProvider).syncWebsocketBatch(_batchedAssetUploadReady.toList()));
     } catch (error) {
       _log.severe("Error processing batched AssetUploadReadyV1 events: $error");
     }

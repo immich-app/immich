@@ -5,21 +5,11 @@ import 'package:immich_mobile/extensions/asset_extensions.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:timezone/timezone.dart';
 
-ExifInfo makeExif({
-  DateTime? dateTimeOriginal,
-  String? timeZone,
-}) {
-  return ExifInfo(
-    dateTimeOriginal: dateTimeOriginal,
-    timeZone: timeZone,
-  );
+ExifInfo makeExif({DateTime? dateTimeOriginal, String? timeZone}) {
+  return ExifInfo(dateTimeOriginal: dateTimeOriginal, timeZone: timeZone);
 }
 
-Asset makeAsset({
-  required String id,
-  required DateTime createdAt,
-  ExifInfo? exifInfo,
-}) {
+Asset makeAsset({required String id, required DateTime createdAt, ExifInfo? exifInfo}) {
   return Asset(
     checksum: '',
     localId: id,
@@ -79,10 +69,7 @@ void main() {
     test('Returns dateTimeOriginal in UTC from exifInfo with invalid timezone', () {
       final createdAt = DateTime.parse("2023-01-27T14:00:00-0500");
       final dateTimeOriginal = DateTime.parse("2022-01-27T14:00:00+0530");
-      final e = makeExif(
-        dateTimeOriginal: dateTimeOriginal,
-        timeZone: "#_#",
-      ); // Invalid timezone
+      final e = makeExif(dateTimeOriginal: dateTimeOriginal, timeZone: "#_#"); // Invalid timezone
       final a = makeAsset(id: '1', createdAt: createdAt, exifInfo: e);
       final (dt, tz) = a.getTZAdjustedTimeAndOffset();
 

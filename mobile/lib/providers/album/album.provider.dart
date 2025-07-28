@@ -35,31 +35,15 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
 
   Future<bool> deleteAlbum(Album album) => albumService.deleteAlbum(album);
 
-  Future<Album?> createAlbum(
-    String albumTitle,
-    Set<Asset> assets,
-  ) =>
-      albumService.createAlbum(albumTitle, assets, []);
+  Future<Album?> createAlbum(String albumTitle, Set<Asset> assets) => albumService.createAlbum(albumTitle, assets, []);
 
-  Future<Album?> getAlbumByName(
-    String albumName, {
-    bool? remote,
-    bool? shared,
-    bool? owner,
-  }) =>
-      albumService.getAlbumByName(
-        albumName,
-        remote: remote,
-        shared: shared,
-        owner: owner,
-      );
+  Future<Album?> getAlbumByName(String albumName, {bool? remote, bool? shared, bool? owner}) =>
+      albumService.getAlbumByName(albumName, remote: remote, shared: shared, owner: owner);
 
   /// Create an album on the server with the same name as the selected album for backup
   /// First this will check if the album already exists on the server with name
   /// If it does not exist, it will create the album on the server
-  Future<void> createSyncAlbum(
-    String albumName,
-  ) async {
+  Future<void> createSyncAlbum(String albumName) async {
     final album = await getAlbumByName(albumName, remote: true, owner: true);
     if (album != null) {
       return;
@@ -105,10 +89,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     return await albumService.removeAsset(album, assets);
   }
 
-  Future<bool> setActivitystatus(
-    Album album,
-    bool enabled,
-  ) {
+  Future<bool> setActivitystatus(Album album, bool enabled) {
     return albumService.setActivityStatus(album, enabled);
   }
 
@@ -126,10 +107,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
 }
 
 final albumProvider = StateNotifierProvider.autoDispose<AlbumNotifier, List<Album>>((ref) {
-  return AlbumNotifier(
-    ref.watch(albumServiceProvider),
-    ref,
-  );
+  return AlbumNotifier(ref.watch(albumServiceProvider), ref);
 });
 
 final albumWatcher = StreamProvider.autoDispose.family<Album, int>((ref, id) async* {

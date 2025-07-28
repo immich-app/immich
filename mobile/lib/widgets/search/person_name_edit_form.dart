@@ -16,11 +16,7 @@ class PersonNameEditForm extends HookConsumerWidget {
   final String personId;
   final String personName;
 
-  const PersonNameEditForm({
-    super.key,
-    required this.personId,
-    required this.personName,
-  });
+  const PersonNameEditForm({super.key, required this.personId, required this.personName});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,10 +24,7 @@ class PersonNameEditForm extends HookConsumerWidget {
     final isError = useState(false);
 
     return AlertDialog(
-      title: const Text(
-        "add_a_name",
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ).tr(),
+      title: const Text("add_a_name", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
       content: SingleChildScrollView(
         child: TextFormField(
           controller: controller,
@@ -46,23 +39,16 @@ class PersonNameEditForm extends HookConsumerWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () => context.pop(
-            const PersonNameEditFormResult(false, ''),
-          ),
+          onPressed: () => context.pop(const PersonNameEditFormResult(false, '')),
           child: Text(
             "cancel",
-            style: TextStyle(
-              color: Colors.red[300],
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: Colors.red[300], fontWeight: FontWeight.bold),
           ).tr(),
         ),
         TextButton(
           onPressed: () async {
             isError.value = false;
-            final result = await ref.read(
-              updatePersonNameProvider(personId, controller.text).future,
-            );
+            final result = await ref.read(updatePersonNameProvider(personId, controller.text).future);
             isError.value = !result;
             if (result) {
               context.pop(PersonNameEditFormResult(true, controller.text));
@@ -70,10 +56,7 @@ class PersonNameEditForm extends HookConsumerWidget {
           },
           child: Text(
             "save",
-            style: TextStyle(
-              color: context.primaryColor,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold),
           ).tr(),
         ),
       ],

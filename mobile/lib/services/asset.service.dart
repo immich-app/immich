@@ -78,8 +78,9 @@ class AssetService {
   /// required. Returns `true` if there were any changes.
   Future<bool> refreshRemoteAssets() async {
     final syncedUserIds = await _etagRepository.getAllIds();
-    final List<UserDto> syncedUsers =
-        syncedUserIds.isEmpty ? [] : (await _isarUserRepository.getByUserIds(syncedUserIds)).nonNulls.toList();
+    final List<UserDto> syncedUsers = syncedUserIds.isEmpty
+        ? []
+        : (await _isarUserRepository.getByUserIds(syncedUserIds)).nonNulls.toList();
     final Stopwatch sw = Stopwatch()..start();
     final bool changes = await _syncService.syncRemoteAssetsToDb(
       users: syncedUsers,
@@ -95,10 +96,7 @@ class AssetService {
     List<UserDto> users,
     DateTime since,
   ) async {
-    final dto = AssetDeltaSyncDto(
-      updatedAfter: since,
-      userIds: users.map((e) => e.id).toList(),
-    );
+    final dto = AssetDeltaSyncDto(updatedAfter: since, userIds: users.map((e) => e.id).toList());
     final changes = await _apiService.syncApi.getDeltaSync(dto);
     return changes == null || changes.needsFullSync
         ? (null, null)
@@ -107,19 +105,13 @@ class AssetService {
 
   /// Returns the list of people of the given asset id.
   // If the server is not reachable `null` is returned.
-  Future<List<PersonWithFacesResponseDto>?> getRemotePeopleOfAsset(
-    String remoteId,
-  ) async {
+  Future<List<PersonWithFacesResponseDto>?> getRemotePeopleOfAsset(String remoteId) async {
     try {
       final AssetResponseDto? dto = await _apiService.assetsApi.getAssetInfo(remoteId);
 
       return dto?.people;
     } catch (error, stack) {
-      log.severe(
-        'Error while getting remote asset info: ${error.toString()}',
-        error,
-        stack,
-      );
+      log.severe('Error while getting remote asset info: ${error.toString()}', error, stack);
 
       return null;
     }
@@ -133,18 +125,11 @@ class AssetService {
       String? lastId;
       // will break on error or once all assets are loaded
       while (true) {
-        final dto = AssetFullSyncDto(
-          limit: chunkSize,
-          updatedUntil: until,
-          lastId: lastId,
-          userId: user.id,
-        );
+        final dto = AssetFullSyncDto(limit: chunkSize, updatedUntil: until, lastId: lastId, userId: user.id);
         log.fine("Requesting $chunkSize assets from $lastId");
         final List<AssetResponseDto>? assets = await _apiService.syncApi.getFullSyncForUser(dto);
         if (assets == null) return null;
-        log.fine(
-          "Received ${assets.length} assets from ${assets.firstOrNull?.id} to ${assets.lastOrNull?.id}",
-        );
+        log.fine("Received ${assets.length} assets from ${assets.firstOrNull?.id} to ${assets.lastOrNull?.id}");
         allAssets.addAll(assets.map(Asset.remote));
         if (assets.length != chunkSize) break;
         lastId = assets.last.id;
@@ -182,10 +167,7 @@ class AssetService {
     return a;
   }
 
-  Future<void> updateAssets(
-    List<Asset> assets,
-    UpdateAssetDto updateAssetDto,
-  ) async {
+  Future<void> updateAssets(List<Asset> assets, UpdateAssetDto updateAssetDto) async {
     return await _apiService.assetsApi.updateAssets(
       AssetBulkUpdateDto(
         ids: assets.map((e) => e.remoteId!).toList(),
@@ -198,10 +180,7 @@ class AssetService {
     );
   }
 
-  Future<List<Asset>> changeFavoriteStatus(
-    List<Asset> assets,
-    bool isFavorite,
-  ) async {
+  Future<List<Asset>> changeFavoriteStatus(List<Asset> assets, bool isFavorite) async {
     try {
       await updateAssets(assets, UpdateAssetDto(isFavorite: isFavorite));
 
@@ -218,16 +197,11 @@ class AssetService {
     }
   }
 
-  Future<List<Asset>> changeArchiveStatus(
-    List<Asset> assets,
-    bool isArchived,
-  ) async {
+  Future<List<Asset>> changeArchiveStatus(List<Asset> assets, bool isArchived) async {
     try {
       await updateAssets(
         assets,
-        UpdateAssetDto(
-          visibility: isArchived ? AssetVisibility.archive : AssetVisibility.timeline,
-        ),
+        UpdateAssetDto(visibility: isArchived ? AssetVisibility.archive : AssetVisibility.timeline),
       );
 
       for (var element in assets) {
@@ -244,15 +218,9 @@ class AssetService {
     }
   }
 
-  Future<List<Asset>?> changeDateTime(
-    List<Asset> assets,
-    String updatedDt,
-  ) async {
+  Future<List<Asset>?> changeDateTime(List<Asset> assets, String updatedDt) async {
     try {
-      await updateAssets(
-        assets,
-        UpdateAssetDto(dateTimeOriginal: updatedDt),
-      );
+      await updateAssets(assets, UpdateAssetDto(dateTimeOriginal: updatedDt));
 
       for (var element in assets) {
         element.fileCreatedAt = DateTime.parse(updatedDt);
@@ -268,24 +236,12 @@ class AssetService {
     }
   }
 
-  Future<List<Asset>?> changeLocation(
-    List<Asset> assets,
-    LatLng location,
-  ) async {
+  Future<List<Asset>?> changeLocation(List<Asset> assets, LatLng location) async {
     try {
-      await updateAssets(
-        assets,
-        UpdateAssetDto(
-          latitude: location.latitude,
-          longitude: location.longitude,
-        ),
-      );
+      await updateAssets(assets, UpdateAssetDto(latitude: location.latitude, longitude: location.longitude));
 
       for (var element in assets) {
-        element.exifInfo = element.exifInfo?.copyWith(
-          latitude: location.latitude,
-          longitude: location.longitude,
-        );
+        element.exifInfo = element.exifInfo?.copyWith(latitude: location.latitude, longitude: location.longitude);
       }
 
       await _syncService.upsertAssetsWithExif(assets);
@@ -310,18 +266,13 @@ class AssetService {
 
       await refreshRemoteAssets();
       final owner = _userService.getMyUser();
-      final remoteAssets = await _assetRepository.getAll(
-        ownerId: owner.id,
-        state: AssetState.merged,
-      );
+      final remoteAssets = await _assetRepository.getAll(ownerId: owner.id, state: AssetState.merged);
 
       /// Map<AlbumName, [AssetId]>
       Map<String, List<String>> assetToAlbums = {};
 
       for (BackupCandidate candidate in candidates) {
-        final asset = remoteAssets.firstWhereOrNull(
-          (a) => a.localId == candidate.asset.localId,
-        );
+        final asset = remoteAssets.firstWhereOrNull((a) => a.localId == candidate.asset.localId);
 
         if (asset != null) {
           for (final albumName in candidate.albumNames) {
@@ -342,10 +293,7 @@ class AssetService {
     }
   }
 
-  Future<void> setDescription(
-    Asset asset,
-    String newDescription,
-  ) async {
+  Future<void> setDescription(Asset asset, String newDescription) async {
     final remoteAssetId = asset.remoteId;
     final localExifId = asset.exifInfo?.assetId;
 
@@ -354,10 +302,7 @@ class AssetService {
       return;
     }
 
-    final result = await _assetApiRepository.update(
-      remoteAssetId,
-      description: newDescription,
-    );
+    final result = await _assetApiRepository.update(remoteAssetId, description: newDescription);
 
     final description = result.exifInfo?.description;
 
@@ -437,10 +382,7 @@ class AssetService {
   }
 
   /// Delete assets from the server and unreference from the database
-  Future<void> deleteRemoteAssets(
-    Iterable<Asset> assets, {
-    bool shouldDeletePermanently = false,
-  }) async {
+  Future<void> deleteRemoteAssets(Iterable<Asset> assets, {bool shouldDeletePermanently = false}) async {
     final candidates = assets.where((a) => a.isRemote);
 
     if (candidates.isEmpty) {
@@ -448,10 +390,7 @@ class AssetService {
     }
 
     await _apiService.assetsApi.deleteAssets(
-      AssetBulkDeleteDto(
-        ids: candidates.map((a) => a.remoteId!).toList(),
-        force: shouldDeletePermanently,
-      ),
+      AssetBulkDeleteDto(ids: candidates.map((a) => a.remoteId!).toList(), force: shouldDeletePermanently),
     );
 
     /// Update asset info bassed on the deletion type.
@@ -470,8 +409,10 @@ class AssetService {
       await _assetRepository.updateAll(payload.toList());
 
       if (shouldDeletePermanently) {
-        final remoteAssetIds =
-            assets.where((asset) => asset.storage == AssetState.remote).map((asset) => asset.id).toList();
+        final remoteAssetIds = assets
+            .where((asset) => asset.storage == AssetState.remote)
+            .map((asset) => asset.id)
+            .toList();
         await _assetRepository.deleteByIds(remoteAssetIds);
       }
     });
@@ -479,10 +420,7 @@ class AssetService {
 
   /// Delete assets on both local file system and the server.
   /// Unreference from the database.
-  Future<void> deleteAssets(
-    Iterable<Asset> assets, {
-    bool shouldDeletePermanently = false,
-  }) async {
+  Future<void> deleteAssets(Iterable<Asset> assets, {bool shouldDeletePermanently = false}) async {
     final hasLocal = assets.any((asset) => asset.isLocal);
     final hasRemote = assets.any((asset) => asset.isRemote);
 
@@ -491,10 +429,7 @@ class AssetService {
     }
 
     if (hasRemote) {
-      await deleteRemoteAssets(
-        assets,
-        shouldDeletePermanently: shouldDeletePermanently,
-      );
+      await deleteRemoteAssets(assets, shouldDeletePermanently: shouldDeletePermanently);
     }
   }
 
@@ -512,14 +447,8 @@ class AssetService {
     return _assetRepository.getMotionAssets(me.id);
   }
 
-  Future<void> setVisibility(
-    List<Asset> assets,
-    AssetVisibilityEnum visibility,
-  ) async {
-    await _assetApiRepository.updateVisibility(
-      assets.map((asset) => asset.remoteId!).toList(),
-      visibility,
-    );
+  Future<void> setVisibility(List<Asset> assets, AssetVisibilityEnum visibility) async {
+    await _assetApiRepository.updateVisibility(assets.map((asset) => asset.remoteId!).toList(), visibility);
 
     final updatedAssets = assets.map((asset) {
       asset.visibility = visibility;

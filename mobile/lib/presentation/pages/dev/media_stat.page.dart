@@ -21,12 +21,7 @@ class _Summary extends StatelessWidget {
   final Future<int> countFuture;
   final void Function()? onTap;
 
-  const _Summary({
-    required this.name,
-    required this.countFuture,
-    this.leading,
-    this.onTap,
-  });
+  const _Summary({required this.name, required this.countFuture, this.leading, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -40,31 +35,17 @@ class _Summary extends StatelessWidget {
         } else if (snapshot.hasError) {
           subtitle = const Icon(Icons.error_rounded);
         } else {
-          subtitle = Text(
-            '${snapshot.data ?? 0}',
-            style: ctx.textTheme.bodyLarge,
-          );
+          subtitle = Text('${snapshot.data ?? 0}', style: ctx.textTheme.bodyLarge);
         }
-        return ListTile(
-          leading: leading,
-          title: Text(name),
-          trailing: subtitle,
-          onTap: onTap,
-        );
+        return ListTile(leading: leading, title: Text(name), trailing: subtitle, onTap: onTap);
       },
     );
   }
 }
 
 final _localStats = [
-  _Stat(
-    name: 'Local Assets',
-    load: (db) => db.managers.localAssetEntity.count(),
-  ),
-  _Stat(
-    name: 'Local Albums',
-    load: (db) => db.managers.localAlbumEntity.count(),
-  ),
+  _Stat(name: 'Local Assets', load: (db) => db.managers.localAssetEntity.count()),
+  _Stat(name: 'Local Albums', load: (db) => db.managers.localAlbumEntity.count()),
 ];
 
 @RoutePage()
@@ -97,10 +78,7 @@ class LocalMediaSummaryPage extends StatelessWidget {
                     const Divider(),
                     Padding(
                       padding: const EdgeInsets.only(left: 15),
-                      child: Text(
-                        "Album summary",
-                        style: ctx.textTheme.titleMedium,
-                      ),
+                      child: Text("Album summary", style: ctx.textTheme.titleMedium),
                     ),
                   ],
                 ),
@@ -117,15 +95,14 @@ class LocalMediaSummaryPage extends StatelessWidget {
                   return SliverList.builder(
                     itemBuilder: (_, index) {
                       final album = albums[index];
-                      final countFuture =
-                          db.managers.localAlbumAssetEntity.filter((f) => f.albumId.id.equals(album.id)).count();
+                      final countFuture = db.managers.localAlbumAssetEntity
+                          .filter((f) => f.albumId.id.equals(album.id))
+                          .count();
                       return _Summary(
                         leading: const Icon(Icons.photo_album_rounded),
                         name: album.name,
                         countFuture: countFuture,
-                        onTap: () => context.router.push(
-                          LocalTimelineRoute(album: album),
-                        ),
+                        onTap: () => context.router.push(LocalTimelineRoute(album: album)),
                       );
                     },
                     itemCount: albums.length,
@@ -141,38 +118,14 @@ class LocalMediaSummaryPage extends StatelessWidget {
 }
 
 final _remoteStats = [
-  _Stat(
-    name: 'Remote Assets',
-    load: (db) => db.managers.remoteAssetEntity.count(),
-  ),
-  _Stat(
-    name: 'Exif Entities',
-    load: (db) => db.managers.remoteExifEntity.count(),
-  ),
-  _Stat(
-    name: 'Remote Albums',
-    load: (db) => db.managers.remoteAlbumEntity.count(),
-  ),
-  _Stat(
-    name: 'Memories',
-    load: (db) => db.managers.memoryEntity.count(),
-  ),
-  _Stat(
-    name: 'Memories Assets',
-    load: (db) => db.managers.memoryAssetEntity.count(),
-  ),
-  _Stat(
-    name: 'Stacks',
-    load: (db) => db.managers.stackEntity.count(),
-  ),
-  _Stat(
-    name: 'People',
-    load: (db) => db.managers.personEntity.count(),
-  ),
-  _Stat(
-    name: 'AssetFaces',
-    load: (db) => db.managers.assetFaceEntity.count(),
-  ),
+  _Stat(name: 'Remote Assets', load: (db) => db.managers.remoteAssetEntity.count()),
+  _Stat(name: 'Exif Entities', load: (db) => db.managers.remoteExifEntity.count()),
+  _Stat(name: 'Remote Albums', load: (db) => db.managers.remoteAlbumEntity.count()),
+  _Stat(name: 'Memories', load: (db) => db.managers.memoryEntity.count()),
+  _Stat(name: 'Memories Assets', load: (db) => db.managers.memoryAssetEntity.count()),
+  _Stat(name: 'Stacks', load: (db) => db.managers.stackEntity.count()),
+  _Stat(name: 'People', load: (db) => db.managers.personEntity.count()),
+  _Stat(name: 'AssetFaces', load: (db) => db.managers.assetFaceEntity.count()),
 ];
 
 @RoutePage()
@@ -205,10 +158,7 @@ class RemoteMediaSummaryPage extends StatelessWidget {
                     const Divider(),
                     Padding(
                       padding: const EdgeInsets.only(left: 15),
-                      child: Text(
-                        "Album summary",
-                        style: ctx.textTheme.titleMedium,
-                      ),
+                      child: Text("Album summary", style: ctx.textTheme.titleMedium),
                     ),
                   ],
                 ),
@@ -225,15 +175,14 @@ class RemoteMediaSummaryPage extends StatelessWidget {
                   return SliverList.builder(
                     itemBuilder: (_, index) {
                       final album = albums[index];
-                      final countFuture =
-                          db.managers.remoteAlbumAssetEntity.filter((f) => f.albumId.id.equals(album.id)).count();
+                      final countFuture = db.managers.remoteAlbumAssetEntity
+                          .filter((f) => f.albumId.id.equals(album.id))
+                          .count();
                       return _Summary(
                         leading: const Icon(Icons.photo_album_rounded),
                         name: album.name,
                         countFuture: countFuture,
-                        onTap: () => context.router.push(
-                          RemoteAlbumRoute(album: album),
-                        ),
+                        onTap: () => context.router.push(RemoteAlbumRoute(album: album)),
                       );
                     },
                     itemCount: albums.length,

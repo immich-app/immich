@@ -109,9 +109,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
 
   // retrieve image from the provider
   void _resolveImage() {
-    final ImageStream newStream = widget.imageProvider.resolve(
-      const ImageConfiguration(),
-    );
+    final ImageStream newStream = widget.imageProvider.resolve(const ImageConfiguration());
     _updateSourceStream(newStream);
   }
 
@@ -125,10 +123,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
 
     void handleImageFrame(ImageInfo info, bool synchronousCall) {
       setupCB() {
-        _imageSize = Size(
-          info.image.width.toDouble(),
-          info.image.height.toDouble(),
-        );
+        _imageSize = Size(info.image.width.toDouble(), info.image.height.toDouble());
         _loading = false;
         _imageInfo = _imageInfo;
 
@@ -154,11 +149,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
       }());
     }
 
-    _imageStreamListener = ImageStreamListener(
-      handleImageFrame,
-      onChunk: handleImageChunk,
-      onError: handleError,
-    );
+    _imageStreamListener = ImageStreamListener(handleImageFrame, onChunk: handleImageChunk, onError: handleError);
 
     return _imageStreamListener!;
   }
@@ -227,20 +218,14 @@ class _ImageWrapperState extends State<ImageWrapper> {
       return widget.loadingBuilder!(context, _loadingProgress, widget.index);
     }
 
-    return PhotoViewDefaultLoading(
-      event: _loadingProgress,
-    );
+    return PhotoViewDefaultLoading(event: _loadingProgress);
   }
 
-  Widget _buildError(
-    BuildContext context,
-  ) {
+  Widget _buildError(BuildContext context) {
     if (widget.errorBuilder != null) {
       return widget.errorBuilder!(context, _lastException!, _lastStack);
     }
-    return PhotoViewDefaultError(
-      decoration: widget.backgroundDecoration,
-    );
+    return PhotoViewDefaultError(decoration: widget.backgroundDecoration);
   }
 }
 

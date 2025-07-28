@@ -15,24 +15,18 @@ class DriftRecentlyTakenPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProviderScope(
       overrides: [
-        timelineServiceProvider.overrideWith(
-          (ref) {
-            final user = ref.watch(currentUserProvider);
-            if (user == null) {
-              throw Exception(
-                'User must be logged in to access recently taken',
-              );
-            }
+        timelineServiceProvider.overrideWith((ref) {
+          final user = ref.watch(currentUserProvider);
+          if (user == null) {
+            throw Exception('User must be logged in to access recently taken');
+          }
 
-            final timelineService = ref.watch(timelineFactoryProvider).remoteAssets(user.id);
-            ref.onDispose(timelineService.dispose);
-            return timelineService;
-          },
-        ),
+          final timelineService = ref.watch(timelineFactoryProvider).remoteAssets(user.id);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
       ],
-      child: Timeline(
-        appBar: MesmerizingSliverAppBar(title: 'recently_taken'.t()),
-      ),
+      child: Timeline(appBar: MesmerizingSliverAppBar(title: 'recently_taken'.t())),
     );
   }
 }

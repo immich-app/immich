@@ -11,11 +11,7 @@ class AlbumViewerPageState {
     required this.editDescriptionText,
   });
 
-  AlbumViewerPageState copyWith({
-    bool? isEditAlbum,
-    String? editTitleText,
-    String? editDescriptionText,
-  }) {
+  AlbumViewerPageState copyWith({bool? isEditAlbum, String? editTitleText, String? editDescriptionText}) {
     return AlbumViewerPageState(
       isEditAlbum: isEditAlbum ?? this.isEditAlbum,
       editTitleText: editTitleText ?? this.editTitleText,

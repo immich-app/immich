@@ -54,26 +54,11 @@ class UploadRepository {
 
   Future<void> getUploadInfo() async {
     final [enqueuedTasks, runningTasks, canceledTasks, waitingTasks, pausedTasks] = await Future.wait([
-      FileDownloader().database.allRecordsWithStatus(
-            TaskStatus.enqueued,
-            group: kBackupGroup,
-          ),
-      FileDownloader().database.allRecordsWithStatus(
-            TaskStatus.running,
-            group: kBackupGroup,
-          ),
-      FileDownloader().database.allRecordsWithStatus(
-            TaskStatus.canceled,
-            group: kBackupGroup,
-          ),
-      FileDownloader().database.allRecordsWithStatus(
-            TaskStatus.waitingToRetry,
-            group: kBackupGroup,
-          ),
-      FileDownloader().database.allRecordsWithStatus(
-            TaskStatus.paused,
-            group: kBackupGroup,
-          ),
+      FileDownloader().database.allRecordsWithStatus(TaskStatus.enqueued, group: kBackupGroup),
+      FileDownloader().database.allRecordsWithStatus(TaskStatus.running, group: kBackupGroup),
+      FileDownloader().database.allRecordsWithStatus(TaskStatus.canceled, group: kBackupGroup),
+      FileDownloader().database.allRecordsWithStatus(TaskStatus.waitingToRetry, group: kBackupGroup),
+      FileDownloader().database.allRecordsWithStatus(TaskStatus.paused, group: kBackupGroup),
     ]);
 
     debugPrint("""

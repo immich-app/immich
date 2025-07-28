@@ -8,12 +8,7 @@ import 'package:logging/logging.dart';
 
 final log = Logger('AssetGridDataStructure');
 
-enum RenderAssetGridElementType {
-  assets,
-  assetRow,
-  groupDividerTitle,
-  monthTitle;
-}
+enum RenderAssetGridElementType { assets, assetRow, groupDividerTitle, monthTitle }
 
 class RenderAssetGridElement {
   final RenderAssetGridElementType type;
@@ -33,13 +28,7 @@ class RenderAssetGridElement {
   });
 }
 
-enum GroupAssetsBy {
-  day,
-  month,
-  auto,
-  none,
-  ;
-}
+enum GroupAssetsBy { day, month, auto, none }
 
 class RenderList {
   final List<RenderAssetGridElement> elements;
@@ -87,10 +76,7 @@ class RenderList {
         // when scrolling backward, end shortly after the requested offset...
         // ... to guard against the user scrolling in the other direction
         // a tiny bit resulting in a another required load from the DB
-        final start = max(
-          0,
-          forward ? offset - oppositeSize : (len > batchSize ? offset : offset + count - len),
-        );
+        final start = max(0, forward ? offset - oppositeSize : (len > batchSize ? offset : offset + count - len));
         // load the calculated batch (start:start+len) from the DB and put it into the buffer
         _buf = query!.offset(start).limit(len).findAllSync();
         _bufOffset = start;
@@ -117,19 +103,14 @@ class RenderList {
       // request the asset from the database (not changing the buffer!)
       final asset = query!.offset(index).findFirstSync();
       if (asset == null) {
-        throw Exception(
-          "Asset at index $index does no longer exist in database",
-        );
+        throw Exception("Asset at index $index does no longer exist in database");
       }
       return asset;
     }
     throw Exception("RenderList has neither assets nor query");
   }
 
-  static Future<RenderList> fromQuery(
-    QueryBuilder<Asset, Asset, QAfterSortBy> query,
-    GroupAssetsBy groupBy,
-  ) =>
+  static Future<RenderList> fromQuery(QueryBuilder<Asset, Asset, QAfterSortBy> query, GroupAssetsBy groupBy) =>
       _buildRenderList(null, query, groupBy);
 
   static Future<RenderList> _buildRenderList(
@@ -145,12 +126,7 @@ class RenderList {
     if (groupBy == GroupAssetsBy.none) {
       final int total = assets?.length ?? query!.countSync();
 
-      final dateLoader = query != null
-          ? DateBatchLoader(
-              query: query,
-              batchSize: 1000 * sectionSize,
-            )
-          : null;
+      final dateLoader = query != null ? DateBatchLoader(query: query, batchSize: 1000 * sectionSize) : null;
 
       for (int i = 0; i < total; i += sectionSize) {
         final date = assets != null ? assets[i].fileCreatedAt : await dateLoader?.getDate(i);
@@ -224,11 +200,11 @@ class RenderList {
       for (int j = 0; j < count; j += sectionSize) {
         final type = j == 0
             ? (groupBy != GroupAssetsBy.month && newMonth
-                ? RenderAssetGridElementType.monthTitle
-                : RenderAssetGridElementType.groupDividerTitle)
+                  ? RenderAssetGridElementType.monthTitle
+                  : RenderAssetGridElementType.groupDividerTitle)
             : (groupBy == GroupAssetsBy.auto
-                ? RenderAssetGridElementType.groupDividerTitle
-                : RenderAssetGridElementType.assets);
+                  ? RenderAssetGridElementType.groupDividerTitle
+                  : RenderAssetGridElementType.assets);
         final sectionCount = j + sectionSize > count ? count - j : sectionSize;
         assert(sectionCount > 0 && sectionCount <= sectionSize);
         elements.add(
@@ -257,11 +233,7 @@ class RenderList {
           : await query!.offset(offset).limit(pageSize).fileCreatedAtProperty().findAll();
       int i = 0;
       for (final date in dates) {
-        final d = DateTime(
-          date.year,
-          date.month,
-          groupBy == GroupAssetsBy.month ? 1 : date.day,
-        );
+        final d = DateTime(date.year, date.month, groupBy == GroupAssetsBy.month ? 1 : date.day);
         current ??= d;
         if (current != d) {
           addElems(current, prevDate);
@@ -288,10 +260,7 @@ class RenderList {
 
   static RenderList empty() => RenderList([], null, []);
 
-  static Future<RenderList> fromAssets(
-    List<Asset> assets,
-    GroupAssetsBy groupBy,
-  ) =>
+  static Future<RenderList> fromAssets(List<Asset> assets, GroupAssetsBy groupBy) =>
       _buildRenderList(assets, null, groupBy);
 
   /// Deletes an asset from the render list and clears the buffer
@@ -310,10 +279,7 @@ class DateBatchLoader {
   List<DateTime> _buffer = [];
   int _bufferStart = 0;
 
-  DateBatchLoader({
-    required this.query,
-    required this.batchSize,
-  });
+  DateBatchLoader({required this.query, required this.batchSize});
 
   Future<DateTime?> getDate(int index) async {
     if (!_isIndexInBuffer(index)) {

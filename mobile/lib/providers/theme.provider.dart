@@ -31,13 +31,8 @@ final immichThemePresetProvider = StateProvider<ImmichColorPreset>((ref) {
   try {
     return ImmichColorPreset.values.firstWhere((e) => e.name == primaryColorPreset);
   } catch (e) {
-    debugPrint(
-      "Theme preset $primaryColorPreset not found. Applying default preset.",
-    );
-    appSettingsProvider.setSetting(
-      AppSettingsEnum.primaryColor,
-      defaultColorPresetName,
-    );
+    debugPrint("Theme preset $primaryColorPreset not found. Applying default preset.");
+    appSettingsProvider.setSetting(AppSettingsEnum.primaryColor, defaultColorPresetName);
     return defaultColorPreset;
   }
 });

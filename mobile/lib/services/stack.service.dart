@@ -23,24 +23,16 @@ class StackService {
 
   Future<StackResponseDto?> createStack(List<String> assetIds) async {
     try {
-      return _api.stacksApi.createStack(
-        StackCreateDto(assetIds: assetIds),
-      );
+      return _api.stacksApi.createStack(StackCreateDto(assetIds: assetIds));
     } catch (error) {
       debugPrint("Error while creating stack: $error");
     }
     return null;
   }
 
-  Future<StackResponseDto?> updateStack(
-    String stackId,
-    String primaryAssetId,
-  ) async {
+  Future<StackResponseDto?> updateStack(String stackId, String primaryAssetId) async {
     try {
-      return await _api.stacksApi.updateStack(
-        stackId,
-        StackUpdateDto(primaryAssetId: primaryAssetId),
-      );
+      return await _api.stacksApi.updateStack(stackId, StackUpdateDto(primaryAssetId: primaryAssetId));
     } catch (error) {
       debugPrint("Error while updating stack children: $error");
     }
@@ -68,8 +60,5 @@ class StackService {
 }
 
 final stackServiceProvider = Provider(
-  (ref) => StackService(
-    ref.watch(apiServiceProvider),
-    ref.watch(assetRepositoryProvider),
-  ),
+  (ref) => StackService(ref.watch(apiServiceProvider), ref.watch(assetRepositoryProvider)),
 );

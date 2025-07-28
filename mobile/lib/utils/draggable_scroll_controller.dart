@@ -5,20 +5,12 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 ///
 /// See also:
 /// - [DraggableScrollableController]
-DraggableScrollableController useDraggableScrollController({
-  List<Object?>? keys,
-}) {
-  return use(
-    _DraggableScrollControllerHook(
-      keys: keys,
-    ),
-  );
+DraggableScrollableController useDraggableScrollController({List<Object?>? keys}) {
+  return use(_DraggableScrollControllerHook(keys: keys));
 }
 
 class _DraggableScrollControllerHook extends Hook<DraggableScrollableController> {
-  const _DraggableScrollControllerHook({
-    super.keys,
-  });
+  const _DraggableScrollControllerHook({super.keys});
 
   @override
   HookState<DraggableScrollableController, Hook<DraggableScrollableController>> createState() =>

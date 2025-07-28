@@ -85,16 +85,14 @@ Future<void> _migrateTo(Isar db, int version) async {
 Future<void> _migrateDeviceAsset(Isar db) async {
   final ids = Platform.isAndroid
       ? (await db.androidDeviceAssets.where().findAll())
-          .map((a) => _DeviceAsset(assetId: a.id.toString(), hash: a.hash))
-          .toList()
+            .map((a) => _DeviceAsset(assetId: a.id.toString(), hash: a.hash))
+            .toList()
       : (await db.iOSDeviceAssets.where().findAll()).map((i) => _DeviceAsset(assetId: i.id, hash: i.hash)).toList();
 
   final PermissionState ps = await PhotoManager.requestPermissionExtend();
   if (!ps.hasAccess) {
     if (kDebugMode) {
-      debugPrint(
-        "[MIGRATION] Photo library permission not granted. Skipping device asset migration.",
-      );
+      debugPrint("[MIGRATION] Photo library permission not granted. Skipping device asset migration.");
     }
 
     return;
@@ -105,9 +103,7 @@ Future<void> _migrateDeviceAsset(Isar db) async {
 
   if (paths.isEmpty) {
     localAssets = (await db.assets.where().anyOf(ids, (query, id) => query.localIdEqualTo(id.assetId)).findAll())
-        .map(
-          (a) => _DeviceAsset(assetId: a.localId!, dateTime: a.fileModifiedAt),
-        )
+        .map((a) => _DeviceAsset(assetId: a.localId!, dateTime: a.fileModifiedAt))
         .toList();
   } else {
     final AssetPathEntity albumWithAll = paths.first;
@@ -129,34 +125,24 @@ Future<void> _migrateDeviceAsset(Isar db) async {
     compare: (a, b) => a.assetId.compareTo(b.assetId),
     both: (deviceAsset, asset) {
       toAdd.add(
-        DeviceAssetEntity(
-          assetId: deviceAsset.assetId,
-          hash: deviceAsset.hash!,
-          modifiedTime: asset.dateTime!,
-        ),
+        DeviceAssetEntity(assetId: deviceAsset.assetId, hash: deviceAsset.hash!, modifiedTime: asset.dateTime!),
       );
       return false;
     },
     onlyFirst: (deviceAsset) {
       if (kDebugMode) {
-        debugPrint(
-          '[MIGRATION] Local asset not found in DeviceAsset: ${deviceAsset.assetId}',
-        );
+        debugPrint('[MIGRATION] Local asset not found in DeviceAsset: ${deviceAsset.assetId}');
       }
     },
     onlySecond: (asset) {
       if (kDebugMode) {
-        debugPrint(
-          '[MIGRATION] Local asset not found in DeviceAsset: ${asset.assetId}',
-        );
+        debugPrint('[MIGRATION] Local asset not found in DeviceAsset: ${asset.assetId}');
       }
     },
   );
 
   if (kDebugMode) {
-    debugPrint(
-      "[MIGRATION] Total number of device assets migrated - ${toAdd.length}",
-    );
+    debugPrint("[MIGRATION] Total number of device assets migrated - ${toAdd.length}");
   }
 
   await db.writeTxn(() async {
@@ -171,24 +157,17 @@ Future<void> migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
       for (final deviceAsset in isarDeviceAssets) {
         batch.update(
           drift.localAssetEntity,
-          LocalAssetEntityCompanion(
-            checksum: Value(base64.encode(deviceAsset.hash)),
-          ),
+          LocalAssetEntityCompanion(checksum: Value(base64.encode(deviceAsset.hash))),
           where: (t) => t.id.equals(deviceAsset.assetId),
         );
       }
     });
   } catch (error) {
-    debugPrint(
-      "[MIGRATION] Error while migrating device assets to SQLite: $error",
-    );
+    debugPrint("[MIGRATION] Error while migrating device assets to SQLite: $error");
   }
 }
 
-Future<void> migrateBackupAlbumsToSqlite(
-  Isar db,
-  Drift drift,
-) async {
+Future<void> migrateBackupAlbumsToSqlite(Isar db, Drift drift) async {
   try {
     final isarBackupAlbums = await db.backupAlbums.where().findAll();
     // Recents is a virtual album on Android, and we don't have it with the new sync
@@ -197,23 +176,17 @@ Future<void> migrateBackupAlbumsToSqlite(
       final recentAlbum = isarBackupAlbums.firstWhereOrNull((album) => album.id == 'isAll');
       if (recentAlbum != null) {
         await drift.localAlbumEntity.update().write(
-              const LocalAlbumEntityCompanion(
-                backupSelection: Value(BackupSelection.selected),
-              ),
-            );
+          const LocalAlbumEntityCompanion(backupSelection: Value(BackupSelection.selected)),
+        );
         final excluded = isarBackupAlbums
-            .where(
-              (album) => album.selection == isar_backup_album.BackupSelection.exclude,
-            )
+            .where((album) => album.selection == isar_backup_album.BackupSelection.exclude)
             .map((album) => album.id)
             .toList();
         await drift.batch((batch) async {
           for (final id in excluded) {
             batch.update(
               drift.localAlbumEntity,
-              const LocalAlbumEntityCompanion(
-                backupSelection: Value(BackupSelection.excluded),
-              ),
+              const LocalAlbumEntityCompanion(backupSelection: Value(BackupSelection.excluded)),
               where: (t) => t.id.equals(id),
             );
           }
@@ -227,22 +200,18 @@ Future<void> migrateBackupAlbumsToSqlite(
         batch.update(
           drift.localAlbumEntity,
           LocalAlbumEntityCompanion(
-            backupSelection: Value(
-              switch (album.selection) {
-                isar_backup_album.BackupSelection.none => BackupSelection.none,
-                isar_backup_album.BackupSelection.select => BackupSelection.selected,
-                isar_backup_album.BackupSelection.exclude => BackupSelection.excluded,
-              },
-            ),
+            backupSelection: Value(switch (album.selection) {
+              isar_backup_album.BackupSelection.none => BackupSelection.none,
+              isar_backup_album.BackupSelection.select => BackupSelection.selected,
+              isar_backup_album.BackupSelection.exclude => BackupSelection.excluded,
+            }),
           ),
           where: (t) => t.id.equals(album.id),
         );
       }
     });
   } catch (error) {
-    debugPrint(
-      "[MIGRATION] Error while migrating backup albums to SQLite: $error",
-    );
+    debugPrint("[MIGRATION] Error while migrating backup albums to SQLite: $error");
   }
 }
 
@@ -259,12 +228,10 @@ Future<void> runNewSync(WidgetRef ref, {bool full = false}) async {
 
   final backgroundManager = ref.read(backgroundSyncProvider);
   Future.wait([
-    backgroundManager.syncLocal(full: full).then(
-      (_) {
-        Logger("runNewSync").fine("Hashing assets after syncLocal");
-        backgroundManager.hashAssets();
-      },
-    ),
+    backgroundManager.syncLocal(full: full).then((_) {
+      Logger("runNewSync").fine("Hashing assets after syncLocal");
+      backgroundManager.hashAssets();
+    }),
     backgroundManager.syncRemote(),
   ]);
 }

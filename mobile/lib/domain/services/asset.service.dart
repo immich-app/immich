@@ -13,9 +13,9 @@ class AssetService {
   const AssetService({
     required RemoteAssetRepository remoteAssetRepository,
     required DriftLocalAssetRepository localAssetRepository,
-  })  : _remoteAssetRepository = remoteAssetRepository,
-        _localAssetRepository = localAssetRepository,
-        _platform = const LocalPlatform();
+  }) : _remoteAssetRepository = remoteAssetRepository,
+       _localAssetRepository = localAssetRepository,
+       _platform = const LocalPlatform();
 
   Stream<BaseAsset?> watchAsset(BaseAsset asset) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).id;

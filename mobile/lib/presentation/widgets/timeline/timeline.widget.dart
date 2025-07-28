@@ -29,11 +29,7 @@ class Timeline extends StatelessWidget {
     this.topSliverWidgetHeight,
     this.showStorageIndicator = false,
     this.withStack = false,
-    this.appBar = const ImmichSliverAppBar(
-      floating: true,
-      pinned: false,
-      snap: false,
-    ),
+    this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
     this.bottomSheet = const GeneralBottomSheet(),
     this.groupBy,
   });
@@ -57,9 +53,7 @@ class Timeline extends StatelessWidget {
               (ref) => TimelineArgs(
                 maxWidth: constraints.maxWidth,
                 maxHeight: constraints.maxHeight,
-                columnCount: ref.watch(
-                  settingsProvider.select((s) => s.get(Setting.tilesPerRow)),
-                ),
+                columnCount: ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow))),
                 showStorageIndicator: showStorageIndicator,
                 withStack: withStack,
                 groupBy: groupBy,
@@ -79,12 +73,7 @@ class Timeline extends StatelessWidget {
 }
 
 class _SliverTimeline extends ConsumerStatefulWidget {
-  const _SliverTimeline({
-    this.topSliverWidget,
-    this.topSliverWidgetHeight,
-    this.appBar,
-    this.bottomSheet,
-  });
+  const _SliverTimeline({this.topSliverWidget, this.topSliverWidgetHeight, this.appBar, this.bottomSheet});
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
@@ -108,11 +97,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   void _onEvent(Event event) {
     switch (event) {
       case ScrollToTopEvent():
-        _scrollController.animateTo(
-          0,
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOut,
-        );
+        _scrollController.animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
       case ScrollToDateEvent scrollToDateEvent:
         _scrollToDate(scrollToDateEvent.date);
       case TimelineReloadEvent():
@@ -143,7 +128,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       });
 
       // If exact date not found, try to find the closest month
-      final fallbackSegment = targetSegment ??
+      final fallbackSegment =
+          targetSegment ??
           segments.firstWhereOrNull((segment) {
             if (segment.bucket is TimeBucket) {
               final segmentDate = (segment.bucket as TimeBucket).date;
@@ -168,9 +154,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   Widget build(BuildContext _) {
     final asyncSegments = ref.watch(timelineSegmentProvider);
     final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
-    final isSelectionMode = ref.watch(
-      multiSelectProvider.select((s) => s.forceEnable),
-    );
+    final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
 
     return asyncSegments.widgetWhen(
       onData: (segments) {
@@ -211,42 +195,26 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                         addRepaintBoundaries: false,
                       ),
                     ),
-                    const SliverPadding(
-                      padding: EdgeInsets.only(
-                        bottom: scrubberBottomPadding,
-                      ),
-                    ),
+                    const SliverPadding(padding: EdgeInsets.only(bottom: scrubberBottomPadding)),
                   ],
                 ),
               ),
               if (!isSelectionMode) ...[
                 Consumer(
                   builder: (_, consumerRef, child) {
-                    final isMultiSelectEnabled = consumerRef.watch(
-                      multiSelectProvider.select(
-                        (s) => s.isEnabled,
-                      ),
-                    );
+                    final isMultiSelectEnabled = consumerRef.watch(multiSelectProvider.select((s) => s.isEnabled));
 
                     if (isMultiSelectEnabled) {
                       return child!;
                     }
                     return const SizedBox.shrink();
                   },
-                  child: const Positioned(
-                    top: 60,
-                    left: 25,
-                    child: _MultiSelectStatusButton(),
-                  ),
+                  child: const Positioned(top: 60, left: 25, child: _MultiSelectStatusButton()),
                 ),
                 if (widget.bottomSheet != null)
                   Consumer(
                     builder: (_, consumerRef, child) {
-                      final isMultiSelectEnabled = consumerRef.watch(
-                        multiSelectProvider.select(
-                          (s) => s.isEnabled,
-                        ),
-                      );
+                      final isMultiSelectEnabled = consumerRef.watch(multiSelectProvider.select((s) => s.isEnabled));
 
                       if (isMultiSelectEnabled) {
                         return child!;
@@ -267,22 +235,14 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 class _SliverSegmentedList extends SliverMultiBoxAdaptorWidget {
   final List<Segment> _segments;
 
-  const _SliverSegmentedList({
-    required List<Segment> segments,
-    required super.delegate,
-  }) : _segments = segments;
+  const _SliverSegmentedList({required List<Segment> segments, required super.delegate}) : _segments = segments;
 
   @override
-  _RenderSliverTimelineBoxAdaptor createRenderObject(BuildContext context) => _RenderSliverTimelineBoxAdaptor(
-        childManager: context as SliverMultiBoxAdaptorElement,
-        segments: _segments,
-      );
+  _RenderSliverTimelineBoxAdaptor createRenderObject(BuildContext context) =>
+      _RenderSliverTimelineBoxAdaptor(childManager: context as SliverMultiBoxAdaptorElement, segments: _segments);
 
   @override
-  void updateRenderObject(
-    BuildContext context,
-    _RenderSliverTimelineBoxAdaptor renderObject,
-  ) {
+  void updateRenderObject(BuildContext context, _RenderSliverTimelineBoxAdaptor renderObject) {
     renderObject.segments = _segments;
   }
 }
@@ -299,10 +259,8 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
     markNeedsLayout();
   }
 
-  _RenderSliverTimelineBoxAdaptor({
-    required super.childManager,
-    required List<Segment> segments,
-  }) : _segments = segments;
+  _RenderSliverTimelineBoxAdaptor({required super.childManager, required List<Segment> segments})
+    : _segments = segments;
 
   int getMinChildIndexForScrollOffset(double offset) =>
       _segments.findByOffset(offset)?.getMinChildIndexForScrollOffset(offset) ?? 0;
@@ -335,16 +293,18 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
     final int firstRequiredChildIndex = getMinChildIndexForScrollOffset(scrollOffset);
 
     // Find the index of the last child that should be visible or in the trailing cache area.
-    final int? lastRequiredChildIndex =
-        targetScrollOffset.isFinite ? getMaxChildIndexForScrollOffset(targetScrollOffset) : null;
+    final int? lastRequiredChildIndex = targetScrollOffset.isFinite
+        ? getMaxChildIndexForScrollOffset(targetScrollOffset)
+        : null;
 
     // Remove children that are no longer visible or within the cache area.
     if (firstChild == null) {
       collectGarbage(0, 0);
     } else {
       final int leadingChildrenToRemove = calculateLeadingGarbage(firstIndex: firstRequiredChildIndex);
-      final int trailingChildrenToRemove =
-          lastRequiredChildIndex == null ? 0 : calculateTrailingGarbage(lastIndex: lastRequiredChildIndex);
+      final int trailingChildrenToRemove = lastRequiredChildIndex == null
+          ? 0
+          : calculateTrailingGarbage(lastIndex: lastRequiredChildIndex);
       collectGarbage(leadingChildrenToRemove, trailingChildrenToRemove);
     }
 
@@ -352,10 +312,7 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
     // try to add the first child needed for the current scroll offset.
     if (firstChild == null) {
       final double firstChildLayoutOffset = indexToLayoutOffset(firstRequiredChildIndex);
-      final bool childAdded = addInitialChild(
-        index: firstRequiredChildIndex,
-        layoutOffset: firstChildLayoutOffset,
-      );
+      final bool childAdded = addInitialChild(index: firstRequiredChildIndex, layoutOffset: firstChildLayoutOffset);
 
       if (!childAdded) {
         // There are either no children, or we are past the end of all our children.
@@ -408,16 +365,15 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
     // until we reach the [lastRequiredChildIndex] or run out of children.
     double calculatedMaxScrollOffset = double.infinity;
 
-    for (int currentIndex = indexOf(mostRecentlyLaidOutChild!) + 1;
-        lastRequiredChildIndex == null || currentIndex <= lastRequiredChildIndex;
-        ++currentIndex) {
+    for (
+      int currentIndex = indexOf(mostRecentlyLaidOutChild!) + 1;
+      lastRequiredChildIndex == null || currentIndex <= lastRequiredChildIndex;
+      ++currentIndex
+    ) {
       RenderBox? child = childAfter(mostRecentlyLaidOutChild!);
 
       if (child == null || indexOf(child) != currentIndex) {
-        child = insertAndLayoutChild(
-          childConstraints,
-          after: mostRecentlyLaidOutChild,
-        );
+        child = insertAndLayoutChild(childConstraints, after: mostRecentlyLaidOutChild);
         if (child == null) {
           final Segment? segment = _segments.findByIndex(currentIndex) ?? _segments.lastOrNull;
           calculatedMaxScrollOffset = segment?.indexToLayoutOffset(currentIndex) ?? computeMaxScrollOffset();
@@ -443,30 +399,18 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
     );
     assert(debugAssertChildListIsNonEmptyAndContiguous());
     assert(indexOf(firstChild!) == firstRequiredChildIndex);
-    assert(
-      lastRequiredChildIndex == null || lastLaidOutChildIndex <= lastRequiredChildIndex,
-    );
+    assert(lastRequiredChildIndex == null || lastLaidOutChildIndex <= lastRequiredChildIndex);
 
-    calculatedMaxScrollOffset = math.min(
-      calculatedMaxScrollOffset,
-      estimateMaxScrollOffset(),
-    );
+    calculatedMaxScrollOffset = math.min(calculatedMaxScrollOffset, estimateMaxScrollOffset());
 
-    final double paintExtent = calculatePaintOffset(
-      constraints,
-      from: leadingScrollOffset,
-      to: trailingScrollOffset,
-    );
+    final double paintExtent = calculatePaintOffset(constraints, from: leadingScrollOffset, to: trailingScrollOffset);
 
-    final double cacheExtent = calculateCacheOffset(
-      constraints,
-      from: leadingScrollOffset,
-      to: trailingScrollOffset,
-    );
+    final double cacheExtent = calculateCacheOffset(constraints, from: leadingScrollOffset, to: trailingScrollOffset);
 
     final double targetEndScrollOffsetForPaint = constraints.scrollOffset + constraints.remainingPaintExtent;
-    final int? targetLastIndexForPaint =
-        targetEndScrollOffsetForPaint.isFinite ? getMaxChildIndexForScrollOffset(targetEndScrollOffsetForPaint) : null;
+    final int? targetLastIndexForPaint = targetEndScrollOffsetForPaint.isFinite
+        ? getMaxChildIndexForScrollOffset(targetEndScrollOffsetForPaint)
+        : null;
 
     final maxPaintExtent = math.max(paintExtent, calculatedMaxScrollOffset);
 
@@ -477,7 +421,8 @@ class _RenderSliverTimelineBoxAdaptor extends RenderSliverMultiBoxAdaptor {
       // Indicates if there's content scrolled off-screen.
       // This is true if the last child needed for painting is actually laid out,
       // or if the first child is partially visible.
-      hasVisualOverflow: (targetLastIndexForPaint != null && lastLaidOutChildIndex >= targetLastIndexForPaint) ||
+      hasVisualOverflow:
+          (targetLastIndexForPaint != null && lastLaidOutChildIndex >= targetLastIndexForPaint) ||
           constraints.scrollOffset > 0.0,
       cacheExtent: cacheExtent,
     );
@@ -500,16 +445,10 @@ class _MultiSelectStatusButton extends ConsumerWidget {
     final selectCount = ref.watch(multiSelectProvider.select((s) => s.selectedAssets.length));
     return ElevatedButton.icon(
       onPressed: () => ref.read(multiSelectProvider.notifier).reset(),
-      icon: Icon(
-        Icons.close_rounded,
-        color: context.colorScheme.onPrimary,
-      ),
+      icon: Icon(Icons.close_rounded, color: context.colorScheme.onPrimary),
       label: Text(
         selectCount.toString(),
-        style: context.textTheme.titleMedium?.copyWith(
-          height: 2.5,
-          color: context.colorScheme.onPrimary,
-        ),
+        style: context.textTheme.titleMedium?.copyWith(height: 2.5, color: context.colorScheme.onPrimary),
       ),
     );
   }

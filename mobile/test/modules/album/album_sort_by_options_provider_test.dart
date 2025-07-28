@@ -22,12 +22,7 @@ void main() {
       db = await TestUtils.initIsar();
     });
 
-    final albums = [
-      AlbumStub.emptyAlbum,
-      AlbumStub.sharedWithUser,
-      AlbumStub.oneAsset,
-      AlbumStub.twoAsset,
-    ];
+    final albums = [AlbumStub.emptyAlbum, AlbumStub.sharedWithUser, AlbumStub.oneAsset, AlbumStub.twoAsset];
 
     setUp(() {
       db.writeTxnSync(() {
@@ -48,23 +43,13 @@ void main() {
       const created = AlbumSortMode.created;
       test("Created time - ASC", () {
         final sorted = created.sortFn(albums, false);
-        final sortedList = [
-          AlbumStub.emptyAlbum,
-          AlbumStub.twoAsset,
-          AlbumStub.oneAsset,
-          AlbumStub.sharedWithUser,
-        ];
+        final sortedList = [AlbumStub.emptyAlbum, AlbumStub.twoAsset, AlbumStub.oneAsset, AlbumStub.sharedWithUser];
         expect(sorted, orderedEquals(sortedList));
       });
 
       test("Created time - DESC", () {
         final sorted = created.sortFn(albums, true);
-        final sortedList = [
-          AlbumStub.sharedWithUser,
-          AlbumStub.oneAsset,
-          AlbumStub.twoAsset,
-          AlbumStub.emptyAlbum,
-        ];
+        final sortedList = [AlbumStub.sharedWithUser, AlbumStub.oneAsset, AlbumStub.twoAsset, AlbumStub.emptyAlbum];
         expect(sorted, orderedEquals(sortedList));
       });
     });
@@ -73,23 +58,13 @@ void main() {
       const assetCount = AlbumSortMode.assetCount;
       test("Asset Count - ASC", () {
         final sorted = assetCount.sortFn(albums, false);
-        final sortedList = [
-          AlbumStub.emptyAlbum,
-          AlbumStub.sharedWithUser,
-          AlbumStub.oneAsset,
-          AlbumStub.twoAsset,
-        ];
+        final sortedList = [AlbumStub.emptyAlbum, AlbumStub.sharedWithUser, AlbumStub.oneAsset, AlbumStub.twoAsset];
         expect(sorted, orderedEquals(sortedList));
       });
 
       test("Asset Count - DESC", () {
         final sorted = assetCount.sortFn(albums, true);
-        final sortedList = [
-          AlbumStub.twoAsset,
-          AlbumStub.oneAsset,
-          AlbumStub.sharedWithUser,
-          AlbumStub.emptyAlbum,
-        ];
+        final sortedList = [AlbumStub.twoAsset, AlbumStub.oneAsset, AlbumStub.sharedWithUser, AlbumStub.emptyAlbum];
         expect(sorted, orderedEquals(sortedList));
       });
     });
@@ -98,23 +73,13 @@ void main() {
       const lastModified = AlbumSortMode.lastModified;
       test("Last modified - ASC", () {
         final sorted = lastModified.sortFn(albums, false);
-        final sortedList = [
-          AlbumStub.twoAsset,
-          AlbumStub.emptyAlbum,
-          AlbumStub.sharedWithUser,
-          AlbumStub.oneAsset,
-        ];
+        final sortedList = [AlbumStub.twoAsset, AlbumStub.emptyAlbum, AlbumStub.sharedWithUser, AlbumStub.oneAsset];
         expect(sorted, orderedEquals(sortedList));
       });
 
       test("Last modified - DESC", () {
         final sorted = lastModified.sortFn(albums, true);
-        final sortedList = [
-          AlbumStub.oneAsset,
-          AlbumStub.sharedWithUser,
-          AlbumStub.emptyAlbum,
-          AlbumStub.twoAsset,
-        ];
+        final sortedList = [AlbumStub.oneAsset, AlbumStub.sharedWithUser, AlbumStub.emptyAlbum, AlbumStub.twoAsset];
         expect(sorted, orderedEquals(sortedList));
       });
     });
@@ -123,23 +88,13 @@ void main() {
       const created = AlbumSortMode.created;
       test("Created - ASC", () {
         final sorted = created.sortFn(albums, false);
-        final sortedList = [
-          AlbumStub.emptyAlbum,
-          AlbumStub.twoAsset,
-          AlbumStub.oneAsset,
-          AlbumStub.sharedWithUser,
-        ];
+        final sortedList = [AlbumStub.emptyAlbum, AlbumStub.twoAsset, AlbumStub.oneAsset, AlbumStub.sharedWithUser];
         expect(sorted, orderedEquals(sortedList));
       });
 
       test("Created - DESC", () {
         final sorted = created.sortFn(albums, true);
-        final sortedList = [
-          AlbumStub.sharedWithUser,
-          AlbumStub.oneAsset,
-          AlbumStub.twoAsset,
-          AlbumStub.emptyAlbum,
-        ];
+        final sortedList = [AlbumStub.sharedWithUser, AlbumStub.oneAsset, AlbumStub.twoAsset, AlbumStub.emptyAlbum];
         expect(sorted, orderedEquals(sortedList));
       });
     });
@@ -148,15 +103,12 @@ void main() {
       const mostRecent = AlbumSortMode.mostRecent;
 
       test("Most Recent - DESC", () {
-        final sorted = mostRecent.sortFn(
-          [
-            AlbumStub.create2020end2020Album,
-            AlbumStub.create2020end2022Album,
-            AlbumStub.create2020end2024Album,
-            AlbumStub.create2020end2026Album,
-          ],
-          false,
-        );
+        final sorted = mostRecent.sortFn([
+          AlbumStub.create2020end2020Album,
+          AlbumStub.create2020end2022Album,
+          AlbumStub.create2020end2024Album,
+          AlbumStub.create2020end2026Album,
+        ], false);
         final sortedList = [
           AlbumStub.create2020end2026Album,
           AlbumStub.create2020end2024Album,
@@ -167,15 +119,12 @@ void main() {
       });
 
       test("Most Recent - ASC", () {
-        final sorted = mostRecent.sortFn(
-          [
-            AlbumStub.create2020end2020Album,
-            AlbumStub.create2020end2022Album,
-            AlbumStub.create2020end2024Album,
-            AlbumStub.create2020end2026Album,
-          ],
-          true,
-        );
+        final sorted = mostRecent.sortFn([
+          AlbumStub.create2020end2020Album,
+          AlbumStub.create2020end2022Album,
+          AlbumStub.create2020end2024Album,
+          AlbumStub.create2020end2026Album,
+        ], true);
         final sortedList = [
           AlbumStub.create2020end2020Album,
           AlbumStub.create2020end2022Album,
@@ -191,23 +140,13 @@ void main() {
 
       test("Most Oldest - ASC", () {
         final sorted = mostOldest.sortFn(albums, false);
-        final sortedList = [
-          AlbumStub.twoAsset,
-          AlbumStub.emptyAlbum,
-          AlbumStub.oneAsset,
-          AlbumStub.sharedWithUser,
-        ];
+        final sortedList = [AlbumStub.twoAsset, AlbumStub.emptyAlbum, AlbumStub.oneAsset, AlbumStub.sharedWithUser];
         expect(sorted, orderedEquals(sortedList));
       });
 
       test("Most Oldest - DESC", () {
         final sorted = mostOldest.sortFn(albums, true);
-        final sortedList = [
-          AlbumStub.sharedWithUser,
-          AlbumStub.oneAsset,
-          AlbumStub.emptyAlbum,
-          AlbumStub.twoAsset,
-        ];
+        final sortedList = [AlbumStub.sharedWithUser, AlbumStub.oneAsset, AlbumStub.emptyAlbum, AlbumStub.twoAsset];
         expect(sorted, orderedEquals(sortedList));
       });
     });
@@ -221,67 +160,43 @@ void main() {
     setUp(() async {
       settingsMock = MockAppSettingsService();
       container = TestUtils.createContainer(
-        overrides: [
-          appSettingsServiceProvider.overrideWith((ref) => settingsMock),
-        ],
+        overrides: [appSettingsServiceProvider.overrideWith((ref) => settingsMock)],
       );
       when(
-        () => settingsMock.setSetting<bool>(
-          AppSettingsEnum.selectedAlbumSortReverse,
-          any(),
-        ),
+        () => settingsMock.setSetting<bool>(AppSettingsEnum.selectedAlbumSortReverse, any()),
       ).thenAnswer((_) async => {});
       when(
-        () => settingsMock.setSetting<int>(
-          AppSettingsEnum.selectedAlbumSortOrder,
-          any(),
-        ),
+        () => settingsMock.setSetting<int>(AppSettingsEnum.selectedAlbumSortOrder, any()),
       ).thenAnswer((_) async => {});
     });
 
     test('Returns the default sort mode when none set', () {
       // Returns the default value when nothing is set
-      when(
-        () => settingsMock.getSetting(AppSettingsEnum.selectedAlbumSortOrder),
-      ).thenReturn(0);
+      when(() => settingsMock.getSetting(AppSettingsEnum.selectedAlbumSortOrder)).thenReturn(0);
 
       expect(container.read(albumSortByOptionsProvider), AlbumSortMode.created);
     });
 
     test('Returns the correct sort mode with index from Store', () {
       // Returns the default value when nothing is set
-      when(
-        () => settingsMock.getSetting(AppSettingsEnum.selectedAlbumSortOrder),
-      ).thenReturn(3);
+      when(() => settingsMock.getSetting(AppSettingsEnum.selectedAlbumSortOrder)).thenReturn(3);
 
-      expect(
-        container.read(albumSortByOptionsProvider),
-        AlbumSortMode.lastModified,
-      );
+      expect(container.read(albumSortByOptionsProvider), AlbumSortMode.lastModified);
     });
 
     test('Properly saves the correct store index of sort mode', () {
       container.read(albumSortByOptionsProvider.notifier).changeSortMode(AlbumSortMode.mostOldest);
 
       verify(
-        () => settingsMock.setSetting(
-          AppSettingsEnum.selectedAlbumSortOrder,
-          AlbumSortMode.mostOldest.storeIndex,
-        ),
+        () => settingsMock.setSetting(AppSettingsEnum.selectedAlbumSortOrder, AlbumSortMode.mostOldest.storeIndex),
       );
     });
 
     test('Notifies listeners on state change', () {
-      when(
-        () => settingsMock.getSetting(AppSettingsEnum.selectedAlbumSortOrder),
-      ).thenReturn(0);
+      when(() => settingsMock.getSetting(AppSettingsEnum.selectedAlbumSortOrder)).thenReturn(0);
 
       final listener = ListenerMock<AlbumSortMode>();
-      container.listen(
-        albumSortByOptionsProvider,
-        listener.call,
-        fireImmediately: true,
-      );
+      container.listen(albumSortByOptionsProvider, listener.call, fireImmediately: true);
 
       // Created -> Most Oldest
       container.read(albumSortByOptionsProvider.notifier).changeSortMode(AlbumSortMode.mostOldest);
@@ -309,28 +224,18 @@ void main() {
     setUp(() async {
       settingsMock = MockAppSettingsService();
       container = TestUtils.createContainer(
-        overrides: [
-          appSettingsServiceProvider.overrideWith((ref) => settingsMock),
-        ],
+        overrides: [appSettingsServiceProvider.overrideWith((ref) => settingsMock)],
       );
       when(
-        () => settingsMock.setSetting<bool>(
-          AppSettingsEnum.selectedAlbumSortReverse,
-          any(),
-        ),
+        () => settingsMock.setSetting<bool>(AppSettingsEnum.selectedAlbumSortReverse, any()),
       ).thenAnswer((_) async => {});
       when(
-        () => settingsMock.setSetting<int>(
-          AppSettingsEnum.selectedAlbumSortOrder,
-          any(),
-        ),
+        () => settingsMock.setSetting<int>(AppSettingsEnum.selectedAlbumSortOrder, any()),
       ).thenAnswer((_) async => {});
     });
 
     test('Returns the default sort order when none set - false', () {
-      when(
-        () => settingsMock.getSetting(AppSettingsEnum.selectedAlbumSortReverse),
-      ).thenReturn(false);
+      when(() => settingsMock.getSetting(AppSettingsEnum.selectedAlbumSortReverse)).thenReturn(false);
 
       expect(container.read(albumSortOrderProvider), isFalse);
     });
@@ -338,25 +243,14 @@ void main() {
     test('Properly saves the correct order', () {
       container.read(albumSortOrderProvider.notifier).changeSortDirection(true);
 
-      verify(
-        () => settingsMock.setSetting(
-          AppSettingsEnum.selectedAlbumSortReverse,
-          true,
-        ),
-      );
+      verify(() => settingsMock.setSetting(AppSettingsEnum.selectedAlbumSortReverse, true));
     });
 
     test('Notifies listeners on state change', () {
-      when(
-        () => settingsMock.getSetting(AppSettingsEnum.selectedAlbumSortReverse),
-      ).thenReturn(false);
+      when(() => settingsMock.getSetting(AppSettingsEnum.selectedAlbumSortReverse)).thenReturn(false);
 
       final listener = ListenerMock<bool>();
-      container.listen(
-        albumSortOrderProvider,
-        listener.call,
-        fireImmediately: true,
-      );
+      container.listen(albumSortOrderProvider, listener.call, fireImmediately: true);
 
       // false -> true
       container.read(albumSortOrderProvider.notifier).changeSortDirection(true);

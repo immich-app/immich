@@ -7,12 +7,7 @@ class ServerEndpointInput extends StatelessWidget {
   final FocusNode focusNode;
   final Function()? onSubmit;
 
-  const ServerEndpointInput({
-    super.key,
-    required this.controller,
-    required this.focusNode,
-    this.onSubmit,
-  });
+  const ServerEndpointInput({super.key, required this.controller, required this.focusNode, this.onSubmit});
 
   String? _validateInput(String? url) {
     if (url == null || url.isEmpty) return null;

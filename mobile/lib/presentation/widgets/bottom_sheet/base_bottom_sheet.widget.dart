@@ -73,9 +73,7 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
           borderOnForeground: false,
           clipBehavior: Clip.antiAlias,
           elevation: 6.0,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-          ),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
           margin: const EdgeInsets.symmetric(horizontal: 0),
           child: CustomScrollView(
             controller: scrollController,
@@ -89,11 +87,7 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
                     if (widget.actions.isNotEmpty)
                       SizedBox(
                         height: 115,
-                        child: ListView(
-                          shrinkWrap: true,
-                          scrollDirection: Axis.horizontal,
-                          children: widget.actions,
-                        ),
+                        child: ListView(shrinkWrap: true, scrollDirection: Axis.horizontal, children: widget.actions),
                       ),
                     if (widget.actions.isNotEmpty) ...[
                       const Divider(indent: 16, endIndent: 16),

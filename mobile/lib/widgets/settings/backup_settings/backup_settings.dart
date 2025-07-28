@@ -15,9 +15,7 @@ import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 
 class BackupSettings extends HookConsumerWidget {
-  const BackupSettings({
-    super.key,
-  });
+  const BackupSettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -71,22 +69,14 @@ class BackupSettings extends HookConsumerWidget {
         SettingsButtonListTile(
           icon: Icons.photo_album_outlined,
           title: 'sync_albums'.tr(),
-          subtitle: Text(
-            "sync_albums_manual_subtitle".tr(),
-          ),
+          subtitle: Text("sync_albums_manual_subtitle".tr()),
           buttonText: 'sync_albums'.tr(),
           child: isAlbumSyncInProgress.value
               ? const CircularProgressIndicator()
-              : ElevatedButton(
-                  onPressed: syncAlbums,
-                  child: Text('sync'.tr()),
-                ),
+              : ElevatedButton(onPressed: syncAlbums, child: Text('sync'.tr())),
         ),
     ];
 
-    return SettingsSubPageScaffold(
-      settings: backupSettings,
-      showDivider: true,
-    );
+    return SettingsSubPageScaffold(settings: backupSettings, showDivider: true);
   }
 }

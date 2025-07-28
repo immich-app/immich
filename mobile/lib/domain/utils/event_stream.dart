@@ -28,12 +28,7 @@ class EventStream {
     void Function()? onDone,
     bool? cancelOnError,
   }) {
-    return where<T>().listen(
-      onData,
-      onError: onError,
-      onDone: onDone,
-      cancelOnError: cancelOnError,
-    );
+    return where<T>().listen(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
 
   /// Closes the stream controller

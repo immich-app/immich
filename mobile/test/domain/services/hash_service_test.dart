@@ -21,10 +21,7 @@ void main() {
   late MockLocalAssetRepository mockAssetRepo;
   late MockStorageRepository mockStorageRepo;
   late MockNativeSyncApi mockNativeApi;
-  final sortBy = {
-    SortLocalAlbumsBy.backupSelection,
-    SortLocalAlbumsBy.isIosSharedAlbum,
-  };
+  final sortBy = {SortLocalAlbumsBy.backupSelection, SortLocalAlbumsBy.isIosSharedAlbum};
 
   setUp(() {
     mockAlbumRepo = MockLocalAlbumRepository();
@@ -47,9 +44,9 @@ void main() {
 
   group('HashService hashAssets', () {
     test('skips albums with no assets to hash', () async {
-      when(() => mockAlbumRepo.getAll(sortBy: sortBy)).thenAnswer(
-        (_) async => [LocalAlbumStub.recent.copyWith(assetCount: 0)],
-      );
+      when(
+        () => mockAlbumRepo.getAll(sortBy: sortBy),
+      ).thenAnswer((_) async => [LocalAlbumStub.recent.copyWith(assetCount: 0)]);
       when(() => mockAlbumRepo.getAssetsToHash(LocalAlbumStub.recent.id)).thenAnswer((_) async => []);
 
       await sut.hashAssets();
@@ -84,9 +81,7 @@ void main() {
       when(() => mockAlbumRepo.getAll(sortBy: sortBy)).thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id)).thenAnswer((_) async => [asset]);
       when(() => mockStorageRepo.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
-      when(() => mockNativeApi.hashPaths(['image-path'])).thenAnswer(
-        (_) async => [hash],
-      );
+      when(() => mockNativeApi.hashPaths(['image-path'])).thenAnswer((_) async => [hash]);
 
       await sut.hashAssets();
 

@@ -39,14 +39,10 @@ class BaseActionButton extends StatelessWidget {
     }
 
     return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxWidth: maxWidth,
-      ),
+      constraints: BoxConstraints(maxWidth: maxWidth),
       child: MaterialButton(
         padding: const EdgeInsets.all(10),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(20)),
-        ),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
         textColor: textColor,
         onPressed: onPressed,
         onLongPress: onLongPressed,
@@ -59,10 +55,7 @@ class BaseActionButton extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 14.0,
-                fontWeight: FontWeight.w400,
-              ),
+              style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400),
               maxLines: 3,
               textAlign: TextAlign.center,
               softWrap: true,

@@ -6,26 +6,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 
-enum UploadProfileStatus {
-  idle,
-  loading,
-  success,
-  failure,
-}
+enum UploadProfileStatus { idle, loading, success, failure }
 
 class UploadProfileImageState {
   // enum
   final UploadProfileStatus status;
   final String profileImagePath;
-  const UploadProfileImageState({
-    required this.status,
-    required this.profileImagePath,
-  });
+  const UploadProfileImageState({required this.status, required this.profileImagePath});
 
-  UploadProfileImageState copyWith({
-    UploadProfileStatus? status,
-    String? profileImagePath,
-  }) {
+  UploadProfileImageState copyWith({UploadProfileStatus? status, String? profileImagePath}) {
     return UploadProfileImageState(
       status: status ?? this.status,
       profileImagePath: profileImagePath ?? this.profileImagePath,
@@ -68,29 +57,18 @@ class UploadProfileImageState {
 
 class UploadProfileImageNotifier extends StateNotifier<UploadProfileImageState> {
   UploadProfileImageNotifier(this._userService)
-      : super(
-          const UploadProfileImageState(
-            profileImagePath: '',
-            status: UploadProfileStatus.idle,
-          ),
-        );
+    : super(const UploadProfileImageState(profileImagePath: '', status: UploadProfileStatus.idle));
 
   final UserService _userService;
 
   Future<bool> upload(XFile file) async {
     state = state.copyWith(status: UploadProfileStatus.loading);
 
-    var profileImagePath = await _userService.createProfileImage(
-      file.name,
-      await file.readAsBytes(),
-    );
+    var profileImagePath = await _userService.createProfileImage(file.name, await file.readAsBytes());
 
     if (profileImagePath != null) {
       debugPrint("Successfully upload profile image");
-      state = state.copyWith(
-        status: UploadProfileStatus.success,
-        profileImagePath: profileImagePath,
-      );
+      state = state.copyWith(status: UploadProfileStatus.success, profileImagePath: profileImagePath);
       return true;
     }
 

@@ -42,15 +42,11 @@ class SettingsSwitchListTile extends StatelessWidget {
       onChanged: onSwitchChanged,
       activeColor: enabled ? context.primaryColor : context.themeData.disabledColor,
       dense: true,
-      secondary: icon != null
-          ? Icon(
-              icon!,
-              color: valueNotifier.value ? context.primaryColor : null,
-            )
-          : null,
+      secondary: icon != null ? Icon(icon!, color: valueNotifier.value ? context.primaryColor : null) : null,
       title: Text(
         title,
-        style: titleStyle ??
+        style:
+            titleStyle ??
             context.textTheme.bodyLarge?.copyWith(
               fontWeight: FontWeight.w500,
               color: enabled ? null : context.themeData.disabledColor,
@@ -60,7 +56,8 @@ class SettingsSwitchListTile extends StatelessWidget {
       subtitle: subtitle != null
           ? Text(
               subtitle!,
-              style: subtitleStyle ??
+              style:
+                  subtitleStyle ??
                   context.textTheme.bodyMedium?.copyWith(
                     color: enabled ? context.colorScheme.onSurfaceSecondary : context.themeData.disabledColor,
                   ),

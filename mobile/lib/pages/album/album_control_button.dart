@@ -7,11 +7,7 @@ class AlbumControlButton extends ConsumerWidget {
   final void Function()? onAddPhotosPressed;
   final void Function()? onAddUsersPressed;
 
-  const AlbumControlButton({
-    super.key,
-    this.onAddPhotosPressed,
-    this.onAddUsersPressed,
-  });
+  const AlbumControlButton({super.key, this.onAddPhotosPressed, this.onAddUsersPressed});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -25,19 +25,16 @@ class HashService {
     required NativeSyncApi nativeSyncApi,
     this.batchSizeLimit = kBatchHashSizeLimit,
     this.batchFileLimit = kBatchHashFileLimit,
-  })  : _localAlbumRepository = localAlbumRepository,
-        _localAssetRepository = localAssetRepository,
-        _storageRepository = storageRepository,
-        _nativeSyncApi = nativeSyncApi;
+  }) : _localAlbumRepository = localAlbumRepository,
+       _localAssetRepository = localAssetRepository,
+       _storageRepository = storageRepository,
+       _nativeSyncApi = nativeSyncApi;
 
   Future<void> hashAssets() async {
     final Stopwatch stopwatch = Stopwatch()..start();
     // Sorted by backupSelection followed by isCloud
     final localAlbums = await _localAlbumRepository.getAll(
-      sortBy: {
-        SortLocalAlbumsBy.backupSelection,
-        SortLocalAlbumsBy.isIosSharedAlbum,
-      },
+      sortBy: {SortLocalAlbumsBy.backupSelection, SortLocalAlbumsBy.isIosSharedAlbum},
     );
 
     for (final album in localAlbums) {

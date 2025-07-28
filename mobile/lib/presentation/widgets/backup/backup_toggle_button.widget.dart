@@ -11,11 +11,7 @@ class BackupToggleButton extends ConsumerStatefulWidget {
   final VoidCallback onStart;
   final VoidCallback onStop;
 
-  const BackupToggleButton({
-    super.key,
-    required this.onStart,
-    required this.onStop,
-  });
+  const BackupToggleButton({super.key, required this.onStart, required this.onStop});
 
   @override
   ConsumerState<BackupToggleButton> createState() => BackupToggleButtonState();
@@ -29,17 +25,12 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 8),
-      vsync: this,
-    );
+    _animationController = AnimationController(duration: const Duration(seconds: 8), vsync: this);
 
-    _gradientAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
+    _gradientAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
 
     _isEnabled = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
   }
@@ -66,21 +57,13 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
 
   @override
   Widget build(BuildContext context) {
-    final enqueueCount = ref.watch(
-      driftBackupProvider.select((state) => state.enqueueCount),
-    );
+    final enqueueCount = ref.watch(driftBackupProvider.select((state) => state.enqueueCount));
 
-    final enqueueTotalCount = ref.watch(
-      driftBackupProvider.select((state) => state.enqueueTotalCount),
-    );
+    final enqueueTotalCount = ref.watch(driftBackupProvider.select((state) => state.enqueueTotalCount));
 
-    final isCanceling = ref.watch(
-      driftBackupProvider.select((state) => state.isCanceling),
-    );
+    final isCanceling = ref.watch(driftBackupProvider.select((state) => state.isCanceling));
 
-    final uploadTasks = ref.watch(
-      driftBackupProvider.select((state) => state.uploadItems),
-    );
+    final uploadTasks = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
 
     final isUploading = uploadTasks.isNotEmpty;
 
@@ -116,11 +99,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
               end: Alignment.bottomRight,
             ),
             boxShadow: [
-              BoxShadow(
-                color: context.primaryColor.withValues(alpha: 0.1),
-                blurRadius: 12,
-                offset: const Offset(0, 2),
-              ),
+              BoxShadow(color: context.primaryColor.withValues(alpha: 0.1), blurRadius: 12, offset: const Offset(0, 2)),
             ],
           ),
           child: Container(
@@ -151,18 +130,8 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                           ),
                         ),
                         child: isUploading
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Icon(
-                                Icons.cloud_upload_outlined,
-                                color: context.primaryColor,
-                                size: 24,
-                              ),
+                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                            : Icon(Icons.cloud_upload_outlined, color: context.primaryColor, size: 24),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -185,10 +154,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                               Text(
                                 "queue_status".t(
                                   context: context,
-                                  args: {
-                                    'count': enqueueCount.toString(),
-                                    'total': enqueueTotalCount.toString(),
-                                  },
+                                  args: {'count': enqueueCount.toString(), 'total': enqueueTotalCount.toString()},
                                 ),
                                 style: context.textTheme.labelLarge?.copyWith(
                                   color: context.colorScheme.onSurfaceSecondary,
@@ -197,10 +163,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                             if (isCanceling)
                               Row(
                                 children: [
-                                  Text(
-                                    "canceling".t(),
-                                    style: context.textTheme.labelLarge,
-                                  ),
+                                  Text("canceling".t(), style: context.textTheme.labelLarge),
                                   const SizedBox(width: 4),
                                   SizedBox(
                                     width: 18,
@@ -215,10 +178,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                           ],
                         ),
                       ),
-                      Switch.adaptive(
-                        value: _isEnabled,
-                        onChanged: (value) => isCanceling ? null : _onToggle(value),
-                      ),
+                      Switch.adaptive(value: _isEnabled, onChanged: (value) => isCanceling ? null : _onToggle(value)),
                     ],
                   ),
                 ),
