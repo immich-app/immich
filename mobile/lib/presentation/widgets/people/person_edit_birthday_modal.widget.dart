@@ -42,10 +42,31 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
         "edit_birthday".t(context: context),
         style: const TextStyle(fontWeight: FontWeight.bold),
       ),
-      content: SingleChildScrollView(
-        child: SizedBox(
-          height: 250,
+      content: SizedBox(
+        width: double.maxFinite,
+        height: 300,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.all(Radius.circular(16.0)),
           child: ScrollDatePicker(
+            options: DatePickerOptions(
+              backgroundColor: context.colorScheme.surfaceContainerHigh,
+              itemExtent: 50,
+              diameterRatio: 5,
+            ),
+            scrollViewOptions: DatePickerScrollViewOptions(
+              day: ScrollViewDetailOptions(
+                margin: const EdgeInsets.all(12),
+                selectedTextStyle: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              month: ScrollViewDetailOptions(
+                margin: const EdgeInsets.all(12),
+                selectedTextStyle: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              year: ScrollViewDetailOptions(
+                margin: const EdgeInsets.all(12),
+                selectedTextStyle: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
             selectedDate: _selectedDate,
             locale: context.locale,
             onDateTimeChanged: (DateTime value) {

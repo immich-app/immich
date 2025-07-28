@@ -25,7 +25,7 @@ class PersonOptionSheet extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.cake),
-              title: Text('edit_birdthday'.t(context: context), style: textStyle),
+              title: Text('edit_birthday'.t(context: context), style: textStyle),
               onTap: onEditBirthday,
             ),
           ],
