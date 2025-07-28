@@ -47,8 +47,9 @@ String _$userServiceHash() => r'181414dddc7891be6237e13d568c287a804228d1';
 final userServiceProvider = Provider<UserService>.internal(
   userService,
   name: r'userServiceProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$userServiceHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$userServiceHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
