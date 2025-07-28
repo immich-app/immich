@@ -29,6 +29,33 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     return query.map((row) => row.toDto()).get();
   }
 
+  SingleOrNullSelectable<RemoteAsset?> _assetSelectable(String id) {
+    final query = _db.remoteAssetEntity.select().addColumns([
+      _db.localAssetEntity.id,
+    ]).join([
+      leftOuterJoin(
+        _db.localAssetEntity,
+        _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
+        useColumns: false,
+      ),
+    ])
+      ..where(_db.remoteAssetEntity.id.equals(id))
+      ..limit(1);
+
+    return query.map((row) {
+      final asset = row.readTable(_db.remoteAssetEntity).toDto();
+      return asset.copyWith(localId: row.read(_db.localAssetEntity.id));
+    });
+  }
+
+  Stream<RemoteAsset?> watch(String id) {
+    return _assetSelectable(id).watchSingleOrNull();
+  }
+
+  Future<RemoteAsset?> get(String id) {
+    return _assetSelectable(id).getSingleOrNull();
+  }
+
   Stream<RemoteAsset?> watchAsset(String id) {
     final query = _db.remoteAssetEntity.select().addColumns([
       _db.localAssetEntity.id,

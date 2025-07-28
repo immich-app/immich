@@ -437,6 +437,15 @@ export class DatabaseRepository {
   }
 
   async migrateFilePaths(sourceFolder: string, targetFolder: string): Promise<void> {
+    // remove trailing slashes
+    if (sourceFolder.endsWith('/')) {
+      sourceFolder = sourceFolder.slice(0, -1);
+    }
+
+    if (targetFolder.endsWith('/')) {
+      targetFolder = targetFolder.slice(0, -1);
+    }
+
     // escaping regex special characters with a backslash
     const sourceRegex = '^' + sourceFolder.replaceAll(/[-[\]{}()*+?.,\\^$|#\s]/g, String.raw`\$&`);
     const source = sql.raw(`'${sourceRegex}'`);

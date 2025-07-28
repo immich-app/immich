@@ -46,7 +46,7 @@ class ArchiveActionButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
       iconData: Icons.archive_outlined,
-      label: "archive".t(context: context),
+      label: "to_archive".t(context: context),
       onPressed: () => _onTap(context, ref),
     );
   }

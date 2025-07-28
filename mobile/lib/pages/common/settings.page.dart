@@ -34,7 +34,7 @@ enum SettingSection {
     "asset_viewer_settings_subtitle",
   ),
   backup(
-    'backup_controller_page_backup',
+    'backup',
     Icons.cloud_upload_outlined,
     "backup_setting_subtitle",
   ),
