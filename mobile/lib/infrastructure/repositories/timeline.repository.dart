@@ -31,9 +31,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 
   TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy) => (
-        bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),
-        assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count),
-      );
+    bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),
+    assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count),
+  );
 
   Stream<List<Bucket>> _watchMainBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
@@ -91,9 +91,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 
   TimelineQuery localAlbum(String albumId, GroupAssetsBy groupBy) => (
-        bucketSource: () => _watchLocalAlbumBucket(albumId, groupBy: groupBy),
-        assetSource: (offset, count) => _getLocalAlbumBucketAssets(albumId, offset: offset, count: count),
-      );
+    bucketSource: () => _watchLocalAlbumBucket(albumId, groupBy: groupBy),
+    assetSource: (offset, count) => _getLocalAlbumBucketAssets(albumId, offset: offset, count: count),
+  );
 
   Stream<List<Bucket>> _watchLocalAlbumBucket(String albumId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
@@ -106,22 +106,23 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     final assetCountExp = _db.localAssetEntity.id.count();
     final dateExp = _db.localAssetEntity.createdAt.dateFmt(groupBy);
 
-    final query = _db.localAssetEntity.selectOnly().join([
-      innerJoin(
-        _db.localAlbumAssetEntity,
-        _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
-        useColumns: false,
-      ),
-      leftOuterJoin(
-        _db.remoteAssetEntity,
-        _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-        useColumns: false,
-      ),
-    ])
-      ..addColumns([assetCountExp, dateExp])
-      ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
-      ..groupBy([dateExp])
-      ..orderBy([OrderingTerm.desc(dateExp)]);
+    final query =
+        _db.localAssetEntity.selectOnly().join([
+            innerJoin(
+              _db.localAlbumAssetEntity,
+              _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+              useColumns: false,
+            ),
+          ])
+          ..addColumns([assetCountExp, dateExp])
+          ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
+          ..groupBy([dateExp])
+          ..orderBy([OrderingTerm.desc(dateExp)]);
 
     return query.map((row) {
       final timeline = row.read(dateExp)!.dateFmt(groupBy);
@@ -131,22 +132,23 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 
   Future<List<BaseAsset>> _getLocalAlbumBucketAssets(String albumId, {required int offset, required int count}) {
-    final query = _db.localAssetEntity.select().join([
-      innerJoin(
-        _db.localAlbumAssetEntity,
-        _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
-        useColumns: false,
-      ),
-      leftOuterJoin(
-        _db.remoteAssetEntity,
-        _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-        useColumns: false,
-      ),
-    ])
-      ..addColumns([_db.remoteAssetEntity.id])
-      ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
-      ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
-      ..limit(count, offset: offset);
+    final query =
+        _db.localAssetEntity.select().join([
+            innerJoin(
+              _db.localAlbumAssetEntity,
+              _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+              useColumns: false,
+            ),
+          ])
+          ..addColumns([_db.remoteAssetEntity.id])
+          ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
+          ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
+          ..limit(count, offset: offset);
 
     return query.map((row) {
       final asset = row.readTable(_db.localAssetEntity).toDto();
@@ -155,9 +157,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 
   TimelineQuery remoteAlbum(String albumId, GroupAssetsBy groupBy) => (
-        bucketSource: () => _watchRemoteAlbumBucket(albumId, groupBy: groupBy),
-        assetSource: (offset, count) => _getRemoteAlbumBucketAssets(albumId, offset: offset, count: count),
-      );
+    bucketSource: () => _watchRemoteAlbumBucket(albumId, groupBy: groupBy),
+    assetSource: (offset, count) => _getRemoteAlbumBucketAssets(albumId, offset: offset, count: count),
+  );
 
   Stream<List<Bucket>> _watchRemoteAlbumBucket(String albumId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
@@ -167,47 +169,50 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
           .watch()
           .map((results) => results.isNotEmpty ? results.first : <Bucket>[])
           .handleError((error) {
-        return [];
-      });
+            return [];
+          });
     }
 
-    return (_db.remoteAlbumEntity.select()..where((row) => row.id.equals(albumId))).watch().switchMap((albums) {
-      if (albums.isEmpty) {
-        return Stream.value(<Bucket>[]);
-      }
+    return (_db.remoteAlbumEntity.select()..where((row) => row.id.equals(albumId)))
+        .watch()
+        .switchMap((albums) {
+          if (albums.isEmpty) {
+            return Stream.value(<Bucket>[]);
+          }
 
-      final album = albums.first;
-      final isAscending = album.order == AlbumAssetOrder.asc;
-      final assetCountExp = _db.remoteAssetEntity.id.count();
-      final dateExp = _db.remoteAssetEntity.createdAt.dateFmt(groupBy);
+          final album = albums.first;
+          final isAscending = album.order == AlbumAssetOrder.asc;
+          final assetCountExp = _db.remoteAssetEntity.id.count();
+          final dateExp = _db.remoteAssetEntity.createdAt.dateFmt(groupBy);
 
-      final query = _db.remoteAssetEntity.selectOnly()
-        ..addColumns([assetCountExp, dateExp])
-        ..join([
-          innerJoin(
-            _db.remoteAlbumAssetEntity,
-            _db.remoteAlbumAssetEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
-            useColumns: false,
-          ),
-        ])
-        ..where(_db.remoteAssetEntity.deletedAt.isNull() & _db.remoteAlbumAssetEntity.albumId.equals(albumId))
-        ..groupBy([dateExp]);
+          final query = _db.remoteAssetEntity.selectOnly()
+            ..addColumns([assetCountExp, dateExp])
+            ..join([
+              innerJoin(
+                _db.remoteAlbumAssetEntity,
+                _db.remoteAlbumAssetEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+                useColumns: false,
+              ),
+            ])
+            ..where(_db.remoteAssetEntity.deletedAt.isNull() & _db.remoteAlbumAssetEntity.albumId.equals(albumId))
+            ..groupBy([dateExp]);
 
-      if (isAscending) {
-        query.orderBy([OrderingTerm.asc(dateExp)]);
-      } else {
-        query.orderBy([OrderingTerm.desc(dateExp)]);
-      }
+          if (isAscending) {
+            query.orderBy([OrderingTerm.asc(dateExp)]);
+          } else {
+            query.orderBy([OrderingTerm.desc(dateExp)]);
+          }
 
-      return query.map((row) {
-        final timeline = row.read(dateExp)!.dateFmt(groupBy);
-        final assetCount = row.read(assetCountExp)!;
-        return TimeBucket(date: timeline, assetCount: assetCount);
-      }).watch();
-    }).handleError((error) {
-      // If there's an error (e.g., album was deleted), return empty buckets
-      return <Bucket>[];
-    });
+          return query.map((row) {
+            final timeline = row.read(dateExp)!.dateFmt(groupBy);
+            final assetCount = row.read(assetCountExp)!;
+            return TimeBucket(date: timeline, assetCount: assetCount);
+          }).watch();
+        })
+        .handleError((error) {
+          // If there's an error (e.g., album was deleted), return empty buckets
+          return <Bucket>[];
+        });
   }
 
   Future<List<BaseAsset>> _getRemoteAlbumBucketAssets(String albumId, {required int offset, required int count}) async {
@@ -226,8 +231,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         _db.remoteAlbumAssetEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
         useColumns: false,
       ),
-    ])
-      ..where(_db.remoteAssetEntity.deletedAt.isNull() & _db.remoteAlbumAssetEntity.albumId.equals(albumId));
+    ])..where(_db.remoteAssetEntity.deletedAt.isNull() & _db.remoteAlbumAssetEntity.albumId.equals(albumId));
 
     if (isAscending) {
       query.orderBy([OrderingTerm.asc(_db.remoteAssetEntity.createdAt)]);
@@ -241,66 +245,57 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 
   TimelineQuery fromAssets(List<BaseAsset> assets) => (
-        bucketSource: () => Stream.value(_generateBuckets(assets.length)),
-        assetSource: (offset, count) => Future.value(assets.skip(offset).take(count).toList()),
-      );
+    bucketSource: () => Stream.value(_generateBuckets(assets.length)),
+    assetSource: (offset, count) => Future.value(assets.skip(offset).take(count).toList()),
+  );
 
   TimelineQuery remote(String ownerId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
-        filter: (row) =>
-            row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.equals(ownerId),
-        groupBy: groupBy,
-      );
+    filter: (row) =>
+        row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.equals(ownerId),
+    groupBy: groupBy,
+  );
 
   TimelineQuery favorite(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
-        filter: (row) => row.deletedAt.isNull() & row.isFavorite.equals(true) & row.ownerId.equals(userId),
-        groupBy: groupBy,
-      );
+    filter: (row) => row.deletedAt.isNull() & row.isFavorite.equals(true) & row.ownerId.equals(userId),
+    groupBy: groupBy,
+  );
 
   TimelineQuery trash(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
-        filter: (row) => row.deletedAt.isNotNull() & row.ownerId.equals(userId),
-        groupBy: groupBy,
-        joinLocal: true,
-      );
+    filter: (row) => row.deletedAt.isNotNull() & row.ownerId.equals(userId),
+    groupBy: groupBy,
+    joinLocal: true,
+  );
 
   TimelineQuery archived(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
-        filter: (row) =>
-            row.deletedAt.isNull() & row.ownerId.equals(userId) & row.visibility.equalsValue(AssetVisibility.archive),
-        groupBy: groupBy,
-      );
+    filter: (row) =>
+        row.deletedAt.isNull() & row.ownerId.equals(userId) & row.visibility.equalsValue(AssetVisibility.archive),
+    groupBy: groupBy,
+  );
 
   TimelineQuery locked(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
-        filter: (row) =>
-            row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.locked) & row.ownerId.equals(userId),
-        groupBy: groupBy,
-      );
+    filter: (row) =>
+        row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.locked) & row.ownerId.equals(userId),
+    groupBy: groupBy,
+  );
 
   TimelineQuery video(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
-        filter: (row) =>
-            row.deletedAt.isNull() &
-            row.type.equalsValue(AssetType.video) &
-            row.visibility.equalsValue(AssetVisibility.timeline) &
-            row.ownerId.equals(userId),
-        groupBy: groupBy,
-      );
+    filter: (row) =>
+        row.deletedAt.isNull() &
+        row.type.equalsValue(AssetType.video) &
+        row.visibility.equalsValue(AssetVisibility.timeline) &
+        row.ownerId.equals(userId),
+    groupBy: groupBy,
+  );
 
   TimelineQuery place(String place, GroupAssetsBy groupBy) => (
-        bucketSource: () => _watchPlaceBucket(place, groupBy: groupBy),
-        assetSource: (offset, count) => _getPlaceBucketAssets(place, offset: offset, count: count),
-      );
+    bucketSource: () => _watchPlaceBucket(place, groupBy: groupBy),
+    assetSource: (offset, count) => _getPlaceBucketAssets(place, offset: offset, count: count),
+  );
 
   TimelineQuery person(String userId, String personId, GroupAssetsBy groupBy) => (
-        bucketSource: () => _watchPersonBucket(
-              userId,
-              personId,
-              groupBy: groupBy,
-            ),
-        assetSource: (offset, count) => _getPersonBucketAssets(
-              userId,
-              personId,
-              offset: offset,
-              count: count,
-            ),
-      );
+    bucketSource: () => _watchPersonBucket(userId, personId, groupBy: groupBy),
+    assetSource: (offset, count) => _getPersonBucketAssets(userId, personId, offset: offset, count: count),
+  );
 
   Stream<List<Bucket>> _watchPlaceBucket(String place, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
@@ -336,28 +331,25 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 
   Future<List<BaseAsset>> _getPlaceBucketAssets(String place, {required int offset, required int count}) {
-    final query = _db.remoteAssetEntity.select().join([
-      innerJoin(
-        _db.remoteExifEntity,
-        _db.remoteExifEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
-        useColumns: false,
-      ),
-    ])
-      ..where(
-        _db.remoteAssetEntity.deletedAt.isNull() &
-            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
-            _db.remoteExifEntity.city.equals(place),
-      )
-      ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
-      ..limit(count, offset: offset);
+    final query =
+        _db.remoteAssetEntity.select().join([
+            innerJoin(
+              _db.remoteExifEntity,
+              _db.remoteExifEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..where(
+            _db.remoteAssetEntity.deletedAt.isNull() &
+                _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
+                _db.remoteExifEntity.city.equals(place),
+          )
+          ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+          ..limit(count, offset: offset);
     return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }
 
-  Stream<List<Bucket>> _watchPersonBucket(
-    String userId,
-    String personId, {
-    GroupAssetsBy groupBy = GroupAssetsBy.day,
-  }) {
+  Stream<List<Bucket>> _watchPersonBucket(String userId, String personId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
       final query = _db.remoteAssetEntity.selectOnly()
         ..addColumns([_db.remoteAssetEntity.id.count()])
@@ -415,23 +407,22 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     required int offset,
     required int count,
   }) {
-    final query = _db.remoteAssetEntity.select().join(
-      [
-        innerJoin(
-          _db.assetFaceEntity,
-          _db.assetFaceEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
-          useColumns: false,
-        ),
-      ],
-    )
-      ..where(
-        _db.remoteAssetEntity.deletedAt.isNull() &
-            _db.remoteAssetEntity.ownerId.equals(userId) &
-            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
-            _db.assetFaceEntity.personId.equals(personId),
-      )
-      ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
-      ..limit(count, offset: offset);
+    final query =
+        _db.remoteAssetEntity.select().join([
+            innerJoin(
+              _db.assetFaceEntity,
+              _db.assetFaceEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..where(
+            _db.remoteAssetEntity.deletedAt.isNull() &
+                _db.remoteAssetEntity.ownerId.equals(userId) &
+                _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
+                _db.assetFaceEntity.personId.equals(personId),
+          )
+          ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+          ..limit(count, offset: offset);
 
     return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }
@@ -480,17 +471,18 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     bool joinLocal = false,
   }) {
     if (joinLocal) {
-      final query = _db.remoteAssetEntity.select().join([
-        leftOuterJoin(
-          _db.localAssetEntity,
-          _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
-          useColumns: false,
-        ),
-      ])
-        ..addColumns([_db.localAssetEntity.id])
-        ..where(filter(_db.remoteAssetEntity))
-        ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
-        ..limit(count, offset: offset);
+      final query =
+          _db.remoteAssetEntity.select().join([
+              leftOuterJoin(
+                _db.localAssetEntity,
+                _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
+                useColumns: false,
+              ),
+            ])
+            ..addColumns([_db.localAssetEntity.id])
+            ..where(filter(_db.remoteAssetEntity))
+            ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+            ..limit(count, offset: offset);
 
       return query.map((row) {
         final asset = row.readTable(_db.remoteAssetEntity).toDto();

@@ -40,7 +40,7 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
   }
 
   Future<void> handleEditBirthday(BuildContext context) async {
-    // final newName = await showNameEditModal(context, _person);
+    final newName = await showBirthdayEditModal(context, _person);
 
     // if (newName != null && newName.isNotEmpty) {
     //   setState(() {

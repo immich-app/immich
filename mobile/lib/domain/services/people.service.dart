@@ -24,4 +24,8 @@ class DriftPeopleService {
     await _personApiRepository.update(personId, name: name);
     return _repository.updateName(personId, name);
   }
+
+  Future<int> updateBrithday(String personId, DateTime birthday) async {
+    return 1;
+  }
 }

@@ -9,14 +9,8 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
 
   Future<List<DriftPerson>> getAssetPeople(String assetId) async {
     final query = _db.select(_db.assetFaceEntity).join([
-      innerJoin(
-        _db.personEntity,
-        _db.personEntity.id.equalsExp(_db.assetFaceEntity.personId),
-      ),
-    ])
-      ..where(
-        _db.assetFaceEntity.assetId.equals(assetId) & _db.personEntity.isHidden.equals(false),
-      );
+      innerJoin(_db.personEntity, _db.personEntity.id.equalsExp(_db.assetFaceEntity.personId)),
+    ])..where(_db.assetFaceEntity.assetId.equals(assetId) & _db.personEntity.isHidden.equals(false));
 
     return query.map((row) {
       final person = row.readTable(_db.personEntity);
@@ -25,24 +19,16 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
   }
 
   Future<List<DriftPerson>> getAllPeople() async {
-    final query = _db.select(_db.personEntity).join([
-      leftOuterJoin(
-        _db.assetFaceEntity,
-        _db.assetFaceEntity.personId.equalsExp(_db.personEntity.id),
-      ),
-    ])
-      ..where(_db.personEntity.isHidden.equals(false))
-      ..groupBy([_db.personEntity.id])
-      ..orderBy([
-        OrderingTerm(
-          expression: _db.personEntity.name.equals('').not(),
-          mode: OrderingMode.desc,
-        ),
-        OrderingTerm(
-          expression: _db.assetFaceEntity.id.count(),
-          mode: OrderingMode.desc,
-        ),
-      ]);
+    final query =
+        _db.select(_db.personEntity).join([
+            leftOuterJoin(_db.assetFaceEntity, _db.assetFaceEntity.personId.equalsExp(_db.personEntity.id)),
+          ])
+          ..where(_db.personEntity.isHidden.equals(false))
+          ..groupBy([_db.personEntity.id])
+          ..orderBy([
+            OrderingTerm(expression: _db.personEntity.name.equals('').not(), mode: OrderingMode.desc),
+            OrderingTerm(expression: _db.assetFaceEntity.id.count(), mode: OrderingMode.desc),
+          ]);
 
     return query.map((row) {
       final person = row.readTable(_db.personEntity);
@@ -53,12 +39,7 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
   Future<int> updateName(String personId, String name) {
     final query = _db.update(_db.personEntity)..where((row) => row.id.equals(personId));
 
-    return query.write(
-      PersonEntityCompanion(
-        name: Value(name),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
+    return query.write(PersonEntityCompanion(name: Value(name), updatedAt: Value(DateTime.now())));
   }
 }
 

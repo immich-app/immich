@@ -1,0 +1,77 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/person.model.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
+import 'package:scroll_date_picker/scroll_date_picker.dart';
+
+class DriftPersonBirthdayEditForm extends ConsumerStatefulWidget {
+  final DriftPerson person;
+
+  const DriftPersonBirthdayEditForm({super.key, required this.person});
+
+  @override
+  ConsumerState<DriftPersonBirthdayEditForm> createState() => _DriftPersonNameEditFormState();
+}
+
+class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEditForm> {
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.person.birthDate ?? DateTime.now();
+  }
+
+  void saveBirthday() async {
+    final payload = UpdateBirthdayPayload(widget.person.id, _selectedDate);
+
+    print("Saving birthday for ${widget.person.name}: $_selectedDate");
+    // final result = await ref.read(driftUpdatePersonNameProvider(payload).future);
+    // if (result != 0) {
+    //   context.pop<String>(newName);
+    // }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(
+        "edit_birthday".t(context: context),
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+      content: SingleChildScrollView(
+        child: SizedBox(
+          height: 250,
+          child: ScrollDatePicker(
+            selectedDate: _selectedDate,
+            locale: context.locale,
+            onDateTimeChanged: (DateTime value) {
+              setState(() {
+                _selectedDate = value;
+              });
+            },
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(null),
+          child: Text(
+            "cancel",
+            style: TextStyle(color: Colors.red[300], fontWeight: FontWeight.bold),
+          ).tr(),
+        ),
+        TextButton(
+          onPressed: () => saveBirthday(),
+          child: Text(
+            "save",
+            style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold),
+          ).tr(),
+        ),
+      ],
+    );
+  }
+}

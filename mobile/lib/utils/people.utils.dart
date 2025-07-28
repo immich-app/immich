@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/people/person_edit_birthday_modal.widget.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
 
 String formatAge(DateTime birthDate, DateTime referenceDate) {
@@ -38,6 +39,16 @@ Future<String?> showNameEditModal(BuildContext context, DriftPerson person) {
     useRootNavigator: false,
     builder: (BuildContext context) {
       return DriftPersonNameEditForm(person: person);
+    },
+  );
+}
+
+Future<String?> showBirthdayEditModal(BuildContext context, DriftPerson person) {
+  return showDialog<String?>(
+    context: context,
+    useRootNavigator: false,
+    builder: (BuildContext context) {
+      return DriftPersonBirthdayEditForm(person: person);
     },
   );
 }

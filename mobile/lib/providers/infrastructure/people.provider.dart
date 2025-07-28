@@ -13,19 +13,15 @@ final driftPeopleServiceProvider = Provider<DriftPeopleService>(
   (ref) => DriftPeopleService(ref.watch(driftPeopleRepositoryProvider), ref.watch(personApiRepositoryProvider)),
 );
 
-final driftPeopleAssetProvider = FutureProvider.family<List<DriftPerson>, String>(
-  (ref, assetId) async {
-    final service = ref.watch(driftPeopleServiceProvider);
-    return service.getAssetPeople(assetId);
-  },
-);
+final driftPeopleAssetProvider = FutureProvider.family<List<DriftPerson>, String>((ref, assetId) async {
+  final service = ref.watch(driftPeopleServiceProvider);
+  return service.getAssetPeople(assetId);
+});
 
-final driftGetAllPeopleProvider = FutureProvider<List<DriftPerson>>(
-  (ref) async {
-    final service = ref.watch(driftPeopleServiceProvider);
-    return service.getAllPeople();
-  },
-);
+final driftGetAllPeopleProvider = FutureProvider<List<DriftPerson>>((ref) async {
+  final service = ref.watch(driftPeopleServiceProvider);
+  return service.getAllPeople();
+});
 
 class UpdateNamePayload {
   final String personId;
@@ -34,12 +30,25 @@ class UpdateNamePayload {
   const UpdateNamePayload(this.personId, this.newName);
 }
 
-final driftUpdatePersonNameProvider = FutureProvider.family<int, UpdateNamePayload>(
-  (ref, payload) async {
-    final service = ref.watch(driftPeopleServiceProvider);
-    final changes = await service.updateName(payload.personId, payload.newName);
-    ref.invalidate(driftGetAllPeopleProvider);
+final driftUpdatePersonNameProvider = FutureProvider.family<int, UpdateNamePayload>((ref, payload) async {
+  final service = ref.watch(driftPeopleServiceProvider);
+  final changes = await service.updateName(payload.personId, payload.newName);
+  ref.invalidate(driftGetAllPeopleProvider);
 
-    return changes;
-  },
-);
+  return changes;
+});
+
+class UpdateBirthdayPayload {
+  final String personId;
+  final DateTime birthday;
+
+  const UpdateBirthdayPayload(this.personId, this.birthday);
+}
+
+final driftUpdatePersonBirthdayProvider = FutureProvider.family<int, UpdateBirthdayPayload>((ref, payload) async {
+  final service = ref.watch(driftPeopleServiceProvider);
+  final changes = await service.updateBrithday(payload.personId, payload.birthday);
+  ref.invalidate(driftGetAllPeopleProvider);
+
+  return changes;
+});
