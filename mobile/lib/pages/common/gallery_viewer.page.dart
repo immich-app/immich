@@ -222,6 +222,12 @@ class GalleryViewerPage extends HookConsumerWidget {
           handleSwipeUpDown(details);
         },
         onTapDown: (ctx, tapDownDetails, _) {
+          final tapToNavigate = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.tapToNavigate);
+          if (!tapToNavigate) {
+            ref.read(showControlsProvider.notifier).toggle();
+            return;
+          }
+
           double tapX = tapDownDetails.globalPosition.dx;
           double screenWidth = ctx.width;
 
