@@ -5,12 +5,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 
 class BetaTimelineListTile extends ConsumerStatefulWidget {
   const BetaTimelineListTile({
@@ -83,14 +83,16 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
             context: context,
             builder: (context) {
               return AlertDialog(
-                title: value ? const Text("Enable Beta Timeline") : const Text("Disable Beta Timeline"),
-                content: value
-                    ? const Text(
-                        "Are you sure you want to enable the beta timeline?",
-                      )
-                    : const Text(
-                        "Are you sure you want to disable the beta timeline?",
-                      ),
+                title: Text(
+                  value
+                      ? "advanced_settings_beta_timeline_enable_title".t(context: context)
+                      : "advanced_settings_beta_timeline_disable_title".t(context: context),
+                ),
+                content: Text(
+                  value
+                      ? "advanced_settings_beta_timeline_enable_subtitle".t(context: context)
+                      : "advanced_settings_beta_timeline_disable_subtitle".t(context: context),
+                ),
                 actions: [
                   TextButton(
                     onPressed: () {
