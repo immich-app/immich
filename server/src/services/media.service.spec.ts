@@ -205,19 +205,19 @@ describe(MediaService.name, () => {
         entityId: assetStub.image.id,
         pathType: AssetPathType.FullSize,
         oldPath: '/uploads/user-id/fullsize/path.webp',
-        newPath: expect.stringContaining('upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg'),
+        newPath: expect.stringContaining('/data/thumbs/user-id/as/se/asset-id-fullsize.jpeg'),
       });
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: assetStub.image.id,
         pathType: AssetPathType.Preview,
         oldPath: '/uploads/user-id/thumbs/path.jpg',
-        newPath: expect.stringContaining('upload/thumbs/user-id/as/se/asset-id-preview.jpeg'),
+        newPath: expect.stringContaining('/data/thumbs/user-id/as/se/asset-id-preview.jpeg'),
       });
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: assetStub.image.id,
         pathType: AssetPathType.Thumbnail,
         oldPath: '/uploads/user-id/webp/path.ext',
-        newPath: expect.stringContaining('upload/thumbs/user-id/as/se/asset-id-thumbnail.webp'),
+        newPath: expect.stringContaining('/data/thumbs/user-id/as/se/asset-id-thumbnail.webp'),
       });
       expect(mocks.move.create).toHaveBeenCalledTimes(3);
     });
@@ -531,8 +531,8 @@ describe(MediaService.name, () => {
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
-      const previewPath = expect.stringContaining(`upload/thumbs/user-id/as/se/asset-id-preview.jpeg`);
-      const thumbnailPath = expect.stringContaining(`upload/thumbs/user-id/as/se/asset-id-thumbnail.${format}`);
+      const previewPath = expect.stringContaining(`/data/thumbs/user-id/as/se/asset-id-preview.jpeg`);
+      const thumbnailPath = expect.stringContaining(`/data/thumbs/user-id/as/se/asset-id-thumbnail.${format}`);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 

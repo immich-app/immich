@@ -47,7 +47,7 @@ export const serverVersion = new SemVer(version);
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
-export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || '/usr/src/app/upload';
+export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || '/data';
 
 export const MACHINE_LEARNING_PING_TIMEOUT = Number(process.env.MACHINE_LEARNING_PING_TIMEOUT || 2000);
 export const MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME = Number(

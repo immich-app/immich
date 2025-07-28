@@ -49,7 +49,7 @@ describe(DownloadService.name, () => {
       expect(archiveMock.addFile).toHaveBeenCalledTimes(1);
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(
         1,
-        expect.stringContaining('upload/library/IMG_123.jpg'),
+        expect.stringContaining('/data/library/IMG_123.jpg'),
         'IMG_123.jpg',
       );
     });
@@ -75,8 +75,8 @@ describe(DownloadService.name, () => {
 
       expect(mocks.logger.warn).toHaveBeenCalledTimes(2);
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_456.jpg', 'IMG_456.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/IMG_456.jpg', 'IMG_456.jpg');
     });
 
     it('should download an archive', async () => {
@@ -98,8 +98,8 @@ describe(DownloadService.name, () => {
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_456.jpg', 'IMG_456.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/IMG_456.jpg', 'IMG_456.jpg');
     });
 
     it('should handle duplicate file names', async () => {
@@ -121,8 +121,8 @@ describe(DownloadService.name, () => {
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_123.jpg', 'IMG_123+1.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/IMG_123.jpg', 'IMG_123+1.jpg');
     });
 
     it('should be deterministic', async () => {
@@ -144,8 +144,8 @@ describe(DownloadService.name, () => {
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_123.jpg', 'IMG_123+1.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/IMG_123.jpg', 'IMG_123+1.jpg');
     });
 
     it('should resolve symlinks', async () => {
