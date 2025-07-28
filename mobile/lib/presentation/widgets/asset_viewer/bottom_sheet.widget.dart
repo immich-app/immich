@@ -16,8 +16,8 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/location_details.widget.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/people_details.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_people_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';

@@ -34,8 +34,8 @@ class FixedSegment extends Segment {
     required super.headerExtent,
     required super.spacing,
     required super.header,
-  })  : assert(tileHeight != 0),
-        mainAxisExtend = tileHeight + spacing;
+  }) : assert(tileHeight != 0),
+       mainAxisExtend = tileHeight + spacing;
 
   @override
   double indexToLayoutOffset(int index) {
@@ -100,7 +100,7 @@ class _FixedSegmentRow extends ConsumerWidget {
     }
 
     if (timelineService.hasRange(assetIndex, assetCount)) {
-      return _buildAssetRow(context, timelineService.getAssets(assetIndex, assetCount));
+      return _buildAssetRow(context, timelineService.getAssets(assetIndex, assetCount), timelineService);
     }
 
     return FutureBuilder<List<BaseAsset>>(
@@ -125,7 +125,11 @@ class _FixedSegmentRow extends ConsumerWidget {
       textDirection: Directionality.of(context),
       children: [
         for (int i = 0; i < assets.length; i++)
-          _AssetTileWidget(key: ValueKey(assets[i].heroTag), asset: assets[i], assetIndex: assetIndex + i),
+          _AssetTileWidget(
+            key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
+            asset: assets[i],
+            assetIndex: assetIndex + i,
+          ),
       ],
     );
   }

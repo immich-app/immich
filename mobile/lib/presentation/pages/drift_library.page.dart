@@ -6,7 +6,7 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_album_thumbnail.widget.dart';
-import 'package:immich_mobile/presentation/widgets/partner_user_avatar.widget.dart';
+import 'package:immich_mobile/presentation/widgets/people/partner_user_avatar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/partner.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';

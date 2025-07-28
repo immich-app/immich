@@ -970,7 +970,7 @@ class DriftPartnerRoute extends PageRouteInfo<void> {
 /// [DriftPeopleCollectionPage]
 class DriftPeopleCollectionRoute extends PageRouteInfo<void> {
   const DriftPeopleCollectionRoute({List<PageRouteInfo>? children})
-      : super(DriftPeopleCollectionRoute.name, initialChildren: children);
+    : super(DriftPeopleCollectionRoute.name, initialChildren: children);
 
   static const String name = 'DriftPeopleCollectionRoute';
 
@@ -990,10 +990,10 @@ class DriftPersonRoute extends PageRouteInfo<DriftPersonRouteArgs> {
     required DriftPerson person,
     List<PageRouteInfo>? children,
   }) : super(
-          DriftPersonRoute.name,
-          args: DriftPersonRouteArgs(key: key, person: person),
-          initialChildren: children,
-        );
+         DriftPersonRoute.name,
+         args: DriftPersonRouteArgs(key: key, person: person),
+         initialChildren: children,
+       );
 
   static const String name = 'DriftPersonRoute';
 

@@ -16,16 +16,16 @@ import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/age.utils.dart';
+import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class PersonSliverAppBar extends ConsumerStatefulWidget {
-  const PersonSliverAppBar({
-    super.key,
-    required this.person,
-  });
+  const PersonSliverAppBar({super.key, required this.person, required this.onNameTap, required this.onShowOptions});
 
   final DriftPerson person;
+  final VoidCallback onNameTap;
+  final VoidCallback onShowOptions;
+
   @override
   ConsumerState<PersonSliverAppBar> createState() => _MesmerizingSliverAppBarState();
 }
@@ -49,6 +49,13 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
   @override
   Widget build(BuildContext context) {
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    Color? actionIconColor = Color.lerp(Colors.white, context.primaryColor, _scrollProgress);
+    List<Shadow> actionIconShadows = [
+      if (_scrollProgress < 0.95)
+        Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
+      else
+        const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
+    ];
 
     return isMultiSelectEnabled
         ? SliverToBoxAdapter(
@@ -66,29 +73,23 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
             leading: IconButton(
               icon: Icon(
                 Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
-                color: Color.lerp(
-                  Colors.white,
-                  context.primaryColor,
-                  _scrollProgress,
-                ),
+                color: Color.lerp(Colors.white, context.primaryColor, _scrollProgress),
                 shadows: [
                   _scrollProgress < 0.95
-                      ? Shadow(
-                          offset: const Offset(0, 2),
-                          blurRadius: 5,
-                          color: Colors.black.withValues(alpha: 0.5),
-                        )
-                      : const Shadow(
-                          offset: Offset(0, 2),
-                          blurRadius: 0,
-                          color: Colors.transparent,
-                        ),
+                      ? Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
+                      : const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
                 ],
               ),
               onPressed: () {
                 context.pop();
               },
             ),
+            actions: [
+              IconButton(
+                icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
+                onPressed: widget.onShowOptions,
+              ),
+            ],
             flexibleSpace: Builder(
               builder: (context) {
                 final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
@@ -110,17 +111,14 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
                     child: scrollProgress > 0.95
                         ? Text(
                             widget.person.name,
-                            style: TextStyle(
-                              color: context.primaryColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                            ),
+                            style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
                           )
                         : null,
                   ),
                   background: _ExpandedBackground(
                     scrollProgress: scrollProgress,
                     person: widget.person,
+                    onNameTap: widget.onNameTap,
                   ),
                 );
               },
@@ -132,11 +130,9 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
 class _ExpandedBackground extends ConsumerStatefulWidget {
   final double scrollProgress;
   final DriftPerson person;
+  final VoidCallback onNameTap;
 
-  const _ExpandedBackground({
-    required this.scrollProgress,
-    required this.person,
-  });
+  const _ExpandedBackground({required this.scrollProgress, required this.person, required this.onNameTap});
 
   @override
   ConsumerState<_ExpandedBackground> createState() => _ExpandedBackgroundState();
@@ -150,20 +146,12 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
   void initState() {
     super.initState();
 
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
+    _slideController = AnimationController(duration: const Duration(milliseconds: 800), vsync: this);
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 1.5),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _slideController,
-        curve: Curves.easeOutCubic,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
 
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
@@ -189,17 +177,12 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
           offset: Offset(0, widget.scrollProgress * 50),
           child: Transform.scale(
             scale: 1.4 - (widget.scrollProgress * 0.2),
-            child: _RandomAssetBackground(
-              timelineService: timelineService,
-            ),
+            child: _RandomAssetBackground(timelineService: timelineService),
           ),
         ),
         ClipRect(
           child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: widget.scrollProgress * 2.0,
-              sigmaY: widget.scrollProgress * 2.0,
-            ),
+            filter: ImageFilter.blur(sigmaX: widget.scrollProgress * 2.0, sigmaY: widget.scrollProgress * 2.0),
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -209,9 +192,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                     Colors.black.withValues(alpha: 0.05),
                     Colors.transparent,
                     Colors.black.withValues(alpha: 0.3),
-                    Colors.black.withValues(
-                      alpha: 0.6 + (widget.scrollProgress * 0.25),
-                    ),
+                    Colors.black.withValues(alpha: 0.6 + (widget.scrollProgress * 0.25)),
                   ],
                   stops: const [0.0, 0.15, 0.55, 1.0],
                 ),
@@ -231,12 +212,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                   height: 84,
                   width: 84,
                   child: Material(
-                    shape: const CircleBorder(
-                      side: BorderSide(
-                        color: Colors.grey,
-                        width: 1.0,
-                      ),
-                    ),
+                    shape: const CircleBorder(side: BorderSide(color: Colors.grey, width: 1.0)),
                     elevation: 3,
                     child: CircleAvatar(
                       maxRadius: 84 / 2,
@@ -253,33 +229,35 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
-                        width: double.infinity,
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Text(
-                            widget.person.name,
-                            maxLines: 1,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 36,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                              shadows: [
-                                Shadow(
-                                  offset: Offset(0, 2),
-                                  blurRadius: 12,
-                                  color: Colors.black45,
-                                ),
-                              ],
-                            ),
+                      GestureDetector(
+                        onTap: () => widget.onNameTap.call(),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: widget.person.name.isNotEmpty
+                                ? Text(
+                                    widget.person.name,
+                                    maxLines: 1,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
+                                      shadows: [Shadow(offset: Offset(0, 2), blurRadius: 12, color: Colors.black45)],
+                                    ),
+                                  )
+                                : Text(
+                                    'add_a_name'.tr(),
+                                    style: context.textTheme.titleLarge?.copyWith(
+                                      color: Colors.grey[200],
+                                      fontSize: 36,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        child: const _ItemCountText(),
-                      ),
+                      AnimatedContainer(duration: const Duration(milliseconds: 300), child: const _ItemCountText()),
                       const SizedBox(height: 8),
                       if (widget.person.birthDate != null)
                         Row(
@@ -333,25 +311,14 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
 
   @override
   Widget build(BuildContext context) {
-    final assetCount = ref.watch(
-      timelineServiceProvider.select((s) => s.totalAssets),
-    );
+    final assetCount = ref.watch(timelineServiceProvider.select((s) => s.totalAssets));
 
     return Text(
-      'items_count'.t(
-        context: context,
-        args: {"count": assetCount},
-      ),
+      'items_count'.t(context: context, args: {"count": assetCount}),
       style: context.textTheme.labelLarge?.copyWith(
         fontWeight: FontWeight.bold,
         color: Colors.white,
-        shadows: [
-          const Shadow(
-            offset: Offset(0, 1),
-            blurRadius: 6,
-            color: Colors.black45,
-          ),
-        ],
+        shadows: [const Shadow(offset: Offset(0, 1), blurRadius: 6, color: Colors.black45)],
       ),
     );
   }
@@ -360,9 +327,7 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
 class _RandomAssetBackground extends StatefulWidget {
   final TimelineService timelineService;
 
-  const _RandomAssetBackground({
-    required this.timelineService,
-  });
+  const _RandomAssetBackground({required this.timelineService});
 
   @override
   State<_RandomAssetBackground> createState() => _RandomAssetBackgroundState();
@@ -382,50 +347,26 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
   void initState() {
     super.initState();
 
-    _zoomController = AnimationController(
-      duration: const Duration(seconds: 12),
-      vsync: this,
-    );
+    _zoomController = AnimationController(duration: const Duration(seconds: 12), vsync: this);
 
-    _crossFadeController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
+    _crossFadeController = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this);
 
     _zoomAnimation = Tween<double>(
       begin: 1.0,
       end: 1.2,
-    ).animate(
-      CurvedAnimation(
-        parent: _zoomController,
-        curve: Curves.easeInOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _zoomController, curve: Curves.easeInOut));
 
     _panAnimation = Tween<Offset>(
       begin: Offset.zero,
       end: const Offset(0.5, -0.5),
-    ).animate(
-      CurvedAnimation(
-        parent: _zoomController,
-        curve: Curves.easeInOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _zoomController, curve: Curves.easeInOut));
 
     _crossFadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _crossFadeController,
-        curve: Curves.easeInOutCubic,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _crossFadeController, curve: Curves.easeInOutCubic));
 
-    Future.delayed(
-      Durations.medium1,
-      () => _loadFirstAsset(),
-    );
+    Future.delayed(Durations.medium1, () => _loadFirstAsset());
   }
 
   @override
@@ -515,9 +456,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
     }
 
     return AnimatedBuilder(
-      animation: Listenable.merge(
-        [_zoomAnimation, _panAnimation, _crossFadeAnimation],
-      ),
+      animation: Listenable.merge([_zoomAnimation, _panAnimation, _crossFadeAnimation]),
       builder: (context, child) {
         return Transform.scale(
           scale: _zoomAnimation.value,
@@ -549,11 +488,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
                           return SizedBox(
                             width: double.infinity,
                             height: double.infinity,
-                            child: Icon(
-                              Icons.error_outline_rounded,
-                              size: 24,
-                              color: Colors.red[300],
-                            ),
+                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
                           );
                         },
                       ),
@@ -580,11 +515,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
                           return SizedBox(
                             width: double.infinity,
                             height: double.infinity,
-                            child: Icon(
-                              Icons.error_outline_rounded,
-                              size: 24,
-                              color: Colors.red[300],
-                            ),
+                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
                           );
                         },
                       ),

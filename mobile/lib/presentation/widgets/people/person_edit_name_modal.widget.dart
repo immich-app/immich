@@ -8,10 +8,7 @@ import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 class DriftPersonNameEditForm extends ConsumerStatefulWidget {
   final DriftPerson person;
 
-  const DriftPersonNameEditForm({
-    super.key,
-    required this.person,
-  });
+  const DriftPersonNameEditForm({super.key, required this.person});
 
   @override
   ConsumerState<DriftPersonNameEditForm> createState() => _DriftPersonNameEditFormState();
@@ -31,47 +28,35 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
 
     final result = await ref.read(driftUpdatePersonNameProvider(payload).future);
     if (result != 0) {
-      context.pop();
+      context.pop<String>(newName);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text(
-        "add_a_name",
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ).tr(),
+      title: const Text("add_a_name", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
       content: SingleChildScrollView(
         child: TextFormField(
           controller: _formController,
           textCapitalization: TextCapitalization.words,
           autofocus: true,
-          decoration: InputDecoration(
-            hintText: 'name'.tr(),
-            border: const OutlineInputBorder(),
-          ),
+          decoration: InputDecoration(hintText: 'name'.tr(), border: const OutlineInputBorder()),
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => context.pop(),
+          onPressed: () => context.pop(null),
           child: Text(
             "cancel",
-            style: TextStyle(
-              color: Colors.red[300],
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: Colors.red[300], fontWeight: FontWeight.bold),
           ).tr(),
         ),
         TextButton(
           onPressed: () => onEdit(widget.person.id, _formController.text),
           child: Text(
             "save",
-            style: TextStyle(
-              color: context.primaryColor,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold),
           ).tr(),
         ),
       ],

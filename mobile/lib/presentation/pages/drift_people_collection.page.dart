@@ -2,13 +2,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/person_edit_name_modal.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
 @RoutePage()
@@ -27,18 +26,6 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
   void dispose() {
     _formFocus.dispose();
     super.dispose();
-  }
-
-  Future<void> showNameEditModal(DriftPerson person) {
-    return showDialog(
-      context: context,
-      useRootNavigator: false,
-      builder: (BuildContext context) {
-        return DriftPersonNameEditForm(
-          person: person,
-        );
-      },
-    );
   }
 
   @override
@@ -96,27 +83,20 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
                       children: [
                         GestureDetector(
                           onTap: () {
-                            context.pushRoute(
-                              DriftPersonRoute(
-                                person: person,
-                              ),
-                            );
+                            context.pushRoute(DriftPersonRoute(person: person));
                           },
                           child: Material(
                             shape: const CircleBorder(side: BorderSide.none),
                             elevation: 3,
                             child: CircleAvatar(
                               maxRadius: isTablet ? 100 / 2 : 96 / 2,
-                              backgroundImage: NetworkImage(
-                                getFaceThumbnailUrl(person.id),
-                                headers: headers,
-                              ),
+                              backgroundImage: NetworkImage(getFaceThumbnailUrl(person.id), headers: headers),
                             ),
                           ),
                         ),
                         const SizedBox(height: 12),
                         GestureDetector(
-                          onTap: () => showNameEditModal(person),
+                          onTap: () => showNameEditModal(context, person),
                           child: person.name.isEmpty
                               ? Text(
                                   'add_a_name'.tr(),
@@ -126,15 +106,11 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
                                   ),
                                 )
                               : Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
                                   child: Text(
                                     person.name,
                                     overflow: TextOverflow.ellipsis,
-                                    style: context.textTheme.titleSmall?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                    style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
                                   ),
                                 ),
                         ),

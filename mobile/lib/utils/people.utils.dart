@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
+import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
 
 String formatAge(DateTime birthDate, DateTime referenceDate) {
   int ageInYears = _calculateAge(birthDate, referenceDate);
@@ -27,4 +30,14 @@ int _calculateAgeInMonths(DateTime birthDate, DateTime referenceDate) {
       referenceDate.month -
       birthDate.month -
       (referenceDate.day < birthDate.day ? 1 : 0);
+}
+
+Future<String?> showNameEditModal(BuildContext context, DriftPerson person) {
+  return showDialog<String?>(
+    context: context,
+    useRootNavigator: false,
+    builder: (BuildContext context) {
+      return DriftPersonNameEditForm(person: person);
+    },
+  );
 }

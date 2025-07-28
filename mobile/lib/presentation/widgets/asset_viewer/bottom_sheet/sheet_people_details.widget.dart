@@ -5,12 +5,12 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/person_edit_name_modal.widget.dart';
+import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/age.utils.dart';
+import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class SheetPeopleDetails extends ConsumerStatefulWidget {
@@ -35,9 +35,7 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
         context: context,
         useRootNavigator: false,
         builder: (BuildContext context) {
-          return DriftPersonNameEditForm(
-            person: person,
-          );
+          return DriftPersonNameEditForm(person: person);
         },
       );
 
@@ -85,10 +83,7 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
           duration: Durations.short4,
         );
       },
-      error: (error, stack) => Text(
-        "error_loading_people".t(context: context),
-        style: context.textTheme.bodyMedium,
-      ),
+      error: (error, stack) => Text("error_loading_people".t(context: context), style: context.textTheme.bodyMedium),
       loading: () => const SizedBox.shrink(),
     );
   }
@@ -101,21 +96,14 @@ class _PeopleAvatar extends StatelessWidget {
   final VoidCallback? onNameTap;
   final double imageSize = 96;
 
-  const _PeopleAvatar({
-    required this.person,
-    required this.assetFileCreatedAt,
-    this.onTap,
-    this.onNameTap,
-  });
+  const _PeopleAvatar({required this.person, required this.assetFileCreatedAt, this.onTap, this.onNameTap});
 
   @override
   Widget build(BuildContext context) {
     final headers = ApiService.getRequestHeaders();
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(
-        maxWidth: 96,
-      ),
+      constraints: const BoxConstraints(maxWidth: 96),
       child: Padding(
         padding: const EdgeInsets.only(right: 16.0),
         child: Column(
@@ -126,35 +114,23 @@ class _PeopleAvatar extends StatelessWidget {
               child: SizedBox(
                 height: imageSize,
                 child: Material(
-                  shape: CircleBorder(
-                    side: BorderSide(
-                      color: context.primaryColor.withAlpha(50),
-                      width: 1.0,
-                    ),
-                  ),
+                  shape: CircleBorder(side: BorderSide(color: context.primaryColor.withAlpha(50), width: 1.0)),
                   shadowColor: context.colorScheme.shadow,
                   elevation: 3,
                   child: CircleAvatar(
                     maxRadius: imageSize / 2,
-                    backgroundImage: NetworkImage(
-                      getFaceThumbnailUrl(person.id),
-                      headers: headers,
-                    ),
+                    backgroundImage: NetworkImage(getFaceThumbnailUrl(person.id), headers: headers),
                   ),
                 ),
               ),
             ),
-            const SizedBox(
-              height: 4,
-            ),
+            const SizedBox(height: 4),
             if (person.name.isEmpty)
               GestureDetector(
                 onTap: () => onNameTap?.call(),
                 child: Text(
                   "add_a_name".t(context: context),
-                  style: context.textTheme.labelLarge?.copyWith(
-                    color: context.primaryColor,
-                  ),
+                  style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
