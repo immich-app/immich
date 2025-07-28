@@ -211,7 +211,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                 ),
                 if (!isSelectionMode && isMultiSelectEnabled) ...[
                   const Positioned(top: 60, left: 25, child: _MultiSelectStatusButton()),
-                  ?widget.bottomSheet,
+                  if (widget.bottomSheet != null) widget.bottomSheet!,
                 ],
               ],
             ),
