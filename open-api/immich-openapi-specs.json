@@ -5621,7 +5621,8 @@
         ],
         "tags": [
           "Search"
-        ]
+        ],
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/metadata": {
