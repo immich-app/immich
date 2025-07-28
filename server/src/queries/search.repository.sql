@@ -14,7 +14,8 @@ where
   and "asset"."isFavorite" = $5
   and "asset"."deletedAt" is null
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."originalFileName" desc
 limit
   $6
 offset
@@ -100,7 +101,7 @@ limit
   $7
 offset
   $8
-commit
+rollback
 
 -- SearchRepository.searchFaces
 begin
@@ -131,7 +132,7 @@ from
   "cte"
 where
   "cte"."distance" <= $4
-commit
+rollback
 
 -- SearchRepository.searchPlaces
 select

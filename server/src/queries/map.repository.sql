@@ -28,4 +28,5 @@ where
     )
   )
 order by
-  "fileCreatedAt" desc
+  "fileCreatedAt" desc,
+  "originalFileName" desc

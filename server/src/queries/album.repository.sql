@@ -82,7 +82,8 @@ select
           and "asset"."deletedAt" is null
           and "asset"."visibility" in ('archive', 'timeline')
         order by
-          "asset"."fileCreatedAt" desc
+          "asset"."fileCreatedAt" desc,
+          "asset"."originalFileName" desc
       ) as "asset"
   ) as "assets"
 from
