@@ -7,7 +7,7 @@ import {
   createParamDecorator,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCookieAuth, ApiExtension, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ImmichQuery, MetadataKey, Permission } from 'src/enum';
@@ -26,6 +26,10 @@ export const Authenticated = (options?: AuthenticatedOptions): MethodDecorator =
     ApiSecurity(MetadataKey.ApiKeySecurity),
     SetMetadata(MetadataKey.AuthRoute, options || {}),
   ];
+
+  if (options?.permission) {
+    decorators.push(ApiExtension('x-immich-permission', options.permission));
+  }
 
   if ((options as SharedLinkRoute)?.sharedLink) {
     decorators.push(
