@@ -65,6 +65,7 @@ enum AppSettingsEnum<T> {
   logLevel<int>(StoreKey.logLevel, null, 5), // Level.INFO = 5
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, null, false),
   loopVideo<bool>(StoreKey.loopVideo, "loopVideo", true),
+  tapToNavigate<bool>(StoreKey.tapToNavigate, "tapToNavigate", false),
   loadOriginalVideo<bool>(
     StoreKey.loadOriginalVideo,
     "loadOriginalVideo",

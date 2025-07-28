@@ -19,6 +19,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/top_app_bar.widg
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
@@ -26,6 +27,7 @@ import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view_gallery.dart';
 import 'package:platform/platform.dart';
@@ -357,8 +359,36 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     ref.read(assetViewerProvider.notifier).setOpacity(backgroundOpacity);
   }
 
-  void _onTapDown(_, __, ___) {
-    if (!showingBottomSheet) {
+  void _onTapDown(BuildContext context, TapDownDetails details, PhotoViewControllerValue controllerValue) {
+    final tapToNavigate = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.tapToNavigate);
+    if (!tapToNavigate) {
+      if (!showingBottomSheet) {
+        ref.read(assetViewerProvider.notifier).toggleControls();
+      }
+      return;
+    }
+    double tapX = details.globalPosition.dx;
+    double screenWidth = context.width;
+
+    // We want to change images if the user taps in the leftmost or
+    // rightmost quarter of the screen
+    bool tappedLeftSide = tapX < screenWidth / 4;
+    bool tappedRightSide = tapX > screenWidth * (3 / 4);
+
+    int? currentPage = pageController.page?.toInt();
+    int maxPage = totalAssets - 1;
+
+    if (tappedLeftSide && currentPage != null) {
+      // Nested if because we don't want to fallback to show/hide controls
+      if (currentPage != 0) {
+        pageController.jumpToPage(currentPage - 1);
+      }
+    } else if (tappedRightSide && currentPage != null) {
+      // Nested if because we don't want to fallback to show/hide controls
+      if (currentPage != maxPage) {
+        pageController.jumpToPage(currentPage + 1);
+      }
+    } else if (!showingBottomSheet) {
       ref.read(assetViewerProvider.notifier).toggleControls();
     }
   }
