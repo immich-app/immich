@@ -186,6 +186,23 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     });
   }
 
+  Future<void> updateDateTime(List<String> ids, DateTime dateTime) {
+    return _db.batch((batch) async {
+      for (final id in ids) {
+        batch.update(
+          _db.remoteExifEntity,
+          RemoteExifEntityCompanion(dateTimeOriginal: Value(dateTime)),
+          where: (e) => e.assetId.equals(id),
+        );
+        batch.update(
+          _db.remoteAssetEntity,
+          RemoteAssetEntityCompanion(createdAt: Value(dateTime)),
+          where: (e) => e.id.equals(id),
+        );
+      }
+    });
+  }
+
   Future<void> stack(String userId, StackResponse stack) {
     return _db.transaction(() async {
       final stackIds = await _db.managers.stackEntity

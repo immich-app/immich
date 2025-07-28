@@ -832,6 +832,7 @@
   "edit_birthday": "Edit Birthday",
   "edit_date": "Edit date",
   "edit_date_and_time": "Edit date and time",
+  "edit_date_and_time_action_prompt": "{count} date and time edited",
   "edit_description": "Edit description",
   "edit_description_prompt": "Please select a new description:",
   "edit_exclusion_pattern": "Edit exclusion pattern",
