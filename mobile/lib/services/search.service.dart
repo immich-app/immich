@@ -25,11 +25,7 @@ class SearchService {
   final SearchApiRepository _searchApiRepository;
 
   final _log = Logger("SearchService");
-  SearchService(
-    this._apiService,
-    this._assetRepository,
-    this._searchApiRepository,
-  );
+  SearchService(this._apiService, this._assetRepository, this._searchApiRepository);
 
   Future<List<String>?> getSearchSuggestions(
     SearchSuggestionType type, {

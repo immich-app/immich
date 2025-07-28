@@ -75,22 +75,10 @@ class _AlbumSortHandlers {
 enum AlbumSortMode {
   title(1, "library_page_sort_title", _AlbumSortHandlers.title),
   assetCount(4, "library_page_sort_asset_count", _AlbumSortHandlers.assetCount),
-  lastModified(
-    3,
-    "library_page_sort_last_modified",
-    _AlbumSortHandlers.lastModified,
-  ),
+  lastModified(3, "library_page_sort_last_modified", _AlbumSortHandlers.lastModified),
   created(0, "library_page_sort_created", _AlbumSortHandlers.created),
-  mostRecent(
-    2,
-    "sort_recent",
-    _AlbumSortHandlers.mostRecent,
-  ),
-  mostOldest(
-    5,
-    "sort_oldest",
-    _AlbumSortHandlers.mostOldest,
-  );
+  mostRecent(2, "sort_recent", _AlbumSortHandlers.mostRecent),
+  mostOldest(5, "sort_oldest", _AlbumSortHandlers.mostOldest);
 
   final int storeIndex;
   final String label;
@@ -104,18 +92,12 @@ class AlbumSortByOptions extends _$AlbumSortByOptions {
   @override
   AlbumSortMode build() {
     final sortOpt = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.selectedAlbumSortOrder);
-    return AlbumSortMode.values.firstWhere(
-      (e) => e.storeIndex == sortOpt,
-      orElse: () => AlbumSortMode.title,
-    );
+    return AlbumSortMode.values.firstWhere((e) => e.storeIndex == sortOpt, orElse: () => AlbumSortMode.title);
   }
 
   void changeSortMode(AlbumSortMode sortOption) {
     state = sortOption;
-    ref.watch(appSettingsServiceProvider).setSetting(
-          AppSettingsEnum.selectedAlbumSortOrder,
-          sortOption.storeIndex,
-        );
+    ref.watch(appSettingsServiceProvider).setSetting(AppSettingsEnum.selectedAlbumSortOrder, sortOption.storeIndex);
   }
 }
 

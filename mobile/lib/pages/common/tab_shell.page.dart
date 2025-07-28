@@ -56,56 +56,30 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     final navigationDestinations = [
       NavigationDestination(
         label: 'photos'.tr(),
-        icon: const Icon(
-          Icons.photo_library_outlined,
-        ),
-        selectedIcon: Icon(
-          Icons.photo_library,
-          color: context.primaryColor,
-        ),
+        icon: const Icon(Icons.photo_library_outlined),
+        selectedIcon: Icon(Icons.photo_library, color: context.primaryColor),
       ),
       NavigationDestination(
         label: 'search'.tr(),
-        icon: const Icon(
-          Icons.search_rounded,
-        ),
-        selectedIcon: Icon(
-          Icons.search,
-          color: context.primaryColor,
-        ),
+        icon: const Icon(Icons.search_rounded),
+        selectedIcon: Icon(Icons.search, color: context.primaryColor),
       ),
       NavigationDestination(
         label: 'albums'.tr(),
-        icon: const Icon(
-          Icons.photo_album_outlined,
-        ),
-        selectedIcon: Icon(
-          Icons.photo_album_rounded,
-          color: context.primaryColor,
-        ),
+        icon: const Icon(Icons.photo_album_outlined),
+        selectedIcon: Icon(Icons.photo_album_rounded, color: context.primaryColor),
       ),
       NavigationDestination(
         label: 'library'.tr(),
-        icon: const Icon(
-          Icons.space_dashboard_outlined,
-        ),
-        selectedIcon: Icon(
-          Icons.space_dashboard_rounded,
-          color: context.primaryColor,
-        ),
+        icon: const Icon(Icons.space_dashboard_outlined),
+        selectedIcon: Icon(Icons.space_dashboard_rounded, color: context.primaryColor),
       ),
     ];
 
     Widget navigationRail(TabsRouter tabsRouter) {
       return NavigationRail(
         destinations: navigationDestinations
-            .map(
-              (e) => NavigationRailDestination(
-                icon: e.icon,
-                label: Text(e.label),
-                selectedIcon: e.selectedIcon,
-              ),
-            )
+            .map((e) => NavigationRailDestination(icon: e.icon, label: Text(e.label), selectedIcon: e.selectedIcon))
             .toList(),
         onDestinationSelected: (index) => _onNavigationSelected(tabsRouter, index, ref),
         selectedIndex: tabsRouter.activeIndex,
@@ -115,17 +89,9 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     }
 
     return AutoTabsRouter(
-      routes: [
-        const MainTimelineRoute(),
-        DriftSearchRoute(),
-        const DriftAlbumsRoute(),
-        const DriftLibraryRoute(),
-      ],
+      routes: [const MainTimelineRoute(), DriftSearchRoute(), const DriftAlbumsRoute(), const DriftLibraryRoute()],
       duration: const Duration(milliseconds: 600),
-      transitionBuilder: (context, child, animation) => FadeTransition(
-        opacity: animation,
-        child: child,
-      ),
+      transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
         return PopScope(
@@ -142,10 +108,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
                     ],
                   )
                 : child,
-            bottomNavigationBar: _BottomNavigationBar(
-              tabsRouter: tabsRouter,
-              destinations: navigationDestinations,
-            ),
+            bottomNavigationBar: _BottomNavigationBar(tabsRouter: tabsRouter, destinations: navigationDestinations),
           ),
         );
       },
@@ -175,10 +138,7 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
 }
 
 class _BottomNavigationBar extends ConsumerWidget {
-  const _BottomNavigationBar({
-    required this.tabsRouter,
-    required this.destinations,
-  });
+  const _BottomNavigationBar({required this.tabsRouter, required this.destinations});
 
   final List<Widget> destinations;
   final TabsRouter tabsRouter;

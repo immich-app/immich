@@ -59,66 +59,58 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     PersonEntity,
     AssetFaceEntity,
   ],
-  include: {
-    'package:immich_mobile/infrastructure/entities/merged_asset.drift',
-  },
+  include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
 class Drift extends $Drift implements IDatabaseRepository {
   Drift([QueryExecutor? executor])
-      : super(
-          executor ??
-              driftDatabase(
-                name: 'immich',
-                native: const DriftNativeOptions(shareAcrossIsolates: true),
-              ),
-        );
+    : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
   @override
   int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onUpgrade: (m, from, to) async {
-          // Run migration steps without foreign keys and re-enable them later
-          await customStatement('PRAGMA foreign_keys = OFF');
+    onUpgrade: (m, from, to) async {
+      // Run migration steps without foreign keys and re-enable them later
+      await customStatement('PRAGMA foreign_keys = OFF');
 
-          await m.runMigrationSteps(
-            from: from,
-            to: to,
-            steps: migrationSteps(
-              from1To2: (m, v2) async {
-                for (final entity in v2.entities) {
-                  await m.drop(entity);
-                  await m.create(entity);
-                }
-              },
-              from2To3: (m, v3) async {
-                // Removed foreign key constraint on stack.primaryAssetId
-                await m.alterTable(TableMigration(v3.stackEntity));
-              },
-              from3To4: (m, v4) async {
-                // Thumbnail path column got removed from person_entity
-                await m.alterTable(TableMigration(v4.personEntity));
-                // asset_face_entity is added
-                await m.create(v4.assetFaceEntity);
-              },
-            ),
-          );
-
-          if (kDebugMode) {
-            // Fail if the migration broke foreign keys
-            final wrongFKs = await customSelect('PRAGMA foreign_key_check').get();
-            assert(wrongFKs.isEmpty, '${wrongFKs.map((e) => e.data)}');
-          }
-
-          await customStatement('PRAGMA foreign_keys = ON;');
-        },
-        beforeOpen: (details) async {
-          await customStatement('PRAGMA foreign_keys = ON');
-          await customStatement('PRAGMA synchronous = NORMAL');
-          await customStatement('PRAGMA journal_mode = WAL');
-        },
+      await m.runMigrationSteps(
+        from: from,
+        to: to,
+        steps: migrationSteps(
+          from1To2: (m, v2) async {
+            for (final entity in v2.entities) {
+              await m.drop(entity);
+              await m.create(entity);
+            }
+          },
+          from2To3: (m, v3) async {
+            // Removed foreign key constraint on stack.primaryAssetId
+            await m.alterTable(TableMigration(v3.stackEntity));
+          },
+          from3To4: (m, v4) async {
+            // Thumbnail path column got removed from person_entity
+            await m.alterTable(TableMigration(v4.personEntity));
+            // asset_face_entity is added
+            await m.create(v4.assetFaceEntity);
+          },
+        ),
       );
+
+      if (kDebugMode) {
+        // Fail if the migration broke foreign keys
+        final wrongFKs = await customSelect('PRAGMA foreign_key_check').get();
+        assert(wrongFKs.isEmpty, '${wrongFKs.map((e) => e.data)}');
+      }
+
+      await customStatement('PRAGMA foreign_keys = ON;');
+    },
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+      await customStatement('PRAGMA synchronous = NORMAL');
+      await customStatement('PRAGMA journal_mode = WAL');
+    },
+  );
 }
 
 class DriftDatabaseRepository implements IDatabaseRepository {

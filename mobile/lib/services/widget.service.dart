@@ -3,9 +3,7 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/repositories/widget.repository.dart';
 
 final widgetServiceProvider = Provider((ref) {
-  return WidgetService(
-    ref.watch(widgetRepositoryProvider),
-  );
+  return WidgetService(ref.watch(widgetRepositoryProvider));
 });
 
 class WidgetService {

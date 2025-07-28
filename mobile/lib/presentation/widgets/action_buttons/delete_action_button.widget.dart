@@ -40,9 +40,7 @@ class DeleteActionButton extends ConsumerWidget {
               onPressed: () => Navigator.of(context).pop(true),
               child: Text(
                 'confirm'.t(context: context),
-                style: TextStyle(
-                  color: context.colorScheme.error,
-                ),
+                style: TextStyle(color: context.colorScheme.error),
               ),
             ),
           ],
@@ -58,10 +56,7 @@ class DeleteActionButton extends ConsumerWidget {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
 
-    final successMessage = 'delete_action_prompt'.t(
-      context: context,
-      args: {'count': result.count.toString()},
-    );
+    final successMessage = 'delete_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 
     if (context.mounted) {
       ImmichToast.show(

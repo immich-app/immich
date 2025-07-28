@@ -14,13 +14,7 @@ class Stack {
     required this.primaryAssetId,
   });
 
-  Stack copyWith({
-    String? id,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    String? ownerId,
-    String? primaryAssetId,
-  }) {
+  Stack copyWith({String? id, DateTime? createdAt, DateTime? updatedAt, String? ownerId, String? primaryAssetId}) {
     return Stack(
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
@@ -63,11 +57,7 @@ class StackResponse {
   final String primaryAssetId;
   final List<String> assetIds;
 
-  const StackResponse({
-    required this.id,
-    required this.primaryAssetId,
-    required this.assetIds,
-  });
+  const StackResponse({required this.id, required this.primaryAssetId, required this.assetIds});
 
   @override
   bool operator ==(covariant StackResponse other) {

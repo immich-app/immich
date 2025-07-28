@@ -61,11 +61,7 @@ class LogService {
     return instance;
   }
 
-  LogService._(
-    this._logRepository,
-    this._storeRepository,
-    this._shouldBuffer,
-  ) {
+  LogService._(this._logRepository, this._storeRepository, this._shouldBuffer) {
     _logSubscription = Logger.root.onRecord.listen(_handleLogRecord);
   }
 
@@ -89,10 +85,7 @@ class LogService {
 
     if (_shouldBuffer) {
       _msgBuffer.add(record);
-      _flushTimer ??= Timer(
-        const Duration(seconds: 5),
-        () => unawaited(flushBuffer()),
-      );
+      _flushTimer ??= Timer(const Duration(seconds: 5), () => unawaited(flushBuffer()));
     } else {
       unawaited(_logRepository.insert(record));
     }

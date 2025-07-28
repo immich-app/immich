@@ -13,12 +13,7 @@ class SettingsRadioListTile<T> extends StatelessWidget {
   final T groupBy;
   final void Function(T?) onRadioChanged;
 
-  const SettingsRadioListTile({
-    super.key,
-    required this.groups,
-    required this.groupBy,
-    required this.onRadioChanged,
-  });
+  const SettingsRadioListTile({super.key, required this.groups, required this.groupBy, required this.onRadioChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +24,7 @@ class SettingsRadioListTile<T> extends StatelessWidget {
               contentPadding: const EdgeInsets.symmetric(horizontal: 20),
               dense: true,
               activeColor: context.primaryColor,
-              title: Text(
-                g.title,
-                style: context.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              title: Text(g.title, style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500)),
               value: g.value,
               groupValue: groupBy,
               onChanged: onRadioChanged,

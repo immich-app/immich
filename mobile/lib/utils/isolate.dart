@@ -51,15 +51,9 @@ Cancelable<T?> runInIsolateGentle<T>({
       HttpSSLOptions.apply(applyNative: false);
       return await computation(ref);
     } on CanceledError {
-      log.warning(
-        "Computation cancelled ${debugLabel == null ? '' : ' for $debugLabel'}",
-      );
+      log.warning("Computation cancelled ${debugLabel == null ? '' : ' for $debugLabel'}");
     } catch (error, stack) {
-      log.severe(
-        "Error in runInIsolateGentle ${debugLabel == null ? '' : ' for $debugLabel'}",
-        error,
-        stack,
-      );
+      log.severe("Error in runInIsolateGentle ${debugLabel == null ? '' : ' for $debugLabel'}", error, stack);
     } finally {
       try {
         await LogService.I.flushBuffer();

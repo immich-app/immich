@@ -22,24 +22,18 @@ class PartnerDetailPage extends HookConsumerWidget {
     final inTimeline = useState(partner.inTimeline);
     bool toggleInProcess = false;
 
-    useEffect(
-      () {
-        Future.microtask(
-          () async => {
-            await ref.read(assetProvider.notifier).getAllAsset(),
-          },
-        );
-        return null;
-      },
-      [],
-    );
+    useEffect(() {
+      Future.microtask(() async => {await ref.read(assetProvider.notifier).getAllAsset()});
+      return null;
+    }, []);
 
     void toggleInTimeline() async {
       if (toggleInProcess) return;
       toggleInProcess = true;
       try {
-        final ok =
-            await ref.read(partnerSharedWithProvider.notifier).updatePartner(partner, inTimeline: !inTimeline.value);
+        final ok = await ref
+            .read(partnerSharedWithProvider.notifier)
+            .updatePartner(partner, inTimeline: !inTimeline.value);
         if (ok) {
           inTimeline.value = !inTimeline.value;
           final action = inTimeline.value ? "shown on" : "hidden from";
@@ -65,28 +59,16 @@ class PartnerDetailPage extends HookConsumerWidget {
     return Scaffold(
       appBar: ref.watch(multiselectProvider)
           ? null
-          : AppBar(
-              title: Text(partner.name),
-              elevation: 0,
-              centerTitle: false,
-            ),
+          : AppBar(title: Text(partner.name), elevation: 0, centerTitle: false),
       body: MultiselectGrid(
         topWidget: Padding(
           padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0),
           child: Container(
             decoration: BoxDecoration(
-              border: Border.all(
-                color: context.colorScheme.onSurface.withAlpha(10),
-                width: 1,
-              ),
-              borderRadius: const BorderRadius.all(
-                Radius.circular(20),
-              ),
+              border: Border.all(color: context.colorScheme.onSurface.withAlpha(10), width: 1),
+              borderRadius: const BorderRadius.all(Radius.circular(20)),
               gradient: LinearGradient(
-                colors: [
-                  context.colorScheme.primary.withAlpha(10),
-                  context.colorScheme.primary.withAlpha(15),
-                ],
+                colors: [context.colorScheme.primary.withAlpha(10), context.colorScheme.primary.withAlpha(15)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -96,18 +78,13 @@ class PartnerDetailPage extends HookConsumerWidget {
               child: ListTile(
                 title: Text(
                   "Show in timeline",
-                  style: context.textTheme.titleSmall?.copyWith(
-                    color: context.colorScheme.primary,
-                  ),
+                  style: context.textTheme.titleSmall?.copyWith(color: context.colorScheme.primary),
                 ),
                 subtitle: Text(
                   "Show photos and videos from this user in your timeline",
                   style: context.textTheme.bodyMedium,
                 ),
-                trailing: Switch(
-                  value: inTimeline.value,
-                  onChanged: (_) => toggleInTimeline(),
-                ),
+                trailing: Switch(value: inTimeline.value, onChanged: (_) => toggleInTimeline()),
               ),
             ),
           ),

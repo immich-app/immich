@@ -67,9 +67,7 @@ void main() {
       overrides: overrides,
     );
 
-    mapStateNotifier.state = mapState.copyWith(
-      darkStyleFetched: const AsyncError("Error", StackTrace.empty),
-    );
+    mapStateNotifier.state = mapState.copyWith(darkStyleFetched: const AsyncError("Error", StackTrace.empty));
     await tester.pumpAndSettle();
     expect(mapStyle?.hasError, isTrue);
   });
@@ -86,10 +84,7 @@ void main() {
       overrides: overrides,
     );
 
-    mapStateNotifier.state = mapState.copyWith(
-      themeMode: ThemeMode.light,
-      lightStyleFetched: const AsyncData("light"),
-    );
+    mapStateNotifier.state = mapState.copyWith(themeMode: ThemeMode.light, lightStyleFetched: const AsyncData("light"));
     await tester.pumpAndSettle();
     expect(mapStyle?.valueOrNull, "light");
   });

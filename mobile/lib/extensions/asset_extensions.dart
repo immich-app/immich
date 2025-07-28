@@ -15,16 +15,10 @@ extension TZExtension on Asset {
           final location = getLocation(exifInfo!.timeZone!);
           dt = TZDateTime.from(dt, location);
         } on LocationNotFoundException {
-          RegExp re = RegExp(
-            r'^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$',
-            caseSensitive: false,
-          );
+          RegExp re = RegExp(r'^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$', caseSensitive: false);
           final m = re.firstMatch(exifInfo!.timeZone!);
           if (m != null) {
-            final duration = Duration(
-              hours: int.parse(m.group(1) ?? '0'),
-              minutes: int.parse(m.group(2) ?? '0'),
-            );
+            final duration = Duration(hours: int.parse(m.group(1) ?? '0'), minutes: int.parse(m.group(2) ?? '0'));
             dt = dt.add(duration);
             return (dt, duration);
           }

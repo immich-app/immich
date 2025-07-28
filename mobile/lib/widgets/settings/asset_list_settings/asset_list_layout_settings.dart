@@ -9,9 +9,7 @@ import 'package:immich_mobile/widgets/settings/settings_sub_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
 class LayoutSettings extends HookConsumerWidget {
-  const LayoutSettings({
-    super.key,
-  });
+  const LayoutSettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

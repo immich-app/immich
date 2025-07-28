@@ -21,10 +21,7 @@ import 'package:immich_mobile/widgets/common/remote_album_sliver_app_bar.dart';
 class RemoteAlbumPage extends ConsumerStatefulWidget {
   final RemoteAlbum album;
 
-  const RemoteAlbumPage({
-    super.key,
-    required this.album,
-  });
+  const RemoteAlbumPage({super.key, required this.album});
 
   @override
   ConsumerState<RemoteAlbumPage> createState() => _RemoteAlbumPageState();
@@ -40,16 +37,16 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     final albumAssets = await ref.read(remoteAlbumProvider.notifier).getAssets(widget.album.id);
 
     final newAssets = await context.pushRoute<Set<BaseAsset>>(
-      DriftAssetSelectionTimelineRoute(
-        lockedSelectionAssets: albumAssets.toSet(),
-      ),
+      DriftAssetSelectionTimelineRoute(lockedSelectionAssets: albumAssets.toSet()),
     );
 
     if (newAssets == null || newAssets.isEmpty) {
       return;
     }
 
-    final added = await ref.read(remoteAlbumProvider.notifier).addAssets(
+    final added = await ref
+        .read(remoteAlbumProvider.notifier)
+        .addAssets(
           widget.album.id,
           newAssets.map((asset) {
             final remoteAsset = asset as RemoteAsset;
@@ -60,21 +57,14 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     if (added > 0) {
       ImmichToast.show(
         context: context,
-        msg: "assets_added_to_album_count".t(
-          context: context,
-          args: {
-            'count': added.toString(),
-          },
-        ),
+        msg: "assets_added_to_album_count".t(context: context, args: {'count': added.toString()}),
         toastType: ToastType.success,
       );
     }
   }
 
   Future<void> addUsers(BuildContext context) async {
-    final newUsers = await context.pushRoute<List<String>>(
-      DriftUserSelectionRoute(album: widget.album),
-    );
+    final newUsers = await context.pushRoute<List<String>>(DriftUserSelectionRoute(album: widget.album));
 
     if (newUsers == null || newUsers.isEmpty) {
       return;
@@ -86,12 +76,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       if (newUsers.isNotEmpty) {
         ImmichToast.show(
           context: context,
-          msg: "users_added_to_album_count".t(
-            context: context,
-            args: {
-              'count': newUsers.length,
-            },
-          ),
+          msg: "users_added_to_album_count".t(context: context, args: {'count': newUsers.length}),
           toastType: ToastType.success,
         );
       }
@@ -107,9 +92,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   }
 
   Future<void> toggleAlbumOrder() async {
-    await ref.read(remoteAlbumProvider.notifier).toggleAlbumOrder(
-          widget.album.id,
-        );
+    await ref.read(remoteAlbumProvider.notifier).toggleAlbumOrder(widget.album.id);
 
     ref.invalidate(timelineServiceProvider);
   }
@@ -123,16 +106,9 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'album_delete_confirmation'.t(
-                  context: context,
-                  args: {'album': widget.album.name},
-                ),
-              ),
+              Text('album_delete_confirmation'.t(context: context, args: {'album': widget.album.name})),
               const SizedBox(height: 8),
-              Text(
-                'album_delete_confirmation_description'.t(context: context),
-              ),
+              Text('album_delete_confirmation_description'.t(context: context)),
             ],
           ),
           actions: [
@@ -142,9 +118,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.error,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
               child: Text('delete_album'.t(context: context)),
             ),
           ],
@@ -230,13 +204,11 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   Widget build(BuildContext context) {
     return ProviderScope(
       overrides: [
-        timelineServiceProvider.overrideWith(
-          (ref) {
-            final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: widget.album.id);
-            ref.onDispose(timelineService.dispose);
-            return timelineService;
-          },
-        ),
+        timelineServiceProvider.overrideWith((ref) {
+          final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: widget.album.id);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
       ],
       child: Timeline(
         appBar: RemoteAlbumSliverAppBar(
@@ -245,9 +217,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
           onToggleAlbumOrder: () => toggleAlbumOrder(),
           onEditTitle: () => showEditTitleAndDescription(context),
         ),
-        bottomSheet: RemoteAlbumBottomSheet(
-          album: widget.album,
-        ),
+        bottomSheet: RemoteAlbumBottomSheet(album: widget.album),
       ),
     );
   }
@@ -257,18 +227,13 @@ class _EditAlbumData {
   final String name;
   final String? description;
 
-  const _EditAlbumData({
-    required this.name,
-    this.description,
-  });
+  const _EditAlbumData({required this.name, this.description});
 }
 
 class _EditAlbumDialog extends ConsumerStatefulWidget {
   final RemoteAlbum album;
 
-  const _EditAlbumDialog({
-    required this.album,
-  });
+  const _EditAlbumDialog({required this.album});
 
   @override
   ConsumerState<_EditAlbumDialog> createState() => _EditAlbumDialogState();
@@ -302,19 +267,14 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
       final newTitle = titleController.text.trim();
       final newDescription = descriptionController.text.trim();
 
-      await ref.read(remoteAlbumProvider.notifier).updateAlbum(
-            widget.album.id,
-            name: newTitle,
-            description: newDescription.isEmpty ? null : newDescription,
-          );
+      await ref
+          .read(remoteAlbumProvider.notifier)
+          .updateAlbum(widget.album.id, name: newTitle, description: newDescription.isEmpty ? null : newDescription);
 
       if (mounted) {
-        Navigator.of(context).pop(
-          _EditAlbumData(
-            name: newTitle,
-            description: newDescription.isEmpty ? null : newDescription,
-          ),
-        );
+        Navigator.of(
+          context,
+        ).pop(_EditAlbumData(name: newTitle, description: newDescription.isEmpty ? null : newDescription));
       }
     } catch (e) {
       if (mounted) {
@@ -331,11 +291,7 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       insetPadding: const EdgeInsets.all(24),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(16),
-        ),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
       child: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(16),
@@ -348,16 +304,9 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.edit_outlined,
-                      color: context.colorScheme.primary,
-                      size: 24,
-                    ),
+                    Icon(Icons.edit_outlined, color: context.colorScheme.primary, size: 24),
                     const SizedBox(width: 12),
-                    Text(
-                      'edit_album'.t(context: context),
-                      style: context.textTheme.titleMedium,
-                    ),
+                    Text('edit_album'.t(context: context), style: context.textTheme.titleMedium),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -365,9 +314,7 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
                 // Album Name
                 Text(
                   'album_name'.t(context: context).toUpperCase(),
-                  style: context.textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: context.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 4),
                 TextFormField(
@@ -375,9 +322,7 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
                   maxLines: 1,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                    ),
+                    border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                     filled: true,
                     fillColor: context.colorScheme.surface,
                   ),
@@ -394,9 +339,7 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
                 // Description
                 Text(
                   'description'.t(context: context).toUpperCase(),
-                  style: context.textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: context.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 4),
                 TextFormField(
@@ -404,11 +347,7 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
                   maxLines: 4,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(12),
-                      ),
-                    ),
+                    border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                     filled: true,
                     fillColor: context.colorScheme.surface,
                   ),

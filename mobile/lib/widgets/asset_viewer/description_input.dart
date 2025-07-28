@@ -14,11 +14,7 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:logging/logging.dart';
 
 class DescriptionInput extends HookConsumerWidget {
-  DescriptionInput({
-    super.key,
-    required this.asset,
-    this.exifInfo,
-  });
+  DescriptionInput({super.key, required this.asset, this.exifInfo});
 
   final Asset asset;
   final ExifInfo? exifInfo;
@@ -37,16 +33,13 @@ class DescriptionInput extends HookConsumerWidget {
     final hasDescription = useState(false);
     final isOwner = fastHash(owner?.id ?? '') == asset.ownerId;
 
-    useEffect(
-      () {
-        assetService.getDescription(asset).then((value) {
-          controller.text = value;
-          hasDescription.value = value.isNotEmpty;
-        });
-        return null;
-      },
-      [assetWithExif.value],
-    );
+    useEffect(() {
+      assetService.getDescription(asset).then((value) {
+        controller.text = value;
+        hasDescription.value = value.isNotEmpty;
+      });
+      return null;
+    }, [assetWithExif.value]);
 
     if (!isOwner && !hasDescription.value) {
       return const SizedBox.shrink();
@@ -55,19 +48,12 @@ class DescriptionInput extends HookConsumerWidget {
     submitDescription(String description) async {
       hasError.value = false;
       try {
-        await assetService.setDescription(
-          asset,
-          description,
-        );
+        await assetService.setDescription(asset, description);
         controller.text = description;
       } catch (error, stack) {
         hasError.value = true;
         _log.severe("Error updating description", error, stack);
-        ImmichToast.show(
-          context: context,
-          msg: "description_input_submit_error".tr(),
-          toastType: ToastType.error,
-        );
+        ImmichToast.show(context: context, msg: "description_input_submit_error".tr(), toastType: ToastType.error);
       }
     }
 
@@ -80,10 +66,7 @@ class DescriptionInput extends HookConsumerWidget {
           controller.clear();
           isTextEmpty.value = true;
         },
-        icon: Icon(
-          Icons.cancel_rounded,
-          color: context.colorScheme.onSurfaceSecondary,
-        ),
+        icon: Icon(Icons.cancel_rounded, color: context.colorScheme.onSurfaceSecondary),
         splashRadius: 10,
       );
     }

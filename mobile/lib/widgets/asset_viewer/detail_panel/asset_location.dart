@@ -11,10 +11,7 @@ import 'package:immich_mobile/widgets/asset_viewer/detail_panel/exif_map.dart';
 class AssetLocation extends HookConsumerWidget {
   final Asset asset;
 
-  const AssetLocation({
-    super.key,
-    required this.asset,
-  });
+  const AssetLocation({super.key, required this.asset});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,10 +32,7 @@ class AssetLocation extends HookConsumerWidget {
               leading: const Icon(Icons.location_on),
               title: Text(
                 "add_a_location",
-                style: context.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: context.primaryColor,
-                ),
+                style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: context.primaryColor),
               ).tr(),
               onTap: editLocation,
             )
@@ -56,10 +50,7 @@ class AssetLocation extends HookConsumerWidget {
       bool hasLocationName = (cityName != null && stateName != null);
 
       return hasLocationName
-          ? Text(
-              "$cityName, $stateName",
-              style: context.textTheme.labelLarge,
-            )
+          ? Text("$cityName, $stateName", style: context.textTheme.labelLarge)
           : const SizedBox.shrink();
     }
 
@@ -79,25 +70,16 @@ class AssetLocation extends HookConsumerWidget {
                 ),
               ).tr(),
               if (asset.isRemote)
-                IconButton(
-                  onPressed: editLocation,
-                  icon: const Icon(Icons.edit_outlined),
-                  iconSize: 20,
-                ),
+                IconButton(onPressed: editLocation, icon: const Icon(Icons.edit_outlined), iconSize: 20),
             ],
           ),
           asset.isRemote ? const SizedBox.shrink() : const SizedBox(height: 16),
-          ExifMap(
-            exifInfo: exifInfo!,
-            markerId: asset.remoteId,
-          ),
+          ExifMap(exifInfo: exifInfo!, markerId: asset.remoteId),
           const SizedBox(height: 16),
           getLocationName(),
           Text(
             "${exifInfo.latitude!.toStringAsFixed(4)}, ${exifInfo.longitude!.toStringAsFixed(4)}",
-            style: context.textTheme.labelMedium?.copyWith(
-              color: context.textTheme.labelMedium?.color?.withAlpha(150),
-            ),
+            style: context.textTheme.labelMedium?.copyWith(color: context.textTheme.labelMedium?.color?.withAlpha(150)),
           ),
         ],
       ),

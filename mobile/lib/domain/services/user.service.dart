@@ -18,9 +18,9 @@ class UserService {
     required IsarUserRepository isarUserRepository,
     required UserApiRepository userApiRepository,
     required StoreService storeService,
-  })  : _isarUserRepository = isarUserRepository,
-        _userApiRepository = userApiRepository,
-        _storeService = storeService;
+  }) : _isarUserRepository = isarUserRepository,
+       _userApiRepository = userApiRepository,
+       _storeService = storeService;
 
   UserDto getMyUser() {
     return _storeService.get(StoreKey.currentUser);
@@ -44,10 +44,7 @@ class UserService {
 
   Future<String?> createProfileImage(String name, Uint8List image) async {
     try {
-      final path = await _userApiRepository.createProfileImage(
-        name: name,
-        data: image,
-      );
+      final path = await _userApiRepository.createProfileImage(name: name, data: image);
       final updatedUser = getMyUser().copyWith(profileImagePath: path);
       await _storeService.put(StoreKey.currentUser, updatedUser);
       await _isarUserRepository.update(updatedUser);
