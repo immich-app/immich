@@ -2,7 +2,8 @@ import { notificationController, NotificationType } from '$lib/components/shared
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { StackResponse } from '$lib/utils/asset-utils';
-import { AssetVisibility, deleteAssets as deleteBulk, restoreAssets } from '@immich/sdk';
+import { toTimelineAsset } from '$lib/utils/timeline-util';
+import { AssetVisibility, deleteAssets as deleteBulk, restoreAssets, type StackResponseDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
@@ -99,4 +100,27 @@ export function updateUnstackedAssetInTimeline(timelineManager: TimelineManager,
   );
 
   timelineManager.addAssets(assets);
+}
+
+export function refreshStackedAssetInTimeline(
+  timelineManager: TimelineManager,
+  stack: StackResponseDto,
+  addPrimaryAsset: boolean = false,
+) {
+  if (stack != undefined) {
+    if (addPrimaryAsset) {
+      timelineManager.addAssets(
+        stack.assets.filter((a) => a.id === stack.primaryAssetId).map((a) => toTimelineAsset(a)),
+      );
+    }
+    timelineManager.updateAssetOperation([stack.primaryAssetId], (asset) => {
+      asset.stack = {
+        id: stack.id,
+        primaryAssetId: stack.primaryAssetId,
+        assetCount: stack.assets.length,
+      };
+      return { remove: false };
+    });
+    timelineManager.removeAssets(stack.assets.filter((a) => a.id !== stack.primaryAssetId).map(({ id }) => id));
+  }
 }
