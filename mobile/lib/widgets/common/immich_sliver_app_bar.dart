@@ -4,11 +4,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -51,11 +52,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
         pinned: pinned,
         snap: snap,
         expandedHeight: expandedHeight,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(5),
-          ),
-        ),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
         automaticallyImplyLeading: false,
         centerTitle: false,
         title: title ?? const _ImmichLogoWithText(),
@@ -65,38 +62,21 @@ class ImmichSliverAppBar extends ConsumerWidget {
               padding: const EdgeInsets.only(right: 12),
               child: IconButton(
                 onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => const CastDialog(),
-                  );
+                  showDialog(context: context, builder: (context) => const CastDialog());
                 },
-                icon: Icon(
-                  isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
-                ),
+                icon: Icon(isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded),
               ),
             ),
           const _SyncStatusIndicator(),
           if (actions != null)
-            ...actions!.map(
-              (action) => Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: action,
-              ),
-            ),
+            ...actions!.map((action) => Padding(padding: const EdgeInsets.only(right: 16), child: action)),
           if (kDebugMode || kProfileMode)
             IconButton(
               icon: const Icon(Icons.science_rounded),
               onPressed: () => context.pushRoute(const FeatInDevRoute()),
             ),
-          if (showUploadButton)
-            const Padding(
-              padding: EdgeInsets.only(right: 20),
-              child: _BackupIndicator(),
-            ),
-          const Padding(
-            padding: EdgeInsets.only(right: 20),
-            child: _ProfileIndicator(),
-          ),
+          if (showUploadButton) const Padding(padding: EdgeInsets.only(right: 20), child: _BackupIndicator()),
+          const Padding(padding: EdgeInsets.only(right: 20), child: _ProfileIndicator()),
         ],
       ),
     );
@@ -158,23 +138,12 @@ class _ProfileIndicator extends ConsumerWidget {
     const widgetSize = 30.0;
 
     return InkWell(
-      onTap: () => showDialog(
-        context: context,
-        useRootNavigator: false,
-        builder: (ctx) => const ImmichAppBarDialog(),
-      ),
+      onTap: () => showDialog(context: context, useRootNavigator: false, builder: (ctx) => const ImmichAppBarDialog()),
       borderRadius: const BorderRadius.all(Radius.circular(12)),
       child: Badge(
         label: Container(
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(widgetSize / 2),
-          ),
-          child: const Icon(
-            Icons.info,
-            color: Color.fromARGB(255, 243, 188, 106),
-            size: widgetSize / 2,
-          ),
+          decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(widgetSize / 2)),
+          child: const Icon(Icons.info, color: Color.fromARGB(255, 243, 188, 106), size: widgetSize / 2),
         ),
         backgroundColor: Colors.transparent,
         alignment: Alignment.bottomRight,
@@ -182,17 +151,10 @@ class _ProfileIndicator extends ConsumerWidget {
             serverInfoState.isVersionMismatch || ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable),
         offset: const Offset(-2, -12),
         child: user == null
-            ? const Icon(
-                Icons.face_outlined,
-                size: widgetSize,
-              )
+            ? const Icon(Icons.face_outlined, size: widgetSize)
             : Semantics(
                 label: "logged_in_as".tr(namedArgs: {"user": user.name}),
-                child: UserCircleAvatar(
-                  radius: 17,
-                  size: 31,
-                  user: user,
-                ),
+                child: UserCircleAvatar(radius: 17, size: 31, user: user),
               ),
       ),
     );
@@ -217,9 +179,7 @@ class _BackupIndicator extends ConsumerWidget {
           height: widgetSize / 2,
           decoration: BoxDecoration(
             color: badgeBackground,
-            border: Border.all(
-              color: context.colorScheme.outline.withValues(alpha: .3),
-            ),
+            border: Border.all(color: context.colorScheme.outline.withValues(alpha: .3)),
             borderRadius: BorderRadius.circular(widgetSize / 2),
           ),
           child: indicatorIcon,
@@ -228,53 +188,57 @@ class _BackupIndicator extends ConsumerWidget {
         alignment: Alignment.bottomRight,
         isLabelVisible: indicatorIcon != null,
         offset: const Offset(-2, -12),
-        child: Icon(
-          Icons.backup_rounded,
-          size: widgetSize,
-          color: context.primaryColor,
-        ),
+        child: Icon(Icons.backup_rounded, size: widgetSize, color: context.primaryColor),
       ),
     );
   }
 
   Widget? _getBackupBadgeIcon(BuildContext context, WidgetRef ref) {
-    final BackUpState backupState = ref.watch(backupProvider);
-    final bool isEnableAutoBackup = backupState.backgroundBackup || backupState.autoBackup;
+    final backupStateStream = ref.watch(settingsProvider).watch(Setting.enableBackup);
     final isDarkTheme = context.isDarkTheme;
     final iconColor = isDarkTheme ? Colors.white : Colors.black;
+    final isUploading = ref.watch(driftBackupProvider.select((state) => state.uploadItems.isNotEmpty));
 
-    if (isEnableAutoBackup) {
-      if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
-        return Container(
-          padding: const EdgeInsets.all(3.5),
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            strokeCap: StrokeCap.round,
-            valueColor: AlwaysStoppedAnimation<Color>(iconColor),
-            semanticsLabel: 'backup_controller_page_backup'.tr(),
-          ),
-        );
-      } else if (backupState.backupProgress != BackUpProgressEnum.inBackground &&
-          backupState.backupProgress != BackUpProgressEnum.manualInProgress) {
+    return StreamBuilder(
+      stream: backupStateStream,
+      initialData: false,
+      builder: (ctx, snapshot) {
+        final backupEnabled = snapshot.data ?? false;
+
+        if (!backupEnabled) {
+          return Icon(
+            Icons.cloud_off_rounded,
+            size: 9,
+            color: iconColor,
+            semanticLabel: 'backup_controller_page_backup'.tr(),
+          );
+        }
+
+        if (isUploading) {
+          return Container(
+            padding: const EdgeInsets.all(3.5),
+            child: Theme(
+              data: context.themeData.copyWith(
+                progressIndicatorTheme: context.themeData.progressIndicatorTheme.copyWith(year2023: true),
+              ),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                strokeCap: StrokeCap.round,
+                valueColor: AlwaysStoppedAnimation<Color>(iconColor),
+                semanticsLabel: 'backup_controller_page_backup'.tr(),
+              ),
+            ),
+          );
+        }
+
         return Icon(
           Icons.check_outlined,
           size: 9,
           color: iconColor,
           semanticLabel: 'backup_controller_page_backup'.tr(),
         );
-      }
-    }
-
-    if (!isEnableAutoBackup) {
-      return Icon(
-        Icons.cloud_off_rounded,
-        size: 9,
-        color: iconColor,
-        semanticLabel: 'backup_controller_page_backup'.tr(),
-      );
-    }
-
-    return null;
+      },
+    );
   }
 }
 
@@ -294,27 +258,13 @@ class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator> with
   @override
   void initState() {
     super.initState();
-    _rotationController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    );
-    _dismissalController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(_rotationController);
+    _rotationController = AnimationController(duration: const Duration(seconds: 2), vsync: this);
+    _dismissalController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+    _rotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_rotationController);
     _dismissalAnimation = Tween<double>(
       begin: 1.0,
       end: 0.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _dismissalController,
-        curve: Curves.easeOutQuart,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _dismissalController, curve: Curves.easeOutQuart));
   }
 
   @override
@@ -358,11 +308,7 @@ class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator> with
               opacity: isSyncing ? 1.0 : _dismissalAnimation.value,
               child: Transform.rotate(
                 angle: _rotationAnimation.value * 2 * 3.14159 * -1, // Rotate counter-clockwise
-                child: Icon(
-                  Icons.sync,
-                  size: 24,
-                  color: context.primaryColor,
-                ),
+                child: Icon(Icons.sync, size: 24, color: context.primaryColor),
               ),
             ),
           ),

@@ -80,7 +80,7 @@ export class ApiService {
       if (shareMatches) {
         try {
           const key = shareMatches[1];
-          const auth = await this.authService.validateSharedLink(key);
+          const auth = await this.authService.validateSharedLinkKey(key);
           const meta = await this.sharedLinkService.getMetadataTags(
             auth,
             request.host ? `${request.protocol}://${request.host}` : undefined,

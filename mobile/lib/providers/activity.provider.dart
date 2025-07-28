@@ -36,12 +36,9 @@ class AlbumActivity extends _$AlbumActivity {
   }
 
   Future<void> addComment(String comment) async {
-    final activity = await ref.watch(activityServiceProvider).addActivity(
-          albumId,
-          ActivityType.comment,
-          assetId: assetId,
-          comment: comment,
-        );
+    final activity = await ref
+        .watch(activityServiceProvider)
+        .addActivity(albumId, ActivityType.comment, assetId: assetId, comment: comment);
 
     if (activity.hasValue) {
       final activities = state.valueOrNull ?? [];

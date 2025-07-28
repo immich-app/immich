@@ -957,6 +957,14 @@
             }
           },
           {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "withoutAssets",
             "required": false,
             "in": "query",
@@ -1111,6 +1119,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -1551,6 +1567,14 @@
             }
           },
           {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "x-immich-checksum",
             "in": "header",
             "description": "sha1 checksum that can be used for duplicate detection before the file is uploaded",
@@ -1929,6 +1953,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2029,6 +2061,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2074,6 +2114,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -2151,6 +2199,14 @@
             "schema": {
               "$ref": "#/components/schemas/AssetMediaSize"
             }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2197,6 +2253,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -2605,6 +2669,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -2652,6 +2724,14 @@
         "parameters": [
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -6218,6 +6298,14 @@
             }
           },
           {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "token",
             "required": false,
             "in": "query",
@@ -6399,6 +6487,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -6455,6 +6551,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -7731,6 +7835,14 @@
             }
           },
           {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "tagId",
             "required": false,
             "in": "query",
@@ -7872,6 +7984,14 @@
             "description": "Filter assets containing a specific person (face recognition)",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
               "type": "string"
             }
           },
@@ -13027,6 +13147,7 @@
             "type": "array"
           },
           "description": {
+            "nullable": true,
             "type": "string"
           },
           "expiresAt": {
@@ -13036,11 +13157,16 @@
             "type": "string"
           },
           "password": {
+            "nullable": true,
             "type": "string"
           },
           "showMetadata": {
             "default": true,
             "type": "boolean"
+          },
+          "slug": {
+            "nullable": true,
+            "type": "string"
           },
           "type": {
             "allOf": [
@@ -13068,6 +13194,7 @@
             "type": "boolean"
           },
           "description": {
+            "nullable": true,
             "type": "string"
           },
           "expiresAt": {
@@ -13076,10 +13203,15 @@
             "type": "string"
           },
           "password": {
+            "nullable": true,
             "type": "string"
           },
           "showMetadata": {
             "type": "boolean"
+          },
+          "slug": {
+            "nullable": true,
+            "type": "string"
           }
         },
         "type": "object"
@@ -13127,6 +13259,10 @@
           "showMetadata": {
             "type": "boolean"
           },
+          "slug": {
+            "nullable": true,
+            "type": "string"
+          },
           "token": {
             "nullable": true,
             "type": "string"
@@ -13153,6 +13289,7 @@
           "key",
           "password",
           "showMetadata",
+          "slug",
           "type",
           "userId"
         ],

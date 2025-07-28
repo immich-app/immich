@@ -47,11 +47,7 @@ extension DateRangeFormatting on DateTime {
   /// - Date range of this year: "Mar 23-May 31"
   /// - Date range of other year: "Aug 28 - Sep 30, 2023"
   /// - Date range over multiple years: "Apr 17, 2021 - Apr 9, 2022"
-  static String formatDateRange(
-    DateTime startDate,
-    DateTime endDate,
-    Locale? locale,
-  ) {
+  static String formatDateRange(DateTime startDate, DateTime endDate, Locale? locale) {
     final now = DateTime.now();
     final currentYear = now.year;
     final localeString = locale?.toString() ?? 'en_US';

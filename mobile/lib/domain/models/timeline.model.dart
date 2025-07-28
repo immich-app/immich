@@ -1,18 +1,8 @@
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 
-enum GroupAssetsBy {
-  day,
-  month,
-  auto,
-  none;
-}
+enum GroupAssetsBy { day, month, auto, none }
 
-enum HeaderType {
-  none,
-  month,
-  day,
-  monthAndDay;
-}
+enum HeaderType { none, month, day, monthAndDay }
 
 class Bucket {
   final int assetCount;

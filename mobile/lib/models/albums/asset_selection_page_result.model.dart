@@ -4,9 +4,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 class AssetSelectionPageResult {
   final Set<Asset> selectedAssets;
 
-  const AssetSelectionPageResult({
-    required this.selectedAssets,
-  });
+  const AssetSelectionPageResult({required this.selectedAssets});
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

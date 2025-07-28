@@ -41,11 +41,7 @@ class GCastService {
 
   void Function(CastState)? onCastState;
 
-  GCastService(
-    this._gCastRepository,
-    this._sessionsApiService,
-    this._assetApiRepository,
-  ) {
+  GCastService(this._gCastRepository, this._sessionsApiService, this._assetApiRepository) {
     _gCastRepository.onCastStatus = _onCastStatusCallback;
     _gCastRepository.onCastMessage = _onCastMessageCallback;
   }
@@ -100,9 +96,7 @@ class GCastService {
     }
 
     if (status["media"] != null && status["media"]["duration"] != null) {
-      final duration = Duration(
-        milliseconds: (status["media"]["duration"] * 1000 ?? 0).toInt(),
-      );
+      final duration = Duration(milliseconds: (status["media"]["duration"] * 1000 ?? 0).toInt());
       onDuration?.call(duration);
     }
 
@@ -170,13 +164,8 @@ class GCastService {
     }
 
     final unauthenticatedUrl = asset.isVideo
-        ? getPlaybackUrlForRemoteId(
-            asset.id,
-          )
-        : getThumbnailUrlForRemoteId(
-            asset.id,
-            type: AssetMediaSize.fullsize,
-          );
+        ? getPlaybackUrlForRemoteId(asset.id)
+        : getThumbnailUrlForRemoteId(asset.id, type: AssetMediaSize.fullsize);
 
     final authenticatedURL = "$unauthenticatedUrl&sessionKey=${sessionKey?.token}";
 
@@ -220,17 +209,11 @@ class GCastService {
   }
 
   void play() {
-    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
-      "type": "PLAY",
-      "mediaSessionId": _sessionId,
-    });
+    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {"type": "PLAY", "mediaSessionId": _sessionId});
   }
 
   void pause() {
-    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
-      "type": "PAUSE",
-      "mediaSessionId": _sessionId,
-    });
+    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {"type": "PAUSE", "mediaSessionId": _sessionId});
   }
 
   void seekTo(Duration position) {
@@ -242,10 +225,7 @@ class GCastService {
   }
 
   void stop() {
-    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
-      "type": "STOP",
-      "mediaSessionId": _sessionId,
-    });
+    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {"type": "STOP", "mediaSessionId": _sessionId});
     _mediaStatusPollingTimer?.cancel();
 
     currentAssetId = null;
@@ -258,14 +238,13 @@ class GCastService {
     final dests = await _gCastRepository.listDestinations();
 
     return dests
-        .map(
-      (device) => (device.extras["fn"] ?? "Google Cast", CastDestinationType.googleCast, device),
-    )
+        .map((device) => (device.extras["fn"] ?? "Google Cast", CastDestinationType.googleCast, device))
         .where((device) {
-      final caString = device.$3.extras["ca"];
-      final caNumber = int.tryParse(caString ?? "0") ?? 0;
+          final caString = device.$3.extras["ca"];
+          final caNumber = int.tryParse(caString ?? "0") ?? 0;
 
-      return isDisplay(caNumber);
-    }).toList(growable: false);
+          return isDisplay(caNumber);
+        })
+        .toList(growable: false);
   }
 }

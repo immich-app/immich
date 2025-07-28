@@ -40,12 +40,9 @@ class MockHttpOverrides extends HttpOverrides {
 
       final cancelOnError = invocation.namedArguments[#cancelOnError] as bool;
 
-      return Stream<List<int>>.fromIterable([kTransparentImage.toList()]).listen(
-        onData,
-        onDone: onDone,
-        onError: onError,
-        cancelOnError: cancelOnError,
-      );
+      return Stream<List<int>>.fromIterable([
+        kTransparentImage.toList(),
+      ]).listen(onData, onDone: onDone, onError: onError, cancelOnError: cancelOnError);
     });
 
     return client;

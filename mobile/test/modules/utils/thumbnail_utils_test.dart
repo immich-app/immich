@@ -9,22 +9,12 @@ void main() {
   final dateTimeString = DateFormat.yMMMMd().format(dateTime);
 
   test('returns description if it has one', () {
-    final result = getAltText(
-      const ExifInfo(description: 'description'),
-      dateTime,
-      AssetType.image,
-      [],
-    );
+    final result = getAltText(const ExifInfo(description: 'description'), dateTime, AssetType.image, []);
     expect(result, 'description');
   });
 
   test('returns image alt text with date if no location', () {
-    final (template, args) = getAltTextTemplate(
-      const ExifInfo(),
-      dateTime,
-      AssetType.image,
-      [],
-    );
+    final (template, args) = getAltTextTemplate(const ExifInfo(), dateTime, AssetType.image, []);
     expect(template, "image_alt_text_date");
     expect(args["isVideo"], "false");
     expect(args["date"], dateTimeString);
@@ -45,12 +35,7 @@ void main() {
   });
 
   test('returns image alt text with date and some people', () {
-    final (template, args) = getAltTextTemplate(
-      const ExifInfo(),
-      dateTime,
-      AssetType.image,
-      ["Alice", "Bob"],
-    );
+    final (template, args) = getAltTextTemplate(const ExifInfo(), dateTime, AssetType.image, ["Alice", "Bob"]);
     expect(template, "image_alt_text_date_2_people");
     expect(args["isVideo"], "false");
     expect(args["date"], dateTimeString);

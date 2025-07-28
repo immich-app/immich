@@ -52,16 +52,13 @@ class AssetRepository extends DatabaseRepository {
   }
 
   Future<void> deleteByIds(List<int> ids) => txn(() async {
-        await db.assets.deleteAll(ids);
-        await db.exifInfos.deleteAll(ids);
-      });
+    await db.assets.deleteAll(ids);
+    await db.exifInfos.deleteAll(ids);
+  });
 
   Future<Asset?> getByRemoteId(String id) => db.assets.getByRemoteId(id);
 
-  Future<List<Asset>> getAllByRemoteId(
-    Iterable<String> ids, {
-    AssetState? state,
-  }) async {
+  Future<List<Asset>> getAllByRemoteId(Iterable<String> ids, {AssetState? state}) async {
     if (ids.isEmpty) {
       return [];
     }
@@ -69,10 +66,7 @@ class AssetRepository extends DatabaseRepository {
     return _getAllByRemoteIdImpl(ids, state).findAll();
   }
 
-  QueryBuilder<Asset, Asset, QAfterFilterCondition> _getAllByRemoteIdImpl(
-    Iterable<String> ids,
-    AssetState? state,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterFilterCondition> _getAllByRemoteIdImpl(Iterable<String> ids, AssetState? state) {
     final query = db.assets.remote(ids).filter();
     return switch (state) {
       null => query.noOp(),
@@ -82,12 +76,7 @@ class AssetRepository extends DatabaseRepository {
     };
   }
 
-  Future<List<Asset>> getAll({
-    required String ownerId,
-    AssetState? state,
-    AssetSort? sortBy,
-    int? limit,
-  }) {
+  Future<List<Asset>> getAll({required String ownerId, AssetState? state, AssetSort? sortBy, int? limit}) {
     final baseQuery = db.assets.where();
     final isarUserIds = fastHash(ownerId);
     final QueryBuilder<Asset, Asset, QAfterFilterCondition> filteredQuery = switch (state) {
@@ -133,19 +122,15 @@ class AssetRepository extends DatabaseRepository {
     return asset;
   }
 
-  Future<void> upsertDuplicatedAssets(Iterable<String> duplicatedAssets) => txn(
-        () => db.duplicatedAssets.putAll(duplicatedAssets.map(DuplicatedAsset.new).toList()),
-      );
+  Future<void> upsertDuplicatedAssets(Iterable<String> duplicatedAssets) =>
+      txn(() => db.duplicatedAssets.putAll(duplicatedAssets.map(DuplicatedAsset.new).toList()));
 
   Future<List<String>> getAllDuplicatedAssetIds() => db.duplicatedAssets.where().idProperty().findAll();
 
   Future<Asset?> getByOwnerIdChecksum(int ownerId, String checksum) =>
       db.assets.getByOwnerIdChecksum(ownerId, checksum);
 
-  Future<List<Asset?>> getAllByOwnerIdChecksum(
-    List<int> ownerIds,
-    List<String> checksums,
-  ) =>
+  Future<List<Asset?>> getAllByOwnerIdChecksum(List<int> ownerIds, List<String> checksums) =>
       db.assets.getAllByOwnerIdChecksum(ownerIds, checksums);
 
   Future<List<Asset>> getAllLocal() => db.assets.where().localIdIsNotNull().findAll();
@@ -211,26 +196,25 @@ Future<List<Asset>> _getMatchesImpl(
   int ownerId,
   List<Asset> assets,
   int limit,
-) =>
-    query
-        .ownerIdEqualTo(ownerId)
-        .anyOf(
-          assets,
-          (q, Asset a) => q
-              .fileNameEqualTo(a.fileName)
-              .and()
-              .durationInSecondsEqualTo(a.durationInSeconds)
-              .and()
-              .fileCreatedAtBetween(
-                a.fileCreatedAt.subtract(const Duration(hours: 12)),
-                a.fileCreatedAt.add(const Duration(hours: 12)),
-              )
-              .and()
-              .not()
-              .checksumEqualTo(a.checksum),
-        )
-        .sortByFileName()
-        .thenByFileCreatedAt()
-        .thenByFileModifiedAt()
-        .limit(limit)
-        .findAll();
+) => query
+    .ownerIdEqualTo(ownerId)
+    .anyOf(
+      assets,
+      (q, Asset a) => q
+          .fileNameEqualTo(a.fileName)
+          .and()
+          .durationInSecondsEqualTo(a.durationInSeconds)
+          .and()
+          .fileCreatedAtBetween(
+            a.fileCreatedAt.subtract(const Duration(hours: 12)),
+            a.fileCreatedAt.add(const Duration(hours: 12)),
+          )
+          .and()
+          .not()
+          .checksumEqualTo(a.checksum),
+    )
+    .sortByFileName()
+    .thenByFileCreatedAt()
+    .thenByFileModifiedAt()
+    .limit(limit)
+    .findAll();

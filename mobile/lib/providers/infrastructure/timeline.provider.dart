@@ -33,13 +33,11 @@ final timelineFactoryProvider = Provider<TimelineFactory>(
   ),
 );
 
-final timelineUsersProvider = StreamProvider<List<String>>(
-  (ref) {
-    final currentUserId = ref.watch(currentUserProvider.select((u) => u?.id));
-    if (currentUserId == null) {
-      return Stream.value([]);
-    }
+final timelineUsersProvider = StreamProvider<List<String>>((ref) {
+  final currentUserId = ref.watch(currentUserProvider.select((u) => u?.id));
+  if (currentUserId == null) {
+    return Stream.value([]);
+  }
 
-    return ref.watch(timelineRepositoryProvider).watchTimelineUserIds(currentUserId);
-  },
-);
+  return ref.watch(timelineRepositoryProvider).watchTimelineUserIds(currentUserId);
+});

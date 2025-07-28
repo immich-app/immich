@@ -15,9 +15,7 @@ export 'src/photo_view_scale_state.dart';
 export 'src/utils/photo_view_hero_attributes.dart';
 
 typedef PhotoViewControllerCallback = PhotoViewControllerBase Function();
-typedef PhotoViewControllerCallbackBuilder = void Function(
-  PhotoViewControllerCallback photoViewMethod,
-);
+typedef PhotoViewControllerCallbackBuilder = void Function(PhotoViewControllerCallback photoViewMethod);
 
 /// A [StatefulWidget] that contains all the photo view rendering elements.
 ///
@@ -269,8 +267,8 @@ class PhotoView extends StatefulWidget {
     this.disableScaleGestures,
     this.errorBuilder,
     this.enablePanAlways,
-  })  : child = null,
-        childSize = null;
+  }) : child = null,
+       childSize = null;
 
   /// Creates a widget that displays a zoomable child.
   ///
@@ -310,12 +308,12 @@ class PhotoView extends StatefulWidget {
     this.disableScaleGestures,
     this.disableGestures,
     this.enablePanAlways,
-  })  : semanticLabel = null,
-        errorBuilder = null,
-        imageProvider = null,
-        gaplessPlayback = false,
-        loadingBuilder = null,
-        index = 0;
+  }) : semanticLabel = null,
+       errorBuilder = null,
+       imageProvider = null,
+       gaplessPlayback = false,
+       loadingBuilder = null,
+       index = 0;
 
   /// Given a [imageProvider] it resolves into an zoomable image widget using. It
   /// is required
@@ -543,10 +541,7 @@ class _PhotoViewState extends State<PhotoView> with AutomaticKeepAliveClientMixi
   Widget build(BuildContext context) {
     super.build(context);
     return LayoutBuilder(
-      builder: (
-        BuildContext context,
-        BoxConstraints constraints,
-      ) {
+      builder: (BuildContext context, BoxConstraints constraints) {
         final computedOuterSize = widget.customSize ?? constraints.biggest;
         final backgroundDecoration = widget.backgroundDecoration ?? const BoxDecoration(color: Colors.black);
 
@@ -623,72 +618,49 @@ class _PhotoViewState extends State<PhotoView> with AutomaticKeepAliveClientMixi
 
 /// The default [ScaleStateCycle]
 PhotoViewScaleState defaultScaleStateCycle(PhotoViewScaleState actual) => switch (actual) {
-      PhotoViewScaleState.initial => PhotoViewScaleState.covering,
-      PhotoViewScaleState.covering => PhotoViewScaleState.originalSize,
-      PhotoViewScaleState.originalSize => PhotoViewScaleState.initial,
-      PhotoViewScaleState.zoomedIn || PhotoViewScaleState.zoomedOut => PhotoViewScaleState.initial,
-    };
+  PhotoViewScaleState.initial => PhotoViewScaleState.covering,
+  PhotoViewScaleState.covering => PhotoViewScaleState.originalSize,
+  PhotoViewScaleState.originalSize => PhotoViewScaleState.initial,
+  PhotoViewScaleState.zoomedIn || PhotoViewScaleState.zoomedOut => PhotoViewScaleState.initial,
+};
 
 /// A type definition for a [Function] that receives the actual [PhotoViewScaleState] and returns the next one
 /// It is used internally to walk in the "doubletap gesture cycle".
 /// It is passed to [PhotoView.scaleStateCycle]
-typedef ScaleStateCycle = PhotoViewScaleState Function(
-  PhotoViewScaleState actual,
-);
+typedef ScaleStateCycle = PhotoViewScaleState Function(PhotoViewScaleState actual);
 
 /// A type definition for a callback when the user taps up the photoview region
-typedef PhotoViewImageTapUpCallback = Function(
-  BuildContext context,
-  TapUpDetails details,
-  PhotoViewControllerValue controllerValue,
-);
+typedef PhotoViewImageTapUpCallback =
+    Function(BuildContext context, TapUpDetails details, PhotoViewControllerValue controllerValue);
 
 /// A type definition for a callback when the user taps down the photoview region
-typedef PhotoViewImageTapDownCallback = Function(
-  BuildContext context,
-  TapDownDetails details,
-  PhotoViewControllerValue controllerValue,
-);
+typedef PhotoViewImageTapDownCallback =
+    Function(BuildContext context, TapDownDetails details, PhotoViewControllerValue controllerValue);
 
 /// A type definition for a callback when the user drags up
-typedef PhotoViewImageDragStartCallback = Function(
-  BuildContext context,
-  DragStartDetails details,
-  PhotoViewControllerBase controllerValue,
-  PhotoViewScaleStateController scaleStateController,
-);
+typedef PhotoViewImageDragStartCallback =
+    Function(
+      BuildContext context,
+      DragStartDetails details,
+      PhotoViewControllerBase controllerValue,
+      PhotoViewScaleStateController scaleStateController,
+    );
 
 /// A type definition for a callback when the user drags
-typedef PhotoViewImageDragUpdateCallback = Function(
-  BuildContext context,
-  DragUpdateDetails details,
-  PhotoViewControllerValue controllerValue,
-);
+typedef PhotoViewImageDragUpdateCallback =
+    Function(BuildContext context, DragUpdateDetails details, PhotoViewControllerValue controllerValue);
 
 /// A type definition for a callback when the user taps down the photoview region
-typedef PhotoViewImageDragEndCallback = Function(
-  BuildContext context,
-  DragEndDetails details,
-  PhotoViewControllerValue controllerValue,
-);
+typedef PhotoViewImageDragEndCallback =
+    Function(BuildContext context, DragEndDetails details, PhotoViewControllerValue controllerValue);
 
 /// A type definition for a callback when a user finished scale
-typedef PhotoViewImageScaleEndCallback = Function(
-  BuildContext context,
-  ScaleEndDetails details,
-  PhotoViewControllerValue controllerValue,
-);
+typedef PhotoViewImageScaleEndCallback =
+    Function(BuildContext context, ScaleEndDetails details, PhotoViewControllerValue controllerValue);
 
 /// A type definition for a callback when the user long press start
-typedef PhotoViewImageLongPressStartCallback = Function(
-  BuildContext context,
-  LongPressStartDetails details,
-  PhotoViewControllerValue controllerValue,
-);
+typedef PhotoViewImageLongPressStartCallback =
+    Function(BuildContext context, LongPressStartDetails details, PhotoViewControllerValue controllerValue);
 
 /// A type definition for a callback to show a widget while the image is loading, a [ImageChunkEvent] is passed to inform progress
-typedef LoadingBuilder = Widget Function(
-  BuildContext context,
-  ImageChunkEvent? event,
-  int index,
-);
+typedef LoadingBuilder = Widget Function(BuildContext context, ImageChunkEvent? event, int index);

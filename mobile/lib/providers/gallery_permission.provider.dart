@@ -5,8 +5,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
-  GalleryPermissionNotifier() : super(PermissionStatus.denied) // Denied is the initial state
-  {
+  GalleryPermissionNotifier()
+    : super(PermissionStatus.denied) // Denied is the initial state
+      {
     // Sets the initial state
     getGalleryPermissionStatus();
   }

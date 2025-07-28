@@ -21,10 +21,7 @@ class PeopleCollectionPage extends HookConsumerWidget {
     final formFocus = useFocusNode();
     final ValueNotifier<String?> search = useState(null);
 
-    showNameEditModel(
-      String personId,
-      String personName,
-    ) {
+    showNameEditModel(String personId, String personName) {
       return showDialog(
         context: context,
         useRootNavigator: false,
@@ -84,22 +81,14 @@ class PeopleCollectionPage extends HookConsumerWidget {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            context.pushRoute(
-                              PersonResultRoute(
-                                personId: person.id,
-                                personName: person.name,
-                              ),
-                            );
+                            context.pushRoute(PersonResultRoute(personId: person.id, personName: person.name));
                           },
                           child: Material(
                             shape: const CircleBorder(side: BorderSide.none),
                             elevation: 3,
                             child: CircleAvatar(
                               maxRadius: isTablet ? 120 / 2 : 96 / 2,
-                              backgroundImage: NetworkImage(
-                                getFaceThumbnailUrl(person.id),
-                                headers: headers,
-                              ),
+                              backgroundImage: NetworkImage(getFaceThumbnailUrl(person.id), headers: headers),
                             ),
                           ),
                         ),
@@ -115,15 +104,11 @@ class PeopleCollectionPage extends HookConsumerWidget {
                                   ),
                                 )
                               : Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
                                   child: Text(
                                     person.name,
                                     overflow: TextOverflow.ellipsis,
-                                    style: context.textTheme.titleSmall?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                    style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
                                   ),
                                 ),
                         ),

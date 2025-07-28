@@ -11,27 +11,19 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 
-typedef TimelineAssetSource = Future<List<BaseAsset>> Function(
-  int index,
-  int count,
-);
+typedef TimelineAssetSource = Future<List<BaseAsset>> Function(int index, int count);
 
 typedef TimelineBucketSource = Stream<List<Bucket>> Function();
 
-typedef TimelineQuery = ({
-  TimelineAssetSource assetSource,
-  TimelineBucketSource bucketSource,
-});
+typedef TimelineQuery = ({TimelineAssetSource assetSource, TimelineBucketSource bucketSource});
 
 class TimelineFactory {
   final DriftTimelineRepository _timelineRepository;
   final SettingsService _settingsService;
 
-  const TimelineFactory({
-    required DriftTimelineRepository timelineRepository,
-    required SettingsService settingsService,
-  })  : _timelineRepository = timelineRepository,
-        _settingsService = settingsService;
+  const TimelineFactory({required DriftTimelineRepository timelineRepository, required SettingsService settingsService})
+    : _timelineRepository = timelineRepository,
+      _settingsService = settingsService;
 
   GroupAssetsBy get groupBy {
     final group = GroupAssetsBy.values[_settingsService.get(Setting.groupAssetsBy)];
@@ -78,17 +70,11 @@ class TimelineService {
   int _totalAssets = 0;
   int get totalAssets => _totalAssets;
 
-  TimelineService(TimelineQuery query)
-      : this._(
-          assetSource: query.assetSource,
-          bucketSource: query.bucketSource,
-        );
+  TimelineService(TimelineQuery query) : this._(assetSource: query.assetSource, bucketSource: query.bucketSource);
 
-  TimelineService._({
-    required TimelineAssetSource assetSource,
-    required TimelineBucketSource bucketSource,
-  })  : _assetSource = assetSource,
-        _bucketSource = bucketSource {
+  TimelineService._({required TimelineAssetSource assetSource, required TimelineBucketSource bucketSource})
+    : _assetSource = assetSource,
+      _bucketSource = bucketSource {
     _bucketSubscription = _bucketSource().listen((buckets) {
       _mutex.run(() async {
         final totalAssets = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
@@ -106,10 +92,7 @@ class TimelineService {
             count = kTimelineAssetLoadBatchSize;
           } else {
             offset = _bufferOffset;
-            count = math.min(
-              _buffer.length,
-              totalAssets - _bufferOffset,
-            );
+            count = math.min(_buffer.length, totalAssets - _bufferOffset);
           }
           _buffer = await _assetSource(offset, count);
           _bufferOffset = offset;
@@ -137,10 +120,7 @@ class TimelineService {
     // make sure to load a meaningful amount of data (and not only the requested slice)
     // otherwise, each call to [loadAssets] would result in DB call trashing performance
     // fills small requests to [kTimelineAssetLoadBatchSize], adds some legroom into the opposite scroll direction for large requests
-    final len = math.max(
-      kTimelineAssetLoadBatchSize,
-      count + kTimelineAssetLoadOppositeSize,
-    );
+    final len = math.max(kTimelineAssetLoadBatchSize, count + kTimelineAssetLoadOppositeSize);
     // when scrolling forward, start shortly before the requested offset
     // when scrolling backward, end shortly after the requested offset to guard against the user scrolling
     // in the other direction a tiny bit resulting in another required load from the DB

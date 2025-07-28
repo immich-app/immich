@@ -34,10 +34,7 @@ class AdvancedSettings extends HookConsumerWidget {
 
     final logLevel = Level.LEVELS[levelId.value].name;
 
-    useValueChanged(
-      levelId.value,
-      (_, __) => LogService.I.setLogLevel(Level.LEVELS[levelId.value].toLogLevel()),
-    );
+    useValueChanged(levelId.value, (_, __) => LogService.I.setLogLevel(Level.LEVELS[levelId.value].toLogLevel()));
 
     Future<bool> checkAndroidVersion() async {
       if (Platform.isAndroid) {

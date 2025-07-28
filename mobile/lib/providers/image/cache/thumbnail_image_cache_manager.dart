@@ -9,12 +9,5 @@ class ThumbnailImageCacheManager extends CacheManager {
     return _instance;
   }
 
-  ThumbnailImageCacheManager._()
-      : super(
-          Config(
-            key,
-            maxNrOfCacheObjects: 5000,
-            stalePeriod: const Duration(days: 30),
-          ),
-        );
+  ThumbnailImageCacheManager._() : super(Config(key, maxNrOfCacheObjects: 5000, stalePeriod: const Duration(days: 30)));
 }

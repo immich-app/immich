@@ -7,12 +7,7 @@ class EntitiyCountTile extends StatelessWidget {
   final String label;
   final IconData icon;
 
-  const EntitiyCountTile({
-    super.key,
-    required this.count,
-    required this.label,
-    required this.icon,
-  });
+  const EntitiyCountTile({super.key, required this.count, required this.label, required this.icon});
 
   String zeroPadding(int number, int targetWidth) {
     final numStr = number.toString();
@@ -31,10 +26,7 @@ class EntitiyCountTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.colorScheme.surfaceContainerLow,
         borderRadius: const BorderRadius.all(Radius.circular(16)),
-        border: Border.all(
-          width: 0.5,
-          color: context.colorScheme.outline.withAlpha(25),
-        ),
+        border: Border.all(width: 0.5, color: context.colorScheme.outline.withAlpha(25)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -44,18 +36,11 @@ class EntitiyCountTile extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Icon(
-                icon,
-                color: context.primaryColor,
-              ),
+              Icon(icon, color: context.primaryColor),
               const SizedBox(width: 8),
               Text(
                 label,
-                style: TextStyle(
-                  color: context.primaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ],
           ),
@@ -66,23 +51,15 @@ class EntitiyCountTile extends StatelessWidget {
               final maxDigits = calculateMaxDigits(constraints.maxWidth);
               return RichText(
                 text: TextSpan(
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontFamily: 'OverpassMono',
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: const TextStyle(fontSize: 18, fontFamily: 'OverpassMono', fontWeight: FontWeight.w600),
                   children: [
                     TextSpan(
                       text: zeroPadding(count, maxDigits),
-                      style: TextStyle(
-                        color: context.colorScheme.onSurfaceSecondary.withAlpha(75),
-                      ),
+                      style: TextStyle(color: context.colorScheme.onSurfaceSecondary.withAlpha(75)),
                     ),
                     TextSpan(
                       text: count.toString(),
-                      style: TextStyle(
-                        color: context.primaryColor,
-                      ),
+                      style: TextStyle(color: context.primaryColor),
                     ),
                   ],
                 ),
