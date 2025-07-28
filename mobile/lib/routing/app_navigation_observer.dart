@@ -26,9 +26,10 @@ class AppNavigationObserver extends AutoRouterObserver {
   void didPush(Route route, Route? previousRoute) {
     _handleLockedViewState(route, previousRoute);
     _handleDriftLockedFolderState(route, previousRoute);
-    Future(
-      () => ref.read(currentRouteNameProvider.notifier).state = route.settings.name,
-    );
+    Future(() {
+      ref.read(currentRouteNameProvider.notifier).state = route.settings.name;
+      ref.read(previousRouteNameProvider.notifier).state = previousRoute?.settings.name;
+    });
   }
 
   _handleLockedViewState(Route route, Route? previousRoute) {
