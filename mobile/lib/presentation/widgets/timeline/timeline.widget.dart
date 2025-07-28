@@ -155,79 +155,69 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     final asyncSegments = ref.watch(timelineSegmentProvider);
     final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
     final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
+    final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
-    return asyncSegments.widgetWhen(
-      onData: (segments) {
-        final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
-        final double appBarExpandedHeight = widget.appBar != null && widget.appBar is MesmerizingSliverAppBar ? 200 : 0;
-        final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
-
-        const scrubberBottomPadding = 100.0;
-        final bottomPadding = context.padding.bottom + (widget.appBar == null ? 0 : scrubberBottomPadding);
-
-        return PrimaryScrollController(
-          controller: _scrollController,
-          child: Stack(
-            children: [
-              Scrubber(
-                layoutSegments: segments,
-                timelineHeight: maxHeight,
-                topPadding: topPadding,
-                bottomPadding: bottomPadding,
-                monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
-                child: CustomScrollView(
-                  primary: true,
-                  cacheExtent: maxHeight * 2,
-                  slivers: [
-                    if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
-                    if (widget.topSliverWidget != null) widget.topSliverWidget!,
-                    _SliverSegmentedList(
-                      segments: segments,
-                      delegate: SliverChildBuilderDelegate(
-                        (ctx, index) {
-                          if (index >= childCount) return null;
-                          final segment = segments.findByIndex(index);
-                          return segment?.builder(ctx, index) ?? const SizedBox.shrink();
-                        },
-                        childCount: childCount,
-                        addAutomaticKeepAlives: false,
-                        // We add repaint boundary around tiles, so skip the auto boundaries
-                        addRepaintBoundaries: false,
-                      ),
-                    ),
-                    const SliverPadding(padding: EdgeInsets.only(bottom: scrubberBottomPadding)),
-                  ],
-                ),
-              ),
-              if (!isSelectionMode) ...[
-                Consumer(
-                  builder: (_, consumerRef, child) {
-                    final isMultiSelectEnabled = consumerRef.watch(multiSelectProvider.select((s) => s.isEnabled));
-
-                    if (isMultiSelectEnabled) {
-                      return child!;
-                    }
-                    return const SizedBox.shrink();
-                  },
-                  child: const Positioned(top: 60, left: 25, child: _MultiSelectStatusButton()),
-                ),
-                if (widget.bottomSheet != null)
-                  Consumer(
-                    builder: (_, consumerRef, child) {
-                      final isMultiSelectEnabled = consumerRef.watch(multiSelectProvider.select((s) => s.isEnabled));
-
-                      if (isMultiSelectEnabled) {
-                        return child!;
-                      }
-                      return const SizedBox.shrink();
-                    },
-                    child: widget.bottomSheet,
-                  ),
-              ],
-            ],
-          ),
-        );
+    return PopScope(
+      canPop: !isMultiSelectEnabled,
+      onPopInvokedWithResult: (_, __) {
+        if (isMultiSelectEnabled) {
+          ref.read(multiSelectProvider.notifier).reset();
+        }
       },
+      child: asyncSegments.widgetWhen(
+        onData: (segments) {
+          final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
+          final double appBarExpandedHeight = widget.appBar != null && widget.appBar is MesmerizingSliverAppBar
+              ? 200
+              : 0;
+          final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
+
+          const scrubberBottomPadding = 100.0;
+          final bottomPadding = context.padding.bottom + (widget.appBar == null ? 0 : scrubberBottomPadding);
+
+          return PrimaryScrollController(
+            controller: _scrollController,
+            child: Stack(
+              children: [
+                Scrubber(
+                  layoutSegments: segments,
+                  timelineHeight: maxHeight,
+                  topPadding: topPadding,
+                  bottomPadding: bottomPadding,
+                  monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
+                  child: CustomScrollView(
+                    primary: true,
+                    cacheExtent: maxHeight * 2,
+                    slivers: [
+                      if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
+                      if (widget.topSliverWidget != null) widget.topSliverWidget!,
+                      _SliverSegmentedList(
+                        segments: segments,
+                        delegate: SliverChildBuilderDelegate(
+                          (ctx, index) {
+                            if (index >= childCount) return null;
+                            final segment = segments.findByIndex(index);
+                            return segment?.builder(ctx, index) ?? const SizedBox.shrink();
+                          },
+                          childCount: childCount,
+                          addAutomaticKeepAlives: false,
+                          // We add repaint boundary around tiles, so skip the auto boundaries
+                          addRepaintBoundaries: false,
+                        ),
+                      ),
+                      const SliverPadding(padding: EdgeInsets.only(bottom: scrubberBottomPadding)),
+                    ],
+                  ),
+                ),
+                if (!isSelectionMode && isMultiSelectEnabled) ...[
+                  const Positioned(top: 60, left: 25, child: _MultiSelectStatusButton()),
+                  ?widget.bottomSheet,
+                ],
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
