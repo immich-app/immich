@@ -7,7 +7,7 @@
       "restart": true,
       "port": 9231,
       "name": "Immich API Server",
-      "remoteRoot": "/usr/src/app",
+      "remoteRoot": "/usr/src/app/server",
       "localRoot": "${workspaceFolder}/server"
     },
     {
@@ -16,7 +16,7 @@
       "restart": true,
       "port": 9230,
       "name": "Immich Workers",
-      "remoteRoot": "/usr/src/app",
+      "remoteRoot": "/usr/src/app/server",
       "localRoot": "${workspaceFolder}/server"
     }
   ]
