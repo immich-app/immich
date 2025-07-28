@@ -178,7 +178,7 @@ export class MapRepository {
 
     if (!ne_response) {
       this.logger.warn(
-        `Response from database for natural earth reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
+        `Empty response from database for natural earth country reverse geocoding lat: ${point.latitude}, lon: ${point.longitude}`,
       );
 
       return { country: null, state: null, city: null };
