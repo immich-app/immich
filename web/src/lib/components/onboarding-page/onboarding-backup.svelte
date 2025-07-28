@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import { Heading, HStack, Stack, VStack } from '@immich/ui';
+  import { Heading, HStack, Stack } from '@immich/ui';
   import { mdiAlert } from '@mdi/js';
 </script>
 
@@ -46,7 +46,7 @@
     </Stack>
     <p>
       <FormatMessage key="admin.backup_onboarding_footer">
-        {#snippet children({ tag, message })}
+        {#snippet children({ message })}
           <a
             href="https://immich.app/docs/administration/backup-and-restore/"
             class="underline"
