@@ -9,10 +9,7 @@ import 'package:immich_mobile/providers/backup/ios_background_settings.provider.
 /// more confident about background sync
 class IosDebugInfoTile extends HookConsumerWidget {
   final IOSBackgroundSettings settings;
-  const IosDebugInfoTile({
-    super.key,
-    required this.settings,
-  });
+  const IosDebugInfoTile({super.key, required this.settings});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,31 +34,16 @@ class IosDebugInfoTile extends HookConsumerWidget {
       subtitle = 'ios_debug_info_processing_ran_at'.t(context: context, args: {'dateTime': df.format(processing)});
     } else {
       final fetchOrProcessing = fetch!.isAfter(processing!) ? fetch : processing;
-      subtitle = 'ios_debug_info_last_sync_at'.t(
-        context: context,
-        args: {'dateTime': df.format(fetchOrProcessing)},
-      );
+      subtitle = 'ios_debug_info_last_sync_at'.t(context: context, args: {'dateTime': df.format(fetchOrProcessing)});
     }
 
     return ListTile(
       title: Text(
         title,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-          color: context.primaryColor,
-        ),
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.primaryColor),
       ),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(
-          fontSize: 14,
-        ),
-      ),
-      leading: Icon(
-        Icons.bug_report,
-        color: context.primaryColor,
-      ),
+      subtitle: Text(subtitle, style: const TextStyle(fontSize: 14)),
+      leading: Icon(Icons.bug_report, color: context.primaryColor),
     );
   }
 }

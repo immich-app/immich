@@ -12,9 +12,6 @@ class VideoControls extends ConsumerWidget {
     final isPortrait = context.orientation == Orientation.portrait;
     return isPortrait
         ? const VideoPosition()
-        : const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 60.0),
-            child: VideoPosition(),
-          );
+        : const Padding(padding: EdgeInsets.symmetric(horizontal: 60.0), child: VideoPosition());
   }
 }

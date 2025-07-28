@@ -36,12 +36,7 @@ class AssetViewerPage extends StatelessWidget {
   final TimelineService timelineService;
   final int? heroOffset;
 
-  const AssetViewerPage({
-    super.key,
-    required this.initialIndex,
-    required this.timelineService,
-    this.heroOffset,
-  });
+  const AssetViewerPage({super.key, required this.initialIndex, required this.timelineService, this.heroOffset});
 
   @override
   Widget build(BuildContext context) {
@@ -59,12 +54,7 @@ class AssetViewer extends ConsumerStatefulWidget {
   final Platform? platform;
   final int? heroOffset;
 
-  const AssetViewer({
-    super.key,
-    required this.initialIndex,
-    this.platform,
-    this.heroOffset,
-  });
+  const AssetViewer({super.key, required this.initialIndex, this.platform, this.heroOffset});
 
   @override
   ConsumerState createState() => _AssetViewerState();
@@ -162,11 +152,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           context,
           onError: (_, __) {},
         ),
-        precacheImage(
-          getFullImageProvider(asset, size: screenSize),
-          context,
-          onError: (_, __) {},
-        ),
+        precacheImage(getFullImageProvider(asset, size: screenSize), context, onError: (_, __) {}),
       ]),
     );
   }
@@ -222,9 +208,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
             duration: const Duration(seconds: 2),
             content: Text(
               "local_asset_cast_failed".tr(),
-              style: context.textTheme.bodyLarge?.copyWith(
-                color: context.primaryColor,
-              ),
+              style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
             ),
           ),
         );
@@ -262,7 +246,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     viewController = controller;
     dragDownPosition = details.localPosition;
     initialPhotoViewState = controller.value;
-    final isZoomed = scaleStateController.scaleState == PhotoViewScaleState.zoomedIn ||
+    final isZoomed =
+        scaleStateController.scaleState == PhotoViewScaleState.zoomedIn ||
         scaleStateController.scaleState == PhotoViewScaleState.covering;
     if (!showingBottomSheet && isZoomed) {
       blockGestures = true;
@@ -350,10 +335,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     final backgroundOpacity = (255 * (1.0 - (scaleReduction / dragRatio))).round();
 
-    viewController?.updateMultiple(
-      position: initialPhotoViewState.position + delta,
-      scale: updatedScale,
-    );
+    viewController?.updateMultiple(position: initialPhotoViewState.position + delta, scale: updatedScale);
     ref.read(assetViewerProvider.notifier).setOpacity(backgroundOpacity);
   }
 
@@ -450,32 +432,21 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     });
   }
 
-  void _openBottomSheet(
-    BuildContext ctx, {
-    double extent = _kBottomSheetMinimumExtent,
-  }) {
+  void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent}) {
     ref.read(assetViewerProvider.notifier).setBottomSheet(true);
     initialScale = viewController?.scale;
     viewController?.updateMultiple(scale: _getScaleForBottomSheet);
     previousExtent = _kBottomSheetMinimumExtent;
     sheetCloseController = showBottomSheet(
       context: ctx,
-      sheetAnimationStyle: const AnimationStyle(
-        duration: Durations.short4,
-        reverseDuration: Durations.short2,
-      ),
+      sheetAnimationStyle: const AnimationStyle(duration: Durations.short4, reverseDuration: Durations.short2),
       constraints: const BoxConstraints(maxWidth: double.infinity),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.0))),
       backgroundColor: ctx.colorScheme.surfaceContainerLowest,
       builder: (_) {
         return NotificationListener<Notification>(
           onNotification: _onNotification,
-          child: AssetDetailBottomSheet(
-            controller: bottomSheetController,
-            initialChildSize: extent,
-          ),
+          child: AssetDetailBottomSheet(controller: bottomSheetController, initialChildSize: extent),
         );
       },
     );
@@ -496,18 +467,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
     isSnapping = true;
-    bottomSheetController.animateTo(
-      _kBottomSheetSnapExtent,
-      duration: Durations.short3,
-      curve: Curves.easeOut,
-    );
+    bottomSheetController.animateTo(_kBottomSheetSnapExtent, duration: Durations.short3, curve: Curves.easeOut);
   }
 
-  Widget _placeholderBuilder(
-    BuildContext ctx,
-    ImageChunkEvent? progress,
-    int index,
-  ) {
+  Widget _placeholderBuilder(BuildContext ctx, ImageChunkEvent? progress, int index) {
     BaseAsset asset = ref.read(timelineServiceProvider).getAsset(index);
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
     if (stackChildren != null && stackChildren.isNotEmpty) {
@@ -517,14 +480,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       width: double.infinity,
       height: double.infinity,
       color: backgroundColor,
-      child: Thumbnail(
-        asset: asset,
-        fit: BoxFit.contain,
-        size: Size(
-          ctx.width,
-          ctx.height,
-        ),
-      ),
+      child: Thumbnail(asset: asset, fit: BoxFit.contain, size: Size(ctx.width, ctx.height)),
     );
   }
 
@@ -574,11 +530,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         width: ctx.width,
         height: ctx.height,
         color: backgroundColor,
-        child: Thumbnail(
-          asset: asset,
-          fit: BoxFit.contain,
-          size: size,
-        ),
+        child: Thumbnail(asset: asset, fit: BoxFit.contain, size: size),
       ),
     );
   }
@@ -662,8 +614,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           pageController: pageController,
           scrollPhysics: platform.isIOS
               ? const FastScrollPhysics() // Use bouncing physics for iOS
-              : const FastClampingScrollPhysics() // Use heavy physics for Android
-          ,
+              : const FastClampingScrollPhysics(), // Use heavy physics for Android
           itemCount: totalAssets,
           onPageChanged: _onPageChanged,
           onPageBuild: _onPageBuild,
@@ -678,10 +629,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const AssetStackRow(),
-                  if (!isInLockedView) const ViewerBottomBar(),
-                ],
+                children: [const AssetStackRow(), if (!isInLockedView) const ViewerBottomBar()],
               ),
       ),
     );

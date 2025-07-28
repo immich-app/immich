@@ -7,12 +7,7 @@ class ThumbnailPlaceholder extends StatelessWidget {
   final double width;
   final double height;
 
-  const ThumbnailPlaceholder({
-    super.key,
-    this.margin = EdgeInsets.zero,
-    this.width = 250,
-    this.height = 250,
-  });
+  const ThumbnailPlaceholder({super.key, this.margin = EdgeInsets.zero, this.width = 250, this.height = 250});
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +21,7 @@ class ThumbnailPlaceholder extends StatelessWidget {
       height: height,
       margin: margin,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: gradientColors,
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
+        gradient: LinearGradient(colors: gradientColors, begin: Alignment.topCenter, end: Alignment.bottomCenter),
       ),
     );
   }

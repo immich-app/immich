@@ -30,10 +30,7 @@ final remoteAlbumRepository = Provider<DriftRemoteAlbumRepository>(
 );
 
 final remoteAlbumServiceProvider = Provider<RemoteAlbumService>(
-  (ref) => RemoteAlbumService(
-    ref.watch(remoteAlbumRepository),
-    ref.watch(driftAlbumApiRepositoryProvider),
-  ),
+  (ref) => RemoteAlbumService(ref.watch(remoteAlbumRepository), ref.watch(driftAlbumApiRepositoryProvider)),
   dependencies: [remoteAlbumRepository],
 );
 

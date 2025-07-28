@@ -81,9 +81,7 @@ void main() {
       final upsertExifCallback = verify(() => syncService.upsertAssetsWithExif(captureAny()));
       upsertExifCallback.called(1);
       final receivedAssets = upsertExifCallback.captured.firstOrNull as List<Object>? ?? [];
-      final receivedDatetime = receivedAssets.cast<Asset>().map(
-            (a) => a.exifInfo?.dateTimeOriginal ?? DateTime(0),
-          );
+      final receivedDatetime = receivedAssets.cast<Asset>().map((a) => a.exifInfo?.dateTimeOriginal ?? DateTime(0));
       expect(receivedDatetime.every((d) => d == dateTime), isTrue);
     });
 
@@ -97,8 +95,8 @@ void main() {
       upsertExifCallback.called(1);
       final receivedAssets = upsertExifCallback.captured.firstOrNull as List<Object>? ?? [];
       final receivedCoords = receivedAssets.cast<Asset>().map(
-            (a) => LatLng(a.exifInfo?.latitude ?? 0, a.exifInfo?.longitude ?? 0),
-          );
+        (a) => LatLng(a.exifInfo?.latitude ?? 0, a.exifInfo?.longitude ?? 0),
+      );
       expect(receivedCoords.every((l) => l == latLng), isTrue);
     });
   });

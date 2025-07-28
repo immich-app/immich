@@ -27,10 +27,7 @@ import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-bool _isCurrentAsset(
-  BaseAsset asset,
-  BaseAsset? currentAsset,
-) {
+bool _isCurrentAsset(BaseAsset asset, BaseAsset? currentAsset) {
   if (asset is RemoteAsset) {
     return switch (currentAsset) {
       RemoteAsset remoteAsset => remoteAsset.id == asset.id,
@@ -98,10 +95,7 @@ class NativeVideoViewer extends HookConsumerWidget {
             throw Exception('No file found for the video');
           }
 
-          final source = await VideoSource.init(
-            path: file.path,
-            type: VideoSourceType.file,
-          );
+          final source = await VideoSource.init(path: file.path, type: VideoSourceType.file);
           return source;
         }
 
@@ -122,31 +116,24 @@ class NativeVideoViewer extends HookConsumerWidget {
         );
         return source;
       } catch (error) {
-        log.severe(
-          'Error creating video source for asset ${asset.name}: $error',
-        );
+        log.severe('Error creating video source for asset ${asset.name}: $error');
         return null;
       }
     }
 
     final videoSource = useMemoized<Future<VideoSource?>>(() => createSource());
     final aspectRatio = useState<double?>(null);
-    useMemoized(
-      () async {
-        if (!context.mounted || aspectRatio.value != null) {
-          return null;
-        }
+    useMemoized(() async {
+      if (!context.mounted || aspectRatio.value != null) {
+        return null;
+      }
 
-        try {
-          aspectRatio.value = await ref.read(assetServiceProvider).getAspectRatio(asset);
-        } catch (error) {
-          log.severe(
-            'Error getting aspect ratio for asset ${asset.name}: $error',
-          );
-        }
-      },
-      [asset.heroTag],
-    );
+      try {
+        aspectRatio.value = await ref.read(assetServiceProvider).getAspectRatio(asset);
+      } catch (error) {
+        log.severe('Error getting aspect ratio for asset ${asset.name}: $error');
+      }
+    }, [asset.heroTag]);
 
     void checkIfBuffering() {
       if (!context.mounted) {
@@ -156,8 +143,9 @@ class NativeVideoViewer extends HookConsumerWidget {
       final videoPlayback = ref.read(videoPlaybackValueProvider);
       if ((isBuffering.value || videoPlayback.state == VideoPlaybackState.initializing) &&
           videoPlayback.state != VideoPlaybackState.buffering) {
-        ref.read(videoPlaybackValueProvider.notifier).value =
-            videoPlayback.copyWith(state: VideoPlaybackState.buffering);
+        ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback.copyWith(
+          state: VideoPlaybackState.buffering,
+        );
       }
     }
 
@@ -345,48 +333,42 @@ class NativeVideoViewer extends HookConsumerWidget {
       // This delay seems like a hacky way to resolve underlying bugs in video
       // playback, but other resolutions failed thus far
       Timer(
-          Platform.isIOS
-              ? Duration(milliseconds: 300 * playbackDelayFactor)
-              : imageToVideo
-                  ? Duration(milliseconds: 200 * playbackDelayFactor)
-                  : Duration(milliseconds: 400 * playbackDelayFactor), () {
-        if (!context.mounted) {
-          return;
-        }
-
-        currentAsset.value = value;
-        if (currentAsset.value == asset) {
-          onPlaybackReady();
-        }
-      });
-    });
-
-    useEffect(
-      () {
-        // If opening a remote video from a hero animation, delay visibility to avoid a stutter
-        final timer = isVisible.value
-            ? null
-            : Timer(
-                const Duration(milliseconds: 300),
-                () => isVisible.value = true,
-              );
-
-        return () {
-          timer?.cancel();
-          final playerController = controller.value;
-          if (playerController == null) {
+        Platform.isIOS
+            ? Duration(milliseconds: 300 * playbackDelayFactor)
+            : imageToVideo
+            ? Duration(milliseconds: 200 * playbackDelayFactor)
+            : Duration(milliseconds: 400 * playbackDelayFactor),
+        () {
+          if (!context.mounted) {
             return;
           }
-          removeListeners(playerController);
-          playerController.stop().catchError((error) {
-            log.fine('Error stopping video: $error');
-          });
 
-          WakelockPlus.disable();
-        };
-      },
-      const [],
-    );
+          currentAsset.value = value;
+          if (currentAsset.value == asset) {
+            onPlaybackReady();
+          }
+        },
+      );
+    });
+
+    useEffect(() {
+      // If opening a remote video from a hero animation, delay visibility to avoid a stutter
+      final timer = isVisible.value ? null : Timer(const Duration(milliseconds: 300), () => isVisible.value = true);
+
+      return () {
+        timer?.cancel();
+        final playerController = controller.value;
+        if (playerController == null) {
+          return;
+        }
+        removeListeners(playerController);
+        playerController.stop().catchError((error) {
+          log.fine('Error stopping video: $error');
+        });
+
+        WakelockPlus.disable();
+      };
+    }, const []);
 
     useOnAppLifecycleStateChange((_, state) async {
       if (state == AppLifecycleState.resumed && shouldPlayOnForeground.value) {
@@ -416,12 +398,7 @@ class NativeVideoViewer extends HookConsumerWidget {
               child: AspectRatio(
                 key: ValueKey(asset),
                 aspectRatio: aspectRatio.value!,
-                child: isCurrent
-                    ? NativeVideoPlayerView(
-                        key: ValueKey(asset),
-                        onViewReady: initController,
-                      )
-                    : null,
+                child: isCurrent ? NativeVideoPlayerView(key: ValueKey(asset), onViewReady: initController) : null,
               ),
             ),
           ),

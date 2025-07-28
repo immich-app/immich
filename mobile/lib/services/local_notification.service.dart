@@ -6,10 +6,7 @@ import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 final localNotificationService = Provider(
-  (ref) => LocalNotificationService(
-    ref.watch(notificationPermissionProvider),
-    ref,
-  ),
+  (ref) => LocalNotificationService(ref.watch(notificationPermissionProvider), ref),
 );
 
 class LocalNotificationService {
@@ -46,10 +43,7 @@ class LocalNotificationService {
     AndroidNotificationDetails androidNotificationDetails,
     DarwinNotificationDetails iosNotificationDetails,
   ) async {
-    final notificationDetails = NotificationDetails(
-      android: androidNotificationDetails,
-      iOS: iosNotificationDetails,
-    );
+    final notificationDetails = NotificationDetails(android: androidNotificationDetails, iOS: iosNotificationDetails);
 
     if (_permissionStatus == PermissionStatus.granted) {
       await _localNotificationPlugin.show(id, title, body, notificationDetails);
@@ -95,20 +89,12 @@ class LocalNotificationService {
             ongoing: true,
             actions: (showActions ?? false)
                 ? <AndroidNotificationAction>[
-                    const AndroidNotificationAction(
-                      cancelUploadActionID,
-                      'Cancel',
-                      showsUserInterface: true,
-                    ),
+                    const AndroidNotificationAction(cancelUploadActionID, 'Cancel', showsUserInterface: true),
                   ]
                 : null,
           )
         // Non-progress notification
-        : AndroidNotificationDetails(
-            androidChannelID,
-            androidChannelName,
-            playSound: false,
-          );
+        : AndroidNotificationDetails(androidChannelID, androidChannelName, playSound: false);
 
     final iosNotificationDetails = DarwinNotificationDetails(
       presentBadge: true,
@@ -116,18 +102,10 @@ class LocalNotificationService {
       presentBanner: presentBanner,
     );
 
-    return _showOrUpdateNotification(
-      notificationlId,
-      title,
-      body,
-      androidNotificationDetails,
-      iosNotificationDetails,
-    );
+    return _showOrUpdateNotification(notificationlId, title, body, androidNotificationDetails, iosNotificationDetails);
   }
 
-  void _onDidReceiveForegroundNotificationResponse(
-    NotificationResponse notificationResponse,
-  ) {
+  void _onDidReceiveForegroundNotificationResponse(NotificationResponse notificationResponse) {
     // Handle notification actions
     switch (notificationResponse.actionId) {
       case cancelUploadActionID:

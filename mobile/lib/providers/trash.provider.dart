@@ -7,9 +7,7 @@ class TrashNotifier extends StateNotifier<bool> {
   final TrashService _trashService;
   final _log = Logger('TrashNotifier');
 
-  TrashNotifier(
-    this._trashService,
-  ) : super(false);
+  TrashNotifier(this._trashService) : super(false);
 
   Future<void> emptyTrash() async {
     try {
@@ -43,7 +41,5 @@ class TrashNotifier extends StateNotifier<bool> {
 }
 
 final trashProvider = StateNotifierProvider<TrashNotifier, bool>((ref) {
-  return TrashNotifier(
-    ref.watch(trashServiceProvider),
-  );
+  return TrashNotifier(ref.watch(trashServiceProvider));
 });

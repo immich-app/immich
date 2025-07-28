@@ -20,10 +20,7 @@ class CastActionButton extends ConsumerWidget {
       iconColor: isCasting ? context.primaryColor : null, // null = default color
       label: "cast".t(context: context),
       onPressed: () {
-        showDialog(
-          context: context,
-          builder: (context) => const CastDialog(),
-        );
+        showDialog(context: context, builder: (context) => const CastDialog());
       },
       menuItem: menuItem,
     );

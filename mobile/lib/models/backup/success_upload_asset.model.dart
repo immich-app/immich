@@ -5,17 +5,9 @@ class SuccessUploadAsset {
   final String remoteAssetId;
   final bool isDuplicate;
 
-  const SuccessUploadAsset({
-    required this.candidate,
-    required this.remoteAssetId,
-    required this.isDuplicate,
-  });
+  const SuccessUploadAsset({required this.candidate, required this.remoteAssetId, required this.isDuplicate});
 
-  SuccessUploadAsset copyWith({
-    BackupCandidate? candidate,
-    String? remoteAssetId,
-    bool? isDuplicate,
-  }) {
+  SuccessUploadAsset copyWith({BackupCandidate? candidate, String? remoteAssetId, bool? isDuplicate}) {
     return SuccessUploadAsset(
       candidate: candidate ?? this.candidate,
       remoteAssetId: remoteAssetId ?? this.remoteAssetId,

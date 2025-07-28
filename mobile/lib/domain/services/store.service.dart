@@ -24,16 +24,12 @@ class StoreService {
   }
 
   // TODO: Replace the implementation with the one from create after removing the typedef
-  static Future<StoreService> init({
-    required IsarStoreRepository storeRepository,
-  }) async {
+  static Future<StoreService> init({required IsarStoreRepository storeRepository}) async {
     _instance ??= await create(storeRepository: storeRepository);
     return _instance!;
   }
 
-  static Future<StoreService> create({
-    required IsarStoreRepository storeRepository,
-  }) async {
+  static Future<StoreService> create({required IsarStoreRepository storeRepository}) async {
     final instance = StoreService._(storeRepository: storeRepository);
     await instance._populateCache();
     instance._storeUpdateSubscription = instance._listenForChange();
@@ -48,8 +44,8 @@ class StoreService {
   }
 
   StreamSubscription<StoreDto> _listenForChange() => _storeRepository.watchAll().listen((event) {
-        _cache[event.key.id] = event.value;
-      });
+    _cache[event.key.id] = event.value;
+  });
 
   /// Disposes the store and cancels the subscription. To reuse the store call init() again
   void dispose() async {

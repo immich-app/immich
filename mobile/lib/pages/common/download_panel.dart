@@ -6,22 +6,13 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 
 class DownloadPanel extends ConsumerWidget {
-  const DownloadPanel({
-    super.key,
-  });
+  const DownloadPanel({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final showProgress = ref.watch(
-      downloadStateProvider.select((state) => state.showProgress),
-    );
+    final showProgress = ref.watch(downloadStateProvider.select((state) => state.showProgress));
 
-    final tasks = ref
-        .watch(
-          downloadStateProvider.select((state) => state.taskProgress),
-        )
-        .entries
-        .toList();
+    final tasks = ref.watch(downloadStateProvider.select((state) => state.taskProgress)).entries.toList();
 
     onCancelDownload(String id) {
       ref.watch(downloadStateProvider.notifier).cancelDownload(id);
@@ -74,47 +65,35 @@ class DownloadTaskTile extends StatelessWidget {
     final progressPercent = (progress * 100).round();
 
     String getStatusText() => switch (status) {
-          TaskStatus.running => 'downloading'.tr(),
-          TaskStatus.complete => 'download_complete'.tr(),
-          TaskStatus.failed => 'download_failed'.tr(),
-          TaskStatus.canceled => 'download_canceled'.tr(),
-          TaskStatus.paused => 'download_paused'.tr(),
-          TaskStatus.enqueued => 'download_enqueue'.tr(),
-          TaskStatus.notFound => 'download_notfound'.tr(),
-          TaskStatus.waitingToRetry => 'download_waiting_to_retry'.tr(),
-        };
+      TaskStatus.running => 'downloading'.tr(),
+      TaskStatus.complete => 'download_complete'.tr(),
+      TaskStatus.failed => 'download_failed'.tr(),
+      TaskStatus.canceled => 'download_canceled'.tr(),
+      TaskStatus.paused => 'download_paused'.tr(),
+      TaskStatus.enqueued => 'download_enqueue'.tr(),
+      TaskStatus.notFound => 'download_notfound'.tr(),
+      TaskStatus.waitingToRetry => 'download_waiting_to_retry'.tr(),
+    };
 
     return SizedBox(
       key: const ValueKey('download_progress'),
       width: context.width - 32,
       child: Card(
         clipBehavior: Clip.antiAlias,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(16),
-          ),
-        ),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
         child: ListTile(
           minVerticalPadding: 18,
           leading: const Icon(Icons.video_file_outlined),
-          title: Text(
-            getStatusText(),
-            style: context.textTheme.labelLarge,
-          ),
+          title: Text(getStatusText(), style: context.textTheme.labelLarge),
           trailing: IconButton(
             icon: Icon(Icons.close, color: context.colorScheme.onError),
             onPressed: onCancelDownload,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: context.colorScheme.error.withAlpha(200),
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: context.colorScheme.error.withAlpha(200)),
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                fileName,
-                style: context.textTheme.labelMedium,
-              ),
+              Text(fileName, style: context.textTheme.labelMedium),
               Row(
                 children: [
                   Expanded(
@@ -125,10 +104,7 @@ class DownloadTaskTile extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    '$progressPercent%',
-                    style: context.textTheme.labelSmall,
-                  ),
+                  Text('$progressPercent%', style: context.textTheme.labelSmall),
                 ],
               ),
             ],

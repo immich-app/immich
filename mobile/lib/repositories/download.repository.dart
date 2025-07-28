@@ -64,10 +64,7 @@ class DownloadRepository {
   }
 
   Future<List<TaskRecord>> getLiveVideoTasks() {
-    return _downloader.database.allRecordsWithStatus(
-      TaskStatus.complete,
-      group: kDownloadGroupLivePhoto,
-    );
+    return _downloader.database.allRecordsWithStatus(TaskStatus.complete, group: kDownloadGroupLivePhoto);
   }
 
   Future<void> deleteRecordsWithIds(List<String> ids) {

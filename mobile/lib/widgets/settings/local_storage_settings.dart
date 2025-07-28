@@ -14,13 +14,10 @@ class LocalStorageSettings extends HookConsumerWidget {
     final isarDb = ref.watch(dbProvider);
     final cacheItemCount = useState(0);
 
-    useEffect(
-      () {
-        cacheItemCount.value = isarDb.duplicatedAssets.countSync();
-        return null;
-      },
-      [],
-    );
+    useEffect(() {
+      cacheItemCount.value = isarDb.duplicatedAssets.countSync();
+      return null;
+    }, []);
 
     void clearCache() async {
       await isarDb.writeTxn(() => isarDb.duplicatedAssets.clear());
@@ -32,15 +29,11 @@ class LocalStorageSettings extends HookConsumerWidget {
       dense: true,
       title: Text(
         "cache_settings_duplicated_assets_title",
-        style: context.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
+        style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
       ).tr(namedArgs: {'count': "${cacheItemCount.value}"}),
       subtitle: Text(
         "cache_settings_duplicated_assets_subtitle",
-        style: context.textTheme.bodyMedium?.copyWith(
-          color: context.colorScheme.onSurfaceSecondary,
-        ),
+        style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
       ).tr(),
       trailing: TextButton(
         onPressed: cacheItemCount.value > 0 ? clearCache : null,

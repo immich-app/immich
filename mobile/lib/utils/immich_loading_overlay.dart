@@ -9,10 +9,7 @@ final _loadingEntry = OverlayEntry(
     child: DecoratedBox(
       decoration: BoxDecoration(color: context.colorScheme.surface.withAlpha(200)),
       child: const Center(
-        child: DelayedLoadingIndicator(
-          delay: Duration(seconds: 1),
-          fadeInDuration: Duration(milliseconds: 400),
-        ),
+        child: DelayedLoadingIndicator(delay: Duration(seconds: 1), fadeInDuration: Duration(milliseconds: 400)),
       ),
     ),
   ),

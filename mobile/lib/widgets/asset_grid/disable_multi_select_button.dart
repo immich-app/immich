@@ -3,11 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class DisableMultiSelectButton extends ConsumerWidget {
-  const DisableMultiSelectButton({
-    super.key,
-    required this.onPressed,
-    required this.selectedItemCount,
-  });
+  const DisableMultiSelectButton({super.key, required this.onPressed, required this.selectedItemCount});
 
   final Function onPressed;
   final int selectedItemCount;
@@ -22,16 +18,10 @@ class DisableMultiSelectButton extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 4.0),
           child: ElevatedButton.icon(
             onPressed: () => onPressed(),
-            icon: Icon(
-              Icons.close_rounded,
-              color: context.colorScheme.onPrimary,
-            ),
+            icon: Icon(Icons.close_rounded, color: context.colorScheme.onPrimary),
             label: Text(
               '$selectedItemCount',
-              style: context.textTheme.titleMedium?.copyWith(
-                height: 2.5,
-                color: context.colorScheme.onPrimary,
-              ),
+              style: context.textTheme.titleMedium?.copyWith(height: 2.5, color: context.colorScheme.onPrimary),
             ),
           ),
         ),

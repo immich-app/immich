@@ -49,11 +49,7 @@ class PinVerificationForm extends HookConsumerWidget {
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
             child: isVerified.value
-                ? Icon(
-                    successIcon ?? Icons.lock_open_rounded,
-                    size: 64,
-                    color: Colors.green[300],
-                  )
+                ? Icon(successIcon ?? Icons.lock_open_rounded, size: 64, color: Colors.green[300])
                 : Icon(
                     icon ?? Icons.lock_outline_rounded,
                     size: 64,
@@ -65,9 +61,7 @@ class PinVerificationForm extends HookConsumerWidget {
             width: context.width * 0.7,
             child: Text(
               description ?? 'enter_your_pin_code_subtitle'.tr(),
-              style: context.textTheme.labelLarge!.copyWith(
-                fontSize: 18,
-              ),
+              style: context.textTheme.labelLarge!.copyWith(fontSize: 18),
               textAlign: TextAlign.center,
             ),
           ),

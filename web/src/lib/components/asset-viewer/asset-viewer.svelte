@@ -111,7 +111,7 @@
   let zoomToggle = $state(() => void 0);
 
   const refreshStack = async () => {
-    if (authManager.key) {
+    if (authManager.isSharedLink) {
       return;
     }
 
@@ -191,7 +191,7 @@
   });
 
   const handleGetAllAlbums = async () => {
-    if (authManager.key) {
+    if (authManager.isSharedLink) {
       return;
     }
 

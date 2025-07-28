@@ -31,9 +31,7 @@ class CuratedPlacesRow extends StatelessWidget {
       height: imageSize,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         separatorBuilder: (context, index) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           // Injecting Map thumbnail as the first element

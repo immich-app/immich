@@ -11,9 +11,7 @@ import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 
 class ThemeSetting extends HookConsumerWidget {
-  const ThemeSetting({
-    super.key,
-  });
+  const ThemeSetting({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

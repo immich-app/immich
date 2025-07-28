@@ -173,7 +173,9 @@ class AssetsApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<Response> downloadAssetWithHttpInfo(String id, { String? key, }) async {
+  ///
+  /// * [String] slug:
+  Future<Response> downloadAssetWithHttpInfo(String id, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/original'
       .replaceAll('{id}', id);
@@ -187,6 +189,9 @@ class AssetsApi {
 
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
 
     const contentTypes = <String>[];
@@ -208,8 +213,10 @@ class AssetsApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<MultipartFile?> downloadAsset(String id, { String? key, }) async {
-    final response = await downloadAssetWithHttpInfo(id,  key: key, );
+  ///
+  /// * [String] slug:
+  Future<MultipartFile?> downloadAsset(String id, { String? key, String? slug, }) async {
+    final response = await downloadAssetWithHttpInfo(id,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -289,7 +296,9 @@ class AssetsApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<Response> getAssetInfoWithHttpInfo(String id, { String? key, }) async {
+  ///
+  /// * [String] slug:
+  Future<Response> getAssetInfoWithHttpInfo(String id, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}'
       .replaceAll('{id}', id);
@@ -303,6 +312,9 @@ class AssetsApi {
 
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
 
     const contentTypes = <String>[];
@@ -324,8 +336,10 @@ class AssetsApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<AssetResponseDto?> getAssetInfo(String id, { String? key, }) async {
-    final response = await getAssetInfoWithHttpInfo(id,  key: key, );
+  ///
+  /// * [String] slug:
+  Future<AssetResponseDto?> getAssetInfo(String id, { String? key, String? slug, }) async {
+    final response = await getAssetInfoWithHttpInfo(id,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -469,7 +483,9 @@ class AssetsApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<Response> playAssetVideoWithHttpInfo(String id, { String? key, }) async {
+  ///
+  /// * [String] slug:
+  Future<Response> playAssetVideoWithHttpInfo(String id, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/video/playback'
       .replaceAll('{id}', id);
@@ -483,6 +499,9 @@ class AssetsApi {
 
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
 
     const contentTypes = <String>[];
@@ -504,8 +523,10 @@ class AssetsApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  Future<MultipartFile?> playAssetVideo(String id, { String? key, }) async {
-    final response = await playAssetVideoWithHttpInfo(id,  key: key, );
+  ///
+  /// * [String] slug:
+  Future<MultipartFile?> playAssetVideo(String id, { String? key, String? slug, }) async {
+    final response = await playAssetVideoWithHttpInfo(id,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -541,10 +562,12 @@ class AssetsApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] slug:
+  ///
   /// * [String] duration:
   ///
   /// * [String] filename:
-  Future<Response> replaceAssetWithHttpInfo(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? duration, String? filename, }) async {
+  Future<Response> replaceAssetWithHttpInfo(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? duration, String? filename, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/original'
       .replaceAll('{id}', id);
@@ -558,6 +581,9 @@ class AssetsApi {
 
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
 
     const contentTypes = <String>['multipart/form-data'];
@@ -628,11 +654,13 @@ class AssetsApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] slug:
+  ///
   /// * [String] duration:
   ///
   /// * [String] filename:
-  Future<AssetMediaResponseDto?> replaceAsset(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? duration, String? filename, }) async {
-    final response = await replaceAssetWithHttpInfo(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, duration: duration, filename: filename, );
+  Future<AssetMediaResponseDto?> replaceAsset(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? duration, String? filename, }) async {
+    final response = await replaceAssetWithHttpInfo(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, slug: slug, duration: duration, filename: filename, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -791,6 +819,8 @@ class AssetsApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] slug:
+  ///
   /// * [String] xImmichChecksum:
   ///   sha1 checksum that can be used for duplicate detection before the file is uploaded
   ///
@@ -805,7 +835,7 @@ class AssetsApi {
   /// * [MultipartFile] sidecarData:
   ///
   /// * [AssetVisibility] visibility:
-  Future<Response> uploadAssetWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
+  Future<Response> uploadAssetWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets';
 
@@ -818,6 +848,9 @@ class AssetsApi {
 
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
 
     if (xImmichChecksum != null) {
@@ -903,6 +936,8 @@ class AssetsApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] slug:
+  ///
   /// * [String] xImmichChecksum:
   ///   sha1 checksum that can be used for duplicate detection before the file is uploaded
   ///
@@ -917,8 +952,8 @@ class AssetsApi {
   /// * [MultipartFile] sidecarData:
   ///
   /// * [AssetVisibility] visibility:
-  Future<AssetMediaResponseDto?> uploadAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
-    final response = await uploadAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, xImmichChecksum: xImmichChecksum, duration: duration, filename: filename, isFavorite: isFavorite, livePhotoVideoId: livePhotoVideoId, sidecarData: sidecarData, visibility: visibility, );
+  Future<AssetMediaResponseDto?> uploadAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
+    final response = await uploadAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, slug: slug, xImmichChecksum: xImmichChecksum, duration: duration, filename: filename, isFavorite: isFavorite, livePhotoVideoId: livePhotoVideoId, sidecarData: sidecarData, visibility: visibility, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -940,7 +975,9 @@ class AssetsApi {
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
-  Future<Response> viewAssetWithHttpInfo(String id, { String? key, AssetMediaSize? size, }) async {
+  ///
+  /// * [String] slug:
+  Future<Response> viewAssetWithHttpInfo(String id, { String? key, AssetMediaSize? size, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/thumbnail'
       .replaceAll('{id}', id);
@@ -957,6 +994,9 @@ class AssetsApi {
     }
     if (size != null) {
       queryParams.addAll(_queryParams('', 'size', size));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
 
     const contentTypes = <String>[];
@@ -980,8 +1020,10 @@ class AssetsApi {
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
-  Future<MultipartFile?> viewAsset(String id, { String? key, AssetMediaSize? size, }) async {
-    final response = await viewAssetWithHttpInfo(id,  key: key, size: size, );
+  ///
+  /// * [String] slug:
+  Future<MultipartFile?> viewAsset(String id, { String? key, AssetMediaSize? size, String? slug, }) async {
+    final response = await viewAssetWithHttpInfo(id,  key: key, size: size, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

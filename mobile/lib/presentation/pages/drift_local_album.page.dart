@@ -16,14 +16,7 @@ class DriftLocalAlbumsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          LocalAlbumsSliverAppBar(),
-          _AlbumList(),
-        ],
-      ),
-    );
+    return const Scaffold(body: CustomScrollView(slivers: [LocalAlbumsSliverAppBar(), _AlbumList()]));
   }
 }
 
@@ -37,10 +30,7 @@ class _AlbumList extends ConsumerWidget {
     return albums.when(
       loading: () => const SliverToBoxAdapter(
         child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: CircularProgressIndicator(),
-          ),
+          child: Padding(padding: EdgeInsets.all(20.0), child: CircularProgressIndicator()),
         ),
       ),
       error: (error, stack) => SliverToBoxAdapter(
@@ -49,9 +39,7 @@ class _AlbumList extends ConsumerWidget {
             padding: const EdgeInsets.all(20.0),
             child: Text(
               'Error loading albums: $error, stack: $stack',
-              style: TextStyle(
-                color: context.colorScheme.error,
-              ),
+              style: TextStyle(color: context.colorScheme.error),
             ),
           ),
         ),
@@ -60,10 +48,7 @@ class _AlbumList extends ConsumerWidget {
         if (albums.isEmpty) {
           return const SliverToBoxAdapter(
             child: Center(
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Text('No albums found'),
-              ),
+              child: Padding(padding: EdgeInsets.all(20.0), child: Text('No albums found')),
             ),
           );
         }
@@ -77,30 +62,12 @@ class _AlbumList extends ConsumerWidget {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: LargeLeadingTile(
-                  leadingPadding: const EdgeInsets.only(
-                    right: 16,
-                  ),
-                  leading: SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: LocalAlbumThumbnail(
-                      albumId: album.id,
-                    ),
-                  ),
-                  title: Text(
-                    album.name,
-                    style: context.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  leadingPadding: const EdgeInsets.only(right: 16),
+                  leading: SizedBox(width: 80, height: 80, child: LocalAlbumThumbnail(albumId: album.id)),
+                  title: Text(album.name, style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                   subtitle: Text(
-                    'items_count'.t(
-                      context: context,
-                      args: {'count': album.assetCount},
-                    ),
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: context.colorScheme.onSurfaceSecondary,
-                    ),
+                    'items_count'.t(context: context, args: {'count': album.assetCount}),
+                    style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                   ),
                   onTap: () => context.pushRoute(LocalTimelineRoute(album: album)),
                 ),

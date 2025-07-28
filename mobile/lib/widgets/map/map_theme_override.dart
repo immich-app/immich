@@ -85,11 +85,7 @@ class _MapThemeOverrideState extends ConsumerState<MapThemeOverride> with Widget
           ? getThemeData(colorScheme: appTheme.dark, locale: locale)
           : getThemeData(colorScheme: appTheme.light, locale: locale),
       child: widget.mapBuilder.call(
-        ref.watch(
-          mapStateNotifierProvider.select(
-            (v) => _isDarkTheme ? v.darkStyleFetched : v.lightStyleFetched,
-          ),
-        ),
+        ref.watch(mapStateNotifierProvider.select((v) => _isDarkTheme ? v.darkStyleFetched : v.lightStyleFetched)),
       ),
     );
   }

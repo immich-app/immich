@@ -113,10 +113,7 @@ class Album {
         modifiedAt.isAtSameMomentAs(other.modifiedAt) &&
         isAtSameMomentAs(startDate, other.startDate) &&
         isAtSameMomentAs(endDate, other.endDate) &&
-        isAtSameMomentAs(
-          lastModifiedAssetTimestamp,
-          other.lastModifiedAssetTimestamp,
-        ) &&
+        isAtSameMomentAs(lastModifiedAssetTimestamp, other.lastModifiedAssetTimestamp) &&
         shared == other.shared &&
         activityEnabled == other.activityEnabled &&
         owner.value == other.owner.value &&
@@ -169,9 +166,7 @@ class Album {
       a.thumbnail.value = await db.assets.where().remoteIdEqualTo(dto.albumThumbnailAssetId).findFirst();
     }
     if (dto.albumUsers.isNotEmpty) {
-      final users = await db.users.getAllById(
-        dto.albumUsers.map((e) => e.user.id).toList(growable: false),
-      );
+      final users = await db.users.getAllById(dto.albumUsers.map((e) => e.user.id).toList(growable: false));
       a.sharedUsers.addAll(users.cast());
     }
     if (dto.assets.isNotEmpty) {

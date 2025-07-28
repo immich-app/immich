@@ -13,14 +13,14 @@ String _$paginatedSearchRenderListHash() =>
 @ProviderFor(paginatedSearchRenderList)
 final paginatedSearchRenderListProvider =
     AutoDisposeFutureProvider<RenderList>.internal(
-  paginatedSearchRenderList,
-  name: r'paginatedSearchRenderListProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$paginatedSearchRenderListHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      paginatedSearchRenderList,
+      name: r'paginatedSearchRenderListProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$paginatedSearchRenderListHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element

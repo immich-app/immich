@@ -11,24 +11,14 @@ class OAuthService {
   final log = Logger('OAuthService');
   OAuthService(this._apiService);
 
-  Future<String?> getOAuthServerUrl(
-    String serverUrl,
-    String state,
-    String codeChallenge,
-  ) async {
+  Future<String?> getOAuthServerUrl(String serverUrl, String state, String codeChallenge) async {
     // Resolve API server endpoint from user provided serverUrl
     await _apiService.resolveAndSetEndpoint(serverUrl);
     final redirectUri = '$callbackUrlScheme:///oauth-callback';
-    log.info(
-      "Starting OAuth flow with redirect URI: $redirectUri",
-    );
+    log.info("Starting OAuth flow with redirect URI: $redirectUri");
 
     final dto = await _apiService.oAuthApi.startOAuth(
-      OAuthConfigDto(
-        redirectUri: redirectUri,
-        state: state,
-        codeChallenge: codeChallenge,
-      ),
+      OAuthConfigDto(redirectUri: redirectUri, state: state, codeChallenge: codeChallenge),
     );
 
     final authUrl = dto?.url;
@@ -37,31 +27,17 @@ class OAuthService {
     return authUrl;
   }
 
-  Future<LoginResponseDto?> oAuthLogin(
-    String oauthUrl,
-    String state,
-    String codeVerifier,
-  ) async {
-    String result = await FlutterWebAuth2.authenticate(
-      url: oauthUrl,
-      callbackUrlScheme: callbackUrlScheme,
-    );
+  Future<LoginResponseDto?> oAuthLogin(String oauthUrl, String state, String codeVerifier) async {
+    String result = await FlutterWebAuth2.authenticate(url: oauthUrl, callbackUrlScheme: callbackUrlScheme);
 
     log.info('Received OAuth callback: $result');
 
     if (result.startsWith('app.immich:/oauth-callback')) {
-      result = result.replaceAll(
-        'app.immich:/oauth-callback',
-        'app.immich:///oauth-callback',
-      );
+      result = result.replaceAll('app.immich:/oauth-callback', 'app.immich:///oauth-callback');
     }
 
     return await _apiService.oAuthApi.finishOAuth(
-      OAuthCallbackDto(
-        url: result,
-        state: state,
-        codeVerifier: codeVerifier,
-      ),
+      OAuthCallbackDto(url: result, state: state, codeVerifier: codeVerifier),
     );
   }
 }

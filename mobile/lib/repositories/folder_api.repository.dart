@@ -5,11 +5,7 @@ import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
-final folderApiRepositoryProvider = Provider(
-  (ref) => FolderApiRepository(
-    ref.watch(apiServiceProvider).viewApi,
-  ),
-);
+final folderApiRepositoryProvider = Provider((ref) => FolderApiRepository(ref.watch(apiServiceProvider).viewApi));
 
 class FolderApiRepository extends ApiRepository {
   final ViewApi _api;

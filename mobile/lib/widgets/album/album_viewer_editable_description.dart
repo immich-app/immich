@@ -8,11 +8,7 @@ import 'package:immich_mobile/providers/album/album_viewer.provider.dart';
 class AlbumViewerEditableDescription extends HookConsumerWidget {
   final String albumDescription;
   final FocusNode descriptionFocusNode;
-  const AlbumViewerEditableDescription({
-    super.key,
-    required this.albumDescription,
-    required this.descriptionFocusNode,
-  });
+  const AlbumViewerEditableDescription({super.key, required this.albumDescription, required this.descriptionFocusNode});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,15 +27,12 @@ class AlbumViewerEditableDescription extends HookConsumerWidget {
       }
     }
 
-    useEffect(
-      () {
-        descriptionFocusNode.addListener(onFocusModeChange);
-        return () {
-          descriptionFocusNode.removeListener(onFocusModeChange);
-        };
-      },
-      [],
-    );
+    useEffect(() {
+      descriptionFocusNode.addListener(onFocusModeChange);
+      return () {
+        descriptionFocusNode.removeListener(onFocusModeChange);
+      };
+    }, []);
 
     return Material(
       color: Colors.transparent,
@@ -72,19 +65,12 @@ class AlbumViewerEditableDescription extends HookConsumerWidget {
                   onPressed: () {
                     descriptionTextEditController.clear();
                   },
-                  icon: Icon(
-                    Icons.cancel_rounded,
-                    color: context.primaryColor,
-                  ),
+                  icon: Icon(Icons.cancel_rounded, color: context.primaryColor),
                   splashRadius: 10,
                 )
               : null,
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.transparent),
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.transparent),
-          ),
+          enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.transparent)),
+          focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.transparent)),
           focusColor: Colors.grey[300],
           fillColor: context.scaffoldBackgroundColor,
           filled: descriptionFocusNode.hasFocus,

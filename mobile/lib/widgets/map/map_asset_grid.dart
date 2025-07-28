@@ -119,7 +119,8 @@ class MapAssetGrid extends HookConsumerWidget {
       final rowOffset = renderElement.offset;
       // Column offset = (total trailingEdge - trailingEdge crossed) / offset for each asset
       final totalOffset = item.itemTrailingEdge - item.itemLeadingEdge;
-      final edgeOffset = (totalOffset - partialOffset) /
+      final edgeOffset =
+          (totalOffset - partialOffset) /
           // Round the total count to the next multiple of [assetsPerRow]
           ((renderElement.totalCount / assetsPerRow) * assetsPerRow).floor();
 
@@ -146,34 +147,32 @@ class MapAssetGrid extends HookConsumerWidget {
               // Place it just below the drag handle
               heightFactor: 0.87,
               child: assetsInBounds.value.isNotEmpty
-                  ? ref.watch(assetsTimelineProvider(assetsInBounds.value)).when(
-                        data: (renderList) {
-                          // Cache render list here to use it back during visibleItemsListener
-                          cachedRenderList.value = renderList;
-                          return ValueListenableBuilder(
-                            valueListenable: selectedAssets,
-                            builder: (_, value, __) => ImmichAssetGrid(
-                              shrinkWrap: true,
-                              renderList: renderList,
-                              showDragScroll: false,
-                              assetsPerRow: assetsPerRow,
-                              showMultiSelectIndicator: false,
-                              selectionActive: value.isNotEmpty,
-                              listener: onAssetsSelected,
-                              visibleItemsListener: (pos) => gridScrollThrottler.run(() => handleVisibleItems(pos)),
-                            ),
-                          );
-                        },
-                        error: (error, stackTrace) {
-                          log.warning(
-                            "Cannot get assets in the current map bounds",
-                            error,
-                            stackTrace,
-                          );
-                          return const SizedBox.shrink();
-                        },
-                        loading: () => const SizedBox.shrink(),
-                      )
+                  ? ref
+                        .watch(assetsTimelineProvider(assetsInBounds.value))
+                        .when(
+                          data: (renderList) {
+                            // Cache render list here to use it back during visibleItemsListener
+                            cachedRenderList.value = renderList;
+                            return ValueListenableBuilder(
+                              valueListenable: selectedAssets,
+                              builder: (_, value, __) => ImmichAssetGrid(
+                                shrinkWrap: true,
+                                renderList: renderList,
+                                showDragScroll: false,
+                                assetsPerRow: assetsPerRow,
+                                showMultiSelectIndicator: false,
+                                selectionActive: value.isNotEmpty,
+                                listener: onAssetsSelected,
+                                visibleItemsListener: (pos) => gridScrollThrottler.run(() => handleVisibleItems(pos)),
+                              ),
+                            );
+                          },
+                          error: (error, stackTrace) {
+                            log.warning("Cannot get assets in the current map bounds", error, stackTrace);
+                            return const SizedBox.shrink();
+                          },
+                          loading: () => const SizedBox.shrink(),
+                        )
                   : const _MapNoAssetsInSheet(),
             ),
           ),
@@ -194,11 +193,7 @@ class _MapNoAssetsInSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const image = Image(
-      height: 150,
-      width: 150,
-      image: AssetImage('assets/lighthouse.png'),
-    );
+    const image = Image(height: 150, width: 150, image: AssetImage('assets/lighthouse.png'));
 
     return Center(
       child: ListView(
@@ -206,21 +201,12 @@ class _MapNoAssetsInSheet extends StatelessWidget {
         children: [
           context.isDarkTheme
               ? const InvertionFilter(
-                  child: SaturationFilter(
-                    saturation: -1,
-                    child: BrightnessFilter(
-                      brightness: -5,
-                      child: image,
-                    ),
-                  ),
+                  child: SaturationFilter(saturation: -1, child: BrightnessFilter(brightness: -5, child: image)),
                 )
               : image,
           const SizedBox(height: 20),
           Center(
-            child: Text(
-              "map_zoom_to_see_photos".tr(),
-              style: context.textTheme.displayLarge?.copyWith(fontSize: 18),
-            ),
+            child: Text("map_zoom_to_see_photos".tr(), style: context.textTheme.displayLarge?.copyWith(fontSize: 18)),
           ),
         ],
       ),
@@ -254,10 +240,7 @@ class _MapSheetDragRegion extends StatelessWidget {
         margin: EdgeInsets.zero,
         shape: context.isMobile
             ? const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(20),
-                  topLeft: Radius.circular(20),
-                ),
+                borderRadius: BorderRadius.only(topRight: Radius.circular(20), topLeft: Radius.circular(20)),
               )
             : const BeveledRectangleBorder(),
         elevation: 0.0,
@@ -291,10 +274,7 @@ class _MapSheetDragRegion extends StatelessWidget {
                   right: 18,
                   top: 24,
                   child: IconButton(
-                    icon: Icon(
-                      Icons.map_outlined,
-                      color: context.textTheme.displayLarge?.color,
-                    ),
+                    icon: Icon(Icons.map_outlined, color: context.textTheme.displayLarge?.color),
                     iconSize: 24,
                     tooltip: 'Zoom to bounds',
                     onPressed: () => onZoomToAsset?.call(value!),

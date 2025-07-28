@@ -32,17 +32,12 @@ class ImmichLocalThumbnailProvider extends ImageProvider<ImmichLocalThumbnailPro
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
   @override
-  Future<ImmichLocalThumbnailProvider> obtainKey(
-    ImageConfiguration configuration,
-  ) {
+  Future<ImmichLocalThumbnailProvider> obtainKey(ImageConfiguration configuration) {
     return SynchronousFuture(this);
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    ImmichLocalThumbnailProvider key,
-    ImageDecoderCallback decode,
-  ) {
+  ImageStreamCompleter loadImage(ImmichLocalThumbnailProvider key, ImageDecoderCallback decode) {
     final cache = cacheManager ?? ThumbnailImageCacheManager();
     return MultiImageStreamCompleter(
       codec: _codec(key.asset, cache, decode),
@@ -54,11 +49,7 @@ class ImmichLocalThumbnailProvider extends ImageProvider<ImmichLocalThumbnailPro
   }
 
   // Streams in each stage of the image as we ask for it
-  Stream<ui.Codec> _codec(
-    Asset assetData,
-    CacheManager cache,
-    ImageDecoderCallback decode,
-  ) async* {
+  Stream<ui.Codec> _codec(Asset assetData, CacheManager cache, ImageDecoderCallback decode) async* {
     final cacheKey = '$userId${assetData.localId}${assetData.checksum}$width$height';
     final fileFromCache = await cache.getFileFromCache(cacheKey);
     if (fileFromCache != null) {
@@ -72,14 +63,9 @@ class ImmichLocalThumbnailProvider extends ImageProvider<ImmichLocalThumbnailPro
       }
     }
 
-    final thumbnailBytes = await assetData.local?.thumbnailDataWithSize(
-      ThumbnailSize(width, height),
-      quality: 80,
-    );
+    final thumbnailBytes = await assetData.local?.thumbnailDataWithSize(ThumbnailSize(width, height), quality: 80);
     if (thumbnailBytes == null) {
-      throw StateError(
-        "Loading thumb for local photo ${assetData.fileName} failed",
-      );
+      throw StateError("Loading thumb for local photo ${assetData.fileName} failed");
     }
 
     final buffer = await ui.ImmutableBuffer.fromUint8List(thumbnailBytes);

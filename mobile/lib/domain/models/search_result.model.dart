@@ -5,21 +5,12 @@ class SearchResult {
   final List<BaseAsset> assets;
   final int? nextPage;
 
-  const SearchResult({
-    required this.assets,
-    this.nextPage,
-  });
+  const SearchResult({required this.assets, this.nextPage});
 
   int get totalAssets => assets.length;
 
-  SearchResult copyWith({
-    List<BaseAsset>? assets,
-    int? nextPage,
-  }) {
-    return SearchResult(
-      assets: assets ?? this.assets,
-      nextPage: nextPage ?? this.nextPage,
-    );
+  SearchResult copyWith({List<BaseAsset>? assets, int? nextPage}) {
+    return SearchResult(assets: assets ?? this.assets, nextPage: nextPage ?? this.nextPage);
   }
 
   @override

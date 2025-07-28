@@ -19,30 +19,30 @@ part 'asset.entity.g.dart';
 @Collection(inheritance: false)
 class Asset {
   Asset.remote(AssetResponseDto remote)
-      : remoteId = remote.id,
-        checksum = remote.checksum,
-        fileCreatedAt = remote.fileCreatedAt,
-        fileModifiedAt = remote.fileModifiedAt,
-        updatedAt = remote.updatedAt,
-        durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
-        type = remote.type.toAssetType(),
-        fileName = remote.originalFileName,
-        height = remote.exifInfo?.exifImageHeight?.toInt(),
-        width = remote.exifInfo?.exifImageWidth?.toInt(),
-        livePhotoVideoId = remote.livePhotoVideoId,
-        ownerId = fastHash(remote.ownerId),
-        exifInfo = remote.exifInfo == null ? null : ExifDtoConverter.fromDto(remote.exifInfo!),
-        isFavorite = remote.isFavorite,
-        isArchived = remote.isArchived,
-        isTrashed = remote.isTrashed,
-        isOffline = remote.isOffline,
-        // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
-        // stack handling to properly handle it
-        stackPrimaryAssetId = remote.stack?.primaryAssetId == remote.id ? null : remote.stack?.primaryAssetId,
-        stackCount = remote.stack?.assetCount ?? 0,
-        stackId = remote.stack?.id,
-        thumbhash = remote.thumbhash,
-        visibility = getVisibility(remote.visibility);
+    : remoteId = remote.id,
+      checksum = remote.checksum,
+      fileCreatedAt = remote.fileCreatedAt,
+      fileModifiedAt = remote.fileModifiedAt,
+      updatedAt = remote.updatedAt,
+      durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
+      type = remote.type.toAssetType(),
+      fileName = remote.originalFileName,
+      height = remote.exifInfo?.exifImageHeight?.toInt(),
+      width = remote.exifInfo?.exifImageWidth?.toInt(),
+      livePhotoVideoId = remote.livePhotoVideoId,
+      ownerId = fastHash(remote.ownerId),
+      exifInfo = remote.exifInfo == null ? null : ExifDtoConverter.fromDto(remote.exifInfo!),
+      isFavorite = remote.isFavorite,
+      isArchived = remote.isArchived,
+      isTrashed = remote.isTrashed,
+      isOffline = remote.isOffline,
+      // workaround to nullify stackPrimaryAssetId for the parent asset until we refactor the mobile app
+      // stack handling to properly handle it
+      stackPrimaryAssetId = remote.stack?.primaryAssetId == remote.id ? null : remote.stack?.primaryAssetId,
+      stackCount = remote.stack?.assetCount ?? 0,
+      stackId = remote.stack?.id,
+      thumbhash = remote.thumbhash,
+      visibility = getVisibility(remote.visibility);
 
   Asset({
     this.id = Isar.autoIncrement,
@@ -127,11 +127,7 @@ class Asset {
   @Index(unique: false, replace: false, type: IndexType.hash)
   String? localId;
 
-  @Index(
-    unique: true,
-    replace: false,
-    composite: [CompositeIndex("checksum", type: IndexType.hash)],
-  )
+  @Index(unique: true, replace: false, composite: [CompositeIndex("checksum", type: IndexType.hash)])
   int ownerId;
 
   DateTime fileCreatedAt;
@@ -447,33 +443,32 @@ class Asset {
     int? stackCount,
     String? thumbhash,
     AssetVisibilityEnum? visibility,
-  }) =>
-      Asset(
-        id: id ?? this.id,
-        checksum: checksum ?? this.checksum,
-        remoteId: remoteId ?? this.remoteId,
-        localId: localId ?? this.localId,
-        ownerId: ownerId ?? this.ownerId,
-        fileCreatedAt: fileCreatedAt ?? this.fileCreatedAt,
-        fileModifiedAt: fileModifiedAt ?? this.fileModifiedAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-        durationInSeconds: durationInSeconds ?? this.durationInSeconds,
-        type: type ?? this.type,
-        width: width ?? this.width,
-        height: height ?? this.height,
-        fileName: fileName ?? this.fileName,
-        livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
-        isFavorite: isFavorite ?? this.isFavorite,
-        isArchived: isArchived ?? this.isArchived,
-        isTrashed: isTrashed ?? this.isTrashed,
-        isOffline: isOffline ?? this.isOffline,
-        exifInfo: exifInfo ?? this.exifInfo,
-        stackId: stackId ?? this.stackId,
-        stackPrimaryAssetId: stackPrimaryAssetId ?? this.stackPrimaryAssetId,
-        stackCount: stackCount ?? this.stackCount,
-        thumbhash: thumbhash ?? this.thumbhash,
-        visibility: visibility ?? this.visibility,
-      );
+  }) => Asset(
+    id: id ?? this.id,
+    checksum: checksum ?? this.checksum,
+    remoteId: remoteId ?? this.remoteId,
+    localId: localId ?? this.localId,
+    ownerId: ownerId ?? this.ownerId,
+    fileCreatedAt: fileCreatedAt ?? this.fileCreatedAt,
+    fileModifiedAt: fileModifiedAt ?? this.fileModifiedAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    durationInSeconds: durationInSeconds ?? this.durationInSeconds,
+    type: type ?? this.type,
+    width: width ?? this.width,
+    height: height ?? this.height,
+    fileName: fileName ?? this.fileName,
+    livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
+    isFavorite: isFavorite ?? this.isFavorite,
+    isArchived: isArchived ?? this.isArchived,
+    isTrashed: isTrashed ?? this.isTrashed,
+    isOffline: isOffline ?? this.isOffline,
+    exifInfo: exifInfo ?? this.exifInfo,
+    stackId: stackId ?? this.stackId,
+    stackPrimaryAssetId: stackPrimaryAssetId ?? this.stackPrimaryAssetId,
+    stackCount: stackCount ?? this.stackCount,
+    thumbhash: thumbhash ?? this.thumbhash,
+    visibility: visibility ?? this.visibility,
+  );
 
   Future<void> put(Isar db) async {
     await db.assets.put(this);
@@ -494,10 +489,7 @@ class Asset {
     return compareByChecksum(a, b);
   }
 
-  static int compareByOwnerChecksumCreatedModified(
-    Asset a,
-    Asset b,
-  ) {
+  static int compareByOwnerChecksumCreatedModified(Asset a, Asset b) {
     final int ownerIdOrder = a.ownerId.compareTo(b.ownerId);
     if (ownerIdOrder != 0) return ownerIdOrder;
     final int checksumOrder = compareByChecksum(a, b);
@@ -539,11 +531,11 @@ class Asset {
   }
 
   static getVisibility(AssetVisibility visibility) => switch (visibility) {
-        AssetVisibility.archive => AssetVisibilityEnum.archive,
-        AssetVisibility.hidden => AssetVisibilityEnum.hidden,
-        AssetVisibility.locked => AssetVisibilityEnum.locked,
-        AssetVisibility.timeline || _ => AssetVisibilityEnum.timeline,
-      };
+    AssetVisibility.archive => AssetVisibilityEnum.archive,
+    AssetVisibility.hidden => AssetVisibilityEnum.hidden,
+    AssetVisibility.locked => AssetVisibilityEnum.locked,
+    AssetVisibility.timeline || _ => AssetVisibilityEnum.timeline,
+  };
 }
 
 enum AssetType {
@@ -556,21 +548,17 @@ enum AssetType {
 
 extension AssetTypeEnumHelper on AssetTypeEnum {
   AssetType toAssetType() => switch (this) {
-        AssetTypeEnum.IMAGE => AssetType.image,
-        AssetTypeEnum.VIDEO => AssetType.video,
-        AssetTypeEnum.AUDIO => AssetType.audio,
-        AssetTypeEnum.OTHER => AssetType.other,
-        _ => throw Exception(),
-      };
+    AssetTypeEnum.IMAGE => AssetType.image,
+    AssetTypeEnum.VIDEO => AssetType.video,
+    AssetTypeEnum.AUDIO => AssetType.audio,
+    AssetTypeEnum.OTHER => AssetType.other,
+    _ => throw Exception(),
+  };
 }
 
 /// Describes where the information of this asset came from:
 /// only from the local device, only from the remote server or merged from both
-enum AssetState {
-  local,
-  remote,
-  merged,
-}
+enum AssetState { local, remote, merged }
 
 extension AssetsHelper on IsarCollection<Asset> {
   Future<int> deleteAllByRemoteId(Iterable<String> ids) => ids.isEmpty ? Future.value(0) : remote(ids).deleteAll();
@@ -579,13 +567,9 @@ extension AssetsHelper on IsarCollection<Asset> {
   Future<List<Asset>> getAllByLocalId(Iterable<String> ids) => ids.isEmpty ? Future.value([]) : local(ids).findAll();
   Future<Asset?> getByRemoteId(String id) => where().remoteIdEqualTo(id).findFirst();
 
-  QueryBuilder<Asset, Asset, QAfterWhereClause> remote(
-    Iterable<String> ids,
-  ) =>
+  QueryBuilder<Asset, Asset, QAfterWhereClause> remote(Iterable<String> ids) =>
       where().anyOf(ids, (q, String e) => q.remoteIdEqualTo(e));
-  QueryBuilder<Asset, Asset, QAfterWhereClause> local(
-    Iterable<String> ids,
-  ) {
+  QueryBuilder<Asset, Asset, QAfterWhereClause> local(Iterable<String> ids) {
     return where().anyOf(ids, (q, String e) => q.localIdEqualTo(e));
   }
 }

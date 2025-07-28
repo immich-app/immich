@@ -18,12 +18,9 @@ const AndroidDeviceAssetSchema = CollectionSchema(
   name: r'AndroidDeviceAsset',
   id: -6758387181232899335,
   properties: {
-    r'hash': PropertySchema(
-      id: 0,
-      name: r'hash',
-      type: IsarType.byteList,
-    )
+    r'hash': PropertySchema(id: 0, name: r'hash', type: IsarType.byteList),
   },
+
   estimateSize: _androidDeviceAssetEstimateSize,
   serialize: _androidDeviceAssetSerialize,
   deserialize: _androidDeviceAssetDeserialize,
@@ -40,12 +37,13 @@ const AndroidDeviceAssetSchema = CollectionSchema(
           name: r'hash',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
-    )
+    ),
   },
   links: {},
   embeddedSchemas: {},
+
   getId: _androidDeviceAssetGetId,
   getLinks: _androidDeviceAssetGetLinks,
   attach: _androidDeviceAssetAttach,
@@ -103,12 +101,16 @@ Id _androidDeviceAssetGetId(AndroidDeviceAsset object) {
 }
 
 List<IsarLinkBase<dynamic>> _androidDeviceAssetGetLinks(
-    AndroidDeviceAsset object) {
+  AndroidDeviceAsset object,
+) {
   return [];
 }
 
 void _androidDeviceAssetAttach(
-    IsarCollection<dynamic> col, Id id, AndroidDeviceAsset object) {
+  IsarCollection<dynamic> col,
+  Id id,
+  AndroidDeviceAsset object,
+) {
   object.id = id;
 }
 
@@ -124,17 +126,14 @@ extension AndroidDeviceAssetQueryWhereSort
 extension AndroidDeviceAssetQueryWhere
     on QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QWhereClause> {
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterWhereClause>
-      idEqualTo(Id id) {
+  idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterWhereClause>
-      idNotEqualTo(Id id) {
+  idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -157,7 +156,7 @@ extension AndroidDeviceAssetQueryWhere
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterWhereClause>
-      idGreaterThan(Id id, {bool include = false}) {
+  idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -166,7 +165,7 @@ extension AndroidDeviceAssetQueryWhere
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterWhereClause>
-      idLessThan(Id id, {bool include = false}) {
+  idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -175,63 +174,72 @@ extension AndroidDeviceAssetQueryWhere
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterWhereClause>
-      idBetween(
+  idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterWhereClause>
-      hashEqualTo(List<int> hash) {
+  hashEqualTo(List<int> hash) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'hash',
-        value: [hash],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'hash', value: [hash]),
+      );
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterWhereClause>
-      hashNotEqualTo(List<int> hash) {
+  hashNotEqualTo(List<int> hash) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'hash',
-              lower: [],
-              upper: [hash],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'hash',
-              lower: [hash],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'hash',
+                lower: [],
+                upper: [hash],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'hash',
+                lower: [hash],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'hash',
-              lower: [hash],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'hash',
-              lower: [],
-              upper: [hash],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'hash',
+                lower: [hash],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'hash',
+                lower: [],
+                upper: [hash],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
@@ -240,134 +248,97 @@ extension AndroidDeviceAssetQueryWhere
 extension AndroidDeviceAssetQueryFilter
     on QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QFilterCondition> {
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      hashElementEqualTo(int value) {
+  hashElementEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'hash',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'hash', value: value),
+      );
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      hashElementGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  hashElementGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'hash',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'hash',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      hashElementLessThan(
-    int value, {
-    bool include = false,
-  }) {
+  hashElementLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'hash',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'hash',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      hashElementBetween(
+  hashElementBetween(
     int lower,
     int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'hash',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      hashLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'hash',
-        length,
-        true,
-        length,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'hash',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
       );
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      hashIsEmpty() {
+  hashLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'hash',
-        0,
-        true,
-        0,
-        true,
-      );
+      return query.listLength(r'hash', length, true, length, true);
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      hashIsNotEmpty() {
+  hashIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'hash',
-        0,
-        false,
-        999999,
-        true,
-      );
+      return query.listLength(r'hash', 0, true, 0, true);
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      hashLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
+  hashIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'hash',
-        0,
-        true,
-        length,
-        include,
-      );
+      return query.listLength(r'hash', 0, false, 999999, true);
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      hashLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
+  hashLengthLessThan(int length, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'hash',
-        length,
-        include,
-        999999,
-        true,
-      );
+      return query.listLength(r'hash', 0, true, length, include);
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      hashLengthBetween(
+  hashLengthGreaterThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'hash', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
+  hashLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -385,58 +356,57 @@ extension AndroidDeviceAssetQueryFilter
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      idEqualTo(Id value) {
+  idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      idGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  idGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      idLessThan(
-    Id value, {
-    bool include = false,
-  }) {
+  idLessThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterFilterCondition>
-      idBetween(
+  idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -453,14 +423,14 @@ extension AndroidDeviceAssetQuerySortBy
 extension AndroidDeviceAssetQuerySortThenBy
     on QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QSortThenBy> {
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterSortBy>
-      thenById() {
+  thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QAfterSortBy>
-      thenByIdDesc() {
+  thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
@@ -470,7 +440,7 @@ extension AndroidDeviceAssetQuerySortThenBy
 extension AndroidDeviceAssetQueryWhereDistinct
     on QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QDistinct> {
   QueryBuilder<AndroidDeviceAsset, AndroidDeviceAsset, QDistinct>
-      distinctByHash() {
+  distinctByHash() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'hash');
     });

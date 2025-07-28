@@ -11,10 +11,7 @@ class ShareDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const CircularProgressIndicator(),
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            child: const Text('share_dialog_preparing').tr(),
-          ),
+          Container(margin: const EdgeInsets.only(top: 12), child: const Text('share_dialog_preparing').tr()),
         ],
       ),
     );

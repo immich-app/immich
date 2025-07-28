@@ -5,9 +5,7 @@ import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:openapi/api.dart';
 
 final sessionsAPIRepositoryProvider = Provider(
-  (ref) => SessionsAPIRepository(
-    ref.watch(apiServiceProvider).sessionsApi,
-  ),
+  (ref) => SessionsAPIRepository(ref.watch(apiServiceProvider).sessionsApi),
 );
 
 class SessionsAPIRepository extends ApiRepository {
@@ -15,19 +13,9 @@ class SessionsAPIRepository extends ApiRepository {
 
   SessionsAPIRepository(this._api);
 
-  Future<SessionCreateResponse> createSession(
-    String deviceType,
-    String deviceOS, {
-    int? duration,
-  }) async {
+  Future<SessionCreateResponse> createSession(String deviceType, String deviceOS, {int? duration}) async {
     final dto = await checkNull(
-      _api.createSession(
-        SessionCreateDto(
-          deviceType: deviceType,
-          deviceOS: deviceOS,
-          duration: duration,
-        ),
-      ),
+      _api.createSession(SessionCreateDto(deviceType: deviceType, deviceOS: deviceOS, duration: duration)),
     );
 
     return SessionCreateResponse(

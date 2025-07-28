@@ -7,11 +7,7 @@ import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 
-final serverInfoServiceProvider = Provider(
-  (ref) => ServerInfoService(
-    ref.watch(apiServiceProvider),
-  ),
-);
+final serverInfoServiceProvider = Provider((ref) => ServerInfoService(ref.watch(apiServiceProvider)));
 
 class ServerInfoService {
   final ApiService _apiService;

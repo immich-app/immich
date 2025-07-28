@@ -17,12 +17,14 @@ export enum ImmichHeader {
   UserToken = 'x-immich-user-token',
   SessionToken = 'x-immich-session-token',
   SharedLinkKey = 'x-immich-share-key',
+  SharedLinkSlug = 'x-immich-share-slug',
   Checksum = 'x-immich-checksum',
   Cid = 'x-immich-cid',
 }
 
 export enum ImmichQuery {
   SharedLinkKey = 'key',
+  SharedLinkSlug = 'slug',
   ApiKey = 'apiKey',
   SessionKey = 'sessionKey',
 }

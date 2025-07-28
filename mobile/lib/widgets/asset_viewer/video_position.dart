@@ -17,12 +17,8 @@ class VideoPosition extends HookConsumerWidget {
     final isCasting = ref.watch(castProvider).isCasting;
 
     final (position, duration) = isCasting
-        ? ref.watch(
-            castProvider.select((c) => (c.currentTime, c.duration)),
-          )
-        : ref.watch(
-            videoPlaybackValueProvider.select((v) => (v.position, v.duration)),
-          );
+        ? ref.watch(castProvider.select((c) => (c.currentTime, c.duration)))
+        : ref.watch(videoPlaybackValueProvider.select((v) => (v.position, v.duration)));
 
     final wasPlaying = useRef<bool>(true);
     return duration == Duration.zero
@@ -34,20 +30,14 @@ class VideoPosition extends HookConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    FormattedDuration(position),
-                    FormattedDuration(duration),
-                  ],
+                  children: [FormattedDuration(position), FormattedDuration(duration)],
                 ),
               ),
               Row(
                 children: [
                   Expanded(
                     child: Slider(
-                      value: min(
-                        position.inMicroseconds / duration.inMicroseconds * 100,
-                        100,
-                      ),
+                      value: min(position.inMicroseconds / duration.inMicroseconds * 100, 100),
                       min: 0,
                       max: 100,
                       thumbColor: Colors.white,
@@ -98,10 +88,7 @@ class _VideoPositionPlaceholder extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 12.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              FormattedDuration(Duration.zero),
-              FormattedDuration(Duration.zero),
-            ],
+            children: [FormattedDuration(Duration.zero), FormattedDuration(Duration.zero)],
           ),
         ),
         Row(

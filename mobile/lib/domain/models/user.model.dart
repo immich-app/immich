@@ -74,22 +74,21 @@ quotaSizeInBytes: $quotaSizeInBytes,
     bool? isPartnerSharedWith,
     int? quotaUsageInBytes,
     int? quotaSizeInBytes,
-  }) =>
-      UserDto(
-        id: id ?? this.id,
-        email: email ?? this.email,
-        name: name ?? this.name,
-        isAdmin: isAdmin ?? this.isAdmin,
-        updatedAt: updatedAt ?? this.updatedAt,
-        profileImagePath: profileImagePath ?? this.profileImagePath,
-        avatarColor: avatarColor ?? this.avatarColor,
-        memoryEnabled: memoryEnabled ?? this.memoryEnabled,
-        inTimeline: inTimeline ?? this.inTimeline,
-        isPartnerSharedBy: isPartnerSharedBy ?? this.isPartnerSharedBy,
-        isPartnerSharedWith: isPartnerSharedWith ?? this.isPartnerSharedWith,
-        quotaUsageInBytes: quotaUsageInBytes ?? this.quotaUsageInBytes,
-        quotaSizeInBytes: quotaSizeInBytes ?? this.quotaSizeInBytes,
-      );
+  }) => UserDto(
+    id: id ?? this.id,
+    email: email ?? this.email,
+    name: name ?? this.name,
+    isAdmin: isAdmin ?? this.isAdmin,
+    updatedAt: updatedAt ?? this.updatedAt,
+    profileImagePath: profileImagePath ?? this.profileImagePath,
+    avatarColor: avatarColor ?? this.avatarColor,
+    memoryEnabled: memoryEnabled ?? this.memoryEnabled,
+    inTimeline: inTimeline ?? this.inTimeline,
+    isPartnerSharedBy: isPartnerSharedBy ?? this.isPartnerSharedBy,
+    isPartnerSharedWith: isPartnerSharedWith ?? this.isPartnerSharedWith,
+    quotaUsageInBytes: quotaUsageInBytes ?? this.quotaUsageInBytes,
+    quotaSizeInBytes: quotaSizeInBytes ?? this.quotaSizeInBytes,
+  );
 
   @override
   bool operator ==(covariant UserDto other) {
@@ -143,13 +142,7 @@ class PartnerUserDto {
     this.profileImagePath,
   });
 
-  PartnerUserDto copyWith({
-    String? id,
-    String? email,
-    String? name,
-    bool? inTimeline,
-    String? profileImagePath,
-  }) {
+  PartnerUserDto copyWith({String? id, String? email, String? name, bool? inTimeline, String? profileImagePath}) {
     return PartnerUserDto(
       id: id ?? this.id,
       email: email ?? this.email,

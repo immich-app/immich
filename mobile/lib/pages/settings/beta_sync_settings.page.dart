@@ -5,9 +5,7 @@ import 'package:immich_mobile/widgets/settings/beta_sync_settings/beta_sync_sett
 
 @RoutePage()
 class BetaSyncSettingsPage extends StatelessWidget {
-  const BetaSyncSettingsPage({
-    super.key,
-  });
+  const BetaSyncSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,9 +16,7 @@ class BetaSyncSettingsPage extends StatelessWidget {
         leading: IconButton(
           onPressed: () => context.maybePop(true),
           splashRadius: 24,
-          icon: const Icon(
-            Icons.arrow_back_ios_rounded,
-          ),
+          icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
       ),
       body: const BetaSyncSettings(),

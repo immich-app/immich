@@ -189,6 +189,8 @@ select
   ) as "files"
 from
   "asset"
+where
+  "asset"."libraryId" is null
 limit
   3
 

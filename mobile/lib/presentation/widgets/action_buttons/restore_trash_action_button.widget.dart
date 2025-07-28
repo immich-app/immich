@@ -20,10 +20,7 @@ class RestoreTrashActionButton extends ConsumerWidget {
     final result = await ref.read(actionProvider.notifier).restoreTrash(source);
     ref.read(multiSelectProvider.notifier).reset();
 
-    final successMessage = 'assets_restored_count'.t(
-      context: context,
-      args: {'count': result.count.toString()},
-    );
+    final successMessage = 'assets_restored_count'.t(context: context, args: {'count': result.count.toString()});
 
     if (context.mounted) {
       ImmichToast.show(
@@ -38,16 +35,8 @@ class RestoreTrashActionButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return TextButton.icon(
-      icon: const Icon(
-        Icons.history_rounded,
-      ),
-      label: Text(
-        'restore'.t(),
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+      icon: const Icon(Icons.history_rounded),
+      label: Text('restore'.t(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
       onPressed: () => _onTap(context, ref),
     );
   }

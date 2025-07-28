@@ -25,10 +25,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
     final suggestedShareUsers = ref.watch(otherUsersProvider);
 
     createSharedAlbum() async {
-      var newAlbum = await ref.watch(albumProvider.notifier).createAlbum(
-            ref.watch(albumTitleProvider),
-            assets,
-          );
+      var newAlbum = await ref.watch(albumProvider.notifier).createAlbum(ref.watch(albumTitleProvider), assets);
 
       if (newAlbum != null) {
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
@@ -40,9 +37,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
         child: SnackBar(
           content: Text(
             'select_user_for_sharing_page_err_album',
-            style: context.textTheme.bodyLarge?.copyWith(
-              color: context.primaryColor,
-            ),
+            style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
           ).tr(),
         ),
       );
@@ -50,17 +45,9 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
 
     buildTileIcon(UserDto user) {
       if (sharedUsersList.value.contains(user)) {
-        return CircleAvatar(
-          backgroundColor: context.primaryColor,
-          child: const Icon(
-            Icons.check_rounded,
-            size: 25,
-          ),
-        );
+        return CircleAvatar(backgroundColor: context.primaryColor, child: const Icon(Icons.check_rounded, size: 25));
       } else {
-        return UserCircleAvatar(
-          user: user,
-        );
+        return UserCircleAvatar(user: user);
       }
     }
 
@@ -75,11 +62,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
               backgroundColor: context.primaryColor.withValues(alpha: 0.15),
               label: Text(
                 user.email,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -87,18 +70,12 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
       }
       return ListView(
         children: [
-          Wrap(
-            children: [...usersChip],
-          ),
+          Wrap(children: [...usersChip]),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: const Text(
               'suggestions',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
             ).tr(),
           ),
           ListView.builder(
@@ -107,25 +84,14 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
             itemBuilder: ((context, index) {
               return ListTile(
                 leading: buildTileIcon(users[index]),
-                title: Text(
-                  users[index].email,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                title: Text(users[index].email, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                 onTap: () {
                   if (sharedUsersList.value.contains(users[index])) {
                     sharedUsersList.value = sharedUsersList.value
-                        .where(
-                          (selectedUser) => selectedUser.id != users[index].id,
-                        )
+                        .where((selectedUser) => selectedUser.id != users[index].id)
                         .toSet();
                   } else {
-                    sharedUsersList.value = {
-                      ...sharedUsersList.value,
-                      users[index],
-                    };
+                    sharedUsersList.value = {...sharedUsersList.value, users[index]};
                   }
                 },
               );
@@ -138,10 +104,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'invite_to_album',
-          style: TextStyle(color: context.primaryColor),
-        ).tr(),
+        title: Text('invite_to_album', style: TextStyle(color: context.primaryColor)).tr(),
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
@@ -152,9 +115,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
         ),
         actions: [
           TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: context.primaryColor,
-            ),
+            style: TextButton.styleFrom(foregroundColor: context.primaryColor),
             onPressed: sharedUsersList.value.isEmpty ? null : createSharedAlbum,
             child: const Text(
               "create_album",

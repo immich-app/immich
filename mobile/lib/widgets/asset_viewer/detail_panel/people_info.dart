@@ -21,10 +21,7 @@ class PeopleInfo extends ConsumerWidget {
     final peopleProvider = ref.watch(assetPeopleNotifierProvider(asset).notifier);
     final people = ref.watch(assetPeopleNotifierProvider(asset)).value?.where((p) => !p.isHidden);
 
-    showPersonNameEditModel(
-      String personId,
-      String personName,
-    ) {
+    showPersonNameEditModel(String personId, String personName) {
       return showDialog(
         context: context,
         useRootNavigator: false,
@@ -37,7 +34,8 @@ class PeopleInfo extends ConsumerWidget {
       });
     }
 
-    final curatedPeople = people
+    final curatedPeople =
+        people
             ?.map(
               (p) => SearchCuratedContent(
                 id: p.id,
@@ -78,17 +76,10 @@ class PeopleInfo extends ConsumerWidget {
                 content: curatedPeople,
                 onTap: (content, index) {
                   context
-                      .pushRoute(
-                        PersonResultRoute(
-                          personId: content.id,
-                          personName: content.label,
-                        ),
-                      )
+                      .pushRoute(PersonResultRoute(personId: content.id, personName: content.label))
                       .then((_) => peopleProvider.refresh());
                 },
-                onNameTap: (person, index) => {
-                  showPersonNameEditModel(person.id, person.label),
-                },
+                onNameTap: (person, index) => {showPersonNameEditModel(person.id, person.label)},
               ),
             ),
           ],

@@ -8,10 +8,7 @@ import 'package:immich_mobile/repositories/asset.repository.dart';
 class EntityService {
   final AssetRepository _assetRepository;
   final IsarUserRepository _isarUserRepository;
-  const EntityService(
-    this._assetRepository,
-    this._isarUserRepository,
-  );
+  const EntityService(this._assetRepository, this._isarUserRepository);
 
   Future<Album> fillAlbumWithDatabaseEntities(Album album) async {
     final ownerId = album.ownerId;
@@ -43,8 +40,5 @@ class EntityService {
 }
 
 final entityServiceProvider = Provider(
-  (ref) => EntityService(
-    ref.watch(assetRepositoryProvider),
-    ref.watch(userRepositoryProvider),
-  ),
+  (ref) => EntityService(ref.watch(assetRepositoryProvider), ref.watch(userRepositoryProvider)),
 );

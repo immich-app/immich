@@ -21,9 +21,9 @@ class LocalSyncService {
     required DriftLocalAlbumRepository localAlbumRepository,
     required NativeSyncApi nativeSyncApi,
     Platform? platform,
-  })  : _localAlbumRepository = localAlbumRepository,
-        _nativeSyncApi = nativeSyncApi,
-        _platform = platform ?? const LocalPlatform();
+  }) : _localAlbumRepository = localAlbumRepository,
+       _nativeSyncApi = nativeSyncApi,
+       _platform = platform ?? const LocalPlatform();
 
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
@@ -70,9 +70,7 @@ class LocalSyncService {
         for (final album in cloudAlbums) {
           final dbAlbum = dbAlbums.firstWhereOrNull((a) => a.id == album.id);
           if (dbAlbum == null) {
-            _log.warning(
-              "Cloud album ${album.name} not found in local database. Skipping sync.",
-            );
+            _log.warning("Cloud album ${album.name} not found in local database. Skipping sync.");
             continue;
           }
           await updateAlbum(dbAlbum, album);
@@ -120,10 +118,7 @@ class LocalSyncService {
 
       final assets = album.assetCount > 0 ? await _nativeSyncApi.getAssetsForAlbum(album.id) : <PlatformAsset>[];
 
-      await _localAlbumRepository.upsert(
-        album,
-        toUpsert: assets.toLocalAssets(),
-      );
+      await _localAlbumRepository.upsert(album, toUpsert: assets.toLocalAssets());
       _log.fine("Successfully added device album ${album.name}");
     } catch (e, s) {
       _log.warning("Error while adding device album", e, s);
@@ -146,9 +141,7 @@ class LocalSyncService {
       _log.fine("Syncing device album ${dbAlbum.name}");
 
       if (_albumsEqual(deviceAlbum, dbAlbum)) {
-        _log.fine(
-          "Device album ${dbAlbum.name} has not changed. Skipping sync.",
-        );
+        _log.fine("Device album ${dbAlbum.name} has not changed. Skipping sync.");
         return false;
       }
 
@@ -172,10 +165,7 @@ class LocalSyncService {
   @visibleForTesting
   // The [deviceAlbum] is expected to be refreshed before calling this method
   // with modified time and asset count
-  Future<bool> checkAddition(
-    LocalAlbum dbAlbum,
-    LocalAlbum deviceAlbum,
-  ) async {
+  Future<bool> checkAddition(LocalAlbum dbAlbum, LocalAlbum deviceAlbum) async {
     try {
       _log.fine("Fast syncing device album ${dbAlbum.name}");
       // Assets has been modified
@@ -189,9 +179,7 @@ class LocalSyncService {
 
       // Early return if no new assets were found
       if (newAssetsCount == 0) {
-        _log.fine(
-          "No new assets found despite album having changes. Proceeding to full sync for ${dbAlbum.name}",
-        );
+        _log.fine("No new assets found despite album having changes. Proceeding to full sync for ${dbAlbum.name}");
         return false;
       }
 
@@ -201,10 +189,7 @@ class LocalSyncService {
         return false;
       }
 
-      final newAssets = await _nativeSyncApi.getAssetsForAlbum(
-        deviceAlbum.id,
-        updatedTimeCond: updatedTime,
-      );
+      final newAssets = await _nativeSyncApi.getAssetsForAlbum(deviceAlbum.id, updatedTimeCond: updatedTime);
 
       await _localAlbumRepository.upsert(
         deviceAlbum.copyWith(backupSelection: dbAlbum.backupSelection),
@@ -229,9 +214,7 @@ class LocalSyncService {
       final assetsInDb = dbAlbum.assetCount > 0 ? await _localAlbumRepository.getAssets(dbAlbum.id) : <LocalAsset>[];
 
       if (deviceAlbum.assetCount == 0) {
-        _log.fine(
-          "Device album ${deviceAlbum.name} is empty. Removing assets from DB.",
-        );
+        _log.fine("Device album ${deviceAlbum.name} is empty. Removing assets from DB.");
         await _localAlbumRepository.upsert(
           deviceAlbum.copyWith(backupSelection: dbAlbum.backupSelection),
           toDelete: assetsInDb.map((a) => a.id),
@@ -239,18 +222,11 @@ class LocalSyncService {
         return true;
       }
 
-      final updatedDeviceAlbum = deviceAlbum.copyWith(
-        backupSelection: dbAlbum.backupSelection,
-      );
+      final updatedDeviceAlbum = deviceAlbum.copyWith(backupSelection: dbAlbum.backupSelection);
 
       if (dbAlbum.assetCount == 0) {
-        _log.fine(
-          "Device album ${deviceAlbum.name} is empty. Adding assets to DB.",
-        );
-        await _localAlbumRepository.upsert(
-          updatedDeviceAlbum,
-          toUpsert: assetsInDevice,
-        );
+        _log.fine("Device album ${deviceAlbum.name} is empty. Adding assets to DB.");
+        await _localAlbumRepository.upsert(updatedDeviceAlbum, toUpsert: assetsInDevice);
         return true;
       }
 
@@ -282,18 +258,12 @@ class LocalSyncService {
       );
 
       if (assetsToUpsert.isEmpty && assetsToDelete.isEmpty) {
-        _log.fine(
-          "No asset changes detected in album ${deviceAlbum.name}. Updating metadata.",
-        );
+        _log.fine("No asset changes detected in album ${deviceAlbum.name}. Updating metadata.");
         _localAlbumRepository.upsert(updatedDeviceAlbum);
         return true;
       }
 
-      await _localAlbumRepository.upsert(
-        updatedDeviceAlbum,
-        toUpsert: assetsToUpsert,
-        toDelete: assetsToDelete,
-      );
+      await _localAlbumRepository.upsert(updatedDeviceAlbum, toUpsert: assetsToUpsert, toDelete: assetsToDelete);
 
       return true;
     } catch (e, s) {

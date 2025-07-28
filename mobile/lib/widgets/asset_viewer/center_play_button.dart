@@ -29,19 +29,13 @@ class CenterPlayButton extends StatelessWidget {
             opacity: show ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 100),
             child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
               child: IconButton(
                 iconSize: 32,
                 padding: const EdgeInsets.all(12.0),
                 icon: isFinished
                     ? Icon(Icons.replay, color: iconColor)
-                    : AnimatedPlayPause(
-                        color: iconColor,
-                        playing: isPlaying,
-                      ),
+                    : AnimatedPlayPause(color: iconColor, playing: isPlaying),
                 onPressed: onPressed,
               ),
             ),

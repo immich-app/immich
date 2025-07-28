@@ -32,7 +32,7 @@
 
   let sharedLinkUrl = $state('');
   const handleViewQrCode = (sharedLink: SharedLinkResponseDto) => {
-    sharedLinkUrl = makeSharedLinkUrl(sharedLink.key);
+    sharedLinkUrl = makeSharedLinkUrl(sharedLink);
   };
 
   const roleOptions: Array<{ title: string; value: AlbumUserRole | 'none'; icon?: string }> = [

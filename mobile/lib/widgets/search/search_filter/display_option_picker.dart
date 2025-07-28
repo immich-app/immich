@@ -3,18 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 
-enum DisplayOption {
-  notInAlbum,
-  favorite,
-  archive,
-}
+enum DisplayOption { notInAlbum, favorite, archive }
 
 class DisplayOptionPicker extends HookWidget {
-  const DisplayOptionPicker({
-    super.key,
-    required this.onSelect,
-    this.filter,
-  });
+  const DisplayOptionPicker({super.key, required this.onSelect, this.filter});
 
   final Function(Map<DisplayOption, bool>) onSelect;
   final SearchDisplayFilters? filter;
@@ -34,10 +26,7 @@ class DisplayOptionPicker extends HookWidget {
           title: const Text('search_filter_display_option_not_in_album').tr(),
           value: options.value[DisplayOption.notInAlbum],
           onChanged: (bool? value) {
-            options.value = {
-              ...options.value,
-              DisplayOption.notInAlbum: value!,
-            };
+            options.value = {...options.value, DisplayOption.notInAlbum: value!};
             onSelect(options.value);
           },
         ),
@@ -45,10 +34,7 @@ class DisplayOptionPicker extends HookWidget {
           title: const Text('favorite').tr(),
           value: options.value[DisplayOption.favorite],
           onChanged: (value) {
-            options.value = {
-              ...options.value,
-              DisplayOption.favorite: value!,
-            };
+            options.value = {...options.value, DisplayOption.favorite: value!};
             onSelect(options.value);
           },
         ),
@@ -56,10 +42,7 @@ class DisplayOptionPicker extends HookWidget {
           title: const Text('archive').tr(),
           value: options.value[DisplayOption.archive],
           onChanged: (value) {
-            options.value = {
-              ...options.value,
-              DisplayOption.archive: value!,
-            };
+            options.value = {...options.value, DisplayOption.archive: value!};
             onSelect(options.value);
           },
         ),

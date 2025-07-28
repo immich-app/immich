@@ -24,10 +24,7 @@ class PaginatedSearchNotifier extends StateNotifier<SearchResult> {
       return false;
     }
 
-    state = SearchResult(
-      assets: [...state.assets, ...result.assets],
-      nextPage: result.nextPage,
-    );
+    state = SearchResult(assets: [...state.assets, ...result.assets], nextPage: result.nextPage);
 
     return true;
   }

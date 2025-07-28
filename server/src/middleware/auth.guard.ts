@@ -28,7 +28,10 @@ export const Authenticated = (options?: AuthenticatedOptions): MethodDecorator =
   ];
 
   if ((options as SharedLinkRoute)?.sharedLink) {
-    decorators.push(ApiQuery({ name: ImmichQuery.SharedLinkKey, type: String, required: false }));
+    decorators.push(
+      ApiQuery({ name: ImmichQuery.SharedLinkKey, type: String, required: false }),
+      ApiQuery({ name: ImmichQuery.SharedLinkSlug, type: String, required: false }),
+    );
   }
 
   return applyDecorators(...decorators);

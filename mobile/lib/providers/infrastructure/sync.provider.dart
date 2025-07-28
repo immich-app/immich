@@ -20,13 +20,9 @@ final syncStreamServiceProvider = Provider(
   ),
 );
 
-final syncApiRepositoryProvider = Provider(
-  (ref) => SyncApiRepository(ref.watch(apiServiceProvider)),
-);
+final syncApiRepositoryProvider = Provider((ref) => SyncApiRepository(ref.watch(apiServiceProvider)));
 
-final syncStreamRepositoryProvider = Provider(
-  (ref) => SyncStreamRepository(ref.watch(driftProvider)),
-);
+final syncStreamRepositoryProvider = Provider((ref) => SyncStreamRepository(ref.watch(driftProvider)));
 
 final localSyncServiceProvider = Provider(
   (ref) => LocalSyncService(

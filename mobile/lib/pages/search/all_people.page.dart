@@ -17,13 +17,8 @@ class AllPeoplePage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'people',
-        ).tr(),
-        leading: IconButton(
-          onPressed: () => context.maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-        ),
+        title: const Text('people').tr(),
+        leading: IconButton(onPressed: () => context.maybePop(), icon: const Icon(Icons.arrow_back_ios_rounded)),
       ),
       body: curatedPeople.widgetWhen(
         onData: (people) => ExploreGrid(

@@ -18,9 +18,9 @@ class SyncStreamService {
     required SyncApiRepository syncApiRepository,
     required SyncStreamRepository syncStreamRepository,
     bool Function()? cancelChecker,
-  })  : _syncApiRepository = syncApiRepository,
-        _syncStreamRepository = syncStreamRepository,
-        _cancelChecker = cancelChecker;
+  }) : _syncApiRepository = syncApiRepository,
+       _syncStreamRepository = syncStreamRepository,
+       _cancelChecker = cancelChecker;
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
@@ -34,9 +34,7 @@ class SyncStreamService {
   Future<void> handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) async {
     if (batchData.isEmpty) return;
 
-    _logger.info(
-      'Processing batch of ${batchData.length} AssetUploadReadyV1 events',
-    );
+    _logger.info('Processing batch of ${batchData.length} AssetUploadReadyV1 events');
 
     final List<SyncAssetV1> assets = [];
     final List<SyncAssetExifV1> exifs = [];
@@ -65,22 +63,12 @@ class SyncStreamService {
       }
 
       if (assets.isNotEmpty && exifs.isNotEmpty) {
-        await _syncStreamRepository.updateAssetsV1(
-          assets,
-          debugLabel: 'websocket-batch',
-        );
-        await _syncStreamRepository.updateAssetsExifV1(
-          exifs,
-          debugLabel: 'websocket-batch',
-        );
+        await _syncStreamRepository.updateAssetsV1(assets, debugLabel: 'websocket-batch');
+        await _syncStreamRepository.updateAssetsExifV1(exifs, debugLabel: 'websocket-batch');
         _logger.info('Successfully processed ${assets.length} assets in batch');
       }
     } catch (error, stackTrace) {
-      _logger.severe(
-        "Error processing AssetUploadReadyV1 websocket batch events",
-        error,
-        stackTrace,
-      );
+      _logger.severe("Error processing AssetUploadReadyV1 websocket batch events", error, stackTrace);
     }
   }
 
@@ -114,10 +102,7 @@ class SyncStreamService {
     batch.clear();
   }
 
-  Future<void> _handleSyncData(
-    SyncEntityType type,
-    Iterable<Object> data,
-  ) async {
+  Future<void> _handleSyncData(SyncEntityType type, Iterable<Object> data) async {
     _logger.fine("Processing sync data for $type of length ${data.length}");
     switch (type) {
       case SyncEntityType.userV1:
@@ -135,30 +120,15 @@ class SyncStreamService {
       case SyncEntityType.assetExifV1:
         return _syncStreamRepository.updateAssetsExifV1(data.cast());
       case SyncEntityType.partnerAssetV1:
-        return _syncStreamRepository.updateAssetsV1(
-          data.cast(),
-          debugLabel: 'partner',
-        );
+        return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'partner');
       case SyncEntityType.partnerAssetBackfillV1:
-        return _syncStreamRepository.updateAssetsV1(
-          data.cast(),
-          debugLabel: 'partner backfill',
-        );
+        return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'partner backfill');
       case SyncEntityType.partnerAssetDeleteV1:
-        return _syncStreamRepository.deleteAssetsV1(
-          data.cast(),
-          debugLabel: "partner",
-        );
+        return _syncStreamRepository.deleteAssetsV1(data.cast(), debugLabel: "partner");
       case SyncEntityType.partnerAssetExifV1:
-        return _syncStreamRepository.updateAssetsExifV1(
-          data.cast(),
-          debugLabel: 'partner',
-        );
+        return _syncStreamRepository.updateAssetsExifV1(data.cast(), debugLabel: 'partner');
       case SyncEntityType.partnerAssetExifBackfillV1:
-        return _syncStreamRepository.updateAssetsExifV1(
-          data.cast(),
-          debugLabel: 'partner backfill',
-        );
+        return _syncStreamRepository.updateAssetsExifV1(data.cast(), debugLabel: 'partner backfill');
       case SyncEntityType.albumV1:
         return _syncStreamRepository.updateAlbumsV1(data.cast());
       case SyncEntityType.albumDeleteV1:
@@ -166,39 +136,21 @@ class SyncStreamService {
       case SyncEntityType.albumUserV1:
         return _syncStreamRepository.updateAlbumUsersV1(data.cast());
       case SyncEntityType.albumUserBackfillV1:
-        return _syncStreamRepository.updateAlbumUsersV1(
-          data.cast(),
-          debugLabel: 'backfill',
-        );
+        return _syncStreamRepository.updateAlbumUsersV1(data.cast(), debugLabel: 'backfill');
       case SyncEntityType.albumUserDeleteV1:
         return _syncStreamRepository.deleteAlbumUsersV1(data.cast());
       case SyncEntityType.albumAssetV1:
-        return _syncStreamRepository.updateAssetsV1(
-          data.cast(),
-          debugLabel: 'album',
-        );
+        return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'album');
       case SyncEntityType.albumAssetBackfillV1:
-        return _syncStreamRepository.updateAssetsV1(
-          data.cast(),
-          debugLabel: 'album backfill',
-        );
+        return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'album backfill');
       case SyncEntityType.albumAssetExifV1:
-        return _syncStreamRepository.updateAssetsExifV1(
-          data.cast(),
-          debugLabel: 'album',
-        );
+        return _syncStreamRepository.updateAssetsExifV1(data.cast(), debugLabel: 'album');
       case SyncEntityType.albumAssetExifBackfillV1:
-        return _syncStreamRepository.updateAssetsExifV1(
-          data.cast(),
-          debugLabel: 'album backfill',
-        );
+        return _syncStreamRepository.updateAssetsExifV1(data.cast(), debugLabel: 'album backfill');
       case SyncEntityType.albumToAssetV1:
         return _syncStreamRepository.updateAlbumToAssetsV1(data.cast());
       case SyncEntityType.albumToAssetBackfillV1:
-        return _syncStreamRepository.updateAlbumToAssetsV1(
-          data.cast(),
-          debugLabel: 'backfill',
-        );
+        return _syncStreamRepository.updateAlbumToAssetsV1(data.cast(), debugLabel: 'backfill');
       case SyncEntityType.albumToAssetDeleteV1:
         return _syncStreamRepository.deleteAlbumToAssetsV1(data.cast());
       // No-op. SyncAckV1 entities are checkpoints in the sync stream
@@ -218,28 +170,15 @@ class SyncStreamService {
       case SyncEntityType.stackDeleteV1:
         return _syncStreamRepository.deleteStacksV1(data.cast());
       case SyncEntityType.partnerStackV1:
-        return _syncStreamRepository.updateStacksV1(
-          data.cast(),
-          debugLabel: 'partner',
-        );
+        return _syncStreamRepository.updateStacksV1(data.cast(), debugLabel: 'partner');
       case SyncEntityType.partnerStackBackfillV1:
-        return _syncStreamRepository.updateStacksV1(
-          data.cast(),
-          debugLabel: 'partner backfill',
-        );
+        return _syncStreamRepository.updateStacksV1(data.cast(), debugLabel: 'partner backfill');
       case SyncEntityType.partnerStackDeleteV1:
-        return _syncStreamRepository.deleteStacksV1(
-          data.cast(),
-          debugLabel: 'partner',
-        );
+        return _syncStreamRepository.deleteStacksV1(data.cast(), debugLabel: 'partner');
       case SyncEntityType.userMetadataV1:
-        return _syncStreamRepository.updateUserMetadatasV1(
-          data.cast(),
-        );
+        return _syncStreamRepository.updateUserMetadatasV1(data.cast());
       case SyncEntityType.userMetadataDeleteV1:
-        return _syncStreamRepository.deleteUserMetadatasV1(
-          data.cast(),
-        );
+        return _syncStreamRepository.deleteUserMetadatasV1(data.cast());
       case SyncEntityType.personV1:
         return _syncStreamRepository.updatePeopleV1(data.cast());
       case SyncEntityType.personDeleteV1:

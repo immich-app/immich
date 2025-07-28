@@ -51,9 +51,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         final isSuccess = await ref.read(albumProvider.notifier).leaveAlbum(album);
 
         if (isSuccess) {
-          context.navigateTo(
-            const TabControllerRoute(children: [AlbumsRoute()]),
-          );
+          context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()]));
         } else {
           showErrorMessage();
         }
@@ -110,10 +108,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
           return SafeArea(
             child: Padding(
               padding: const EdgeInsets.only(top: 24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [...actions],
-              ),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [...actions]),
             ),
           );
         },
@@ -123,20 +118,9 @@ class AlbumOptionsPage extends HookConsumerWidget {
     buildOwnerInfo() {
       return ListTile(
         leading: owner != null ? UserCircleAvatar(user: owner.toDto()) : const SizedBox(),
-        title: Text(
-          album.owner.value?.name ?? "",
-          style: const TextStyle(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        subtitle: Text(
-          album.owner.value?.email ?? "",
-          style: TextStyle(color: context.colorScheme.onSurfaceSecondary),
-        ),
-        trailing: Text(
-          "owner",
-          style: context.textTheme.labelLarge,
-        ).tr(),
+        title: Text(album.owner.value?.name ?? "", style: const TextStyle(fontWeight: FontWeight.w500)),
+        subtitle: Text(album.owner.value?.email ?? "", style: TextStyle(color: context.colorScheme.onSurfaceSecondary)),
+        trailing: Text("owner", style: context.textTheme.labelLarge).tr(),
       );
     }
 
@@ -148,22 +132,9 @@ class AlbumOptionsPage extends HookConsumerWidget {
         itemBuilder: (context, index) {
           final user = sharedUsers.value[index];
           return ListTile(
-            leading: UserCircleAvatar(
-              user: user,
-              radius: 22,
-            ),
-            title: Text(
-              user.name,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            subtitle: Text(
-              user.email,
-              style: TextStyle(
-                color: context.colorScheme.onSurfaceSecondary,
-              ),
-            ),
+            leading: UserCircleAvatar(user: user, radius: 22),
+            title: Text(user.name, style: const TextStyle(fontWeight: FontWeight.w500)),
+            subtitle: Text(user.email, style: TextStyle(color: context.colorScheme.onSurfaceSecondary)),
             trailing: userId == user.id || isOwner ? const Icon(Icons.more_horiz_rounded) : const SizedBox(),
             onTap: userId == user.id || isOwner ? () => handleUserClick(user) : null,
           );
@@ -206,9 +177,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
               ).tr(),
               subtitle: Text(
                 "let_others_respond",
-                style: context.textTheme.labelLarge?.copyWith(
-                  color: context.colorScheme.onSurfaceSecondary,
-                ),
+                style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
               ).tr(),
             ),
           buildSectionTitle("shared_album_section_people_title".tr()),

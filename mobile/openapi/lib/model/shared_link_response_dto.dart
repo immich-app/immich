@@ -24,6 +24,7 @@ class SharedLinkResponseDto {
     required this.key,
     required this.password,
     required this.showMetadata,
+    required this.slug,
     this.token,
     required this.type,
     required this.userId,
@@ -57,6 +58,8 @@ class SharedLinkResponseDto {
 
   bool showMetadata;
 
+  String? slug;
+
   String? token;
 
   SharedLinkType type;
@@ -76,6 +79,7 @@ class SharedLinkResponseDto {
     other.key == key &&
     other.password == password &&
     other.showMetadata == showMetadata &&
+    other.slug == slug &&
     other.token == token &&
     other.type == type &&
     other.userId == userId;
@@ -94,12 +98,13 @@ class SharedLinkResponseDto {
     (key.hashCode) +
     (password == null ? 0 : password!.hashCode) +
     (showMetadata.hashCode) +
+    (slug == null ? 0 : slug!.hashCode) +
     (token == null ? 0 : token!.hashCode) +
     (type.hashCode) +
     (userId.hashCode);
 
   @override
-  String toString() => 'SharedLinkResponseDto[album=$album, allowDownload=$allowDownload, allowUpload=$allowUpload, assets=$assets, createdAt=$createdAt, description=$description, expiresAt=$expiresAt, id=$id, key=$key, password=$password, showMetadata=$showMetadata, token=$token, type=$type, userId=$userId]';
+  String toString() => 'SharedLinkResponseDto[album=$album, allowDownload=$allowDownload, allowUpload=$allowUpload, assets=$assets, createdAt=$createdAt, description=$description, expiresAt=$expiresAt, id=$id, key=$key, password=$password, showMetadata=$showMetadata, slug=$slug, token=$token, type=$type, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -130,6 +135,11 @@ class SharedLinkResponseDto {
     //  json[r'password'] = null;
     }
       json[r'showMetadata'] = this.showMetadata;
+    if (this.slug != null) {
+      json[r'slug'] = this.slug;
+    } else {
+    //  json[r'slug'] = null;
+    }
     if (this.token != null) {
       json[r'token'] = this.token;
     } else {
@@ -160,6 +170,7 @@ class SharedLinkResponseDto {
         key: mapValueOfType<String>(json, r'key')!,
         password: mapValueOfType<String>(json, r'password'),
         showMetadata: mapValueOfType<bool>(json, r'showMetadata')!,
+        slug: mapValueOfType<String>(json, r'slug'),
         token: mapValueOfType<String>(json, r'token'),
         type: SharedLinkType.fromJson(json[r'type'])!,
         userId: mapValueOfType<String>(json, r'userId')!,
@@ -220,6 +231,7 @@ class SharedLinkResponseDto {
     'key',
     'password',
     'showMetadata',
+    'slug',
     'type',
     'userId',
   };

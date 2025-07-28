@@ -43,36 +43,36 @@ class User {
   });
 
   static User fromDto(UserDto dto) => User(
-        id: dto.id,
-        updatedAt: dto.updatedAt,
-        email: dto.email,
-        name: dto.name,
-        isAdmin: dto.isAdmin,
-        isPartnerSharedBy: dto.isPartnerSharedBy,
-        isPartnerSharedWith: dto.isPartnerSharedWith,
-        profileImagePath: dto.profileImagePath ?? "",
-        avatarColor: dto.avatarColor,
-        memoryEnabled: dto.memoryEnabled,
-        inTimeline: dto.inTimeline,
-        quotaUsageInBytes: dto.quotaUsageInBytes,
-        quotaSizeInBytes: dto.quotaSizeInBytes,
-      );
+    id: dto.id,
+    updatedAt: dto.updatedAt,
+    email: dto.email,
+    name: dto.name,
+    isAdmin: dto.isAdmin,
+    isPartnerSharedBy: dto.isPartnerSharedBy,
+    isPartnerSharedWith: dto.isPartnerSharedWith,
+    profileImagePath: dto.profileImagePath ?? "",
+    avatarColor: dto.avatarColor,
+    memoryEnabled: dto.memoryEnabled,
+    inTimeline: dto.inTimeline,
+    quotaUsageInBytes: dto.quotaUsageInBytes,
+    quotaSizeInBytes: dto.quotaSizeInBytes,
+  );
 
   UserDto toDto() => UserDto(
-        id: id,
-        email: email,
-        name: name,
-        isAdmin: isAdmin,
-        updatedAt: updatedAt,
-        profileImagePath: profileImagePath.isEmpty ? null : profileImagePath,
-        avatarColor: avatarColor,
-        memoryEnabled: memoryEnabled,
-        inTimeline: inTimeline,
-        isPartnerSharedBy: isPartnerSharedBy,
-        isPartnerSharedWith: isPartnerSharedWith,
-        quotaUsageInBytes: quotaUsageInBytes,
-        quotaSizeInBytes: quotaSizeInBytes,
-      );
+    id: id,
+    email: email,
+    name: name,
+    isAdmin: isAdmin,
+    updatedAt: updatedAt,
+    profileImagePath: profileImagePath.isEmpty ? null : profileImagePath,
+    avatarColor: avatarColor,
+    memoryEnabled: memoryEnabled,
+    inTimeline: inTimeline,
+    isPartnerSharedBy: isPartnerSharedBy,
+    isPartnerSharedWith: isPartnerSharedWith,
+    quotaUsageInBytes: quotaUsageInBytes,
+    quotaSizeInBytes: quotaSizeInBytes,
+  );
 }
 
 class UserEntity extends Table with DriftDefaultsMixin {

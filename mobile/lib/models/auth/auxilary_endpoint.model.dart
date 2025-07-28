@@ -5,19 +5,10 @@ class AuxilaryEndpoint {
   final String url;
   final AuxCheckStatus status;
 
-  const AuxilaryEndpoint({
-    required this.url,
-    required this.status,
-  });
+  const AuxilaryEndpoint({required this.url, required this.status});
 
-  AuxilaryEndpoint copyWith({
-    String? url,
-    AuxCheckStatus? status,
-  }) {
-    return AuxilaryEndpoint(
-      url: url ?? this.url,
-      status: status ?? this.status,
-    );
+  AuxilaryEndpoint copyWith({String? url, AuxCheckStatus? status}) {
+    return AuxilaryEndpoint(url: url ?? this.url, status: status ?? this.status);
   }
 
   @override
@@ -34,10 +25,7 @@ class AuxilaryEndpoint {
   int get hashCode => url.hashCode ^ status.hashCode;
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'url': url,
-      'status': status.toMap(),
-    };
+    return <String, dynamic>{'url': url, 'status': status.toMap()};
   }
 
   factory AuxilaryEndpoint.fromMap(Map<String, dynamic> map) {
@@ -55,9 +43,7 @@ class AuxilaryEndpoint {
 
 class AuxCheckStatus {
   final String name;
-  const AuxCheckStatus({
-    required this.name,
-  });
+  const AuxCheckStatus({required this.name});
   const AuxCheckStatus._(this.name);
 
   static const loading = AuxCheckStatus._('loading');
@@ -75,24 +61,16 @@ class AuxCheckStatus {
   @override
   int get hashCode => name.hashCode;
 
-  AuxCheckStatus copyWith({
-    String? name,
-  }) {
-    return AuxCheckStatus(
-      name: name ?? this.name,
-    );
+  AuxCheckStatus copyWith({String? name}) {
+    return AuxCheckStatus(name: name ?? this.name);
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'name': name,
-    };
+    return <String, dynamic>{'name': name};
   }
 
   factory AuxCheckStatus.fromMap(Map<String, dynamic> map) {
-    return AuxCheckStatus(
-      name: map['name'] as String,
-    );
+    return AuxCheckStatus(name: map['name'] as String);
   }
 
   String toJson() => json.encode(toMap());

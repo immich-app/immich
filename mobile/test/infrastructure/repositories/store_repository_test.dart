@@ -24,16 +24,8 @@ Future<void> _addStrStoreValue(Isar db, StoreKey key, String? value) async {
 
 Future<void> _populateStore(Isar db) async {
   await db.writeTxn(() async {
-    await _addIntStoreValue(
-      db,
-      StoreKey.colorfulInterface,
-      _kTestColorfulInterface ? 1 : 0,
-    );
-    await _addIntStoreValue(
-      db,
-      StoreKey.backupFailedSince,
-      _kTestBackupFailed.millisecondsSinceEpoch,
-    );
+    await _addIntStoreValue(db, StoreKey.colorfulInterface, _kTestColorfulInterface ? 1 : 0);
+    await _addIntStoreValue(db, StoreKey.backupFailedSince, _kTestBackupFailed.millisecondsSinceEpoch);
     await _addStrStoreValue(db, StoreKey.accessToken, _kTestAccessToken);
     await _addIntStoreValue(db, StoreKey.version, _kTestVersion);
   });
@@ -143,21 +135,10 @@ void main() {
         stream,
         emitsInAnyOrder([
           emits(const StoreDto<Object>(StoreKey.version, _kTestVersion)),
-          emits(
-            StoreDto<Object>(StoreKey.backupFailedSince, _kTestBackupFailed),
-          ),
-          emits(
-            const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
-          ),
-          emits(
-            const StoreDto<Object>(
-              StoreKey.colorfulInterface,
-              _kTestColorfulInterface,
-            ),
-          ),
-          emits(
-            const StoreDto<Object>(StoreKey.version, _kTestVersion + 10),
-          ),
+          emits(StoreDto<Object>(StoreKey.backupFailedSince, _kTestBackupFailed)),
+          emits(const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken)),
+          emits(const StoreDto<Object>(StoreKey.colorfulInterface, _kTestColorfulInterface)),
+          emits(const StoreDto<Object>(StoreKey.version, _kTestVersion + 10)),
         ]),
       );
       await sut.update(StoreKey.version, _kTestVersion + 10);

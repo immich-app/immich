@@ -1,16 +1,16 @@
 <script lang="ts">
   import Badge from '$lib/components/elements/badge.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import SharedLinkCopy from '$lib/components/sharedlinks-page/actions/shared-link-copy.svelte';
+  import SharedLinkDelete from '$lib/components/sharedlinks-page/actions/shared-link-delete.svelte';
+  import SharedLinkEdit from '$lib/components/sharedlinks-page/actions/shared-link-edit.svelte';
   import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
   import { AppRoute } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
+  import { mdiDotsVertical } from '@mdi/js';
   import { DateTime, type ToRelativeUnit } from 'luxon';
   import { t } from 'svelte-i18n';
-  import SharedLinkDelete from '$lib/components/sharedlinks-page/actions/shared-link-delete.svelte';
-  import SharedLinkEdit from '$lib/components/sharedlinks-page/actions/shared-link-edit.svelte';
-  import SharedLinkCopy from '$lib/components/sharedlinks-page/actions/shared-link-copy.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import { mdiDotsVertical } from '@mdi/js';
 
   interface Props {
     link: SharedLinkResponseDto;
@@ -90,6 +90,9 @@
 
         {#if link.password}
           <Badge rounded="full"><span class="text-xs px-1">{$t('password')}</span></Badge>
+        {/if}
+        {#if link.slug}
+          <Badge rounded="full"><span class="text-xs px-1">{$t('custom_url')}</span></Badge>
         {/if}
       </div>
     </div>

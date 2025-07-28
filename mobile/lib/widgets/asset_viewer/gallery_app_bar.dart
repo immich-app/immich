@@ -51,11 +51,7 @@ class GalleryAppBar extends ConsumerWidget {
       final result = await ref.read(trashProvider.notifier).restoreAssets([asset]);
 
       if (result && context.mounted) {
-        ImmichToast.show(
-          context: context,
-          msg: 'asset_restored_successfully'.tr(),
-          gravity: ToastGravity.BOTTOM,
-        );
+        ImmichToast.show(context: context, msg: 'asset_restored_successfully'.tr(), gravity: ToastGravity.BOTTOM);
       }
     }
 
@@ -75,16 +71,10 @@ class GalleryAppBar extends ConsumerWidget {
     addToAlbum(Asset addToAlbumAsset) {
       showModalBottomSheet(
         elevation: 0,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(15.0),
-          ),
-        ),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
         context: context,
         builder: (BuildContext _) {
-          return AddToAlbumBottomSheet(
-            assets: [addToAlbumAsset],
-          );
+          return AddToAlbumBottomSheet(assets: [addToAlbumAsset]);
         },
       );
     }

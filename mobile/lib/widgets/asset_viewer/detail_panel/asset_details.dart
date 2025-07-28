@@ -12,11 +12,7 @@ class AssetDetails extends ConsumerWidget {
   final Asset asset;
   final ExifInfo? exifInfo;
 
-  const AssetDetails({
-    super.key,
-    required this.asset,
-    this.exifInfo,
-  });
+  const AssetDetails({super.key, required this.asset, this.exifInfo});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

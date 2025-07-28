@@ -12,9 +12,7 @@ import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class NotificationSetting extends HookConsumerWidget {
-  const NotificationSetting({
-    super.key,
-  });
+  const NotificationSetting({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,14 +37,8 @@ class NotificationSetting extends HookConsumerWidget {
         builder: (ctx) => AlertDialog(
           content: const Text('notification_permission_dialog_content').tr(),
           actions: [
-            TextButton(
-              child: const Text('cancel').tr(),
-              onPressed: () => ctx.pop(),
-            ),
-            TextButton(
-              onPressed: () => openAppNotificationSettings(ctx),
-              child: const Text('settings').tr(),
-            ),
+            TextButton(child: const Text('cancel').tr(), onPressed: () => ctx.pop()),
+            TextButton(onPressed: () => openAppNotificationSettings(ctx), child: const Text('settings').tr()),
           ],
         ),
       );
@@ -63,10 +55,10 @@ class NotificationSetting extends HookConsumerWidget {
           buttonText: 'notification_permission_list_tile_enable_button'.tr(),
           onButtonTap: () =>
               ref.watch(notificationPermissionProvider.notifier).requestNotificationPermission().then((permission) {
-            if (permission == PermissionStatus.permanentlyDenied) {
-              showPermissionsDialog();
-            }
-          }),
+                if (permission == PermissionStatus.permanentlyDenied) {
+                  showPermissionsDialog();
+                }
+              }),
         ),
       SettingsSwitchListTile(
         enabled: hasPermission,

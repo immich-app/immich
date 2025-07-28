@@ -16,18 +16,11 @@ class CurrentUploadingAssetInfoBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       isThreeLine: true,
-      leading: Icon(
-        Icons.image_outlined,
-        color: context.primaryColor,
-        size: 30,
-      ),
+      leading: Icon(Icons.image_outlined, color: context.primaryColor, size: 30),
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            "backup_controller_page_uploading_file_info",
-            style: context.textTheme.titleSmall,
-          ).tr(),
+          Text("backup_controller_page_uploading_file_info", style: context.textTheme.titleSmall).tr(),
           const BackupErrorChip(),
         ],
       ),

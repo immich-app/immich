@@ -10,10 +10,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 @RoutePage()
 class DriftAssetSelectionTimelinePage extends ConsumerWidget {
   final Set<BaseAsset> lockedSelectionAssets;
-  const DriftAssetSelectionTimelinePage({
-    super.key,
-    this.lockedSelectionAssets = const {},
-  });
+  const DriftAssetSelectionTimelinePage({super.key, this.lockedSelectionAssets = const {}});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,27 +18,19 @@ class DriftAssetSelectionTimelinePage extends ConsumerWidget {
       overrides: [
         multiSelectProvider.overrideWith(
           () => MultiSelectNotifier(
-            MultiSelectState(
-              selectedAssets: {},
-              lockedSelectionAssets: lockedSelectionAssets,
-              forceEnable: true,
-            ),
+            MultiSelectState(selectedAssets: {}, lockedSelectionAssets: lockedSelectionAssets, forceEnable: true),
           ),
         ),
-        timelineServiceProvider.overrideWith(
-          (ref) {
-            final user = ref.watch(currentUserProvider);
-            if (user == null) {
-              throw Exception(
-                'User must be logged in to access asset selection timeline',
-              );
-            }
+        timelineServiceProvider.overrideWith((ref) {
+          final user = ref.watch(currentUserProvider);
+          if (user == null) {
+            throw Exception('User must be logged in to access asset selection timeline');
+          }
 
-            final timelineService = ref.watch(timelineFactoryProvider).remoteAssets(user.id);
-            ref.onDispose(timelineService.dispose);
-            return timelineService;
-          },
-        ),
+          final timelineService = ref.watch(timelineFactoryProvider).remoteAssets(user.id);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
       ],
       child: const Timeline(),
     );

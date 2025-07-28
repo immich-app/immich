@@ -6,10 +6,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/utils/hash.dart';
 
 extension ListExtension<E> on List<E> {
-  List<E> uniqueConsecutive({
-    int Function(E a, E b)? compare,
-    void Function(E a, E b)? onDuplicate,
-  }) {
+  List<E> uniqueConsecutive({int Function(E a, E b)? compare, void Function(E a, E b)? onDuplicate}) {
     compare ??= (E a, E b) => a == b ? 0 : 1;
     int i = 1, j = 1;
     for (; i < length; i++) {
@@ -45,9 +42,7 @@ extension IntListExtension on Iterable<int> {
 
 extension AssetListExtension on Iterable<Asset> {
   /// Returns the assets that are already available in the Immich server
-  Iterable<Asset> remoteOnly({
-    void Function()? errorCallback,
-  }) {
+  Iterable<Asset> remoteOnly({void Function()? errorCallback}) {
     final bool onlyRemote = every((e) => e.isRemote);
     if (!onlyRemote) {
       if (errorCallback != null) errorCallback();
@@ -58,10 +53,7 @@ extension AssetListExtension on Iterable<Asset> {
 
   /// Returns the assets that are owned by the user passed to the [owner] param
   /// If [owner] is null, an empty list is returned
-  Iterable<Asset> ownedOnly(
-    UserDto? owner, {
-    void Function()? errorCallback,
-  }) {
+  Iterable<Asset> ownedOnly(UserDto? owner, {void Function()? errorCallback}) {
     if (owner == null) return [];
     final isarUserId = fastHash(owner.id);
     final bool onlyOwned = every((e) => e.ownerId == isarUserId);

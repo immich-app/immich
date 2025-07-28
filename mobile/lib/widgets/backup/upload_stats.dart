@@ -10,34 +10,23 @@ class BackupUploadStats extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isManualUpload = ref.watch(
-      backupProvider.select(
-        (value) => value.backupProgress == BackUpProgressEnum.manualInProgress,
-      ),
+      backupProvider.select((value) => value.backupProgress == BackUpProgressEnum.manualInProgress),
     );
 
     final uploadFileProgress = isManualUpload
-        ? ref.watch(
-            manualUploadProvider.select((value) => value.progressInFileSize),
-          )
+        ? ref.watch(manualUploadProvider.select((value) => value.progressInFileSize))
         : ref.watch(backupProvider.select((value) => value.progressInFileSize));
 
     final uploadFileSpeed = isManualUpload
-        ? ref.watch(
-            manualUploadProvider.select((value) => value.progressInFileSpeed),
-          )
-        : ref.watch(
-            backupProvider.select((value) => value.progressInFileSpeed),
-          );
+        ? ref.watch(manualUploadProvider.select((value) => value.progressInFileSpeed))
+        : ref.watch(backupProvider.select((value) => value.progressInFileSpeed));
 
     return Padding(
       padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            uploadFileProgress,
-            style: const TextStyle(fontSize: 10, fontFamily: "OverpassMono"),
-          ),
+          Text(uploadFileProgress, style: const TextStyle(fontSize: 10, fontFamily: "OverpassMono")),
           Text(
             _formatUploadFileSpeed(uploadFileSpeed),
             style: const TextStyle(fontSize: 10, fontFamily: "OverpassMono"),

@@ -23,45 +23,29 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
     final isDarkTheme = context.isDarkTheme;
     final albums = ref.watch(backupProvider).availableAlbums;
 
-    useEffect(
-      () {
-        ref.watch(backupProvider.notifier).getBackupInfo();
-        return null;
-      },
-      [],
-    );
+    useEffect(() {
+      ref.watch(backupProvider.notifier).getBackupInfo();
+      return null;
+    }, []);
 
     buildAlbumSelectionList() {
       if (albums.isEmpty) {
-        return const SliverToBoxAdapter(
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
+        return const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
       }
 
       return SliverPadding(
         padding: const EdgeInsets.symmetric(vertical: 12.0),
         sliver: SliverList(
-          delegate: SliverChildBuilderDelegate(
-            ((context, index) {
-              return AlbumInfoListTile(
-                album: albums[index],
-              );
-            }),
-            childCount: albums.length,
-          ),
+          delegate: SliverChildBuilderDelegate(((context, index) {
+            return AlbumInfoListTile(album: albums[index]);
+          }), childCount: albums.length),
         ),
       );
     }
 
     buildAlbumSelectionGrid() {
       if (albums.isEmpty) {
-        return const SliverToBoxAdapter(
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
+        return const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
       }
 
       return SliverPadding(
@@ -74,9 +58,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           ),
           itemCount: albums.length,
           itemBuilder: ((context, index) {
-            return AlbumInfoCard(
-              album: albums[index],
-            );
+            return AlbumInfoCard(album: albums[index]);
           }),
         ),
       );
@@ -101,10 +83,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               ),
               backgroundColor: context.primaryColor,
               deleteIconColor: isDarkTheme ? Colors.black : Colors.white,
-              deleteIcon: const Icon(
-                Icons.cancel_rounded,
-                size: 15,
-              ),
+              deleteIcon: const Icon(Icons.cancel_rounded, size: 15),
               onDeleted: removeSelection,
             ),
           ),
@@ -125,18 +104,11 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
             child: Chip(
               label: Text(
                 album.name,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: context.scaffoldBackgroundColor,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 12, color: context.scaffoldBackgroundColor, fontWeight: FontWeight.bold),
               ),
               backgroundColor: Colors.red[300],
               deleteIconColor: context.scaffoldBackgroundColor,
-              deleteIcon: const Icon(
-                Icons.cancel_rounded,
-                size: 15,
-              ),
+              deleteIcon: const Icon(Icons.cancel_rounded, size: 15),
               onDeleted: removeSelection,
             ),
           ),
@@ -155,13 +127,8 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () => context.maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-        ),
-        title: const Text(
-          "backup_album_selection_page_select_albums",
-        ).tr(),
+        leading: IconButton(onPressed: () => context.maybePop(), icon: const Icon(Icons.arrow_back_ios_rounded)),
+        title: const Text("backup_album_selection_page_select_albums").tr(),
         elevation: 0,
       ),
       body: CustomScrollView(
@@ -172,25 +139,14 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 8.0,
-                    horizontal: 16.0,
-                  ),
-                  child: Text(
-                    "backup_album_selection_page_selection_info",
-                    style: context.textTheme.titleSmall,
-                  ).tr(),
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  child: Text("backup_album_selection_page_selection_info", style: context.textTheme.titleSmall).tr(),
                 ),
-                // Selected Album Chips
 
+                // Selected Album Chips
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Wrap(
-                    children: [
-                      ...buildSelectedAlbumNameChip(),
-                      ...buildExcludedAlbumNameChip(),
-                    ],
-                  ),
+                  child: Wrap(children: [...buildSelectedAlbumNameChip(), ...buildExcludedAlbumNameChip()]),
                 ),
 
                 SettingsSwitchListTile(
@@ -198,21 +154,15 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                   title: "sync_albums".tr(),
                   subtitle: "sync_upload_album_setting_subtitle".tr(),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  titleStyle: context.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  subtitleStyle: context.textTheme.labelLarge?.copyWith(
-                    color: context.colorScheme.primary,
-                  ),
+                  titleStyle: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                  subtitleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.primary),
                   onChanged: handleSyncAlbumToggle,
                 ),
 
                 ListTile(
                   title: Text(
                     "backup_album_selection_page_albums_device".tr(
-                      namedArgs: {
-                        'count': ref.watch(backupProvider).availableAlbums.length.toString(),
-                      },
+                      namedArgs: {'count': ref.watch(backupProvider).availableAlbums.length.toString()},
                     ),
                     style: context.textTheme.titleSmall,
                   ),
@@ -220,46 +170,30 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Text(
                       "backup_album_selection_page_albums_tap",
-                      style: context.textTheme.labelLarge?.copyWith(
-                        color: context.primaryColor,
-                      ),
+                      style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
                     ).tr(),
                   ),
                   trailing: IconButton(
                     splashRadius: 16,
-                    icon: Icon(
-                      Icons.info,
-                      size: 20,
-                      color: context.primaryColor,
-                    ),
+                    icon: Icon(Icons.info, size: 20, color: context.primaryColor),
                     onPressed: () {
                       // show the dialog
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(10),
-                              ),
-                            ),
+                            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                             elevation: 5,
                             title: Text(
                               'backup_album_selection_page_selection_info',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: context.primaryColor,
-                              ),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.primaryColor),
                             ).tr(),
                             content: SingleChildScrollView(
                               child: ListBody(
                                 children: [
                                   const Text(
                                     'backup_album_selection_page_assets_scatter',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                    ),
+                                    style: TextStyle(fontSize: 14),
                                   ).tr(),
                                 ],
                               ),

@@ -10,10 +10,7 @@ import 'package:immich_mobile/services/secure_storage.service.dart';
 import 'package:logging/logging.dart';
 
 final localAuthProvider = StateNotifierProvider<LocalAuthNotifier, BiometricStatus>((ref) {
-  return LocalAuthNotifier(
-    ref.watch(localAuthServiceProvider),
-    ref.watch(secureStorageServiceProvider),
-  );
+  return LocalAuthNotifier(ref.watch(localAuthServiceProvider), ref.watch(secureStorageServiceProvider));
 });
 
 class LocalAuthNotifier extends StateNotifier<BiometricStatus> {
@@ -23,17 +20,9 @@ class LocalAuthNotifier extends StateNotifier<BiometricStatus> {
   final _log = Logger("LocalAuthNotifier");
 
   LocalAuthNotifier(this._localAuthService, this._secureStorageService)
-      : super(
-          const BiometricStatus(
-            availableBiometrics: [],
-            canAuthenticate: false,
-          ),
-        ) {
+    : super(const BiometricStatus(availableBiometrics: [], canAuthenticate: false)) {
     _localAuthService.getStatus().then((value) {
-      state = state.copyWith(
-        canAuthenticate: value.canAuthenticate,
-        availableBiometrics: value.availableBiometrics,
-      );
+      state = state.copyWith(canAuthenticate: value.canAuthenticate, availableBiometrics: value.availableBiometrics);
     });
   }
 
@@ -79,10 +68,7 @@ class LocalAuthNotifier extends StateNotifier<BiometricStatus> {
       if (errorMessage.isNotEmpty) {
         context.showSnackBar(
           SnackBar(
-            content: Text(
-              errorMessage,
-              style: context.textTheme.labelLarge,
-            ),
+            content: Text(errorMessage, style: context.textTheme.labelLarge),
             duration: const Duration(seconds: 3),
             backgroundColor: context.colorScheme.errorContainer,
           ),

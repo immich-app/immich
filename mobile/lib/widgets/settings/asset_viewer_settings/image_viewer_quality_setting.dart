@@ -9,9 +9,7 @@ import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 
 class ImageViewerQualitySetting extends HookConsumerWidget {
-  const ImageViewerQualitySetting({
-    super.key,
-  });
+  const ImageViewerQualitySetting({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,10 +22,7 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
         SettingsSubTitle(title: "setting_image_viewer_title".tr()),
         ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-          title: Text(
-            'setting_image_viewer_help',
-            style: context.textTheme.bodyMedium,
-          ).tr(),
+          title: Text('setting_image_viewer_help', style: context.textTheme.bodyMedium).tr(),
         ),
         SettingsSwitchListTile(
           valueNotifier: isPreview,

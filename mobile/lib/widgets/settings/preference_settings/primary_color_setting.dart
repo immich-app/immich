@@ -12,9 +12,7 @@ import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 
 class PrimaryColorSetting extends HookConsumerWidget {
-  const PrimaryColorSetting({
-    super.key,
-  });
+  const PrimaryColorSetting({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -70,20 +68,14 @@ class PrimaryColorSetting extends HookConsumerWidget {
             Container(
               height: tileSize,
               width: tileSize,
-              decoration: BoxDecoration(
-                color: bottomColor,
-                borderRadius: const BorderRadius.all(Radius.circular(100)),
-              ),
+              decoration: BoxDecoration(color: bottomColor, borderRadius: const BorderRadius.all(Radius.circular(100))),
             ),
             Container(
               height: tileSize / 2,
               width: tileSize,
               decoration: BoxDecoration(
                 color: topColor,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(100),
-                  topRight: Radius.circular(100),
-                ),
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(100), topRight: Radius.circular(100)),
               ),
             ),
             if (showSelector)
@@ -99,11 +91,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
                   ),
                   child: const Padding(
                     padding: EdgeInsets.all(3),
-                    child: Icon(
-                      Icons.check_rounded,
-                      color: Colors.white,
-                      size: 25,
-                    ),
+                    child: Icon(Icons.check_rounded, color: Colors.white, size: 25),
                   ),
                 ),
               ),
@@ -118,10 +106,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
         children: [
           Align(
             alignment: Alignment.center,
-            child: Text(
-              "theme_setting_primary_color_title".tr(),
-              style: context.textTheme.titleLarge,
-            ),
+            child: Text("theme_setting_primary_color_title".tr(), style: context.textTheme.titleLarge),
           ),
           if (DynamicTheme.isAvailable)
             Container(
@@ -132,15 +117,10 @@ class PrimaryColorSetting extends HookConsumerWidget {
                 dense: true,
                 activeColor: context.primaryColor,
                 tileColor: context.colorScheme.surfaceContainerHigh,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(15)),
-                ),
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15))),
                 title: Text(
                   'theme_setting_system_primary_color_title'.tr(),
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    height: 1.5,
-                  ),
+                  style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500, height: 1.5),
                 ),
                 value: systemPrimaryColorSetting.value,
                 onChanged: onUseSystemColorChange,
@@ -175,10 +155,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
         context: context,
         isScrollControlled: true,
         builder: (BuildContext ctx) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 0),
-            child: bottomSheetContent(),
-          );
+          return Padding(padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 0), child: bottomSheetContent());
         },
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 20),
@@ -190,9 +167,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
               children: [
                 Text(
                   "theme_setting_primary_color_title".tr(),
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
                 ),
                 Text(
                   "theme_setting_primary_color_subtitle".tr(),

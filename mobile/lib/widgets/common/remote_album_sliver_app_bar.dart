@@ -63,25 +63,13 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
       return const SliverToBoxAdapter(child: SizedBox.shrink());
     }
 
-    Color? actionIconColor = Color.lerp(
-      Colors.white,
-      context.primaryColor,
-      _scrollProgress,
-    );
+    Color? actionIconColor = Color.lerp(Colors.white, context.primaryColor, _scrollProgress);
 
     List<Shadow> actionIconShadows = [
       if (_scrollProgress < 0.95)
-        Shadow(
-          offset: const Offset(0, 2),
-          blurRadius: 5,
-          color: Colors.black.withValues(alpha: 0.5),
-        )
+        Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
       else
-        const Shadow(
-          offset: Offset(0, 2),
-          blurRadius: 0,
-          color: Colors.transparent,
-        ),
+        const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
     ];
 
     return isMultiSelectEnabled
@@ -111,20 +99,12 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
             actions: [
               if (widget.onToggleAlbumOrder != null)
                 IconButton(
-                  icon: Icon(
-                    Icons.swap_vert_rounded,
-                    color: actionIconColor,
-                    shadows: actionIconShadows,
-                  ),
+                  icon: Icon(Icons.swap_vert_rounded, color: actionIconColor, shadows: actionIconShadows),
                   onPressed: widget.onToggleAlbumOrder,
                 ),
               if (widget.onShowOptions != null)
                 IconButton(
-                  icon: Icon(
-                    Icons.more_vert,
-                    color: actionIconColor,
-                    shadows: actionIconShadows,
-                  ),
+                  icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
                   onPressed: widget.onShowOptions,
                 ),
             ],
@@ -149,11 +129,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
                     child: scrollProgress > 0.95
                         ? Text(
                             currentAlbum.name,
-                            style: TextStyle(
-                              color: context.primaryColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                            ),
+                            style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
                           )
                         : null,
                   ),
@@ -174,11 +150,7 @@ class _ExpandedBackground extends ConsumerStatefulWidget {
   final IconData icon;
   final void Function()? onEditTitle;
 
-  const _ExpandedBackground({
-    required this.scrollProgress,
-    required this.icon,
-    this.onEditTitle,
-  });
+  const _ExpandedBackground({required this.scrollProgress, required this.icon, this.onEditTitle});
 
   @override
   ConsumerState<_ExpandedBackground> createState() => _ExpandedBackgroundState();
@@ -192,20 +164,12 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
   void initState() {
     super.initState();
 
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
+    _slideController = AnimationController(duration: const Duration(milliseconds: 800), vsync: this);
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 1.5),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _slideController,
-        curve: Curves.easeOutCubic,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
 
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
@@ -229,9 +193,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
       return const SizedBox.shrink();
     }
 
-    final dateRange = ref.watch(
-      remoteAlbumDateRangeProvider(currentAlbum.id),
-    );
+    final dateRange = ref.watch(remoteAlbumDateRangeProvider(currentAlbum.id));
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -239,18 +201,12 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
           offset: Offset(0, widget.scrollProgress * 50),
           child: Transform.scale(
             scale: 1.4 - (widget.scrollProgress * 0.2),
-            child: _RandomAssetBackground(
-              timelineService: timelineService,
-              icon: widget.icon,
-            ),
+            child: _RandomAssetBackground(timelineService: timelineService, icon: widget.icon),
           ),
         ),
         ClipRect(
           child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: widget.scrollProgress * 2.0,
-              sigmaY: widget.scrollProgress * 2.0,
-            ),
+            filter: ImageFilter.blur(sigmaX: widget.scrollProgress * 2.0, sigmaY: widget.scrollProgress * 2.0),
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -260,9 +216,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                     Colors.black.withValues(alpha: 0.05),
                     Colors.transparent,
                     Colors.black.withValues(alpha: 0.3),
-                    Colors.black.withValues(
-                      alpha: 0.6 + (widget.scrollProgress * 0.25),
-                    ),
+                    Colors.black.withValues(alpha: 0.6 + (widget.scrollProgress * 0.25)),
                   ],
                   stops: const [0.0, 0.15, 0.55, 1.0],
                 ),
@@ -291,32 +245,17 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                         ),
                         style: const TextStyle(
                           color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              offset: Offset(0, 2),
-                              blurRadius: 12,
-                              color: Colors.black87,
-                            ),
-                          ],
+                          shadows: [Shadow(offset: Offset(0, 2), blurRadius: 12, color: Colors.black87)],
                         ),
                       ),
                     const Text(
                       " • ",
                       style: TextStyle(
                         color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(0, 2),
-                            blurRadius: 12,
-                            color: Colors.black87,
-                          ),
-                        ],
+                        shadows: [Shadow(offset: Offset(0, 2), blurRadius: 12, color: Colors.black87)],
                       ),
                     ),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      child: const _ItemCountText(),
-                    ),
+                    AnimatedContainer(duration: const Duration(milliseconds: 300), child: const _ItemCountText()),
                   ],
                 ),
                 GestureDetector(
@@ -333,13 +272,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                           fontSize: 36,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
-                          shadows: [
-                            Shadow(
-                              offset: Offset(0, 2),
-                              blurRadius: 12,
-                              color: Colors.black54,
-                            ),
-                          ],
+                          shadows: [Shadow(offset: Offset(0, 2), blurRadius: 12, color: Colors.black54)],
                         ),
                       ),
                     ),
@@ -349,31 +282,20 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                   GestureDetector(
                     onTap: widget.onEditTitle,
                     child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        maxHeight: 80,
-                      ),
+                      constraints: const BoxConstraints(maxHeight: 80),
                       child: SingleChildScrollView(
                         child: Text(
                           currentAlbum.description,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
-                            shadows: [
-                              Shadow(
-                                offset: Offset(0, 2),
-                                blurRadius: 8,
-                                color: Colors.black54,
-                              ),
-                            ],
+                            shadows: [Shadow(offset: Offset(0, 2), blurRadius: 8, color: Colors.black54)],
                           ),
                         ),
                       ),
                     ),
                   ),
-                const Padding(
-                  padding: EdgeInsets.only(top: 8.0),
-                  child: RemoteAlbumSharedUserIcons(),
-                ),
+                const Padding(padding: EdgeInsets.only(top: 8.0), child: RemoteAlbumSharedUserIcons()),
               ],
             ),
           ),
@@ -407,24 +329,13 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
 
   @override
   Widget build(BuildContext context) {
-    final assetCount = ref.watch(
-      timelineServiceProvider.select((s) => s.totalAssets),
-    );
+    final assetCount = ref.watch(timelineServiceProvider.select((s) => s.totalAssets));
 
     return Text(
-      'items_count'.t(
-        context: context,
-        args: {"count": assetCount},
-      ),
+      'items_count'.t(context: context, args: {"count": assetCount}),
       style: context.textTheme.labelLarge?.copyWith(
         color: Colors.white,
-        shadows: [
-          const Shadow(
-            offset: Offset(0, 2),
-            blurRadius: 12,
-            color: Colors.black87,
-          ),
-        ],
+        shadows: [const Shadow(offset: Offset(0, 2), blurRadius: 12, color: Colors.black87)],
       ),
     );
   }
@@ -434,10 +345,7 @@ class _RandomAssetBackground extends StatefulWidget {
   final TimelineService timelineService;
   final IconData icon;
 
-  const _RandomAssetBackground({
-    required this.timelineService,
-    required this.icon,
-  });
+  const _RandomAssetBackground({required this.timelineService, required this.icon});
 
   @override
   State<_RandomAssetBackground> createState() => _RandomAssetBackgroundState();
@@ -457,50 +365,26 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
   void initState() {
     super.initState();
 
-    _zoomController = AnimationController(
-      duration: const Duration(seconds: 12),
-      vsync: this,
-    );
+    _zoomController = AnimationController(duration: const Duration(seconds: 12), vsync: this);
 
-    _crossFadeController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
+    _crossFadeController = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this);
 
     _zoomAnimation = Tween<double>(
       begin: 1.0,
       end: 1.2,
-    ).animate(
-      CurvedAnimation(
-        parent: _zoomController,
-        curve: Curves.easeInOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _zoomController, curve: Curves.easeInOut));
 
     _panAnimation = Tween<Offset>(
       begin: Offset.zero,
       end: const Offset(0.5, -0.5),
-    ).animate(
-      CurvedAnimation(
-        parent: _zoomController,
-        curve: Curves.easeInOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _zoomController, curve: Curves.easeInOut));
 
     _crossFadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _crossFadeController,
-        curve: Curves.easeInOutCubic,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _crossFadeController, curve: Curves.easeInOutCubic));
 
-    Future.delayed(
-      Durations.medium1,
-      () => _loadFirstAsset(),
-    );
+    Future.delayed(Durations.medium1, () => _loadFirstAsset());
   }
 
   @override
@@ -590,9 +474,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
     }
 
     return AnimatedBuilder(
-      animation: Listenable.merge(
-        [_zoomAnimation, _panAnimation, _crossFadeAnimation],
-      ),
+      animation: Listenable.merge([_zoomAnimation, _panAnimation, _crossFadeAnimation]),
       builder: (context, child) {
         return Transform.scale(
           scale: _zoomAnimation.value,
@@ -624,11 +506,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
                           return SizedBox(
                             width: double.infinity,
                             height: double.infinity,
-                            child: Icon(
-                              Icons.error_outline_rounded,
-                              size: 24,
-                              color: Colors.red[300],
-                            ),
+                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
                           );
                         },
                       ),
@@ -655,11 +533,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
                           return SizedBox(
                             width: double.infinity,
                             height: double.infinity,
-                            child: Icon(
-                              Icons.error_outline_rounded,
-                              size: 24,
-                              color: Colors.red[300],
-                            ),
+                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
                           );
                         },
                       ),

@@ -29,11 +29,7 @@ extension TextTranslateExtension on Text {
   }
 }
 
-String _translateHelper(
-  BuildContext? context,
-  String key, [
-  Map<String, Object>? args,
-]) {
+String _translateHelper(BuildContext? context, String key, [Map<String, Object>? args]) {
   if (key.isEmpty) {
     return '';
   }

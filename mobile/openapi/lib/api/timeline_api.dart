@@ -39,6 +39,8 @@ class TimelineApi {
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
   ///
+  /// * [String] slug:
+  ///
   /// * [String] tagId:
   ///   Filter assets with a specific tag
   ///
@@ -53,7 +55,7 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<Response> getTimeBucketWithHttpInfo(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
+  Future<Response> getTimeBucketWithHttpInfo(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/timeline/bucket';
 
@@ -81,6 +83,9 @@ class TimelineApi {
     }
     if (personId != null) {
       queryParams.addAll(_queryParams('', 'personId', personId));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
     if (tagId != null) {
       queryParams.addAll(_queryParams('', 'tagId', tagId));
@@ -135,6 +140,8 @@ class TimelineApi {
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
   ///
+  /// * [String] slug:
+  ///
   /// * [String] tagId:
   ///   Filter assets with a specific tag
   ///
@@ -149,8 +156,8 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
-    final response = await getTimeBucketWithHttpInfo(timeBucket,  albumId: albumId, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, tagId: tagId, userId: userId, visibility: visibility, withPartners: withPartners, withStacked: withStacked, );
+  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
+    final response = await getTimeBucketWithHttpInfo(timeBucket,  albumId: albumId, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withPartners: withPartners, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -184,6 +191,8 @@ class TimelineApi {
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
   ///
+  /// * [String] slug:
+  ///
   /// * [String] tagId:
   ///   Filter assets with a specific tag
   ///
@@ -198,7 +207,7 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<Response> getTimeBucketsWithHttpInfo({ String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
+  Future<Response> getTimeBucketsWithHttpInfo({ String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/timeline/buckets';
 
@@ -226,6 +235,9 @@ class TimelineApi {
     }
     if (personId != null) {
       queryParams.addAll(_queryParams('', 'personId', personId));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
     if (tagId != null) {
       queryParams.addAll(_queryParams('', 'tagId', tagId));
@@ -276,6 +288,8 @@ class TimelineApi {
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
   ///
+  /// * [String] slug:
+  ///
   /// * [String] tagId:
   ///   Filter assets with a specific tag
   ///
@@ -290,8 +304,8 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<List<TimeBucketsResponseDto>?> getTimeBuckets({ String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
-    final response = await getTimeBucketsWithHttpInfo( albumId: albumId, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, tagId: tagId, userId: userId, visibility: visibility, withPartners: withPartners, withStacked: withStacked, );
+  Future<List<TimeBucketsResponseDto>?> getTimeBuckets({ String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withPartners, bool? withStacked, }) async {
+    final response = await getTimeBucketsWithHttpInfo( albumId: albumId, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withPartners: withPartners, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -12,11 +12,7 @@ class RemoveFromAlbumActionButton extends ConsumerWidget {
   final String albumId;
   final ActionSource source;
 
-  const RemoveFromAlbumActionButton({
-    super.key,
-    required this.albumId,
-    required this.source,
-  });
+  const RemoveFromAlbumActionButton({super.key, required this.albumId, required this.source});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {

@@ -22,10 +22,10 @@ UserApiRepository userApiRepository(Ref ref) => UserApiRepository(ref.watch(apiS
 
 @Riverpod(keepAlive: true)
 UserService userService(Ref ref) => UserService(
-      isarUserRepository: ref.watch(userRepositoryProvider),
-      userApiRepository: ref.watch(userApiRepositoryProvider),
-      storeService: ref.watch(storeServiceProvider),
-    );
+  isarUserRepository: ref.watch(userRepositoryProvider),
+  userApiRepository: ref.watch(userApiRepositoryProvider),
+  storeService: ref.watch(storeServiceProvider),
+);
 
 /// Drifts
 final driftPartnerRepositoryProvider = Provider<DriftPartnerRepository>(
@@ -33,12 +33,7 @@ final driftPartnerRepositoryProvider = Provider<DriftPartnerRepository>(
 );
 
 final driftPartnerServiceProvider = Provider<DriftPartnerService>(
-  (ref) => DriftPartnerService(
-    ref.watch(driftPartnerRepositoryProvider),
-    ref.watch(partnerApiRepositoryProvider),
-  ),
+  (ref) => DriftPartnerService(ref.watch(driftPartnerRepositoryProvider), ref.watch(partnerApiRepositoryProvider)),
 );
 
-final partnerUsersProvider = NotifierProvider<PartnerNotifier, List<PartnerUserDto>>(
-  PartnerNotifier.new,
-);
+final partnerUsersProvider = NotifierProvider<PartnerNotifier, List<PartnerUserDto>>(PartnerNotifier.new);

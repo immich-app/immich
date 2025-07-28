@@ -8,7 +8,7 @@ enum Setting<T> {
   loadOriginalVideo<bool>(StoreKey.loadOriginalVideo, false),
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, false),
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, false),
-  ;
+  enableBackup<bool>(StoreKey.enableBackup, false);
 
   const Setting(this.storeKey, this.defaultValue);
 

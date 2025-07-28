@@ -19,12 +19,7 @@ class ActivityApiRepository extends ApiRepository {
     return response.map(_toActivity).toList();
   }
 
-  Future<Activity> create(
-    String albumId,
-    ActivityType type, {
-    String? assetId,
-    String? comment,
-  }) async {
+  Future<Activity> create(String albumId, ActivityType type, {String? assetId, String? comment}) async {
     final dto = ActivityCreateDto(
       albumId: albumId,
       type: type == ActivityType.comment ? ReactionType.comment : ReactionType.like,
@@ -45,11 +40,11 @@ class ActivityApiRepository extends ApiRepository {
   }
 
   static Activity _toActivity(ActivityResponseDto dto) => Activity(
-        id: dto.id,
-        createdAt: dto.createdAt,
-        type: dto.type == ReactionType.comment ? ActivityType.comment : ActivityType.like,
-        user: UserConverter.fromSimpleUserDto(dto.user),
-        assetId: dto.assetId,
-        comment: dto.comment,
-      );
+    id: dto.id,
+    createdAt: dto.createdAt,
+    type: dto.type == ReactionType.comment ? ActivityType.comment : ActivityType.like,
+    user: UserConverter.fromSimpleUserDto(dto.user),
+    assetId: dto.assetId,
+    comment: dto.comment,
+  );
 }

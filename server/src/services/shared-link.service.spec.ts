@@ -136,6 +136,7 @@ describe(SharedLinkService.name, () => {
         allowUpload: true,
         description: null,
         expiresAt: null,
+        slug: null,
         showExif: true,
         key: Buffer.from('random-bytes', 'utf8'),
       });
@@ -163,6 +164,7 @@ describe(SharedLinkService.name, () => {
         userId: authStub.admin.user.id,
         albumId: null,
         allowDownload: true,
+        slug: null,
         allowUpload: true,
         assetIds: [assetStub.image.id],
         description: null,
@@ -199,6 +201,7 @@ describe(SharedLinkService.name, () => {
         description: null,
         expiresAt: null,
         showExif: false,
+        slug: null,
         key: Buffer.from('random-bytes', 'utf8'),
       });
     });
@@ -223,6 +226,7 @@ describe(SharedLinkService.name, () => {
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authStub.user1.user.id, sharedLinkStub.valid.id);
       expect(mocks.sharedLink.update).toHaveBeenCalledWith({
         id: sharedLinkStub.valid.id,
+        slug: null,
         userId: authStub.user1.user.id,
         allowDownload: false,
       });
@@ -277,6 +281,7 @@ describe(SharedLinkService.name, () => {
       expect(mocks.sharedLink.update).toHaveBeenCalled();
       expect(mocks.sharedLink.update).toHaveBeenCalledWith({
         ...sharedLinkStub.individual,
+        slug: null,
         assetIds: ['asset-3'],
       });
     });

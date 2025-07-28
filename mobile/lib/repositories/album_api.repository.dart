@@ -9,9 +9,7 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:openapi/api.dart';
 
-final albumApiRepositoryProvider = Provider(
-  (ref) => AlbumApiRepository(ref.watch(apiServiceProvider).albumsApi),
-);
+final albumApiRepositoryProvider = Provider((ref) => AlbumApiRepository(ref.watch(apiServiceProvider).albumsApi));
 
 class AlbumApiRepository extends ApiRepository {
   final AlbumsApi _api;
@@ -34,9 +32,7 @@ class AlbumApiRepository extends ApiRepository {
     Iterable<String> sharedUserIds = const [],
     String? description,
   }) async {
-    final users = sharedUserIds.map(
-      (id) => AlbumUserCreateDto(userId: id, role: AlbumUserRole.editor),
-    );
+    final users = sharedUserIds.map((id) => AlbumUserCreateDto(userId: id, role: AlbumUserRole.editor));
     final responseDto = await checkNull(
       _api.createAlbum(
         CreateAlbumDto(
@@ -51,19 +47,9 @@ class AlbumApiRepository extends ApiRepository {
   }
 
   // TODO: Change name after removing old method
-  Future<RemoteAlbum> createDriftAlbum(
-    String name, {
-    required Iterable<String> assetIds,
-    String? description,
-  }) async {
+  Future<RemoteAlbum> createDriftAlbum(String name, {required Iterable<String> assetIds, String? description}) async {
     final responseDto = await checkNull(
-      _api.createAlbum(
-        CreateAlbumDto(
-          albumName: name,
-          description: description,
-          assetIds: assetIds.toList(),
-        ),
-      ),
+      _api.createAlbum(CreateAlbumDto(albumName: name, description: description, assetIds: assetIds.toList())),
     );
 
     return _toRemoteAlbum(responseDto);
@@ -102,16 +88,8 @@ class AlbumApiRepository extends ApiRepository {
     return _api.deleteAlbum(albumId);
   }
 
-  Future<({List<String> added, List<String> duplicates})> addAssets(
-    String albumId,
-    Iterable<String> assetIds,
-  ) async {
-    final response = await checkNull(
-      _api.addAssetsToAlbum(
-        albumId,
-        BulkIdsDto(ids: assetIds.toList()),
-      ),
-    );
+  Future<({List<String> added, List<String> duplicates})> addAssets(String albumId, Iterable<String> assetIds) async {
+    final response = await checkNull(_api.addAssetsToAlbum(albumId, BulkIdsDto(ids: assetIds.toList())));
 
     final List<String> added = [];
     final List<String> duplicates = [];
@@ -126,16 +104,8 @@ class AlbumApiRepository extends ApiRepository {
     return (added: added, duplicates: duplicates);
   }
 
-  Future<({List<String> removed, List<String> failed})> removeAssets(
-    String albumId,
-    Iterable<String> assetIds,
-  ) async {
-    final response = await checkNull(
-      _api.removeAssetFromAlbum(
-        albumId,
-        BulkIdsDto(ids: assetIds.toList()),
-      ),
-    );
+  Future<({List<String> removed, List<String> failed})> removeAssets(String albumId, Iterable<String> assetIds) async {
+    final response = await checkNull(_api.removeAssetFromAlbum(albumId, BulkIdsDto(ids: assetIds.toList())));
     final List<String> removed = [], failed = [];
     for (final dto in response) {
       if (dto.success) {
@@ -149,12 +119,7 @@ class AlbumApiRepository extends ApiRepository {
 
   Future<Album> addUsers(String albumId, Iterable<String> userIds) async {
     final albumUsers = userIds.map((userId) => AlbumUserAddDto(userId: userId)).toList();
-    final response = await checkNull(
-      _api.addUsersToAlbum(
-        albumId,
-        AddUsersDto(albumUsers: albumUsers),
-      ),
-    );
+    final response = await checkNull(_api.addUsersToAlbum(albumId, AddUsersDto(albumUsers: albumUsers)));
     return _toAlbum(response);
   }
 

@@ -30,12 +30,7 @@ class AlbumRepository extends DatabaseRepository {
 
   Future<Album> create(Album album) => txn(() => db.albums.store(album));
 
-  Future<Album?> getByName(
-    String name, {
-    bool? shared,
-    bool? remote,
-    bool? owner,
-  }) {
+  Future<Album?> getByName(String name, {bool? shared, bool? remote, bool? owner}) {
     var query = db.albums.filter().nameEqualTo(name);
     if (shared != null) {
       query = query.sharedEqualTo(shared);
@@ -58,12 +53,7 @@ class AlbumRepository extends DatabaseRepository {
 
   Future<void> delete(int albumId) => txn(() => db.albums.delete(albumId));
 
-  Future<List<Album>> getAll({
-    bool? shared,
-    bool? remote,
-    int? ownerId,
-    AlbumSort? sortBy,
-  }) {
+  Future<List<Album>> getAll({bool? shared, bool? remote, int? ownerId, AlbumSort? sortBy}) {
     final baseQuery = db.albums.where();
     final QueryBuilder<Album, Album, QAfterWhereClause> afterWhere;
     if (remote == null) {
@@ -94,9 +84,8 @@ class AlbumRepository extends DatabaseRepository {
     return db.albums.filter().remoteIdEqualTo(remoteId).findFirst();
   }
 
-  Future<void> removeUsers(Album album, List<UserDto> users) => txn(
-        () => album.sharedUsers.update(unlink: users.map(entity.User.fromDto)),
-      );
+  Future<void> removeUsers(Album album, List<UserDto> users) =>
+      txn(() => album.sharedUsers.update(unlink: users.map(entity.User.fromDto)));
 
   Future<void> addAssets(Album album, List<Asset> assets) => txn(() => album.assets.update(link: assets));
 
@@ -114,10 +103,7 @@ class AlbumRepository extends DatabaseRepository {
 
   Future<void> deleteAllLocal() => txn(() => db.albums.where().localIdIsNotNull().deleteAll());
 
-  Future<List<Album>> search(
-    String searchTerm,
-    QuickFilterMode filterMode,
-  ) async {
+  Future<List<Album>> search(String searchTerm, QuickFilterMode filterMode) async {
     var query = db.albums.filter().nameContains(searchTerm, caseSensitive: false).remoteIdIsNotNull();
     final isarUserId = fastHash(Store.get(StoreKey.currentUser).id);
 

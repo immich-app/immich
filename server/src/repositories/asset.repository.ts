@@ -349,6 +349,7 @@ export class AssetRepository {
           'files',
         ),
       ])
+      .where('asset.libraryId', 'is', null)
       .limit(sql.lit(3))
       .execute();
   }

@@ -19,32 +19,20 @@ class AlbumTitle extends ConsumerWidget {
           return const (false, false, '');
         }
 
-        return (
-          album.ownerId == userId,
-          album.isRemote,
-          album.name,
-        );
+        return (album.ownerId == userId, album.isRemote, album.name);
       }),
     );
 
     if (isOwner && isRemote) {
       return Padding(
         padding: const EdgeInsets.only(left: 8, right: 8),
-        child: AlbumViewerEditableTitle(
-          albumName: albumName,
-          titleFocusNode: titleFocusNode,
-        ),
+        child: AlbumViewerEditableTitle(albumName: albumName, titleFocusNode: titleFocusNode),
       );
     }
 
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 8),
-      child: Text(
-        albumName,
-        style: context.textTheme.headlineLarge?.copyWith(
-          fontWeight: FontWeight.w700,
-        ),
-      ),
+      child: Text(albumName, style: context.textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w700)),
     );
   }
 }

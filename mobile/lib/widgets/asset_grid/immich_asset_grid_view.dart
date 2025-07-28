@@ -34,10 +34,7 @@ import 'disable_multi_select_button.dart';
 import 'draggable_scrollbar_custom.dart';
 import 'group_divider_title.dart';
 
-typedef ImmichAssetGridSelectionListener = void Function(
-  bool,
-  Set<Asset>,
-);
+typedef ImmichAssetGridSelectionListener = void Function(bool, Set<Asset>);
 
 class ImmichAssetGridView extends ConsumerStatefulWidget {
   final RenderList renderList;
@@ -161,16 +158,10 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
     // the scroll_position widget crashes. This is a workaround to prevent this.
     // If the index is within the last 10 elements, we jump instead of scrolling.
     if (widget.renderList.elements.length <= index + 10) {
-      _itemScrollController.jumpTo(
-        index: index,
-      );
+      _itemScrollController.jumpTo(index: index);
       return;
     }
-    await _itemScrollController.scrollTo(
-      index: index,
-      alignment: 0,
-      duration: const Duration(milliseconds: 500),
-    );
+    await _itemScrollController.scrollTo(index: index, alignment: 0, duration: const Duration(milliseconds: 500));
   }
 
   Widget _itemBuilder(BuildContext c, int position) {
@@ -219,18 +210,12 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
 
     return Text(
       DateFormat.yMMMM().format(date),
-      style: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-      ),
+      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
     );
   }
 
   Widget _buildMultiSelectIndicator() {
-    return DisableMultiSelectButton(
-      onPressed: () => _deselectAll(),
-      selectedItemCount: _selectedAssets.length,
-    );
+    return DisableMultiSelectButton(onPressed: () => _deselectAll(), selectedItemCount: _selectedAssets.length);
   }
 
   Widget _buildAssetGrid() {
@@ -250,10 +235,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
     }
 
     final listWidget = ScrollablePositionedList.builder(
-      padding: EdgeInsets.only(
-        top: appBarOffset() ? 60 : 0,
-        bottom: 220,
-      ),
+      padding: EdgeInsets.only(top: appBarOffset() ? 60 : 0, bottom: 220),
       itemBuilder: _itemBuilder,
       itemPositionsListener: _itemPositionsListener,
       physics: _scrollPhysics,
@@ -269,8 +251,9 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
             scrollStateListener: dragScrolling,
             itemPositionsListener: _itemPositionsListener,
             controller: _itemScrollController,
-            backgroundColor:
-                context.isDarkTheme ? context.colorScheme.primary.darken(amount: .5) : context.colorScheme.primary,
+            backgroundColor: context.isDarkTheme
+                ? context.colorScheme.primary.darken(amount: .5)
+                : context.colorScheme.primary,
             labelTextBuilder: widget.showLabel ? _labelBuilder : null,
             padding: appBarOffset() ? const EdgeInsets.only(top: 60) : const EdgeInsets.only(),
             heightOffset: appBarOffset() ? 60 : 0,
@@ -284,12 +267,8 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
     return widget.onRefresh == null
         ? child
         : appBarOffset()
-            ? RefreshIndicator(
-                onRefresh: widget.onRefresh!,
-                edgeOffset: 30,
-                child: child,
-              )
-            : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
+        ? RefreshIndicator(onRefresh: widget.onRefresh!, edgeOffset: 30, child: child)
+        : RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
   }
 
   void _scrollToDate() {
@@ -312,9 +291,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
     // If the exact date is not found, the timeline is grouped by month,
     // thus we search for the month
     if (index == -1) {
-      index = widget.renderList.elements.indexWhere(
-        (e) => e.date.year == date.year && e.date.month == date.month,
-      );
+      index = widget.renderList.elements.indexWhere((e) => e.date.year == date.year && e.date.month == date.month);
     }
 
     if (index < widget.renderList.elements.length) {
@@ -411,13 +388,8 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
   void _scrollToTop() {
     // for some reason, this is necessary as well in order
     // to correctly reposition the drag thumb scroll bar
-    _itemScrollController.jumpTo(
-      index: 0,
-    );
-    _itemScrollController.scrollTo(
-      index: 0,
-      duration: const Duration(milliseconds: 200),
-    );
+    _itemScrollController.jumpTo(index: 0);
+    _itemScrollController.scrollTo(index: 0, duration: const Duration(milliseconds: 200));
   }
 
   void _setDragStartIndex(AssetIndex index) {
@@ -495,9 +467,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
       final sectionAssets = widget.renderList.loadAssets(section.offset, section.count);
 
       if (currentSectionIndex == startSectionIndex) {
-        selectedAssets.addAll(
-          sectionAssets.slice(startSectionAssetIndex, sectionAssets.length),
-        );
+        selectedAssets.addAll(sectionAssets.slice(startSectionAssetIndex, sectionAssets.length));
       } else {
         selectedAssets.addAll(sectionAssets);
       }
@@ -509,13 +479,9 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
     if (section != null) {
       final sectionAssets = widget.renderList.loadAssets(section.offset, section.count);
       if (startSectionIndex == endSectionIndex) {
-        selectedAssets.addAll(
-          sectionAssets.slice(startSectionAssetIndex, endSectionAssetIndex + 1),
-        );
+        selectedAssets.addAll(sectionAssets.slice(startSectionAssetIndex, endSectionAssetIndex + 1));
       } else {
-        selectedAssets.addAll(
-          sectionAssets.slice(0, endSectionAssetIndex + 1),
-        );
+        selectedAssets.addAll(sectionAssets.slice(0, endSectionAssetIndex + 1));
       }
     }
 
@@ -554,9 +520,8 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
             onAssetEnter: _handleDragAssetEnter,
             onEnd: _stopDrag,
             onScroll: _dragDragScroll,
-            onScrollStart: () => WidgetsBinding.instance.addPostFrameCallback(
-              (_) => controlBottomAppBarNotifier.minimize(),
-            ),
+            onScrollStart: () =>
+                WidgetsBinding.instance.addPostFrameCallback((_) => controlBottomAppBarNotifier.minimize()),
             child: _buildAssetGrid(),
           ),
           if (widget.showMultiSelectIndicator && widget.selectionActive) _buildMultiSelectIndicator(),
@@ -590,10 +555,7 @@ class _PlaceholderRow extends StatelessWidget {
             key: ValueKey(i),
             width: width,
             height: height,
-            margin: EdgeInsets.only(
-              bottom: margin,
-              right: i + 1 == number ? 0.0 : margin,
-            ),
+            margin: EdgeInsets.only(bottom: margin, right: i + 1 == number ? 0.0 : margin),
           ),
       ],
     );
@@ -639,9 +601,7 @@ class _Section extends StatelessWidget {
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth / assetsPerRow - margin * (assetsPerRow - 1) / assetsPerRow;
@@ -675,10 +635,7 @@ class _Section extends StatelessWidget {
                       key: ValueKey(i),
                       rowStartIndex: i * assetsPerRow,
                       sectionIndex: sectionIndex,
-                      assets: assetsToRender.nestedSlice(
-                        i * assetsPerRow,
-                        min((i + 1) * assetsPerRow, section.count),
-                      ),
+                      assets: assetsToRender.nestedSlice(i * assetsPerRow, min((i + 1) * assetsPerRow, section.count)),
                       absoluteOffset: section.offset + i * assetsPerRow,
                       width: width,
                       assetsPerRow: assetsPerRow,
@@ -706,9 +663,7 @@ class _Section extends StatelessWidget {
 class _MonthTitle extends StatelessWidget {
   final DateTime date;
 
-  const _MonthTitle({
-    required this.date,
-  });
+  const _MonthTitle({required this.date});
 
   @override
   Widget build(BuildContext context) {
@@ -719,10 +674,7 @@ class _MonthTitle extends StatelessWidget {
       padding: const EdgeInsets.only(left: 12.0, top: 24.0),
       child: Text(
         toBeginningOfSentenceCase(title, context.locale.languageCode),
-        style: const TextStyle(
-          fontSize: 26,
-          fontWeight: FontWeight.w500,
-        ),
+        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -821,11 +773,7 @@ class _AssetRow extends StatelessWidget {
 
       // Normalize:
       final sum = arConfiguration.sum;
-      widthDistribution.setRange(
-        0,
-        widthDistribution.length,
-        arConfiguration.map((e) => (e * assets.length) / sum),
-      );
+      widthDistribution.setRange(0, widthDistribution.length, arConfiguration.map((e) => (e * assets.length) / sum));
     }
     return Row(
       key: key,
@@ -835,10 +783,7 @@ class _AssetRow extends StatelessWidget {
         return Container(
           width: width * widthDistribution[index],
           height: width,
-          margin: EdgeInsets.only(
-            bottom: margin,
-            right: last ? 0.0 : margin,
-          ),
+          margin: EdgeInsets.only(bottom: margin, right: last ? 0.0 : margin),
           child: GestureDetector(
             onTap: () {
               if (selectionActive) {

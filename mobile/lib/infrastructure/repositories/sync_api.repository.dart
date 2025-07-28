@@ -27,10 +27,7 @@ class SyncApiRepository {
     final client = httpClient ?? http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
 
-    final headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/jsonlines+json',
-    };
+    final headers = {'Content-Type': 'application/json', 'Accept': 'application/jsonlines+json'};
 
     final headerParams = <String, String>{};
     await _api.applyToParams([], headerParams);
@@ -78,10 +75,7 @@ class SyncApiRepository {
 
       if (response.statusCode != 200) {
         final errorBody = await response.stream.bytesToString();
-        throw ApiException(
-          response.statusCode,
-          'Failed to get sync stream: $errorBody',
-        );
+        throw ApiException(response.statusCode, 'Failed to get sync stream: $errorBody');
       }
 
       await for (final chunk in response.stream.transform(utf8.decoder)) {

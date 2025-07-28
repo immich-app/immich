@@ -12,48 +12,21 @@ void main() {
   late MediumFactory mediumFactory;
 
   setUp(() {
-    db = Drift(
-      DatabaseConnection(
-        NativeDatabase.memory(),
-        closeStreamsSynchronously: true,
-      ),
-    );
+    db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     mediumFactory = MediumFactory(db);
   });
 
   group('getAll', () {
     test('sorts albums by backupSelection & isIosSharedAlbum', () async {
       final localAlbumRepo = mediumFactory.getRepository<DriftLocalAlbumRepository>();
+      await localAlbumRepo.upsert(mediumFactory.localAlbum(id: '1', backupSelection: BackupSelection.none));
+      await localAlbumRepo.upsert(mediumFactory.localAlbum(id: '2', backupSelection: BackupSelection.excluded));
       await localAlbumRepo.upsert(
-        mediumFactory.localAlbum(
-          id: '1',
-          backupSelection: BackupSelection.none,
-        ),
+        mediumFactory.localAlbum(id: '3', backupSelection: BackupSelection.selected, isIosSharedAlbum: true),
       );
-      await localAlbumRepo.upsert(
-        mediumFactory.localAlbum(
-          id: '2',
-          backupSelection: BackupSelection.excluded,
-        ),
-      );
-      await localAlbumRepo.upsert(
-        mediumFactory.localAlbum(
-          id: '3',
-          backupSelection: BackupSelection.selected,
-          isIosSharedAlbum: true,
-        ),
-      );
-      await localAlbumRepo.upsert(
-        mediumFactory.localAlbum(
-          id: '4',
-          backupSelection: BackupSelection.selected,
-        ),
-      );
+      await localAlbumRepo.upsert(mediumFactory.localAlbum(id: '4', backupSelection: BackupSelection.selected));
       final albums = await localAlbumRepo.getAll(
-        sortBy: {
-          SortLocalAlbumsBy.backupSelection,
-          SortLocalAlbumsBy.isIosSharedAlbum,
-        },
+        sortBy: {SortLocalAlbumsBy.backupSelection, SortLocalAlbumsBy.isIosSharedAlbum},
       );
       expect(albums.length, 4);
       expect(albums[0].id, '4'); // selected

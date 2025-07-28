@@ -15,11 +15,7 @@ void main() {
 
   setUp(() async {
     activityMock = ActivityServiceMock();
-    container = TestUtils.createContainer(
-      overrides: [
-        activityServiceProvider.overrideWith((ref) => activityMock),
-      ],
-    );
+    container = TestUtils.createContainer(overrides: [activityServiceProvider.overrideWith((ref) => activityMock)]);
     listener = ListenerMock();
   });
 
@@ -31,34 +27,21 @@ void main() {
     // Read here to make the getStatistics call
     container.read(activityStatisticsProvider('test-album', 'test-asset'));
 
-    container.listen(
-      activityStatisticsProvider('test-album', 'test-asset'),
-      listener.call,
-      fireImmediately: true,
-    );
+    container.listen(activityStatisticsProvider('test-album', 'test-asset'), listener.call, fireImmediately: true);
 
     // Sleep for the getStatistics future to resolve
     await Future.delayed(const Duration(milliseconds: 1));
 
-    verifyInOrder([
-      () => listener.call(null, 0),
-      () => listener.call(0, 5),
-    ]);
+    verifyInOrder([() => listener.call(null, 0), () => listener.call(0, 5)]);
 
     verifyNoMoreInteractions(listener);
   });
 
   test('Adds activity', () async {
-    when(
-      () => activityMock.getStatistics('test-album'),
-    ).thenAnswer((_) async => const ActivityStats(comments: 10));
+    when(() => activityMock.getStatistics('test-album')).thenAnswer((_) async => const ActivityStats(comments: 10));
 
     final provider = activityStatisticsProvider('test-album');
-    container.listen(
-      provider,
-      listener.call,
-      fireImmediately: true,
-    );
+    container.listen(provider, listener.call, fireImmediately: true);
 
     // Sleep for the getStatistics future to resolve
     await Future.delayed(const Duration(milliseconds: 1));
@@ -75,11 +58,7 @@ void main() {
     ).thenAnswer((_) async => const ActivityStats(comments: 10));
 
     final provider = activityStatisticsProvider('new-album', 'test-asset');
-    container.listen(
-      provider,
-      listener.call,
-      fireImmediately: true,
-    );
+    container.listen(provider, listener.call, fireImmediately: true);
 
     // Sleep for the getStatistics future to resolve
     await Future.delayed(const Duration(milliseconds: 1));

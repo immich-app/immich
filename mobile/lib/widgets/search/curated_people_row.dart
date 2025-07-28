@@ -15,13 +15,7 @@ class CuratedPeopleRow extends StatelessWidget {
   final Function(SearchCuratedContent, int)? onTap;
   final Function(SearchCuratedContent, int)? onNameTap;
 
-  const CuratedPeopleRow({
-    super.key,
-    required this.content,
-    this.onTap,
-    this.padding,
-    required this.onNameTap,
-  });
+  const CuratedPeopleRow({super.key, required this.content, this.onTap, this.padding, required this.onNameTap});
 
   @override
   Widget build(BuildContext context) {
@@ -50,19 +44,13 @@ class CuratedPeopleRow extends StatelessWidget {
                         elevation: 3,
                         child: CircleAvatar(
                           maxRadius: imageSize / 2,
-                          backgroundImage: NetworkImage(
-                            getFaceThumbnailUrl(person.id),
-                            headers: headers,
-                          ),
+                          backgroundImage: NetworkImage(getFaceThumbnailUrl(person.id), headers: headers),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  SizedBox(
-                    width: imageSize,
-                    child: _buildPersonLabel(context, person, index),
-                  ),
+                  SizedBox(width: imageSize, child: _buildPersonLabel(context, person, index)),
                 ],
               ),
             );
@@ -72,19 +60,13 @@ class CuratedPeopleRow extends StatelessWidget {
     );
   }
 
-  Widget _buildPersonLabel(
-    BuildContext context,
-    SearchCuratedContent person,
-    int index,
-  ) {
+  Widget _buildPersonLabel(BuildContext context, SearchCuratedContent person, int index) {
     if (person.label.isEmpty) {
       return GestureDetector(
         onTap: () => onNameTap?.call(person, index),
         child: Text(
           "exif_bottom_sheet_person_add_person",
-          style: context.textTheme.labelLarge?.copyWith(
-            color: context.primaryColor,
-          ),
+          style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
@@ -101,11 +83,7 @@ class CuratedPeopleRow extends StatelessWidget {
           style: context.textTheme.labelLarge,
           maxLines: 2,
         ),
-        if (person.subtitle != null)
-          Text(
-            person.subtitle!,
-            textAlign: TextAlign.center,
-          ),
+        if (person.subtitle != null) Text(person.subtitle!, textAlign: TextAlign.center),
       ],
     );
   }

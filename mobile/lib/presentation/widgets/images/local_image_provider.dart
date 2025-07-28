@@ -39,10 +39,7 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    LocalThumbProvider key,
-    ImageDecoderCallback decode,
-  ) {
+  ImageStreamCompleter loadImage(LocalThumbProvider key, ImageDecoderCallback decode) {
     final cache = cacheManager ?? ThumbnailImageCacheManager();
     return MultiFrameImageStreamCompleter(
       codec: _codec(key, cache, decode),
@@ -57,11 +54,7 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
     );
   }
 
-  Future<Codec> _codec(
-    LocalThumbProvider key,
-    CacheManager cache,
-    ImageDecoderCallback decode,
-  ) async {
+  Future<Codec> _codec(LocalThumbProvider key, CacheManager cache, ImageDecoderCallback decode) async {
     final cacheKey = '${key.id}-${key.updatedAt}-${key.size.width}x${key.size.height}';
 
     final fileFromCache = await cache.getFileFromCache(cacheKey);
@@ -75,9 +68,7 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
     final thumbnailBytes = await _assetMediaRepository.getThumbnail(key.id, size: key.size);
     if (thumbnailBytes == null) {
       PaintingBinding.instance.imageCache.evict(key);
-      throw StateError(
-        "Loading thumb for local photo ${key.name} failed",
-      );
+      throw StateError("Loading thumb for local photo ${key.name} failed");
     }
 
     final buffer = await ImmutableBuffer.fromUint8List(thumbnailBytes);
@@ -107,12 +98,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   final Size size;
   final AssetType type;
 
-  const LocalFullImageProvider({
-    required this.id,
-    required this.name,
-    required this.size,
-    required this.type,
-  });
+  const LocalFullImageProvider({required this.id, required this.name, required this.size, required this.type});
 
   @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -120,10 +106,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    LocalFullImageProvider key,
-    ImageDecoderCallback decode,
-  ) {
+  ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
     return MultiImageStreamCompleter(
       codec: _codec(key, decode),
       scale: 1.0,
@@ -134,10 +117,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   }
 
   // Streams in each stage of the image as we ask for it
-  Stream<Codec> _codec(
-    LocalFullImageProvider key,
-    ImageDecoderCallback decode,
-  ) async* {
+  Stream<Codec> _codec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
     try {
       switch (key.type) {
         case AssetType.image:
@@ -156,16 +136,11 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
       }
     } catch (error, stack) {
       Logger('ImmichLocalImageProvider').severe('Error loading local image ${key.name}', error, stack);
-      throw const ImageLoadingException(
-        'Could not load image from local storage',
-      );
+      throw const ImageLoadingException('Could not load image from local storage');
     }
   }
 
-  Future<Codec?> _getThumbnailCodec(
-    LocalFullImageProvider key,
-    ImageDecoderCallback decode,
-  ) async {
+  Future<Codec?> _getThumbnailCodec(LocalFullImageProvider key, ImageDecoderCallback decode) async {
     final thumbBytes = await _assetMediaRepository.getThumbnail(key.id, size: key.size);
     if (thumbBytes == null) {
       return null;
@@ -174,10 +149,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
     return decode(buffer);
   }
 
-  Stream<Codec> _decodeProgressive(
-    LocalFullImageProvider key,
-    ImageDecoderCallback decode,
-  ) async* {
+  Stream<Codec> _decodeProgressive(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
     final file = await _storageRepository.getFileForAsset(key.id);
     if (file == null) {
       throw StateError("Opening file for asset ${key.name} failed");

@@ -8,30 +8,14 @@ class SearchLocationFilter {
   String? country;
   String? state;
   String? city;
-  SearchLocationFilter({
-    this.country,
-    this.state,
-    this.city,
-  });
+  SearchLocationFilter({this.country, this.state, this.city});
 
-  SearchLocationFilter copyWith({
-    String? country,
-    String? state,
-    String? city,
-  }) {
-    return SearchLocationFilter(
-      country: country ?? this.country,
-      state: state ?? this.state,
-      city: city ?? this.city,
-    );
+  SearchLocationFilter copyWith({String? country, String? state, String? city}) {
+    return SearchLocationFilter(country: country ?? this.country, state: state ?? this.state, city: city ?? this.city);
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'country': country,
-      'state': state,
-      'city': city,
-    };
+    return <String, dynamic>{'country': country, 'state': state, 'city': city};
   }
 
   factory SearchLocationFilter.fromMap(Map<String, dynamic> map) {
@@ -64,26 +48,14 @@ class SearchLocationFilter {
 class SearchCameraFilter {
   String? make;
   String? model;
-  SearchCameraFilter({
-    this.make,
-    this.model,
-  });
+  SearchCameraFilter({this.make, this.model});
 
-  SearchCameraFilter copyWith({
-    String? make,
-    String? model,
-  }) {
-    return SearchCameraFilter(
-      make: make ?? this.make,
-      model: model ?? this.model,
-    );
+  SearchCameraFilter copyWith({String? make, String? model}) {
+    return SearchCameraFilter(make: make ?? this.make, model: model ?? this.model);
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'make': make,
-      'model': model,
-    };
+    return <String, dynamic>{'make': make, 'model': model};
   }
 
   factory SearchCameraFilter.fromMap(Map<String, dynamic> map) {
@@ -115,19 +87,10 @@ class SearchCameraFilter {
 class SearchDateFilter {
   DateTime? takenBefore;
   DateTime? takenAfter;
-  SearchDateFilter({
-    this.takenBefore,
-    this.takenAfter,
-  });
+  SearchDateFilter({this.takenBefore, this.takenAfter});
 
-  SearchDateFilter copyWith({
-    DateTime? takenBefore,
-    DateTime? takenAfter,
-  }) {
-    return SearchDateFilter(
-      takenBefore: takenBefore ?? this.takenBefore,
-      takenAfter: takenAfter ?? this.takenAfter,
-    );
+  SearchDateFilter copyWith({DateTime? takenBefore, DateTime? takenAfter}) {
+    return SearchDateFilter(takenBefore: takenBefore ?? this.takenBefore, takenAfter: takenAfter ?? this.takenAfter);
   }
 
   Map<String, dynamic> toMap() {
@@ -167,17 +130,9 @@ class SearchDisplayFilters {
   bool isNotInAlbum = false;
   bool isArchive = false;
   bool isFavorite = false;
-  SearchDisplayFilters({
-    required this.isNotInAlbum,
-    required this.isArchive,
-    required this.isFavorite,
-  });
+  SearchDisplayFilters({required this.isNotInAlbum, required this.isArchive, required this.isFavorite});
 
-  SearchDisplayFilters copyWith({
-    bool? isNotInAlbum,
-    bool? isArchive,
-    bool? isFavorite,
-  }) {
+  SearchDisplayFilters copyWith({bool? isNotInAlbum, bool? isArchive, bool? isFavorite}) {
     return SearchDisplayFilters(
       isNotInAlbum: isNotInAlbum ?? this.isNotInAlbum,
       isArchive: isArchive ?? this.isArchive,
@@ -186,11 +141,7 @@ class SearchDisplayFilters {
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'isNotInAlbum': isNotInAlbum,
-      'isArchive': isArchive,
-      'isFavorite': isFavorite,
-    };
+    return <String, dynamic>{'isNotInAlbum': isNotInAlbum, 'isArchive': isArchive, 'isFavorite': isFavorite};
   }
 
   factory SearchDisplayFilters.fromMap(Map<String, dynamic> map) {

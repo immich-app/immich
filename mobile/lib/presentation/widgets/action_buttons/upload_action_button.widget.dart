@@ -20,10 +20,7 @@ class UploadActionButton extends ConsumerWidget {
 
     final result = await ref.read(actionProvider.notifier).upload(source);
 
-    final successMessage = 'upload_action_prompt'.t(
-      context: context,
-      args: {'count': result.count.toString()},
-    );
+    final successMessage = 'upload_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 
     if (context.mounted) {
       ImmichToast.show(

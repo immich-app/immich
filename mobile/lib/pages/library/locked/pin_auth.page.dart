@@ -23,18 +23,12 @@ class PinAuthPage extends HookConsumerWidget {
     final isBetaTimeline = Store.isBetaTimelineEnabled;
 
     Future<void> registerBiometric(String pinCode) async {
-      final isRegistered = await ref.read(localAuthProvider.notifier).registerBiometric(
-            context,
-            pinCode,
-          );
+      final isRegistered = await ref.read(localAuthProvider.notifier).registerBiometric(context, pinCode);
 
       if (isRegistered) {
         context.showSnackBar(
           SnackBar(
-            content: Text(
-              'biometric_auth_enabled'.tr(),
-              style: context.textTheme.labelLarge,
-            ),
+            content: Text('biometric_auth_enabled'.tr(), style: context.textTheme.labelLarge),
             duration: const Duration(seconds: 3),
             backgroundColor: context.colorScheme.primaryContainer,
           ),
@@ -79,20 +73,14 @@ class PinAuthPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('locked_folder'.tr()),
-      ),
+      appBar: AppBar(title: Text('locked_folder'.tr())),
       body: ListView(
         shrinkWrap: true,
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 36.0),
             child: showPinRegistrationForm.value
-                ? Center(
-                    child: PinRegistrationForm(
-                      onDone: () => showPinRegistrationForm.value = false,
-                    ),
-                  )
+                ? Center(child: PinRegistrationForm(onDone: () => showPinRegistrationForm.value = false))
                 : Column(
                     children: [
                       Center(
@@ -112,17 +100,11 @@ class PinAuthPage extends HookConsumerWidget {
                         Padding(
                           padding: const EdgeInsets.only(right: 16.0),
                           child: TextButton.icon(
-                            icon: const Icon(
-                              Icons.fingerprint,
-                              size: 28,
-                            ),
+                            icon: const Icon(Icons.fingerprint, size: 28),
                             onPressed: enableBiometricAuth,
                             label: Text(
                               'use_biometric'.tr(),
-                              style: context.textTheme.labelLarge?.copyWith(
-                                color: context.primaryColor,
-                                fontSize: 18,
-                              ),
+                              style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor, fontSize: 18),
                             ),
                           ),
                         ),

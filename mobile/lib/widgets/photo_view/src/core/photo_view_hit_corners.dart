@@ -25,10 +25,7 @@ mixin HitCornersDetector on PhotoViewControllerDelegate {
     return HitCorners(y <= cornersY.min, y >= cornersY.max);
   }
 
-  bool _shouldMoveAxis(
-    HitCorners hitCorners,
-    double mainAxisMove,
-  ) {
+  bool _shouldMoveAxis(HitCorners hitCorners, double mainAxisMove) {
     if (mainAxisMove == 0) {
       return false;
     }

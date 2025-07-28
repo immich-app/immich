@@ -27,10 +27,7 @@ class ArchiveActionButton extends ConsumerWidget {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
 
-    final successMessage = 'archive_action_prompt'.t(
-      context: context,
-      args: {'count': result.count.toString()},
-    );
+    final successMessage = 'archive_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 
     if (context.mounted) {
       ImmichToast.show(
@@ -46,7 +43,7 @@ class ArchiveActionButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
       iconData: Icons.archive_outlined,
-      label: "archive".t(context: context),
+      label: "to_archive".t(context: context),
       onPressed: () => _onTap(context, ref),
     );
   }

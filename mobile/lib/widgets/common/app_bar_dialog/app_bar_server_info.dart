@@ -11,9 +11,7 @@ import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class AppBarServerInfo extends HookConsumerWidget {
-  const AppBarServerInfo({
-    super.key,
-  });
+  const AppBarServerInfo({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,29 +25,20 @@ class AppBarServerInfo extends HookConsumerWidget {
     getPackageInfo() async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
-      appInfo.value = {
-        "version": packageInfo.version,
-        "buildNumber": packageInfo.buildNumber,
-      };
+      appInfo.value = {"version": packageInfo.version, "buildNumber": packageInfo.buildNumber};
     }
 
-    useEffect(
-      () {
-        getPackageInfo();
-        return null;
-      },
-      [],
-    );
+    useEffect(() {
+      getPackageInfo();
+      return null;
+    }, []);
 
     return Padding(
       padding: const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 10.0),
       child: Container(
         decoration: BoxDecoration(
           color: context.colorScheme.surface,
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(10),
-            bottomRight: Radius.circular(10),
-          ),
+          borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
@@ -63,17 +52,10 @@ class AppBarServerInfo extends HookConsumerWidget {
                       ? serverInfoState.versionMismatchErrorMessage
                       : "profile_drawer_client_server_up_to_date".tr(),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: context.primaryColor,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 11, color: context.primaryColor, fontWeight: FontWeight.w500),
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Divider(thickness: 1),
-              ),
+              const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -106,10 +88,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                   ),
                 ],
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Divider(thickness: 1),
-              ),
+              const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -144,10 +123,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                   ),
                 ],
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Divider(thickness: 1),
-              ),
+              const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -197,10 +173,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                   ),
                 ],
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                child: Divider(thickness: 1),
-              ),
+              const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -212,11 +185,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                           if (serverInfoState.isNewReleaseAvailable)
                             const Padding(
                               padding: EdgeInsets.only(right: 5.0),
-                              child: Icon(
-                                Icons.info,
-                                color: Color.fromARGB(255, 243, 188, 106),
-                                size: 12,
-                              ),
+                              child: Icon(Icons.info, color: Color.fromARGB(255, 243, 188, 106), size: 12),
                             ),
                           Text(
                             "latest_version".tr(),

@@ -70,12 +70,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
 
   Widget _buildContent() {
     if (selectedAssets.isEmpty) {
-      return SliverList(
-        delegate: SliverChildListDelegate([
-          _buildEmptyState(),
-          _buildSelectPhotosButton(),
-        ]),
-      );
+      return SliverList(delegate: SliverChildListDelegate([_buildEmptyState(), _buildSelectPhotosButton()]));
     } else {
       return _buildSelectedImageGrid();
     }
@@ -84,10 +79,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
   Widget _buildEmptyState() {
     return Padding(
       padding: const EdgeInsets.only(top: 0, left: 18),
-      child: Text(
-        'create_shared_album_page_share_add_assets',
-        style: context.textTheme.labelLarge,
-      ).t(),
+      child: Text('create_shared_album_page_share_add_assets', style: context.textTheme.labelLarge).t(),
     );
   }
 
@@ -97,27 +89,17 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
       child: FilledButton.icon(
         style: FilledButton.styleFrom(
           alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.symmetric(
-            vertical: 24.0,
-            horizontal: 16.0,
-          ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10.0)),
-          ),
+          padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10.0))),
           backgroundColor: context.colorScheme.surfaceContainerHigh,
         ),
         onPressed: onSelectPhotos,
         icon: Icon(Icons.add_rounded, color: context.primaryColor),
         label: Padding(
-          padding: const EdgeInsets.only(
-            left: 8.0,
-          ),
+          padding: const EdgeInsets.only(left: 8.0),
           child: Text(
             'create_shared_album_page_share_select_photos',
-            style: context.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: context.primaryColor,
-            ),
+            style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: context.primaryColor),
           ).t(),
         ),
       ),
@@ -133,16 +115,13 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
           crossAxisSpacing: 1.0,
           mainAxisSpacing: 1.0,
         ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final asset = selectedAssets.elementAt(index);
-            return GestureDetector(
-              onTap: onBackgroundTapped,
-              child: Thumbnail(asset: asset),
-            );
-          },
-          childCount: selectedAssets.length,
-        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final asset = selectedAssets.elementAt(index);
+          return GestureDetector(
+            onTap: onBackgroundTapped,
+            child: Thumbnail(asset: asset),
+          );
+        }, childCount: selectedAssets.length),
       ),
     );
   }
@@ -162,9 +141,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
 
   Future<void> onSelectPhotos() async {
     final assets = await context.pushRoute<Set<BaseAsset>>(
-      DriftAssetSelectionTimelineRoute(
-        lockedSelectionAssets: selectedAssets,
-      ),
+      DriftAssetSelectionTimelineRoute(lockedSelectionAssets: selectedAssets),
     );
 
     if (assets == null || assets.isEmpty) {
@@ -183,16 +160,15 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
     if (title.isEmpty) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('create_album_title_required'.t()),
-            backgroundColor: context.colorScheme.error,
-          ),
+          SnackBar(content: Text('create_album_title_required'.t()), backgroundColor: context.colorScheme.error),
         );
       }
       return;
     }
 
-    final album = await ref.watch(remoteAlbumProvider.notifier).createAlbum(
+    final album = await ref
+        .watch(remoteAlbumProvider.notifier)
+        .createAlbum(
           title: title,
           description: albumDescriptionController.text.trim(),
           assetIds: selectedAssets.map((asset) {
@@ -203,18 +179,13 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
 
     if (album != null) {
       ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
-      context.replaceRoute(
-        RemoteAlbumRoute(album: album),
-      );
+      context.replaceRoute(RemoteAlbumRoute(album: album));
     }
   }
 
   Widget buildTitleInputField() {
     return Padding(
-      padding: const EdgeInsets.only(
-        right: 10.0,
-        left: 10.0,
-      ),
+      padding: const EdgeInsets.only(right: 10.0, left: 10.0),
       child: _AlbumTitleTextField(
         focusNode: albumTitleTextFieldFocusNode,
         textController: albumTitleController,
@@ -230,11 +201,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
 
   Widget buildDescriptionInputField() {
     return Padding(
-      padding: const EdgeInsets.only(
-        right: 10.0,
-        left: 10.0,
-        top: 8,
-      ),
+      padding: const EdgeInsets.only(right: 10.0, left: 10.0, top: 8),
       child: _AlbumViewerEditableDescription(
         textController: albumDescriptionController,
         focusNode: albumDescriptionTextFieldFocusNode,
@@ -244,11 +211,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
 
   Widget buildControlButton() {
     return Padding(
-      padding: const EdgeInsets.only(
-        left: 12.0,
-        top: 8.0,
-        bottom: 8.0,
-      ),
+      padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
       child: SizedBox(
         height: 42.0,
         child: ListView(
@@ -272,10 +235,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
         elevation: 0,
         centerTitle: false,
         backgroundColor: context.scaffoldBackgroundColor,
-        leading: IconButton(
-          onPressed: () => context.maybePop(),
-          icon: const Icon(Icons.close_rounded),
-        ),
+        leading: IconButton(onPressed: () => context.maybePop(), icon: const Icon(Icons.close_rounded)),
         title: const Text('create_album').t(),
         actions: [
           TextButton(
@@ -292,12 +252,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
       ),
       body: GestureDetector(
         onTap: onBackgroundTapped,
-        child: CustomScrollView(
-          slivers: [
-            _buildSliverAppBar(),
-            _buildContent(),
-          ],
-        ),
+        child: CustomScrollView(slivers: [_buildSliverAppBar(), _buildContent()]),
       ),
     );
   }
@@ -341,11 +296,7 @@ class _AlbumTitleTextFieldState extends State<_AlbumTitleTextField> {
   Widget build(BuildContext context) {
     return TextField(
       focusNode: widget.focusNode,
-      style: TextStyle(
-        fontSize: 28.0,
-        color: context.colorScheme.onSurface,
-        fontWeight: FontWeight.bold,
-      ),
+      style: TextStyle(fontSize: 28.0, color: context.colorScheme.onSurface, fontWeight: FontWeight.bold),
       controller: widget.textController,
       onTap: () {
         if (widget.textController.text == 'create_album_page_untitled'.t(context: context)) {
@@ -353,35 +304,23 @@ class _AlbumTitleTextFieldState extends State<_AlbumTitleTextField> {
         }
       },
       decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 8.0,
-          vertical: 16.0,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
         suffixIcon: widget.textController.text.isNotEmpty && widget.isFocus
             ? IconButton(
                 onPressed: () {
                   widget.textController.clear();
                 },
-                icon: Icon(
-                  Icons.cancel_rounded,
-                  color: context.primaryColor,
-                ),
+                icon: Icon(Icons.cancel_rounded, color: context.primaryColor),
                 splashRadius: 10.0,
               )
             : null,
         enabledBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: Colors.transparent),
-          borderRadius: BorderRadius.all(
-            Radius.circular(16.0),
-          ),
+          borderRadius: BorderRadius.all(Radius.circular(16.0)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: context.primaryColor.withValues(alpha: 0.3),
-          ),
-          borderRadius: const BorderRadius.all(
-            Radius.circular(16.0),
-          ),
+          borderSide: BorderSide(color: context.primaryColor.withValues(alpha: 0.3)),
+          borderRadius: const BorderRadius.all(Radius.circular(16.0)),
         ),
         hintText: 'add_a_title'.t(),
         hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(
@@ -398,10 +337,7 @@ class _AlbumTitleTextFieldState extends State<_AlbumTitleTextField> {
 }
 
 class _AlbumViewerEditableDescription extends StatefulWidget {
-  const _AlbumViewerEditableDescription({
-    required this.textController,
-    required this.focusNode,
-  });
+  const _AlbumViewerEditableDescription({required this.textController, required this.focusNode});
 
   final TextEditingController textController;
   final FocusNode focusNode;
@@ -448,37 +384,23 @@ class _AlbumViewerEditableDescriptionState extends State<_AlbumViewerEditableDes
         minLines: 1,
         controller: widget.textController,
         decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12.0,
-            vertical: 16.0,
-          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
           suffixIcon: widget.focusNode.hasFocus && widget.textController.text.isNotEmpty
               ? IconButton(
                   onPressed: () {
                     widget.textController.clear();
                   },
-                  icon: Icon(
-                    Icons.cancel_rounded,
-                    color: context.primaryColor,
-                  ),
+                  icon: Icon(Icons.cancel_rounded, color: context.primaryColor),
                   splashRadius: 10.0,
                 )
               : null,
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: context.colorScheme.outline.withValues(alpha: 0.3),
-            ),
-            borderRadius: const BorderRadius.all(
-              Radius.circular(16.0),
-            ),
+            borderSide: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.3)),
+            borderRadius: const BorderRadius.all(Radius.circular(16.0)),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: context.primaryColor.withValues(alpha: 0.3),
-            ),
-            borderRadius: const BorderRadius.all(
-              Radius.circular(16.0),
-            ),
+            borderSide: BorderSide(color: context.primaryColor.withValues(alpha: 0.3)),
+            borderRadius: const BorderRadius.all(Radius.circular(16.0)),
           ),
           hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(
             fontSize: 16.0,

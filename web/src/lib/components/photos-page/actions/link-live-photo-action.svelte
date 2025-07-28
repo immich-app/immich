@@ -1,15 +1,15 @@
 <script lang="ts">
   import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { OnLink, OnUnlink } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { getAssetInfo, updateAsset } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiLinkOff, mdiMotionPlayOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     onLink: OnLink;
@@ -59,7 +59,7 @@
     try {
       loading = true;
       const stillResponse = await updateAsset({ id: still.id, updateAssetDto: { livePhotoVideoId: null } });
-      const motionResponse = await getAssetInfo({ id: motionId, key: authManager.key });
+      const motionResponse = await getAssetInfo({ ...authManager.params, id: motionId });
       onUnlink({ still: toTimelineAsset(stillResponse), motion: toTimelineAsset(motionResponse) });
       clearSelect();
     } catch (error) {
