@@ -7,7 +7,6 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asse
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
-import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
@@ -38,7 +37,6 @@ class ActionNotifier extends Notifier<void> {
   late ActionService _service;
   late UploadService _uploadService;
   late DownloadService _downloadService;
-  late AlbumService _albumService;
 
   ActionNotifier() : super();
 
@@ -46,7 +44,6 @@ class ActionNotifier extends Notifier<void> {
   void build() {
     _uploadService = ref.watch(uploadServiceProvider);
     _service = ref.watch(actionServiceProvider);
-    _albumService = ref.watch(albumServiceProvider);
     _downloadService = ref.watch(downloadServiceProvider);
     _downloadService.onImageDownloadStatus = _downloadImageCallback;
     _downloadService.onVideoDownloadStatus = _downloadVideoCallback;
@@ -56,18 +53,12 @@ class ActionNotifier extends Notifier<void> {
   void _downloadImageCallback(TaskStatusUpdate update) {
     if (update.status == TaskStatus.complete) {
       _downloadService.saveImageWithPath(update.task);
-      Future.delayed(const Duration(seconds: 2), () {
-        _albumService.refreshDeviceAlbums();
-      });
     }
   }
 
   void _downloadVideoCallback(TaskStatusUpdate update) {
     if (update.status == TaskStatus.complete) {
       _downloadService.saveVideo(update.task);
-      Future.delayed(const Duration(seconds: 2), () {
-        _albumService.refreshDeviceAlbums();
-      });
     }
   }
 
@@ -75,9 +66,6 @@ class ActionNotifier extends Notifier<void> {
     if (update.status == TaskStatus.complete) {
       final livePhotosId = LivePhotosMetadata.fromJson(update.task.metaData).id;
       _downloadService.saveLivePhotos(update.task, livePhotosId);
-      Future.delayed(const Duration(seconds: 2), () {
-        _albumService.refreshDeviceAlbums();
-      });
     }
   }
 
