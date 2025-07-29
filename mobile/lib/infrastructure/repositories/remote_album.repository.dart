@@ -179,8 +179,8 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
             inTimeline: false,
             isPartnerSharedBy: false,
             isPartnerSharedWith: false,
-            profileChangedAt: DateTime.now(),
-            hasProfileImage: user.profileImagePath != null,
+            profileChangedAt: user.profileChangedAt,
+            hasProfileImage: user.hasProfileImage,
           ),
         )
         .get();
