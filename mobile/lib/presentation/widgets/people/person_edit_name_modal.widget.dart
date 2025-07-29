@@ -1,9 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class DriftPersonNameEditForm extends ConsumerStatefulWidget {
   final DriftPerson person;
@@ -24,11 +27,24 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
   }
 
   void onEdit(String personId, String newName) async {
-    final payload = UpdateNamePayload(personId, newName);
+    try {
+      final result = await ref.read(driftPeopleServiceProvider).updateName(personId, newName);
+      if (result != 0) {
+        context.pop<String>(newName);
+      }
+    } catch (error) {
+      debugPrint('Error updating name: $error');
 
-    final result = await ref.read(driftUpdatePersonNameProvider(payload).future);
-    if (result != 0) {
-      context.pop<String>(newName);
+      if (!context.mounted) {
+        return;
+      }
+
+      ImmichToast.show(
+        context: context,
+        msg: 'scaffold_body_error_occurred'.t(context: context),
+        gravity: ToastGravity.BOTTOM,
+        toastType: ToastType.error,
+      );
     }
   }
 

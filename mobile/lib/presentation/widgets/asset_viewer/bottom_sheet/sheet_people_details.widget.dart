@@ -134,7 +134,7 @@ class _PeopleAvatar extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                ).t(context: context),
+                ),
               )
             else
               Column(
