@@ -14,19 +14,10 @@ class EnqueueStatus {
   final int enqueueCount;
   final int totalCount;
 
-  const EnqueueStatus({
-    required this.enqueueCount,
-    required this.totalCount,
-  });
+  const EnqueueStatus({required this.enqueueCount, required this.totalCount});
 
-  EnqueueStatus copyWith({
-    int? enqueueCount,
-    int? totalCount,
-  }) {
-    return EnqueueStatus(
-      enqueueCount: enqueueCount ?? this.enqueueCount,
-      totalCount: totalCount ?? this.totalCount,
-    );
+  EnqueueStatus copyWith({int? enqueueCount, int? totalCount}) {
+    return EnqueueStatus(enqueueCount: enqueueCount ?? this.enqueueCount, totalCount: totalCount ?? this.totalCount);
   }
 
   @override
@@ -197,25 +188,22 @@ class DriftBackupState {
 }
 
 final driftBackupProvider = StateNotifierProvider<DriftBackupNotifier, DriftBackupState>((ref) {
-  return DriftBackupNotifier(
-    ref.watch(uploadServiceProvider),
-  );
+  return DriftBackupNotifier(ref.watch(uploadServiceProvider));
 });
 
 class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
-  DriftBackupNotifier(
-    this._uploadService,
-  ) : super(
-          const DriftBackupState(
-            totalCount: 0,
-            backupCount: 0,
-            remainderCount: 0,
-            enqueueCount: 0,
-            enqueueTotalCount: 0,
-            isCanceling: false,
-            uploadItems: {},
-          ),
-        ) {
+  DriftBackupNotifier(this._uploadService)
+    : super(
+        const DriftBackupState(
+          totalCount: 0,
+          backupCount: 0,
+          remainderCount: 0,
+          enqueueCount: 0,
+          enqueueTotalCount: 0,
+          isCanceling: false,
+          uploadItems: {},
+        ),
+      ) {
     {
       _uploadService.taskStatusStream.listen(_handleTaskStatusUpdate);
       _uploadService.taskProgressStream.listen(_handleTaskProgressUpdate);
@@ -241,10 +229,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     switch (update.status) {
       case TaskStatus.complete:
         if (update.task.group == kBackupGroup) {
-          state = state.copyWith(
-            backupCount: state.backupCount + 1,
-            remainderCount: state.remainderCount - 1,
-          );
+          state = state.copyWith(backupCount: state.backupCount + 1, remainderCount: state.remainderCount - 1);
         }
 
         // Remove the completed task from the upload items
@@ -260,14 +245,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
           return;
         }
 
-        state = state.copyWith(
-          uploadItems: {
-            ...state.uploadItems,
-            taskId: currentItem.copyWith(
-              isFailed: true,
-            ),
-          },
-        );
+        state = state.copyWith(uploadItems: {...state.uploadItems, taskId: currentItem.copyWith(isFailed: true)});
         break;
 
       case TaskStatus.canceled:
@@ -299,9 +277,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
                   fileSize: update.expectedFileSize,
                   networkSpeedAsString: update.networkSpeedAsString,
                 )
-              : currentItem.copyWith(
-                  progress: progress,
-                ),
+              : currentItem.copyWith(progress: progress),
         },
       );
 
@@ -329,11 +305,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
       _uploadService.getBackupRemainderCount(userId),
     ]);
 
-    state = state.copyWith(
-      totalCount: totalCount,
-      backupCount: backupCount,
-      remainderCount: remainderCount,
-    );
+    state = state.copyWith(totalCount: totalCount, backupCount: backupCount, remainderCount: remainderCount);
   }
 
   Future<void> startBackup(String userId) {
@@ -341,34 +313,22 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void _updateEnqueueCount(EnqueueStatus status) {
-    state = state.copyWith(
-      enqueueCount: status.enqueueCount,
-      enqueueTotalCount: status.totalCount,
-    );
+    state = state.copyWith(enqueueCount: status.enqueueCount, enqueueTotalCount: status.totalCount);
   }
 
   Future<void> cancel() async {
     debugPrint("Canceling backup tasks...");
-    state = state.copyWith(
-      enqueueCount: 0,
-      enqueueTotalCount: 0,
-      isCanceling: true,
-    );
+    state = state.copyWith(enqueueCount: 0, enqueueTotalCount: 0, isCanceling: true);
 
     final activeTaskCount = await _uploadService.cancelBackup();
 
     if (activeTaskCount > 0) {
-      debugPrint(
-        "$activeTaskCount tasks left, continuing to cancel...",
-      );
+      debugPrint("$activeTaskCount tasks left, continuing to cancel...");
       await cancel();
     } else {
       debugPrint("All tasks canceled successfully.");
       // Clear all upload items when cancellation is complete
-      state = state.copyWith(
-        isCanceling: false,
-        uploadItems: {},
-      );
+      state = state.copyWith(isCanceling: false, uploadItems: {});
     }
   }
 

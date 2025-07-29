@@ -119,10 +119,7 @@ class UploadService {
   /// Find backup candidates
   /// Build the upload tasks
   /// Enqueue the tasks
-  Future<void> startBackup(
-    String userId,
-    void Function(EnqueueStatus status) onEnqueueTasks,
-  ) async {
+  Future<void> startBackup(String userId, void Function(EnqueueStatus status) onEnqueueTasks) async {
     shouldAbortQueuingTasks = false;
 
     final candidates = await _backupRepository.getCandidates(userId);
@@ -151,12 +148,7 @@ class UploadService {
         count += tasks.length;
         enqueueTasks(tasks);
 
-        onEnqueueTasks(
-          EnqueueStatus(
-            enqueueCount: count,
-            totalCount: candidates.length,
-          ),
-        );
+        onEnqueueTasks(EnqueueStatus(enqueueCount: count, totalCount: candidates.length));
       }
     }
   }
@@ -210,10 +202,7 @@ class UploadService {
         return;
       }
 
-      final uploadTask = await _getLivePhotoUploadTask(
-        localAsset,
-        response['id'] as String,
-      );
+      final uploadTask = await _getLivePhotoUploadTask(localAsset, response['id'] as String);
 
       if (uploadTask == null) {
         return;
@@ -225,11 +214,7 @@ class UploadService {
     }
   }
 
-  Future<UploadTask?> _getUploadTask(
-    LocalAsset asset, {
-    String group = kBackupGroup,
-    int? priority,
-  }) async {
+  Future<UploadTask?> _getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
       return null;
@@ -257,12 +242,7 @@ class UploadService {
       return null;
     }
 
-    final originalFileName = entity.isLivePhoto
-        ? p.setExtension(
-            asset.name,
-            p.extension(file.path),
-          )
-        : asset.name;
+    final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
 
     String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
@@ -280,10 +260,7 @@ class UploadService {
     );
   }
 
-  Future<UploadTask?> _getLivePhotoUploadTask(
-    LocalAsset asset,
-    String livePhotoVideoId,
-  ) async {
+  Future<UploadTask?> _getLivePhotoUploadTask(LocalAsset asset, String livePhotoVideoId) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
       return null;
@@ -294,9 +271,7 @@ class UploadService {
       return null;
     }
 
-    final fields = {
-      'livePhotoVideoId': livePhotoVideoId,
-    };
+    final fields = {'livePhotoVideoId': livePhotoVideoId};
 
     return buildUploadTask(
       file,
@@ -363,17 +338,9 @@ class UploadTaskMetadata {
   final bool isLivePhotos;
   final String livePhotoVideoId;
 
-  const UploadTaskMetadata({
-    required this.localAssetId,
-    required this.isLivePhotos,
-    required this.livePhotoVideoId,
-  });
+  const UploadTaskMetadata({required this.localAssetId, required this.isLivePhotos, required this.livePhotoVideoId});
 
-  UploadTaskMetadata copyWith({
-    String? localAssetId,
-    bool? isLivePhotos,
-    String? livePhotoVideoId,
-  }) {
+  UploadTaskMetadata copyWith({String? localAssetId, bool? isLivePhotos, String? livePhotoVideoId}) {
     return UploadTaskMetadata(
       localAssetId: localAssetId ?? this.localAssetId,
       isLivePhotos: isLivePhotos ?? this.isLivePhotos,

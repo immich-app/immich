@@ -11,11 +11,7 @@ class FormattedDuration extends StatelessWidget {
       width: data.inHours > 0 ? 70 : 60, // use a fixed width to prevent jitter
       child: Text(
         data.format(),
-        style: const TextStyle(
-          fontSize: 14.0,
-          color: Colors.white,
-          fontWeight: FontWeight.w500,
-        ),
+        style: const TextStyle(fontSize: 14.0, color: Colors.white, fontWeight: FontWeight.w500),
         textAlign: TextAlign.center,
       ),
     );

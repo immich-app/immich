@@ -27,9 +27,7 @@ class BrightnessFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColorFiltered(
-      colorFilter: ColorFilter.matrix(
-        _ColorFilterGenerator.brightnessAdjustMatrix(brightness),
-      ),
+      colorFilter: ColorFilter.matrix(_ColorFilterGenerator.brightnessAdjustMatrix(brightness)),
       child: child,
     );
   }
@@ -44,9 +42,7 @@ class SaturationFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColorFiltered(
-      colorFilter: ColorFilter.matrix(
-        _ColorFilterGenerator.saturationAdjustMatrix(saturation),
-      ),
+      colorFilter: ColorFilter.matrix(_ColorFilterGenerator.saturationAdjustMatrix(saturation)),
       child: child,
     );
   }

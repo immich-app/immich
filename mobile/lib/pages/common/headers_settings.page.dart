@@ -79,10 +79,8 @@ class HeaderSettingsPage extends HookConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
           itemCount: list.length,
           itemBuilder: (ctx, index) => list[index],
-          separatorBuilder: (context, index) => const Padding(
-            padding: EdgeInsets.only(bottom: 16.0, left: 8, right: 8),
-            child: Divider(),
-          ),
+          separatorBuilder: (context, index) =>
+              const Padding(padding: EdgeInsets.only(bottom: 16.0, left: 8, right: 8), child: Divider()),
         ),
       ),
     );
@@ -109,12 +107,9 @@ class HeaderKeyValueSettings extends StatelessWidget {
   final SettingsHeader header;
   final Function() onRemove;
 
-  HeaderKeyValueSettings({
-    super.key,
-    required this.header,
-    required this.onRemove,
-  })  : keyController = TextEditingController(text: header.key),
-        valueController = TextEditingController(text: header.value);
+  HeaderKeyValueSettings({super.key, required this.header, required this.onRemove})
+    : keyController = TextEditingController(text: header.key),
+      valueController = TextEditingController(text: header.value);
 
   String? emptyFieldValidator(String? value) {
     if (value == null || value.isEmpty) {
@@ -150,9 +145,7 @@ class HeaderKeyValueSettings extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 8),
                 child: IconButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
+                  style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
                   color: Colors.red[400],
                   onPressed: onRemove,
                   icon: const Icon(Icons.delete_outline),

@@ -10,6 +10,8 @@ import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
+/// This delete action has the following behavior:
+/// - Prompt to delete the asset locally
 class DeleteLocalActionButton extends ConsumerWidget {
   final ActionSource source;
 
@@ -27,10 +29,11 @@ class DeleteLocalActionButton extends ConsumerWidget {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
 
-    final successMessage = 'delete_local_action_prompt'.t(
-      context: context,
-      args: {'count': result.count.toString()},
-    );
+    if (result.count == 0) {
+      return;
+    }
+
+    final successMessage = 'delete_local_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 
     if (context.mounted) {
       ImmichToast.show(

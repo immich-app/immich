@@ -21,12 +21,10 @@ class LoginPage extends HookConsumerWidget {
       appVersion.value = packageInfo.version;
     }
 
-    useEffect(
-      () {
-        getAppInfo();
-        return null;
-      },
-    );
+    useEffect(() {
+      getAppInfo();
+      return null;
+    });
 
     return Scaffold(
       body: LoginForm(),

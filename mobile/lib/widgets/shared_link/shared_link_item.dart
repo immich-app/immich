@@ -33,10 +33,7 @@ class SharedLinkItem extends ConsumerWidget {
     var expiresText = "shared_link_expires_never".tr();
     if (sharedLink.expiresAt != null) {
       if (isExpired()) {
-        return Text(
-          "expired",
-          style: TextStyle(color: Colors.red[300]),
-        ).tr();
+        return Text("expired", style: TextStyle(color: Colors.red[300])).tr();
       }
       final difference = sharedLink.expiresAt!.difference(DateTime.now());
       debugPrint("Difference: $difference");
@@ -54,10 +51,7 @@ class SharedLinkItem extends ConsumerWidget {
         expiresText = "shared_link_expires_seconds".tr(namedArgs: {'count': difference.inSeconds.toString()});
       }
     }
-    return Text(
-      expiresText,
-      style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
-    );
+    return Text(expiresText, style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]));
   }
 
   @override
@@ -68,9 +62,7 @@ class SharedLinkItem extends ConsumerWidget {
     final imageSize = math.min(context.width / 4, 100.0);
 
     void copyShareLinkToClipboard() {
-      final externalDomain = ref.read(
-        serverInfoProvider.select((s) => s.serverConfig.externalDomain),
-      );
+      final externalDomain = ref.read(serverInfoProvider.select((s) => s.serverConfig.externalDomain));
       var serverUrl = externalDomain.isNotEmpty ? externalDomain : getServerUrl();
       if (serverUrl != null && !serverUrl.endsWith('/')) {
         serverUrl += '/';
@@ -85,16 +77,12 @@ class SharedLinkItem extends ConsumerWidget {
         return;
       }
 
-      Clipboard.setData(
-        ClipboardData(text: "${serverUrl}share/${sharedLink.key}"),
-      ).then((_) {
+      Clipboard.setData(ClipboardData(text: "${serverUrl}share/${sharedLink.key}")).then((_) {
         context.scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(
               "shared_link_clipboard_copied_massage",
-              style: context.textTheme.bodyLarge?.copyWith(
-                color: context.primaryColor,
-              ),
+              style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
             ).tr(),
             duration: const Duration(seconds: 2),
           ),
@@ -120,14 +108,9 @@ class SharedLinkItem extends ConsumerWidget {
         return Container(
           height: imageSize * 1.2,
           width: imageSize,
-          decoration: BoxDecoration(
-            color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-          ),
+          decoration: BoxDecoration(color: isDarkMode ? Colors.grey[800] : Colors.grey[200]),
           child: Center(
-            child: Icon(
-              Icons.image_not_supported_outlined,
-              color: isDarkMode ? Colors.grey[100] : Colors.grey[700],
-            ),
+            child: Icon(Icons.image_not_supported_outlined, color: isDarkMode ? Colors.grey[100] : Colors.grey[700]),
           ),
         );
       }
@@ -160,9 +143,7 @@ class SharedLinkItem extends ConsumerWidget {
               color: isDarkMode ? Colors.black : Colors.white,
             ),
           ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(25)),
-          ),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(25))),
         ),
       );
     }
@@ -228,10 +209,7 @@ class SharedLinkItem extends ConsumerWidget {
                 color: colorScheme.primary.withValues(alpha: 0.9),
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
               ),
-              textStyle: TextStyle(
-                color: isDarkMode ? Colors.black : Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+              textStyle: TextStyle(color: isDarkMode ? Colors.black : Colors.white, fontWeight: FontWeight.bold),
               message: sharedLink.title,
               preferBelow: false,
               triggerMode: TooltipTriggerMode.tap,
@@ -256,23 +234,14 @@ class SharedLinkItem extends ConsumerWidget {
                     color: colorScheme.primary.withValues(alpha: 0.9),
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
                   ),
-                  textStyle: TextStyle(
-                    color: isDarkMode ? Colors.black : Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  textStyle: TextStyle(color: isDarkMode ? Colors.black : Colors.white, fontWeight: FontWeight.bold),
                   message: sharedLink.description ?? "",
                   preferBelow: false,
                   triggerMode: TooltipTriggerMode.tap,
-                  child: Text(
-                    sharedLink.description ?? "",
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: Text(sharedLink.description ?? "", overflow: TextOverflow.ellipsis),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(right: 15),
-                child: buildSharedLinkActions(),
-              ),
+              Padding(padding: const EdgeInsets.only(right: 15), child: buildSharedLinkActions()),
             ],
           ),
           buildBottomInfo(),
@@ -286,24 +255,13 @@ class SharedLinkItem extends ConsumerWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 15),
-              child: buildThumbnail(),
-            ),
+            Padding(padding: const EdgeInsets.only(left: 15), child: buildThumbnail()),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 15),
-                child: buildSharedLinkDetails(),
-              ),
+              child: Padding(padding: const EdgeInsets.only(left: 15), child: buildSharedLinkDetails()),
             ),
           ],
         ),
-        const Padding(
-          padding: EdgeInsets.all(20),
-          child: Divider(
-            height: 0,
-          ),
-        ),
+        const Padding(padding: EdgeInsets.all(20), child: Divider(height: 0)),
       ],
     );
   }

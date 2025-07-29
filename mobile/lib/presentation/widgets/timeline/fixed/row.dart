@@ -16,11 +16,7 @@ class FixedTimelineRow extends MultiChildRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return RenderFixedRow(
-      dimension: dimension,
-      spacing: spacing,
-      textDirection: textDirection,
-    );
+    return RenderFixedRow(dimension: dimension, spacing: spacing, textDirection: textDirection);
   }
 
   @override
@@ -50,9 +46,9 @@ class RenderFixedRow extends RenderBox
     required double dimension,
     required double spacing,
     required TextDirection textDirection,
-  })  : _dimension = dimension,
-        _spacing = spacing,
-        _textDirection = textDirection {
+  }) : _dimension = dimension,
+       _spacing = spacing,
+       _textDirection = textDirection {
     addAll(children);
   }
 

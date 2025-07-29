@@ -1199,6 +1199,7 @@ export type SharedLinkResponseDto = {
     key: string;
     password: string | null;
     showMetadata: boolean;
+    slug: string | null;
     token?: string | null;
     "type": SharedLinkType;
     userId: string;
@@ -1208,10 +1209,11 @@ export type SharedLinkCreateDto = {
     allowDownload?: boolean;
     allowUpload?: boolean;
     assetIds?: string[];
-    description?: string;
+    description?: string | null;
     expiresAt?: string | null;
-    password?: string;
+    password?: string | null;
     showMetadata?: boolean;
+    slug?: string | null;
     "type": SharedLinkType;
 };
 export type SharedLinkEditDto = {
@@ -1221,10 +1223,11 @@ export type SharedLinkEditDto = {
     Setting this flag and not sending expiryAt is considered as null instead.
     Clients that can send null values can ignore this. */
     changeExpiryTime?: boolean;
-    description?: string;
+    description?: string | null;
     expiresAt?: string | null;
-    password?: string;
+    password?: string | null;
     showMetadata?: boolean;
+    slug?: string | null;
 };
 export type AssetIdsResponseDto = {
     assetId: string;
@@ -1821,9 +1824,10 @@ export function deleteAlbum({ id }: {
         method: "DELETE"
     }));
 }
-export function getAlbumInfo({ id, key, withoutAssets }: {
+export function getAlbumInfo({ id, key, slug, withoutAssets }: {
     id: string;
     key?: string;
+    slug?: string;
     withoutAssets?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -1831,6 +1835,7 @@ export function getAlbumInfo({ id, key, withoutAssets }: {
         data: AlbumResponseDto;
     }>(`/albums/${encodeURIComponent(id)}${QS.query(QS.explode({
         key,
+        slug,
         withoutAssets
     }))}`, {
         ...opts
@@ -1862,16 +1867,18 @@ export function removeAssetFromAlbum({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function addAssetsToAlbum({ id, key, bulkIdsDto }: {
+export function addAssetsToAlbum({ id, key, slug, bulkIdsDto }: {
     id: string;
     key?: string;
+    slug?: string;
     bulkIdsDto: BulkIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: BulkIdResponseDto[];
     }>(`/albums/${encodeURIComponent(id)}/assets${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.json({
         ...opts,
         method: "PUT",
@@ -1971,8 +1978,9 @@ export function deleteAssets({ assetBulkDeleteDto }: {
         body: assetBulkDeleteDto
     })));
 }
-export function uploadAsset({ key, xImmichChecksum, assetMediaCreateDto }: {
+export function uploadAsset({ key, slug, xImmichChecksum, assetMediaCreateDto }: {
     key?: string;
+    slug?: string;
     xImmichChecksum?: string;
     assetMediaCreateDto: AssetMediaCreateDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -1980,7 +1988,8 @@ export function uploadAsset({ key, xImmichChecksum, assetMediaCreateDto }: {
         status: 201;
         data: AssetMediaResponseDto;
     }>(`/assets${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.multipart({
         ...opts,
         method: "POST",
@@ -2082,15 +2091,17 @@ export function getAssetStatistics({ isFavorite, isTrashed, visibility }: {
         ...opts
     }));
 }
-export function getAssetInfo({ id, key }: {
+export function getAssetInfo({ id, key, slug }: {
     id: string;
     key?: string;
+    slug?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetResponseDto;
     }>(`/assets/${encodeURIComponent(id)}${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, {
         ...opts
     }));
@@ -2108,15 +2119,17 @@ export function updateAsset({ id, updateAssetDto }: {
         body: updateAssetDto
     })));
 }
-export function downloadAsset({ id, key }: {
+export function downloadAsset({ id, key, slug }: {
     id: string;
     key?: string;
+    slug?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/original${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, {
         ...opts
     }));
@@ -2124,46 +2137,52 @@ export function downloadAsset({ id, key }: {
 /**
  * replaceAsset
  */
-export function replaceAsset({ id, key, assetMediaReplaceDto }: {
+export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
     id: string;
     key?: string;
+    slug?: string;
     assetMediaReplaceDto: AssetMediaReplaceDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetMediaResponseDto;
     }>(`/assets/${encodeURIComponent(id)}/original${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.multipart({
         ...opts,
         method: "PUT",
         body: assetMediaReplaceDto
     })));
 }
-export function viewAsset({ id, key, size }: {
+export function viewAsset({ id, key, size, slug }: {
     id: string;
     key?: string;
     size?: AssetMediaSize;
+    slug?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/thumbnail${QS.query(QS.explode({
         key,
-        size
+        size,
+        slug
     }))}`, {
         ...opts
     }));
 }
-export function playAssetVideo({ id, key }: {
+export function playAssetVideo({ id, key, slug }: {
     id: string;
     key?: string;
+    slug?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/video/playback${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, {
         ...opts
     }));
@@ -2272,30 +2291,34 @@ export function validateAccessToken(opts?: Oazapfts.RequestOpts) {
         method: "POST"
     }));
 }
-export function downloadArchive({ key, assetIdsDto }: {
+export function downloadArchive({ key, slug, assetIdsDto }: {
     key?: string;
+    slug?: string;
     assetIdsDto: AssetIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
         data: Blob;
     }>(`/download/archive${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.json({
         ...opts,
         method: "POST",
         body: assetIdsDto
     })));
 }
-export function getDownloadInfo({ key, downloadInfoDto }: {
+export function getDownloadInfo({ key, slug, downloadInfoDto }: {
     key?: string;
+    slug?: string;
     downloadInfoDto: DownloadInfoDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 201;
         data: DownloadResponseDto;
     }>(`/download/info${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.json({
         ...opts,
         method: "POST",
@@ -2931,6 +2954,79 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+    albumIds?: string[];
+    city?: string | null;
+    country?: string | null;
+    createdAfter?: string;
+    createdBefore?: string;
+    deviceId?: string;
+    isEncoded?: boolean;
+    isFavorite?: boolean;
+    isMotion?: boolean;
+    isNotInAlbum?: boolean;
+    isOffline?: boolean;
+    lensModel?: string | null;
+    libraryId?: string | null;
+    make?: string;
+    minFileSize?: number;
+    model?: string | null;
+    personIds?: string[];
+    rating?: number;
+    size?: number;
+    state?: string | null;
+    tagIds?: string[] | null;
+    takenAfter?: string;
+    takenBefore?: string;
+    trashedAfter?: string;
+    trashedBefore?: string;
+    $type?: AssetTypeEnum;
+    updatedAfter?: string;
+    updatedBefore?: string;
+    visibility?: AssetVisibility;
+    withDeleted?: boolean;
+    withExif?: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>(`/search/large-assets${QS.query(QS.explode({
+        albumIds,
+        city,
+        country,
+        createdAfter,
+        createdBefore,
+        deviceId,
+        isEncoded,
+        isFavorite,
+        isMotion,
+        isNotInAlbum,
+        isOffline,
+        lensModel,
+        libraryId,
+        make,
+        minFileSize,
+        model,
+        personIds,
+        rating,
+        size,
+        state,
+        tagIds,
+        takenAfter,
+        takenBefore,
+        trashedAfter,
+        trashedBefore,
+        "type": $type,
+        updatedAfter,
+        updatedBefore,
+        visibility,
+        withDeleted,
+        withExif
+    }))}`, {
+        ...opts,
+        method: "POST"
+    }));
+}
 export function searchAssets({ metadataSearchDto }: {
     metadataSearchDto: MetadataSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -3230,9 +3326,10 @@ export function createSharedLink({ sharedLinkCreateDto }: {
         body: sharedLinkCreateDto
     })));
 }
-export function getMySharedLink({ key, password, token }: {
+export function getMySharedLink({ key, password, slug, token }: {
     key?: string;
     password?: string;
+    slug?: string;
     token?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3241,6 +3338,7 @@ export function getMySharedLink({ key, password, token }: {
     }>(`/shared-links/me${QS.query(QS.explode({
         key,
         password,
+        slug,
         token
     }))}`, {
         ...opts
@@ -3277,32 +3375,36 @@ export function updateSharedLink({ id, sharedLinkEditDto }: {
         body: sharedLinkEditDto
     })));
 }
-export function removeSharedLinkAssets({ id, key, assetIdsDto }: {
+export function removeSharedLinkAssets({ id, key, slug, assetIdsDto }: {
     id: string;
     key?: string;
+    slug?: string;
     assetIdsDto: AssetIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetIdsResponseDto[];
     }>(`/shared-links/${encodeURIComponent(id)}/assets${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.json({
         ...opts,
         method: "DELETE",
         body: assetIdsDto
     })));
 }
-export function addSharedLinkAssets({ id, key, assetIdsDto }: {
+export function addSharedLinkAssets({ id, key, slug, assetIdsDto }: {
     id: string;
     key?: string;
+    slug?: string;
     assetIdsDto: AssetIdsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetIdsResponseDto[];
     }>(`/shared-links/${encodeURIComponent(id)}/assets${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.json({
         ...opts,
         method: "PUT",
@@ -3611,13 +3713,14 @@ export function tagAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
     personId?: string;
+    slug?: string;
     tagId?: string;
     timeBucket: string;
     userId?: string;
@@ -3635,6 +3738,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
         key,
         order,
         personId,
+        slug,
         tagId,
         timeBucket,
         userId,
@@ -3645,13 +3749,14 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
         ...opts
     }));
 }
-export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, tagId, userId, visibility, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
     personId?: string;
+    slug?: string;
     tagId?: string;
     userId?: string;
     visibility?: AssetVisibility;
@@ -3668,6 +3773,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
         key,
         order,
         personId,
+        slug,
         tagId,
         userId,
         visibility,

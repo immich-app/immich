@@ -85,7 +85,7 @@
 
   const handleNewAsset = async (newAsset: AssetResponseDto) => {
     // TODO: check if reloading asset data is necessary
-    if (newAsset.id && !authManager.key) {
+    if (newAsset.id && !authManager.isSharedLink) {
       const data = await getAssetInfo({ id: asset.id });
       people = data?.people || [];
       unassignedFaces = data?.unassignedFaces || [];
@@ -195,7 +195,7 @@
   <DetailPanelDescription {asset} {isOwner} />
   <DetailPanelRating {asset} {isOwner} />
 
-  {#if !authManager.key && isOwner}
+  {#if !authManager.isSharedLink && isOwner}
     <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>{$t('people').toUpperCase()}</h2>

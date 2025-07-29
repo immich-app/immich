@@ -21,8 +21,10 @@ bool _deepEquals(Object? a, Object? b) {
   }
   if (a is Map && b is Map) {
     return a.length == b.length &&
-        a.entries.every((MapEntry<Object?, Object?> entry) =>
-            (b as Map<Object?, Object?>).containsKey(entry.key) && _deepEquals(entry.value, b[entry.key]));
+        a.entries.every(
+          (MapEntry<Object?, Object?> entry) =>
+              (b as Map<Object?, Object?>).containsKey(entry.key) && _deepEquals(entry.value, b[entry.key]),
+        );
   }
   return a == b;
 }
@@ -59,17 +61,7 @@ class PlatformAsset {
   int orientation;
 
   List<Object?> _toList() {
-    return <Object?>[
-      id,
-      name,
-      type,
-      createdAt,
-      updatedAt,
-      width,
-      height,
-      durationInSeconds,
-      orientation,
-    ];
+    return <Object?>[id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation];
   }
 
   Object encode() {
@@ -128,13 +120,7 @@ class PlatformAlbum {
   int assetCount;
 
   List<Object?> _toList() {
-    return <Object?>[
-      id,
-      name,
-      updatedAt,
-      isCloud,
-      assetCount,
-    ];
+    return <Object?>[id, name, updatedAt, isCloud, assetCount];
   }
 
   Object encode() {
@@ -170,12 +156,7 @@ class PlatformAlbum {
 }
 
 class SyncDelta {
-  SyncDelta({
-    required this.hasChanges,
-    required this.updates,
-    required this.deletes,
-    required this.assetAlbums,
-  });
+  SyncDelta({required this.hasChanges, required this.updates, required this.deletes, required this.assetAlbums});
 
   bool hasChanges;
 
@@ -186,12 +167,7 @@ class SyncDelta {
   Map<String, List<String>> assetAlbums;
 
   List<Object?> _toList() {
-    return <Object?>[
-      hasChanges,
-      updates,
-      deletes,
-      assetAlbums,
-    ];
+    return <Object?>[hasChanges, updates, deletes, assetAlbums];
   }
 
   Object encode() {
@@ -266,8 +242,8 @@ class NativeSyncApi {
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
   NativeSyncApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
-      : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+    : pigeonVar_binaryMessenger = binaryMessenger,
+      pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();

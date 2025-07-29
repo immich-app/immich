@@ -49,11 +49,7 @@ class ActionService {
   );
 
   Future<void> shareLink(List<String> remoteIds, BuildContext context) async {
-    context.pushRoute(
-      SharedLinkEditRoute(
-        assetsList: remoteIds,
-      ),
-    );
+    context.pushRoute(SharedLinkEditRoute(assetsList: remoteIds));
   }
 
   Future<void> favorite(List<String> remoteIds) async {
@@ -67,39 +63,18 @@ class ActionService {
   }
 
   Future<void> archive(List<String> remoteIds) async {
-    await _assetApiRepository.updateVisibility(
-      remoteIds,
-      AssetVisibilityEnum.archive,
-    );
-    await _remoteAssetRepository.updateVisibility(
-      remoteIds,
-      AssetVisibility.archive,
-    );
+    await _assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.archive);
+    await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.archive);
   }
 
   Future<void> unArchive(List<String> remoteIds) async {
-    await _assetApiRepository.updateVisibility(
-      remoteIds,
-      AssetVisibilityEnum.timeline,
-    );
-    await _remoteAssetRepository.updateVisibility(
-      remoteIds,
-      AssetVisibility.timeline,
-    );
+    await _assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.timeline);
+    await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.timeline);
   }
 
-  Future<void> moveToLockFolder(
-    List<String> remoteIds,
-    List<String> localIds,
-  ) async {
-    await _assetApiRepository.updateVisibility(
-      remoteIds,
-      AssetVisibilityEnum.locked,
-    );
-    await _remoteAssetRepository.updateVisibility(
-      remoteIds,
-      AssetVisibility.locked,
-    );
+  Future<void> moveToLockFolder(List<String> remoteIds, List<String> localIds) async {
+    await _assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked);
+    await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked);
 
     // Ask user if they want to delete local copies
     if (localIds.isNotEmpty) {
@@ -112,14 +87,8 @@ class ActionService {
   }
 
   Future<void> removeFromLockFolder(List<String> remoteIds) async {
-    await _assetApiRepository.updateVisibility(
-      remoteIds,
-      AssetVisibilityEnum.timeline,
-    );
-    await _remoteAssetRepository.updateVisibility(
-      remoteIds,
-      AssetVisibility.timeline,
-    );
+    await _assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.timeline);
+    await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.timeline);
   }
 
   Future<void> trash(List<String> remoteIds) async {
@@ -132,10 +101,20 @@ class ActionService {
     await _remoteAssetRepository.restoreTrash(ids);
   }
 
-  Future<void> deleteRemoteAndLocal(
-    List<String> remoteIds,
-    List<String> localIds,
-  ) async {
+  Future<void> trashRemoteAndDeleteLocal(List<String> remoteIds, List<String> localIds) async {
+    await _assetApiRepository.delete(remoteIds, false);
+    await _remoteAssetRepository.trash(remoteIds);
+
+    if (localIds.isNotEmpty) {
+      final deletedIds = await _assetMediaRepository.deleteAll(localIds);
+
+      if (deletedIds.isNotEmpty) {
+        await _localAssetRepository.delete(deletedIds);
+      }
+    }
+  }
+
+  Future<void> deleteRemoteAndLocal(List<String> remoteIds, List<String> localIds) async {
     await _assetApiRepository.delete(remoteIds, true);
     await _remoteAssetRepository.delete(remoteIds);
 
@@ -148,15 +127,17 @@ class ActionService {
     }
   }
 
-  Future<void> deleteLocal(List<String> localIds) async {
-    await _assetMediaRepository.deleteAll(localIds);
-    await _localAssetRepository.delete(localIds);
+  Future<int> deleteLocal(List<String> localIds) async {
+    final deletedIds = await _assetMediaRepository.deleteAll(localIds);
+    if (deletedIds.isNotEmpty) {
+      await _localAssetRepository.delete(deletedIds);
+      return deletedIds.length;
+    }
+
+    return 0;
   }
 
-  Future<bool> editLocation(
-    List<String> remoteIds,
-    BuildContext context,
-  ) async {
+  Future<bool> editLocation(List<String> remoteIds, BuildContext context) async {
     maplibre.LatLng? initialLatLng;
     if (remoteIds.length == 1) {
       final exif = await _remoteAssetRepository.getExif(remoteIds[0]);
@@ -166,23 +147,14 @@ class ActionService {
       }
     }
 
-    final location = await showLocationPicker(
-      context: context,
-      initialLatLng: initialLatLng,
-    );
+    final location = await showLocationPicker(context: context, initialLatLng: initialLatLng);
 
     if (location == null) {
       return false;
     }
 
-    await _assetApiRepository.updateLocation(
-      remoteIds,
-      location,
-    );
-    await _remoteAssetRepository.updateLocation(
-      remoteIds,
-      location,
-    );
+    await _assetApiRepository.updateLocation(remoteIds, location);
+    await _remoteAssetRepository.updateLocation(remoteIds, location);
 
     return true;
   }

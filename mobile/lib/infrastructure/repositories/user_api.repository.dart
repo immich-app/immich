@@ -17,15 +17,8 @@ class UserApiRepository extends ApiRepository {
     return UserConverter.fromAdminDto(adminDto, preferenceDto);
   }
 
-  Future<String> createProfileImage({
-    required String name,
-    required Uint8List data,
-  }) async {
-    final res = await checkNull(
-      _api.createProfileImage(
-        MultipartFile.fromBytes('file', data, filename: name),
-      ),
-    );
+  Future<String> createProfileImage({required String name, required Uint8List data}) async {
+    final res = await checkNull(_api.createProfileImage(MultipartFile.fromBytes('file', data, filename: name)));
     return res.profileImagePath;
   }
 

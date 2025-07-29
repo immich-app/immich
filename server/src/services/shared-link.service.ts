@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { PostgresError } from 'postgres';
 import { SharedLink } from 'src/database';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
@@ -64,36 +65,53 @@ export class SharedLinkService extends BaseService {
       }
     }
 
-    const sharedLink = await this.sharedLinkRepository.create({
-      key: this.cryptoRepository.randomBytes(50),
-      userId: auth.user.id,
-      type: dto.type,
-      albumId: dto.albumId || null,
-      assetIds: dto.assetIds,
-      description: dto.description || null,
-      password: dto.password,
-      expiresAt: dto.expiresAt || null,
-      allowUpload: dto.allowUpload ?? true,
-      allowDownload: dto.showMetadata === false ? false : (dto.allowDownload ?? true),
-      showExif: dto.showMetadata ?? true,
-    });
+    try {
+      const sharedLink = await this.sharedLinkRepository.create({
+        key: this.cryptoRepository.randomBytes(50),
+        userId: auth.user.id,
+        type: dto.type,
+        albumId: dto.albumId || null,
+        assetIds: dto.assetIds,
+        description: dto.description || null,
+        password: dto.password,
+        expiresAt: dto.expiresAt || null,
+        allowUpload: dto.allowUpload ?? true,
+        allowDownload: dto.showMetadata === false ? false : (dto.allowDownload ?? true),
+        showExif: dto.showMetadata ?? true,
+        slug: dto.slug || null,
+      });
 
-    return this.mapToSharedLink(sharedLink, { withExif: true });
+      return this.mapToSharedLink(sharedLink, { withExif: true });
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  private handleError(error: unknown): never {
+    if ((error as PostgresError).constraint_name === 'shared_link_slug_uq') {
+      throw new BadRequestException('Shared link with this slug already exists');
+    }
+    throw error;
   }
 
   async update(auth: AuthDto, id: string, dto: SharedLinkEditDto) {
     await this.findOrFail(auth.user.id, id);
-    const sharedLink = await this.sharedLinkRepository.update({
-      id,
-      userId: auth.user.id,
-      description: dto.description,
-      password: dto.password,
-      expiresAt: dto.changeExpiryTime && !dto.expiresAt ? null : dto.expiresAt,
-      allowUpload: dto.allowUpload,
-      allowDownload: dto.allowDownload,
-      showExif: dto.showMetadata,
-    });
-    return this.mapToSharedLink(sharedLink, { withExif: true });
+    try {
+      const sharedLink = await this.sharedLinkRepository.update({
+        id,
+        userId: auth.user.id,
+        description: dto.description,
+        password: dto.password,
+        expiresAt: dto.changeExpiryTime && !dto.expiresAt ? null : dto.expiresAt,
+        allowUpload: dto.allowUpload,
+        allowDownload: dto.allowDownload,
+        showExif: dto.showMetadata,
+        slug: dto.slug || null,
+      });
+      return this.mapToSharedLink(sharedLink, { withExif: true });
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   async remove(auth: AuthDto, id: string): Promise<void> {

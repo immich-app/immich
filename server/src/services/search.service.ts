@@ -4,6 +4,7 @@ import { AssetMapOptions, AssetResponseDto, MapAsset, mapAsset } from 'src/dtos/
 import { AuthDto } from 'src/dtos/auth.dto';
 import { mapPerson, PersonResponseDto } from 'src/dtos/person.dto';
 import {
+  LargeAssetSearchDto,
   mapPlaces,
   MetadataSearchDto,
   PlacesResponseDto,
@@ -88,6 +89,16 @@ export class SearchService extends BaseService {
 
     const userIds = await this.getUserIdsToSearch(auth);
     const items = await this.searchRepository.searchRandom(dto.size || 250, { ...dto, userIds });
+    return items.map((item) => mapAsset(item, { auth }));
+  }
+
+  async searchLargeAssets(auth: AuthDto, dto: LargeAssetSearchDto): Promise<AssetResponseDto[]> {
+    if (dto.visibility === AssetVisibility.Locked) {
+      requireElevatedPermission(auth);
+    }
+
+    const userIds = await this.getUserIdsToSearch(auth);
+    const items = await this.searchRepository.searchLargeAssets(dto.size || 250, { ...dto, userIds });
     return items.map((item) => mapAsset(item, { auth }));
   }
 

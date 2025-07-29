@@ -12,7 +12,7 @@ enum SyncStatus {
       SyncStatus.idle => "idle".tr(),
       SyncStatus.syncing => "running".tr(),
       SyncStatus.success => "success".tr(),
-      SyncStatus.error => "error".tr()
+      SyncStatus.error => "error".tr(),
     };
   }
 }
@@ -60,12 +60,7 @@ class SyncStatusState {
   }
 
   @override
-  int get hashCode => Object.hash(
-        remoteSyncStatus,
-        localSyncStatus,
-        hashJobStatus,
-        errorMessage,
-      );
+  int get hashCode => Object.hash(remoteSyncStatus, localSyncStatus, hashJobStatus, errorMessage);
 }
 
 class SyncStatusNotifier extends Notifier<SyncStatusState> {
@@ -84,10 +79,7 @@ class SyncStatusNotifier extends Notifier<SyncStatusState> {
   ///
 
   void setRemoteSyncStatus(SyncStatus status, [String? errorMessage]) {
-    state = state.copyWith(
-      remoteSyncStatus: status,
-      errorMessage: status == SyncStatus.error ? errorMessage : null,
-    );
+    state = state.copyWith(remoteSyncStatus: status, errorMessage: status == SyncStatus.error ? errorMessage : null);
   }
 
   void startRemoteSync() => setRemoteSyncStatus(SyncStatus.syncing);
@@ -99,10 +91,7 @@ class SyncStatusNotifier extends Notifier<SyncStatusState> {
   ///
 
   void setLocalSyncStatus(SyncStatus status, [String? errorMessage]) {
-    state = state.copyWith(
-      localSyncStatus: status,
-      errorMessage: status == SyncStatus.error ? errorMessage : null,
-    );
+    state = state.copyWith(localSyncStatus: status, errorMessage: status == SyncStatus.error ? errorMessage : null);
   }
 
   void startLocalSync() => setLocalSyncStatus(SyncStatus.syncing);
@@ -114,10 +103,7 @@ class SyncStatusNotifier extends Notifier<SyncStatusState> {
   ///
 
   void setHashJobStatus(SyncStatus status, [String? errorMessage]) {
-    state = state.copyWith(
-      hashJobStatus: status,
-      errorMessage: status == SyncStatus.error ? errorMessage : null,
-    );
+    state = state.copyWith(hashJobStatus: status, errorMessage: status == SyncStatus.error ? errorMessage : null);
   }
 
   void startHashJob() => setHashJobStatus(SyncStatus.syncing);
@@ -125,6 +111,4 @@ class SyncStatusNotifier extends Notifier<SyncStatusState> {
   void errorHashJob(String error) => setHashJobStatus(SyncStatus.error, error);
 }
 
-final syncStatusProvider = NotifierProvider<SyncStatusNotifier, SyncStatusState>(
-  SyncStatusNotifier.new,
-);
+final syncStatusProvider = NotifierProvider<SyncStatusNotifier, SyncStatusState>(SyncStatusNotifier.new);

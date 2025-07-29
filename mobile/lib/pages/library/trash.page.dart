@@ -29,10 +29,7 @@ class TrashPage extends HookConsumerWidget {
     final selection = useState(<Asset>{});
     final processing = useProcessingOverlay();
 
-    void selectionListener(
-      bool multiselect,
-      Set<Asset> selectedAssets,
-    ) {
+    void selectionListener(bool multiselect, Set<Asset> selectedAssets) {
       selectionEnabledHook.value = multiselect;
       selection.value = selectedAssets;
     }
@@ -43,11 +40,7 @@ class TrashPage extends HookConsumerWidget {
       processing.value = false;
       selectionEnabledHook.value = false;
       if (context.mounted) {
-        ImmichToast.show(
-          context: context,
-          msg: 'trash_emptied'.tr(),
-          gravity: ToastGravity.BOTTOM,
-        );
+        ImmichToast.show(context: context, msg: 'trash_emptied'.tr(), gravity: ToastGravity.BOTTOM);
       }
     }
 
@@ -88,10 +81,7 @@ class TrashPage extends HookConsumerWidget {
     handlePermanentDelete() async {
       await showDialog(
         context: context,
-        builder: (context) => DeleteDialog(
-          alert: "delete_dialog_alert_remote",
-          onDelete: () => onPermanentlyDelete(),
-        ),
+        builder: (context) => DeleteDialog(alert: "delete_dialog_alert_remote", onDelete: () => onPermanentlyDelete()),
       );
     }
 
@@ -138,8 +128,9 @@ class TrashPage extends HookConsumerWidget {
                   selectionEnabledHook.value = false;
                   selection.value = {};
                 },
-          icon:
-              !selectionEnabledHook.value ? const Icon(Icons.arrow_back_ios_rounded) : const Icon(Icons.close_rounded),
+          icon: !selectionEnabledHook.value
+              ? const Icon(Icons.arrow_back_ios_rounded)
+              : const Icon(Icons.close_rounded),
         ),
         centerTitle: !selectionEnabledHook.value,
         automaticallyImplyLeading: false,
@@ -149,14 +140,8 @@ class TrashPage extends HookConsumerWidget {
             PopupMenuButton<void Function()>(
               itemBuilder: (context) {
                 return [
-                  PopupMenuItem(
-                    value: () => selectionEnabledHook.value = true,
-                    child: const Text('select').tr(),
-                  ),
-                  PopupMenuItem(
-                    value: handleEmptyTrash,
-                    child: const Text('empty_trash').tr(),
-                  ),
+                  PopupMenuItem(value: () => selectionEnabledHook.value = true, child: const Text('select').tr()),
+                  PopupMenuItem(value: handleEmptyTrash, child: const Text('empty_trash').tr()),
                 ];
               },
               onSelected: (fn) => fn(),
@@ -177,40 +162,28 @@ class TrashPage extends HookConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   TextButton.icon(
-                    icon: Icon(
-                      Icons.delete_forever,
-                      color: Colors.red[400],
-                    ),
+                    icon: Icon(Icons.delete_forever, color: Colors.red[400]),
                     label: Text(
                       selection.value.isEmpty ? 'trash_page_delete_all'.tr() : 'delete'.tr(),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.red[400],
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.red[400], fontWeight: FontWeight.bold),
                     ),
                     onPressed: processing.value
                         ? null
                         : selection.value.isEmpty
-                            ? handleEmptyTrash
-                            : handlePermanentDelete,
+                        ? handleEmptyTrash
+                        : handlePermanentDelete,
                   ),
                   TextButton.icon(
-                    icon: const Icon(
-                      Icons.history_rounded,
-                    ),
+                    icon: const Icon(Icons.history_rounded),
                     label: Text(
                       selection.value.isEmpty ? 'trash_page_restore_all'.tr() : 'restore'.tr(),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     onPressed: processing.value
                         ? null
                         : selection.value.isEmpty
-                            ? handleRestoreAll
-                            : handleRestore,
+                        ? handleRestoreAll
+                        : handleRestore,
                   ),
                 ],
               ),
@@ -227,9 +200,7 @@ class TrashPage extends HookConsumerWidget {
       ),
       body: trashRenderList.widgetWhen(
         onData: (data) => data.isEmpty
-            ? Center(
-                child: Text('trash_page_no_assets'.tr()),
-              )
+            ? Center(child: Text('trash_page_no_assets'.tr()))
             : Stack(
                 children: [
                   SafeArea(
@@ -240,13 +211,8 @@ class TrashPage extends HookConsumerWidget {
                       showMultiSelectIndicator: false,
                       showStack: true,
                       topWidget: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 24,
-                        ),
-                        child: const Text(
-                          "trash_page_info",
-                        ).tr(namedArgs: {"days": "$trashDays"}),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+                        child: const Text("trash_page_info").tr(namedArgs: {"days": "$trashDays"}),
                       ),
                     ),
                   ),

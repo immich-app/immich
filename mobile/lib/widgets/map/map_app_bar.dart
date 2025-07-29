@@ -52,16 +52,12 @@ class _NonSelectionRow extends StatelessWidget {
       children: [
         ElevatedButton(
           onPressed: () => context.maybePop(),
-          style: ElevatedButton.styleFrom(
-            shape: const CircleBorder(),
-          ),
+          style: ElevatedButton.styleFrom(shape: const CircleBorder()),
           child: const Icon(Icons.arrow_back_ios_new_rounded),
         ),
         ElevatedButton(
           onPressed: onSettingsPressed,
-          style: ElevatedButton.styleFrom(
-            shape: const CircleBorder(),
-          ),
+          style: ElevatedButton.styleFrom(shape: const CircleBorder()),
           child: const Icon(Icons.more_vert_rounded),
         ),
       ],
@@ -78,10 +74,7 @@ class _SelectionRow extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isProcessing = useProcessingOverlay();
 
-    Future<void> handleProcessing(
-      FutureOr<void> Function() action, [
-      bool reloadMarkers = false,
-    ]) async {
+    Future<void> handleProcessing(FutureOr<void> Function() action, [bool reloadMarkers = false]) async {
       isProcessing.value = true;
       await action();
       // Reset state
@@ -101,9 +94,7 @@ class _SelectionRow extends HookConsumerWidget {
             icon: const Icon(Icons.close_rounded),
             label: Text(
               '${selectedAssets.value.length}',
-              style: context.textTheme.titleMedium?.copyWith(
-                color: context.colorScheme.onPrimary,
-              ),
+              style: context.textTheme.titleMedium?.copyWith(color: context.colorScheme.onPrimary),
             ),
           ),
         ),
@@ -112,43 +103,20 @@ class _SelectionRow extends HookConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               ElevatedButton(
-                onPressed: () => handleProcessing(
-                  () => handleShareAssets(
-                    ref,
-                    context,
-                    selectedAssets.value.toList(),
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
-                ),
+                onPressed: () => handleProcessing(() => handleShareAssets(ref, context, selectedAssets.value.toList())),
+                style: ElevatedButton.styleFrom(shape: const CircleBorder()),
                 child: const Icon(Icons.ios_share_rounded),
               ),
               ElevatedButton(
-                onPressed: () => handleProcessing(
-                  () => handleFavoriteAssets(
-                    ref,
-                    context,
-                    selectedAssets.value.toList(),
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
-                ),
+                onPressed: () =>
+                    handleProcessing(() => handleFavoriteAssets(ref, context, selectedAssets.value.toList())),
+                style: ElevatedButton.styleFrom(shape: const CircleBorder()),
                 child: const Icon(Icons.favorite),
               ),
               ElevatedButton(
-                onPressed: () => handleProcessing(
-                  () => handleArchiveAssets(
-                    ref,
-                    context,
-                    selectedAssets.value.toList(),
-                  ),
-                  true,
-                ),
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
-                ),
+                onPressed: () =>
+                    handleProcessing(() => handleArchiveAssets(ref, context, selectedAssets.value.toList()), true),
+                style: ElevatedButton.styleFrom(shape: const CircleBorder()),
                 child: const Icon(Icons.archive),
               ),
             ],

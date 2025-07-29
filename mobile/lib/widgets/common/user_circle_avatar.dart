@@ -16,13 +16,7 @@ class UserCircleAvatar extends ConsumerWidget {
   double size;
   bool hasBorder;
 
-  UserCircleAvatar({
-    super.key,
-    this.radius = 22,
-    this.size = 44,
-    this.hasBorder = false,
-    required this.user,
-  });
+  UserCircleAvatar({super.key, this.radius = 22, this.size = 44, this.hasBorder = false, required this.user});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,12 +37,7 @@ class UserCircleAvatar extends ConsumerWidget {
       child: Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: hasBorder
-              ? Border.all(
-                  color: Colors.grey[500]!,
-                  width: 1,
-                )
-              : null,
+          border: hasBorder ? Border.all(color: Colors.grey[500]!, width: 1) : null,
         ),
         child: CircleAvatar(
           backgroundColor: userAvatarColor,

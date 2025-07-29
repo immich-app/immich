@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
@@ -28,11 +29,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
   final DraggableScrollableController? controller;
   final double initialChildSize;
 
-  const AssetDetailBottomSheet({
-    this.controller,
-    this.initialChildSize = 0.35,
-    super.key,
-  });
+  const AssetDetailBottomSheet({this.controller, this.initialChildSize = 0.35, super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,9 +38,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final isTrashEnable = ref.watch(
-      serverInfoProvider.select((state) => state.serverFeatures.trash),
-    );
+    final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
 
     final isInLockedView = ref.watch(inLockedViewProvider);
 
@@ -56,9 +51,8 @@ class AssetDetailBottomSheet extends ConsumerWidget {
         isTrashEnable
             ? const TrashActionButton(source: ActionSource.viewer)
             : const DeletePermanentActionButton(source: ActionSource.viewer),
-        const MoveToLockFolderActionButton(
-          source: ActionSource.viewer,
-        ),
+        const DeleteActionButton(source: ActionSource.viewer),
+        const MoveToLockFolderActionButton(source: ActionSource.viewer),
       ],
       if (asset.storage == AssetState.local) ...[
         const DeleteLocalActionButton(source: ActionSource.viewer),
@@ -151,9 +145,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         // Asset Date and Time
         _SheetTile(
           title: _getDateTime(context, asset),
-          titleStyle: context.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SheetLocationDetails(),
         // Details header
@@ -183,11 +175,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           _SheetTile(
             title: cameraTitle,
             titleStyle: context.textTheme.labelLarge,
-            leading: Icon(
-              Icons.camera_outlined,
-              size: 24,
-              color: context.textTheme.labelLarge?.color,
-            ),
+            leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
             subtitle: _getCameraInfoSubtitle(exifInfo),
             subtitleStyle: context.textTheme.bodyMedium?.copyWith(
               color: context.textTheme.bodyMedium?.color?.withAlpha(155),
@@ -205,13 +193,7 @@ class _SheetTile extends StatelessWidget {
   final TextStyle? titleStyle;
   final TextStyle? subtitleStyle;
 
-  const _SheetTile({
-    required this.title,
-    this.titleStyle,
-    this.leading,
-    this.subtitle,
-    this.subtitleStyle,
-  });
+  const _SheetTile({required this.title, this.titleStyle, this.leading, this.subtitle, this.subtitleStyle});
 
   @override
   Widget build(BuildContext context) {

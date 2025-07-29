@@ -15,22 +15,18 @@ class DriftVideoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProviderScope(
       overrides: [
-        timelineServiceProvider.overrideWith(
-          (ref) {
-            final user = ref.watch(currentUserProvider);
-            if (user == null) {
-              throw Exception('User must be logged in to video');
-            }
+        timelineServiceProvider.overrideWith((ref) {
+          final user = ref.watch(currentUserProvider);
+          if (user == null) {
+            throw Exception('User must be logged in to video');
+          }
 
-            final timelineService = ref.watch(timelineFactoryProvider).video(user.id);
-            ref.onDispose(timelineService.dispose);
-            return timelineService;
-          },
-        ),
+          final timelineService = ref.watch(timelineFactoryProvider).video(user.id);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
       ],
-      child: Timeline(
-        appBar: MesmerizingSliverAppBar(title: 'videos'.t()),
-      ),
+      child: Timeline(appBar: MesmerizingSliverAppBar(title: 'videos'.t())),
     );
   }
 }

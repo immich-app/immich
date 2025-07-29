@@ -13,12 +13,7 @@ class AssetSelectionState {
     this.selectedCount = 0,
   });
 
-  AssetSelectionState copyWith({
-    bool? hasRemote,
-    bool? hasLocal,
-    bool? hasMerged,
-    int? selectedCount,
-  }) {
+  AssetSelectionState copyWith({bool? hasRemote, bool? hasLocal, bool? hasMerged, int? selectedCount}) {
     return AssetSelectionState(
       hasRemote: hasRemote ?? this.hasRemote,
       hasLocal: hasLocal ?? this.hasLocal,
@@ -28,10 +23,10 @@ class AssetSelectionState {
   }
 
   AssetSelectionState.fromSelection(Set<Asset> selection)
-      : hasLocal = selection.any((e) => e.storage == AssetState.local),
-        hasMerged = selection.any((e) => e.storage == AssetState.merged),
-        hasRemote = selection.any((e) => e.storage == AssetState.remote),
-        selectedCount = selection.length;
+    : hasLocal = selection.any((e) => e.storage == AssetState.local),
+      hasMerged = selection.any((e) => e.storage == AssetState.merged),
+      hasRemote = selection.any((e) => e.storage == AssetState.remote),
+      selectedCount = selection.length;
 
   @override
   String toString() =>
