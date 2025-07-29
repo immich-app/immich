@@ -170,6 +170,14 @@ class ActionService {
     return removedCount;
   }
 
+  Future<bool> updateDescription(String assetId, String description) async {
+    // update remote first, then local to ensure consistency
+    await _assetApiRepository.updateDescription(assetId, description);
+    await _remoteAssetRepository.updateDescription(assetId, description);
+
+    return true;
+  }
+
   Future<void> stack(String userId, List<String> remoteIds) async {
     final stack = await _assetApiRepository.stack(remoteIds);
     await _remoteAssetRepository.stack(userId, stack);
