@@ -1717,6 +1717,8 @@
   "setting_notifications_subtitle": "Adjust your notification preferences",
   "setting_notifications_total_progress_subtitle": "Overall upload progress (done/total assets)",
   "setting_notifications_total_progress_title": "Show background backup total progress",
+  "setting_video_viewer_auto_play_subtitle": "Automatically start playing videos when they are opened",
+  "setting_video_viewer_auto_play_title": "Auto play videos",
   "setting_video_viewer_looping_title": "Looping",
   "setting_video_viewer_original_video_subtitle": "When streaming a video from the server, play the original even when a transcode is available. May lead to buffering. Videos available locally are played in original quality regardless of this setting.",
   "setting_video_viewer_original_video_title": "Force original video",

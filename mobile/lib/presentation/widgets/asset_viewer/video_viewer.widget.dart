@@ -209,7 +209,10 @@ class NativeVideoViewer extends HookConsumerWidget {
       }
 
       try {
-        await videoController.play();
+        final autoPlayVideo = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.autoPlayVideo);
+        if (autoPlayVideo) {
+          await videoController.play();
+        }
         await videoController.setVolume(0.9);
       } catch (error) {
         log.severe('Error playing video: $error');
