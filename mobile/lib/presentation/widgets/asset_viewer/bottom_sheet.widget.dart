@@ -19,11 +19,10 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
@@ -260,11 +259,9 @@ class _SheetAssetDescription extends HookConsumerWidget {
         return;
       }
 
-      try {
-        // update remote first, then local to ensure consistency
-        await ref.read(assetApiRepositoryProvider).updateDescription((asset as RemoteAsset).id, newDescription);
-        await ref.read(remoteAssetRepositoryProvider).updateDescription((asset as RemoteAsset).id, newDescription);
-      } catch (e) {
+      final editAction = await ref.read(actionProvider.notifier).updateDescription(ActionSource.viewer, newDescription);
+
+      if (!editAction.success) {
         controller.text = oldDescription ?? '';
 
         ImmichToast.show(
