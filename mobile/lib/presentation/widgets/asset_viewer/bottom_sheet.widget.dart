@@ -151,6 +151,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           title: _getDateTime(context, asset),
           titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
+        if (exifInfo != null) _SheetAssetDescription(asset: asset, assetExif: exifInfo),
         const SheetLocationDetails(),
         // Details header
         _SheetTile(
@@ -185,7 +186,6 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
               color: context.textTheme.bodyMedium?.color?.withAlpha(155),
             ),
           ),
-        if (exifInfo != null) _SheetAssetDescription(asset: asset, assetExif: exifInfo),
       ],
     );
   }
