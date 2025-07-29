@@ -104,6 +104,7 @@ class HashService {
     DLog.log("Hashed ${hashed.length}/${toHash.length} assets");
 
     await _localAssetRepository.updateHashes(hashed);
+    await _storageRepository.clearCache();
   }
 }
 
