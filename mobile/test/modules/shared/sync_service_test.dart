@@ -82,7 +82,7 @@ void main() {
       db.writeTxnSync(() => db.clearSync());
       await StoreService.init(storeRepository: IsarStoreRepository(db));
       await Store.put(StoreKey.currentUser, owner);
-      await LogService.init(logRepository: IsarLogRepository(db), storeRepository: IsarStoreRepository(db));
+      await LogService.init(logRepository: LogRepository.init(db), storeRepository: IsarStoreRepository(db));
     });
     final List<Asset> initialAssets = [
       makeAsset(checksum: "a", remoteId: "0-1"),

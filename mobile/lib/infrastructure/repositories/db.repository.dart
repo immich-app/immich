@@ -9,6 +9,7 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
@@ -126,6 +127,25 @@ class Drift extends $Drift implements IDatabaseRepository {
 class DriftDatabaseRepository implements IDatabaseRepository {
   final Drift _db;
   const DriftDatabaseRepository(this._db);
+
+  @override
+  Future<T> transaction<T>(Future<T> Function() callback) => _db.transaction(callback);
+}
+
+@DriftDatabase(tables: [LogMessageEntity])
+class DriftLogger extends $DriftLogger implements IDatabaseRepository {
+  DriftLogger([QueryExecutor? executor])
+    : super(
+        executor ?? driftDatabase(name: 'immich_logs', native: const DriftNativeOptions(shareAcrossIsolates: true)),
+      );
+
+  @override
+  int get schemaVersion => 1;
+}
+
+class DriftLoggerDatabaseRepository implements IDatabaseRepository {
+  final DriftLogger _db;
+  const DriftLoggerDatabaseRepository(this._db);
 
   @override
   Future<T> transaction<T>(Future<T> Function() callback) => _db.transaction(callback);
