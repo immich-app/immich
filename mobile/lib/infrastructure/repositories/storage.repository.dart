@@ -66,4 +66,14 @@ class StorageRepository {
     }
     return entity;
   }
+
+  Future<void> clearCache() async {
+    final log = Logger('StorageRepository');
+
+    try {
+      await PhotoManager.clearFileCache();
+    } catch (error, stackTrace) {
+      log.warning("Error clearing cache", error, stackTrace);
+    }
+  }
 }

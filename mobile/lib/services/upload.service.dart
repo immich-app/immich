@@ -89,6 +89,7 @@ class UploadService {
   }
 
   Future<void> manualBackup(List<LocalAsset> localAssets) async {
+    await _storageRepository.clearCache();
     List<UploadTask> tasks = [];
     for (final asset in localAssets) {
       final task = await _getUploadTask(
@@ -110,6 +111,8 @@ class UploadService {
   /// Build the upload tasks
   /// Enqueue the tasks
   Future<void> startBackup(String userId, void Function(EnqueueStatus status) onEnqueueTasks) async {
+    await _storageRepository.clearCache();
+
     shouldAbortQueuingTasks = false;
 
     final candidates = await _backupRepository.getCandidates(userId);
@@ -149,6 +152,7 @@ class UploadService {
   Future<int> cancelBackup() async {
     shouldAbortQueuingTasks = true;
 
+    await _storageRepository.clearCache();
     await _uploadRepository.reset(kBackupGroup);
     await _uploadRepository.deleteDatabaseRecords(kBackupGroup);
 
