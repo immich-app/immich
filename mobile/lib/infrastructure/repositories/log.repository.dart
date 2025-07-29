@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/log.entity.drift.dart';
@@ -77,7 +78,7 @@ class LogRepository extends DriftLoggerDatabaseRepository {
     return query.watch().map((rows) => rows.map((row) => row.toDto()).toList());
   }
 
-  Future<void> truncate({int limit = 2000}) async {
+  Future<void> truncate({int limit = kLogTruncateLimit}) async {
     final totalCount = await _db.managers.logMessageEntity.count();
     if (totalCount > limit) {
       final rowsToDelete = totalCount - limit;
