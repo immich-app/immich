@@ -5,7 +5,12 @@
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
-  import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
+  import {
+    autoPlayVideo,
+    loopVideo as loopVideoPreference,
+    videoViewerMuted,
+    videoViewerVolume,
+  } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
@@ -126,7 +131,7 @@
       <video
         bind:this={videoPlayer}
         loop={$loopVideoPreference && loopVideo}
-        autoplay
+        autoplay={$autoPlayVideo}
         playsinline
         controls
         class="h-full object-contain"

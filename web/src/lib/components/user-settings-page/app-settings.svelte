@@ -7,6 +7,7 @@
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import {
     alwaysLoadOriginalFile,
+    autoPlayVideo,
     locale,
     loopVideo,
     playVideoThumbnailOnHover,
@@ -120,6 +121,13 @@
           title={$t('video_hover_setting')}
           subtitle={$t('video_hover_setting_description')}
           bind:checked={$playVideoThumbnailOnHover}
+        />
+      </div>
+      <div class="ms-4">
+        <SettingSwitch
+          title={$t('setting_video_viewer_auto_play_title')}
+          subtitle={$t('setting_video_viewer_auto_play_subtitle')}
+          bind:checked={$autoPlayVideo}
         />
       </div>
       <div class="ms-4">
