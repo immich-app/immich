@@ -42,12 +42,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     try {
       await _db.batch((batch) {
         for (final user in data) {
-          final companion = UserEntityCompanion(
-            name: Value(user.name),
-            email: Value(user.email),
-            hasProfileImage: Value(user.hasProfileImage),
-            profileChangedAt: Value(user.profileChangedAt),
-          );
+          final companion = UserEntityCompanion(name: Value(user.name), email: Value(user.email));
 
           batch.insert(_db.userEntity, companion.copyWith(id: Value(user.id)), onConflict: DoUpdate((_) => companion));
         }
