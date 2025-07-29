@@ -2,7 +2,7 @@ import { Kysely, sql } from 'kysely';
 
 export async function up(db: Kysely<any>): Promise<void> {
   await sql`DELETE FROM session_sync_checkpoint
-  WHERE type IN [
+  WHERE type IN (
     'UserV1',
     'AuthUserV1',
     'AssetV1',
@@ -10,12 +10,12 @@ export async function up(db: Kysely<any>): Promise<void> {
     'PartnerAssetBackfillV1',
     'AlbumAssetV1',
     'AlbumAssetBackfillV1'
-  ]`.execute(db);
+  )`.execute(db);
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
   await sql`DELETE FROM session_sync_checkpoint
-  WHERE type IN [
+  WHERE type IN (
     'UserV1',
     'AuthUserV1',
     'AssetV1',
@@ -23,5 +23,5 @@ export async function down(db: Kysely<any>): Promise<void> {
     'PartnerAssetBackfillV1',
     'AlbumAssetV1',
     'AlbumAssetBackfillV1'
-  ]`.execute(db);
+  )`.execute(db);
 }
