@@ -29,7 +29,7 @@ LEFT JOIN
 WHERE
 	rae.deleted_at IS NULL
 	AND rae.visibility = 0 -- timeline visibility
-	AND rae.owner_id in ?
+	AND rae.owner_id IN :user_ids
 	AND (
 		rae.stack_id IS NULL
 		OR rae.id = se.primary_asset_id
@@ -57,7 +57,7 @@ SELECT
 FROM
 	local_asset_entity lae
 WHERE NOT EXISTS (
-	SELECT 1 FROM remote_asset_entity rae WHERE rae.checksum = lae.checksum
+	SELECT 1 FROM remote_asset_entity rae WHERE rae.checksum = lae.checksum AND rae.owner_id IN :user_ids
 )
 AND EXISTS (
 	SELECT 1 FROM local_album_asset_entity laa
@@ -85,7 +85,7 @@ FROM
 	WHERE
 		rae.deleted_at IS NULL
 		AND rae.visibility = 0 -- timeline visibility
-		AND rae.owner_id in ?
+		AND rae.owner_id in :user_ids
 		AND (
 			rae.stack_id IS NULL
 			OR rae.id = se.primary_asset_id
@@ -103,6 +103,7 @@ FROM
 		local_album_entity la ON la.id = laa.album_id
 	WHERE
 		rae.id IS NULL
+		AND rae.owner_id IN :user_ids
 		AND la.backup_selection = 0 -- selected
 )
 GROUP BY bucket_date
