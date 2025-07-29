@@ -38,7 +38,7 @@ jobs:
             exit 1
           fi
       - name: Find Pull Request
-        uses: juliangruber/find-pull-request-action@48b6133aa6c826f267ebd33aa2d29470f9d9e7d0 # v1.9.0
+        uses: juliangruber/find-pull-request-action@952b3bb1ddb2dcc0aa3479e98bb1c2d1a922f096 # v1.10.0
         id: find-pr
         with:
           branch: chore/translations
