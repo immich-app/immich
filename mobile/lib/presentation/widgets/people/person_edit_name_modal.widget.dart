@@ -30,6 +30,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
     try {
       final result = await ref.read(driftPeopleServiceProvider).updateName(personId, newName);
       if (result != 0) {
+        ref.invalidate(driftGetAllPeopleProvider);
         context.pop<String>(newName);
       }
     } catch (error) {
