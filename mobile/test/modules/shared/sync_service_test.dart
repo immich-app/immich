@@ -66,7 +66,14 @@ void main() {
     final MockPartnerRepository partnerRepository = MockPartnerRepository();
     final MockUserService userService = MockUserService();
 
-    final owner = UserDto(id: "1", updatedAt: DateTime.now(), email: "a@b.c", name: "first last", isAdmin: false);
+    final owner = UserDto(
+      id: "1",
+      updatedAt: DateTime.now(),
+      email: "a@b.c",
+      name: "first last",
+      isAdmin: false,
+      profileChangedAt: DateTime(2021),
+    );
     late SyncService s;
     setUpAll(() async {
       WidgetsFlutterBinding.ensureInitialized();
