@@ -12,7 +12,7 @@
       <Icon path={mdiAlert} size="96" class="text-warning" />
       <p class="mb-2">
         <FormatMessage key="admin.backup_onboarding_description">
-          {#snippet children({ tag, message })}
+          {#snippet children({ message })}
             <a
               href="https://www.backblaze.com/blog/the-3-2-1-backup-strategy/"
               class="underline"
