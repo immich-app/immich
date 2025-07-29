@@ -29,6 +29,7 @@ extension PHAsset {
       height: Int64(pixelHeight),
       durationInSeconds: Int64(duration),
       orientation: 0
+      isFavorite: isFavorite
     )
   }
 }
