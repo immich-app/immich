@@ -249,13 +249,14 @@ class _SheetAssetDescription extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = useTextEditingController(text: assetExif.description ?? '');
+    final descriptionFocus = useFocusNode();
 
     Future<void> saveDescription() async {
       final newDescription = controller.text.trim();
       final oldDescription = assetExif.description;
 
       if (newDescription == oldDescription) {
-        FocusScope.of(context).unfocus();
+        descriptionFocus.unfocus();
         return;
       }
 
@@ -273,8 +274,7 @@ class _SheetAssetDescription extends HookConsumerWidget {
         );
       }
 
-      // unfocus text field
-      FocusScope.of(context).unfocus();
+      descriptionFocus.unfocus();
     }
 
     return Padding(
@@ -282,6 +282,7 @@ class _SheetAssetDescription extends HookConsumerWidget {
       child: TextField(
         controller: controller,
         keyboardType: TextInputType.multiline,
+        focusNode: descriptionFocus,
         maxLines: null, // makes it grow as text is added
         decoration: InputDecoration(
           hintText: 'exif_bottom_sheet_description'.t(context: context),
