@@ -143,12 +143,22 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
     final cameraTitle = _getCameraInfoTitle(exifInfo);
 
+    Future<void> editDateTime() async {
+      await ref.read(actionProvider.notifier).editDateTime(ActionSource.viewer, context);
+    }
+
     return SliverList.list(
       children: [
         // Asset Date and Time
         _SheetTile(
           title: _getDateTime(context, asset),
           titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          trailing: IconButton(
+            icon: const Icon(Icons.edit, size: 18),
+            onPressed: () async {
+              await editDateTime();
+            },
+          ),
         ),
         if (exifInfo != null) _SheetAssetDescription(exif: exifInfo),
         const SheetPeopleDetails(),
@@ -194,11 +204,19 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
 class _SheetTile extends StatelessWidget {
   final String title;
   final Widget? leading;
+  final Widget? trailing;
   final String? subtitle;
   final TextStyle? titleStyle;
   final TextStyle? subtitleStyle;
 
-  const _SheetTile({required this.title, this.titleStyle, this.leading, this.subtitle, this.subtitleStyle});
+  const _SheetTile({
+    required this.title,
+    this.titleStyle,
+    this.leading,
+    this.subtitle,
+    this.subtitleStyle,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -234,6 +252,7 @@ class _SheetTile extends StatelessWidget {
       title: titleWidget,
       titleAlignment: ListTileTitleAlignment.center,
       leading: leading,
+      trailing: trailing,
       contentPadding: leading == null ? null : const EdgeInsets.only(left: 25),
       subtitle: subtitleWidget,
     );
