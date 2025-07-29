@@ -41,9 +41,8 @@ class ThumbnailImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final assetContainerColor = context.isDarkTheme
-        ? context.primaryColor.darken(amount: 0.6)
-        : context.primaryColor.lighten(amount: 0.8);
+    final assetContainerColor =
+        context.isDarkTheme ? context.primaryColor.darken(amount: 0.6) : context.primaryColor.lighten(amount: 0.8);
 
     return Stack(
       children: [
@@ -64,7 +63,11 @@ class ThumbnailImage extends StatelessWidget {
               ),
               if (showStorageIndicator) _StorageIcon(storage: asset.storage),
               if (asset.isFavorite)
-                const Positioned(left: 8, bottom: 5, child: Icon(Icons.favorite, color: Colors.white, size: 16)),
+                const Positioned(
+                  left: 8,
+                  bottom: 5,
+                  child: Icon(Icons.favorite, color: Colors.white, size: 16),
+                ),
               if (asset.isVideo) _VideoIcon(duration: asset.duration),
               if (asset.stackCount > 0) _StackIcon(isVideo: asset.isVideo, stackCount: asset.stackCount),
             ],
@@ -107,9 +110,8 @@ class _SelectedIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final assetContainerColor = context.isDarkTheme
-        ? context.primaryColor.darken(amount: 0.6)
-        : context.primaryColor.lighten(amount: 0.8);
+    final assetContainerColor =
+        context.isDarkTheme ? context.primaryColor.darken(amount: 0.6) : context.primaryColor.lighten(amount: 0.8);
 
     return DecoratedBox(
       decoration: BoxDecoration(shape: BoxShape.circle, color: assetContainerColor),
@@ -132,7 +134,11 @@ class _VideoIcon extends StatelessWidget {
         children: [
           Text(
             duration.format(),
-            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(width: 3),
           const Icon(Icons.play_circle_fill_rounded, color: Colors.white, size: 18),
@@ -158,7 +164,11 @@ class _StackIcon extends StatelessWidget {
           if (stackCount > 1)
             Text(
               "$stackCount",
-              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           if (stackCount > 1) const SizedBox(width: 3),
           const Icon(Icons.burst_mode_rounded, color: Colors.white, size: 18),
@@ -177,35 +187,53 @@ class _StorageIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (storage) {
       AssetState.local => const Positioned(
-        right: 8,
-        bottom: 5,
-        child: Icon(
-          Icons.cloud_off_outlined,
-          color: Color.fromRGBO(255, 255, 255, 0.8),
-          size: 16,
-          shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
+          right: 8,
+          bottom: 5,
+          child: Icon(
+            Icons.cloud_off_outlined,
+            color: Color.fromRGBO(255, 255, 255, 0.8),
+            size: 16,
+            shadows: [
+              Shadow(
+                blurRadius: 5.0,
+                color: Color.fromRGBO(0, 0, 0, 0.6),
+                offset: Offset(0.0, 0.0),
+              ),
+            ],
+          ),
         ),
-      ),
       AssetState.remote => const Positioned(
-        right: 8,
-        bottom: 5,
-        child: Icon(
-          Icons.cloud_outlined,
-          color: Color.fromRGBO(255, 255, 255, 0.8),
-          size: 16,
-          shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
+          right: 8,
+          bottom: 5,
+          child: Icon(
+            Icons.cloud_outlined,
+            color: Color.fromRGBO(255, 255, 255, 0.8),
+            size: 16,
+            shadows: [
+              Shadow(
+                blurRadius: 5.0,
+                color: Color.fromRGBO(0, 0, 0, 0.6),
+                offset: Offset(0.0, 0.0),
+              ),
+            ],
+          ),
         ),
-      ),
       AssetState.merged => const Positioned(
-        right: 8,
-        bottom: 5,
-        child: Icon(
-          Icons.cloud_done_outlined,
-          color: Color.fromRGBO(255, 255, 255, 0.8),
-          size: 16,
-          shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
+          right: 8,
+          bottom: 5,
+          child: Icon(
+            Icons.cloud_done_outlined,
+            color: Color.fromRGBO(255, 255, 255, 0.8),
+            size: 16,
+            shadows: [
+              Shadow(
+                blurRadius: 5.0,
+                color: Color.fromRGBO(0, 0, 0, 0.6),
+                offset: Offset(0.0, 0.0),
+              ),
+            ],
+          ),
         ),
-      ),
     };
   }
 }
