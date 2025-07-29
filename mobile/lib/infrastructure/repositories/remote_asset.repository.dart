@@ -196,7 +196,7 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
         );
         batch.update(
           _db.remoteAssetEntity,
-          RemoteAssetEntityCompanion(localDateTime: Value(dateTime), createdAt: Value(dateTime)),
+          RemoteAssetEntityCompanion(createdAt: Value(dateTime)),
           where: (e) => e.id.equals(id),
         );
       }
