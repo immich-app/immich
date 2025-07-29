@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -18,10 +19,13 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 const _kSeparator = '  •  ';
 
@@ -181,6 +185,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
               color: context.textTheme.bodyMedium?.color?.withAlpha(155),
             ),
           ),
+        if (exifInfo != null) _SheetAssetDescription(asset: asset, assetExif: exifInfo),
       ],
     );
   }
@@ -231,6 +236,60 @@ class _SheetTile extends StatelessWidget {
       leading: leading,
       contentPadding: leading == null ? null : const EdgeInsets.only(left: 25),
       subtitle: subtitleWidget,
+    );
+  }
+}
+
+class _SheetAssetDescription extends HookConsumerWidget {
+  final BaseAsset asset;
+  final ExifInfo assetExif;
+
+  const _SheetAssetDescription({required this.asset, required this.assetExif});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final controller = useTextEditingController(text: assetExif.description ?? '');
+
+    Future<void> saveDescription() async {
+      final newDescription = controller.text.trim();
+      final oldDescription = assetExif.description;
+
+      if (newDescription == oldDescription) {
+        FocusScope.of(context).unfocus();
+        return;
+      }
+
+      try {
+        // update remote first, then local to ensure consistency
+        await ref.read(assetApiRepositoryProvider).updateDescription((asset as RemoteAsset).id, newDescription);
+        await ref.read(remoteAssetRepositoryProvider).updateDescription((asset as RemoteAsset).id, newDescription);
+      } catch (e) {
+        controller.text = oldDescription ?? '';
+
+        ImmichToast.show(
+          context: context,
+          msg: 'exif_bottom_sheet_description_error'.t(context: context),
+          toastType: ToastType.error,
+        );
+      }
+
+      // unfocus text field
+      FocusScope.of(context).unfocus();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.multiline,
+        maxLines: null, // makes it grow as text is added
+        decoration: InputDecoration(
+          hintText: 'exif_bottom_sheet_description'.t(context: context),
+          border: const OutlineInputBorder(),
+          contentPadding: const EdgeInsets.all(16),
+        ),
+        onTapOutside: (_) => saveDescription(),
+      ),
     );
   }
 }

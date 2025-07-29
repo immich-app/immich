@@ -93,6 +93,10 @@ class AssetApiRepository extends ApiRepository {
     // we need to get the MIME of the thumbnail once that gets added to the API
     return response.originalMimeType;
   }
+
+  Future<void> updateDescription(String assetId, String description) {
+    return _api.updateAsset(assetId, UpdateAssetDto(description: description));
+  }
 }
 
 extension on StackResponseDto {

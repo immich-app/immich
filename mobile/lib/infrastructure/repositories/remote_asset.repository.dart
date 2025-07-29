@@ -226,6 +226,14 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     });
   }
 
+  Future<void> updateDescription(String assetId, String description) async {
+    return _db.transaction(() async {
+      await (_db.remoteExifEntity.update()..where((row) => row.assetId.equals(assetId))).write(
+        RemoteExifEntityCompanion(description: Value(description)),
+      );
+    });
+  }
+
   Future<int> getCount() {
     return _db.managers.remoteAssetEntity.count();
   }
