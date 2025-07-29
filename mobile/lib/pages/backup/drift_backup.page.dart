@@ -119,7 +119,7 @@ class _BackupWifiRequirementButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final valueStream = Store.watch(StoreKey.uploadRequiredWifi);
+    final valueStream = Store.watch(StoreKey.useWifiForUploadVideos);
 
     return ListTile(
       title: Text("network_requirements".t(context: context), style: context.textTheme.titleMedium).tr(),
