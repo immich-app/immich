@@ -150,7 +150,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           title: _getDateTime(context, asset),
           titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
-        if (exifInfo != null) _SheetAssetDescription(asset: asset, assetExif: exifInfo),
+        if (exifInfo != null) _SheetAssetDescription(exif: exifInfo),
         const SheetLocationDetails(),
         // Details header
         _SheetTile(
@@ -239,54 +239,76 @@ class _SheetTile extends StatelessWidget {
   }
 }
 
-class _SheetAssetDescription extends HookConsumerWidget {
-  final BaseAsset asset;
-  final ExifInfo assetExif;
+class _SheetAssetDescription extends ConsumerStatefulWidget {
+  final ExifInfo exif;
 
-  const _SheetAssetDescription({required this.asset, required this.assetExif});
+  const _SheetAssetDescription({required this.exif});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = useTextEditingController(text: assetExif.description ?? '');
-    final descriptionFocus = useFocusNode();
+  ConsumerState<_SheetAssetDescription> createState() => _SheetAssetDescriptionState();
+}
 
-    Future<void> saveDescription() async {
-      final newDescription = controller.text.trim();
-      final oldDescription = assetExif.description;
+class _SheetAssetDescriptionState extends ConsumerState<_SheetAssetDescription> {
+  late TextEditingController _controller;
+  final _descriptionFocus = FocusNode();
 
-      if (newDescription == oldDescription) {
-        descriptionFocus.unfocus();
-        return;
-      }
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.exif.description ?? '');
+  }
 
-      final editAction = await ref.read(actionProvider.notifier).updateDescription(ActionSource.viewer, newDescription);
+  Future<void> saveDescription(String? previousDescription) async {
+    final newDescription = _controller.text.trim();
 
-      if (!editAction.success) {
-        controller.text = oldDescription ?? '';
+    if (newDescription == previousDescription) {
+      _descriptionFocus.unfocus();
+      return;
+    }
 
-        ImmichToast.show(
-          context: context,
-          msg: 'exif_bottom_sheet_description_error'.t(context: context),
-          toastType: ToastType.error,
-        );
-      }
+    final editAction = await ref.read(actionProvider.notifier).updateDescription(ActionSource.viewer, newDescription);
 
-      descriptionFocus.unfocus();
+    if (!editAction.success) {
+      _controller.text = previousDescription ?? '';
+
+      ImmichToast.show(
+        context: context,
+        msg: 'exif_bottom_sheet_description_error'.t(context: context),
+        toastType: ToastType.error,
+      );
+    }
+
+    _descriptionFocus.unfocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Watch the current asset EXIF provider to get updates
+    final currentExifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
+
+    // Update controller text when EXIF data changes
+    final currentDescription = currentExifInfo?.description ?? '';
+    if (_controller.text != currentDescription && !_descriptionFocus.hasFocus) {
+      _controller.text = currentDescription;
     }
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
       child: TextField(
-        controller: controller,
+        controller: _controller,
         keyboardType: TextInputType.multiline,
-        focusNode: descriptionFocus,
+        focusNode: _descriptionFocus,
         maxLines: null, // makes it grow as text is added
         decoration: InputDecoration(
           hintText: 'exif_bottom_sheet_description'.t(context: context),
-          border: const OutlineInputBorder(),
-          contentPadding: const EdgeInsets.all(16),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          disabledBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
         ),
-        onTapOutside: (_) => saveDescription(),
+        onTapOutside: (_) => saveDescription(currentExifInfo?.description),
       ),
     );
   }
