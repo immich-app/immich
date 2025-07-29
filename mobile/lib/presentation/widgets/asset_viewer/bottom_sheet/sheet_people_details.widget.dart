@@ -8,6 +8,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
@@ -70,6 +71,15 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
                         person: person,
                         assetFileCreatedAt: asset.createdAt,
                         onTap: () {
+                          final previousRouteData = ref.read(previousRouteDataProvider);
+                          final previousRouteArgs = previousRouteData?.arguments;
+
+                          // Prevent circular navigation
+                          if (previousRouteArgs is DriftPersonRouteArgs && previousRouteArgs.person.id == person.id) {
+                            context.back();
+                            return;
+                          }
+                          context.back();
                           context.pushRoute(DriftPersonRoute(person: person));
                         },
                         onNameTap: () => showNameEditModal(person),
