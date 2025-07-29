@@ -1,6 +1,5 @@
 import { Stats } from 'node:fs';
 import { defaults, SystemConfig } from 'src/config';
-import { APP_MEDIA_LOCATION } from 'src/constants';
 import { AssetPathType, JobStatus } from 'src/enum';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { albumStub } from 'test/fixtures/album.stub';
@@ -111,10 +110,8 @@ describe(StorageTemplateService.name, () => {
 
     it('should migrate single moving picture', async () => {
       mocks.user.get.mockResolvedValue(userStub.user1);
-      const newMotionPicturePath =
-        APP_MEDIA_LOCATION + `/library/${motionAsset.ownerId}/2022/2022-06-19/${motionAsset.originalFileName}`;
-      const newStillPicturePath =
-        APP_MEDIA_LOCATION + `/library/${stillAsset.ownerId}/2022/2022-06-19/${stillAsset.originalFileName}`;
+      const newMotionPicturePath = `/data/library/${motionAsset.ownerId}/2022/2022-06-19/${motionAsset.originalFileName}`;
+      const newStillPicturePath = `/data/library/${stillAsset.ownerId}/2022/2022-06-19/${stillAsset.originalFileName}`;
 
       mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(stillAsset);
       mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(motionAsset);
@@ -243,9 +240,7 @@ describe(StorageTemplateService.name, () => {
       const month = (asset.fileCreatedAt.getMonth() + 1).toString().padStart(2, '0');
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: asset.id,
-        newPath:
-          APP_MEDIA_LOCATION +
-          `/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${month}/${asset.originalFileName}`,
+        newPath: `/data/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${month}/${asset.originalFileName}`,
         oldPath: asset.originalPath,
         pathType: AssetPathType.Original,
       });
@@ -255,9 +250,8 @@ describe(StorageTemplateService.name, () => {
       mocks.user.get.mockResolvedValue(userStub.user1);
 
       const asset = assetStub.storageAsset();
-      const previousFailedNewPath =
-        APP_MEDIA_LOCATION + `/library/${userStub.user1.id}/2023/Feb/${asset.originalFileName}`;
-      const newPath = APP_MEDIA_LOCATION + `/library/${userStub.user1.id}/2022/2022-06-19/${asset.originalFileName}`;
+      const previousFailedNewPath = `/data/library/${userStub.user1.id}/2023/Feb/${asset.originalFileName}`;
+      const newPath = `/data/library/${userStub.user1.id}/2022/2022-06-19/${asset.originalFileName}`;
 
       mocks.storage.checkFileExists.mockImplementation((path) => Promise.resolve(path === asset.originalPath));
       mocks.move.getByEntity.mockResolvedValue({
@@ -296,9 +290,8 @@ describe(StorageTemplateService.name, () => {
       mocks.user.get.mockResolvedValue(userStub.user1);
 
       const asset = assetStub.storageAsset({ fileSizeInByte: 5000 });
-      const previousFailedNewPath =
-        APP_MEDIA_LOCATION + `/library/${asset.ownerId}/2022/June/${asset.originalFileName}`;
-      const newPath = APP_MEDIA_LOCATION + `/library/${asset.ownerId}/2022/2022-06-19/${asset.originalFileName}`;
+      const previousFailedNewPath = `/data/library/${asset.ownerId}/2022/June/${asset.originalFileName}`;
+      const newPath = `/data/library/${asset.ownerId}/2022/2022-06-19/${asset.originalFileName}`;
 
       mocks.storage.checkFileExists.mockImplementation((path) => Promise.resolve(path === previousFailedNewPath));
       mocks.storage.stat.mockResolvedValue({ size: 5000 } as Stats);
@@ -332,8 +325,7 @@ describe(StorageTemplateService.name, () => {
 
     it('should fail move if copying and hash of asset and the new file do not match', async () => {
       mocks.user.get.mockResolvedValue(userStub.user1);
-      const newPath =
-        APP_MEDIA_LOCATION + `/library/${userStub.user1.id}/2022/2022-06-19/${testAsset.originalFileName}`;
+      const newPath = `/data/library/${userStub.user1.id}/2022/2022-06-19/${testAsset.originalFileName}`;
 
       mocks.storage.rename.mockRejectedValue({ code: 'EXDEV' });
       mocks.storage.stat.mockResolvedValue({ size: 5000 } as Stats);
@@ -423,7 +415,7 @@ describe(StorageTemplateService.name, () => {
     it('should handle an asset with a duplicate destination', async () => {
       const asset = assetStub.storageAsset();
       const oldPath = asset.originalPath;
-      const newPath = APP_MEDIA_LOCATION + `/library/user-id/2022/2022-06-19/${asset.originalFileName}`;
+      const newPath = `/data/library/user-id/2022/2022-06-19/${asset.originalFileName}`;
       const newPath2 = newPath.replace('.jpg', '+1.jpg');
 
       mocks.assetJob.streamForStorageTemplateJob.mockReturnValue(makeStream([asset]));
@@ -480,7 +472,7 @@ describe(StorageTemplateService.name, () => {
     it('should move an asset', async () => {
       const asset = assetStub.storageAsset();
       const oldPath = asset.originalPath;
-      const newPath = APP_MEDIA_LOCATION + `/library/user-id/2022/2022-06-19/${asset.originalFileName}`;
+      const newPath = `/data/library/user-id/2022/2022-06-19/${asset.originalFileName}`;
       mocks.assetJob.streamForStorageTemplateJob.mockReturnValue(makeStream([asset]));
       mocks.user.getList.mockResolvedValue([userStub.user1]);
       mocks.move.create.mockResolvedValue({
@@ -529,7 +521,7 @@ describe(StorageTemplateService.name, () => {
     it('should copy the file if rename fails due to EXDEV (rename across filesystems)', async () => {
       const asset = assetStub.storageAsset({ originalPath: '/path/to/original.jpg', fileSizeInByte: 5000 });
       const oldPath = asset.originalPath;
-      const newPath = APP_MEDIA_LOCATION + `/library/user-id/2022/2022-06-19/${asset.originalFileName}`;
+      const newPath = `/data/library/user-id/2022/2022-06-19/${asset.originalFileName}`;
       mocks.assetJob.streamForStorageTemplateJob.mockReturnValue(makeStream([asset]));
       mocks.storage.rename.mockRejectedValue({ code: 'EXDEV' });
       mocks.user.getList.mockResolvedValue([userStub.user1]);

@@ -1,6 +1,5 @@
 import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
-import { APP_MEDIA_LOCATION } from 'src/constants';
 import { Exif } from 'src/database';
 import {
   AssetFileType,
@@ -486,8 +485,8 @@ describe(MediaService.name, () => {
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
-      const previewPath = APP_MEDIA_LOCATION + `/thumbs/user-id/as/se/asset-id-preview.${format}`;
-      const thumbnailPath = APP_MEDIA_LOCATION + `/thumbs/user-id/as/se/asset-id-thumbnail.webp`;
+      const previewPath = `/data/thumbs/user-id/as/se/asset-id-preview.${format}`;
+      const thumbnailPath = `/data/thumbs/user-id/as/se/asset-id-thumbnail.webp`;
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -2895,7 +2894,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        APP_MEDIA_LOCATION + '/encoded-video/user-id/as/se/asset-id.mp4',
+        '/data/encoded-video/user-id/as/se/asset-id.mp4',
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:a copy']),

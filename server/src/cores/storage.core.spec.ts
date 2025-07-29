@@ -2,7 +2,6 @@ import { StorageCore } from 'src/cores/storage.core';
 import { vitest } from 'vitest';
 
 vitest.mock('src/constants', () => ({
-  APP_MEDIA_LOCATION: '/photos',
   ADDED_IN_PREFIX: 'This property was added in ',
   DEPRECATED_IN_PREFIX: 'This property was deprecated in ',
   IWorker: 'IWorker',
@@ -10,6 +9,10 @@ vitest.mock('src/constants', () => ({
 
 describe('StorageCore', () => {
   describe('isImmichPath', () => {
+    beforeAll(() => {
+      StorageCore.setMediaLocation('/photos');
+    });
+
     it('should return true for APP_MEDIA_LOCATION path', () => {
       const immichPath = '/photos';
       expect(StorageCore.isImmichPath(immichPath)).toBe(true);

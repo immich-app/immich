@@ -20,6 +20,14 @@ describe(StorageService.name, () => {
     it('should enable mount folder checking', async () => {
       mocks.systemMetadata.get.mockResolvedValue(null);
       mocks.asset.getFileSamples.mockResolvedValue([]);
+      mocks.config.getEnv.mockReturnValue(
+        mockEnvData({
+          storage: {
+            ignoreMountCheckErrors: false,
+            mediaLocation: '/data',
+          },
+        }),
+      );
 
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
@@ -77,6 +85,14 @@ describe(StorageService.name, () => {
         },
       });
       mocks.asset.getFileSamples.mockResolvedValue([]);
+      mocks.config.getEnv.mockReturnValue(
+        mockEnvData({
+          storage: {
+            ignoreMountCheckErrors: false,
+            mediaLocation: '/data',
+          },
+        }),
+      );
 
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
 

@@ -1,5 +1,4 @@
 import { BadRequestException } from '@nestjs/common';
-import { APP_MEDIA_LOCATION } from 'src/constants';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { DownloadService } from 'src/services/download.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -291,7 +290,7 @@ describe(DownloadService.name, () => {
             id: 'asset-2',
             livePhotoVideoId: null,
             size: 23_456,
-            originalPath: APP_MEDIA_LOCATION + '/encoded-video/uuid-MP.mp4',
+            originalPath: '/data/encoded-video/uuid-MP.mp4',
           },
         ]),
       );
