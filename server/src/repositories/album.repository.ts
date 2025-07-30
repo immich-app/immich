@@ -62,6 +62,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'album'>) => {
         .where('asset.deletedAt', 'is', null)
         .$call(withDefaultVisibility)
         .orderBy('asset.fileCreatedAt', 'desc')
+        .orderBy('asset.originalFileName', 'desc')
         .as('asset'),
     )
     .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
@@ -338,6 +339,7 @@ export class AlbumRepository {
         albumThumbnailAssetId: this.updateThumbnailBuilder(eb)
           .select('album_asset.assetsId')
           .orderBy('asset.fileCreatedAt', 'desc')
+          .orderBy('asset.originalFileName', 'desc')
           .limit(1),
       }))
       .where((eb) =>

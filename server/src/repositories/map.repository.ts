@@ -135,6 +135,7 @@ export class MapRepository {
         return eb.or(expression);
       })
       .orderBy('fileCreatedAt', 'desc')
+      .orderBy('originalFileName', 'desc')
       .execute();
   }
 

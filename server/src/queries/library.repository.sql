@@ -54,12 +54,3 @@ where
   "library"."id" = $6
 group by
   "library"."id"
-select
-  0::int as "photos",
-  0::int as "videos",
-  0::int as "usage",
-  0::int as "total"
-from
-  "library"
-where
-  "library"."id" = $1

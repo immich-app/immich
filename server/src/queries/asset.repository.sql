@@ -336,7 +336,8 @@ with
           and "stack"."primaryAssetId" != "asset"."id"
       )
     order by
-      "asset"."fileCreatedAt" desc
+      "asset"."fileCreatedAt" desc,
+      "asset"."originalFileName" desc
   ),
   "agg" as (
     select

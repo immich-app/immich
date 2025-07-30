@@ -32,7 +32,8 @@ from
       "shared_link"."id" = "shared_link_asset"."sharedLinksId"
       and "asset"."deletedAt" is null
     order by
-      "asset"."fileCreatedAt" asc
+      "asset"."fileCreatedAt" asc,
+      "asset"."originalFileName" asc
   ) as "a" on true
   left join lateral (
     select
@@ -66,7 +67,8 @@ from
           "album_asset"."assetsId" = "asset"."id"
           and "asset"."deletedAt" is null
         order by
-          "asset"."fileCreatedAt" asc
+          "asset"."fileCreatedAt" asc,
+          "asset"."originalFileName" asc
       ) as "assets" on true
       inner join lateral (
         select
