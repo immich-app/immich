@@ -430,26 +430,14 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 
   TimelineQuery map(LatLngBounds bounds, GroupAssetsBy groupBy) => (
-        bucketSource: () => _watchMapBucket(
-              bounds,
-              groupBy: groupBy,
-            ),
-        assetSource: (offset, count) => _getMapBucketAssets(
-              bounds,
-              offset: offset,
-              count: count,
-            ),
-      );
+    bucketSource: () => _watchMapBucket(bounds, groupBy: groupBy),
+    assetSource: (offset, count) => _getMapBucketAssets(bounds, offset: offset, count: count),
+  );
 
-  Stream<List<Bucket>> _watchMapBucket(
-    LatLngBounds bounds, {
-    GroupAssetsBy groupBy = GroupAssetsBy.day,
-  }) {
+  Stream<List<Bucket>> _watchMapBucket(LatLngBounds bounds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
       // TODO: Support GroupAssetsBy.none
-      throw UnsupportedError(
-        "GroupAssetsBy.none is not supported for _watchMapBucket",
-      );
+      throw UnsupportedError("GroupAssetsBy.none is not supported for _watchMapBucket");
     }
 
     final assetCountExp = _db.remoteAssetEntity.id.count();
@@ -468,8 +456,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         _db.remoteExifEntity.latitude.isNotNull() &
             _db.remoteExifEntity.longitude.isNotNull() &
             _db.remoteExifEntity.inBounds(bounds) &
-            _db.remoteAssetEntity.visibility
-                .equalsValue(AssetVisibility.timeline) &
+            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
             _db.remoteAssetEntity.deletedAt.isNull(),
       )
       ..groupBy([dateExp])
@@ -482,33 +469,25 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     }).watch();
   }
 
-  Future<List<BaseAsset>> _getMapBucketAssets(
-    LatLngBounds bounds, {
-    required int offset,
-    required int count,
-  }) {
-    final query = _db.remoteAssetEntity.select().join(
-      [
-        innerJoin(
-          _db.remoteExifEntity,
-          _db.remoteExifEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
-          useColumns: false,
-        ),
-      ],
-    )
-      ..where(
-        _db.remoteExifEntity.latitude.isNotNull() &
-            _db.remoteExifEntity.longitude.isNotNull() &
-            _db.remoteExifEntity.inBounds(bounds) &
-            _db.remoteAssetEntity.visibility
-                .equalsValue(AssetVisibility.timeline) &
-            _db.remoteAssetEntity.deletedAt.isNull(),
-      )
-      ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
-      ..limit(count, offset: offset);
-    return query
-        .map((row) => row.readTable(_db.remoteAssetEntity).toDto())
-        .get();
+  Future<List<BaseAsset>> _getMapBucketAssets(LatLngBounds bounds, {required int offset, required int count}) {
+    final query =
+        _db.remoteAssetEntity.select().join([
+            innerJoin(
+              _db.remoteExifEntity,
+              _db.remoteExifEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..where(
+            _db.remoteExifEntity.latitude.isNotNull() &
+                _db.remoteExifEntity.longitude.isNotNull() &
+                _db.remoteExifEntity.inBounds(bounds) &
+                _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
+                _db.remoteAssetEntity.deletedAt.isNull(),
+          )
+          ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+          ..limit(count, offset: offset);
+    return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }
 
   TimelineQuery _remoteQueryBuilder({

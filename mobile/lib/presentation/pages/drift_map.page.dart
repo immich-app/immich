@@ -8,9 +8,6 @@ class DriftMapPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      extendBodyBehindAppBar: true,
-      body: DriftMap(),
-    );
+    return const Scaffold(extendBodyBehindAppBar: true, body: DriftMap());
   }
 }

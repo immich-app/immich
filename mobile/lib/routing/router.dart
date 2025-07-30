@@ -330,7 +330,7 @@ class AppRouter extends RootStackRouter {
 
     AutoRoute(page: DriftPeopleCollectionRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftPersonRoute.page, guards: [_authGuard]),
-    AutoRoute(page: DriftMapRoute.page,guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: DriftMapRoute.page, guards: [_authGuard, _duplicateGuard]),
     // required to handle all deeplinks in deep_link.service.dart
     // auto_route_library#1722
     RedirectRoute(path: '*', redirectTo: '/'),

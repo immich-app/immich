@@ -16,15 +16,14 @@ class MapBottomSheet extends ConsumerWidget {
     return BaseBottomSheet(
       initialChildSize: 0.25,
       shouldCloseOnMinExtent: false,
-      actions: [],
+      actions: const [],
       slivers: [
         SliverFillRemaining(
           child: ProviderScope(
             key: ObjectKey(bounds),
             overrides: [
               timelineServiceProvider.overrideWith((ref) {
-                final timelineService =
-                    ref.watch(timelineFactoryProvider).map(bounds);
+                final timelineService = ref.watch(timelineFactoryProvider).map(bounds);
                 ref.onDispose(timelineService.dispose);
                 return timelineService;
               }),

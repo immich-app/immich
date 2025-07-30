@@ -1,5 +1,4 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/presentation/widgets/map/marker_build.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -24,35 +23,39 @@ class MapState {
 class MapStateNotifier extends Notifier<MapState> {
   MapStateNotifier();
 
-  void setBounds(LatLngBounds bounds) {
+  bool setBounds(LatLngBounds bounds) {
+    if (state.bounds == bounds) {
+      return false;
+    }
     state = state.copyWith(bounds: bounds);
+    return true;
   }
 
   @override
   MapState build() => MapState(
-        // TODO: set default bounds
-        bounds: LatLngBounds(
-          northeast: const LatLng(0, 0),
-          southwest: const LatLng(0, 0),
-        ),
-      );
+    // TODO: set default bounds
+    bounds: LatLngBounds(northeast: const LatLng(0, 0), southwest: const LatLng(0, 0)),
+  );
 }
 
 // This provider watches the markers from the map service and serves the markers.
 // It should be used only after the map service provider is overridden
-final mapMarkerProvider =
-    StreamProvider.family<Map<String, dynamic>, LatLngBounds?>(
-  (ref, bounds) async* {
-    final mapService = ref.watch(mapServiceProvider);
-    yield* mapService.watchMarkers(bounds).map((markers) {
-      return MarkerBuilder(
-        markers: markers,
-      ).generate();
-    });
-  },
-  dependencies: [mapServiceProvider],
-);
+final mapMarkerProvider = FutureProvider.family<Map<String, dynamic>, LatLngBounds?>((ref, bounds) async {
+  final mapService = ref.watch(mapServiceProvider);
+  final markers = await mapService.getMarkers(bounds);
+  final features = List.filled(markers.length, const <String, dynamic>{});
+  for (int i = 0; i < markers.length; i++) {
+    final marker = markers[i];
+    features[i] = {
+      'type': 'Feature',
+      'id': marker.assetId,
+      'geometry': {
+        'type': 'Point',
+        'coordinates': [marker.location.longitude, marker.location.latitude],
+      },
+    };
+  }
+  return {'type': 'FeatureCollection', 'features': features};
+}, dependencies: [mapServiceProvider]);
 
-final mapStateProvider = NotifierProvider<MapStateNotifier, MapState>(
-  MapStateNotifier.new,
-);
+final mapStateProvider = NotifierProvider<MapStateNotifier, MapState>(MapStateNotifier.new);

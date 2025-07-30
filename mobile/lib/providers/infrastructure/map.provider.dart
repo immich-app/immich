@@ -4,9 +4,7 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/domain/services/map.service.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
-final mapRepositoryProvider = Provider<DriftMapRepository>(
-  (ref) => DriftMapRepository(ref.watch(driftProvider)),
-);
+final mapRepositoryProvider = Provider<DriftMapRepository>((ref) => DriftMapRepository(ref.watch(driftProvider)));
 
 final mapServiceProvider = Provider<MapService>(
   (ref) {
@@ -16,16 +14,11 @@ final mapServiceProvider = Provider<MapService>(
     }
 
     final mapService = ref.watch(mapFactoryProvider).remote(user.id);
-    ref.onDispose(mapService.dispose);
     return mapService;
   },
   // Empty dependencies to inform the framework that this provider
   // might be used in a ProviderScope
-  dependencies: [],
+  dependencies: const [],
 );
 
-final mapFactoryProvider = Provider<MapFactory>(
-  (ref) => MapFactory(
-    mapRepository: ref.watch(mapRepositoryProvider),
-  ),
-);
+final mapFactoryProvider = Provider<MapFactory>((ref) => MapFactory(mapRepository: ref.watch(mapRepositoryProvider)));
