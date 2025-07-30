@@ -11,17 +11,16 @@ Immich can:
 
 ![XMP sidecars](./img/xmp-sidecars.webp)
 
-## 1 · What Immich Reads
+## 1 · What Immich Writes and Reads
+Immich reads and writes a selected set of metadata fields to and from XMP sidecar files. If a sidecar file already exists, Immich updates only the supported fields that have changed; otherwise, it creates a new .xmp file containing just the modified metadata.
 
-Only a few XMP fields are saved into the database:
-
-| Stored in DB       | XMP Field                         |
-|--------------------|-----------------------------------|
-| **Title**          | `dc:title`                        |
-| **Description**    | `dc:description`                  |
-| **DateTimeOriginal** | `exif:DateTimeOriginal`        |
-| **Rating**         | `xmp:Rating`                      |
-| **Tags**           | `digiKam:TagsList`, `dc:subject`  |
+| Metadata            | Immich writes to XMP                          | Immich reads from XMP                                                                                   |
+|---------------------|-----------------------------------------------|---------------------------------------------------------------------------------------------------------|
+| **Description**     | `dc:description`, `tiff:ImageDescription`     | `dc:description`, `tiff:ImageDescription`                                                               |
+| **Rating**          | `xmp:Rating`                                  | `xmp:Rating`                                                                                            |
+| **Timecode**        | `exif:DateTimeOriginal`, `photoshop:DateCreated` | In prioritized order:<br>`exif:SubSecDateTimeOriginal`<br>`exif:DateTimeOriginal`<br>`xmp:SubSecCreateDate`<br>`xmp:CreateDate`<br>`xmp:CreationDate`<br>`xmp:MediaCreateDate`<br>`xmp:SubSecMediaCreateDate`<br>`xmp:DateTimeCreated` |
+| **Location**        | `exif:GPSLatitude`, `exif:GPSLongitude`       | `exif:GPSLatitude`, `exif:GPSLongitude`                                                                 |
+| **Tags**            | `digiKam:TagsList`                            | `digiKam:TagsList`, `dc:subject`                                                                        | 
 
 All other fields (e.g. `Creator`, `Source`, IPTC, Lightroom edits) remain in the `.xmp` file and are **not searchable** in Immich.
 
