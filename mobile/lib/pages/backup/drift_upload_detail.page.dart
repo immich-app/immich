@@ -16,9 +16,7 @@ class DriftUploadDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final uploadItems = ref.watch(
-      driftBackupProvider.select((state) => state.uploadItems),
-    );
+    final uploadItems = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
 
     return Scaffold(
       appBar: AppBar(
@@ -36,26 +34,18 @@ class DriftUploadDetailPage extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.cloud_off_rounded,
-            size: 80,
-            color: context.colorScheme.onSurface.withValues(alpha: 0.3),
-          ),
+          Icon(Icons.cloud_off_rounded, size: 80, color: context.colorScheme.onSurface.withValues(alpha: 0.3)),
           const SizedBox(height: 16),
           Text(
             "no_uploads_in_progress".t(context: context),
-            style: context.textTheme.titleMedium?.copyWith(
-              color: context.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
+            style: context.textTheme.titleMedium?.copyWith(color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildUploadList(
-    Map<String, DriftUploadStatus> uploadItems,
-  ) {
+  Widget _buildUploadList(Map<String, DriftUploadStatus> uploadItems) {
     return ListView.separated(
       addAutomaticKeepAlives: true,
       padding: const EdgeInsets.all(16),
@@ -68,10 +58,7 @@ class DriftUploadDetailPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildUploadCard(
-    BuildContext context,
-    DriftUploadStatus item,
-  ) {
+  Widget _buildUploadCard(BuildContext context, DriftUploadStatus item) {
     final isCompleted = item.progress >= 1.0;
     final double progressPercentage = (item.progress * 100).clamp(0, 100);
 
@@ -79,19 +66,12 @@ class DriftUploadDetailPage extends ConsumerWidget {
       elevation: 0,
       color: item.isFailed != null ? context.colorScheme.errorContainer : context.colorScheme.surfaceContainer,
       shape: RoundedRectangleBorder(
-        borderRadius: const BorderRadius.all(
-          Radius.circular(16),
-        ),
-        side: BorderSide(
-          color: context.colorScheme.outline.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
+        side: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.1), width: 1),
       ),
       child: InkWell(
         onTap: () => _showFileDetailDialog(context, item),
-        borderRadius: const BorderRadius.all(
-          Radius.circular(16),
-        ),
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -105,9 +85,7 @@ class DriftUploadDetailPage extends ConsumerWidget {
                       children: [
                         Text(
                           path.basename(item.filename),
-                          style: context.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -166,18 +144,11 @@ class DriftUploadDetailPage extends ConsumerWidget {
               ),
             ),
             if (isCompleted)
-              Icon(
-                Icons.check_circle_rounded,
-                size: 28,
-                color: context.colorScheme.primary,
-              )
+              Icon(Icons.check_circle_rounded, size: 28, color: context.colorScheme.primary)
             else
               Text(
                 percentage.toStringAsFixed(0),
-                style: context.textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 10,
-                ),
+                style: context.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold, fontSize: 10),
               ),
           ],
         ),
@@ -192,10 +163,7 @@ class DriftUploadDetailPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _showFileDetailDialog(
-    BuildContext context,
-    DriftUploadStatus item,
-  ) async {
+  Future<void> _showFileDetailDialog(BuildContext context, DriftUploadStatus item) async {
     showDialog(
       context: context,
       builder: (context) => FileDetailDialog(uploadStatus: item),
@@ -206,10 +174,7 @@ class DriftUploadDetailPage extends ConsumerWidget {
 class FileDetailDialog extends ConsumerWidget {
   final DriftUploadStatus uploadStatus;
 
-  const FileDetailDialog({
-    super.key,
-    required this.uploadStatus,
-  });
+  const FileDetailDialog({super.key, required this.uploadStatus});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -217,29 +182,17 @@ class FileDetailDialog extends ConsumerWidget {
       insetPadding: const EdgeInsets.all(20),
       backgroundColor: context.colorScheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
-        borderRadius: const BorderRadius.all(
-          Radius.circular(16),
-        ),
-        side: BorderSide(
-          color: context.colorScheme.outline.withValues(alpha: 0.2),
-          width: 1,
-        ),
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
+        side: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1),
       ),
       title: Row(
         children: [
-          Icon(
-            Icons.info_outline,
-            color: context.primaryColor,
-            size: 24,
-          ),
+          Icon(Icons.info_outline, color: context.primaryColor, size: 24),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               "details".t(context: context),
-              style: context.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: context.primaryColor,
-              ),
+              style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: context.primaryColor),
             ),
           ),
         ],
@@ -250,10 +203,7 @@ class FileDetailDialog extends ConsumerWidget {
           future: _getAssetDetails(ref, uploadStatus.taskId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const SizedBox(
-                height: 200,
-                child: Center(child: CircularProgressIndicator()),
-              );
+              return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
             }
 
             final asset = snapshot.data;
@@ -270,18 +220,11 @@ class FileDetailDialog extends ConsumerWidget {
                         width: 128,
                         height: 128,
                         decoration: BoxDecoration(
-                          border: Border.all(
-                            color: context.colorScheme.outline.withValues(alpha: 0.2),
-                            width: 1,
-                          ),
+                          border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.2), width: 1),
                           borderRadius: const BorderRadius.all(Radius.circular(12)),
                         ),
                         child: asset != null
-                            ? Thumbnail(
-                                asset: asset,
-                                size: const Size(512, 512),
-                                fit: BoxFit.cover,
-                              )
+                            ? Thumbnail(asset: asset, size: const Size(512, 512), fit: BoxFit.cover)
                             : null,
                       ),
                     ),
@@ -289,44 +232,14 @@ class FileDetailDialog extends ConsumerWidget {
                   const SizedBox(height: 24),
                   if (asset != null) ...[
                     _buildInfoSection(context, [
-                      _buildInfoRow(
-                        context,
-                        "Filename",
-                        path.basename(uploadStatus.filename),
-                      ),
-                      _buildInfoRow(
-                        context,
-                        "Local ID",
-                        asset.id,
-                      ),
-                      _buildInfoRow(
-                        context,
-                        "File Size",
-                        formatHumanReadableBytes(uploadStatus.fileSize, 2),
-                      ),
+                      _buildInfoRow(context, "Filename", path.basename(uploadStatus.filename)),
+                      _buildInfoRow(context, "Local ID", asset.id),
+                      _buildInfoRow(context, "File Size", formatHumanReadableBytes(uploadStatus.fileSize, 2)),
                       if (asset.width != null) _buildInfoRow(context, "Width", "${asset.width}px"),
-                      if (asset.height != null)
-                        _buildInfoRow(
-                          context,
-                          "Height",
-                          "${asset.height}px",
-                        ),
-                      _buildInfoRow(
-                        context,
-                        "Created At",
-                        asset.createdAt.toString(),
-                      ),
-                      _buildInfoRow(
-                        context,
-                        "Updated At",
-                        asset.updatedAt.toString(),
-                      ),
-                      if (asset.checksum != null)
-                        _buildInfoRow(
-                          context,
-                          "Checksum",
-                          asset.checksum!,
-                        ),
+                      if (asset.height != null) _buildInfoRow(context, "Height", "${asset.height}px"),
+                      _buildInfoRow(context, "Created At", asset.createdAt.toString()),
+                      _buildInfoRow(context, "Updated At", asset.updatedAt.toString()),
+                      if (asset.checksum != null) _buildInfoRow(context, "Checksum", asset.checksum!),
                     ]),
                   ],
                 ],
@@ -340,39 +253,23 @@ class FileDetailDialog extends ConsumerWidget {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
             "close".t(),
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: context.primaryColor,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w600, color: context.primaryColor),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildInfoSection(
-    BuildContext context,
-    List<Widget> children,
-  ) {
+  Widget _buildInfoSection(BuildContext context, List<Widget> children) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: context.colorScheme.surfaceContainer,
-        borderRadius: const BorderRadius.all(
-          Radius.circular(12),
-        ),
-        border: Border.all(
-          color: context.colorScheme.outline.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.1), width: 1),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ...children,
-        ],
-      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [...children]),
     );
   }
 
@@ -405,10 +302,7 @@ class FileDetailDialog extends ConsumerWidget {
     );
   }
 
-  Future<LocalAsset?> _getAssetDetails(
-    WidgetRef ref,
-    String localAssetId,
-  ) async {
+  Future<LocalAsset?> _getAssetDetails(WidgetRef ref, String localAssetId) async {
     try {
       final repository = ref.read(localAssetRepository);
       return await repository.getById(localAssetId);

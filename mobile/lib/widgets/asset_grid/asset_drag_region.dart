@@ -163,12 +163,7 @@ class AssetIndexWrapper extends SingleChildRenderObjectWidget {
   final int rowIndex;
   final int sectionIndex;
 
-  const AssetIndexWrapper({
-    required Widget super.child,
-    required this.rowIndex,
-    required this.sectionIndex,
-    super.key,
-  });
+  const AssetIndexWrapper({required Widget super.child, required this.rowIndex, required this.sectionIndex, super.key});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -191,19 +186,14 @@ class AssetIndexWrapper extends SingleChildRenderObjectWidget {
 class _AssetIndexProxy extends RenderProxyBox {
   AssetIndex index;
 
-  _AssetIndexProxy({
-    required this.index,
-  });
+  _AssetIndexProxy({required this.index});
 }
 
 class AssetIndex {
   final int rowIndex;
   final int sectionIndex;
 
-  const AssetIndex({
-    required this.rowIndex,
-    required this.sectionIndex,
-  });
+  const AssetIndex({required this.rowIndex, required this.sectionIndex});
 
   @override
   bool operator ==(covariant AssetIndex other) {

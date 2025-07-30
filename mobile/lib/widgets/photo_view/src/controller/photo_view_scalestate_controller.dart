@@ -19,8 +19,9 @@ typedef ScaleStateListener = void Function(double prevScale, double nextScale);
 /// The updates should be done via [scaleState] setter and the updated listened via [outputScaleStateStream]
 ///
 class PhotoViewScaleStateController {
-  late final IgnorableValueNotifier<PhotoViewScaleState> _scaleStateNotifier =
-      IgnorableValueNotifier(PhotoViewScaleState.initial)..addListener(_scaleStateChangeListener);
+  late final IgnorableValueNotifier<PhotoViewScaleState> _scaleStateNotifier = IgnorableValueNotifier(
+    PhotoViewScaleState.initial,
+  )..addListener(_scaleStateChangeListener);
   final StreamController<PhotoViewScaleState> _outputScaleStateCtrl = StreamController<PhotoViewScaleState>.broadcast()
     ..sink.add(PhotoViewScaleState.initial);
 

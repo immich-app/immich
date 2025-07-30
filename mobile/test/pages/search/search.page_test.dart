@@ -45,18 +45,11 @@ void main() {
   final emptyTextSearch = isA<MetadataSearchDto>().having((s) => s.originalFileName, 'originalFileName', null);
 
   testWidgets('contextual search with/without text', (tester) async {
-    await tester.pumpConsumerWidget(
-      const SearchPage(),
-      overrides: overrides,
-    );
+    await tester.pumpConsumerWidget(const SearchPage(), overrides: overrides);
 
     await tester.pumpAndSettle();
 
-    expect(
-      find.byIcon(Icons.abc_rounded),
-      findsOneWidget,
-      reason: 'Should have contextual search icon',
-    );
+    expect(find.byIcon(Icons.abc_rounded), findsOneWidget, reason: 'Should have contextual search icon');
 
     final searchField = find.byKey(const Key('search_text_field'));
     expect(searchField, findsOneWidget);
@@ -64,14 +57,9 @@ void main() {
     await tester.enterText(searchField, 'test');
     await tester.testTextInput.receiveAction(TextInputAction.search);
 
-    var captured = verify(
-      () => mockSearchApi.searchSmart(captureAny()),
-    ).captured;
+    var captured = verify(() => mockSearchApi.searchSmart(captureAny())).captured;
 
-    expect(
-      captured.first,
-      isA<SmartSearchDto>().having((s) => s.query, 'query', 'test'),
-    );
+    expect(captured.first, isA<SmartSearchDto>().having((s) => s.query, 'query', 'test'));
 
     await tester.enterText(searchField, '');
     await tester.testTextInput.receiveAction(TextInputAction.search);
@@ -81,10 +69,7 @@ void main() {
   });
 
   testWidgets('not contextual search with/without text', (tester) async {
-    await tester.pumpConsumerWidget(
-      const SearchPage(),
-      overrides: overrides,
-    );
+    await tester.pumpConsumerWidget(const SearchPage(), overrides: overrides);
 
     await tester.pumpAndSettle();
 
@@ -92,11 +77,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(
-      find.byIcon(Icons.image_search_rounded),
-      findsOneWidget,
-      reason: 'Should not have contextual search icon',
-    );
+    expect(find.byIcon(Icons.image_search_rounded), findsOneWidget, reason: 'Should not have contextual search icon');
 
     final searchField = find.byKey(const Key('search_text_field'));
     expect(searchField, findsOneWidget);
@@ -104,14 +85,9 @@ void main() {
     await tester.enterText(searchField, 'test');
     await tester.testTextInput.receiveAction(TextInputAction.search);
 
-    var captured = verify(
-      () => mockSearchApi.searchAssets(captureAny()),
-    ).captured;
+    var captured = verify(() => mockSearchApi.searchAssets(captureAny())).captured;
 
-    expect(
-      captured.first,
-      isA<MetadataSearchDto>().having((s) => s.originalFileName, 'originalFileName', 'test'),
-    );
+    expect(captured.first, isA<MetadataSearchDto>().having((s) => s.originalFileName, 'originalFileName', 'test'));
 
     await tester.enterText(searchField, '');
     await tester.testTextInput.receiveAction(TextInputAction.search);

@@ -10,56 +10,23 @@ final fileMediaRepositoryProvider = Provider((ref) => const FileMediaRepository(
 
 class FileMediaRepository {
   const FileMediaRepository();
-  Future<Asset?> saveImage(
-    Uint8List data, {
-    required String title,
-    String? relativePath,
-  }) async {
-    final entity = await PhotoManager.editor.saveImage(
-      data,
-      filename: title,
-      title: title,
-      relativePath: relativePath,
-    );
+  Future<Asset?> saveImage(Uint8List data, {required String title, String? relativePath}) async {
+    final entity = await PhotoManager.editor.saveImage(data, filename: title, title: title, relativePath: relativePath);
     return AssetMediaRepository.toAsset(entity);
   }
 
-  Future<Asset?> saveImageWithFile(
-    String filePath, {
-    String? title,
-    String? relativePath,
-  }) async {
-    final entity = await PhotoManager.editor.saveImageWithPath(
-      filePath,
-      title: title,
-      relativePath: relativePath,
-    );
+  Future<Asset?> saveImageWithFile(String filePath, {String? title, String? relativePath}) async {
+    final entity = await PhotoManager.editor.saveImageWithPath(filePath, title: title, relativePath: relativePath);
     return AssetMediaRepository.toAsset(entity);
   }
 
-  Future<Asset?> saveLivePhoto({
-    required File image,
-    required File video,
-    required String title,
-  }) async {
-    final entity = await PhotoManager.editor.darwin.saveLivePhoto(
-      imageFile: image,
-      videoFile: video,
-      title: title,
-    );
+  Future<Asset?> saveLivePhoto({required File image, required File video, required String title}) async {
+    final entity = await PhotoManager.editor.darwin.saveLivePhoto(imageFile: image, videoFile: video, title: title);
     return AssetMediaRepository.toAsset(entity);
   }
 
-  Future<Asset?> saveVideo(
-    File file, {
-    required String title,
-    String? relativePath,
-  }) async {
-    final entity = await PhotoManager.editor.saveVideo(
-      file,
-      title: title,
-      relativePath: relativePath,
-    );
+  Future<Asset?> saveVideo(File file, {required String title, String? relativePath}) async {
+    final entity = await PhotoManager.editor.saveVideo(file, title: title, relativePath: relativePath);
     return AssetMediaRepository.toAsset(entity);
   }
 

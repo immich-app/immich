@@ -5,11 +5,7 @@ class DeviceAsset {
   final Uint8List hash;
   final DateTime modifiedTime;
 
-  const DeviceAsset({
-    required this.assetId,
-    required this.hash,
-    required this.modifiedTime,
-  });
+  const DeviceAsset({required this.assetId, required this.hash, required this.modifiedTime});
 
   @override
   bool operator ==(covariant DeviceAsset other) {
@@ -28,11 +24,7 @@ class DeviceAsset {
     return 'DeviceAsset(assetId: $assetId, hash: $hash, modifiedTime: $modifiedTime)';
   }
 
-  DeviceAsset copyWith({
-    String? assetId,
-    Uint8List? hash,
-    DateTime? modifiedTime,
-  }) {
+  DeviceAsset copyWith({String? assetId, Uint8List? hash, DateTime? modifiedTime}) {
     return DeviceAsset(
       assetId: assetId ?? this.assetId,
       hash: hash ?? this.hash,

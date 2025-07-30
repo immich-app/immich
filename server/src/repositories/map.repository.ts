@@ -5,7 +5,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
-import { citiesFile } from 'src/constants';
+import { citiesFile, reverseGeocodeMaxDistance } from 'src/constants';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetVisibility, SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -145,7 +145,7 @@ export class MapRepository {
       .selectFrom('geodata_places')
       .selectAll()
       .where(
-        sql`earth_box(ll_to_earth_public(${point.latitude}, ${point.longitude}), 25000)`,
+        sql`earth_box(ll_to_earth_public(${point.latitude}, ${point.longitude}), ${reverseGeocodeMaxDistance})`,
         '@>',
         sql`ll_to_earth_public(latitude, longitude)`,
       )
@@ -165,8 +165,8 @@ export class MapRepository {
       return { country, state, city };
     }
 
-    this.logger.warn(
-      `Response from database for reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
+    this.logger.log(
+      `Empty response from database for city reverse geocoding lat: ${point.latitude}, lon: ${point.longitude}. Likely cause: no nearby large populated place (500+ within ${reverseGeocodeMaxDistance / 1000}km). Falling back to country boundaries.`,
     );
 
     const ne_response = await this.db
@@ -177,8 +177,8 @@ export class MapRepository {
       .executeTakeFirst();
 
     if (!ne_response) {
-      this.logger.warn(
-        `Response from database for natural earth reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
+      this.logger.log(
+        `Empty response from database for natural earth country reverse geocoding lat: ${point.latitude}, lon: ${point.longitude}`,
       );
 
       return { country: null, state: null, city: null };

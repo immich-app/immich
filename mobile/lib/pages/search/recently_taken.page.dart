@@ -17,16 +17,9 @@ class RecentlyTakenPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('recently_taken_page_title').tr(),
-        leading: IconButton(
-          onPressed: () => context.maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-        ),
+        leading: IconButton(onPressed: () => context.maybePop(), icon: const Icon(Icons.arrow_back_ios_rounded)),
       ),
-      body: recents.widgetWhen(
-        onData: (searchResponse) => ImmichAssetGrid(
-          assets: searchResponse,
-        ),
-      ),
+      body: recents.widgetWhen(onData: (searchResponse) => ImmichAssetGrid(assets: searchResponse)),
     );
   }
 }

@@ -3,7 +3,7 @@ import AsyncLock from 'async-lock';
 import { FileMigrationProvider, Kysely, Migrator, sql, Transaction } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { readdir } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import semver from 'semver';
 import {
   EXTENSION_NAMES,
@@ -23,10 +23,9 @@ import { DB } from 'src/schema';
 import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
 import { vectorIndexQuery } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
-import { DataSource, QueryRunner } from 'typeorm';
 
 export let cachedVectorExtension: VectorExtension | undefined;
-export async function getVectorExtension(runner: Kysely<DB> | QueryRunner): Promise<VectorExtension> {
+export async function getVectorExtension(runner: Kysely<DB>): Promise<VectorExtension> {
   if (cachedVectorExtension) {
     return cachedVectorExtension;
   }
@@ -36,14 +35,8 @@ export async function getVectorExtension(runner: Kysely<DB> | QueryRunner): Prom
     return cachedVectorExtension;
   }
 
-  let availableExtensions: { name: VectorExtension }[];
   const query = `SELECT name FROM pg_available_extensions WHERE name IN (${VECTOR_EXTENSIONS.map((ext) => `'${ext}'`).join(', ')})`;
-  if (runner instanceof Kysely) {
-    const { rows } = await sql.raw<{ name: VectorExtension }>(query).execute(runner);
-    availableExtensions = rows;
-  } else {
-    availableExtensions = (await runner.query(query)) as { name: VectorExtension }[];
-  }
+  const { rows: availableExtensions } = await sql.raw<{ name: VectorExtension }>(query).execute(runner);
   const extensionNames = new Set(availableExtensions.map((row) => row.name));
   cachedVectorExtension = VECTOR_EXTENSIONS.find((ext) => extensionNames.has(ext));
   if (!cachedVectorExtension) {
@@ -364,45 +357,9 @@ export class DatabaseRepository {
     return count;
   }
 
-  async runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void> {
-    const { database } = this.configRepository.getEnv();
+  async runMigrations(): Promise<void> {
+    this.logger.debug('Running migrations');
 
-    this.logger.log('Running migrations, this may take a while');
-
-    const tableExists = sql<{ result: string | null }>`select to_regclass('migrations') as "result"`;
-    const { rows } = await tableExists.execute(this.db);
-    const hasTypeOrmMigrations = !!rows[0]?.result;
-    if (hasTypeOrmMigrations) {
-      // eslint-disable-next-line unicorn/prefer-module
-      const dist = resolve(`${__dirname}/..`);
-
-      this.logger.debug('Running typeorm migrations');
-      const dataSource = new DataSource({
-        type: 'postgres',
-        entities: [],
-        subscribers: [],
-        migrations: [`${dist}/migrations` + '/*.{js,ts}'],
-        migrationsRun: false,
-        synchronize: false,
-        connectTimeoutMS: 10_000, // 10 seconds
-        parseInt8: true,
-        ...(database.config.connectionType === 'url'
-          ? { url: database.config.url }
-          : {
-              host: database.config.host,
-              port: database.config.port,
-              username: database.config.username,
-              password: database.config.password,
-              database: database.config.database,
-            }),
-      });
-      await dataSource.initialize();
-      await dataSource.runMigrations(options);
-      await dataSource.destroy();
-      this.logger.debug('Finished running typeorm migrations');
-    }
-
-    this.logger.debug('Running kysely migrations');
     const migrator = new Migrator({
       db: this.db,
       migrationLockTableName: 'kysely_migrations_lock',
@@ -429,11 +386,11 @@ export class DatabaseRepository {
     }
 
     if (error) {
-      this.logger.error(`Kysely migrations failed: ${error}`);
+      this.logger.error(`Migrations failed: ${error}`);
       throw error;
     }
 
-    this.logger.debug('Finished running kysely migrations');
+    this.logger.debug('Finished running migrations');
   }
 
   async migrateFilePaths(sourceFolder: string, targetFolder: string): Promise<void> {

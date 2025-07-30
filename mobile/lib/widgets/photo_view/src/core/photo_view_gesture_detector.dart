@@ -103,15 +103,13 @@ class PhotoViewGestureDetector extends StatelessWidget {
     );
 
     gestures[LongPressGestureRecognizer] = GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
-        () => LongPressGestureRecognizer(debugOwner: this), (LongPressGestureRecognizer instance) {
-      instance.onLongPressStart = onLongPressStart;
-    });
-
-    return RawGestureDetector(
-      behavior: behavior,
-      gestures: gestures,
-      child: child,
+      () => LongPressGestureRecognizer(debugOwner: this),
+      (LongPressGestureRecognizer instance) {
+        instance.onLongPressStart = onLongPressStart;
+      },
     );
+
+    return RawGestureDetector(behavior: behavior, gestures: gestures, child: child);
   }
 }
 
@@ -241,16 +239,11 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
 /// );
 /// ```
 class PhotoViewGestureDetectorScope extends InheritedWidget {
-  const PhotoViewGestureDetectorScope({
-    super.key,
-    this.axis,
-    this.touchSlopFactor = .2,
-    required super.child,
-  });
+  const PhotoViewGestureDetectorScope({super.key, this.axis, this.touchSlopFactor = .2, required super.child});
 
   static PhotoViewGestureDetectorScope? of(BuildContext context) {
-    final PhotoViewGestureDetectorScope? scope =
-        context.dependOnInheritedWidgetOfExactType<PhotoViewGestureDetectorScope>();
+    final PhotoViewGestureDetectorScope? scope = context
+        .dependOnInheritedWidgetOfExactType<PhotoViewGestureDetectorScope>();
     return scope;
   }
 
@@ -273,10 +266,7 @@ class PhotoViewGestureDetectorScope extends InheritedWidget {
 // we cannot change that, but we can prevent the scrollable from panning until this threshold is reached
 // and let other recognizers accept the gesture instead
 class PhotoViewPageViewScrollPhysics extends ScrollPhysics {
-  const PhotoViewPageViewScrollPhysics({
-    this.touchSlopFactor = 0.1,
-    super.parent,
-  });
+  const PhotoViewPageViewScrollPhysics({this.touchSlopFactor = 0.1, super.parent});
 
   // in [0, 1]
   // 0: most reactive but will not let PhotoView recognizers accept gestures
@@ -285,10 +275,7 @@ class PhotoViewPageViewScrollPhysics extends ScrollPhysics {
 
   @override
   PhotoViewPageViewScrollPhysics applyTo(ScrollPhysics? ancestor) {
-    return PhotoViewPageViewScrollPhysics(
-      touchSlopFactor: touchSlopFactor,
-      parent: buildParent(ancestor),
-    );
+    return PhotoViewPageViewScrollPhysics(touchSlopFactor: touchSlopFactor, parent: buildParent(ancestor));
   }
 
   @override

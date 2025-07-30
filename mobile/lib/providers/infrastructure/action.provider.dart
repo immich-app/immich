@@ -12,10 +12,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final actionProvider = NotifierProvider<ActionNotifier, void>(
   ActionNotifier.new,
-  dependencies: [
-    multiSelectProvider,
-    timelineServiceProvider,
-  ],
+  dependencies: [multiSelectProvider, timelineServiceProvider],
 );
 
 class ActionResult {
@@ -74,37 +71,31 @@ class ActionNotifier extends Notifier<void> {
   Iterable<T> _getIdsForSource<T extends BaseAsset>(ActionSource source) {
     final Set<BaseAsset> assets = _getAssets(source);
     return switch (T) {
-      const (RemoteAsset) => assets.whereType<RemoteAsset>(),
-      const (LocalAsset) => assets.whereType<LocalAsset>(),
-      _ => const [],
-    } as Iterable<T>;
+          const (RemoteAsset) => assets.whereType<RemoteAsset>(),
+          const (LocalAsset) => assets.whereType<LocalAsset>(),
+          _ => const [],
+        }
+        as Iterable<T>;
   }
 
   Set<BaseAsset> _getAssets(ActionSource source) {
     return switch (source) {
       ActionSource.timeline => ref.read(multiSelectProvider).selectedAssets,
       ActionSource.viewer => switch (ref.read(currentAssetNotifier)) {
-          BaseAsset asset => {asset},
-          null => const {},
-        },
+        BaseAsset asset => {asset},
+        null => const {},
+      },
     };
   }
 
-  Future<ActionResult> shareLink(
-    ActionSource source,
-    BuildContext context,
-  ) async {
+  Future<ActionResult> shareLink(ActionSource source, BuildContext context) async {
     final ids = _getRemoteIdsForSource(source);
     try {
       await _service.shareLink(ids, context);
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to create shared link for assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -115,11 +106,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to favorite assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -130,11 +117,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to unfavorite assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -145,11 +128,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to archive assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -160,11 +139,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to unarchive assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -176,11 +151,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to move assets to lock folder', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -191,11 +162,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to remove assets from lock folder', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -207,11 +174,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to trash assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -222,11 +185,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to restore trash assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -238,11 +197,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to delete assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -254,11 +209,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to delete assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -269,18 +220,11 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: deletedCount, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to delete assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
-  Future<ActionResult?> editLocation(
-    ActionSource source,
-    BuildContext context,
-  ) async {
+  Future<ActionResult?> editLocation(ActionSource source, BuildContext context) async {
     final ids = _getOwnedRemoteIdsForSource(source);
     try {
       final isEdited = await _service.editLocation(ids, context);
@@ -291,29 +235,34 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to edit location for assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
-  Future<ActionResult> removeFromAlbum(
-    ActionSource source,
-    String albumId,
-  ) async {
+  Future<ActionResult> removeFromAlbum(ActionSource source, String albumId) async {
     final ids = _getRemoteIdsForSource(source);
     try {
       final removedCount = await _service.removeFromAlbum(ids, albumId);
       return ActionResult(count: removedCount, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to remove assets from album', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
+    }
+  }
+
+  Future<ActionResult> updateDescription(ActionSource source, String description) async {
+    final ids = _getRemoteIdsForSource(source);
+    if (ids.length != 1) {
+      _logger.warning('updateDescription called with multiple assets, expected single asset');
+      return ActionResult(count: ids.length, success: false, error: 'Expected single asset for description update');
+    }
+
+    try {
+      final isUpdated = await _service.updateDescription(ids.first, description);
+      return ActionResult(count: 1, success: isUpdated);
+    } catch (error, stack) {
+      _logger.severe('Failed to update description for asset', error, stack);
+      return ActionResult(count: 1, success: false, error: error.toString());
     }
   }
 
@@ -324,11 +273,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to stack assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -339,10 +284,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: assets.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to unstack assets', error, stack);
-      return ActionResult(
-        count: assets.length,
-        success: false,
-      );
+      return ActionResult(count: assets.length, success: false);
     }
   }
 
@@ -354,11 +296,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: count, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to share assets', error, stack);
-      return ActionResult(
-        count: ids.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -371,11 +309,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: enqueueCount, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to download assets', error, stack);
-      return ActionResult(
-        count: assets.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: assets.length, success: false, error: error.toString());
     }
   }
 
@@ -386,11 +320,7 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: assets.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed manually upload assets', error, stack);
-      return ActionResult(
-        count: assets.length,
-        success: false,
-        error: error.toString(),
-      );
+      return ActionResult(count: assets.length, success: false, error: error.toString());
     }
   }
 }

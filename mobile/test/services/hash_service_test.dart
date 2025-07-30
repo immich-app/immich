@@ -31,15 +31,10 @@ void main() {
     mockBackgroundService = MockBackgroundService();
     mockDeviceAssetRepository = MockDeviceAssetRepository();
 
-    sut = HashService(
-      deviceAssetRepository: mockDeviceAssetRepository,
-      backgroundService: mockBackgroundService,
-    );
+    sut = HashService(deviceAssetRepository: mockDeviceAssetRepository, backgroundService: mockBackgroundService);
 
     when(() => mockDeviceAssetRepository.transaction<Null>(any())).thenAnswer((_) async {
-      final capturedCallback = verify(
-        () => mockDeviceAssetRepository.transaction<Null>(captureAny()),
-      ).captured;
+      final capturedCallback = verify(() => mockDeviceAssetRepository.transaction<Null>(captureAny())).captured;
       // Invoke the transaction callback
       await (capturedCallback.firstOrNull as Future<Null> Function()?)?.call();
     });
@@ -53,17 +48,13 @@ void main() {
 
       when(() => mockBackgroundService.digestFiles([file.path])).thenAnswer((_) async => [hash]);
       // No DB entries for this asset
-      when(
-        () => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!]),
-      ).thenAnswer((_) async => []);
+      when(() => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!])).thenAnswer((_) async => []);
 
       final result = await sut.hashAssets([mockAsset]);
 
       // Verify we stored the new hash in DB
       when(() => mockDeviceAssetRepository.transaction<Null>(any())).thenAnswer((_) async {
-        final capturedCallback = verify(
-          () => mockDeviceAssetRepository.transaction<Null>(captureAny()),
-        ).captured;
+        final capturedCallback = verify(() => mockDeviceAssetRepository.transaction<Null>(captureAny())).captured;
         // Invoke the transaction callback
         await (capturedCallback.firstOrNull as Future<Null> Function()?)?.call();
         verify(
@@ -73,10 +64,7 @@ void main() {
         ).called(1);
         verify(() => mockDeviceAssetRepository.deleteIds([])).called(1);
       });
-      expect(
-        result,
-        [AssetStub.image1.copyWith(checksum: base64.encode(hash))],
-      );
+      expect(result, [AssetStub.image1.copyWith(checksum: base64.encode(hash))]);
     });
   });
 
@@ -84,15 +72,9 @@ void main() {
     test("when the asset is not modified", () async {
       final hash = utf8.encode("image1-hash");
 
-      when(
-        () => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!]),
-      ).thenAnswer(
+      when(() => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!])).thenAnswer(
         (_) async => [
-          DeviceAsset(
-            assetId: AssetStub.image1.localId!,
-            hash: hash,
-            modifiedTime: AssetStub.image1.fileModifiedAt,
-          ),
+          DeviceAsset(assetId: AssetStub.image1.localId!, hash: hash, modifiedTime: AssetStub.image1.fileModifiedAt),
         ],
       );
       final result = await sut.hashAssets([AssetStub.image1]);
@@ -102,9 +84,7 @@ void main() {
       verifyNever(() => mockDeviceAssetRepository.updateAll(any()));
       verifyNever(() => mockDeviceAssetRepository.deleteIds(any()));
 
-      expect(result, [
-        AssetStub.image1.copyWith(checksum: base64.encode(hash)),
-      ]);
+      expect(result, [AssetStub.image1.copyWith(checksum: base64.encode(hash))]);
     });
 
     test("hashed successful when asset is modified", () async {
@@ -118,9 +98,7 @@ void main() {
       final result = await sut.hashAssets([mockAsset]);
 
       when(() => mockDeviceAssetRepository.transaction<Null>(any())).thenAnswer((_) async {
-        final capturedCallback = verify(
-          () => mockDeviceAssetRepository.transaction<Null>(captureAny()),
-        ).captured;
+        final capturedCallback = verify(() => mockDeviceAssetRepository.transaction<Null>(captureAny())).captured;
         // Invoke the transaction callback
         await (capturedCallback.firstOrNull as Future<Null> Function()?)?.call();
         verify(
@@ -133,9 +111,7 @@ void main() {
 
       verify(() => mockBackgroundService.digestFiles([file.path])).called(1);
 
-      expect(result, [
-        AssetStub.image1.copyWith(checksum: base64.encode(hash)),
-      ]);
+      expect(result, [AssetStub.image1.copyWith(checksum: base64.encode(hash))]);
     });
   });
 
@@ -161,18 +137,14 @@ void main() {
       verifyNever(() => mockBackgroundService.digestFiles(any()));
       verifyNever(() => mockBackgroundService.digestFile(any()));
       verifyNever(() => mockDeviceAssetRepository.updateAll(any()));
-      verify(
-        () => mockDeviceAssetRepository.deleteIds([AssetStub.image1.localId!]),
-      ).called(1);
+      verify(() => mockDeviceAssetRepository.deleteIds([AssetStub.image1.localId!])).called(1);
 
       expect(result, isEmpty);
     });
 
     test("cleanups DeviceAsset when hashing failed", () async {
       when(() => mockDeviceAssetRepository.transaction<Null>(any())).thenAnswer((_) async {
-        final capturedCallback = verify(
-          () => mockDeviceAssetRepository.transaction<Null>(captureAny()),
-        ).captured;
+        final capturedCallback = verify(() => mockDeviceAssetRepository.transaction<Null>(captureAny())).captured;
         // Invoke the transaction callback
         await (capturedCallback.firstOrNull as Future<Null> Function()?)?.call();
 
@@ -194,9 +166,7 @@ void main() {
         // To avoid this, we capture the callback and execute it within the transaction stub itself
         // and verify the results inside the transaction stub
         verify(() => mockDeviceAssetRepository.updateAll([])).called(1);
-        verify(
-          () => mockDeviceAssetRepository.deleteIds([AssetStub.image1.localId!]),
-        ).called(1);
+        verify(() => mockDeviceAssetRepository.deleteIds([AssetStub.image1.localId!])).called(1);
       });
 
       when(() => mockBackgroundService.digestFiles([file.path])).thenAnswer(
@@ -243,14 +213,11 @@ void main() {
       verify(() => mockBackgroundService.digestFiles([file1.path, file2.path])).called(1);
       verify(() => mockBackgroundService.digestFiles([file3.path])).called(1);
 
-      expect(
-        result,
-        [
-          AssetStub.image1.copyWith(checksum: base64.encode(hash1)),
-          AssetStub.image2.copyWith(checksum: base64.encode(hash2)),
-          AssetStub.image3.copyWith(checksum: base64.encode(hash3)),
-        ],
-      );
+      expect(result, [
+        AssetStub.image1.copyWith(checksum: base64.encode(hash1)),
+        AssetStub.image2.copyWith(checksum: base64.encode(hash2)),
+        AssetStub.image3.copyWith(checksum: base64.encode(hash3)),
+      ]);
     });
 
     test("processes assets in batches when file limit is reached", () async {
@@ -283,14 +250,11 @@ void main() {
       verify(() => mockBackgroundService.digestFiles([file2.path])).called(1);
       verify(() => mockBackgroundService.digestFiles([file3.path])).called(1);
 
-      expect(
-        result,
-        [
-          AssetStub.image1.copyWith(checksum: base64.encode(hash1)),
-          AssetStub.image2.copyWith(checksum: base64.encode(hash2)),
-          AssetStub.image3.copyWith(checksum: base64.encode(hash3)),
-        ],
-      );
+      expect(result, [
+        AssetStub.image1.copyWith(checksum: base64.encode(hash1)),
+        AssetStub.image2.copyWith(checksum: base64.encode(hash2)),
+        AssetStub.image3.copyWith(checksum: base64.encode(hash3)),
+      ]);
     });
 
     test("HashService: Sort & Process different states", () async {
@@ -345,15 +309,10 @@ void main() {
       test("handles all file access failures", () async {
         // No DB entries
         when(
-          () => mockDeviceAssetRepository.getByIds(
-            [AssetStub.image1.localId!, AssetStub.image2.localId!],
-          ),
+          () => mockDeviceAssetRepository.getByIds([AssetStub.image1.localId!, AssetStub.image2.localId!]),
         ).thenAnswer((_) async => []);
 
-        final result = await sut.hashAssets([
-          AssetStub.image1,
-          AssetStub.image2,
-        ]);
+        final result = await sut.hashAssets([AssetStub.image1, AssetStub.image2]);
 
         verifyNever(() => mockBackgroundService.digestFiles(any()));
         verifyNever(() => mockDeviceAssetRepository.updateAll(any()));
@@ -363,9 +322,7 @@ void main() {
   });
 }
 
-Future<(Asset, File, DeviceAsset, Uint8List)> _createAssetMock(
-  Asset asset,
-) async {
+Future<(Asset, File, DeviceAsset, Uint8List)> _createAssetMock(Asset asset) async {
   final random = Random();
   final hash = Uint8List.fromList(List.generate(20, (i) => random.nextInt(255)));
   final mockAsset = MockAsset();
@@ -384,8 +341,9 @@ Future<(Asset, File, DeviceAsset, Uint8List)> _createAssetMock(
   when(() => mockAsset.fileName).thenReturn(asset.fileName);
   when(() => mockAsset.fileCreatedAt).thenReturn(asset.fileCreatedAt);
   when(() => mockAsset.fileModifiedAt).thenReturn(asset.fileModifiedAt);
-  when(() => mockAsset.copyWith(checksum: any(named: "checksum")))
-      .thenReturn(asset.copyWith(checksum: base64.encode(hash)));
+  when(
+    () => mockAsset.copyWith(checksum: any(named: "checksum")),
+  ).thenReturn(asset.copyWith(checksum: base64.encode(hash)));
   when(() => mockAsset.local).thenAnswer((_) => mockAssetEntity);
   when(() => mockAssetEntity.originFile).thenAnswer((_) async => file);
 

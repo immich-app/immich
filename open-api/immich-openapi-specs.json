@@ -77,7 +77,8 @@
         ],
         "tags": [
           "Activities"
-        ]
+        ],
+        "x-immich-permission": "activity.read"
       },
       "post": {
         "operationId": "createActivity",
@@ -117,7 +118,8 @@
         ],
         "tags": [
           "Activities"
-        ]
+        ],
+        "x-immich-permission": "activity.create"
       }
     },
     "/activities/statistics": {
@@ -168,7 +170,8 @@
         ],
         "tags": [
           "Activities"
-        ]
+        ],
+        "x-immich-permission": "activity.statistics"
       }
     },
     "/activities/{id}": {
@@ -203,7 +206,8 @@
         ],
         "tags": [
           "Activities"
-        ]
+        ],
+        "x-immich-permission": "activity.delete"
       }
     },
     "/admin/notifications": {
@@ -391,7 +395,8 @@
         ],
         "tags": [
           "Users (admin)"
-        ]
+        ],
+        "x-immich-permission": "adminUser.read"
       },
       "post": {
         "operationId": "createUserAdmin",
@@ -431,7 +436,8 @@
         ],
         "tags": [
           "Users (admin)"
-        ]
+        ],
+        "x-immich-permission": "adminUser.create"
       }
     },
     "/admin/users/{id}": {
@@ -483,7 +489,8 @@
         ],
         "tags": [
           "Users (admin)"
-        ]
+        ],
+        "x-immich-permission": "adminUser.delete"
       },
       "get": {
         "operationId": "getUserAdmin",
@@ -523,7 +530,8 @@
         ],
         "tags": [
           "Users (admin)"
-        ]
+        ],
+        "x-immich-permission": "adminUser.read"
       },
       "put": {
         "operationId": "updateUserAdmin",
@@ -573,7 +581,8 @@
         ],
         "tags": [
           "Users (admin)"
-        ]
+        ],
+        "x-immich-permission": "adminUser.update"
       }
     },
     "/admin/users/{id}/preferences": {
@@ -615,7 +624,8 @@
         ],
         "tags": [
           "Users (admin)"
-        ]
+        ],
+        "x-immich-permission": "adminUser.read"
       },
       "put": {
         "operationId": "updateUserPreferencesAdmin",
@@ -665,7 +675,8 @@
         ],
         "tags": [
           "Users (admin)"
-        ]
+        ],
+        "x-immich-permission": "adminUser.update"
       }
     },
     "/admin/users/{id}/restore": {
@@ -707,7 +718,8 @@
         ],
         "tags": [
           "Users (admin)"
-        ]
+        ],
+        "x-immich-permission": "adminUser.delete"
       }
     },
     "/admin/users/{id}/statistics": {
@@ -773,7 +785,8 @@
         ],
         "tags": [
           "Users (admin)"
-        ]
+        ],
+        "x-immich-permission": "adminUser.read"
       }
     },
     "/albums": {
@@ -827,7 +840,8 @@
         ],
         "tags": [
           "Albums"
-        ]
+        ],
+        "x-immich-permission": "album.read"
       },
       "post": {
         "operationId": "createAlbum",
@@ -867,7 +881,8 @@
         ],
         "tags": [
           "Albums"
-        ]
+        ],
+        "x-immich-permission": "album.create"
       }
     },
     "/albums/assets": {
@@ -950,7 +965,8 @@
         ],
         "tags": [
           "Albums"
-        ]
+        ],
+        "x-immich-permission": "album.statistics"
       }
     },
     "/albums/{id}": {
@@ -985,7 +1001,8 @@
         ],
         "tags": [
           "Albums"
-        ]
+        ],
+        "x-immich-permission": "album.delete"
       },
       "get": {
         "operationId": "getAlbumInfo",
@@ -1001,6 +1018,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -1041,7 +1066,8 @@
         ],
         "tags": [
           "Albums"
-        ]
+        ],
+        "x-immich-permission": "album.read"
       },
       "patch": {
         "operationId": "updateAlbumInfo",
@@ -1091,7 +1117,8 @@
         ],
         "tags": [
           "Albums"
-        ]
+        ],
+        "x-immich-permission": "album.update"
       }
     },
     "/albums/{id}/assets": {
@@ -1146,7 +1173,8 @@
         ],
         "tags": [
           "Albums"
-        ]
+        ],
+        "x-immich-permission": "albumAsset.delete"
       },
       "put": {
         "operationId": "addAssetsToAlbum",
@@ -1162,6 +1190,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -1207,7 +1243,8 @@
         ],
         "tags": [
           "Albums"
-        ]
+        ],
+        "x-immich-permission": "albumAsset.create"
       }
     },
     "/albums/{id}/user/{userId}": {
@@ -1250,7 +1287,8 @@
         ],
         "tags": [
           "Albums"
-        ]
+        ],
+        "x-immich-permission": "albumUser.delete"
       },
       "put": {
         "operationId": "updateAlbumUser",
@@ -1301,7 +1339,8 @@
         ],
         "tags": [
           "Albums"
-        ]
+        ],
+        "x-immich-permission": "albumUser.update"
       }
     },
     "/albums/{id}/users": {
@@ -1353,7 +1392,8 @@
         ],
         "tags": [
           "Albums"
-        ]
+        ],
+        "x-immich-permission": "albumUser.create"
       }
     },
     "/api-keys": {
@@ -1388,7 +1428,8 @@
         ],
         "tags": [
           "API Keys"
-        ]
+        ],
+        "x-immich-permission": "apiKey.read"
       },
       "post": {
         "operationId": "createApiKey",
@@ -1428,7 +1469,8 @@
         ],
         "tags": [
           "API Keys"
-        ]
+        ],
+        "x-immich-permission": "apiKey.create"
       }
     },
     "/api-keys/{id}": {
@@ -1463,7 +1505,8 @@
         ],
         "tags": [
           "API Keys"
-        ]
+        ],
+        "x-immich-permission": "apiKey.delete"
       },
       "get": {
         "operationId": "getApiKey",
@@ -1503,7 +1546,8 @@
         ],
         "tags": [
           "API Keys"
-        ]
+        ],
+        "x-immich-permission": "apiKey.read"
       },
       "put": {
         "operationId": "updateApiKey",
@@ -1553,7 +1597,8 @@
         ],
         "tags": [
           "API Keys"
-        ]
+        ],
+        "x-immich-permission": "apiKey.update"
       }
     },
     "/assets": {
@@ -1588,13 +1633,22 @@
         ],
         "tags": [
           "Assets"
-        ]
+        ],
+        "x-immich-permission": "asset.delete"
       },
       "post": {
         "operationId": "uploadAsset",
         "parameters": [
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -1647,7 +1701,8 @@
         ],
         "tags": [
           "Assets"
-        ]
+        ],
+        "x-immich-permission": "asset.upload"
       },
       "put": {
         "operationId": "updateAssets",
@@ -1680,7 +1735,8 @@
         ],
         "tags": [
           "Assets"
-        ]
+        ],
+        "x-immich-permission": "asset.update"
       }
     },
     "/assets/bulk-upload-check": {
@@ -1900,7 +1956,8 @@
         ],
         "x-immich-lifecycle": {
           "deprecatedAt": "v1.116.0"
-        }
+        },
+        "x-immich-permission": "asset.read"
       }
     },
     "/assets/statistics": {
@@ -1957,7 +2014,8 @@
         ],
         "tags": [
           "Assets"
-        ]
+        ],
+        "x-immich-permission": "asset.statistics"
       }
     },
     "/assets/{id}": {
@@ -1975,6 +2033,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -2007,7 +2073,8 @@
         ],
         "tags": [
           "Assets"
-        ]
+        ],
+        "x-immich-permission": "asset.read"
       },
       "put": {
         "operationId": "updateAsset",
@@ -2057,7 +2124,8 @@
         ],
         "tags": [
           "Assets"
-        ]
+        ],
+        "x-immich-permission": "asset.update"
       }
     },
     "/assets/{id}/original": {
@@ -2075,6 +2143,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -2108,7 +2184,8 @@
         ],
         "tags": [
           "Assets"
-        ]
+        ],
+        "x-immich-permission": "asset.download"
       },
       "put": {
         "description": "Replace the asset with new file, without changing its id",
@@ -2125,6 +2202,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -2171,7 +2256,8 @@
         ],
         "x-immich-lifecycle": {
           "addedAt": "v1.106.0"
-        }
+        },
+        "x-immich-permission": "asset.replace"
       }
     },
     "/assets/{id}/thumbnail": {
@@ -2202,52 +2288,9 @@
             "schema": {
               "$ref": "#/components/schemas/AssetMediaSize"
             }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
           },
           {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Assets"
-        ]
-      }
-    },
-    "/assets/{id}/video/playback": {
-      "get": {
-        "operationId": "playAssetVideo",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -2281,7 +2324,68 @@
         ],
         "tags": [
           "Assets"
-        ]
+        ],
+        "x-immich-permission": "asset.view"
+      }
+    },
+    "/assets/{id}/video/playback": {
+      "get": {
+        "operationId": "playAssetVideo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.view"
       }
     },
     "/auth/admin-sign-up": {
@@ -2354,7 +2458,8 @@
         ],
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-permission": "auth.changePassword"
       }
     },
     "/auth/login": {
@@ -2452,7 +2557,8 @@
         ],
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-permission": "pinCode.delete"
       },
       "post": {
         "operationId": "setupPinCode",
@@ -2485,7 +2591,8 @@
         ],
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-permission": "pinCode.create"
       },
       "put": {
         "operationId": "changePinCode",
@@ -2518,7 +2625,8 @@
         ],
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-permission": "pinCode.update"
       }
     },
     "/auth/session/lock": {
@@ -2656,6 +2764,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -2694,7 +2810,8 @@
         ],
         "tags": [
           "Download"
-        ]
+        ],
+        "x-immich-permission": "asset.download"
       }
     },
     "/download/info": {
@@ -2703,6 +2820,14 @@
         "parameters": [
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -2745,7 +2870,8 @@
         ],
         "tags": [
           "Download"
-        ]
+        ],
+        "x-immich-permission": "asset.download"
       }
     },
     "/duplicates": {
@@ -2780,7 +2906,8 @@
         ],
         "tags": [
           "Duplicates"
-        ]
+        ],
+        "x-immich-permission": "duplicate.delete"
       },
       "get": {
         "operationId": "getAssetDuplicates",
@@ -2813,7 +2940,8 @@
         ],
         "tags": [
           "Duplicates"
-        ]
+        ],
+        "x-immich-permission": "duplicate.read"
       }
     },
     "/duplicates/{id}": {
@@ -2848,7 +2976,8 @@
         ],
         "tags": [
           "Duplicates"
-        ]
+        ],
+        "x-immich-permission": "duplicate.delete"
       }
     },
     "/faces": {
@@ -2893,7 +3022,8 @@
         ],
         "tags": [
           "Faces"
-        ]
+        ],
+        "x-immich-permission": "face.read"
       },
       "post": {
         "operationId": "createFace",
@@ -2926,7 +3056,8 @@
         ],
         "tags": [
           "Faces"
-        ]
+        ],
+        "x-immich-permission": "face.create"
       }
     },
     "/faces/{id}": {
@@ -2971,7 +3102,8 @@
         ],
         "tags": [
           "Faces"
-        ]
+        ],
+        "x-immich-permission": "face.delete"
       },
       "put": {
         "operationId": "reassignFacesById",
@@ -3021,7 +3153,8 @@
         ],
         "tags": [
           "Faces"
-        ]
+        ],
+        "x-immich-permission": "face.update"
       }
     },
     "/jobs": {
@@ -3053,7 +3186,8 @@
         ],
         "tags": [
           "Jobs"
-        ]
+        ],
+        "x-immich-permission": "job.read"
       },
       "post": {
         "operationId": "createJob",
@@ -3086,7 +3220,8 @@
         ],
         "tags": [
           "Jobs"
-        ]
+        ],
+        "x-immich-permission": "job.create"
       }
     },
     "/jobs/{id}": {
@@ -3137,7 +3272,8 @@
         ],
         "tags": [
           "Jobs"
-        ]
+        ],
+        "x-immich-permission": "job.create"
       }
     },
     "/libraries": {
@@ -3172,7 +3308,8 @@
         ],
         "tags": [
           "Libraries"
-        ]
+        ],
+        "x-immich-permission": "library.read"
       },
       "post": {
         "operationId": "createLibrary",
@@ -3212,7 +3349,8 @@
         ],
         "tags": [
           "Libraries"
-        ]
+        ],
+        "x-immich-permission": "library.create"
       }
     },
     "/libraries/{id}": {
@@ -3247,7 +3385,8 @@
         ],
         "tags": [
           "Libraries"
-        ]
+        ],
+        "x-immich-permission": "library.delete"
       },
       "get": {
         "operationId": "getLibrary",
@@ -3287,7 +3426,8 @@
         ],
         "tags": [
           "Libraries"
-        ]
+        ],
+        "x-immich-permission": "library.read"
       },
       "put": {
         "operationId": "updateLibrary",
@@ -3337,7 +3477,8 @@
         ],
         "tags": [
           "Libraries"
-        ]
+        ],
+        "x-immich-permission": "library.update"
       }
     },
     "/libraries/{id}/scan": {
@@ -3372,7 +3513,8 @@
         ],
         "tags": [
           "Libraries"
-        ]
+        ],
+        "x-immich-permission": "library.update"
       }
     },
     "/libraries/{id}/statistics": {
@@ -3414,7 +3556,8 @@
         ],
         "tags": [
           "Libraries"
-        ]
+        ],
+        "x-immich-permission": "library.statistics"
       }
     },
     "/libraries/{id}/validate": {
@@ -3675,7 +3818,8 @@
         ],
         "tags": [
           "Memories"
-        ]
+        ],
+        "x-immich-permission": "memory.read"
       },
       "post": {
         "operationId": "createMemory",
@@ -3715,7 +3859,8 @@
         ],
         "tags": [
           "Memories"
-        ]
+        ],
+        "x-immich-permission": "memory.create"
       }
     },
     "/memories/statistics": {
@@ -3781,7 +3926,8 @@
         ],
         "tags": [
           "Memories"
-        ]
+        ],
+        "x-immich-permission": "memory.statistics"
       }
     },
     "/memories/{id}": {
@@ -3816,7 +3962,8 @@
         ],
         "tags": [
           "Memories"
-        ]
+        ],
+        "x-immich-permission": "memory.delete"
       },
       "get": {
         "operationId": "getMemory",
@@ -3856,7 +4003,8 @@
         ],
         "tags": [
           "Memories"
-        ]
+        ],
+        "x-immich-permission": "memory.read"
       },
       "put": {
         "operationId": "updateMemory",
@@ -3906,7 +4054,8 @@
         ],
         "tags": [
           "Memories"
-        ]
+        ],
+        "x-immich-permission": "memory.update"
       }
     },
     "/memories/{id}/assets": {
@@ -3961,7 +4110,8 @@
         ],
         "tags": [
           "Memories"
-        ]
+        ],
+        "x-immich-permission": "memoryAsset.delete"
       },
       "put": {
         "operationId": "addMemoryAssets",
@@ -4014,7 +4164,8 @@
         ],
         "tags": [
           "Memories"
-        ]
+        ],
+        "x-immich-permission": "memoryAsset.create"
       }
     },
     "/notifications": {
@@ -4049,7 +4200,8 @@
         ],
         "tags": [
           "Notifications"
-        ]
+        ],
+        "x-immich-permission": "notification.delete"
       },
       "get": {
         "operationId": "getNotifications",
@@ -4116,7 +4268,8 @@
         ],
         "tags": [
           "Notifications"
-        ]
+        ],
+        "x-immich-permission": "notification.read"
       },
       "put": {
         "operationId": "updateNotifications",
@@ -4149,7 +4302,8 @@
         ],
         "tags": [
           "Notifications"
-        ]
+        ],
+        "x-immich-permission": "notification.update"
       }
     },
     "/notifications/{id}": {
@@ -4184,7 +4338,8 @@
         ],
         "tags": [
           "Notifications"
-        ]
+        ],
+        "x-immich-permission": "notification.delete"
       },
       "get": {
         "operationId": "getNotification",
@@ -4224,7 +4379,8 @@
         ],
         "tags": [
           "Notifications"
-        ]
+        ],
+        "x-immich-permission": "notification.read"
       },
       "put": {
         "operationId": "updateNotification",
@@ -4274,7 +4430,8 @@
         ],
         "tags": [
           "Notifications"
-        ]
+        ],
+        "x-immich-permission": "notification.update"
       }
     },
     "/oauth/authorize": {
@@ -4468,7 +4625,8 @@
         ],
         "tags": [
           "Partners"
-        ]
+        ],
+        "x-immich-permission": "partner.read"
       }
     },
     "/partners/{id}": {
@@ -4503,7 +4661,8 @@
         ],
         "tags": [
           "Partners"
-        ]
+        ],
+        "x-immich-permission": "partner.delete"
       },
       "post": {
         "operationId": "createPartner",
@@ -4543,7 +4702,8 @@
         ],
         "tags": [
           "Partners"
-        ]
+        ],
+        "x-immich-permission": "partner.create"
       },
       "put": {
         "operationId": "updatePartner",
@@ -4593,7 +4753,8 @@
         ],
         "tags": [
           "Partners"
-        ]
+        ],
+        "x-immich-permission": "partner.update"
       }
     },
     "/people": {
@@ -4628,7 +4789,8 @@
         ],
         "tags": [
           "People"
-        ]
+        ],
+        "x-immich-permission": "person.delete"
       },
       "get": {
         "operationId": "getAllPeople",
@@ -4708,7 +4870,8 @@
         ],
         "tags": [
           "People"
-        ]
+        ],
+        "x-immich-permission": "person.read"
       },
       "post": {
         "operationId": "createPerson",
@@ -4748,7 +4911,8 @@
         ],
         "tags": [
           "People"
-        ]
+        ],
+        "x-immich-permission": "person.create"
       },
       "put": {
         "operationId": "updatePeople",
@@ -4791,7 +4955,8 @@
         ],
         "tags": [
           "People"
-        ]
+        ],
+        "x-immich-permission": "person.update"
       }
     },
     "/people/{id}": {
@@ -4826,7 +4991,8 @@
         ],
         "tags": [
           "People"
-        ]
+        ],
+        "x-immich-permission": "person.delete"
       },
       "get": {
         "operationId": "getPerson",
@@ -4866,7 +5032,8 @@
         ],
         "tags": [
           "People"
-        ]
+        ],
+        "x-immich-permission": "person.read"
       },
       "put": {
         "operationId": "updatePerson",
@@ -4916,7 +5083,8 @@
         ],
         "tags": [
           "People"
-        ]
+        ],
+        "x-immich-permission": "person.update"
       }
     },
     "/people/{id}/merge": {
@@ -4971,7 +5139,8 @@
         ],
         "tags": [
           "People"
-        ]
+        ],
+        "x-immich-permission": "person.merge"
       }
     },
     "/people/{id}/reassign": {
@@ -5026,7 +5195,8 @@
         ],
         "tags": [
           "People"
-        ]
+        ],
+        "x-immich-permission": "person.reassign"
       }
     },
     "/people/{id}/statistics": {
@@ -5068,7 +5238,8 @@
         ],
         "tags": [
           "People"
-        ]
+        ],
+        "x-immich-permission": "person.statistics"
       }
     },
     "/people/{id}/thumbnail": {
@@ -5111,7 +5282,8 @@
         ],
         "tags": [
           "People"
-        ]
+        ],
+        "x-immich-permission": "person.read"
       }
     },
     "/search/cities": {
@@ -5146,7 +5318,8 @@
         ],
         "tags": [
           "Search"
-        ]
+        ],
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/explore": {
@@ -5181,7 +5354,326 @@
         ],
         "tags": [
           "Search"
-        ]
+        ],
+        "x-immich-permission": "asset.read"
+      }
+    },
+    "/search/large-assets": {
+      "post": {
+        "operationId": "searchLargeAssets",
+        "parameters": [
+          {
+            "name": "albumIds",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "city",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "createdAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "createdBefore",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "deviceId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isEncoded",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isFavorite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isMotion",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isNotInAlbum",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isOffline",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "lensModel",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "libraryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "make",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minFileSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "model",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "personIds",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "rating",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": -1,
+              "maximum": 5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1000,
+              "type": "number"
+            }
+          },
+          {
+            "name": "state",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "tagIds",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "nullable": true,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "takenAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "takenBefore",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "trashedAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "trashedBefore",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetTypeEnum"
+            }
+          },
+          {
+            "name": "updatedAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "updatedBefore",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            }
+          },
+          {
+            "name": "withDeleted",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withExif",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Search"
+        ],
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/metadata": {
@@ -5223,7 +5715,8 @@
         ],
         "tags": [
           "Search"
-        ]
+        ],
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/person": {
@@ -5275,7 +5768,8 @@
         ],
         "tags": [
           "Search"
-        ]
+        ],
+        "x-immich-permission": "person.read"
       }
     },
     "/search/places": {
@@ -5319,7 +5813,8 @@
         ],
         "tags": [
           "Search"
-        ]
+        ],
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/random": {
@@ -5364,7 +5859,8 @@
         ],
         "tags": [
           "Search"
-        ]
+        ],
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/smart": {
@@ -5406,7 +5902,8 @@
         ],
         "tags": [
           "Search"
-        ]
+        ],
+        "x-immich-permission": "asset.read"
       }
     },
     "/search/statistics": {
@@ -5448,7 +5945,8 @@
         ],
         "tags": [
           "Search"
-        ]
+        ],
+        "x-immich-permission": "asset.statistics"
       }
     },
     "/search/suggestions": {
@@ -5533,7 +6031,8 @@
         ],
         "tags": [
           "Search"
-        ]
+        ],
+        "x-immich-permission": "asset.read"
       }
     },
     "/server/about": {
@@ -5565,7 +6064,8 @@
         ],
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-permission": "server.about"
       }
     },
     "/server/apk-links": {
@@ -5597,7 +6097,8 @@
         ],
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-permission": "server.apkLinks"
       }
     },
     "/server/config": {
@@ -5664,7 +6165,8 @@
         ],
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-permission": "serverLicense.delete"
       },
       "get": {
         "operationId": "getServerLicense",
@@ -5697,7 +6199,8 @@
         ],
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-permission": "serverLicense.read"
       },
       "put": {
         "operationId": "setServerLicense",
@@ -5737,7 +6240,8 @@
         ],
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-permission": "serverLicense.update"
       }
     },
     "/server/media-types": {
@@ -5811,7 +6315,8 @@
         ],
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-permission": "server.statistics"
       }
     },
     "/server/storage": {
@@ -5843,7 +6348,8 @@
         ],
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-permission": "server.storage"
       }
     },
     "/server/theme": {
@@ -5966,7 +6472,8 @@
         ],
         "tags": [
           "Sessions"
-        ]
+        ],
+        "x-immich-permission": "session.delete"
       },
       "get": {
         "operationId": "getSessions",
@@ -5999,7 +6506,8 @@
         ],
         "tags": [
           "Sessions"
-        ]
+        ],
+        "x-immich-permission": "session.read"
       },
       "post": {
         "operationId": "createSession",
@@ -6039,7 +6547,8 @@
         ],
         "tags": [
           "Sessions"
-        ]
+        ],
+        "x-immich-permission": "session.create"
       }
     },
     "/sessions/{id}": {
@@ -6074,7 +6583,8 @@
         ],
         "tags": [
           "Sessions"
-        ]
+        ],
+        "x-immich-permission": "session.delete"
       },
       "put": {
         "operationId": "updateSession",
@@ -6124,7 +6634,8 @@
         ],
         "tags": [
           "Sessions"
-        ]
+        ],
+        "x-immich-permission": "session.update"
       }
     },
     "/sessions/{id}/lock": {
@@ -6159,7 +6670,8 @@
         ],
         "tags": [
           "Sessions"
-        ]
+        ],
+        "x-immich-permission": "session.lock"
       }
     },
     "/shared-links": {
@@ -6204,7 +6716,8 @@
         ],
         "tags": [
           "Shared Links"
-        ]
+        ],
+        "x-immich-permission": "sharedLink.read"
       },
       "post": {
         "operationId": "createSharedLink",
@@ -6244,7 +6757,8 @@
         ],
         "tags": [
           "Shared Links"
-        ]
+        ],
+        "x-immich-permission": "sharedLink.create"
       }
     },
     "/shared-links/me": {
@@ -6265,6 +6779,14 @@
             "in": "query",
             "schema": {
               "example": "password",
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
               "type": "string"
             }
           },
@@ -6337,7 +6859,8 @@
         ],
         "tags": [
           "Shared Links"
-        ]
+        ],
+        "x-immich-permission": "sharedLink.delete"
       },
       "get": {
         "operationId": "getSharedLinkById",
@@ -6377,7 +6900,8 @@
         ],
         "tags": [
           "Shared Links"
-        ]
+        ],
+        "x-immich-permission": "sharedLink.read"
       },
       "patch": {
         "operationId": "updateSharedLink",
@@ -6427,7 +6951,8 @@
         ],
         "tags": [
           "Shared Links"
-        ]
+        ],
+        "x-immich-permission": "sharedLink.update"
       }
     },
     "/shared-links/{id}/assets": {
@@ -6445,6 +6970,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -6506,6 +7039,14 @@
           },
           {
             "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
             "required": false,
             "in": "query",
             "schema": {
@@ -6586,7 +7127,8 @@
         ],
         "tags": [
           "Stacks"
-        ]
+        ],
+        "x-immich-permission": "stack.delete"
       },
       "get": {
         "operationId": "searchStacks",
@@ -6629,7 +7171,8 @@
         ],
         "tags": [
           "Stacks"
-        ]
+        ],
+        "x-immich-permission": "stack.read"
       },
       "post": {
         "operationId": "createStack",
@@ -6669,7 +7212,8 @@
         ],
         "tags": [
           "Stacks"
-        ]
+        ],
+        "x-immich-permission": "stack.create"
       }
     },
     "/stacks/{id}": {
@@ -6704,7 +7248,8 @@
         ],
         "tags": [
           "Stacks"
-        ]
+        ],
+        "x-immich-permission": "stack.delete"
       },
       "get": {
         "operationId": "getStack",
@@ -6744,7 +7289,8 @@
         ],
         "tags": [
           "Stacks"
-        ]
+        ],
+        "x-immich-permission": "stack.read"
       },
       "put": {
         "operationId": "updateStack",
@@ -6794,7 +7340,8 @@
         ],
         "tags": [
           "Stacks"
-        ]
+        ],
+        "x-immich-permission": "stack.update"
       }
     },
     "/stacks/{id}/assets/{assetId}": {
@@ -6838,7 +7385,8 @@
         ],
         "tags": [
           "Stacks"
-        ]
+        ],
+        "x-immich-permission": "stack.update"
       }
     },
     "/sync/ack": {
@@ -6873,7 +7421,8 @@
         ],
         "tags": [
           "Sync"
-        ]
+        ],
+        "x-immich-permission": "syncCheckpoint.delete"
       },
       "get": {
         "operationId": "getSyncAck",
@@ -6906,7 +7455,8 @@
         ],
         "tags": [
           "Sync"
-        ]
+        ],
+        "x-immich-permission": "syncCheckpoint.read"
       },
       "post": {
         "operationId": "sendSyncAck",
@@ -6939,7 +7489,8 @@
         ],
         "tags": [
           "Sync"
-        ]
+        ],
+        "x-immich-permission": "syncCheckpoint.update"
       }
     },
     "/sync/delta-sync": {
@@ -7061,7 +7612,8 @@
         ],
         "tags": [
           "Sync"
-        ]
+        ],
+        "x-immich-permission": "sync.stream"
       }
     },
     "/system-config": {
@@ -7093,7 +7645,8 @@
         ],
         "tags": [
           "System Config"
-        ]
+        ],
+        "x-immich-permission": "systemConfig.read"
       },
       "put": {
         "operationId": "updateConfig",
@@ -7133,7 +7686,8 @@
         ],
         "tags": [
           "System Config"
-        ]
+        ],
+        "x-immich-permission": "systemConfig.update"
       }
     },
     "/system-config/defaults": {
@@ -7165,7 +7719,8 @@
         ],
         "tags": [
           "System Config"
-        ]
+        ],
+        "x-immich-permission": "systemConfig.read"
       }
     },
     "/system-config/storage-template-options": {
@@ -7197,7 +7752,8 @@
         ],
         "tags": [
           "System Config"
-        ]
+        ],
+        "x-immich-permission": "systemConfig.read"
       }
     },
     "/system-metadata/admin-onboarding": {
@@ -7229,7 +7785,8 @@
         ],
         "tags": [
           "System Metadata"
-        ]
+        ],
+        "x-immich-permission": "systemMetadata.read"
       },
       "post": {
         "operationId": "updateAdminOnboarding",
@@ -7262,7 +7819,8 @@
         ],
         "tags": [
           "System Metadata"
-        ]
+        ],
+        "x-immich-permission": "systemMetadata.update"
       }
     },
     "/system-metadata/reverse-geocoding-state": {
@@ -7294,7 +7852,8 @@
         ],
         "tags": [
           "System Metadata"
-        ]
+        ],
+        "x-immich-permission": "systemMetadata.read"
       }
     },
     "/system-metadata/version-check-state": {
@@ -7326,7 +7885,8 @@
         ],
         "tags": [
           "System Metadata"
-        ]
+        ],
+        "x-immich-permission": "systemMetadata.read"
       }
     },
     "/tags": {
@@ -7361,7 +7921,8 @@
         ],
         "tags": [
           "Tags"
-        ]
+        ],
+        "x-immich-permission": "tag.read"
       },
       "post": {
         "operationId": "createTag",
@@ -7401,7 +7962,8 @@
         ],
         "tags": [
           "Tags"
-        ]
+        ],
+        "x-immich-permission": "tag.create"
       },
       "put": {
         "operationId": "upsertTags",
@@ -7444,7 +8006,8 @@
         ],
         "tags": [
           "Tags"
-        ]
+        ],
+        "x-immich-permission": "tag.create"
       }
     },
     "/tags/assets": {
@@ -7486,7 +8049,8 @@
         ],
         "tags": [
           "Tags"
-        ]
+        ],
+        "x-immich-permission": "tag.asset"
       }
     },
     "/tags/{id}": {
@@ -7521,7 +8085,8 @@
         ],
         "tags": [
           "Tags"
-        ]
+        ],
+        "x-immich-permission": "tag.delete"
       },
       "get": {
         "operationId": "getTagById",
@@ -7561,7 +8126,8 @@
         ],
         "tags": [
           "Tags"
-        ]
+        ],
+        "x-immich-permission": "tag.read"
       },
       "put": {
         "operationId": "updateTag",
@@ -7611,7 +8177,8 @@
         ],
         "tags": [
           "Tags"
-        ]
+        ],
+        "x-immich-permission": "tag.update"
       }
     },
     "/tags/{id}/assets": {
@@ -7666,7 +8233,8 @@
         ],
         "tags": [
           "Tags"
-        ]
+        ],
+        "x-immich-permission": "tag.asset"
       },
       "put": {
         "operationId": "tagAssets",
@@ -7719,7 +8287,8 @@
         ],
         "tags": [
           "Tags"
-        ]
+        ],
+        "x-immich-permission": "tag.asset"
       }
     },
     "/timeline/bucket": {
@@ -7778,6 +8347,14 @@
             "description": "Filter assets containing a specific person (face recognition)",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
               "type": "string"
             }
           },
@@ -7864,7 +8441,8 @@
         ],
         "tags": [
           "Timeline"
-        ]
+        ],
+        "x-immich-permission": "asset.read"
       }
     },
     "/timeline/buckets": {
@@ -7923,6 +8501,14 @@
             "description": "Filter assets containing a specific person (face recognition)",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
               "type": "string"
             }
           },
@@ -8002,7 +8588,8 @@
         ],
         "tags": [
           "Timeline"
-        ]
+        ],
+        "x-immich-permission": "asset.read"
       }
     },
     "/trash/empty": {
@@ -8034,7 +8621,8 @@
         ],
         "tags": [
           "Trash"
-        ]
+        ],
+        "x-immich-permission": "asset.delete"
       }
     },
     "/trash/restore": {
@@ -8066,7 +8654,8 @@
         ],
         "tags": [
           "Trash"
-        ]
+        ],
+        "x-immich-permission": "asset.delete"
       }
     },
     "/trash/restore/assets": {
@@ -8108,7 +8697,8 @@
         ],
         "tags": [
           "Trash"
-        ]
+        ],
+        "x-immich-permission": "asset.delete"
       }
     },
     "/users": {
@@ -8143,7 +8733,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "user.read"
       }
     },
     "/users/me": {
@@ -8175,7 +8766,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "user.read"
       },
       "put": {
         "operationId": "updateMyUser",
@@ -8215,7 +8807,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "user.update"
       }
     },
     "/users/me/license": {
@@ -8240,7 +8833,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "userLicense.delete"
       },
       "get": {
         "operationId": "getUserLicense",
@@ -8270,7 +8864,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "userLicense.read"
       },
       "put": {
         "operationId": "setUserLicense",
@@ -8310,7 +8905,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "userLicense.update"
       }
     },
     "/users/me/onboarding": {
@@ -8335,7 +8931,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "userOnboarding.delete"
       },
       "get": {
         "operationId": "getUserOnboarding",
@@ -8365,7 +8962,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "userOnboarding.read"
       },
       "put": {
         "operationId": "setUserOnboarding",
@@ -8405,7 +9003,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "userOnboarding.update"
       }
     },
     "/users/me/preferences": {
@@ -8437,7 +9036,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "userPreference.read"
       },
       "put": {
         "operationId": "updateMyPreferences",
@@ -8477,7 +9077,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "userPreference.update"
       }
     },
     "/users/profile-image": {
@@ -8502,7 +9103,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "userProfileImage.delete"
       },
       "post": {
         "operationId": "createProfileImage",
@@ -8543,7 +9145,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "userProfileImage.update"
       }
     },
     "/users/{id}": {
@@ -8585,7 +9188,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "user.read"
       }
     },
     "/users/{id}/profile-image": {
@@ -8628,7 +9232,8 @@
         ],
         "tags": [
           "Users"
-        ]
+        ],
+        "x-immich-permission": "userProfileImage.read"
       }
     },
     "/view/folder": {
@@ -13136,6 +13741,7 @@
             "type": "array"
           },
           "description": {
+            "nullable": true,
             "type": "string"
           },
           "expiresAt": {
@@ -13145,11 +13751,16 @@
             "type": "string"
           },
           "password": {
+            "nullable": true,
             "type": "string"
           },
           "showMetadata": {
             "default": true,
             "type": "boolean"
+          },
+          "slug": {
+            "nullable": true,
+            "type": "string"
           },
           "type": {
             "allOf": [
@@ -13177,6 +13788,7 @@
             "type": "boolean"
           },
           "description": {
+            "nullable": true,
             "type": "string"
           },
           "expiresAt": {
@@ -13185,10 +13797,15 @@
             "type": "string"
           },
           "password": {
+            "nullable": true,
             "type": "string"
           },
           "showMetadata": {
             "type": "boolean"
+          },
+          "slug": {
+            "nullable": true,
+            "type": "string"
           }
         },
         "type": "object"
@@ -13236,6 +13853,10 @@
           "showMetadata": {
             "type": "boolean"
           },
+          "slug": {
+            "nullable": true,
+            "type": "string"
+          },
           "token": {
             "nullable": true,
             "type": "string"
@@ -13262,6 +13883,7 @@
           "key",
           "password",
           "showMetadata",
+          "slug",
           "type",
           "userId"
         ],

@@ -1,11 +1,6 @@
 part of 'base_asset.model.dart';
 
-enum AssetVisibility {
-  timeline,
-  hidden,
-  archive,
-  locked,
-}
+enum AssetVisibility { timeline, hidden, archive, locked }
 
 // Model for an asset stored in the server
 class RemoteAsset extends BaseAsset {

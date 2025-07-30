@@ -29,11 +29,11 @@
 
     try {
       const results = await removeSharedLinkAssets({
+        ...authManager.params,
         id: sharedLink.id,
         assetIdsDto: {
           assetIds: [...getAssets()].map((asset) => asset.id),
         },
-        key: authManager.key,
       });
 
       for (const result of results) {

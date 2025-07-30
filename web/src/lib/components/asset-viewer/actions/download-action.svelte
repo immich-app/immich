@@ -16,7 +16,7 @@
 
   let { asset, menuItem = false }: Props = $props();
 
-  const onDownloadFile = async () => downloadFile(await getAssetInfo({ id: asset.id, key: authManager.key }));
+  const onDownloadFile = async () => downloadFile(await getAssetInfo({ ...authManager.params, id: asset.id }));
 </script>
 
 <svelte:document use:shortcut={{ shortcut: { key: 'd', shift: true }, onShortcut: onDownloadFile }} />

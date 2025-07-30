@@ -14,9 +14,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:share_plus/share_plus.dart';
 
-final assetMediaRepositoryProvider = Provider(
-  (ref) => AssetMediaRepository(ref.watch(assetApiRepositoryProvider)),
-);
+final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.watch(assetApiRepositoryProvider)));
 
 class AssetMediaRepository {
   final AssetApiRepository _assetApiRepository;
@@ -77,8 +75,8 @@ class AssetMediaRepository {
       final localId = (asset is LocalAsset)
           ? asset.id
           : asset is RemoteAsset
-              ? asset.localId
-              : null;
+          ? asset.localId
+          : null;
       if (localId != null) {
         File? f = await AssetEntity(id: localId, width: 1, height: 1, typeInt: 0).originFile;
         downloadedXFiles.add(XFile(f!.path));

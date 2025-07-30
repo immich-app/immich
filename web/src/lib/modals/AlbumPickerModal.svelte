@@ -28,7 +28,7 @@
 
   onMount(async () => {
     albums = await getAllAlbums({ shared: shared || undefined });
-    recentAlbums = albums.sort((a, b) => (new Date(a.createdAt) > new Date(b.createdAt) ? -1 : 1)).slice(0, 3);
+    recentAlbums = albums.sort((a, b) => (new Date(a.updatedAt) > new Date(b.updatedAt) ? -1 : 1)).slice(0, 3);
     loading = false;
   });
 

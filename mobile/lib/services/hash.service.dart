@@ -17,8 +17,8 @@ class HashService {
     required BackgroundService backgroundService,
     this.batchSizeLimit = kBatchHashSizeLimit,
     this.batchFileLimit = kBatchHashFileLimit,
-  })  : _deviceAssetRepository = deviceAssetRepository,
-        _backgroundService = backgroundService;
+  }) : _deviceAssetRepository = deviceAssetRepository,
+       _backgroundService = backgroundService;
 
   final IsarDeviceAssetRepository _deviceAssetRepository;
   final BackgroundService _backgroundService;
@@ -33,9 +33,7 @@ class HashService {
     assets.sort(Asset.compareByLocalId);
 
     // Get and sort DB entries - guaranteed to be a subset of assets
-    final hashesInDB = await _deviceAssetRepository.getByIds(
-      assets.map((a) => a.localId!).toList(),
-    );
+    final hashesInDB = await _deviceAssetRepository.getByIds(assets.map((a) => a.localId!).toList());
     hashesInDB.sort((a, b) => a.assetId.compareTo(b.assetId));
 
     int dbIndex = 0;
@@ -60,9 +58,7 @@ class HashService {
           matchingDbEntry.hash.isNotEmpty &&
           matchingDbEntry.modifiedTime.isAtSameMomentAs(asset.fileModifiedAt)) {
         // Reuse the existing hash
-        hashedAssets.add(
-          asset.copyWith(checksum: base64.encode(matchingDbEntry.hash)),
-        );
+        hashedAssets.add(asset.copyWith(checksum: base64.encode(matchingDbEntry.hash)));
         continue;
       }
 
@@ -125,10 +121,7 @@ class HashService {
 
   /// Processes a batch of files and returns a list of successfully hashed assets after saving
   /// them in [DeviceAssetToHash] for future retrieval
-  Future<List<Asset>> _processBatch(
-    List<_AssetPath> toBeHashed,
-    List<String> toBeDeleted,
-  ) async {
+  Future<List<Asset>> _processBatch(List<_AssetPath> toBeHashed, List<String> toBeDeleted) async {
     _log.info("Hashing ${toBeHashed.length} files");
     final hashes = await _hashFiles(toBeHashed.map((e) => e.path).toList());
     assert(
@@ -143,13 +136,7 @@ class HashService {
       final asset = toBeHashed.elementAtOrNull(index)?.asset;
       if (asset != null && hash?.length == 20) {
         hashedAssets.add(asset.copyWith(checksum: base64.encode(hash!)));
-        toBeAdded.add(
-          DeviceAsset(
-            assetId: asset.localId!,
-            hash: hash,
-            modifiedTime: asset.fileModifiedAt,
-          ),
-        );
+        toBeAdded.add(DeviceAsset(assetId: asset.localId!, hash: hash, modifiedTime: asset.fileModifiedAt));
       } else {
         _log.warning("Failed to hash file ${asset?.localId ?? '<null>'}");
         if (asset != null) {
