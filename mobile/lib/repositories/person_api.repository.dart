@@ -16,8 +16,8 @@ class PersonApiRepository extends ApiRepository {
     return dto.people.map(_toPerson).toList();
   }
 
-  Future<PersonDto> update(String id, {String? name}) async {
-    final dto = await checkNull(_api.updatePerson(id, PersonUpdateDto(name: name)));
+  Future<PersonDto> update(String id, {String? name, DateTime? birthday}) async {
+    final dto = await checkNull(_api.updatePerson(id, PersonUpdateDto(name: name, birthDate: birthday)));
     return _toPerson(dto);
   }
 

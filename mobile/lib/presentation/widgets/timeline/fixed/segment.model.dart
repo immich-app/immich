@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
@@ -99,7 +100,7 @@ class _FixedSegmentRow extends ConsumerWidget {
     }
 
     if (timelineService.hasRange(assetIndex, assetCount)) {
-      return _buildAssetRow(context, timelineService.getAssets(assetIndex, assetCount));
+      return _buildAssetRow(context, timelineService.getAssets(assetIndex, assetCount), timelineService);
     }
 
     return FutureBuilder<List<BaseAsset>>(
@@ -108,7 +109,7 @@ class _FixedSegmentRow extends ConsumerWidget {
         if (snapshot.connectionState != ConnectionState.done) {
           return _buildPlaceholder(context);
         }
-        return _buildAssetRow(context, snapshot.requireData);
+        return _buildAssetRow(context, snapshot.requireData, timelineService);
       },
     );
   }
@@ -117,14 +118,18 @@ class _FixedSegmentRow extends ConsumerWidget {
     return SegmentBuilder.buildPlaceholder(context, assetCount, size: Size.square(tileHeight), spacing: spacing);
   }
 
-  Widget _buildAssetRow(BuildContext context, List<BaseAsset> assets) {
+  Widget _buildAssetRow(BuildContext context, List<BaseAsset> assets, TimelineService timelineService) {
     return FixedTimelineRow(
       dimension: tileHeight,
       spacing: spacing,
       textDirection: Directionality.of(context),
       children: [
         for (int i = 0; i < assets.length; i++)
-          _AssetTileWidget(key: ValueKey(assets[i].heroTag), asset: assets[i], assetIndex: assetIndex + i),
+          _AssetTileWidget(
+            key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
+            asset: assets[i],
+            assetIndex: assetIndex + i,
+          ),
       ],
     );
   }

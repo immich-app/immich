@@ -967,6 +967,59 @@ class DriftPartnerRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftPeopleCollectionPage]
+class DriftPeopleCollectionRoute extends PageRouteInfo<void> {
+  const DriftPeopleCollectionRoute({List<PageRouteInfo>? children})
+    : super(DriftPeopleCollectionRoute.name, initialChildren: children);
+
+  static const String name = 'DriftPeopleCollectionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftPeopleCollectionPage();
+    },
+  );
+}
+
+/// generated route for
+/// [DriftPersonPage]
+class DriftPersonRoute extends PageRouteInfo<DriftPersonRouteArgs> {
+  DriftPersonRoute({
+    Key? key,
+    required DriftPerson person,
+    List<PageRouteInfo>? children,
+  }) : super(
+         DriftPersonRoute.name,
+         args: DriftPersonRouteArgs(key: key, person: person),
+         initialChildren: children,
+       );
+
+  static const String name = 'DriftPersonRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftPersonRouteArgs>();
+      return DriftPersonPage(key: args.key, person: args.person);
+    },
+  );
+}
+
+class DriftPersonRouteArgs {
+  const DriftPersonRouteArgs({this.key, required this.person});
+
+  final Key? key;
+
+  final DriftPerson person;
+
+  @override
+  String toString() {
+    return 'DriftPersonRouteArgs{key: $key, person: $person}';
+  }
+}
+
+/// generated route for
 /// [DriftPlaceDetailPage]
 class DriftPlaceDetailRoute extends PageRouteInfo<DriftPlaceDetailRouteArgs> {
   DriftPlaceDetailRoute({
