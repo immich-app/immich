@@ -423,6 +423,10 @@ export class AssetMediaService extends BaseService {
       sidecarPath: sidecarFile?.originalPath,
     });
 
+    if (dto.metadata) {
+      await this.assetRepository.upsertMetadata(asset.id, dto.metadata);
+    }
+
     if (sidecarFile) {
       await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
     }
