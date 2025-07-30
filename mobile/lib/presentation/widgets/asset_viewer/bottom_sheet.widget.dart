@@ -153,15 +153,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         _SheetTile(
           title: _getDateTime(context, asset),
           titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-          trailing: IconButton(
-            constraints: const BoxConstraints(),
-            padding: EdgeInsets.zero,
-            style: const ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-            icon: const Icon(Icons.edit, size: 18),
-            onPressed: () async {
-              await editDateTime();
-            },
-          ),
+          trailing: asset.hasRemote ? const Icon(Icons.edit, size: 18) : null,
+          onTap: asset.hasRemote ? () async => await editDateTime() : null,
         ),
         if (exifInfo != null) _SheetAssetDescription(exif: exifInfo),
         const SheetPeopleDetails(),
@@ -211,6 +204,7 @@ class _SheetTile extends StatelessWidget {
   final String? subtitle;
   final TextStyle? titleStyle;
   final TextStyle? subtitleStyle;
+  final VoidCallback? onTap;
 
   const _SheetTile({
     required this.title,
@@ -219,6 +213,7 @@ class _SheetTile extends StatelessWidget {
     this.subtitle,
     this.subtitleStyle,
     this.trailing,
+    this.onTap,
   });
 
   @override
@@ -258,6 +253,7 @@ class _SheetTile extends StatelessWidget {
       trailing: trailing,
       contentPadding: leading == null ? null : const EdgeInsets.only(left: 25),
       subtitle: subtitleWidget,
+      onTap: onTap,
     );
   }
 }
