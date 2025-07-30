@@ -156,9 +156,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           trailing: IconButton(
             constraints: const BoxConstraints(),
             padding: EdgeInsets.zero,
-            style: const ButtonStyle(
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
-            ),
+            style: const ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
             icon: const Icon(Icons.edit, size: 18),
             onPressed: () async {
               await editDateTime();
