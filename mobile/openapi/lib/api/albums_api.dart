@@ -24,7 +24,9 @@ class AlbumsApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   ///
   /// * [String] key:
-  Future<Response> addAssetsToAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto, { String? key, }) async {
+  ///
+  /// * [String] slug:
+  Future<Response> addAssetsToAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}/assets'
       .replaceAll('{id}', id);
@@ -38,6 +40,9 @@ class AlbumsApi {
 
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
 
     const contentTypes = <String>['application/json'];
@@ -61,8 +66,10 @@ class AlbumsApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   ///
   /// * [String] key:
-  Future<List<BulkIdResponseDto>?> addAssetsToAlbum(String id, BulkIdsDto bulkIdsDto, { String? key, }) async {
-    final response = await addAssetsToAlbumWithHttpInfo(id, bulkIdsDto,  key: key, );
+  ///
+  /// * [String] slug:
+  Future<List<BulkIdResponseDto>?> addAssetsToAlbum(String id, BulkIdsDto bulkIdsDto, { String? key, String? slug, }) async {
+    final response = await addAssetsToAlbumWithHttpInfo(id, bulkIdsDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -85,7 +92,9 @@ class AlbumsApi {
   /// * [AlbumsAddAssetsDto] albumsAddAssetsDto (required):
   ///
   /// * [String] key:
-  Future<Response> addAssetsToAlbumsWithHttpInfo(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, }) async {
+  ///
+  /// * [String] slug:
+  Future<Response> addAssetsToAlbumsWithHttpInfo(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/assets';
 
@@ -98,6 +107,9 @@ class AlbumsApi {
 
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
 
     const contentTypes = <String>['application/json'];
@@ -119,8 +131,10 @@ class AlbumsApi {
   /// * [AlbumsAddAssetsDto] albumsAddAssetsDto (required):
   ///
   /// * [String] key:
-  Future<AlbumsAddAssetsResponseDto?> addAssetsToAlbums(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, }) async {
-    final response = await addAssetsToAlbumsWithHttpInfo(albumsAddAssetsDto,  key: key, );
+  ///
+  /// * [String] slug:
+  Future<AlbumsAddAssetsResponseDto?> addAssetsToAlbums(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, String? slug, }) async {
+    final response = await addAssetsToAlbumsWithHttpInfo(albumsAddAssetsDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -280,8 +294,10 @@ class AlbumsApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] slug:
+  ///
   /// * [bool] withoutAssets:
-  Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, bool? withoutAssets, }) async {
+  Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, String? slug, bool? withoutAssets, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}'
       .replaceAll('{id}', id);
@@ -295,6 +311,9 @@ class AlbumsApi {
 
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
     if (withoutAssets != null) {
       queryParams.addAll(_queryParams('', 'withoutAssets', withoutAssets));
@@ -320,9 +339,11 @@ class AlbumsApi {
   ///
   /// * [String] key:
   ///
+  /// * [String] slug:
+  ///
   /// * [bool] withoutAssets:
-  Future<AlbumResponseDto?> getAlbumInfo(String id, { String? key, bool? withoutAssets, }) async {
-    final response = await getAlbumInfoWithHttpInfo(id,  key: key, withoutAssets: withoutAssets, );
+  Future<AlbumResponseDto?> getAlbumInfo(String id, { String? key, String? slug, bool? withoutAssets, }) async {
+    final response = await getAlbumInfoWithHttpInfo(id,  key: key, slug: slug, withoutAssets: withoutAssets, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

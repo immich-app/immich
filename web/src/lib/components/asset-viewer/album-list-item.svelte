@@ -1,13 +1,11 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
   import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { normalizeSearchString } from '$lib/utils/string-utils.js';
   import { type AlbumResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { mdiCheckCircle } from '@mdi/js';
-  import { t } from 'svelte-i18n';
   import type { Action } from 'svelte/action';
   import AlbumListItemDetails from './album-list-item-details.svelte';
 
@@ -123,12 +121,12 @@
       <button
         type="button"
         onclick={handleMultiSelectClicked}
-        class='absolute p-2 focus:outline-none'
+        class="absolute p-2 focus:outline-none"
         role="checkbox"
         tabindex={-1}
         aria-checked={selected}
       >
-        {#if  multiSelected}
+        {#if multiSelected}
           <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
             <Icon path={mdiCheckCircle} size="24" class="text-primary" />
           </div>

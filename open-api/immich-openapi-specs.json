@@ -896,6 +896,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {

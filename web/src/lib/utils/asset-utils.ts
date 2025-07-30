@@ -78,11 +78,11 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
 
 export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], showNotification = true) => {
   const result = await addToAlbums({
+    ...authManager.params,
     albumsAddAssetsDto: {
       albumIds,
       assetIds,
     },
-    key: authManager.key,
   });
 
   if (!showNotification) {

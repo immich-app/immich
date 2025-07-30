@@ -1818,15 +1818,17 @@ export function createAlbum({ createAlbumDto }: {
         body: createAlbumDto
     })));
 }
-export function addAssetsToAlbums({ key, albumsAddAssetsDto }: {
+export function addAssetsToAlbums({ key, slug, albumsAddAssetsDto }: {
     key?: string;
+    slug?: string;
     albumsAddAssetsDto: AlbumsAddAssetsDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AlbumsAddAssetsResponseDto;
     }>(`/albums/assets${QS.query(QS.explode({
-        key
+        key,
+        slug
     }))}`, oazapfts.json({
         ...opts,
         method: "PUT",

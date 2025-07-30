@@ -185,6 +185,7 @@ Class | Method | HTTP request | Description
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | 
 *SearchApi* | [**searchAssetStatistics**](doc//SearchApi.md#searchassetstatistics) | **POST** /search/statistics | 
 *SearchApi* | [**searchAssets**](doc//SearchApi.md#searchassets) | **POST** /search/metadata | 
+*SearchApi* | [**searchLargeAssets**](doc//SearchApi.md#searchlargeassets) | **POST** /search/large-assets | 
 *SearchApi* | [**searchPerson**](doc//SearchApi.md#searchperson) | **GET** /search/person | 
 *SearchApi* | [**searchPlaces**](doc//SearchApi.md#searchplaces) | **GET** /search/places | 
 *SearchApi* | [**searchRandom**](doc//SearchApi.md#searchrandom) | **POST** /search/random | 
