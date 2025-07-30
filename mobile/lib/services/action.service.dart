@@ -13,7 +13,6 @@ import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/utils/asset_dt_utils.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
@@ -174,9 +173,8 @@ class ActionService {
       }
 
       final exifData = await _remoteAssetRepository.getExif(assetId);
-      final (dt, to) = getTZAdjustedTimeAndOffset(asset, exifData);
-      initialDate = dt;
-      offset = to;
+      initialDate = asset.createdAt.toLocal();
+      offset = initialDate.timeZoneOffset;
       timeZone = exifData?.timeZone;
     }
 
