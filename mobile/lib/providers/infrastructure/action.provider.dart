@@ -250,6 +250,22 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> updateDescription(ActionSource source, String description) async {
+    final ids = _getRemoteIdsForSource(source);
+    if (ids.length != 1) {
+      _logger.warning('updateDescription called with multiple assets, expected single asset');
+      return ActionResult(count: ids.length, success: false, error: 'Expected single asset for description update');
+    }
+
+    try {
+      final isUpdated = await _service.updateDescription(ids.first, description);
+      return ActionResult(count: 1, success: isUpdated);
+    } catch (error, stack) {
+      _logger.severe('Failed to update description for asset', error, stack);
+      return ActionResult(count: 1, success: false, error: error.toString());
+    }
+  }
+
   Future<ActionResult> stack(String userId, ActionSource source) async {
     final ids = _getOwnedRemoteIdsForSource(source);
     try {

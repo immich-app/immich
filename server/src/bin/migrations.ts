@@ -98,7 +98,7 @@ const create = (path: string, up: string[], down: string[]) => {
   const folder = dirname(path);
   const fullPath = join(folder, filename);
   mkdirSync(folder, { recursive: true });
-  writeFileSync(fullPath, asMigration('kysely', { name, timestamp, up, down }));
+  writeFileSync(fullPath, asMigration({ up, down }));
   console.log(`Wrote ${fullPath}`);
 };
 
@@ -128,34 +128,11 @@ const compare = async () => {
 };
 
 type MigrationProps = {
-  name: string;
-  timestamp: number;
   up: string[];
   down: string[];
 };
 
-const asMigration = (type: 'kysely' | 'typeorm', options: MigrationProps) =>
-  type === 'typeorm' ? asTypeOrmMigration(options) : asKyselyMigration(options);
-
-const asTypeOrmMigration = ({ timestamp, name, up, down }: MigrationProps) => {
-  const upSql = up.map((sql) => `    await queryRunner.query(\`${sql}\`);`).join('\n');
-  const downSql = down.map((sql) => `    await queryRunner.query(\`${sql}\`);`).join('\n');
-
-  return `import { MigrationInterface, QueryRunner } from 'typeorm';
-
-export class ${name}${timestamp} implements MigrationInterface {
-  public async up(queryRunner: QueryRunner): Promise<void> {
-${upSql}
-  }
-
-  public async down(queryRunner: QueryRunner): Promise<void> {
-${downSql}
-  }
-}
-`;
-};
-
-const asKyselyMigration = ({ up, down }: MigrationProps) => {
+const asMigration = ({ up, down }: MigrationProps) => {
   const upSql = up.map((sql) => `  await sql\`${sql}\`.execute(db);`).join('\n');
   const downSql = down.map((sql) => `  await sql\`${sql}\`.execute(db);`).join('\n');
 

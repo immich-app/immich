@@ -19,10 +19,12 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_people_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 const _kSeparator = '  •  ';
 
@@ -148,6 +150,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           title: _getDateTime(context, asset),
           titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
+        if (exifInfo != null) _SheetAssetDescription(exif: exifInfo),
         const SheetPeopleDetails(),
         const SheetLocationDetails(),
         // Details header
@@ -233,6 +236,81 @@ class _SheetTile extends StatelessWidget {
       leading: leading,
       contentPadding: leading == null ? null : const EdgeInsets.only(left: 25),
       subtitle: subtitleWidget,
+    );
+  }
+}
+
+class _SheetAssetDescription extends ConsumerStatefulWidget {
+  final ExifInfo exif;
+
+  const _SheetAssetDescription({required this.exif});
+
+  @override
+  ConsumerState<_SheetAssetDescription> createState() => _SheetAssetDescriptionState();
+}
+
+class _SheetAssetDescriptionState extends ConsumerState<_SheetAssetDescription> {
+  late TextEditingController _controller;
+  final _descriptionFocus = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.exif.description ?? '');
+  }
+
+  Future<void> saveDescription(String? previousDescription) async {
+    final newDescription = _controller.text.trim();
+
+    if (newDescription == previousDescription) {
+      _descriptionFocus.unfocus();
+      return;
+    }
+
+    final editAction = await ref.read(actionProvider.notifier).updateDescription(ActionSource.viewer, newDescription);
+
+    if (!editAction.success) {
+      _controller.text = previousDescription ?? '';
+
+      ImmichToast.show(
+        context: context,
+        msg: 'exif_bottom_sheet_description_error'.t(context: context),
+        toastType: ToastType.error,
+      );
+    }
+
+    _descriptionFocus.unfocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Watch the current asset EXIF provider to get updates
+    final currentExifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
+
+    // Update controller text when EXIF data changes
+    final currentDescription = currentExifInfo?.description ?? '';
+    if (_controller.text != currentDescription && !_descriptionFocus.hasFocus) {
+      _controller.text = currentDescription;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+      child: TextField(
+        controller: _controller,
+        keyboardType: TextInputType.multiline,
+        focusNode: _descriptionFocus,
+        maxLines: null, // makes it grow as text is added
+        decoration: InputDecoration(
+          hintText: 'exif_bottom_sheet_description'.t(context: context),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          disabledBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
+        ),
+        onTapOutside: (_) => saveDescription(currentExifInfo?.description),
+      ),
     );
   }
 }

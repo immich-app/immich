@@ -61,7 +61,7 @@ export class ChangeMediaLocationCommand extends CommandRunner {
       immich-server:
         ...
         volumes:
-          - \${UPLOAD_LOCATION}:/usr/src/app/upload
+          - \${UPLOAD_LOCATION}:/data
         ...
   )`;
 

@@ -36,7 +36,6 @@ services:
     env_file:
       - .env
     environment:
-      IMMICH_MEDIA_LOCATION: /data
       IMMICH_REPOSITORY: immich-app/immich
       IMMICH_REPOSITORY_URL: https://github.com/immich-app/immich
       IMMICH_SOURCE_REF: local
