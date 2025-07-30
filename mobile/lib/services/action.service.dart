@@ -13,6 +13,7 @@ import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -155,6 +156,44 @@ class ActionService {
 
     await _assetApiRepository.updateLocation(remoteIds, location);
     await _remoteAssetRepository.updateLocation(remoteIds, location);
+
+    return true;
+  }
+
+  Future<bool> editDateTime(List<String> remoteIds, BuildContext context) async {
+    DateTime? initialDate;
+    String? timeZone;
+    Duration? offset;
+
+    if (remoteIds.length == 1) {
+      final assetId = remoteIds.first;
+      final asset = await _remoteAssetRepository.get(assetId);
+      if (asset == null) {
+        return false;
+      }
+
+      final exifData = await _remoteAssetRepository.getExif(assetId);
+      initialDate = asset.createdAt.toLocal();
+      offset = initialDate.timeZoneOffset;
+      timeZone = exifData?.timeZone;
+    }
+
+    final dateTime = await showDateTimePicker(
+      context: context,
+      initialDateTime: initialDate,
+      initialTZ: timeZone,
+      initialTZOffset: offset,
+    );
+
+    if (dateTime == null) {
+      return false;
+    }
+
+    // convert dateTime to DateTime object
+    final parsedDateTime = DateTime.parse(dateTime);
+
+    await _assetApiRepository.updateDateTime(remoteIds, parsedDateTime);
+    await _remoteAssetRepository.updateDateTime(remoteIds, parsedDateTime);
 
     return true;
   }
