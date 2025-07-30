@@ -96,6 +96,7 @@
       case AlbumModalRowType.ALBUM_ITEM: {
         if (multiSelectActive) {
           handleMultiSubmit();
+          break;
         }
         if (item.album) {
           onClose([item.album]);
