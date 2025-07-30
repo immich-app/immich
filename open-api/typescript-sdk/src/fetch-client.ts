@@ -384,6 +384,16 @@ export type CreateAlbumDto = {
     assetIds?: string[];
     description?: string;
 };
+export type AlbumsAddAssetsDto = {
+    albumIds: string[];
+    assetIds: string[];
+};
+export type AlbumsAddAssetsResponseDto = {
+    albumSuccessCount: number;
+    assetSuccessCount: number;
+    error?: BulkIdErrorReason;
+    success: boolean;
+};
 export type AlbumStatisticsResponseDto = {
     notShared: number;
     owned: number;
@@ -1806,6 +1816,23 @@ export function createAlbum({ createAlbumDto }: {
         ...opts,
         method: "POST",
         body: createAlbumDto
+    })));
+}
+export function addAssetsToAlbums({ key, slug, albumsAddAssetsDto }: {
+    key?: string;
+    slug?: string;
+    albumsAddAssetsDto: AlbumsAddAssetsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumsAddAssetsResponseDto;
+    }>(`/albums/assets${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: albumsAddAssetsDto
     })));
 }
 export function getAlbumStatistics(opts?: Oazapfts.RequestOpts) {
@@ -4032,6 +4059,12 @@ export enum AssetTypeEnum {
     Video = "VIDEO",
     Audio = "AUDIO",
     Other = "OTHER"
+}
+export enum BulkIdErrorReason {
+    Duplicate = "duplicate",
+    NoPermission = "no_permission",
+    NotFound = "not_found",
+    Unknown = "unknown"
 }
 export enum Error {
     Duplicate = "duplicate",

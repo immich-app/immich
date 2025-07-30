@@ -885,6 +885,65 @@
         "x-immich-permission": "album.create"
       }
     },
+    "/albums/assets": {
+      "put": {
+        "operationId": "addAssetsToAlbums",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlbumsAddAssetsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumsAddAssetsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Albums"
+        ]
+      }
+    },
     "/albums/statistics": {
       "get": {
         "operationId": "getAlbumStatistics",
@@ -9658,6 +9717,55 @@
         ],
         "type": "string"
       },
+      "AlbumsAddAssetsDto": {
+        "properties": {
+          "albumIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "albumIds",
+          "assetIds"
+        ],
+        "type": "object"
+      },
+      "AlbumsAddAssetsResponseDto": {
+        "properties": {
+          "albumSuccessCount": {
+            "type": "integer"
+          },
+          "assetSuccessCount": {
+            "type": "integer"
+          },
+          "error": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BulkIdErrorReason"
+              }
+            ]
+          },
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "albumSuccessCount",
+          "assetSuccessCount",
+          "success"
+        ],
+        "type": "object"
+      },
       "AlbumsResponse": {
         "properties": {
           "defaultAssetOrder": {
@@ -10607,6 +10715,15 @@
           }
         },
         "type": "object"
+      },
+      "BulkIdErrorReason": {
+        "enum": [
+          "duplicate",
+          "no_permission",
+          "not_found",
+          "unknown"
+        ],
+        "type": "string"
       },
       "BulkIdResponseDto": {
         "properties": {
