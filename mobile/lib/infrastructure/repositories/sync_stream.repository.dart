@@ -505,11 +505,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 }
 
 extension on AssetTypeEnum {
-  BaseAssetType toAssetType() => switch (this) {
-    AssetTypeEnum.IMAGE => BaseAssetType.image,
-    AssetTypeEnum.VIDEO => BaseAssetType.video,
-    AssetTypeEnum.AUDIO => BaseAssetType.audio,
-    AssetTypeEnum.OTHER => BaseAssetType.other,
+  AssetType toAssetType() => switch (this) {
+    AssetTypeEnum.IMAGE => AssetType.image,
+    AssetTypeEnum.VIDEO => AssetType.video,
+    AssetTypeEnum.AUDIO => AssetType.audio,
+    AssetTypeEnum.OTHER => AssetType.other,
     _ => throw Exception('Unknown AssetType value: $this'),
   };
 }

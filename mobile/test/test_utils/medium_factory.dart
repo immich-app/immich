@@ -13,7 +13,7 @@ class MediumFactory {
   LocalAsset localAsset({
     String? id,
     String? name,
-    BaseAssetType? type,
+    AssetType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
     String? checksum,
@@ -24,7 +24,7 @@ class MediumFactory {
       id: id ?? '${random.nextInt(1000000)}',
       name: name ?? 'Asset ${random.nextInt(1000000)}',
       checksum: checksum ?? '${random.nextInt(1000000)}',
-      type: type ?? BaseAssetType.image,
+      type: type ?? AssetType.image,
       createdAt: createdAt ?? DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
       updatedAt: updatedAt ?? DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
     );

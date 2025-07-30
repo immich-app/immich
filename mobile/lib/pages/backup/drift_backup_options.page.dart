@@ -16,15 +16,15 @@ class DriftBackupOptionsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     bool hasPopped = false;
-    final previousWifiReqForVideos = Store.get(StoreKey.useWifiForUploadVideos);
-    final previousWifiReqForPhotos = Store.get(StoreKey.useWifiForUploadPhotos);
+    final previousWifiReqForVideos = Store.tryGet(StoreKey.useWifiForUploadVideos) ?? false;
+    final previousWifiReqForPhotos = Store.tryGet(StoreKey.useWifiForUploadPhotos) ?? false;
     return PopScope(
       onPopInvokedWithResult: (didPop, result) async {
         // There is an issue with Flutter where the pop event
         // can be triggered multiple times, so we guard it with _hasPopped
 
-        final currentWifiReqForVideos = Store.get(StoreKey.useWifiForUploadVideos);
-        final currentWifiReqForPhotos = Store.get(StoreKey.useWifiForUploadPhotos);
+        final currentWifiReqForVideos = Store.tryGet(StoreKey.useWifiForUploadVideos) ?? false;
+        final currentWifiReqForPhotos = Store.tryGet(StoreKey.useWifiForUploadPhotos) ?? false;
 
         if (currentWifiReqForVideos == previousWifiReqForVideos &&
             currentWifiReqForPhotos == previousWifiReqForPhotos) {
@@ -84,7 +84,7 @@ class _UseWifiForUploadVideosButton extends ConsumerWidget {
       subtitle: Text("network_requirement_videos_upload".t(context: context)),
       trailing: StreamBuilder(
         stream: valueStream,
-        initialData: Store.get(StoreKey.useWifiForUploadVideos),
+        initialData: Store.tryGet(StoreKey.useWifiForUploadVideos) ?? false,
         builder: (context, snapshot) {
           final value = snapshot.data ?? false;
           return Switch(
@@ -113,7 +113,7 @@ class _UseWifiForUploadPhotosButton extends ConsumerWidget {
       subtitle: Text("network_requirement_photos_upload".t(context: context)),
       trailing: StreamBuilder(
         stream: valueStream,
-        initialData: Store.get(StoreKey.useWifiForUploadPhotos),
+        initialData: Store.tryGet(StoreKey.useWifiForUploadPhotos) ?? false,
         builder: (context, snapshot) {
           final value = snapshot.data ?? false;
           return Switch(

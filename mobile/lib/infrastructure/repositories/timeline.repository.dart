@@ -281,7 +281,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   TimelineQuery video(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
     filter: (row) =>
         row.deletedAt.isNull() &
-        row.type.equalsValue(BaseAssetType.video) &
+        row.type.equalsValue(AssetType.video) &
         row.visibility.equalsValue(AssetVisibility.timeline) &
         row.ownerId.equals(userId),
     groupBy: groupBy,

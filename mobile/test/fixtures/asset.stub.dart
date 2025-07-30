@@ -61,7 +61,7 @@ abstract final class LocalAssetStub {
   static final image1 = LocalAsset(
     id: "image1",
     name: "image1.jpg",
-    type: BaseAssetType.image,
+    type: AssetType.image,
     createdAt: DateTime(2025),
     updatedAt: DateTime(2025, 2),
   );
@@ -69,7 +69,7 @@ abstract final class LocalAssetStub {
   static final image2 = LocalAsset(
     id: "image2",
     name: "image2.jpg",
-    type: BaseAssetType.image,
+    type: AssetType.image,
     createdAt: DateTime(2000),
     updatedAt: DateTime(20021),
   );

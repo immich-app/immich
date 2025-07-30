@@ -1,7 +1,7 @@
 part 'local_asset.model.dart';
 part 'remote_asset.model.dart';
 
-enum BaseAssetType {
+enum AssetType {
   // do not change this order!
   other,
   image,
@@ -14,7 +14,7 @@ enum AssetState { local, remote, merged }
 sealed class BaseAsset {
   final String name;
   final String? checksum;
-  final BaseAssetType type;
+  final AssetType type;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int? width;
@@ -36,8 +36,8 @@ sealed class BaseAsset {
     this.livePhotoVideoId,
   });
 
-  bool get isImage => type == BaseAssetType.image;
-  bool get isVideo => type == BaseAssetType.video;
+  bool get isImage => type == AssetType.image;
+  bool get isVideo => type == AssetType.video;
 
   bool get isMotionPhoto => livePhotoVideoId != null;
 

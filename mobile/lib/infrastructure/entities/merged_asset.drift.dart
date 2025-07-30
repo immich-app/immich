@@ -116,7 +116,7 @@ class MergedAssetResult {
   final String? remoteId;
   final String? localId;
   final String name;
-  final i2.BaseAssetType type;
+  final i2.AssetType type;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int? width;
