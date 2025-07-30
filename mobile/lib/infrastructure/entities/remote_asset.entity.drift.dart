@@ -14,7 +14,7 @@ import 'package:drift/internal/modular.dart' as i6;
 typedef $$RemoteAssetEntityTableCreateCompanionBuilder =
     i1.RemoteAssetEntityCompanion Function({
       required String name,
-      required i2.AssetType type,
+      required i2.BaseAssetType type,
       i0.Value<DateTime> createdAt,
       i0.Value<DateTime> updatedAt,
       i0.Value<int?> width,
@@ -34,7 +34,7 @@ typedef $$RemoteAssetEntityTableCreateCompanionBuilder =
 typedef $$RemoteAssetEntityTableUpdateCompanionBuilder =
     i1.RemoteAssetEntityCompanion Function({
       i0.Value<String> name,
-      i0.Value<i2.AssetType> type,
+      i0.Value<i2.BaseAssetType> type,
       i0.Value<DateTime> createdAt,
       i0.Value<DateTime> updatedAt,
       i0.Value<int?> width,
@@ -112,11 +112,11 @@ class $$RemoteAssetEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnWithTypeConverterFilters<i2.AssetType, i2.AssetType, int> get type =>
-      $composableBuilder(
-        column: $table.type,
-        builder: (column) => i0.ColumnWithTypeConverterFilters(column),
-      );
+  i0.ColumnWithTypeConverterFilters<i2.BaseAssetType, i2.BaseAssetType, int>
+  get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => i0.ColumnWithTypeConverterFilters(column),
+  );
 
   i0.ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
@@ -346,7 +346,7 @@ class $$RemoteAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  i0.GeneratedColumnWithTypeConverter<i2.AssetType, int> get type =>
+  i0.GeneratedColumnWithTypeConverter<i2.BaseAssetType, int> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
 
   i0.GeneratedColumn<DateTime> get createdAt =>
@@ -464,7 +464,7 @@ class $$RemoteAssetEntityTableTableManager
           updateCompanionCallback:
               ({
                 i0.Value<String> name = const i0.Value.absent(),
-                i0.Value<i2.AssetType> type = const i0.Value.absent(),
+                i0.Value<i2.BaseAssetType> type = const i0.Value.absent(),
                 i0.Value<DateTime> createdAt = const i0.Value.absent(),
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
                 i0.Value<int?> width = const i0.Value.absent(),
@@ -503,7 +503,7 @@ class $$RemoteAssetEntityTableTableManager
           createCompanionCallback:
               ({
                 required String name,
-                required i2.AssetType type,
+                required i2.BaseAssetType type,
                 i0.Value<DateTime> createdAt = const i0.Value.absent(),
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
                 i0.Value<int?> width = const i0.Value.absent(),
@@ -630,14 +630,16 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
     requiredDuringInsert: true,
   );
   @override
-  late final i0.GeneratedColumnWithTypeConverter<i2.AssetType, int> type =
+  late final i0.GeneratedColumnWithTypeConverter<i2.BaseAssetType, int> type =
       i0.GeneratedColumn<int>(
         'type',
         aliasedName,
         false,
         type: i0.DriftSqlType.int,
         requiredDuringInsert: true,
-      ).withConverter<i2.AssetType>(i1.$RemoteAssetEntityTable.$convertertype);
+      ).withConverter<i2.BaseAssetType>(
+        i1.$RemoteAssetEntityTable.$convertertype,
+      );
   static const i0.VerificationMeta _createdAtMeta = const i0.VerificationMeta(
     'createdAt',
   );
@@ -1042,8 +1044,8 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
     return $RemoteAssetEntityTable(attachedDatabase, alias);
   }
 
-  static i0.JsonTypeConverter2<i2.AssetType, int, int> $convertertype =
-      const i0.EnumIndexConverter<i2.AssetType>(i2.AssetType.values);
+  static i0.JsonTypeConverter2<i2.BaseAssetType, int, int> $convertertype =
+      const i0.EnumIndexConverter<i2.BaseAssetType>(i2.BaseAssetType.values);
   static i0.JsonTypeConverter2<i2.AssetVisibility, int, int>
   $convertervisibility = const i0.EnumIndexConverter<i2.AssetVisibility>(
     i2.AssetVisibility.values,
@@ -1057,7 +1059,7 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
 class RemoteAssetEntityData extends i0.DataClass
     implements i0.Insertable<i1.RemoteAssetEntityData> {
   final String name;
-  final i2.AssetType type;
+  final i2.BaseAssetType type;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int? width;
@@ -1198,7 +1200,7 @@ class RemoteAssetEntityData extends i0.DataClass
 
   i1.RemoteAssetEntityData copyWith({
     String? name,
-    i2.AssetType? type,
+    i2.BaseAssetType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
     i0.Value<int?> width = const i0.Value.absent(),
@@ -1341,7 +1343,7 @@ class RemoteAssetEntityData extends i0.DataClass
 class RemoteAssetEntityCompanion
     extends i0.UpdateCompanion<i1.RemoteAssetEntityData> {
   final i0.Value<String> name;
-  final i0.Value<i2.AssetType> type;
+  final i0.Value<i2.BaseAssetType> type;
   final i0.Value<DateTime> createdAt;
   final i0.Value<DateTime> updatedAt;
   final i0.Value<int?> width;
@@ -1378,7 +1380,7 @@ class RemoteAssetEntityCompanion
   });
   RemoteAssetEntityCompanion.insert({
     required String name,
-    required i2.AssetType type,
+    required i2.BaseAssetType type,
     this.createdAt = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
     this.width = const i0.Value.absent(),
@@ -1442,7 +1444,7 @@ class RemoteAssetEntityCompanion
 
   i1.RemoteAssetEntityCompanion copyWith({
     i0.Value<String>? name,
-    i0.Value<i2.AssetType>? type,
+    i0.Value<i2.BaseAssetType>? type,
     i0.Value<DateTime>? createdAt,
     i0.Value<DateTime>? updatedAt,
     i0.Value<int?>? width,

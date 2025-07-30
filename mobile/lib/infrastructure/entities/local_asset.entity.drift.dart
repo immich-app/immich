@@ -11,7 +11,7 @@ import 'package:drift/src/runtime/query_builder/query_builder.dart' as i4;
 typedef $$LocalAssetEntityTableCreateCompanionBuilder =
     i1.LocalAssetEntityCompanion Function({
       required String name,
-      required i2.AssetType type,
+      required i2.BaseAssetType type,
       i0.Value<DateTime> createdAt,
       i0.Value<DateTime> updatedAt,
       i0.Value<int?> width,
@@ -25,7 +25,7 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder =
 typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
     i1.LocalAssetEntityCompanion Function({
       i0.Value<String> name,
-      i0.Value<i2.AssetType> type,
+      i0.Value<i2.BaseAssetType> type,
       i0.Value<DateTime> createdAt,
       i0.Value<DateTime> updatedAt,
       i0.Value<int?> width,
@@ -51,11 +51,11 @@ class $$LocalAssetEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnWithTypeConverterFilters<i2.AssetType, i2.AssetType, int> get type =>
-      $composableBuilder(
-        column: $table.type,
-        builder: (column) => i0.ColumnWithTypeConverterFilters(column),
-      );
+  i0.ColumnWithTypeConverterFilters<i2.BaseAssetType, i2.BaseAssetType, int>
+  get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => i0.ColumnWithTypeConverterFilters(column),
+  );
 
   i0.ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
@@ -180,7 +180,7 @@ class $$LocalAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  i0.GeneratedColumnWithTypeConverter<i2.AssetType, int> get type =>
+  i0.GeneratedColumnWithTypeConverter<i2.BaseAssetType, int> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
 
   i0.GeneratedColumn<DateTime> get createdAt =>
@@ -258,7 +258,7 @@ class $$LocalAssetEntityTableTableManager
           updateCompanionCallback:
               ({
                 i0.Value<String> name = const i0.Value.absent(),
-                i0.Value<i2.AssetType> type = const i0.Value.absent(),
+                i0.Value<i2.BaseAssetType> type = const i0.Value.absent(),
                 i0.Value<DateTime> createdAt = const i0.Value.absent(),
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
                 i0.Value<int?> width = const i0.Value.absent(),
@@ -284,7 +284,7 @@ class $$LocalAssetEntityTableTableManager
           createCompanionCallback:
               ({
                 required String name,
-                required i2.AssetType type,
+                required i2.BaseAssetType type,
                 i0.Value<DateTime> createdAt = const i0.Value.absent(),
                 i0.Value<DateTime> updatedAt = const i0.Value.absent(),
                 i0.Value<int?> width = const i0.Value.absent(),
@@ -359,14 +359,16 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     requiredDuringInsert: true,
   );
   @override
-  late final i0.GeneratedColumnWithTypeConverter<i2.AssetType, int> type =
+  late final i0.GeneratedColumnWithTypeConverter<i2.BaseAssetType, int> type =
       i0.GeneratedColumn<int>(
         'type',
         aliasedName,
         false,
         type: i0.DriftSqlType.int,
         requiredDuringInsert: true,
-      ).withConverter<i2.AssetType>(i1.$LocalAssetEntityTable.$convertertype);
+      ).withConverter<i2.BaseAssetType>(
+        i1.$LocalAssetEntityTable.$convertertype,
+      );
   static const i0.VerificationMeta _createdAtMeta = const i0.VerificationMeta(
     'createdAt',
   );
@@ -632,8 +634,8 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     return $LocalAssetEntityTable(attachedDatabase, alias);
   }
 
-  static i0.JsonTypeConverter2<i2.AssetType, int, int> $convertertype =
-      const i0.EnumIndexConverter<i2.AssetType>(i2.AssetType.values);
+  static i0.JsonTypeConverter2<i2.BaseAssetType, int, int> $convertertype =
+      const i0.EnumIndexConverter<i2.BaseAssetType>(i2.BaseAssetType.values);
   @override
   bool get withoutRowId => true;
   @override
@@ -643,7 +645,7 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
 class LocalAssetEntityData extends i0.DataClass
     implements i0.Insertable<i1.LocalAssetEntityData> {
   final String name;
-  final i2.AssetType type;
+  final i2.BaseAssetType type;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int? width;
@@ -738,7 +740,7 @@ class LocalAssetEntityData extends i0.DataClass
 
   i1.LocalAssetEntityData copyWith({
     String? name,
-    i2.AssetType? type,
+    i2.BaseAssetType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
     i0.Value<int?> width = const i0.Value.absent(),
@@ -837,7 +839,7 @@ class LocalAssetEntityData extends i0.DataClass
 class LocalAssetEntityCompanion
     extends i0.UpdateCompanion<i1.LocalAssetEntityData> {
   final i0.Value<String> name;
-  final i0.Value<i2.AssetType> type;
+  final i0.Value<i2.BaseAssetType> type;
   final i0.Value<DateTime> createdAt;
   final i0.Value<DateTime> updatedAt;
   final i0.Value<int?> width;
@@ -862,7 +864,7 @@ class LocalAssetEntityCompanion
   });
   LocalAssetEntityCompanion.insert({
     required String name,
-    required i2.AssetType type,
+    required i2.BaseAssetType type,
     this.createdAt = const i0.Value.absent(),
     this.updatedAt = const i0.Value.absent(),
     this.width = const i0.Value.absent(),
@@ -905,7 +907,7 @@ class LocalAssetEntityCompanion
 
   i1.LocalAssetEntityCompanion copyWith({
     i0.Value<String>? name,
-    i0.Value<i2.AssetType>? type,
+    i0.Value<i2.BaseAssetType>? type,
     i0.Value<DateTime>? createdAt,
     i0.Value<DateTime>? updatedAt,
     i0.Value<int?>? width,

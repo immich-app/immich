@@ -1315,6 +1315,7 @@
   "name_or_nickname": "Name or nickname",
   "network_requirement_photos_upload": "Use cellular data to backup photos",
   "network_requirement_videos_upload": "Use cellular data to backup videos",
+  "network_requirements_updated": "Network requirements changed, resetting backup queue",
   "networking_settings": "Networking",
   "networking_subtitle": "Manage the server endpoint settings",
   "never": "Never",
