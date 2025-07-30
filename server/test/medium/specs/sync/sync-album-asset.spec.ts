@@ -38,6 +38,7 @@ describe(SyncRequestType.AlbumAssetsV1, () => {
       duration: '0:10:00.00000',
       livePhotoVideoId: null,
       stackId: null,
+      libraryId: null,
     });
     const { album } = await ctx.newAlbum({ ownerId: user2.id });
     await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
@@ -64,6 +65,7 @@ describe(SyncRequestType.AlbumAssetsV1, () => {
           duration: asset.duration,
           livePhotoVideoId: asset.livePhotoVideoId,
           stackId: asset.stackId,
+          libraryId: asset.libraryId,
         },
         type: SyncEntityType.AlbumAssetV1,
       },
