@@ -60,7 +60,7 @@ class LocalAsset extends BaseAsset {
     String? remoteId,
     String? name,
     String? checksum,
-    AssetType? type,
+    BaseAssetType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
     int? width,

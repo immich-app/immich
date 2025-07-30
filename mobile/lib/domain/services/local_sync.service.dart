@@ -305,13 +305,14 @@ extension on Iterable<PlatformAsset> {
         id: e.id,
         name: e.name,
         checksum: null,
-        type: AssetType.values.elementAtOrNull(e.type) ?? AssetType.other,
+        type: BaseAssetType.values.elementAtOrNull(e.type) ?? BaseAssetType.other,
         createdAt: e.createdAt == null ? DateTime.now() : DateTime.fromMillisecondsSinceEpoch(e.createdAt! * 1000),
         updatedAt: e.updatedAt == null ? DateTime.now() : DateTime.fromMillisecondsSinceEpoch(e.updatedAt! * 1000),
         width: e.width,
         height: e.height,
         durationInSeconds: e.durationInSeconds,
         orientation: e.orientation,
+        isFavorite: e.isFavorite,
       ),
     ).toList();
   }

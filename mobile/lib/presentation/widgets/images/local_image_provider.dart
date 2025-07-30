@@ -96,7 +96,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   final String id;
   final String name;
   final Size size;
-  final AssetType type;
+  final BaseAssetType type;
 
   const LocalFullImageProvider({required this.id, required this.name, required this.size, required this.type});
 
@@ -120,18 +120,18 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   Stream<Codec> _codec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
     try {
       switch (key.type) {
-        case AssetType.image:
+        case BaseAssetType.image:
           yield* _decodeProgressive(key, decode);
           break;
-        case AssetType.video:
+        case BaseAssetType.video:
           final codec = await _getThumbnailCodec(key, decode);
           if (codec == null) {
             throw StateError("Failed to load preview for ${key.name}");
           }
           yield codec;
           break;
-        case AssetType.other:
-        case AssetType.audio:
+        case BaseAssetType.other:
+        case BaseAssetType.audio:
           throw StateError('Unsupported asset type ${key.type}');
       }
     } catch (error, stack) {

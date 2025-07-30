@@ -3,8 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -82,6 +80,15 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
           splashRadius: 24,
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.pushRoute(const DriftBackupOptionsRoute());
+            },
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: "backup_options".t(context: context),
+          ),
+        ],
       ),
       body: Stack(
         children: [

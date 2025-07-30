@@ -22,6 +22,7 @@ class AppNavigationObserver extends AutoRouterObserver {
     Future(() {
       ref.read(currentRouteNameProvider.notifier).state = route.settings.name;
       ref.read(previousRouteNameProvider.notifier).state = previousRoute?.settings.name;
+      ref.read(previousRouteDataProvider.notifier).state = previousRoute?.settings;
     });
   }
 

@@ -63,10 +63,10 @@ class CastNotifier extends StateNotifier<CastManagerState> {
       ownerId: asset.ownerId.toString(),
       checksum: asset.checksum,
       type: asset.type == old_asset_entity.AssetType.image
-          ? AssetType.image
+          ? BaseAssetType.image
           : asset.type == old_asset_entity.AssetType.video
-          ? AssetType.video
-          : AssetType.other,
+          ? BaseAssetType.video
+          : BaseAssetType.other,
       createdAt: asset.fileCreatedAt,
       updatedAt: asset.updatedAt,
     );

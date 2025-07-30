@@ -218,7 +218,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onPageBuild(PhotoViewControllerBase controller) {
     viewController ??= controller;
-    if (showingBottomSheet) {
+    if (showingBottomSheet && bottomSheetController.isAttached) {
       final verticalOffset =
           (context.height * bottomSheetController.size) - (context.height * _kBottomSheetMinimumExtent);
       controller.position = Offset(0, -verticalOffset);
@@ -463,7 +463,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _snapBottomSheet() {
-    if (bottomSheetController.size > _kBottomSheetSnapExtent || bottomSheetController.size < 0.4) {
+    if (!bottomSheetController.isAttached ||
+        bottomSheetController.size > _kBottomSheetSnapExtent ||
+        bottomSheetController.size < 0.4) {
       return;
     }
     isSnapping = true;

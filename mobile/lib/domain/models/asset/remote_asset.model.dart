@@ -87,7 +87,7 @@ class RemoteAsset extends BaseAsset {
     String? name,
     String? ownerId,
     String? checksum,
-    AssetType? type,
+    BaseAssetType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
     int? width,

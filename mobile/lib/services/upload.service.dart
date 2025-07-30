@@ -250,6 +250,14 @@ class UploadService {
       livePhotoVideoId: '',
     ).toJson();
 
+    bool requiresWiFi = true;
+
+    if (asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadVideos)) {
+      requiresWiFi = false;
+    } else if (!asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadPhotos)) {
+      requiresWiFi = false;
+    }
+
     return buildUploadTask(
       file,
       originalFileName: originalFileName,
@@ -257,6 +265,8 @@ class UploadService {
       metadata: metadata,
       group: group,
       priority: priority,
+      isFavorite: asset.isFavorite,
+      requiresWiFi: requiresWiFi,
     );
   }
 
@@ -280,6 +290,7 @@ class UploadService {
       fields: fields,
       group: kBackupLivePhotoGroup,
       priority: 0, // Highest priority to get upload immediately
+      isFavorite: asset.isFavorite,
     );
   }
 
@@ -291,12 +302,13 @@ class UploadService {
     String? deviceAssetId,
     String? metadata,
     int? priority,
+    bool? isFavorite,
+    bool requiresWiFi = true,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
     final headers = ApiService.getRequestHeaders();
     final deviceId = Store.get(StoreKey.deviceId);
-    final requiresWiFi = _appSettingsService.getSetting(AppSettingsEnum.uploadRequredWifi);
     final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
     final stats = await file.stat();
     final fileCreatedAt = stats.changed;
@@ -307,7 +319,7 @@ class UploadService {
       'deviceId': deviceId,
       'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
       'fileModifiedAt': fileModifiedAt.toUtc().toIso8601String(),
-      'isFavorite': 'false',
+      'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
       if (fields != null) ...fields,
     };
