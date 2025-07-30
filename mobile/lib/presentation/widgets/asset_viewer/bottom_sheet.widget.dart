@@ -154,6 +154,11 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           title: _getDateTime(context, asset),
           titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           trailing: IconButton(
+            constraints: const BoxConstraints(),
+            padding: EdgeInsets.zero,
+            style: const ButtonStyle(
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+            ),
             icon: const Icon(Icons.edit, size: 18),
             onPressed: () async {
               await editDateTime();
