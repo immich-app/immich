@@ -52,6 +52,28 @@ void main() {
     );
   }
 
+  final owner = UserDto(
+    id: "1",
+    updatedAt: DateTime.now(),
+    email: "a@b.c",
+    name: "first last",
+    isAdmin: false,
+    profileChangedAt: DateTime.now(),
+  );
+
+  setUpAll(() async {
+    final loggerDb = DriftLogger(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    final LogRepository logRepository = LogRepository.init(loggerDb);
+
+    WidgetsFlutterBinding.ensureInitialized();
+    final db = await TestUtils.initIsar();
+
+    db.writeTxnSync(() => db.clearSync());
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
+    await Store.put(StoreKey.currentUser, owner);
+    await LogService.init(logRepository: logRepository, storeRepository: IsarStoreRepository(db));
+  });
+
   group('Test SyncService grouped', () {
     final MockHashService hs = MockHashService();
     final MockEntityService entityService = MockEntityService();
@@ -78,20 +100,8 @@ void main() {
       profileChangedAt: DateTime(2021),
     );
 
-    final loggerDb = DriftLogger(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    final LogRepository logRepository = LogRepository.init(loggerDb);
-
     late SyncService s;
 
-    setUpAll(() async {
-      WidgetsFlutterBinding.ensureInitialized();
-      final db = await TestUtils.initIsar();
-
-      db.writeTxnSync(() => db.clearSync());
-      await StoreService.init(storeRepository: IsarStoreRepository(db));
-      await Store.put(StoreKey.currentUser, owner);
-      await LogService.init(logRepository: logRepository, storeRepository: IsarStoreRepository(db));
-    });
     final List<Asset> initialAssets = [
       makeAsset(checksum: "a", remoteId: "0-1"),
       makeAsset(checksum: "b", remoteId: "2-1"),
