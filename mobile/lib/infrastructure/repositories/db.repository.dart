@@ -21,7 +21,7 @@ import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' hide Index;
 
 import 'db.repository.drift.dart';
 
@@ -66,7 +66,7 @@ class Drift extends $Drift implements IDatabaseRepository {
     : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -111,6 +111,9 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.addColumn(v6.remoteAssetEntity, v6.remoteAssetEntity.libraryId);
             await m.create(v6.uQRemoteAssetsOwnerChecksum);
             await m.create(v6.uQRemoteAssetsOwnerLibraryChecksum);
+          },
+          from6To7: (m, v7) async {
+            await m.createIndex(v7.idxLatLng);
           },
         ),
       );

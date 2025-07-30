@@ -896,7 +896,7 @@ class DriftLockedFolderRoute extends PageRouteInfo<void> {
 /// [DriftMapPage]
 class DriftMapRoute extends PageRouteInfo<void> {
   const DriftMapRoute({List<PageRouteInfo>? children})
-      : super(DriftMapRoute.name, initialChildren: children);
+    : super(DriftMapRoute.name, initialChildren: children);
 
   static const String name = 'DriftMapRoute';
 

@@ -4,10 +4,7 @@ class Marker {
   final LatLng location;
   final String assetId;
 
-  const Marker({
-    required this.location,
-    required this.assetId,
-  });
+  const Marker({required this.location, required this.assetId});
 
   @override
   bool operator ==(covariant Marker other) {

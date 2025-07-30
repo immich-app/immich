@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -11,9 +10,28 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/map_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/map/map_utils.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
+import 'package:immich_mobile/utils/async_mutex.dart';
+import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/map/map_theme_override.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+
+class CustomSourceProperties implements SourceProperties {
+  final Map<String, dynamic> data;
+  const CustomSourceProperties({required this.data});
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      "type": "geojson",
+      "data": data,
+      // "cluster": true,
+      // "clusterRadius": 1,
+      // "clusterMinPoints": 5,
+      // "tolerance": 0.1,
+    };
+  }
+}
 
 class DriftMap extends ConsumerStatefulWidget {
   const DriftMap({super.key});
@@ -24,7 +42,8 @@ class DriftMap extends ConsumerStatefulWidget {
 
 class _DriftMapState extends ConsumerState<DriftMap> {
   MapLibreMapController? mapController;
-  bool loadAllMarkers = false;
+  final _reloadMutex = AsyncMutex();
+  final _debouncer = Debouncer(interval: const Duration(milliseconds: 250), maxWaitTime: const Duration(seconds: 2));
 
   @override
   void initState() {
@@ -33,76 +52,69 @@ class _DriftMapState extends ConsumerState<DriftMap> {
 
   @override
   void dispose() {
+    mapController?.removeListener(onMapMoved);
+    mapController?.dispose();
+    _debouncer.dispose();
     super.dispose();
   }
 
-  Future<void> onMapCreated(MapLibreMapController controller) async {
+  void onMapCreated(MapLibreMapController controller) {
     mapController = controller;
-    await setBounds();
   }
 
-  Future<void> onMapMoved() async {
-    await setBounds();
+  Future<void> onMapReady() async {
+    final controller = mapController;
+    if (controller == null) {
+      return;
+    }
+
+    await controller.addSource(
+      MapUtils.defaultSourceId,
+      const CustomSourceProperties(data: {'type': 'FeatureCollection', 'features': []}),
+    );
+
+    await controller.addHeatmapLayer(
+      MapUtils.defaultSourceId,
+      MapUtils.defaultHeatMapLayerId,
+      MapUtils.defaultHeatmapLayerProperties,
+    );
+    controller.addListener(onMapMoved);
+  }
+
+  void onMapMoved() {
+    if (mapController!.isCameraMoving || !mounted) {
+      return;
+    }
+
+    _debouncer.run(setBounds);
   }
 
   Future<void> setBounds() async {
-    if (mapController == null) return;
-    final bounds = await mapController!.getVisibleRegion();
-    ref.read(mapStateProvider.notifier).setBounds(bounds);
+    final controller = mapController;
+    if (controller == null || !mounted) {
+      return;
+    }
+
+    final bounds = await controller.getVisibleRegion();
+    _reloadMutex.run(() async {
+      if (mounted && ref.read(mapStateProvider.notifier).setBounds(bounds)) {
+        final markers = await ref.read(mapMarkerProvider(bounds).future);
+        await reloadMarkers(markers);
+      }
+    });
   }
 
-  Future<void> reloadMarkers(
-    Map<String, dynamic> markers, {
-    bool isLoadAllMarkers = false,
-  }) async {
-    if (mapController == null || loadAllMarkers) return;
-
-    // Wait for previous reload to complete
-    if (!MapUtils.markerCompleter.isCompleted) {
-      return MapUtils.markerCompleter.future;
-    }
-    MapUtils.markerCompleter = Completer();
-
-    // !! Make sure to remove layers before sources else the native
-    // maplibre library would crash when removing the source saying that
-    // the source is still in use
-    final existingLayers = await mapController!.getLayerIds();
-    if (existingLayers.contains(MapUtils.defaultHeatMapLayerId)) {
-      await mapController!.removeLayer(MapUtils.defaultHeatMapLayerId);
+  Future<void> reloadMarkers(Map<String, dynamic> markers) async {
+    final controller = mapController;
+    if (controller == null || !mounted) {
+      return;
     }
 
-    final existingSources = await mapController!.getSourceIds();
-    if (existingSources.contains(MapUtils.defaultSourceId)) {
-      await mapController!.removeSource(MapUtils.defaultSourceId);
-    }
-
-    await mapController!.addSource(
-      MapUtils.defaultSourceId,
-      GeojsonSourceProperties(data: markers),
-    );
-
-    if (Platform.isAndroid) {
-      await mapController!.addCircleLayer(
-        MapUtils.defaultSourceId,
-        MapUtils.defaultHeatMapLayerId,
-        MapUtils.defaultCircleLayerLayerProperties,
-      );
-    } else if (Platform.isIOS) {
-      await mapController!.addHeatmapLayer(
-        MapUtils.defaultSourceId,
-        MapUtils.defaultHeatMapLayerId,
-        MapUtils.defaultHeatmapLayerProperties,
-      );
-    }
-
-    if (isLoadAllMarkers) loadAllMarkers = true;
-
-    MapUtils.markerCompleter.complete();
+    await controller.setGeoJsonSource(MapUtils.defaultSourceId, markers);
   }
 
   Future<void> onZoomToLocation() async {
-    final (location, error) =
-        await MapUtils.checkPermAndGetLocation(context: context);
+    final (location, error) = await MapUtils.checkPermAndGetLocation(context: context);
     if (error != null) {
       if (error == LocationPermission.unableToDetermine && context.mounted) {
         ImmichToast.show(
@@ -115,12 +127,10 @@ class _DriftMapState extends ConsumerState<DriftMap> {
       return;
     }
 
-    if (mapController != null && location != null) {
-      mapController!.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          LatLng(location.latitude, location.longitude),
-          MapUtils.mapZoomToAssetLevel,
-        ),
+    final controller = mapController;
+    if (controller != null && location != null) {
+      controller.animateCamera(
+        CameraUpdate.newLatLngZoom(LatLng(location.latitude, location.longitude), MapUtils.mapZoomToAssetLevel),
         duration: const Duration(milliseconds: 800),
       );
     }
@@ -128,28 +138,9 @@ class _DriftMapState extends ConsumerState<DriftMap> {
 
   @override
   Widget build(BuildContext context) {
-    final bounds = ref.watch(mapStateProvider.select((s) => s.bounds));
-    AsyncValue<Map<String, dynamic>> markers =
-        ref.watch(mapMarkerProvider(bounds));
-    AsyncValue<Map<String, dynamic>> allMarkers =
-        ref.watch(mapMarkerProvider(null));
-
-    ref.listen(mapStateProvider, (_, __) async {
-      if (!loadAllMarkers) {
-        markers = ref.watch(mapMarkerProvider(bounds));
-      }
-    });
-
-    markers.whenData((markers) => reloadMarkers(markers));
-    allMarkers
-        .whenData((markers) => reloadMarkers(markers, isLoadAllMarkers: true));
-
     return Stack(
       children: [
-        _Map(
-          onMapCreated: onMapCreated,
-          onMapMoved: onMapMoved,
-        ),
+        _Map(onMapCreated: onMapCreated, onMapReady: onMapReady),
         _MyLocationButton(onZoomToLocation: onZoomToLocation),
         const MapBottomSheet(),
       ],
@@ -158,26 +149,21 @@ class _DriftMapState extends ConsumerState<DriftMap> {
 }
 
 class _Map extends StatelessWidget {
-  const _Map({
-    required this.onMapCreated,
-    required this.onMapMoved,
-  });
+  const _Map({required this.onMapCreated, required this.onMapReady});
 
   final MapCreatedCallback onMapCreated;
-  final OnCameraIdleCallback onMapMoved;
+
+  final VoidCallback onMapReady;
 
   @override
   Widget build(BuildContext context) {
     return MapThemeOverride(
       mapBuilder: (style) => style.widgetWhen(
         onData: (style) => MapLibreMap(
-          initialCameraPosition: const CameraPosition(
-            target: LatLng(0, 0),
-            zoom: 0,
-          ),
+          initialCameraPosition: const CameraPosition(target: LatLng(0, 0), zoom: 0),
           styleString: style,
           onMapCreated: onMapCreated,
-          onCameraIdle: onMapMoved,
+          onStyleLoadedCallback: onMapReady,
         ),
       ),
     );
@@ -196,9 +182,7 @@ class _MyLocationButton extends StatelessWidget {
       bottom: context.padding.bottom + 16,
       child: ElevatedButton(
         onPressed: onZoomToLocation,
-        style: ElevatedButton.styleFrom(
-          shape: const CircleBorder(),
-        ),
+        style: ElevatedButton.styleFrom(shape: const CircleBorder()),
         child: const Icon(Icons.my_location),
       ),
     );
