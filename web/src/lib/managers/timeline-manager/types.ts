@@ -1,4 +1,4 @@
-import type { TimelinePlainDate, TimelinePlainDateTime } from '$lib/utils/timeline-util';
+import type { TimelineDate, TimelineDateTime } from '$lib/utils/timeline-util';
 import type { AssetStackResponseDto, AssetVisibility } from '@immich/sdk';
 
 export type AssetApiGetTimeBucketsRequest = Parameters<typeof import('@immich/sdk').getTimeBuckets>[0];
@@ -17,8 +17,8 @@ export type TimelineAsset = {
   ownerId: string;
   ratio: number;
   thumbhash: string | null;
-  localDateTime: TimelinePlainDateTime;
-  fileCreatedAt: TimelinePlainDateTime;
+  localDateTime: TimelineDateTime;
+  fileCreatedAt: TimelineDateTime;
   visibility: AssetVisibility;
   isFavorite: boolean;
   isTrashed: boolean;
@@ -35,7 +35,7 @@ export type TimelineAsset = {
 
 export type AssetOperation = (asset: TimelineAsset) => { remove: boolean };
 
-export type MoveAsset = { asset: TimelineAsset; date: TimelinePlainDate };
+export type MoveAsset = { asset: TimelineAsset; date: TimelineDate };
 
 export interface Viewport {
   width: number;
