@@ -626,9 +626,9 @@ typedef $$RemoteAssetEntityTableProcessedTableManager =
       i1.RemoteAssetEntityData,
       i0.PrefetchHooks Function({bool ownerId})
     >;
-i0.Index get uQRemoteAssetOwnerChecksum => i0.Index(
-  'UQ_remote_asset_owner_checksum',
-  'CREATE INDEX UQ_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
+i0.Index get idxRemoteAssetOwnerChecksum => i0.Index(
+  'idx_remote_asset_owner_checksum',
+  'CREATE INDEX idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
 );
 
 class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
