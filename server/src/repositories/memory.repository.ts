@@ -43,6 +43,23 @@ export class MemoryRepository implements IBulkAsset {
       .where('ownerId', '=', ownerId);
   }
 
+  searchBuilderMemoryAssets(ownerId: string, dto: MemorySearchDto) {
+    return this.searchBuilder(ownerId, dto)
+      .select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('asset')
+            .selectAll('asset')
+            .innerJoin('memory_asset', 'asset.id', 'memory_asset.assetsId')
+            .whereRef('memory_asset.memoriesId', '=', 'memory.id')
+            .orderBy('asset.fileCreatedAt', 'asc')
+            .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+            .where('asset.deletedAt', 'is', null),
+        ).as('assets'),
+      )
+      .selectAll('memory');
+  }
+
   @GenerateSql(
     { params: [DummyValue.UUID, {}] },
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
@@ -58,21 +75,17 @@ export class MemoryRepository implements IBulkAsset {
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
   )
   search(ownerId: string, dto: MemorySearchDto) {
-    return this.searchBuilder(ownerId, dto)
-      .select((eb) =>
-        jsonArrayFrom(
-          eb
-            .selectFrom('asset')
-            .selectAll('asset')
-            .innerJoin('memory_asset', 'asset.id', 'memory_asset.assetsId')
-            .whereRef('memory_asset.memoriesId', '=', 'memory.id')
-            .orderBy('asset.fileCreatedAt', 'asc')
-            .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-            .where('asset.deletedAt', 'is', null),
-        ).as('assets'),
-      )
-      .selectAll('memory')
-      .orderBy('memoryAt', 'desc')
+    return this.searchBuilderMemoryAssets(ownerId, dto).orderBy('memoryAt', 'desc').execute();
+  }
+
+  @GenerateSql(
+    { params: [DummyValue.UUID, {}] },
+    { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
+  )
+  getRandom(ownerId: string, dto: MemorySearchDto, size = 20) {
+    return this.searchBuilderMemoryAssets(ownerId, dto)
+      .orderBy(sql`RANDOM()`)
+      .limit(size)
       .execute();
   }
 

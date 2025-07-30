@@ -206,6 +206,90 @@ class MemoriesApi {
     return null;
   }
 
+  /// Performs an HTTP 'GET /memories/random' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [DateTime] for_:
+  ///
+  /// * [bool] isSaved:
+  ///
+  /// * [bool] isTrashed:
+  ///
+  /// * [int] size:
+  ///   Number of random memories to return
+  ///
+  /// * [MemoryType] type:
+  Future<Response> getRandomMemoriesWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, int? size, MemoryType? type, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/memories/random';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (for_ != null) {
+      queryParams.addAll(_queryParams('', 'for', for_));
+    }
+    if (isSaved != null) {
+      queryParams.addAll(_queryParams('', 'isSaved', isSaved));
+    }
+    if (isTrashed != null) {
+      queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
+    }
+    if (size != null) {
+      queryParams.addAll(_queryParams('', 'size', size));
+    }
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [DateTime] for_:
+  ///
+  /// * [bool] isSaved:
+  ///
+  /// * [bool] isTrashed:
+  ///
+  /// * [int] size:
+  ///   Number of random memories to return
+  ///
+  /// * [MemoryType] type:
+  Future<List<MemoryResponseDto>?> getRandomMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, int? size, MemoryType? type, }) async {
+    final response = await getRandomMemoriesWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, size: size, type: type, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<MemoryResponseDto>') as List)
+        .cast<MemoryResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'GET /memories/statistics' operation and returns the [Response].
   /// Parameters:
   ///
