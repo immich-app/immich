@@ -413,6 +413,11 @@ export enum LogLevel {
   Fatal = 'fatal',
 }
 
+export enum ApiCustomExtension {
+  Permission = 'x-immich-permission',
+  AdminOnly = 'x-immich-admin-only',
+}
+
 export enum MetadataKey {
   AuthRoute = 'auth_route',
   AdminRoute = 'admin_route',

@@ -16,7 +16,9 @@ class SearchApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /search/cities' operation and returns the [Response].
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getAssetsByCityWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/cities';
@@ -42,6 +44,7 @@ class SearchApi {
     );
   }
 
+  /// This endpoint requires the `asset.read` permission.
   Future<List<AssetResponseDto>?> getAssetsByCity() async {
     final response = await getAssetsByCityWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -60,7 +63,9 @@ class SearchApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /search/explore' operation and returns the [Response].
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getExploreDataWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/explore';
@@ -86,6 +91,7 @@ class SearchApi {
     );
   }
 
+  /// This endpoint requires the `asset.read` permission.
   Future<List<SearchExploreResponseDto>?> getExploreData() async {
     final response = await getExploreDataWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -104,7 +110,10 @@ class SearchApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /search/suggestions' operation and returns the [Response].
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [SearchSuggestionType] type (required):
@@ -161,6 +170,8 @@ class SearchApi {
     );
   }
 
+  /// This endpoint requires the `asset.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [SearchSuggestionType] type (required):
@@ -193,7 +204,10 @@ class SearchApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /search/statistics' operation and returns the [Response].
+  /// This endpoint requires the `asset.statistics` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [StatisticsSearchDto] statisticsSearchDto (required):
@@ -222,6 +236,8 @@ class SearchApi {
     );
   }
 
+  /// This endpoint requires the `asset.statistics` permission.
+  ///
   /// Parameters:
   ///
   /// * [StatisticsSearchDto] statisticsSearchDto (required):
@@ -240,7 +256,10 @@ class SearchApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /search/metadata' operation and returns the [Response].
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [MetadataSearchDto] metadataSearchDto (required):
@@ -269,6 +288,8 @@ class SearchApi {
     );
   }
 
+  /// This endpoint requires the `asset.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [MetadataSearchDto] metadataSearchDto (required):
@@ -287,7 +308,10 @@ class SearchApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /search/large-assets' operation and returns the [Response].
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [List<String>] albumIds:
@@ -470,6 +494,8 @@ class SearchApi {
     );
   }
 
+  /// This endpoint requires the `asset.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [List<String>] albumIds:
@@ -551,7 +577,10 @@ class SearchApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /search/person' operation and returns the [Response].
+  /// This endpoint requires the `person.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] name (required):
@@ -587,6 +616,8 @@ class SearchApi {
     );
   }
 
+  /// This endpoint requires the `person.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] name (required):
@@ -610,7 +641,10 @@ class SearchApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /search/places' operation and returns the [Response].
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] name (required):
@@ -641,6 +675,8 @@ class SearchApi {
     );
   }
 
+  /// This endpoint requires the `asset.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] name (required):
@@ -662,7 +698,10 @@ class SearchApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /search/random' operation and returns the [Response].
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [RandomSearchDto] randomSearchDto (required):
@@ -691,6 +730,8 @@ class SearchApi {
     );
   }
 
+  /// This endpoint requires the `asset.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [RandomSearchDto] randomSearchDto (required):
@@ -712,7 +753,10 @@ class SearchApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /search/smart' operation and returns the [Response].
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [SmartSearchDto] smartSearchDto (required):
@@ -741,6 +785,8 @@ class SearchApi {
     );
   }
 
+  /// This endpoint requires the `asset.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [SmartSearchDto] smartSearchDto (required):
