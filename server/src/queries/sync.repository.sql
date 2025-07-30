@@ -452,14 +452,14 @@ select
   "avatarColor",
   "deletedAt",
   "updateId",
+  "profileImagePath",
+  "profileChangedAt",
   "isAdmin",
   "pinCode",
   "oauthId",
   "storageLabel",
   "quotaSizeInBytes",
-  "quotaUsageInBytes",
-  "profileImagePath",
-  "profileChangedAt"
+  "quotaUsageInBytes"
 from
   "user"
 where
@@ -896,7 +896,9 @@ select
   "email",
   "avatarColor",
   "deletedAt",
-  "updateId"
+  "updateId",
+  "profileImagePath",
+  "profileChangedAt"
 from
   "user"
 where
