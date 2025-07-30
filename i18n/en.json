@@ -643,6 +643,7 @@
   "clear": "Clear",
   "clear_all": "Clear all",
   "clear_all_recent_searches": "Clear all recent searches",
+  "clear_file_cache": "Clear File Cache",
   "clear_message": "Clear message",
   "clear_value": "Clear value",
   "client_cert_dialog_msg_confirm": "OK",
