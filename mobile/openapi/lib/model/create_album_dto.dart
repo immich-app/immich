@@ -17,6 +17,7 @@ class CreateAlbumDto {
     this.albumUsers = const [],
     this.assetIds = const [],
     this.description,
+    this.groups = const [],
   });
 
   String albumName;
@@ -33,12 +34,15 @@ class CreateAlbumDto {
   ///
   String? description;
 
+  List<AlbumGroupDto> groups;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateAlbumDto &&
     other.albumName == albumName &&
     _deepEquality.equals(other.albumUsers, albumUsers) &&
     _deepEquality.equals(other.assetIds, assetIds) &&
-    other.description == description;
+    other.description == description &&
+    _deepEquality.equals(other.groups, groups);
 
   @override
   int get hashCode =>
@@ -46,10 +50,11 @@ class CreateAlbumDto {
     (albumName.hashCode) +
     (albumUsers.hashCode) +
     (assetIds.hashCode) +
-    (description == null ? 0 : description!.hashCode);
+    (description == null ? 0 : description!.hashCode) +
+    (groups.hashCode);
 
   @override
-  String toString() => 'CreateAlbumDto[albumName=$albumName, albumUsers=$albumUsers, assetIds=$assetIds, description=$description]';
+  String toString() => 'CreateAlbumDto[albumName=$albumName, albumUsers=$albumUsers, assetIds=$assetIds, description=$description, groups=$groups]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -61,6 +66,7 @@ class CreateAlbumDto {
     } else {
     //  json[r'description'] = null;
     }
+      json[r'groups'] = this.groups;
     return json;
   }
 
@@ -79,6 +85,7 @@ class CreateAlbumDto {
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         description: mapValueOfType<String>(json, r'description'),
+        groups: AlbumGroupDto.listFromJson(json[r'groups']),
       );
     }
     return null;

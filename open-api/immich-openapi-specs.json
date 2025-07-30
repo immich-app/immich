@@ -214,6 +214,437 @@
         "description": "This endpoint requires the `activity.delete` permission."
       }
     },
+    "/admin/groups": {
+      "get": {
+        "operationId": "searchGroupsAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GroupAdminResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Groups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminGroup.read",
+        "description": "This endpoint is an admin-only route, and requires the `adminGroup.read` permission."
+      },
+      "post": {
+        "operationId": "createGroupAdmin",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupAdminCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Groups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminGroup.create",
+        "description": "This endpoint is an admin-only route, and requires the `adminGroup.create` permission."
+      }
+    },
+    "/admin/groups/{id}": {
+      "delete": {
+        "operationId": "deleteGroupAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Groups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminGroup.delete",
+        "description": "This endpoint is an admin-only route, and requires the `adminGroup.delete` permission."
+      },
+      "get": {
+        "operationId": "getGroupAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Groups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminGroup.read",
+        "description": "This endpoint is an admin-only route, and requires the `adminGroup.read` permission."
+      },
+      "put": {
+        "operationId": "updateGroupAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupAdminUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Groups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminGroup.update",
+        "description": "This endpoint is an admin-only route, and requires the `adminGroup.update` permission."
+      }
+    },
+    "/admin/groups/{id}/user": {
+      "delete": {
+        "operationId": "removeUsersFromGroupAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupUserDeleteAllDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Groups (admin)"
+        ],
+        "x-immich-permission": "adminGroupUser.delete",
+        "description": "This endpoint requires the `adminGroupUser.delete` permission."
+      }
+    },
+    "/admin/groups/{id}/user/{userId}": {
+      "delete": {
+        "operationId": "removeUserFromGroupAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Groups (admin)"
+        ],
+        "x-immich-permission": "adminGroupUser.delete",
+        "description": "This endpoint requires the `adminGroupUser.delete` permission."
+      }
+    },
+    "/admin/groups/{id}/users": {
+      "get": {
+        "operationId": "getUsersForGroupAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GroupUserResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Groups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminGroupUser.read",
+        "description": "This endpoint is an admin-only route, and requires the `adminGroupUser.read` permission."
+      },
+      "put": {
+        "operationId": "addUsersToGroupAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupUserCreateAllDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GroupUserResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Groups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminGroupUser.create",
+        "description": "This endpoint is an admin-only route, and requires the `adminGroupUser.create` permission."
+      }
+    },
     "/admin/notifications": {
       "post": {
         "operationId": "createNotification",
@@ -1227,6 +1658,216 @@
         ],
         "x-immich-permission": "albumAsset.create",
         "description": "This endpoint requires the `albumAsset.create` permission."
+      }
+    },
+    "/albums/{id}/groups": {
+      "delete": {
+        "operationId": "removeGroupsFromAlbum",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlbumGroupDeleteAllDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "albumGroup.delete",
+        "description": "This endpoint requires the `albumGroup.delete` permission."
+      },
+      "get": {
+        "operationId": "getGroupsForAlbum",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AlbumGroupResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "albumGroup.read",
+        "description": "This endpoint requires the `albumGroup.read` permission."
+      },
+      "put": {
+        "operationId": "addGroupsToAlbum",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlbumGroupCreateAllDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AlbumGroupResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "albumGroup.create",
+        "description": "This endpoint requires the `albumGroup.create` permission."
+      }
+    },
+    "/albums/{id}/groups/{groupId}": {
+      "put": {
+        "operationId": "updateAlbumGroup",
+        "parameters": [
+          {
+            "name": "groupId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlbumGroupUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumGroupResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "albumGroup.update",
+        "description": "This endpoint requires the `albumGroup.update` permission."
       }
     },
     "/albums/{id}/user/{userId}": {
@@ -3167,6 +3808,170 @@
         ],
         "x-immich-permission": "face.update",
         "description": "This endpoint requires the `face.update` permission."
+      }
+    },
+    "/groups": {
+      "get": {
+        "operationId": "searchMyGroups",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GroupResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Groups"
+        ],
+        "x-immich-permission": "group.read",
+        "description": "This endpoint requires the `group.read` permission."
+      }
+    },
+    "/groups/{id}": {
+      "delete": {
+        "operationId": "leaveMyGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Groups"
+        ],
+        "x-immich-permission": "group.delete",
+        "description": "This endpoint requires the `group.delete` permission."
+      },
+      "get": {
+        "operationId": "getMyGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Groups"
+        ],
+        "x-immich-permission": "group.read",
+        "description": "This endpoint requires the `group.read` permission."
+      }
+    },
+    "/groups/{id}/users": {
+      "get": {
+        "operationId": "getMyGroupUsers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GroupUserResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Groups"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "group.read",
+        "description": "This endpoint is an admin-only route, and requires the `group.read` permission."
       }
     },
     "/jobs": {
@@ -9683,6 +10488,110 @@
         ],
         "type": "object"
       },
+      "AlbumGroupCreateAllDto": {
+        "properties": {
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumGroupDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "groups"
+        ],
+        "type": "object"
+      },
+      "AlbumGroupDeleteAllDto": {
+        "properties": {
+          "groupIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "groupIds"
+        ],
+        "type": "object"
+      },
+      "AlbumGroupDto": {
+        "properties": {
+          "groupId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlbumUserRole"
+              }
+            ]
+          }
+        },
+        "required": [
+          "groupId"
+        ],
+        "type": "object"
+      },
+      "AlbumGroupMetadata": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "AlbumGroupResponseDto": {
+        "properties": {
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/AlbumGroupMetadata"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "description",
+          "id",
+          "metadata",
+          "name"
+        ],
+        "type": "object"
+      },
+      "AlbumGroupUpdateDto": {
+        "properties": {
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlbumUserRole"
+              }
+            ]
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      },
       "AlbumResponseDto": {
         "properties": {
           "albumName": {
@@ -10969,6 +11878,12 @@
           },
           "description": {
             "type": "string"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/AlbumGroupDto"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -11406,6 +12321,188 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "GroupAdminCreateDto": {
+        "properties": {
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "users": {
+            "items": {
+              "$ref": "#/components/schemas/GroupUserDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "GroupAdminResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "description",
+          "id",
+          "name",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "GroupAdminUpdateDto": {
+        "properties": {
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GroupResponseDto": {
+        "properties": {
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "description",
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
+      "GroupUserCreateAllDto": {
+        "properties": {
+          "users": {
+            "items": {
+              "$ref": "#/components/schemas/GroupUserDto"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "users"
+        ],
+        "type": "object"
+      },
+      "GroupUserDeleteAllDto": {
+        "properties": {
+          "userIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "userIds"
+        ],
+        "type": "object"
+      },
+      "GroupUserDto": {
+        "properties": {
+          "userId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId"
+        ],
+        "type": "object"
+      },
+      "GroupUserMetadata": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "GroupUserResponseDto": {
+        "properties": {
+          "avatarColor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ]
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/GroupUserMetadata"
+          },
+          "name": {
+            "type": "string"
+          },
+          "profileChangedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "profileImagePath": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "avatarColor",
+          "email",
+          "id",
+          "metadata",
+          "name",
+          "profileChangedAt",
+          "profileImagePath"
+        ],
         "type": "object"
       },
       "ImageFormat": {
@@ -12584,6 +13681,10 @@
           "albumUser.create",
           "albumUser.update",
           "albumUser.delete",
+          "albumGroup.create",
+          "albumGroup.read",
+          "albumGroup.update",
+          "albumGroup.delete",
           "auth.changePassword",
           "authDevice.delete",
           "archive.read",
@@ -12593,6 +13694,8 @@
           "face.read",
           "face.update",
           "face.delete",
+          "group.read",
+          "group.delete",
           "job.create",
           "job.read",
           "library.create",
@@ -12675,6 +13778,14 @@
           "userProfileImage.read",
           "userProfileImage.update",
           "userProfileImage.delete",
+          "adminGroup.create",
+          "adminGroup.read",
+          "adminGroup.update",
+          "adminGroup.delete",
+          "adminGroupUser.create",
+          "adminGroupUser.read",
+          "adminGroupUser.update",
+          "adminGroupUser.delete",
           "adminUser.create",
           "adminUser.read",
           "adminUser.update",

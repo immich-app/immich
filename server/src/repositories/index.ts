@@ -1,5 +1,6 @@
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { AlbumGroupRepository } from 'src/repositories/album-group.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
@@ -14,6 +15,8 @@ import { DownloadRepository } from 'src/repositories/download.repository';
 import { DuplicateRepository } from 'src/repositories/duplicate.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
+import { GroupUserRepository } from 'src/repositories/group-user.repository';
+import { GroupRepository } from 'src/repositories/group.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -48,6 +51,7 @@ export const repositories = [
   AccessRepository,
   ActivityRepository,
   AlbumRepository,
+  AlbumGroupRepository,
   AlbumUserRepository,
   AuditRepository,
   ApiKeyRepository,
@@ -61,6 +65,8 @@ export const repositories = [
   DuplicateRepository,
   EmailRepository,
   EventRepository,
+  GroupRepository,
+  GroupUserRepository,
   JobRepository,
   LibraryRepository,
   LoggingRepository,

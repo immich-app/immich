@@ -27,6 +27,7 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import GroupAvatar from '$lib/components/shared-components/GroupAvatar.svelte';
   import {
     NotificationType,
     notificationController,
@@ -63,11 +64,9 @@
     AssetOrder,
     AssetVisibility,
     addAssetsToAlbum,
-    addUsersToAlbum,
     deleteAlbum,
     getAlbumInfo,
     updateAlbumInfo,
-    type AlbumUserAddDto,
   } from '@immich/sdk';
   import { Button, IconButton, modalManager } from '@immich/ui';
   import {
@@ -104,6 +103,7 @@
   let isCreatingSharedAlbum = $state(false);
   let isShowActivity = $state(false);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
+  let groups = $derived(data.groups);
 
   const assetInteraction = new AssetInteraction();
   const timelineInteraction = new AssetInteraction();
@@ -222,22 +222,6 @@
     await openFileUploadDialog({ albumId: album.id });
     timelineInteraction.clearMultiselect();
     await setModeToView();
-  };
-
-  const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
-    try {
-      await addUsersToAlbum({
-        id: album.id,
-        addUsersDto: {
-          albumUsers,
-        },
-      });
-      await refreshAlbum();
-
-      viewMode = AlbumPageViewMode.VIEW;
-    } catch (error) {
-      handleError(error, $t('errors.error_adding_users_to_album'));
-    }
   };
 
   const handleDownloadAlbum = async () => {
@@ -385,16 +369,17 @@
   );
 
   const handleShare = async () => {
-    const result = await modalManager.show(AlbumShareModal, { album });
+    const action = await modalManager.show(AlbumShareModal, { album });
 
-    switch (result?.action) {
-      case 'sharedLink': {
-        await handleShareLink();
+    switch (action) {
+      case 'update': {
+        await refreshAlbum();
+        viewMode = AlbumPageViewMode.VIEW;
         return;
       }
 
-      case 'sharedUsers': {
-        await handleAddUsers(result.data);
+      case 'sharedLink': {
+        await handleShareLink();
         return;
       }
     }
@@ -470,7 +455,7 @@
               {/if}
 
               <!-- ALBUM SHARING -->
-              {#if album.albumUsers.length > 0 || (album.hasSharedLink && isOwned)}
+              {#if album.albumUsers.length > 0 || (album.hasSharedLink && isOwned) || groups.length > 0}
                 <div class="my-3 flex gap-x-1">
                   <!-- link -->
                   {#if album.hasSharedLink && isOwned}
@@ -507,6 +492,12 @@
                       onclick={handleEditUsers}
                     />
                   {/if}
+
+                  {#each groups as group (group.id)}
+                    <!-- <button type="button" onclick={handleEditGroups}> -->
+                    <GroupAvatar {group} />
+                    <!-- </button> -->
+                  {/each}
 
                   {#if isOwned}
                     <IconButton

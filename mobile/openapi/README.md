@@ -83,14 +83,18 @@ Class | Method | HTTP request | Description
 *ActivitiesApi* | [**getActivities**](doc//ActivitiesApi.md#getactivities) | **GET** /activities | 
 *ActivitiesApi* | [**getActivityStatistics**](doc//ActivitiesApi.md#getactivitystatistics) | **GET** /activities/statistics | 
 *AlbumsApi* | [**addAssetsToAlbum**](doc//AlbumsApi.md#addassetstoalbum) | **PUT** /albums/{id}/assets | 
+*AlbumsApi* | [**addGroupsToAlbum**](doc//AlbumsApi.md#addgroupstoalbum) | **PUT** /albums/{id}/groups | 
 *AlbumsApi* | [**addUsersToAlbum**](doc//AlbumsApi.md#adduserstoalbum) | **PUT** /albums/{id}/users | 
 *AlbumsApi* | [**createAlbum**](doc//AlbumsApi.md#createalbum) | **POST** /albums | 
 *AlbumsApi* | [**deleteAlbum**](doc//AlbumsApi.md#deletealbum) | **DELETE** /albums/{id} | 
 *AlbumsApi* | [**getAlbumInfo**](doc//AlbumsApi.md#getalbuminfo) | **GET** /albums/{id} | 
 *AlbumsApi* | [**getAlbumStatistics**](doc//AlbumsApi.md#getalbumstatistics) | **GET** /albums/statistics | 
 *AlbumsApi* | [**getAllAlbums**](doc//AlbumsApi.md#getallalbums) | **GET** /albums | 
+*AlbumsApi* | [**getGroupsForAlbum**](doc//AlbumsApi.md#getgroupsforalbum) | **GET** /albums/{id}/groups | 
 *AlbumsApi* | [**removeAssetFromAlbum**](doc//AlbumsApi.md#removeassetfromalbum) | **DELETE** /albums/{id}/assets | 
+*AlbumsApi* | [**removeGroupsFromAlbum**](doc//AlbumsApi.md#removegroupsfromalbum) | **DELETE** /albums/{id}/groups | 
 *AlbumsApi* | [**removeUserFromAlbum**](doc//AlbumsApi.md#removeuserfromalbum) | **DELETE** /albums/{id}/user/{userId} | 
+*AlbumsApi* | [**updateAlbumGroup**](doc//AlbumsApi.md#updatealbumgroup) | **PUT** /albums/{id}/groups/{groupId} | 
 *AlbumsApi* | [**updateAlbumInfo**](doc//AlbumsApi.md#updatealbuminfo) | **PATCH** /albums/{id} | 
 *AlbumsApi* | [**updateAlbumUser**](doc//AlbumsApi.md#updatealbumuser) | **PUT** /albums/{id}/user/{userId} | 
 *AssetsApi* | [**checkBulkUpload**](doc//AssetsApi.md#checkbulkupload) | **POST** /assets/bulk-upload-check | checkBulkUpload
@@ -129,6 +133,19 @@ Class | Method | HTTP request | Description
 *FacesApi* | [**deleteFace**](doc//FacesApi.md#deleteface) | **DELETE** /faces/{id} | 
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | 
 *FacesApi* | [**reassignFacesById**](doc//FacesApi.md#reassignfacesbyid) | **PUT** /faces/{id} | 
+*GroupsApi* | [**getMyGroup**](doc//GroupsApi.md#getmygroup) | **GET** /groups/{id} | 
+*GroupsApi* | [**getMyGroupUsers**](doc//GroupsApi.md#getmygroupusers) | **GET** /groups/{id}/users | 
+*GroupsApi* | [**leaveMyGroup**](doc//GroupsApi.md#leavemygroup) | **DELETE** /groups/{id} | 
+*GroupsApi* | [**searchMyGroups**](doc//GroupsApi.md#searchmygroups) | **GET** /groups | 
+*GroupsAdminApi* | [**addUsersToGroupAdmin**](doc//GroupsAdminApi.md#adduserstogroupadmin) | **PUT** /admin/groups/{id}/users | 
+*GroupsAdminApi* | [**createGroupAdmin**](doc//GroupsAdminApi.md#creategroupadmin) | **POST** /admin/groups | 
+*GroupsAdminApi* | [**deleteGroupAdmin**](doc//GroupsAdminApi.md#deletegroupadmin) | **DELETE** /admin/groups/{id} | 
+*GroupsAdminApi* | [**getGroupAdmin**](doc//GroupsAdminApi.md#getgroupadmin) | **GET** /admin/groups/{id} | 
+*GroupsAdminApi* | [**getUsersForGroupAdmin**](doc//GroupsAdminApi.md#getusersforgroupadmin) | **GET** /admin/groups/{id}/users | 
+*GroupsAdminApi* | [**removeUserFromGroupAdmin**](doc//GroupsAdminApi.md#removeuserfromgroupadmin) | **DELETE** /admin/groups/{id}/user/{userId} | 
+*GroupsAdminApi* | [**removeUsersFromGroupAdmin**](doc//GroupsAdminApi.md#removeusersfromgroupadmin) | **DELETE** /admin/groups/{id}/user | 
+*GroupsAdminApi* | [**searchGroupsAdmin**](doc//GroupsAdminApi.md#searchgroupsadmin) | **GET** /admin/groups | 
+*GroupsAdminApi* | [**updateGroupAdmin**](doc//GroupsAdminApi.md#updategroupadmin) | **PUT** /admin/groups/{id} | 
 *JobsApi* | [**createJob**](doc//JobsApi.md#createjob) | **POST** /jobs | 
 *JobsApi* | [**getAllJobsStatus**](doc//JobsApi.md#getalljobsstatus) | **GET** /jobs | 
 *JobsApi* | [**sendJobCommand**](doc//JobsApi.md#sendjobcommand) | **PUT** /jobs/{id} | 
@@ -292,6 +309,12 @@ Class | Method | HTTP request | Description
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AdminOnboardingUpdateDto](doc//AdminOnboardingUpdateDto.md)
+ - [AlbumGroupCreateAllDto](doc//AlbumGroupCreateAllDto.md)
+ - [AlbumGroupDeleteAllDto](doc//AlbumGroupDeleteAllDto.md)
+ - [AlbumGroupDto](doc//AlbumGroupDto.md)
+ - [AlbumGroupMetadata](doc//AlbumGroupMetadata.md)
+ - [AlbumGroupResponseDto](doc//AlbumGroupResponseDto.md)
+ - [AlbumGroupUpdateDto](doc//AlbumGroupUpdateDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AlbumStatisticsResponseDto](doc//AlbumStatisticsResponseDto.md)
  - [AlbumUserAddDto](doc//AlbumUserAddDto.md)
@@ -360,6 +383,15 @@ Class | Method | HTTP request | Description
  - [FacialRecognitionConfig](doc//FacialRecognitionConfig.md)
  - [FoldersResponse](doc//FoldersResponse.md)
  - [FoldersUpdate](doc//FoldersUpdate.md)
+ - [GroupAdminCreateDto](doc//GroupAdminCreateDto.md)
+ - [GroupAdminResponseDto](doc//GroupAdminResponseDto.md)
+ - [GroupAdminUpdateDto](doc//GroupAdminUpdateDto.md)
+ - [GroupResponseDto](doc//GroupResponseDto.md)
+ - [GroupUserCreateAllDto](doc//GroupUserCreateAllDto.md)
+ - [GroupUserDeleteAllDto](doc//GroupUserDeleteAllDto.md)
+ - [GroupUserDto](doc//GroupUserDto.md)
+ - [GroupUserMetadata](doc//GroupUserMetadata.md)
+ - [GroupUserResponseDto](doc//GroupUserResponseDto.md)
  - [ImageFormat](doc//ImageFormat.md)
  - [JobCommand](doc//JobCommand.md)
  - [JobCommandDto](doc//JobCommandDto.md)

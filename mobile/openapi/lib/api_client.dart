@@ -200,6 +200,18 @@ class ApiClient {
           return AddUsersDto.fromJson(value);
         case 'AdminOnboardingUpdateDto':
           return AdminOnboardingUpdateDto.fromJson(value);
+        case 'AlbumGroupCreateAllDto':
+          return AlbumGroupCreateAllDto.fromJson(value);
+        case 'AlbumGroupDeleteAllDto':
+          return AlbumGroupDeleteAllDto.fromJson(value);
+        case 'AlbumGroupDto':
+          return AlbumGroupDto.fromJson(value);
+        case 'AlbumGroupMetadata':
+          return AlbumGroupMetadata.fromJson(value);
+        case 'AlbumGroupResponseDto':
+          return AlbumGroupResponseDto.fromJson(value);
+        case 'AlbumGroupUpdateDto':
+          return AlbumGroupUpdateDto.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
         case 'AlbumStatisticsResponseDto':
@@ -336,6 +348,24 @@ class ApiClient {
           return FoldersResponse.fromJson(value);
         case 'FoldersUpdate':
           return FoldersUpdate.fromJson(value);
+        case 'GroupAdminCreateDto':
+          return GroupAdminCreateDto.fromJson(value);
+        case 'GroupAdminResponseDto':
+          return GroupAdminResponseDto.fromJson(value);
+        case 'GroupAdminUpdateDto':
+          return GroupAdminUpdateDto.fromJson(value);
+        case 'GroupResponseDto':
+          return GroupResponseDto.fromJson(value);
+        case 'GroupUserCreateAllDto':
+          return GroupUserCreateAllDto.fromJson(value);
+        case 'GroupUserDeleteAllDto':
+          return GroupUserDeleteAllDto.fromJson(value);
+        case 'GroupUserDto':
+          return GroupUserDto.fromJson(value);
+        case 'GroupUserMetadata':
+          return GroupUserMetadata.fromJson(value);
+        case 'GroupUserResponseDto':
+          return GroupUserResponseDto.fromJson(value);
         case 'ImageFormat':
           return ImageFormatTypeTransformer().decode(value);
         case 'JobCommand':

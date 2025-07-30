@@ -165,6 +165,46 @@ export const album_user_delete_audit = registerFunction({
     END`,
 });
 
+export const album_group_delete_audit = registerFunction({
+  name: 'album_group_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO "album_audit" ("albumId", "userId")
+      SELECT OLD."albumId", "group_user"."userId"
+      FROM OLD INNER JOIN "group_user" ON "group_user"."groupId" = OLD."groupId";
+
+      IF pg_trigger_depth() = 1 THEN
+        INSERT INTO album_group_audit ("albumId", "groupId")
+        SELECT "albumId", "groupId"
+        FROM OLD;
+      END IF;
+
+      RETURN NULL;
+    END`,
+});
+
+export const group_user_delete_audit = registerFunction({
+  name: 'group_user_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO group_audit ("groupId", "userId")
+      SELECT "groupId", "userId"
+      FROM OLD;
+
+      IF pg_trigger_depth() = 1 THEN
+        INSERT INTO group_user_audit ("groupId", "userId")
+        SELECT "groupId", "userId"
+        FROM OLD;
+      END IF;
+
+      RETURN NULL;
+    END`,
+});
+
 export const memory_delete_audit = registerFunction({
   name: 'memory_delete_audit',
   returnType: 'TRIGGER',

@@ -91,6 +91,66 @@ class AlbumsApi {
     return null;
   }
 
+  /// This endpoint requires the `albumGroup.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AlbumGroupCreateAllDto] albumGroupCreateAllDto (required):
+  Future<Response> addGroupsToAlbumWithHttpInfo(String id, AlbumGroupCreateAllDto albumGroupCreateAllDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/albums/{id}/groups'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = albumGroupCreateAllDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `albumGroup.create` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AlbumGroupCreateAllDto] albumGroupCreateAllDto (required):
+  Future<List<AlbumGroupResponseDto>?> addGroupsToAlbum(String id, AlbumGroupCreateAllDto albumGroupCreateAllDto,) async {
+    final response = await addGroupsToAlbumWithHttpInfo(id, albumGroupCreateAllDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AlbumGroupResponseDto>') as List)
+        .cast<AlbumGroupResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// This endpoint requires the `albumUser.create` permission.
   ///
   /// Note: This method returns the HTTP [Response].
@@ -432,6 +492,62 @@ class AlbumsApi {
     return null;
   }
 
+  /// This endpoint requires the `albumGroup.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getGroupsForAlbumWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/albums/{id}/groups'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `albumGroup.read` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<List<AlbumGroupResponseDto>?> getGroupsForAlbum(String id,) async {
+    final response = await getGroupsForAlbumWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AlbumGroupResponseDto>') as List)
+        .cast<AlbumGroupResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// This endpoint requires the `albumAsset.delete` permission.
   ///
   /// Note: This method returns the HTTP [Response].
@@ -492,6 +608,55 @@ class AlbumsApi {
     return null;
   }
 
+  /// This endpoint requires the `albumGroup.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AlbumGroupDeleteAllDto] albumGroupDeleteAllDto (required):
+  Future<Response> removeGroupsFromAlbumWithHttpInfo(String id, AlbumGroupDeleteAllDto albumGroupDeleteAllDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/albums/{id}/groups'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = albumGroupDeleteAllDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `albumGroup.delete` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AlbumGroupDeleteAllDto] albumGroupDeleteAllDto (required):
+  Future<void> removeGroupsFromAlbum(String id, AlbumGroupDeleteAllDto albumGroupDeleteAllDto,) async {
+    final response = await removeGroupsFromAlbumWithHttpInfo(id, albumGroupDeleteAllDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// This endpoint requires the `albumUser.delete` permission.
   ///
   /// Note: This method returns the HTTP [Response].
@@ -540,6 +705,68 @@ class AlbumsApi {
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
+  }
+
+  /// This endpoint requires the `albumGroup.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] groupId (required):
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AlbumGroupUpdateDto] albumGroupUpdateDto (required):
+  Future<Response> updateAlbumGroupWithHttpInfo(String groupId, String id, AlbumGroupUpdateDto albumGroupUpdateDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/albums/{id}/groups/{groupId}'
+      .replaceAll('{groupId}', groupId)
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = albumGroupUpdateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `albumGroup.update` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] groupId (required):
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AlbumGroupUpdateDto] albumGroupUpdateDto (required):
+  Future<AlbumGroupResponseDto?> updateAlbumGroup(String groupId, String id, AlbumGroupUpdateDto albumGroupUpdateDto,) async {
+    final response = await updateAlbumGroupWithHttpInfo(groupId, id, albumGroupUpdateDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumGroupResponseDto',) as AlbumGroupResponseDto;
+    
+    }
+    return null;
   }
 
   /// This endpoint requires the `album.update` permission.

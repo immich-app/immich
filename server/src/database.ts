@@ -144,6 +144,17 @@ export type UserAdmin = User & {
   metadata: UserMetadataItem[];
 };
 
+export type Group = {
+  id: string;
+  name: string;
+  description: string | null;
+};
+
+export type GroupAdmin = Group & {
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type StorageAsset = {
   id: string;
   ownerId: string;
@@ -319,6 +330,7 @@ export const columns = {
     'shared_link.allowDownload',
     'shared_link.password',
   ],
+  groupAdmin: ['group.id', 'group.name', 'group.description', 'group.createdAt', 'group.updatedAt'],
   user: userColumns,
   userWithPrefix: userWithPrefixColumns,
   userAdmin: [

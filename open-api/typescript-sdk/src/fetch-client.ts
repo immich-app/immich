@@ -40,6 +40,44 @@ export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
 };
+export type GroupAdminResponseDto = {
+    createdAt: string;
+    description: string | null;
+    id: string;
+    name: string;
+    updatedAt: string;
+};
+export type GroupUserDto = {
+    userId: string;
+};
+export type GroupAdminCreateDto = {
+    description?: string | null;
+    name: string;
+    users?: GroupUserDto[];
+};
+export type GroupAdminUpdateDto = {
+    description?: string | null;
+    name?: string;
+};
+export type GroupUserDeleteAllDto = {
+    userIds: string[];
+};
+export type GroupUserMetadata = {
+    createdAt: string;
+    updatedAt: string;
+};
+export type GroupUserResponseDto = {
+    avatarColor: UserAvatarColor;
+    email: string;
+    id: string;
+    metadata: GroupUserMetadata;
+    name: string;
+    profileChangedAt: string;
+    profileImagePath: string;
+};
+export type GroupUserCreateAllDto = {
+    users: GroupUserDto[];
+};
 export type NotificationCreateDto = {
     data?: object;
     description?: string | null;
@@ -378,11 +416,16 @@ export type AlbumUserCreateDto = {
     role: AlbumUserRole;
     userId: string;
 };
+export type AlbumGroupDto = {
+    groupId: string;
+    role?: AlbumUserRole;
+};
 export type CreateAlbumDto = {
     albumName: string;
     albumUsers?: AlbumUserCreateDto[];
     assetIds?: string[];
     description?: string;
+    groups?: AlbumGroupDto[];
 };
 export type AlbumStatisticsResponseDto = {
     notShared: number;
@@ -403,6 +446,25 @@ export type BulkIdResponseDto = {
     error?: Error;
     id: string;
     success: boolean;
+};
+export type AlbumGroupDeleteAllDto = {
+    groupIds: string[];
+};
+export type AlbumGroupMetadata = {
+    createdAt: string;
+    updatedAt: string;
+};
+export type AlbumGroupResponseDto = {
+    description: string | null;
+    id: string;
+    metadata: AlbumGroupMetadata;
+    name: string;
+};
+export type AlbumGroupCreateAllDto = {
+    groups: AlbumGroupDto[];
+};
+export type AlbumGroupUpdateDto = {
+    role: AlbumUserRole;
 };
 export type UpdateAlbumUserDto = {
     role: AlbumUserRole;
@@ -626,6 +688,11 @@ export type AssetFaceDeleteDto = {
 };
 export type FaceDto = {
     id: string;
+};
+export type GroupResponseDto = {
+    description: string | null;
+    id: string;
+    name: string;
 };
 export type JobCountsDto = {
     active: number;
@@ -1644,6 +1711,132 @@ export function deleteActivity({ id }: {
         method: "DELETE"
     }));
 }
+/**
+ * This endpoint is an admin-only route, and requires the `adminGroup.read` permission.
+ */
+export function searchGroupsAdmin({ id, userId }: {
+    id?: string;
+    userId?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: GroupAdminResponseDto[];
+    }>(`/admin/groups${QS.query(QS.explode({
+        id,
+        userId
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * This endpoint is an admin-only route, and requires the `adminGroup.create` permission.
+ */
+export function createGroupAdmin({ groupAdminCreateDto }: {
+    groupAdminCreateDto: GroupAdminCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: GroupAdminResponseDto;
+    }>("/admin/groups", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: groupAdminCreateDto
+    })));
+}
+/**
+ * This endpoint is an admin-only route, and requires the `adminGroup.delete` permission.
+ */
+export function deleteGroupAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/groups/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * This endpoint is an admin-only route, and requires the `adminGroup.read` permission.
+ */
+export function getGroupAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: GroupAdminResponseDto;
+    }>(`/admin/groups/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * This endpoint is an admin-only route, and requires the `adminGroup.update` permission.
+ */
+export function updateGroupAdmin({ id, groupAdminUpdateDto }: {
+    id: string;
+    groupAdminUpdateDto: GroupAdminUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: GroupAdminResponseDto;
+    }>(`/admin/groups/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: groupAdminUpdateDto
+    })));
+}
+/**
+ * This endpoint requires the `adminGroupUser.delete` permission.
+ */
+export function removeUsersFromGroupAdmin({ id, groupUserDeleteAllDto }: {
+    id: string;
+    groupUserDeleteAllDto: GroupUserDeleteAllDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/groups/${encodeURIComponent(id)}/user`, oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: groupUserDeleteAllDto
+    })));
+}
+/**
+ * This endpoint requires the `adminGroupUser.delete` permission.
+ */
+export function removeUserFromGroupAdmin({ id, userId }: {
+    id: string;
+    userId: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/groups/${encodeURIComponent(id)}/user/${encodeURIComponent(userId)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * This endpoint is an admin-only route, and requires the `adminGroupUser.read` permission.
+ */
+export function getUsersForGroupAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: GroupUserResponseDto[];
+    }>(`/admin/groups/${encodeURIComponent(id)}/users`, {
+        ...opts
+    }));
+}
+/**
+ * This endpoint is an admin-only route, and requires the `adminGroupUser.create` permission.
+ */
+export function addUsersToGroupAdmin({ id, groupUserCreateAllDto }: {
+    id: string;
+    groupUserCreateAllDto: GroupUserCreateAllDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: GroupUserResponseDto[];
+    }>(`/admin/groups/${encodeURIComponent(id)}/users`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: groupUserCreateAllDto
+    })));
+}
 export function createNotification({ notificationCreateDto }: {
     notificationCreateDto: NotificationCreateDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -1946,6 +2139,65 @@ export function addAssetsToAlbum({ id, key, slug, bulkIdsDto }: {
         ...opts,
         method: "PUT",
         body: bulkIdsDto
+    })));
+}
+/**
+ * This endpoint requires the `albumGroup.delete` permission.
+ */
+export function removeGroupsFromAlbum({ id, albumGroupDeleteAllDto }: {
+    id: string;
+    albumGroupDeleteAllDto: AlbumGroupDeleteAllDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/albums/${encodeURIComponent(id)}/groups`, oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: albumGroupDeleteAllDto
+    })));
+}
+/**
+ * This endpoint requires the `albumGroup.read` permission.
+ */
+export function getGroupsForAlbum({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumGroupResponseDto[];
+    }>(`/albums/${encodeURIComponent(id)}/groups`, {
+        ...opts
+    }));
+}
+/**
+ * This endpoint requires the `albumGroup.create` permission.
+ */
+export function addGroupsToAlbum({ id, albumGroupCreateAllDto }: {
+    id: string;
+    albumGroupCreateAllDto: AlbumGroupCreateAllDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumGroupResponseDto[];
+    }>(`/albums/${encodeURIComponent(id)}/groups`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: albumGroupCreateAllDto
+    })));
+}
+/**
+ * This endpoint requires the `albumGroup.update` permission.
+ */
+export function updateAlbumGroup({ groupId, id, albumGroupUpdateDto }: {
+    groupId: string;
+    id: string;
+    albumGroupUpdateDto: AlbumGroupUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumGroupResponseDto;
+    }>(`/albums/${encodeURIComponent(id)}/groups/${encodeURIComponent(groupId)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: albumGroupUpdateDto
     })));
 }
 /**
@@ -2546,6 +2798,54 @@ export function reassignFacesById({ id, faceDto }: {
         method: "PUT",
         body: faceDto
     })));
+}
+/**
+ * This endpoint requires the `group.read` permission.
+ */
+export function searchMyGroups(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: GroupResponseDto[];
+    }>("/groups", {
+        ...opts
+    }));
+}
+/**
+ * This endpoint requires the `group.delete` permission.
+ */
+export function leaveMyGroup({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/groups/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * This endpoint requires the `group.read` permission.
+ */
+export function getMyGroup({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: GroupResponseDto;
+    }>(`/groups/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * This endpoint is an admin-only route, and requires the `group.read` permission.
+ */
+export function getMyGroupUsers({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: GroupUserResponseDto[];
+    }>(`/groups/${encodeURIComponent(id)}/users`, {
+        ...opts
+    }));
 }
 /**
  * This endpoint is an admin-only route, and requires the `job.read` permission.
@@ -4569,6 +4869,10 @@ export enum Permission {
     AlbumUserCreate = "albumUser.create",
     AlbumUserUpdate = "albumUser.update",
     AlbumUserDelete = "albumUser.delete",
+    AlbumGroupCreate = "albumGroup.create",
+    AlbumGroupRead = "albumGroup.read",
+    AlbumGroupUpdate = "albumGroup.update",
+    AlbumGroupDelete = "albumGroup.delete",
     AuthChangePassword = "auth.changePassword",
     AuthDeviceDelete = "authDevice.delete",
     ArchiveRead = "archive.read",
@@ -4578,6 +4882,8 @@ export enum Permission {
     FaceRead = "face.read",
     FaceUpdate = "face.update",
     FaceDelete = "face.delete",
+    GroupRead = "group.read",
+    GroupDelete = "group.delete",
     JobCreate = "job.create",
     JobRead = "job.read",
     LibraryCreate = "library.create",
@@ -4660,6 +4966,14 @@ export enum Permission {
     UserProfileImageRead = "userProfileImage.read",
     UserProfileImageUpdate = "userProfileImage.update",
     UserProfileImageDelete = "userProfileImage.delete",
+    AdminGroupCreate = "adminGroup.create",
+    AdminGroupRead = "adminGroup.read",
+    AdminGroupUpdate = "adminGroup.update",
+    AdminGroupDelete = "adminGroup.delete",
+    AdminGroupUserCreate = "adminGroupUser.create",
+    AdminGroupUserRead = "adminGroupUser.read",
+    AdminGroupUserUpdate = "adminGroupUser.update",
+    AdminGroupUserDelete = "adminGroupUser.delete",
     AdminUserCreate = "adminUser.create",
     AdminUserRead = "adminUser.read",
     AdminUserUpdate = "adminUser.update",

@@ -3,9 +3,10 @@ import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsString, ValidateNested } from 'class-validator';
 import _ from 'lodash';
 import { AlbumUser, AuthSharedLink, User } from 'src/database';
+import { AlbumGroupDto } from 'src/dtos/album-group.dto';
 import { AssetResponseDto, MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
+import { mapUser, UserResponseDto } from 'src/dtos/user.dto';
 import { AlbumUserRole, AssetOrder } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
@@ -49,6 +50,12 @@ export class CreateAlbumDto {
   @ValidateNested({ each: true })
   @Type(() => AlbumUserCreateDto)
   albumUsers?: AlbumUserCreateDto[];
+
+  @Optional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AlbumGroupDto)
+  groups?: AlbumGroupDto[];
 
   @ValidateUUID({ optional: true, each: true })
   assetIds?: string[];

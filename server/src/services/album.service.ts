@@ -1,5 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
+  AlbumGroupCreateAllDto,
+  AlbumGroupDeleteAllDto,
+  AlbumGroupResponseDto,
+  AlbumGroupUpdateDto,
+  mapAlbumGroup,
+} from 'src/dtos/album-group.dto';
+import {
   AddUsersDto,
   AlbumInfoDto,
   AlbumResponseDto,
@@ -202,6 +209,38 @@ export class AlbumService extends BaseService {
     }
 
     return results;
+  }
+
+  async getGroups(auth: AuthDto, id: string): Promise<AlbumGroupResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
+    const albumGroups = await this.albumGroupRepository.getAll(id);
+    return albumGroups.map((albumGroup) => mapAlbumGroup(albumGroup));
+  }
+
+  async upsertGroups(auth: AuthDto, id: string, { groups }: AlbumGroupCreateAllDto): Promise<AlbumGroupResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AlbumUpdate, ids: [id] });
+    const albumGroups = await this.albumGroupRepository.createAll(id, groups);
+    return albumGroups.map((albumGroup) => mapAlbumGroup(albumGroup));
+  }
+
+  async removeGroups(auth: AuthDto, id: string, dto: AlbumGroupDeleteAllDto): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.AlbumUpdate, ids: [id] });
+    await this.albumGroupRepository.deleteAll(id, dto.groupIds);
+  }
+
+  async updateGroup(
+    auth: AuthDto,
+    id: string,
+    groupId: string,
+    dto: AlbumGroupUpdateDto,
+  ): Promise<AlbumGroupResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.AlbumUpdate, ids: [id] });
+    const exists = await this.albumGroupRepository.exists({ albumId: id, groupId });
+    if (!exists) {
+      throw new BadRequestException('Album group not found');
+    }
+    const albumGroup = await this.albumGroupRepository.update({ albumId: id, groupId }, { role: dto.role });
+    return mapAlbumGroup(albumGroup);
   }
 
   async addUsers(auth: AuthDto, id: string, { albumUsers }: AddUsersDto): Promise<AlbumResponseDto> {

@@ -34,9 +34,8 @@
   } from '$lib/utils/album-utils';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
-  import { handleError } from '$lib/utils/handle-error';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { addUsersToAlbum, deleteAlbum, isHttpError, type AlbumResponseDto, type AlbumUserAddDto } from '@immich/sdk';
+  import { deleteAlbum, getAlbumInfo, isHttpError, type AlbumResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { mdiDeleteOutline, mdiFolderDownloadOutline, mdiRenameOutline, mdiShareVariantOutline } from '@mdi/js';
   import { groupBy } from 'lodash-es';
@@ -324,25 +323,6 @@
     updateRecentAlbumInfo(album);
   };
 
-  const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
-    if (!albumToShare) {
-      return;
-    }
-    try {
-      const album = await addUsersToAlbum({
-        id: albumToShare.id,
-        addUsersDto: {
-          albumUsers,
-        },
-      });
-      updateAlbumInfo(album);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_add_album_users'));
-    } finally {
-      albumToShare = null;
-    }
-  };
-
   const handleSharedLinkCreated = (album: AlbumResponseDto) => {
     album.shared = true;
     album.hasSharedLink = true;
@@ -356,11 +336,13 @@
 
     albumToShare = contextMenuTargetAlbum;
     closeAlbumContextMenu();
-    const result = await modalManager.show(AlbumShareModal, { album: albumToShare });
+    const action = await modalManager.show(AlbumShareModal, { album: albumToShare });
 
-    switch (result?.action) {
-      case 'sharedUsers': {
-        await handleAddUsers(result.data);
+    switch (action) {
+      case 'update': {
+        const album = await getAlbumInfo({ id: albumToShare.id, withoutAssets: true });
+        updateAlbumInfo(album);
+        albumToShare = null;
         return;
       }
 

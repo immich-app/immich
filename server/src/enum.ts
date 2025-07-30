@@ -111,6 +111,11 @@ export enum Permission {
   AlbumUserUpdate = 'albumUser.update',
   AlbumUserDelete = 'albumUser.delete',
 
+  AlbumGroupCreate = 'albumGroup.create',
+  AlbumGroupRead = 'albumGroup.read',
+  AlbumGroupUpdate = 'albumGroup.update',
+  AlbumGroupDelete = 'albumGroup.delete',
+
   AuthChangePassword = 'auth.changePassword',
 
   AuthDeviceDelete = 'authDevice.delete',
@@ -124,6 +129,9 @@ export enum Permission {
   FaceRead = 'face.read',
   FaceUpdate = 'face.update',
   FaceDelete = 'face.delete',
+
+  GroupRead = 'group.read',
+  GroupDelete = 'group.delete',
 
   JobCreate = 'job.create',
   JobRead = 'job.read',
@@ -229,6 +237,16 @@ export enum Permission {
   UserProfileImageRead = 'userProfileImage.read',
   UserProfileImageUpdate = 'userProfileImage.update',
   UserProfileImageDelete = 'userProfileImage.delete',
+
+  AdminGroupCreate = 'adminGroup.create',
+  AdminGroupRead = 'adminGroup.read',
+  AdminGroupUpdate = 'adminGroup.update',
+  AdminGroupDelete = 'adminGroup.delete',
+
+  AdminGroupUserCreate = 'adminGroupUser.create',
+  AdminGroupUserRead = 'adminGroupUser.read',
+  AdminGroupUserUpdate = 'adminGroupUser.update',
+  AdminGroupUserDelete = 'adminGroupUser.delete',
 
   AdminUserCreate = 'adminUser.create',
   AdminUserRead = 'adminUser.read',

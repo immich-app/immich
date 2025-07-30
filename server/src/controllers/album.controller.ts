@@ -1,5 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import {
+  AlbumGroupCreateAllDto,
+  AlbumGroupDeleteAllDto,
+  AlbumGroupResponseDto,
+  AlbumGroupUpdateDto,
+} from 'src/dtos/album-group.dto';
 import {
   AddUsersDto,
   AlbumInfoDto,
@@ -15,7 +21,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AlbumService } from 'src/services/album.service';
-import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
+import { GroupIdAndIdParamDto, ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
 
 @ApiTags('Albums')
 @Controller('albums')
@@ -84,6 +90,43 @@ export class AlbumController {
     @Param() { id }: UUIDParamDto,
   ): Promise<BulkIdResponseDto[]> {
     return this.service.removeAssets(auth, id, dto);
+  }
+
+  @Get(':id/groups')
+  @Authenticated({ permission: Permission.AlbumGroupRead })
+  getGroupsForAlbum(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AlbumGroupResponseDto[]> {
+    return this.service.getGroups(auth, id);
+  }
+
+  @Put(':id/groups')
+  @Authenticated({ permission: Permission.AlbumGroupCreate })
+  addGroupsToAlbum(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AlbumGroupCreateAllDto,
+  ): Promise<AlbumGroupResponseDto[]> {
+    return this.service.upsertGroups(auth, id, dto);
+  }
+
+  @Delete(':id/groups')
+  @Authenticated({ permission: Permission.AlbumGroupDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeGroupsFromAlbum(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AlbumGroupDeleteAllDto,
+  ): Promise<void> {
+    return this.service.removeGroups(auth, id, dto);
+  }
+
+  @Put(':id/groups/:groupId')
+  @Authenticated({ permission: Permission.AlbumGroupUpdate })
+  updateAlbumGroup(
+    @Auth() auth: AuthDto,
+    @Param() { id, groupId }: GroupIdAndIdParamDto,
+    @Body() dto: AlbumGroupUpdateDto,
+  ): Promise<AlbumGroupResponseDto> {
+    return this.service.updateGroup(auth, id, groupId, dto);
   }
 
   @Put(':id/users')
