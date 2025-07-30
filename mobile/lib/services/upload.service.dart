@@ -247,6 +247,7 @@ class UploadService {
       metadata: metadata,
       group: group,
       priority: priority,
+      isFavorite: asset.isFavorite,
     );
   }
 
@@ -270,6 +271,7 @@ class UploadService {
       fields: fields,
       group: kBackupLivePhotoGroup,
       priority: 0, // Highest priority to get upload immediately
+      isFavorite: asset.isFavorite,
     );
   }
 
@@ -281,6 +283,7 @@ class UploadService {
     String? deviceAssetId,
     String? metadata,
     int? priority,
+    bool? isFavorite,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
@@ -297,7 +300,7 @@ class UploadService {
       'deviceId': deviceId,
       'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
       'fileModifiedAt': fileModifiedAt.toUtc().toIso8601String(),
-      'isFavorite': 'false',
+      'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
       if (fields != null) ...fields,
     };

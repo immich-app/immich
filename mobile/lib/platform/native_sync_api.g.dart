@@ -40,6 +40,7 @@ class PlatformAsset {
     this.height,
     required this.durationInSeconds,
     required this.orientation,
+    required this.isFavorite,
   });
 
   String id;
@@ -60,8 +61,10 @@ class PlatformAsset {
 
   int orientation;
 
+  bool isFavorite;
+
   List<Object?> _toList() {
-    return <Object?>[id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation];
+    return <Object?>[id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite];
   }
 
   Object encode() {
@@ -80,6 +83,7 @@ class PlatformAsset {
       height: result[6] as int?,
       durationInSeconds: result[7]! as int,
       orientation: result[8]! as int,
+      isFavorite: result[9]! as bool,
     );
   }
 

@@ -42,6 +42,7 @@ open class NativeSyncApiImplBase(context: Context) {
       MediaStore.MediaColumns.HEIGHT,
       MediaStore.MediaColumns.DURATION,
       MediaStore.MediaColumns.ORIENTATION,
+      MediaStore.MediaColumns.IS_FAVORITE,
     )
 
     const val HASH_BUFFER_SIZE = 2 * 1024 * 1024
@@ -77,6 +78,7 @@ open class NativeSyncApiImplBase(context: Context) {
         val durationColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.DURATION)
         val orientationColumn =
           c.getColumnIndexOrThrow(MediaStore.MediaColumns.ORIENTATION)
+        val favoriteColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.IS_FAVORITE)
 
         while (c.moveToNext()) {
           val id = c.getLong(idColumn).toString()
@@ -105,6 +107,7 @@ open class NativeSyncApiImplBase(context: Context) {
           else c.getLong(durationColumn) / 1000
           val bucketId = c.getString(bucketIdColumn)
           val orientation = c.getInt(orientationColumn)
+          val isFavorite = c.getInt(favoriteColumn) != 0;
 
           val asset = PlatformAsset(
             id,
@@ -116,6 +119,7 @@ open class NativeSyncApiImplBase(context: Context) {
             height,
             duration,
             orientation.toLong(),
+            isFavorite,
           )
           yield(AssetResult.ValidAsset(asset, bucketId))
         }
