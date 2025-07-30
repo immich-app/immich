@@ -86,7 +86,10 @@ class SharedLinksApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /shared-links' operation and returns the [Response].
+  /// This endpoint requires the `sharedLink.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [SharedLinkCreateDto] sharedLinkCreateDto (required):
@@ -115,6 +118,8 @@ class SharedLinksApi {
     );
   }
 
+  /// This endpoint requires the `sharedLink.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [SharedLinkCreateDto] sharedLinkCreateDto (required):
@@ -133,7 +138,10 @@ class SharedLinksApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /shared-links' operation and returns the [Response].
+  /// This endpoint requires the `sharedLink.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] albumId:
@@ -166,6 +174,8 @@ class SharedLinksApi {
     );
   }
 
+  /// This endpoint requires the `sharedLink.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] albumId:
@@ -190,14 +200,14 @@ class SharedLinksApi {
   /// Performs an HTTP 'GET /shared-links/me' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] key:
-  ///
   /// * [String] password:
   ///
-  /// * [String] slug:
-  ///
   /// * [String] token:
-  Future<Response> getMySharedLinkWithHttpInfo({ String? key, String? password, String? slug, String? token, }) async {
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<Response> getMySharedLinkWithHttpInfo({ String? password, String? token, String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/me';
 
@@ -208,17 +218,17 @@ class SharedLinksApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    if (key != null) {
-      queryParams.addAll(_queryParams('', 'key', key));
-    }
     if (password != null) {
       queryParams.addAll(_queryParams('', 'password', password));
     }
-    if (slug != null) {
-      queryParams.addAll(_queryParams('', 'slug', slug));
-    }
     if (token != null) {
       queryParams.addAll(_queryParams('', 'token', token));
+    }
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
 
     const contentTypes = <String>[];
@@ -237,15 +247,15 @@ class SharedLinksApi {
 
   /// Parameters:
   ///
-  /// * [String] key:
-  ///
   /// * [String] password:
   ///
-  /// * [String] slug:
-  ///
   /// * [String] token:
-  Future<SharedLinkResponseDto?> getMySharedLink({ String? key, String? password, String? slug, String? token, }) async {
-    final response = await getMySharedLinkWithHttpInfo( key: key, password: password, slug: slug, token: token, );
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<SharedLinkResponseDto?> getMySharedLink({ String? password, String? token, String? key, String? slug, }) async {
+    final response = await getMySharedLinkWithHttpInfo( password: password, token: token, key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -259,7 +269,10 @@ class SharedLinksApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /shared-links/{id}' operation and returns the [Response].
+  /// This endpoint requires the `sharedLink.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -289,6 +302,8 @@ class SharedLinksApi {
     );
   }
 
+  /// This endpoint requires the `sharedLink.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -307,7 +322,10 @@ class SharedLinksApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /shared-links/{id}' operation and returns the [Response].
+  /// This endpoint requires the `sharedLink.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -337,6 +355,8 @@ class SharedLinksApi {
     );
   }
 
+  /// This endpoint requires the `sharedLink.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -417,7 +437,10 @@ class SharedLinksApi {
     return null;
   }
 
-  /// Performs an HTTP 'PATCH /shared-links/{id}' operation and returns the [Response].
+  /// This endpoint requires the `sharedLink.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -449,6 +472,8 @@ class SharedLinksApi {
     );
   }
 
+  /// This endpoint requires the `sharedLink.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

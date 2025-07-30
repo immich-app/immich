@@ -16,7 +16,10 @@ class DownloadApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /download/archive' operation and returns the [Response].
+  /// This endpoint requires the `asset.download` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
@@ -56,6 +59,8 @@ class DownloadApi {
     );
   }
 
+  /// This endpoint requires the `asset.download` permission.
+  ///
   /// Parameters:
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
@@ -78,7 +83,10 @@ class DownloadApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /download/info' operation and returns the [Response].
+  /// This endpoint requires the `asset.download` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [DownloadInfoDto] downloadInfoDto (required):
@@ -118,6 +126,8 @@ class DownloadApi {
     );
   }
 
+  /// This endpoint requires the `asset.download` permission.
+  ///
   /// Parameters:
   ///
   /// * [DownloadInfoDto] downloadInfoDto (required):

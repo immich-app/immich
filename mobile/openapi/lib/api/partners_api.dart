@@ -16,7 +16,10 @@ class PartnersApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /partners/{id}' operation and returns the [Response].
+  /// This endpoint requires the `partner.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -46,6 +49,8 @@ class PartnersApi {
     );
   }
 
+  /// This endpoint requires the `partner.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -64,7 +69,10 @@ class PartnersApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /partners' operation and returns the [Response].
+  /// This endpoint requires the `partner.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [PartnerDirection] direction (required):
@@ -95,6 +103,8 @@ class PartnersApi {
     );
   }
 
+  /// This endpoint requires the `partner.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [PartnerDirection] direction (required):
@@ -116,7 +126,10 @@ class PartnersApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /partners/{id}' operation and returns the [Response].
+  /// This endpoint requires the `partner.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -146,6 +159,8 @@ class PartnersApi {
     );
   }
 
+  /// This endpoint requires the `partner.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -156,7 +171,10 @@ class PartnersApi {
     }
   }
 
-  /// Performs an HTTP 'PUT /partners/{id}' operation and returns the [Response].
+  /// This endpoint requires the `partner.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -188,6 +206,8 @@ class PartnersApi {
     );
   }
 
+  /// This endpoint requires the `partner.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
