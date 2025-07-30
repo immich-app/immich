@@ -172,7 +172,8 @@ class NativeSyncApiImpl: NativeSyncApi {
             name: "",
             type: 0,
             durationInSeconds: 0,
-            orientation: 0
+            orientation: 0,
+            isFavorite: false
           )
           if (updatedAssets.contains(AssetWrapper(with: predicate))) {
             continue
