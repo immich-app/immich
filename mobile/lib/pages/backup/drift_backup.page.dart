@@ -7,12 +7,10 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.widget.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 
 @RoutePage()
@@ -47,19 +45,6 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
 
   Future<void> stopBackup() async {
     await ref.read(driftBackupProvider.notifier).cancel();
-  }
-
-  Future<void> onNetworkRequirementToggled() async {
-    final isBackupEnable = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
-    if (!isBackupEnable) {
-      return;
-    }
-
-    // Stop backup if it is running to clear all tasks
-    await stopBackup();
-
-    // Start queueing tasks again with the new network requirement
-    await startBackup();
   }
 
   @override
