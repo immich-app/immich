@@ -5,6 +5,7 @@
   import { normalizeSearchString } from '$lib/utils/string-utils.js';
   import { type AlbumResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
+  import Icon from '$lib/components/elements/icon.svelte';
   import { mdiCheckCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { Action } from 'svelte/action';
@@ -119,28 +120,22 @@
 <div role="group" class="relative flex w-full text-start" onmouseenter={onMouseEnter} onmouseleave={onMouseLeave}>
   {#if mouseOver || multiSelected}
     <div class="absolute left-3.5 z-[1] rounded-full">
-      {#if multiSelected}
-        <IconButton
-          icon={mdiCheckCircle}
-          aria-label={$t('add_to_album_toggle', { values: { album: album.albumName } })}
-          size="small"
-          shape="round"
-          variant="ghost"
-          color="primary"
-          class="bg-[#D9DCEF] dark:bg-[#232932]"
-          onclick={handleMultiSelectClicked}
-        />
-      {:else}
-        <IconButton
-          icon={mdiCheckCircle}
-          aria-label={$t('add_to_album_toggle', { values: { album: album.albumName } })}
-          size="small"
-          shape="round"
-          variant="ghost"
-          class="text-white/80 hover:text-white"
-          onclick={handleMultiSelectClicked}
-        />
-      {/if}
+      <button
+        type="button"
+        onclick={handleMultiSelectClicked}
+        class='absolute p-2 focus:outline-none'
+        role="checkbox"
+        tabindex={-1}
+        aria-checked={selected}
+      >
+        {#if  multiSelected}
+          <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
+            <Icon path={mdiCheckCircle} size="24" class="text-primary" />
+          </div>
+        {:else}
+          <Icon path={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
+        {/if}
+      </button>
     </div>
   {/if}
   <button
