@@ -96,7 +96,6 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                   const _BackupCard(),
                   const _RemainderCard(),
                   const Divider(),
-                  _BackupWifiRequirementButton(onToggled: onNetworkRequirementToggled),
                   BackupToggleButton(onStart: () async => await startBackup(), onStop: () async => await stopBackup()),
                   TextButton.icon(
                     icon: const Icon(Icons.info_outline_rounded),
@@ -108,37 +107,6 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _BackupWifiRequirementButton extends ConsumerWidget {
-  final VoidCallback onToggled;
-  const _BackupWifiRequirementButton({required this.onToggled});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final valueStream = Store.watch(StoreKey.useWifiForUploadVideos);
-
-    return ListTile(
-      title: Text("network_requirements".t(context: context), style: context.textTheme.titleMedium).tr(),
-      subtitle: Text(
-        "network_requirements_description".t(context: context),
-        style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-      ).tr(),
-      trailing: StreamBuilder(
-        stream: valueStream,
-        builder: (context, snapshot) {
-          final value = snapshot.data ?? false;
-          return Switch(
-            value: value,
-            onChanged: (bool newValue) async {
-              await ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.uploadRequredWifi, newValue);
-              onToggled.call();
-            },
-          );
-        },
       ),
     );
   }

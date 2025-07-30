@@ -7,10 +7,7 @@ enum Setting<T> {
   loadOriginal<bool>(StoreKey.loadOriginal, false),
   loadOriginalVideo<bool>(StoreKey.loadOriginalVideo, false),
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, false),
-  advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, false),
-  enableBackup<bool>(StoreKey.enableBackup, false),
-  useWifiForUploadVideos<bool>(StoreKey.useWifiForUploadVideos, false),
-  useWifiForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, false);
+  advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, false);
 
   const Setting(this.storeKey, this.defaultValue);
 

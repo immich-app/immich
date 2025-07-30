@@ -48,7 +48,8 @@ enum AppSettingsEnum<T> {
   photoManagerCustomFilter<bool>(StoreKey.photoManagerCustomFilter, null, true),
   betaTimeline<bool>(StoreKey.betaTimeline, null, false),
   enableBackup<bool>(StoreKey.enableBackup, null, false),
-  uploadRequredWifi<bool>(StoreKey.useWifiForUploadVideos, null, false);
+  useWifiForUploadVideos<bool>(StoreKey.useWifiForUploadVideos, null, false),
+  useWifiForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, null, false);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 
