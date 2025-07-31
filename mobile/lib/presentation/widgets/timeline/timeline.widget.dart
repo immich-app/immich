@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
@@ -15,6 +17,7 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_s
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -88,6 +91,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   final _scrollController = ScrollController();
   StreamSubscription? _eventSubscription;
 
+  // Drag selection state
+  bool _dragging = false;
+  TimelineAssetIndex? _dragAnchorIndex;
+  final Set<BaseAsset> _draggedAssets = HashSet();
+  ScrollPhysics? _scrollPhysics;
+
   @override
   void initState() {
     super.initState();
@@ -150,6 +159,71 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     });
   }
 
+  // Drag selection methods
+  void _setDragStartIndex(TimelineAssetIndex index) {
+    setState(() {
+      _scrollPhysics = const ClampingScrollPhysics();
+      _dragAnchorIndex = index;
+      _dragging = true;
+    });
+  }
+
+  void _stopDrag() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Update the physics post frame to prevent sudden change in physics on iOS.
+      setState(() {
+        _scrollPhysics = null;
+      });
+    });
+    setState(() {
+      _dragging = false;
+      _draggedAssets.clear();
+    });
+    // Reset the scrolling state after a small delay to allow bottom sheet to expand again
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        ref.read(timelineStateProvider.notifier).setScrolling(false);
+      }
+    });
+  }
+
+  void _dragScroll(ScrollDirection direction) {
+    _scrollController.animateTo(
+      _scrollController.offset + (direction == ScrollDirection.forward ? 175 : -175),
+      duration: const Duration(milliseconds: 125),
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _handleDragAssetEnter(TimelineAssetIndex index) {
+    if (_dragAnchorIndex == null || !_dragging) return;
+
+    final timelineService = ref.read(timelineServiceProvider);
+    final dragAnchorIndex = _dragAnchorIndex!;
+
+    // Calculate the range of assets to select
+    final startIndex = math.min(dragAnchorIndex.assetIndex, index.assetIndex);
+    final endIndex = math.max(dragAnchorIndex.assetIndex, index.assetIndex);
+    final count = endIndex - startIndex + 1;
+
+    // Load the assets in the range
+    if (timelineService.hasRange(startIndex, count)) {
+      final selectedAssets = timelineService.getAssets(startIndex, count);
+
+      // Clear previous drag selection and add new range
+      final multiSelectNotifier = ref.read(multiSelectProvider.notifier);
+      for (final asset in _draggedAssets) {
+        multiSelectNotifier.deselectAsset(asset);
+      }
+      _draggedAssets.clear();
+
+      for (final asset in selectedAssets) {
+        multiSelectNotifier.selectAsset(asset);
+        _draggedAssets.add(asset);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext _) {
     final asyncSegments = ref.watch(timelineSegmentProvider);
@@ -177,43 +251,57 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
           return PrimaryScrollController(
             controller: _scrollController,
-            child: Stack(
-              children: [
-                Scrubber(
-                  layoutSegments: segments,
-                  timelineHeight: maxHeight,
-                  topPadding: topPadding,
-                  bottomPadding: bottomPadding,
-                  monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
-                  child: CustomScrollView(
-                    primary: true,
-                    cacheExtent: maxHeight * 2,
-                    slivers: [
-                      if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
-                      if (widget.topSliverWidget != null) widget.topSliverWidget!,
-                      _SliverSegmentedList(
-                        segments: segments,
-                        delegate: SliverChildBuilderDelegate(
-                          (ctx, index) {
-                            if (index >= childCount) return null;
-                            final segment = segments.findByIndex(index);
-                            return segment?.builder(ctx, index) ?? const SizedBox.shrink();
-                          },
-                          childCount: childCount,
-                          addAutomaticKeepAlives: false,
-                          // We add repaint boundary around tiles, so skip the auto boundaries
-                          addRepaintBoundaries: false,
+            child: TimelineDragRegion(
+              onStart: _setDragStartIndex,
+              onAssetEnter: _handleDragAssetEnter,
+              onEnd: _stopDrag,
+              onScroll: _dragScroll,
+              onScrollStart: () {
+                // Minimize the bottom sheet when drag selection starts
+                ref.read(timelineStateProvider.notifier).setScrolling(true);
+              },
+              child: Stack(
+                children: [
+                  Scrubber(
+                    layoutSegments: segments,
+                    timelineHeight: maxHeight,
+                    topPadding: topPadding,
+                    bottomPadding: bottomPadding,
+                    monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
+                    child: CustomScrollView(
+                      primary: true,
+                      physics: _scrollPhysics,
+                      cacheExtent: maxHeight * 2,
+                      slivers: [
+                        if (isSelectionMode)
+                          const SelectionSliverAppBar()
+                        else if (widget.appBar != null)
+                          widget.appBar!,
+                        if (widget.topSliverWidget != null) widget.topSliverWidget!,
+                        _SliverSegmentedList(
+                          segments: segments,
+                          delegate: SliverChildBuilderDelegate(
+                            (ctx, index) {
+                              if (index >= childCount) return null;
+                              final segment = segments.findByIndex(index);
+                              return segment?.builder(ctx, index) ?? const SizedBox.shrink();
+                            },
+                            childCount: childCount,
+                            addAutomaticKeepAlives: false,
+                            // We add repaint boundary around tiles, so skip the auto boundaries
+                            addRepaintBoundaries: false,
+                          ),
                         ),
-                      ),
-                      const SliverPadding(padding: EdgeInsets.only(bottom: scrubberBottomPadding)),
-                    ],
+                        const SliverPadding(padding: EdgeInsets.only(bottom: scrubberBottomPadding)),
+                      ],
+                    ),
                   ),
-                ),
-                if (!isSelectionMode && isMultiSelectEnabled) ...[
-                  const Positioned(top: 60, left: 25, child: _MultiSelectStatusButton()),
-                  if (widget.bottomSheet != null) widget.bottomSheet!,
+                  if (!isSelectionMode && isMultiSelectEnabled) ...[
+                    const Positioned(top: 60, left: 25, child: _MultiSelectStatusButton()),
+                    if (widget.bottomSheet != null) widget.bottomSheet!,
+                  ],
                 ],
-              ],
+              ),
             ),
           );
         },
