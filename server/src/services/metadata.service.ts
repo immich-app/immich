@@ -101,7 +101,8 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
     return null;
   }
 
-  return val;
+  // round to nearest integer
+  return Number.isInteger(val) ? val : Math.round(val);
 };
 
 const getLensModel = (exifTags: ImmichTags): string | null => {
