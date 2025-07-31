@@ -37,11 +37,7 @@ class BackupVerificationService {
   /// Returns at most [limit] assets that were backed up without exif
   Future<List<Asset>> findWronglyBackedUpAssets({int limit = 100}) async {
     final owner = _userService.getMyUser().id;
-    final List<Asset> onlyLocal = await _assetRepository.getAll(
-      ownerId: owner,
-      state: AssetState.local,
-      limit: limit,
-    );
+    final List<Asset> onlyLocal = await _assetRepository.getAll(ownerId: owner, state: AssetState.local, limit: limit);
     final List<Asset> remoteMatches = await _assetRepository.getMatches(
       assets: onlyLocal,
       ownerId: owner,
@@ -75,41 +71,32 @@ class BackupVerificationService {
     if (deleteCandidates.length > 10) {
       // performs 2 checks in parallel for a nice speedup
       final half = deleteCandidates.length ~/ 2;
-      final lower = compute(
-        _computeSaveToDelete,
-        (
-          deleteCandidates: deleteCandidates.slice(0, half),
-          originals: originals.slice(0, half),
-          auth: Store.get(StoreKey.accessToken),
-          endpoint: Store.get(StoreKey.serverEndpoint),
-          rootIsolateToken: isolateToken,
-          fileMediaRepository: _fileMediaRepository,
-        ),
-      );
-      final upper = compute(
-        _computeSaveToDelete,
-        (
-          deleteCandidates: deleteCandidates.slice(half),
-          originals: originals.slice(half),
-          auth: Store.get(StoreKey.accessToken),
-          endpoint: Store.get(StoreKey.serverEndpoint),
-          rootIsolateToken: isolateToken,
-          fileMediaRepository: _fileMediaRepository,
-        ),
-      );
+      final lower = compute(_computeSaveToDelete, (
+        deleteCandidates: deleteCandidates.slice(0, half),
+        originals: originals.slice(0, half),
+        auth: Store.get(StoreKey.accessToken),
+        endpoint: Store.get(StoreKey.serverEndpoint),
+        rootIsolateToken: isolateToken,
+        fileMediaRepository: _fileMediaRepository,
+      ));
+      final upper = compute(_computeSaveToDelete, (
+        deleteCandidates: deleteCandidates.slice(half),
+        originals: originals.slice(half),
+        auth: Store.get(StoreKey.accessToken),
+        endpoint: Store.get(StoreKey.serverEndpoint),
+        rootIsolateToken: isolateToken,
+        fileMediaRepository: _fileMediaRepository,
+      ));
       toDelete = await lower + await upper;
     } else {
-      toDelete = await compute(
-        _computeSaveToDelete,
-        (
-          deleteCandidates: deleteCandidates,
-          originals: originals,
-          auth: Store.get(StoreKey.accessToken),
-          endpoint: Store.get(StoreKey.serverEndpoint),
-          rootIsolateToken: isolateToken,
-          fileMediaRepository: _fileMediaRepository,
-        ),
-      );
+      toDelete = await compute(_computeSaveToDelete, (
+        deleteCandidates: deleteCandidates,
+        originals: originals,
+        auth: Store.get(StoreKey.accessToken),
+        endpoint: Store.get(StoreKey.serverEndpoint),
+        rootIsolateToken: isolateToken,
+        fileMediaRepository: _fileMediaRepository,
+      ));
     }
     return toDelete;
   }
@@ -122,7 +109,8 @@ class BackupVerificationService {
       String endpoint,
       RootIsolateToken rootIsolateToken,
       FileMediaRepository fileMediaRepository,
-    }) tuple,
+    })
+    tuple,
   ) async {
     assert(tuple.deleteCandidates.length == tuple.originals.length);
     final List<Asset> result = [];
@@ -134,22 +122,14 @@ class BackupVerificationService {
     apiService.setEndpoint(tuple.endpoint);
     apiService.setAccessToken(tuple.auth);
     for (int i = 0; i < tuple.deleteCandidates.length; i++) {
-      if (await _compareAssets(
-        tuple.deleteCandidates[i],
-        tuple.originals[i],
-        apiService,
-      )) {
+      if (await _compareAssets(tuple.deleteCandidates[i], tuple.originals[i], apiService)) {
         result.add(tuple.deleteCandidates[i]);
       }
     }
     return result;
   }
 
-  static Future<bool> _compareAssets(
-    Asset remote,
-    Asset local,
-    ApiService apiService,
-  ) async {
+  static Future<bool> _compareAssets(Asset remote, Asset local, ApiService apiService) async {
     if (remote.checksum == local.checksum) return false;
     ExifInfo? exif = remote.exifInfo;
     if (exif != null && exif.latitude != null) return false;
@@ -169,10 +149,7 @@ class BackupVerificationService {
             latLng.latitude != null &&
             (remote.fileCreatedAt.isAtSameMomentAs(local.fileCreatedAt) ||
                 remote.fileModifiedAt.isAtSameMomentAs(local.fileModifiedAt) ||
-                _sameExceptTimeZone(
-                  remote.fileCreatedAt,
-                  local.fileCreatedAt,
-                ))) {
+                _sameExceptTimeZone(remote.fileCreatedAt, local.fileCreatedAt))) {
           if (remote.type == AssetType.video) {
             // it's very unlikely that a video of same length, filesize, name
             // and date is wrong match. Cannot easily compare videos anyway

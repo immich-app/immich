@@ -62,17 +62,11 @@ class MapPage extends HookConsumerWidget {
 
       final bounds = await mapController.value!.getVisibleRegion();
       final inBounds = markers.value
-          .where(
-            (m) => bounds.contains(LatLng(m.latLng.latitude, m.latLng.longitude)),
-          )
+          .where((m) => bounds.contains(LatLng(m.latLng.latitude, m.latLng.longitude)))
           .toList();
       // Notify bottom sheet to update asset grid only when there are new assets
       if (markersInBounds.value.length != inBounds.length) {
-        bottomSheetStreamController.add(
-          MapAssetsInBoundsUpdated(
-            inBounds.map((e) => e.assetRemoteId).toList(),
-          ),
-        );
+        bottomSheetStreamController.add(MapAssetsInBoundsUpdated(inBounds.map((e) => e.assetRemoteId).toList()));
       }
       markersInBounds.value = inBounds;
     }
@@ -80,9 +74,7 @@ class MapPage extends HookConsumerWidget {
     // removes all sources and layers and re-adds them with the updated markers
     Future<void> reloadLayers() async {
       if (mapController.value != null) {
-        layerDebouncer.run(
-          () => mapController.value!.reloadAllLayersForMarkers(markers.value),
-        );
+        layerDebouncer.run(() => mapController.value!.reloadAllLayersForMarkers(markers.value));
       }
     }
 
@@ -97,15 +89,12 @@ class MapPage extends HookConsumerWidget {
       }
     }
 
-    useEffect(
-      () {
-        final currentAssetLink = ref.read(currentAssetProvider.notifier).ref.keepAlive();
+    useEffect(() {
+      final currentAssetLink = ref.read(currentAssetProvider.notifier).ref.keepAlive();
 
-        loadMarkers();
-        return currentAssetLink.close;
-      },
-      [],
-    );
+      loadMarkers();
+      return currentAssetLink.close;
+    }, []);
 
     // Refetch markers when map state is changed
     ref.listen(mapStateNotifierProvider, (_, current) {
@@ -121,16 +110,9 @@ class MapPage extends HookConsumerWidget {
     });
 
     // updates the selected markers position based on the current map camera
-    Future<void> updateAssetMarkerPosition(
-      MapMarker marker, {
-      bool shouldAnimate = true,
-    }) async {
+    Future<void> updateAssetMarkerPosition(MapMarker marker, {bool shouldAnimate = true}) async {
       final assetPoint = await mapController.value!.toScreenLocation(marker.latLng);
-      selectedMarker.value = _AssetMarkerMeta(
-        point: assetPoint,
-        marker: marker,
-        shouldAnimate: shouldAnimate,
-      );
+      selectedMarker.value = _AssetMarkerMeta(point: assetPoint, marker: marker, shouldAnimate: shouldAnimate);
       (assetPoint, marker, shouldAnimate);
     }
 
@@ -160,10 +142,7 @@ class MapPage extends HookConsumerWidget {
       mapController.value = controller;
       controller.addListener(() {
         if (controller.isCameraMoving && selectedMarker.value != null) {
-          updateAssetMarkerPosition(
-            selectedMarker.value!.marker,
-            shouldAnimate: false,
-          );
+          updateAssetMarkerPosition(selectedMarker.value!.marker, shouldAnimate: false);
         }
       });
     }
@@ -180,22 +159,13 @@ class MapPage extends HookConsumerWidget {
       }
 
       // Since we only have a single asset, we can just show GroupAssetBy.none
-      final renderList = await RenderList.fromAssets(
-        [asset],
-        GroupAssetsBy.none,
-      );
+      final renderList = await RenderList.fromAssets([asset], GroupAssetsBy.none);
 
       ref.read(currentAssetProvider.notifier).set(asset);
       if (asset.isVideo) {
         ref.read(showControlsProvider.notifier).show = false;
       }
-      context.pushRoute(
-        GalleryViewerRoute(
-          initialIndex: 0,
-          heroOffset: 0,
-          renderList: renderList,
-        ),
-      );
+      context.pushRoute(GalleryViewerRoute(initialIndex: 0, heroOffset: 0, renderList: renderList));
     }
 
     /// BOTTOM SHEET CALLBACKS
@@ -216,10 +186,7 @@ class MapPage extends HookConsumerWidget {
       if (mapController.value != null && assetMarker != null) {
         // Offset the latitude a little to show the marker just above the viewports center
         final offset = context.isMobile ? 0.02 : 0;
-        final latlng = LatLng(
-          assetMarker.latLng.latitude - offset,
-          assetMarker.latLng.longitude,
-        );
+        final latlng = LatLng(assetMarker.latLng.latitude - offset, assetMarker.latLng.longitude);
         mapController.value!.animateCamera(
           CameraUpdate.newLatLngZoom(latlng, mapZoomToAssetLevel),
           duration: const Duration(milliseconds: 800),
@@ -243,10 +210,7 @@ class MapPage extends HookConsumerWidget {
 
       if (mapController.value != null && location != null) {
         mapController.value!.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            LatLng(location.latitude, location.longitude),
-            mapZoomToAssetLevel,
-          ),
+          CameraUpdate.newLatLngZoom(LatLng(location.latitude, location.longitude), mapZoomToAssetLevel),
           duration: const Duration(milliseconds: 800),
         );
       }
@@ -311,9 +275,7 @@ class MapPage extends HookConsumerWidget {
                           bottom: context.padding.bottom + 16,
                           child: ElevatedButton(
                             onPressed: onZoomToLocation,
-                            style: ElevatedButton.styleFrom(
-                              shape: const CircleBorder(),
-                            ),
+                            style: ElevatedButton.styleFrom(shape: const CircleBorder()),
                             child: const Icon(Icons.my_location),
                           ),
                         ),
@@ -344,11 +306,7 @@ class _AssetMarkerMeta {
   final MapMarker marker;
   final bool shouldAnimate;
 
-  const _AssetMarkerMeta({
-    required this.point,
-    required this.marker,
-    required this.shouldAnimate,
-  });
+  const _AssetMarkerMeta({required this.point, required this.marker, required this.shouldAnimate});
 
   @override
   String toString() => '_AssetMarkerMeta(point: $point, marker: $marker, shouldAnimate: $shouldAnimate)';

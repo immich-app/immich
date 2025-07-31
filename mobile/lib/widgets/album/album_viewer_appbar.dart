@@ -82,10 +82,7 @@ class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidge
                 onPressed: () => context.pop('Cancel'),
                 child: Text(
                   'cancel',
-                  style: TextStyle(
-                    color: context.primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold),
                 ).tr(),
               ),
               TextButton(
@@ -95,10 +92,7 @@ class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidge
                 },
                 child: Text(
                   'confirm',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: context.colorScheme.error,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, color: context.colorScheme.error),
                 ).tr(),
               ),
             ],
@@ -128,10 +122,7 @@ class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidge
         album.ownerId == userId
             ? ListTile(
                 leading: const Icon(Icons.delete_forever_rounded),
-                title: const Text(
-                  'delete_album',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ).tr(),
+                title: const Text('delete_album', style: TextStyle(fontWeight: FontWeight.w500)).tr(),
                 onTap: onDeleteAlbumPressed,
               )
             : ListTile(
@@ -172,18 +163,12 @@ class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidge
               onAddUsers();
             }
           },
-          title: const Text(
-            "album_viewer_page_share_add_users",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ).tr(),
+          title: const Text("album_viewer_page_share_add_users", style: TextStyle(fontWeight: FontWeight.w500)).tr(),
         ),
         ListTile(
           leading: const Icon(Icons.swap_vert_rounded),
           onTap: onSortOrderToggled,
-          title: const Text(
-            "change_display_order",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ).tr(),
+          title: const Text("change_display_order", style: TextStyle(fontWeight: FontWeight.w500)).tr(),
         ),
         ListTile(
           leading: const Icon(Icons.link_rounded),
@@ -191,18 +176,12 @@ class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidge
             context.pushRoute(SharedLinkEditRoute(albumId: album.remoteId));
             context.pop();
           },
-          title: const Text(
-            "control_bottom_app_bar_share_link",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ).tr(),
+          title: const Text("control_bottom_app_bar_share_link", style: TextStyle(fontWeight: FontWeight.w500)).tr(),
         ),
         ListTile(
           leading: const Icon(Icons.settings_rounded),
           onTap: () => context.navigateTo(const AlbumOptionsRoute()),
-          title: const Text(
-            "options",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ).tr(),
+          title: const Text("options", style: TextStyle(fontWeight: FontWeight.w500)).tr(),
         ),
       ];
 
@@ -216,10 +195,7 @@ class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidge
               onAddPhotos();
             }
           },
-          title: const Text(
-            "add_photos",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ).tr(),
+          title: const Text("add_photos", style: TextStyle(fontWeight: FontWeight.w500)).tr(),
         ),
       ];
       showModalBottomSheet(
@@ -250,18 +226,13 @@ class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidge
         icon: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.mode_comment_outlined,
-            ),
+            const Icon(Icons.mode_comment_outlined),
             if (comments != 0)
               Padding(
                 padding: const EdgeInsets.only(left: 5),
                 child: Text(
                   comments.toString(),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: context.primaryColor,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, color: context.primaryColor),
                 ),
               ),
           ],
@@ -285,8 +256,9 @@ class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidge
               }
               titleFocusNode.unfocus();
             } else if (newAlbumDescription.isNotEmpty) {
-              bool isSuccessDescription =
-                  await ref.watch(albumViewerProvider.notifier).changeAlbumDescription(album, newAlbumDescription);
+              bool isSuccessDescription = await ref
+                  .watch(albumViewerProvider.notifier)
+                  .changeAlbumDescription(album, newAlbumDescription);
               if (!isSuccessDescription) {
                 ImmichToast.show(
                   context: context,
@@ -322,11 +294,7 @@ class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidge
       actions: [
         if (album.shared && (album.activityEnabled || comments != 0)) buildActivitiesButton(),
         if (album.isRemote) ...[
-          IconButton(
-            splashRadius: 25,
-            onPressed: buildBottomSheet,
-            icon: const Icon(Icons.more_horiz_rounded),
-          ),
+          IconButton(splashRadius: 25, onPressed: buildBottomSheet, icon: const Icon(Icons.more_horiz_rounded)),
         ],
       ],
     );

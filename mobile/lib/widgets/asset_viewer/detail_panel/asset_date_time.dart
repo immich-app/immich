@@ -36,18 +36,8 @@ class AssetDateTime extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          formattedDateTime,
-          style: context.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        if (asset.isRemote)
-          IconButton(
-            onPressed: editDateTime,
-            icon: const Icon(Icons.edit_outlined),
-            iconSize: 20,
-          ),
+        Text(formattedDateTime, style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+        if (asset.isRemote) IconButton(onPressed: editDateTime, icon: const Icon(Icons.edit_outlined), iconSize: 20),
       ],
     );
   }

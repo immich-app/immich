@@ -23,11 +23,7 @@ class IsarStoreRepository extends IsarDatabaseRepository {
         .filter()
         .anyOf(validStoreKeys, (query, id) => query.idEqualTo(id))
         .watch(fireImmediately: true)
-        .asyncExpand(
-          (entities) => Stream.fromFutures(
-            entities.map((e) async => _toUpdateEvent(e)),
-          ),
-        );
+        .asyncExpand((entities) => Stream.fromFutures(entities.map((e) async => _toUpdateEvent(e))));
   }
 
   Future<void> delete<T>(StoreKey<T> key) async {
@@ -68,14 +64,17 @@ class IsarStoreRepository extends IsarDatabaseRepository {
     return StoreDto(key, value);
   }
 
-  Future<T?> _toValue<T>(StoreKey<T> key, StoreValue entity) async => switch (key.type) {
-        const (int) => entity.intValue,
-        const (String) => entity.strValue,
-        const (bool) => entity.intValue == 1,
-        const (DateTime) => entity.intValue == null ? null : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
-        const (UserDto) => entity.strValue == null ? null : await IsarUserRepository(_db).getByUserId(entity.strValue!),
-        _ => null,
-      } as T?;
+  Future<T?> _toValue<T>(StoreKey<T> key, StoreValue entity) async =>
+      switch (key.type) {
+            const (int) => entity.intValue,
+            const (String) => entity.strValue,
+            const (bool) => entity.intValue == 1,
+            const (DateTime) => entity.intValue == null ? null : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
+            const (UserDto) =>
+              entity.strValue == null ? null : await IsarUserRepository(_db).getByUserId(entity.strValue!),
+            _ => null,
+          }
+          as T?;
 
   Future<StoreValue> _fromValue<T>(StoreKey<T> key, T value) async {
     final (int? intValue, String? strValue) = switch (key.type) {
@@ -83,13 +82,8 @@ class IsarStoreRepository extends IsarDatabaseRepository {
       const (String) => (null, value as String),
       const (bool) => ((value as bool) ? 1 : 0, null),
       const (DateTime) => ((value as DateTime).millisecondsSinceEpoch, null),
-      const (UserDto) => (
-          null,
-          (await IsarUserRepository(_db).update(value as UserDto)).id,
-        ),
-      _ => throw UnsupportedError(
-          "Unsupported primitive type: ${key.type} for key: ${key.name}",
-        ),
+      const (UserDto) => (null, (await IsarUserRepository(_db).update(value as UserDto)).id),
+      _ => throw UnsupportedError("Unsupported primitive type: ${key.type} for key: ${key.name}"),
     };
     return StoreValue(key.id, intValue: intValue, strValue: strValue);
   }

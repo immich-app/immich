@@ -16,26 +16,19 @@ import 'package:immich_mobile/widgets/memories/memory_epilogue.dart';
 import 'package:immich_mobile/widgets/memories/memory_progress_indicator.dart';
 
 @RoutePage()
-
 /// Expects [currentAssetProvider] to be set before navigating to this page
 class MemoryPage extends HookConsumerWidget {
   final List<Memory> memories;
   final int memoryIndex;
 
-  const MemoryPage({
-    required this.memories,
-    required this.memoryIndex,
-    super.key,
-  });
+  const MemoryPage({required this.memories, required this.memoryIndex, super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentMemory = useState(memories[memoryIndex]);
     final currentAssetPage = useState(0);
     final currentMemoryIndex = useState(memoryIndex);
-    final assetProgress = useState(
-      "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}",
-    );
+    final assetProgress = useState("${currentAssetPage.value + 1}|${currentMemory.value.assets.length}");
     const bgColor = Colors.black;
     final currentAsset = useState<Asset?>(null);
 
@@ -55,19 +48,13 @@ class MemoryPage extends HookConsumerWidget {
     });
 
     toNextMemory() {
-      memoryPageController.nextPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeIn,
-      );
+      memoryPageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
     }
 
     void toPreviousMemory() {
       if (currentMemoryIndex.value > 0) {
         // Move to the previous memory page
-        memoryPageController.previousPage(
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeIn,
-        );
+        memoryPageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
 
         // Wait for the next frame to ensure the page is built
         SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -94,10 +81,7 @@ class MemoryPage extends HookConsumerWidget {
         // Go to the next asset
         PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
-        controller.nextPage(
-          curve: Curves.easeInOut,
-          duration: const Duration(milliseconds: 500),
-        );
+        controller.nextPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500));
       } else {
         // Go to the next memory since we are at the end of our assets
         toNextMemory();
@@ -109,10 +93,7 @@ class MemoryPage extends HookConsumerWidget {
         // Go to the previous asset
         PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
-        controller.previousPage(
-          curve: Curves.easeInOut,
-          duration: const Duration(milliseconds: 500),
-        );
+        controller.previousPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500));
       } else {
         // Go to the previous memory since we are at the end of our assets
         toPreviousMemory();
@@ -161,11 +142,7 @@ class MemoryPage extends HookConsumerWidget {
       // Precache the asset
       final size = MediaQuery.sizeOf(context);
       await precacheImage(
-        ImmichImage.imageProvider(
-          asset: asset,
-          width: size.width,
-          height: size.height,
-        ),
+        ImmichImage.imageProvider(asset: asset, width: size.width, height: size.height),
         context,
         size: size,
       );
@@ -219,9 +196,7 @@ class MemoryPage extends HookConsumerWidget {
         backgroundColor: bgColor,
         body: SafeArea(
           child: PageView.builder(
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
-            ),
+            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             scrollDirection: Axis.vertical,
             controller: memoryPageController,
             onPageChanged: (pageNumber) {
@@ -252,12 +227,7 @@ class MemoryPage extends HookConsumerWidget {
               return Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(
-                      left: 24.0,
-                      right: 24.0,
-                      top: 8.0,
-                      bottom: 2.0,
-                    ),
+                    padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 8.0, bottom: 2.0),
                     child: AnimatedBuilder(
                       animation: assetController,
                       builder: (context, child) {
@@ -277,9 +247,7 @@ class MemoryPage extends HookConsumerWidget {
                     child: Stack(
                       children: [
                         PageView.builder(
-                          physics: const BouncingScrollPhysics(
-                            parent: AlwaysScrollableScrollPhysics(),
-                          ),
+                          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                           controller: assetController,
                           onPageChanged: onAssetChanged,
                           scrollDirection: Axis.horizontal,
@@ -290,11 +258,7 @@ class MemoryPage extends HookConsumerWidget {
                               children: [
                                 Container(
                                   color: Colors.black,
-                                  child: MemoryCard(
-                                    asset: asset,
-                                    title: memories[mIndex].title,
-                                    showTitle: index == 0,
-                                  ),
+                                  child: MemoryCard(asset: asset, title: memories[mIndex].title, showTitle: index == 0),
                                 ),
                                 Positioned.fill(
                                   child: Row(
@@ -335,27 +299,19 @@ class MemoryPage extends HookConsumerWidget {
                               // turn off full screen mode here
                               // https://github.com/Milad-Akarie/auto_route_library/issues/1799
                               context.maybePop();
-                              SystemChrome.setEnabledSystemUIMode(
-                                SystemUiMode.edgeToEdge,
-                              );
+                              SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
                             },
                             shape: const CircleBorder(),
                             color: Colors.white.withValues(alpha: 0.2),
                             elevation: 0,
-                            child: const Icon(
-                              Icons.close_rounded,
-                              color: Colors.white,
-                            ),
+                            child: const Icon(Icons.close_rounded, color: Colors.white),
                           ),
                         ),
                         if (currentAsset.value != null && currentAsset.value!.isVideo)
                           Positioned(
                             bottom: 24,
                             right: 32,
-                            child: Icon(
-                              Icons.videocam_outlined,
-                              color: Colors.grey[200],
-                            ),
+                            child: Icon(Icons.videocam_outlined, color: Colors.grey[200]),
                           ),
                       ],
                     ),

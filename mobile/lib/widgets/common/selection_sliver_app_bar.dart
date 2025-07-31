@@ -7,9 +7,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class SelectionSliverAppBar extends ConsumerStatefulWidget {
-  const SelectionSliverAppBar({
-    super.key,
-  });
+  const SelectionSliverAppBar({super.key});
 
   @override
   ConsumerState<SelectionSliverAppBar> createState() => _SelectionSliverAppBarState();
@@ -18,13 +16,9 @@ class SelectionSliverAppBar extends ConsumerStatefulWidget {
 class _SelectionSliverAppBarState extends ConsumerState<SelectionSliverAppBar> {
   @override
   Widget build(BuildContext context) {
-    final selection = ref.watch(
-      multiSelectProvider.select((s) => s.selectedAssets),
-    );
+    final selection = ref.watch(multiSelectProvider.select((s) => s.selectedAssets));
 
-    final toExclude = ref.watch(
-      multiSelectProvider.select((s) => s.lockedSelectionAssets),
-    );
+    final toExclude = ref.watch(multiSelectProvider.select((s) => s.lockedSelectionAssets));
 
     final filteredAssets = selection.where((asset) {
       return !toExclude.contains(asset);
@@ -40,9 +34,7 @@ class _SelectionSliverAppBarState extends ConsumerState<SelectionSliverAppBar> {
       pinned: true,
       snap: false,
       backgroundColor: context.colorScheme.surfaceContainer,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(5)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
       automaticallyImplyLeading: false,
       leading: IconButton(
         icon: const Icon(Icons.close_rounded),
@@ -52,22 +44,13 @@ class _SelectionSliverAppBarState extends ConsumerState<SelectionSliverAppBar> {
         },
       ),
       centerTitle: true,
-      title: Text(
-        "Select {count}".t(
-          context: context,
-          args: {
-            'count': filteredAssets.length.toString(),
-          },
-        ),
-      ),
+      title: Text("Select {count}".t(context: context, args: {'count': filteredAssets.length.toString()})),
       actions: [
         TextButton(
           onPressed: () => onDone(filteredAssets),
           child: Text(
             'done'.t(context: context),
-            style: context.textTheme.titleSmall?.copyWith(
-              color: context.colorScheme.primary,
-            ),
+            style: context.textTheme.titleSmall?.copyWith(color: context.colorScheme.primary),
           ),
         ),
       ],

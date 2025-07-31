@@ -9,28 +9,20 @@ import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 class DriftPlaceDetailPage extends StatelessWidget {
   final String place;
 
-  const DriftPlaceDetailPage({
-    super.key,
-    required this.place,
-  });
+  const DriftPlaceDetailPage({super.key, required this.place});
 
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
       overrides: [
-        timelineServiceProvider.overrideWith(
-          (ref) {
-            final timelineService = ref.watch(timelineFactoryProvider).place(place);
-            ref.onDispose(timelineService.dispose);
-            return timelineService;
-          },
-        ),
+        timelineServiceProvider.overrideWith((ref) {
+          final timelineService = ref.watch(timelineFactoryProvider).place(place);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
       ],
       child: Timeline(
-        appBar: MesmerizingSliverAppBar(
-          title: place,
-          icon: Icons.location_on,
-        ),
+        appBar: MesmerizingSliverAppBar(title: place, icon: Icons.location_on),
       ),
     );
   }

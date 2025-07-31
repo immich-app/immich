@@ -9,61 +9,72 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart'
     as i4;
 import 'package:drift/internal/modular.dart' as i5;
 
-typedef $$PersonEntityTableCreateCompanionBuilder = i1.PersonEntityCompanion
-    Function({
-  required String id,
-  i0.Value<DateTime> createdAt,
-  i0.Value<DateTime> updatedAt,
-  required String ownerId,
-  required String name,
-  i0.Value<String?> faceAssetId,
-  required bool isFavorite,
-  required bool isHidden,
-  i0.Value<String?> color,
-  i0.Value<DateTime?> birthDate,
-});
-typedef $$PersonEntityTableUpdateCompanionBuilder = i1.PersonEntityCompanion
-    Function({
-  i0.Value<String> id,
-  i0.Value<DateTime> createdAt,
-  i0.Value<DateTime> updatedAt,
-  i0.Value<String> ownerId,
-  i0.Value<String> name,
-  i0.Value<String?> faceAssetId,
-  i0.Value<bool> isFavorite,
-  i0.Value<bool> isHidden,
-  i0.Value<String?> color,
-  i0.Value<DateTime?> birthDate,
-});
+typedef $$PersonEntityTableCreateCompanionBuilder =
+    i1.PersonEntityCompanion Function({
+      required String id,
+      i0.Value<DateTime> createdAt,
+      i0.Value<DateTime> updatedAt,
+      required String ownerId,
+      required String name,
+      i0.Value<String?> faceAssetId,
+      required bool isFavorite,
+      required bool isHidden,
+      i0.Value<String?> color,
+      i0.Value<DateTime?> birthDate,
+    });
+typedef $$PersonEntityTableUpdateCompanionBuilder =
+    i1.PersonEntityCompanion Function({
+      i0.Value<String> id,
+      i0.Value<DateTime> createdAt,
+      i0.Value<DateTime> updatedAt,
+      i0.Value<String> ownerId,
+      i0.Value<String> name,
+      i0.Value<String?> faceAssetId,
+      i0.Value<bool> isFavorite,
+      i0.Value<bool> isHidden,
+      i0.Value<String?> color,
+      i0.Value<DateTime?> birthDate,
+    });
 
-final class $$PersonEntityTableReferences extends i0.BaseReferences<
-    i0.GeneratedDatabase, i1.$PersonEntityTable, i1.PersonEntityData> {
+final class $$PersonEntityTableReferences
+    extends
+        i0.BaseReferences<
+          i0.GeneratedDatabase,
+          i1.$PersonEntityTable,
+          i1.PersonEntityData
+        > {
   $$PersonEntityTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static i4.$UserEntityTable _ownerIdTable(i0.GeneratedDatabase db) =>
       i5.ReadDatabaseContainer(db)
           .resultSet<i4.$UserEntityTable>('user_entity')
-          .createAlias(i0.$_aliasNameGenerator(
-              i5.ReadDatabaseContainer(db)
-                  .resultSet<i1.$PersonEntityTable>('person_entity')
-                  .ownerId,
-              i5.ReadDatabaseContainer(db)
-                  .resultSet<i4.$UserEntityTable>('user_entity')
-                  .id));
+          .createAlias(
+            i0.$_aliasNameGenerator(
+              i5.ReadDatabaseContainer(
+                db,
+              ).resultSet<i1.$PersonEntityTable>('person_entity').ownerId,
+              i5.ReadDatabaseContainer(
+                db,
+              ).resultSet<i4.$UserEntityTable>('user_entity').id,
+            ),
+          );
 
   i4.$$UserEntityTableProcessedTableManager get ownerId {
     final $_column = $_itemColumn<String>('owner_id')!;
 
     final manager = i4
         .$$UserEntityTableTableManager(
+          $_db,
+          i5.ReadDatabaseContainer(
             $_db,
-            i5.ReadDatabaseContainer($_db)
-                .resultSet<i4.$UserEntityTable>('user_entity'))
+          ).resultSet<i4.$UserEntityTable>('user_entity'),
+        )
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_ownerIdTable($_db));
     if (item == null) return manager;
     return i0.ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
   }
 }
 
@@ -77,52 +88,74 @@ class $$PersonEntityTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnFilters<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnFilters(column));
+    column: $table.id,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<DateTime> get createdAt => $composableBuilder(
-      column: $table.createdAt, builder: (column) => i0.ColumnFilters(column));
+    column: $table.createdAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-      column: $table.updatedAt, builder: (column) => i0.ColumnFilters(column));
+    column: $table.updatedAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => i0.ColumnFilters(column));
+    column: $table.name,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<String> get faceAssetId => $composableBuilder(
-      column: $table.faceAssetId,
-      builder: (column) => i0.ColumnFilters(column));
+    column: $table.faceAssetId,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<bool> get isFavorite => $composableBuilder(
-      column: $table.isFavorite, builder: (column) => i0.ColumnFilters(column));
+    column: $table.isFavorite,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<bool> get isHidden => $composableBuilder(
-      column: $table.isHidden, builder: (column) => i0.ColumnFilters(column));
+    column: $table.isHidden,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<String> get color => $composableBuilder(
-      column: $table.color, builder: (column) => i0.ColumnFilters(column));
+    column: $table.color,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<DateTime> get birthDate => $composableBuilder(
-      column: $table.birthDate, builder: (column) => i0.ColumnFilters(column));
+    column: $table.birthDate,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i4.$$UserEntityTableFilterComposer get ownerId {
     final i4.$$UserEntityTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.ownerId,
-        referencedTable: i5.ReadDatabaseContainer($db)
-            .resultSet<i4.$UserEntityTable>('user_entity'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i4.$$UserEntityTableFilterComposer(
-              $db: $db,
-              $table: i5.ReadDatabaseContainer($db)
-                  .resultSet<i4.$UserEntityTable>('user_entity'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.ownerId,
+      referencedTable: i5.ReadDatabaseContainer(
+        $db,
+      ).resultSet<i4.$UserEntityTable>('user_entity'),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => i4.$$UserEntityTableFilterComposer(
+            $db: $db,
+            $table: i5.ReadDatabaseContainer(
+              $db,
+            ).resultSet<i4.$UserEntityTable>('user_entity'),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return composer;
   }
 }
@@ -137,56 +170,74 @@ class $$PersonEntityTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnOrderings<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.id,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-      column: $table.createdAt,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.createdAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-      column: $table.updatedAt,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.updatedAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.name,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get faceAssetId => $composableBuilder(
-      column: $table.faceAssetId,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.faceAssetId,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<bool> get isFavorite => $composableBuilder(
-      column: $table.isFavorite,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.isFavorite,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<bool> get isHidden => $composableBuilder(
-      column: $table.isHidden, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.isHidden,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get color => $composableBuilder(
-      column: $table.color, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.color,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<DateTime> get birthDate => $composableBuilder(
-      column: $table.birthDate,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.birthDate,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i4.$$UserEntityTableOrderingComposer get ownerId {
     final i4.$$UserEntityTableOrderingComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.ownerId,
-        referencedTable: i5.ReadDatabaseContainer($db)
-            .resultSet<i4.$UserEntityTable>('user_entity'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i4.$$UserEntityTableOrderingComposer(
-              $db: $db,
-              $table: i5.ReadDatabaseContainer($db)
-                  .resultSet<i4.$UserEntityTable>('user_entity'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.ownerId,
+      referencedTable: i5.ReadDatabaseContainer(
+        $db,
+      ).resultSet<i4.$UserEntityTable>('user_entity'),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => i4.$$UserEntityTableOrderingComposer(
+            $db: $db,
+            $table: i5.ReadDatabaseContainer(
+              $db,
+            ).resultSet<i4.$UserEntityTable>('user_entity'),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return composer;
   }
 }
@@ -213,10 +264,14 @@ class $$PersonEntityTableAnnotationComposer
       $composableBuilder(column: $table.name, builder: (column) => column);
 
   i0.GeneratedColumn<String> get faceAssetId => $composableBuilder(
-      column: $table.faceAssetId, builder: (column) => column);
+    column: $table.faceAssetId,
+    builder: (column) => column,
+  );
 
   i0.GeneratedColumn<bool> get isFavorite => $composableBuilder(
-      column: $table.isFavorite, builder: (column) => column);
+    column: $table.isFavorite,
+    builder: (column) => column,
+  );
 
   i0.GeneratedColumn<bool> get isHidden =>
       $composableBuilder(column: $table.isHidden, builder: (column) => column);
@@ -229,42 +284,52 @@ class $$PersonEntityTableAnnotationComposer
 
   i4.$$UserEntityTableAnnotationComposer get ownerId {
     final i4.$$UserEntityTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.ownerId,
-        referencedTable: i5.ReadDatabaseContainer($db)
-            .resultSet<i4.$UserEntityTable>('user_entity'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i4.$$UserEntityTableAnnotationComposer(
-              $db: $db,
-              $table: i5.ReadDatabaseContainer($db)
-                  .resultSet<i4.$UserEntityTable>('user_entity'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.ownerId,
+      referencedTable: i5.ReadDatabaseContainer(
+        $db,
+      ).resultSet<i4.$UserEntityTable>('user_entity'),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => i4.$$UserEntityTableAnnotationComposer(
+            $db: $db,
+            $table: i5.ReadDatabaseContainer(
+              $db,
+            ).resultSet<i4.$UserEntityTable>('user_entity'),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return composer;
   }
 }
 
-class $$PersonEntityTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.$PersonEntityTable,
-    i1.PersonEntityData,
-    i1.$$PersonEntityTableFilterComposer,
-    i1.$$PersonEntityTableOrderingComposer,
-    i1.$$PersonEntityTableAnnotationComposer,
-    $$PersonEntityTableCreateCompanionBuilder,
-    $$PersonEntityTableUpdateCompanionBuilder,
-    (i1.PersonEntityData, i1.$$PersonEntityTableReferences),
-    i1.PersonEntityData,
-    i0.PrefetchHooks Function({bool ownerId})> {
+class $$PersonEntityTableTableManager
+    extends
+        i0.RootTableManager<
+          i0.GeneratedDatabase,
+          i1.$PersonEntityTable,
+          i1.PersonEntityData,
+          i1.$$PersonEntityTableFilterComposer,
+          i1.$$PersonEntityTableOrderingComposer,
+          i1.$$PersonEntityTableAnnotationComposer,
+          $$PersonEntityTableCreateCompanionBuilder,
+          $$PersonEntityTableUpdateCompanionBuilder,
+          (i1.PersonEntityData, i1.$$PersonEntityTableReferences),
+          i1.PersonEntityData,
+          i0.PrefetchHooks Function({bool ownerId})
+        > {
   $$PersonEntityTableTableManager(
-      i0.GeneratedDatabase db, i1.$PersonEntityTable table)
-      : super(i0.TableManagerState(
+    i0.GeneratedDatabase db,
+    i1.$PersonEntityTable table,
+  ) : super(
+        i0.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -273,66 +338,69 @@ class $$PersonEntityTableTableManager extends i0.RootTableManager<
               i1.$$PersonEntityTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               i1.$$PersonEntityTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            i0.Value<String> id = const i0.Value.absent(),
-            i0.Value<DateTime> createdAt = const i0.Value.absent(),
-            i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-            i0.Value<String> ownerId = const i0.Value.absent(),
-            i0.Value<String> name = const i0.Value.absent(),
-            i0.Value<String?> faceAssetId = const i0.Value.absent(),
-            i0.Value<bool> isFavorite = const i0.Value.absent(),
-            i0.Value<bool> isHidden = const i0.Value.absent(),
-            i0.Value<String?> color = const i0.Value.absent(),
-            i0.Value<DateTime?> birthDate = const i0.Value.absent(),
-          }) =>
-              i1.PersonEntityCompanion(
-            id: id,
-            createdAt: createdAt,
-            updatedAt: updatedAt,
-            ownerId: ownerId,
-            name: name,
-            faceAssetId: faceAssetId,
-            isFavorite: isFavorite,
-            isHidden: isHidden,
-            color: color,
-            birthDate: birthDate,
-          ),
-          createCompanionCallback: ({
-            required String id,
-            i0.Value<DateTime> createdAt = const i0.Value.absent(),
-            i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-            required String ownerId,
-            required String name,
-            i0.Value<String?> faceAssetId = const i0.Value.absent(),
-            required bool isFavorite,
-            required bool isHidden,
-            i0.Value<String?> color = const i0.Value.absent(),
-            i0.Value<DateTime?> birthDate = const i0.Value.absent(),
-          }) =>
-              i1.PersonEntityCompanion.insert(
-            id: id,
-            createdAt: createdAt,
-            updatedAt: updatedAt,
-            ownerId: ownerId,
-            name: name,
-            faceAssetId: faceAssetId,
-            isFavorite: isFavorite,
-            isHidden: isHidden,
-            color: color,
-            birthDate: birthDate,
-          ),
+          updateCompanionCallback:
+              ({
+                i0.Value<String> id = const i0.Value.absent(),
+                i0.Value<DateTime> createdAt = const i0.Value.absent(),
+                i0.Value<DateTime> updatedAt = const i0.Value.absent(),
+                i0.Value<String> ownerId = const i0.Value.absent(),
+                i0.Value<String> name = const i0.Value.absent(),
+                i0.Value<String?> faceAssetId = const i0.Value.absent(),
+                i0.Value<bool> isFavorite = const i0.Value.absent(),
+                i0.Value<bool> isHidden = const i0.Value.absent(),
+                i0.Value<String?> color = const i0.Value.absent(),
+                i0.Value<DateTime?> birthDate = const i0.Value.absent(),
+              }) => i1.PersonEntityCompanion(
+                id: id,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                ownerId: ownerId,
+                name: name,
+                faceAssetId: faceAssetId,
+                isFavorite: isFavorite,
+                isHidden: isHidden,
+                color: color,
+                birthDate: birthDate,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                i0.Value<DateTime> createdAt = const i0.Value.absent(),
+                i0.Value<DateTime> updatedAt = const i0.Value.absent(),
+                required String ownerId,
+                required String name,
+                i0.Value<String?> faceAssetId = const i0.Value.absent(),
+                required bool isFavorite,
+                required bool isHidden,
+                i0.Value<String?> color = const i0.Value.absent(),
+                i0.Value<DateTime?> birthDate = const i0.Value.absent(),
+              }) => i1.PersonEntityCompanion.insert(
+                id: id,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                ownerId: ownerId,
+                name: name,
+                faceAssetId: faceAssetId,
+                isFavorite: isFavorite,
+                isHidden: isHidden,
+                color: color,
+                birthDate: birthDate,
+              ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (
-                    e.readTable(table),
-                    i1.$$PersonEntityTableReferences(db, table, e)
-                  ))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  i1.$$PersonEntityTableReferences(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: ({ownerId = false}) {
             return i0.PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
-              addJoins: <
-                  T extends i0.TableManagerState<
+              addJoins:
+                  <
+                    T extends i0.TableManagerState<
                       dynamic,
                       dynamic,
                       dynamic,
@@ -343,40 +411,50 @@ class $$PersonEntityTableTableManager extends i0.RootTableManager<
                       dynamic,
                       dynamic,
                       dynamic,
-                      dynamic>>(state) {
-                if (ownerId) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.ownerId,
-                    referencedTable:
-                        i1.$$PersonEntityTableReferences._ownerIdTable(db),
-                    referencedColumn:
-                        i1.$$PersonEntityTableReferences._ownerIdTable(db).id,
-                  ) as T;
-                }
+                      dynamic
+                    >
+                  >(state) {
+                    if (ownerId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.ownerId,
+                                referencedTable: i1
+                                    .$$PersonEntityTableReferences
+                                    ._ownerIdTable(db),
+                                referencedColumn: i1
+                                    .$$PersonEntityTableReferences
+                                    ._ownerIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
 
-                return state;
-              },
+                    return state;
+                  },
               getPrefetchedDataCallback: (items) async {
                 return [];
               },
             );
           },
-        ));
+        ),
+      );
 }
 
-typedef $$PersonEntityTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$PersonEntityTable,
-    i1.PersonEntityData,
-    i1.$$PersonEntityTableFilterComposer,
-    i1.$$PersonEntityTableOrderingComposer,
-    i1.$$PersonEntityTableAnnotationComposer,
-    $$PersonEntityTableCreateCompanionBuilder,
-    $$PersonEntityTableUpdateCompanionBuilder,
-    (i1.PersonEntityData, i1.$$PersonEntityTableReferences),
-    i1.PersonEntityData,
-    i0.PrefetchHooks Function({bool ownerId})>;
+typedef $$PersonEntityTableProcessedTableManager =
+    i0.ProcessedTableManager<
+      i0.GeneratedDatabase,
+      i1.$PersonEntityTable,
+      i1.PersonEntityData,
+      i1.$$PersonEntityTableFilterComposer,
+      i1.$$PersonEntityTableOrderingComposer,
+      i1.$$PersonEntityTableAnnotationComposer,
+      $$PersonEntityTableCreateCompanionBuilder,
+      $$PersonEntityTableUpdateCompanionBuilder,
+      (i1.PersonEntityData, i1.$$PersonEntityTableReferences),
+      i1.PersonEntityData,
+      i0.PrefetchHooks Function({bool ownerId})
+    >;
 
 class $PersonEntityTable extends i2.PersonEntity
     with i0.TableInfo<$PersonEntityTable, i1.PersonEntityData> {
@@ -387,88 +465,139 @@ class $PersonEntityTable extends i2.PersonEntity
   static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
   @override
   late final i0.GeneratedColumn<String> id = i0.GeneratedColumn<String>(
-      'id', aliasedName, false,
-      type: i0.DriftSqlType.string, requiredDuringInsert: true);
-  static const i0.VerificationMeta _createdAtMeta =
-      const i0.VerificationMeta('createdAt');
+    'id',
+    aliasedName,
+    false,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const i0.VerificationMeta _createdAtMeta = const i0.VerificationMeta(
+    'createdAt',
+  );
   @override
   late final i0.GeneratedColumn<DateTime> createdAt =
-      i0.GeneratedColumn<DateTime>('created_at', aliasedName, false,
-          type: i0.DriftSqlType.dateTime,
-          requiredDuringInsert: false,
-          defaultValue: i3.currentDateAndTime);
-  static const i0.VerificationMeta _updatedAtMeta =
-      const i0.VerificationMeta('updatedAt');
+      i0.GeneratedColumn<DateTime>(
+        'created_at',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: i3.currentDateAndTime,
+      );
+  static const i0.VerificationMeta _updatedAtMeta = const i0.VerificationMeta(
+    'updatedAt',
+  );
   @override
   late final i0.GeneratedColumn<DateTime> updatedAt =
-      i0.GeneratedColumn<DateTime>('updated_at', aliasedName, false,
-          type: i0.DriftSqlType.dateTime,
-          requiredDuringInsert: false,
-          defaultValue: i3.currentDateAndTime);
-  static const i0.VerificationMeta _ownerIdMeta =
-      const i0.VerificationMeta('ownerId');
+      i0.GeneratedColumn<DateTime>(
+        'updated_at',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: i3.currentDateAndTime,
+      );
+  static const i0.VerificationMeta _ownerIdMeta = const i0.VerificationMeta(
+    'ownerId',
+  );
   @override
   late final i0.GeneratedColumn<String> ownerId = i0.GeneratedColumn<String>(
-      'owner_id', aliasedName, false,
-      type: i0.DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-          'REFERENCES user_entity (id) ON DELETE CASCADE'));
-  static const i0.VerificationMeta _nameMeta =
-      const i0.VerificationMeta('name');
+    'owner_id',
+    aliasedName,
+    false,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+      'REFERENCES user_entity (id) ON DELETE CASCADE',
+    ),
+  );
+  static const i0.VerificationMeta _nameMeta = const i0.VerificationMeta(
+    'name',
+  );
   @override
   late final i0.GeneratedColumn<String> name = i0.GeneratedColumn<String>(
-      'name', aliasedName, false,
-      type: i0.DriftSqlType.string, requiredDuringInsert: true);
-  static const i0.VerificationMeta _faceAssetIdMeta =
-      const i0.VerificationMeta('faceAssetId');
+    'name',
+    aliasedName,
+    false,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const i0.VerificationMeta _faceAssetIdMeta = const i0.VerificationMeta(
+    'faceAssetId',
+  );
   @override
   late final i0.GeneratedColumn<String> faceAssetId =
-      i0.GeneratedColumn<String>('face_asset_id', aliasedName, true,
-          type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _isFavoriteMeta =
-      const i0.VerificationMeta('isFavorite');
+      i0.GeneratedColumn<String>(
+        'face_asset_id',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const i0.VerificationMeta _isFavoriteMeta = const i0.VerificationMeta(
+    'isFavorite',
+  );
   @override
   late final i0.GeneratedColumn<bool> isFavorite = i0.GeneratedColumn<bool>(
-      'is_favorite', aliasedName, false,
-      type: i0.DriftSqlType.bool,
-      requiredDuringInsert: true,
-      defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-          'CHECK ("is_favorite" IN (0, 1))'));
-  static const i0.VerificationMeta _isHiddenMeta =
-      const i0.VerificationMeta('isHidden');
+    'is_favorite',
+    aliasedName,
+    false,
+    type: i0.DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_favorite" IN (0, 1))',
+    ),
+  );
+  static const i0.VerificationMeta _isHiddenMeta = const i0.VerificationMeta(
+    'isHidden',
+  );
   @override
   late final i0.GeneratedColumn<bool> isHidden = i0.GeneratedColumn<bool>(
-      'is_hidden', aliasedName, false,
-      type: i0.DriftSqlType.bool,
-      requiredDuringInsert: true,
-      defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-          'CHECK ("is_hidden" IN (0, 1))'));
-  static const i0.VerificationMeta _colorMeta =
-      const i0.VerificationMeta('color');
+    'is_hidden',
+    aliasedName,
+    false,
+    type: i0.DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_hidden" IN (0, 1))',
+    ),
+  );
+  static const i0.VerificationMeta _colorMeta = const i0.VerificationMeta(
+    'color',
+  );
   @override
   late final i0.GeneratedColumn<String> color = i0.GeneratedColumn<String>(
-      'color', aliasedName, true,
-      type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _birthDateMeta =
-      const i0.VerificationMeta('birthDate');
+    'color',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _birthDateMeta = const i0.VerificationMeta(
+    'birthDate',
+  );
   @override
   late final i0.GeneratedColumn<DateTime> birthDate =
-      i0.GeneratedColumn<DateTime>('birth_date', aliasedName, true,
-          type: i0.DriftSqlType.dateTime, requiredDuringInsert: false);
+      i0.GeneratedColumn<DateTime>(
+        'birth_date',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<i0.GeneratedColumn> get $columns => [
-        id,
-        createdAt,
-        updatedAt,
-        ownerId,
-        name,
-        faceAssetId,
-        isFavorite,
-        isHidden,
-        color,
-        birthDate
-      ];
+    id,
+    createdAt,
+    updatedAt,
+    ownerId,
+    name,
+    faceAssetId,
+    isFavorite,
+    isHidden,
+    color,
+    birthDate,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -476,8 +605,9 @@ class $PersonEntityTable extends i2.PersonEntity
   static const String $name = 'person_entity';
   @override
   i0.VerificationContext validateIntegrity(
-      i0.Insertable<i1.PersonEntityData> instance,
-      {bool isInserting = false}) {
+    i0.Insertable<i1.PersonEntityData> instance, {
+    bool isInserting = false,
+  }) {
     final context = i0.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -486,52 +616,69 @@ class $PersonEntityTable extends i2.PersonEntity
       context.missing(_idMeta);
     }
     if (data.containsKey('created_at')) {
-      context.handle(_createdAtMeta,
-          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
     }
     if (data.containsKey('updated_at')) {
-      context.handle(_updatedAtMeta,
-          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
     }
     if (data.containsKey('owner_id')) {
-      context.handle(_ownerIdMeta,
-          ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta));
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
     } else if (isInserting) {
       context.missing(_ownerIdMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
     if (data.containsKey('face_asset_id')) {
       context.handle(
+        _faceAssetIdMeta,
+        faceAssetId.isAcceptableOrUnknown(
+          data['face_asset_id']!,
           _faceAssetIdMeta,
-          faceAssetId.isAcceptableOrUnknown(
-              data['face_asset_id']!, _faceAssetIdMeta));
+        ),
+      );
     }
     if (data.containsKey('is_favorite')) {
       context.handle(
-          _isFavoriteMeta,
-          isFavorite.isAcceptableOrUnknown(
-              data['is_favorite']!, _isFavoriteMeta));
+        _isFavoriteMeta,
+        isFavorite.isAcceptableOrUnknown(data['is_favorite']!, _isFavoriteMeta),
+      );
     } else if (isInserting) {
       context.missing(_isFavoriteMeta);
     }
     if (data.containsKey('is_hidden')) {
-      context.handle(_isHiddenMeta,
-          isHidden.isAcceptableOrUnknown(data['is_hidden']!, _isHiddenMeta));
+      context.handle(
+        _isHiddenMeta,
+        isHidden.isAcceptableOrUnknown(data['is_hidden']!, _isHiddenMeta),
+      );
     } else if (isInserting) {
       context.missing(_isHiddenMeta);
     }
     if (data.containsKey('color')) {
       context.handle(
-          _colorMeta, color.isAcceptableOrUnknown(data['color']!, _colorMeta));
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
     }
     if (data.containsKey('birth_date')) {
-      context.handle(_birthDateMeta,
-          birthDate.isAcceptableOrUnknown(data['birth_date']!, _birthDateMeta));
+      context.handle(
+        _birthDateMeta,
+        birthDate.isAcceptableOrUnknown(data['birth_date']!, _birthDateMeta),
+      );
     }
     return context;
   }
@@ -542,26 +689,46 @@ class $PersonEntityTable extends i2.PersonEntity
   i1.PersonEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return i1.PersonEntityData(
-      id: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}id'])!,
+      id: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
       updatedAt: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      ownerId: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}owner_id'])!,
-      name: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}name'])!,
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      ownerId: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
       faceAssetId: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.string, data['${effectivePrefix}face_asset_id']),
-      isFavorite: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.bool, data['${effectivePrefix}is_favorite'])!,
-      isHidden: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.bool, data['${effectivePrefix}is_hidden'])!,
-      color: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}color']),
-      birthDate: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.dateTime, data['${effectivePrefix}birth_date']),
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}face_asset_id'],
+      ),
+      isFavorite: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.bool,
+        data['${effectivePrefix}is_favorite'],
+      )!,
+      isHidden: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.bool,
+        data['${effectivePrefix}is_hidden'],
+      )!,
+      color: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}color'],
+      ),
+      birthDate: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}birth_date'],
+      ),
     );
   }
 
@@ -588,17 +755,18 @@ class PersonEntityData extends i0.DataClass
   final bool isHidden;
   final String? color;
   final DateTime? birthDate;
-  const PersonEntityData(
-      {required this.id,
-      required this.createdAt,
-      required this.updatedAt,
-      required this.ownerId,
-      required this.name,
-      this.faceAssetId,
-      required this.isFavorite,
-      required this.isHidden,
-      this.color,
-      this.birthDate});
+  const PersonEntityData({
+    required this.id,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.ownerId,
+    required this.name,
+    this.faceAssetId,
+    required this.isFavorite,
+    required this.isHidden,
+    this.color,
+    this.birthDate,
+  });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
@@ -621,8 +789,10 @@ class PersonEntityData extends i0.DataClass
     return map;
   }
 
-  factory PersonEntityData.fromJson(Map<String, dynamic> json,
-      {i0.ValueSerializer? serializer}) {
+  factory PersonEntityData.fromJson(
+    Map<String, dynamic> json, {
+    i0.ValueSerializer? serializer,
+  }) {
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return PersonEntityData(
       id: serializer.fromJson<String>(json['id']),
@@ -654,29 +824,29 @@ class PersonEntityData extends i0.DataClass
     };
   }
 
-  i1.PersonEntityData copyWith(
-          {String? id,
-          DateTime? createdAt,
-          DateTime? updatedAt,
-          String? ownerId,
-          String? name,
-          i0.Value<String?> faceAssetId = const i0.Value.absent(),
-          bool? isFavorite,
-          bool? isHidden,
-          i0.Value<String?> color = const i0.Value.absent(),
-          i0.Value<DateTime?> birthDate = const i0.Value.absent()}) =>
-      i1.PersonEntityData(
-        id: id ?? this.id,
-        createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-        ownerId: ownerId ?? this.ownerId,
-        name: name ?? this.name,
-        faceAssetId: faceAssetId.present ? faceAssetId.value : this.faceAssetId,
-        isFavorite: isFavorite ?? this.isFavorite,
-        isHidden: isHidden ?? this.isHidden,
-        color: color.present ? color.value : this.color,
-        birthDate: birthDate.present ? birthDate.value : this.birthDate,
-      );
+  i1.PersonEntityData copyWith({
+    String? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? ownerId,
+    String? name,
+    i0.Value<String?> faceAssetId = const i0.Value.absent(),
+    bool? isFavorite,
+    bool? isHidden,
+    i0.Value<String?> color = const i0.Value.absent(),
+    i0.Value<DateTime?> birthDate = const i0.Value.absent(),
+  }) => i1.PersonEntityData(
+    id: id ?? this.id,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    ownerId: ownerId ?? this.ownerId,
+    name: name ?? this.name,
+    faceAssetId: faceAssetId.present ? faceAssetId.value : this.faceAssetId,
+    isFavorite: isFavorite ?? this.isFavorite,
+    isHidden: isHidden ?? this.isHidden,
+    color: color.present ? color.value : this.color,
+    birthDate: birthDate.present ? birthDate.value : this.birthDate,
+  );
   PersonEntityData copyWithCompanion(i1.PersonEntityCompanion data) {
     return PersonEntityData(
       id: data.id.present ? data.id.value : this.id,
@@ -684,10 +854,12 @@ class PersonEntityData extends i0.DataClass
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
       name: data.name.present ? data.name.value : this.name,
-      faceAssetId:
-          data.faceAssetId.present ? data.faceAssetId.value : this.faceAssetId,
-      isFavorite:
-          data.isFavorite.present ? data.isFavorite.value : this.isFavorite,
+      faceAssetId: data.faceAssetId.present
+          ? data.faceAssetId.value
+          : this.faceAssetId,
+      isFavorite: data.isFavorite.present
+          ? data.isFavorite.value
+          : this.isFavorite,
       isHidden: data.isHidden.present ? data.isHidden.value : this.isHidden,
       color: data.color.present ? data.color.value : this.color,
       birthDate: data.birthDate.present ? data.birthDate.value : this.birthDate,
@@ -712,8 +884,18 @@ class PersonEntityData extends i0.DataClass
   }
 
   @override
-  int get hashCode => Object.hash(id, createdAt, updatedAt, ownerId, name,
-      faceAssetId, isFavorite, isHidden, color, birthDate);
+  int get hashCode => Object.hash(
+    id,
+    createdAt,
+    updatedAt,
+    ownerId,
+    name,
+    faceAssetId,
+    isFavorite,
+    isHidden,
+    color,
+    birthDate,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -764,11 +946,11 @@ class PersonEntityCompanion extends i0.UpdateCompanion<i1.PersonEntityData> {
     required bool isHidden,
     this.color = const i0.Value.absent(),
     this.birthDate = const i0.Value.absent(),
-  })  : id = i0.Value(id),
-        ownerId = i0.Value(ownerId),
-        name = i0.Value(name),
-        isFavorite = i0.Value(isFavorite),
-        isHidden = i0.Value(isHidden);
+  }) : id = i0.Value(id),
+       ownerId = i0.Value(ownerId),
+       name = i0.Value(name),
+       isFavorite = i0.Value(isFavorite),
+       isHidden = i0.Value(isHidden);
   static i0.Insertable<i1.PersonEntityData> custom({
     i0.Expression<String>? id,
     i0.Expression<DateTime>? createdAt,
@@ -795,17 +977,18 @@ class PersonEntityCompanion extends i0.UpdateCompanion<i1.PersonEntityData> {
     });
   }
 
-  i1.PersonEntityCompanion copyWith(
-      {i0.Value<String>? id,
-      i0.Value<DateTime>? createdAt,
-      i0.Value<DateTime>? updatedAt,
-      i0.Value<String>? ownerId,
-      i0.Value<String>? name,
-      i0.Value<String?>? faceAssetId,
-      i0.Value<bool>? isFavorite,
-      i0.Value<bool>? isHidden,
-      i0.Value<String?>? color,
-      i0.Value<DateTime?>? birthDate}) {
+  i1.PersonEntityCompanion copyWith({
+    i0.Value<String>? id,
+    i0.Value<DateTime>? createdAt,
+    i0.Value<DateTime>? updatedAt,
+    i0.Value<String>? ownerId,
+    i0.Value<String>? name,
+    i0.Value<String?>? faceAssetId,
+    i0.Value<bool>? isFavorite,
+    i0.Value<bool>? isHidden,
+    i0.Value<String?>? color,
+    i0.Value<DateTime?>? birthDate,
+  }) {
     return i1.PersonEntityCompanion(
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,

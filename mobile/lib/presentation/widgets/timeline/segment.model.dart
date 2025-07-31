@@ -37,8 +37,8 @@ abstract class Segment {
     required this.headerExtent,
     required this.spacing,
     required this.header,
-  })  : gridIndex = firstIndex + 1,
-        gridOffset = startOffset + headerExtent + spacing;
+  }) : gridIndex = firstIndex + 1,
+       gridOffset = startOffset + headerExtent + spacing;
 
   bool containsIndex(int index) => firstIndex <= index && index <= lastIndex;
 

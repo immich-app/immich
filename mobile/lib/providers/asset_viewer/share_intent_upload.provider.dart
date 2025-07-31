@@ -15,10 +15,10 @@ import 'package:path/path.dart';
 
 final shareIntentUploadProvider = StateNotifierProvider<ShareIntentUploadStateNotifier, List<ShareIntentAttachment>>(
   ((ref) => ShareIntentUploadStateNotifier(
-        ref.watch(appRouterProvider),
-        ref.watch(uploadServiceProvider),
-        ref.watch(shareIntentServiceProvider),
-      )),
+    ref.watch(appRouterProvider),
+    ref.watch(uploadServiceProvider),
+    ref.watch(shareIntentServiceProvider),
+  )),
 );
 
 class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttachment>> {
@@ -26,11 +26,7 @@ class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttac
   final UploadService _uploadService;
   final ShareIntentService _shareIntentService;
 
-  ShareIntentUploadStateNotifier(
-    this.router,
-    this._uploadService,
-    this._shareIntentService,
-  ) : super([]) {
+  ShareIntentUploadStateNotifier(this.router, this._uploadService, this._shareIntentService) : super([]) {
     _uploadService.taskStatusStream.listen(_updateUploadStatus);
     _uploadService.taskProgressStream.listen(_taskProgressCallback);
   }
@@ -83,7 +79,7 @@ class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttac
       TaskStatus.running => UploadStatus.running,
       TaskStatus.paused => UploadStatus.paused,
       TaskStatus.notFound => UploadStatus.notFound,
-      TaskStatus.waitingToRetry => UploadStatus.waitingToRetry
+      TaskStatus.waitingToRetry => UploadStatus.waitingToRetry,
     };
 
     state = [
@@ -106,19 +102,12 @@ class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttac
   }
 
   Future<void> upload(File file) async {
-    final task = await _buildUploadTask(
-      hash(file.path).toString(),
-      file,
-    );
+    final task = await _buildUploadTask(hash(file.path).toString(), file);
 
     _uploadService.enqueueTasks([task]);
   }
 
-  Future<UploadTask> _buildUploadTask(
-    String id,
-    File file, {
-    Map<String, String>? fields,
-  }) async {
+  Future<UploadTask> _buildUploadTask(String id, File file, {Map<String, String>? fields}) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
     final headers = ApiService.getRequestHeaders();

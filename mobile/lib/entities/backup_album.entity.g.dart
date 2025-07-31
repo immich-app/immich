@@ -17,11 +17,7 @@ const BackupAlbumSchema = CollectionSchema(
   name: r'BackupAlbum',
   id: 8308487201128361847,
   properties: {
-    r'id': PropertySchema(
-      id: 0,
-      name: r'id',
-      type: IsarType.string,
-    ),
+    r'id': PropertySchema(id: 0, name: r'id', type: IsarType.string),
     r'lastBackup': PropertySchema(
       id: 1,
       name: r'lastBackup',
@@ -32,8 +28,9 @@ const BackupAlbumSchema = CollectionSchema(
       name: r'selection',
       type: IsarType.byte,
       enumMap: _BackupAlbumselectionEnumValueMap,
-    )
+    ),
   },
+
   estimateSize: _backupAlbumEstimateSize,
   serialize: _backupAlbumSerialize,
   deserialize: _backupAlbumDeserialize,
@@ -42,6 +39,7 @@ const BackupAlbumSchema = CollectionSchema(
   indexes: {},
   links: {},
   embeddedSchemas: {},
+
   getId: _backupAlbumGetId,
   getLinks: _backupAlbumGetLinks,
   attach: _backupAlbumAttach,
@@ -96,9 +94,11 @@ P _backupAlbumDeserializeProp<P>(
     case 1:
       return (reader.readDateTime(offset)) as P;
     case 2:
-      return (_BackupAlbumselectionValueEnumMap[
-              reader.readByteOrNull(offset)] ??
-          BackupSelection.none) as P;
+      return (_BackupAlbumselectionValueEnumMap[reader.readByteOrNull(
+                offset,
+              )] ??
+              BackupSelection.none)
+          as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -124,7 +124,10 @@ List<IsarLinkBase<dynamic>> _backupAlbumGetLinks(BackupAlbum object) {
 }
 
 void _backupAlbumAttach(
-    IsarCollection<dynamic> col, Id id, BackupAlbum object) {}
+  IsarCollection<dynamic> col,
+  Id id,
+  BackupAlbum object,
+) {}
 
 extension BackupAlbumQueryWhereSort
     on QueryBuilder<BackupAlbum, BackupAlbum, QWhere> {
@@ -138,17 +141,18 @@ extension BackupAlbumQueryWhereSort
 extension BackupAlbumQueryWhere
     on QueryBuilder<BackupAlbum, BackupAlbum, QWhereClause> {
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterWhereClause> isarIdEqualTo(
-      Id isarId) {
+    Id isarId,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: isarId,
-        upper: isarId,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(lower: isarId, upper: isarId),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterWhereClause> isarIdNotEqualTo(
-      Id isarId) {
+    Id isarId,
+  ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -171,8 +175,9 @@ extension BackupAlbumQueryWhere
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterWhereClause> isarIdGreaterThan(
-      Id isarId,
-      {bool include = false}) {
+    Id isarId, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: isarId, includeLower: include),
@@ -181,8 +186,9 @@ extension BackupAlbumQueryWhere
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterWhereClause> isarIdLessThan(
-      Id isarId,
-      {bool include = false}) {
+    Id isarId, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: isarId, includeUpper: include),
@@ -197,12 +203,14 @@ extension BackupAlbumQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerIsarId,
-        includeLower: includeLower,
-        upper: upperIsarId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerIsarId,
+          includeLower: includeLower,
+          upper: upperIsarId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -214,11 +222,13 @@ extension BackupAlbumQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -228,12 +238,14 @@ extension BackupAlbumQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -243,12 +255,14 @@ extension BackupAlbumQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -260,14 +274,16 @@ extension BackupAlbumQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -276,11 +292,13 @@ extension BackupAlbumQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -289,77 +307,82 @@ extension BackupAlbumQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition> idContains(
-      String value,
-      {bool caseSensitive = true}) {
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition> idMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'id',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'id',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition> idIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: ''),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition> idIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'id',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'id', value: ''),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition> isarIdEqualTo(
-      Id value) {
+    Id value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'isarId', value: value),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      isarIdGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  isarIdGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'isarId',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -368,11 +391,13 @@ extension BackupAlbumQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'isarId',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -383,125 +408,125 @@ extension BackupAlbumQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'isarId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'isarId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      lastBackupEqualTo(DateTime value) {
+  lastBackupEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'lastBackup',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'lastBackup', value: value),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      lastBackupGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  lastBackupGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'lastBackup',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'lastBackup',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      lastBackupLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  lastBackupLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'lastBackup',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'lastBackup',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      lastBackupBetween(
+  lastBackupBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'lastBackup',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'lastBackup',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      selectionEqualTo(BackupSelection value) {
+  selectionEqualTo(BackupSelection value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'selection',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'selection', value: value),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      selectionGreaterThan(
-    BackupSelection value, {
-    bool include = false,
-  }) {
+  selectionGreaterThan(BackupSelection value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'selection',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'selection',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      selectionLessThan(
-    BackupSelection value, {
-    bool include = false,
-  }) {
+  selectionLessThan(BackupSelection value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'selection',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'selection',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      selectionBetween(
+  selectionBetween(
     BackupSelection lower,
     BackupSelection upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'selection',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'selection',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -604,8 +629,9 @@ extension BackupAlbumQuerySortThenBy
 
 extension BackupAlbumQueryWhereDistinct
     on QueryBuilder<BackupAlbum, BackupAlbum, QDistinct> {
-  QueryBuilder<BackupAlbum, BackupAlbum, QDistinct> distinctById(
-      {bool caseSensitive = true}) {
+  QueryBuilder<BackupAlbum, BackupAlbum, QDistinct> distinctById({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
     });
@@ -645,7 +671,7 @@ extension BackupAlbumQueryProperty
   }
 
   QueryBuilder<BackupAlbum, BackupSelection, QQueryOperations>
-      selectionProperty() {
+  selectionProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'selection');
     });

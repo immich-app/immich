@@ -4,6 +4,7 @@ import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PersonResponseDto } from 'src/dtos/person.dto';
 import {
+  LargeAssetSearchDto,
   MetadataSearchDto,
   PlacesResponseDto,
   RandomSearchDto,
@@ -44,6 +45,13 @@ export class SearchController {
   @Authenticated({ permission: Permission.AssetRead })
   searchRandom(@Auth() auth: AuthDto, @Body() dto: RandomSearchDto): Promise<AssetResponseDto[]> {
     return this.service.searchRandom(auth, dto);
+  }
+
+  @Post('large-assets')
+  @HttpCode(HttpStatus.OK)
+  @Authenticated({ permission: Permission.AssetRead })
+  searchLargeAssets(@Auth() auth: AuthDto, @Query() dto: LargeAssetSearchDto): Promise<AssetResponseDto[]> {
+    return this.service.searchLargeAssets(auth, dto);
   }
 
   @Post('smart')

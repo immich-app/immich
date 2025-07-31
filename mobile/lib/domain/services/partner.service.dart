@@ -7,10 +7,7 @@ class DriftPartnerService {
   final DriftPartnerRepository _driftPartnerRepository;
   final PartnerApiRepository _partnerApiRepository;
 
-  const DriftPartnerService(
-    this._driftPartnerRepository,
-    this._partnerApiRepository,
-  );
+  const DriftPartnerService(this._driftPartnerRepository, this._partnerApiRepository);
 
   Future<List<PartnerUserDto>> getSharedWith(String userId) {
     return _driftPartnerRepository.getSharedWith(userId);
@@ -20,9 +17,7 @@ class DriftPartnerService {
     return _driftPartnerRepository.getSharedBy(userId);
   }
 
-  Future<List<PartnerUserDto>> getAvailablePartners(
-    String currentUserId,
-  ) async {
+  Future<List<PartnerUserDto>> getAvailablePartners(String currentUserId) async {
     final otherUsers = await _driftPartnerRepository.getAvailablePartners(currentUserId);
     final currentPartners = await _driftPartnerRepository.getSharedBy(currentUserId);
     final available = otherUsers.where((user) {
@@ -39,10 +34,7 @@ class DriftPartnerService {
       return;
     }
 
-    await _partnerApiRepository.update(
-      partnerId,
-      inTimeline: !partner.inTimeline,
-    );
+    await _partnerApiRepository.update(partnerId, inTimeline: !partner.inTimeline);
 
     await _driftPartnerRepository.toggleShowInTimeline(partner, userId);
   }

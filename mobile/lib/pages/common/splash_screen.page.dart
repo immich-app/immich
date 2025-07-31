@@ -43,31 +43,26 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     final accessToken = Store.tryGet(StoreKey.accessToken);
 
     if (accessToken != null && serverUrl != null && endpoint != null) {
-      ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
-            (a) => {
-              log.info('Successfully updated auth info with access token: $accessToken'),
-            },
+      ref
+          .read(authProvider.notifier)
+          .saveAuthInfo(accessToken: accessToken)
+          .then(
+            (a) => {log.info('Successfully updated auth info with access token: $accessToken')},
             onError: (exception) => {
-              log.severe(
-                'Failed to update auth info with access token: $accessToken',
-              ),
+              log.severe('Failed to update auth info with access token: $accessToken'),
               ref.read(authProvider.notifier).logout(),
               context.replaceRoute(const LoginRoute()),
             },
           );
     } else {
-      log.severe(
-        'Missing crucial offline login info - Logging out completely',
-      );
+      log.severe('Missing crucial offline login info - Logging out completely');
       ref.read(authProvider.notifier).logout();
       context.replaceRoute(const LoginRoute());
       return;
     }
 
     if (context.router.current.name == SplashScreenRoute.name) {
-      context.replaceRoute(
-        Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute(),
-      );
+      context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute());
     }
 
     if (Store.isBetaTimelineEnabled) {
@@ -85,11 +80,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Image(
-          image: AssetImage('assets/immich-logo.png'),
-          width: 80,
-          filterQuality: FilterQuality.high,
-        ),
+        child: Image(image: AssetImage('assets/immich-logo.png'), width: 80, filterQuality: FilterQuality.high),
       ),
     );
   }

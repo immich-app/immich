@@ -39,7 +39,8 @@ final class CustomImageCache implements ImageCache {
   /// Gets the cache for the given key
   /// [_large] is used for [ImmichLocalImageProvider] and [ImmichRemoteImageProvider]
   /// [_small] is used for [ImmichLocalThumbnailProvider] and [ImmichRemoteThumbnailProvider]
-  ImageCache _cacheForKey(Object key) => (key is ImmichLocalImageProvider ||
+  ImageCache _cacheForKey(Object key) =>
+      (key is ImmichLocalImageProvider ||
           key is ImmichRemoteImageProvider ||
           key is LocalFullImageProvider ||
           key is RemoteFullImageProvider)
@@ -73,8 +74,7 @@ final class CustomImageCache implements ImageCache {
     Object key,
     ImageStreamCompleter Function() loader, {
     ImageErrorListener? onError,
-  }) =>
-      _cacheForKey(key).putIfAbsent(key, loader, onError: onError);
+  }) => _cacheForKey(key).putIfAbsent(key, loader, onError: onError);
 
   @override
   ImageCacheStatus statusForKey(Object key) => _cacheForKey(key).statusForKey(key);

@@ -1,6 +1,5 @@
 import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
-import { APP_MEDIA_LOCATION } from 'src/constants';
 import { Exif } from 'src/database';
 import {
   AssetFileType,
@@ -205,19 +204,19 @@ describe(MediaService.name, () => {
         entityId: assetStub.image.id,
         pathType: AssetPathType.FullSize,
         oldPath: '/uploads/user-id/fullsize/path.webp',
-        newPath: expect.stringContaining('upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg'),
+        newPath: expect.stringContaining('/data/thumbs/user-id/as/se/asset-id-fullsize.jpeg'),
       });
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: assetStub.image.id,
         pathType: AssetPathType.Preview,
         oldPath: '/uploads/user-id/thumbs/path.jpg',
-        newPath: expect.stringContaining('upload/thumbs/user-id/as/se/asset-id-preview.jpeg'),
+        newPath: expect.stringContaining('/data/thumbs/user-id/as/se/asset-id-preview.jpeg'),
       });
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: assetStub.image.id,
         pathType: AssetPathType.Thumbnail,
         oldPath: '/uploads/user-id/webp/path.ext',
-        newPath: expect.stringContaining('upload/thumbs/user-id/as/se/asset-id-thumbnail.webp'),
+        newPath: expect.stringContaining('/data/thumbs/user-id/as/se/asset-id-thumbnail.webp'),
       });
       expect(mocks.move.create).toHaveBeenCalledTimes(3);
     });
@@ -486,8 +485,8 @@ describe(MediaService.name, () => {
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
-      const previewPath = APP_MEDIA_LOCATION + `/thumbs/user-id/as/se/asset-id-preview.${format}`;
-      const thumbnailPath = APP_MEDIA_LOCATION + `/thumbs/user-id/as/se/asset-id-thumbnail.webp`;
+      const previewPath = `/data/thumbs/user-id/as/se/asset-id-preview.${format}`;
+      const thumbnailPath = `/data/thumbs/user-id/as/se/asset-id-thumbnail.webp`;
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -531,8 +530,8 @@ describe(MediaService.name, () => {
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
-      const previewPath = expect.stringContaining(`upload/thumbs/user-id/as/se/asset-id-preview.jpeg`);
-      const thumbnailPath = expect.stringContaining(`upload/thumbs/user-id/as/se/asset-id-thumbnail.${format}`);
+      const previewPath = expect.stringContaining(`/data/thumbs/user-id/as/se/asset-id-preview.jpeg`);
+      const thumbnailPath = expect.stringContaining(`/data/thumbs/user-id/as/se/asset-id-thumbnail.${format}`);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -2895,7 +2894,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
-        APP_MEDIA_LOCATION + '/encoded-video/user-id/as/se/asset-id.mp4',
+        '/data/encoded-video/user-id/as/se/asset-id.mp4',
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:a copy']),

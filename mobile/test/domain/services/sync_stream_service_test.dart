@@ -54,40 +54,25 @@ void main() {
     when(() => mockSyncStreamRepo.deletePartnerV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateAssetsV1(any())).thenAnswer(successHandler);
     when(
-      () => mockSyncStreamRepo.updateAssetsV1(
-        any(),
-        debugLabel: any(named: 'debugLabel'),
-      ),
+      () => mockSyncStreamRepo.updateAssetsV1(any(), debugLabel: any(named: 'debugLabel')),
     ).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteAssetsV1(any())).thenAnswer(successHandler);
     when(
-      () => mockSyncStreamRepo.deleteAssetsV1(
-        any(),
-        debugLabel: any(named: 'debugLabel'),
-      ),
+      () => mockSyncStreamRepo.deleteAssetsV1(any(), debugLabel: any(named: 'debugLabel')),
     ).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateAssetsExifV1(any())).thenAnswer(successHandler);
     when(
-      () => mockSyncStreamRepo.updateAssetsExifV1(
-        any(),
-        debugLabel: any(named: 'debugLabel'),
-      ),
+      () => mockSyncStreamRepo.updateAssetsExifV1(any(), debugLabel: any(named: 'debugLabel')),
     ).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateMemoriesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteMemoriesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateMemoryAssetsV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteMemoryAssetsV1(any())).thenAnswer(successHandler);
     when(
-      () => mockSyncStreamRepo.updateStacksV1(
-        any(),
-        debugLabel: any(named: 'debugLabel'),
-      ),
+      () => mockSyncStreamRepo.updateStacksV1(any(), debugLabel: any(named: 'debugLabel')),
     ).thenAnswer(successHandler);
     when(
-      () => mockSyncStreamRepo.deleteStacksV1(
-        any(),
-        debugLabel: any(named: 'debugLabel'),
-      ),
+      () => mockSyncStreamRepo.deleteStacksV1(any(), debugLabel: any(named: 'debugLabel')),
     ).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateUserMetadatasV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteUserMetadatasV1(any())).thenAnswer(successHandler);
@@ -96,10 +81,7 @@ void main() {
     when(() => mockSyncStreamRepo.updateAssetFacesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteAssetFacesV1(any())).thenAnswer(successHandler);
 
-    sut = SyncStreamService(
-      syncApiRepository: mockSyncApiRepo,
-      syncStreamRepository: mockSyncStreamRepo,
-    );
+    sut = SyncStreamService(syncApiRepository: mockSyncApiRepo, syncStreamRepository: mockSyncStreamRepo);
   });
 
   Future<void> simulateEvents(List<SyncEvent> events) async {
@@ -108,38 +90,32 @@ void main() {
   }
 
   group("SyncStreamService - _handleEvents", () {
-    test(
-      "processes events and acks successfully when handlers succeed",
-      () async {
-        final events = [
-          SyncStreamStub.userDeleteV1,
-          SyncStreamStub.userV1Admin,
-          SyncStreamStub.userV1User,
-          SyncStreamStub.partnerDeleteV1,
-          SyncStreamStub.partnerV1,
-        ];
-
-        await simulateEvents(events);
-
-        verifyInOrder([
-          () => mockSyncStreamRepo.deleteUsersV1(any()),
-          () => mockSyncApiRepo.ack(["2"]),
-          () => mockSyncStreamRepo.updateUsersV1(any()),
-          () => mockSyncApiRepo.ack(["5"]),
-          () => mockSyncStreamRepo.deletePartnerV1(any()),
-          () => mockSyncApiRepo.ack(["4"]),
-          () => mockSyncStreamRepo.updatePartnerV1(any()),
-          () => mockSyncApiRepo.ack(["3"]),
-        ]);
-        verifyNever(() => mockAbortCallbackWrapper());
-      },
-    );
-
-    test("processes final batch correctly", () async {
+    test("processes events and acks successfully when handlers succeed", () async {
       final events = [
         SyncStreamStub.userDeleteV1,
         SyncStreamStub.userV1Admin,
+        SyncStreamStub.userV1User,
+        SyncStreamStub.partnerDeleteV1,
+        SyncStreamStub.partnerV1,
       ];
+
+      await simulateEvents(events);
+
+      verifyInOrder([
+        () => mockSyncStreamRepo.deleteUsersV1(any()),
+        () => mockSyncApiRepo.ack(["2"]),
+        () => mockSyncStreamRepo.updateUsersV1(any()),
+        () => mockSyncApiRepo.ack(["5"]),
+        () => mockSyncStreamRepo.deletePartnerV1(any()),
+        () => mockSyncApiRepo.ack(["4"]),
+        () => mockSyncStreamRepo.updatePartnerV1(any()),
+        () => mockSyncApiRepo.ack(["3"]),
+      ]);
+      verifyNever(() => mockAbortCallbackWrapper());
+    });
+
+    test("processes final batch correctly", () async {
+      final events = [SyncStreamStub.userDeleteV1, SyncStreamStub.userV1Admin];
 
       await simulateEvents(events);
 
@@ -174,11 +150,7 @@ void main() {
       );
       await sut.sync();
 
-      final events = [
-        SyncStreamStub.userDeleteV1,
-        SyncStreamStub.userV1Admin,
-        SyncStreamStub.partnerDeleteV1,
-      ];
+      final events = [SyncStreamStub.userDeleteV1, SyncStreamStub.userV1Admin, SyncStreamStub.partnerDeleteV1];
 
       when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer((_) async {
         when(() => cancellationChecker()).thenReturn(true);
@@ -195,50 +167,43 @@ void main() {
       verify(() => mockSyncApiRepo.ack(["2"])).called(1);
     });
 
-    test(
-      "aborts and stops processing if cancelled before processing batch",
-      () async {
-        final cancellationChecker = _MockCancellationWrapper();
-        when(() => cancellationChecker()).thenReturn(false);
+    test("aborts and stops processing if cancelled before processing batch", () async {
+      final cancellationChecker = _MockCancellationWrapper();
+      when(() => cancellationChecker()).thenReturn(false);
 
-        final processingCompleter = Completer<void>();
-        bool handler1Started = false;
-        when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer((_) async {
-          handler1Started = true;
-          return processingCompleter.future;
-        });
+      final processingCompleter = Completer<void>();
+      bool handler1Started = false;
+      when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer((_) async {
+        handler1Started = true;
+        return processingCompleter.future;
+      });
 
-        sut = SyncStreamService(
-          syncApiRepository: mockSyncApiRepo,
-          syncStreamRepository: mockSyncStreamRepo,
-          cancelChecker: cancellationChecker.call,
-        );
+      sut = SyncStreamService(
+        syncApiRepository: mockSyncApiRepo,
+        syncStreamRepository: mockSyncStreamRepo,
+        cancelChecker: cancellationChecker.call,
+      );
 
-        await sut.sync();
+      await sut.sync();
 
-        final events = [
-          SyncStreamStub.userDeleteV1,
-          SyncStreamStub.userV1Admin,
-          SyncStreamStub.partnerDeleteV1,
-        ];
+      final events = [SyncStreamStub.userDeleteV1, SyncStreamStub.userV1Admin, SyncStreamStub.partnerDeleteV1];
 
-        final processingFuture = handleEventsCallback(events, mockAbortCallbackWrapper.call);
-        await pumpEventQueue();
+      final processingFuture = handleEventsCallback(events, mockAbortCallbackWrapper.call);
+      await pumpEventQueue();
 
-        expect(handler1Started, isTrue);
+      expect(handler1Started, isTrue);
 
-        // Signal cancellation while handler 1 is waiting
-        when(() => cancellationChecker()).thenReturn(true);
-        await pumpEventQueue();
+      // Signal cancellation while handler 1 is waiting
+      when(() => cancellationChecker()).thenReturn(true);
+      await pumpEventQueue();
 
-        processingCompleter.complete();
-        await processingFuture;
+      processingCompleter.complete();
+      await processingFuture;
 
-        verifyNever(() => mockSyncStreamRepo.updateUsersV1(any()));
+      verifyNever(() => mockSyncStreamRepo.updateUsersV1(any()));
 
-        verify(() => mockSyncApiRepo.ack(["2"])).called(1);
-      },
-    );
+      verify(() => mockSyncApiRepo.ack(["2"])).called(1);
+    });
 
     test("processes memory sync events successfully", () async {
       final events = [
@@ -289,15 +254,9 @@ void main() {
     test("handles memory sync failure gracefully", () async {
       when(() => mockSyncStreamRepo.updateMemoriesV1(any())).thenThrow(Exception("Memory sync failed"));
 
-      final events = [
-        SyncStreamStub.memoryV1,
-        SyncStreamStub.userV1Admin,
-      ];
+      final events = [SyncStreamStub.memoryV1, SyncStreamStub.userV1Admin];
 
-      expect(
-        () async => await simulateEvents(events),
-        throwsA(isA<Exception>()),
-      );
+      expect(() async => await simulateEvents(events), throwsA(isA<Exception>()));
     });
 
     test("processes memory asset events with correct data types", () async {

@@ -3,12 +3,7 @@ import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 
-String getAltText(
-  ExifInfo? exifInfo,
-  DateTime fileCreatedAt,
-  AssetType type,
-  List<String> peopleNames,
-) {
+String getAltText(ExifInfo? exifInfo, DateTime fileCreatedAt, AssetType type, List<String> peopleNames) {
   if (exifInfo?.description != null && exifInfo!.description!.isNotEmpty) {
     return exifInfo.description!;
   }
@@ -41,14 +36,14 @@ String getAltText(
           1 => "image_alt_text_date_place_1_person",
           2 => "image_alt_text_date_place_2_people",
           3 => "image_alt_text_date_place_3_people",
-          _ => "image_alt_text_date_place_4_or_more_people"
+          _ => "image_alt_text_date_place_4_or_more_people",
         })
       : (switch (peopleNames.length) {
           0 => "image_alt_text_date",
           1 => "image_alt_text_date_1_person",
           2 => "image_alt_text_date_2_people",
           3 => "image_alt_text_date_3_people",
-          _ => "image_alt_text_date_4_or_more_people"
+          _ => "image_alt_text_date_4_or_more_people",
         });
   return (template, args);
 }

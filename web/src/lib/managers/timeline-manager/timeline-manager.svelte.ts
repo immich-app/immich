@@ -289,8 +289,8 @@ export class TimelineManager {
 
   async #initializeMonthGroups() {
     const timebuckets = await getTimeBuckets({
+      ...authManager.params,
       ...this.#options,
-      key: authManager.key,
     });
 
     this.months = timebuckets.map((timeBucket) => {
@@ -424,7 +424,7 @@ export class TimelineManager {
     if (monthGroup) {
       return monthGroup;
     }
-    const asset = toTimelineAsset(await getAssetInfo({ id, key: authManager.key }));
+    const asset = toTimelineAsset(await getAssetInfo({ ...authManager.params, id }));
     if (!asset || this.isExcluded(asset)) {
       return;
     }

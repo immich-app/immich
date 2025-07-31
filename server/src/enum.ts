@@ -17,12 +17,14 @@ export enum ImmichHeader {
   UserToken = 'x-immich-user-token',
   SessionToken = 'x-immich-session-token',
   SharedLinkKey = 'x-immich-share-key',
+  SharedLinkSlug = 'x-immich-share-slug',
   Checksum = 'x-immich-checksum',
   Cid = 'x-immich-cid',
 }
 
 export enum ImmichQuery {
   SharedLinkKey = 'key',
+  SharedLinkSlug = 'slug',
   ApiKey = 'apiKey',
   SessionKey = 'sessionKey',
 }
@@ -473,6 +475,8 @@ export enum DatabaseExtension {
 export enum BootstrapEventPriority {
   // Database service should be initialized before anything else, most other services need database access
   DatabaseService = -200,
+  // Detect and configure the media location before jobs are queued which may use it
+  StorageService = -195,
   // Other services may need to queue jobs on bootstrap.
   JobService = -190,
   // Initialise config after other bootstrap services, stop other services from using config on bootstrap

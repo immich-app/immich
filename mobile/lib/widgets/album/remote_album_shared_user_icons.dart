@@ -5,9 +5,7 @@ import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dar
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class RemoteAlbumSharedUserIcons extends ConsumerWidget {
-  const RemoteAlbumSharedUserIcons({
-    super.key,
-  });
+  const RemoteAlbumSharedUserIcons({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,12 +29,7 @@ class RemoteAlbumSharedUserIcons extends ConsumerWidget {
             itemBuilder: ((context, index) {
               return Padding(
                 padding: const EdgeInsets.only(right: 4.0),
-                child: UserCircleAvatar(
-                  user: sharedUsers[index],
-                  radius: 18,
-                  size: 36,
-                  hasBorder: true,
-                ),
+                child: UserCircleAvatar(user: sharedUsers[index], radius: 18, size: 36, hasBorder: true),
               );
             }),
             itemCount: sharedUsers.length,

@@ -18,12 +18,6 @@ class DriftStackRepository extends DriftDatabaseRepository {
 
 extension on StackEntityData {
   Stack toDto() {
-    return Stack(
-      id: id,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      ownerId: ownerId,
-      primaryAssetId: primaryAssetId,
-    );
+    return Stack(id: id, createdAt: createdAt, updatedAt: updatedAt, ownerId: ownerId, primaryAssetId: primaryAssetId);
   }
 }

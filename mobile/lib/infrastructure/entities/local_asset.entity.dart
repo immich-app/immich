@@ -22,17 +22,17 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
 extension LocalAssetEntityDataDomainEx on LocalAssetEntityData {
   LocalAsset toDto() => LocalAsset(
-        id: id,
-        name: name,
-        checksum: checksum,
-        type: type,
-        createdAt: createdAt,
-        updatedAt: updatedAt,
-        durationInSeconds: durationInSeconds,
-        isFavorite: isFavorite,
-        height: height,
-        width: width,
-        remoteId: null,
-        orientation: orientation,
-      );
+    id: id,
+    name: name,
+    checksum: checksum,
+    type: type,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
+    durationInSeconds: durationInSeconds,
+    isFavorite: isFavorite,
+    height: height,
+    width: width,
+    remoteId: null,
+    orientation: orientation,
+  );
 }

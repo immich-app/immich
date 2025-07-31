@@ -73,10 +73,7 @@ void main() {
     });
 
     test('Throws StoreKeyNotFoundException for nonexistent keys', () {
-      expect(
-        () => sut.get(StoreKey.currentUser),
-        throwsA(isA<StoreKeyNotFoundException>()),
-      );
+      expect(() => sut.get(StoreKey.currentUser), throwsA(isA<StoreKeyNotFoundException>()));
     });
 
     test('Returns the stored value for the given key or the defaultValue', () {
@@ -91,17 +88,13 @@ void main() {
 
     test('Skip insert when value is not modified', () async {
       await sut.put(StoreKey.accessToken, _kAccessToken);
-      verifyNever(
-        () => mockStoreRepo.insert<String>(StoreKey.accessToken, any()),
-      );
+      verifyNever(() => mockStoreRepo.insert<String>(StoreKey.accessToken, any()));
     });
 
     test('Insert value when modified', () async {
       final newAccessToken = _kAccessToken.toUpperCase();
       await sut.put(StoreKey.accessToken, newAccessToken);
-      verify(
-        () => mockStoreRepo.insert<String>(StoreKey.accessToken, newAccessToken),
-      ).called(1);
+      verify(() => mockStoreRepo.insert<String>(StoreKey.accessToken, newAccessToken)).called(1);
       expect(sut.tryGet(StoreKey.accessToken), newAccessToken);
     });
   });
@@ -120,12 +113,7 @@ void main() {
 
     test('Watches a specific key for changes', () async {
       final stream = sut.watch(StoreKey.accessToken);
-      final events = <String?>[
-        _kAccessToken,
-        _kAccessToken.toUpperCase(),
-        null,
-        _kAccessToken.toLowerCase(),
-      ];
+      final events = <String?>[_kAccessToken, _kAccessToken.toUpperCase(), null, _kAccessToken.toLowerCase()];
 
       expectLater(stream, emitsInOrder(events));
 

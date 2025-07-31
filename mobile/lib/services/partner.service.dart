@@ -20,11 +20,7 @@ class PartnerService {
   final IsarUserRepository _isarUserRepository;
   final Logger _log = Logger("PartnerService");
 
-  PartnerService(
-    this._partnerApiRepository,
-    this._isarUserRepository,
-    this._partnerRepository,
-  );
+  PartnerService(this._partnerApiRepository, this._isarUserRepository, this._partnerRepository);
 
   Future<List<UserDto>> getSharedWith() async {
     return _partnerRepository.getSharedWith();
@@ -64,15 +60,9 @@ class PartnerService {
     return false;
   }
 
-  Future<bool> updatePartner(
-    UserDto partner, {
-    required bool inTimeline,
-  }) async {
+  Future<bool> updatePartner(UserDto partner, {required bool inTimeline}) async {
     try {
-      final dto = await _partnerApiRepository.update(
-        partner.id,
-        inTimeline: inTimeline,
-      );
+      final dto = await _partnerApiRepository.update(partner.id, inTimeline: inTimeline);
       await _isarUserRepository.update(partner.copyWith(inTimeline: dto.inTimeline));
       return true;
     } catch (e) {
