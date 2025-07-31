@@ -22,6 +22,8 @@ import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.d
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
+import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/utils/diff.dart';
@@ -30,7 +32,7 @@ import 'package:logging/logging.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 13;
+const int targetVersion = 14;
 
 Future<void> migrateDatabaseIfNeeded(Isar db) async {
   final int version = Store.get(StoreKey.version, targetVersion);
@@ -56,6 +58,17 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
 
   if (version < 13) {
     await Store.put(StoreKey.photoManagerCustomFilter, true);
+  }
+
+  if (version < 14) {
+    final drift = Drift();
+    final query = drift.localAssetEntity.selectOnly()
+      ..addColumns([drift.localAssetEntity.id])
+      ..where(drift.localAssetEntity.cloudId.isNull());
+    final ids = await query.map((row) => row.read(drift.localAssetEntity.id)!).get();
+    final cloudMapping = await NativeSyncApi().getCloudIdForAssetIds(ids);
+    await DriftLocalAlbumRepository(drift).updateCloudMapping(cloudMapping);
+    await drift.close();
   }
 
   if (targetVersion >= 12) {

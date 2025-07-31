@@ -96,4 +96,6 @@ abstract class NativeSyncApi {
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<Uint8List?> hashPaths(List<String> paths);
+
+  Map<String, String?> getCloudIdForAssetIds(List<String> assetIds);
 }

@@ -260,6 +260,7 @@ interface NativeSyncApi {
   fun getAssetsCountSince(albumId: String, timestamp: Long): Long
   fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset>
   fun hashPaths(paths: List<String>): List<ByteArray?>
+  fun getCloudIdForAssetIds(assetIds: List<String>): Map<String, String?>
 
   companion object {
     /** The codec used by NativeSyncApi. */
@@ -409,6 +410,23 @@ interface NativeSyncApi {
             val pathsArg = args[0] as List<String>
             val wrapped: List<Any?> = try {
               listOf(api.hashPaths(pathsArg))
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val assetIdsArg = args[0] as List<String>
+            val wrapped: List<Any?> = try {
+              listOf(api.getCloudIdForAssetIds(assetIdsArg))
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }
