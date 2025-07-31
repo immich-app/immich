@@ -323,7 +323,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
 
             cursor.use {
               if (it.moveToFirst()) {
-                val path = it.getStringOrNull(it.getColumnIndex(MediaStore.MediaColumns.DATA))
+                val path = it.getString(it.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
                 if (!path.isNullOrBlank()) {
                   Log.i(TAG, "Scanning updated file: $path")
                   MediaScannerConnection.scanFile(context, arrayOf(path), null, null)
