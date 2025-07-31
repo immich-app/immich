@@ -40,5 +40,9 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     filterNewExternalAssetPaths: vitest.fn(),
     updateByLibraryId: vitest.fn(),
     getFileSamples: vitest.fn(),
+    getMetadata: vitest.fn(),
+    upsertMetadata: vitest.fn(),
+    getMetadataByKey: vitest.fn(),
+    deleteMetadataByKey: vitest.fn(),
   };
 };

@@ -18,7 +18,8 @@ type AuditTables =
   | 'stack_audit'
   | 'person_audit'
   | 'user_metadata_audit'
-  | 'asset_face_audit';
+  | 'asset_face_audit'
+  | 'asset_metadata_audit';
 type UpsertTables =
   | 'user'
   | 'partner'
@@ -31,7 +32,8 @@ type UpsertTables =
   | 'stack'
   | 'person'
   | 'user_metadata'
-  | 'asset_face';
+  | 'asset_face'
+  | 'asset_metadata';
 
 @Injectable()
 export class SyncRepository {
@@ -43,6 +45,7 @@ export class SyncRepository {
   asset: AssetSync;
   assetExif: AssetExifSync;
   assetFace: AssetFaceSync;
+  assetMetadata: AssetMetadataSync;
   authUser: AuthUserSync;
   memory: MemorySync;
   memoryToAsset: MemoryToAssetSync;
@@ -64,6 +67,7 @@ export class SyncRepository {
     this.asset = new AssetSync(this.db);
     this.assetExif = new AssetExifSync(this.db);
     this.assetFace = new AssetFaceSync(this.db);
+    this.assetMetadata = new AssetMetadataSync(this.db);
     this.authUser = new AuthUserSync(this.db);
     this.memory = new MemorySync(this.db);
     this.memoryToAsset = new MemoryToAssetSync(this.db);
@@ -729,6 +733,34 @@ class UserMetadataSync extends BaseSync {
       .select(['userId', 'key', 'value', 'updateId'])
       .where('userId', '=', userId)
       .$call(this.upsertTableFilters(ack))
+      .stream();
+  }
+}
+
+class AssetMetadataSync extends BaseSync {
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getDeletes(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('asset_metadata_audit')
+      .select(['asset_metadata_audit.id', 'assetId', 'key'])
+      .leftJoin('asset', 'asset.id', 'asset_metadata_audit.assetId')
+      .where('asset.ownerId', '=', userId)
+      .where('asset_metadata_audit.deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .$if(!!ack, (qb) => qb.where('asset_metadata_audit.id', '>', ack!.updateId))
+      .orderBy('asset_metadata_audit.id', 'asc')
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('asset_metadata')
+      .select(['assetId', 'key', 'value', 'asset_metadata.updateId'])
+      .innerJoin('asset', 'asset.id', 'asset_metadata.assetId')
+      .where('asset.ownerId', '=', userId)
+      .where('asset_metadata.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .$if(!!ack, (qb) => qb.where('asset_metadata.updateId', '>', ack!.updateId))
+      .orderBy('asset_metadata.updateId', 'asc')
       .stream();
   }
 }

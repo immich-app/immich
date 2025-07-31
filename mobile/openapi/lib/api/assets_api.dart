@@ -128,6 +128,56 @@ class AssetsApi {
     return null;
   }
 
+  /// This endpoint requires the `asset.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetMetadataKey] key (required):
+  Future<Response> deleteAssetMetadataWithHttpInfo(String id, AssetMetadataKey key,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/metadata/{key}'
+      .replaceAll('{id}', id)
+      .replaceAll('{key}', key.toString());
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `asset.update` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetMetadataKey] key (required):
+  Future<void> deleteAssetMetadata(String id, AssetMetadataKey key,) async {
+    final response = await deleteAssetMetadataWithHttpInfo(id, key,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// This endpoint requires the `asset.delete` permission.
   ///
   /// Note: This method returns the HTTP [Response].
@@ -363,6 +413,120 @@ class AssetsApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetResponseDto',) as AssetResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getAssetMetadataWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/metadata'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<List<AssetMetadataResponseDto>?> getAssetMetadata(String id,) async {
+    final response = await getAssetMetadataWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetMetadataResponseDto>') as List)
+        .cast<AssetMetadataResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetMetadataKey] key (required):
+  Future<Response> getAssetMetadataByKeyWithHttpInfo(String id, AssetMetadataKey key,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/metadata/{key}'
+      .replaceAll('{id}', id)
+      .replaceAll('{key}', key.toString());
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetMetadataKey] key (required):
+  Future<AssetMetadataResponseDto?> getAssetMetadataByKey(String id, AssetMetadataKey key,) async {
+    final response = await getAssetMetadataByKeyWithHttpInfo(id, key,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetMetadataResponseDto',) as AssetMetadataResponseDto;
     
     }
     return null;
@@ -801,6 +965,66 @@ class AssetsApi {
   ///
   /// Parameters:
   ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetMetadataUpsertDto] assetMetadataUpsertDto (required):
+  Future<Response> updateAssetMetadataWithHttpInfo(String id, AssetMetadataUpsertDto assetMetadataUpsertDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/metadata'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetMetadataUpsertDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `asset.update` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetMetadataUpsertDto] assetMetadataUpsertDto (required):
+  Future<List<AssetMetadataResponseDto>?> updateAssetMetadata(String id, AssetMetadataUpsertDto assetMetadataUpsertDto,) async {
+    final response = await updateAssetMetadataWithHttpInfo(id, assetMetadataUpsertDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetMetadataResponseDto>') as List)
+        .cast<AssetMetadataResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// This endpoint requires the `asset.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
   /// * [AssetBulkUpdateDto] assetBulkUpdateDto (required):
   Future<Response> updateAssetsWithHttpInfo(AssetBulkUpdateDto assetBulkUpdateDto,) async {
     // ignore: prefer_const_declarations
@@ -855,6 +1079,8 @@ class AssetsApi {
   ///
   /// * [DateTime] fileModifiedAt (required):
   ///
+  /// * [List<AssetMetadataUpsertItemDto>] metadata (required):
+  ///
   /// * [String] key:
   ///
   /// * [String] slug:
@@ -873,7 +1099,7 @@ class AssetsApi {
   /// * [MultipartFile] sidecarData:
   ///
   /// * [AssetVisibility] visibility:
-  Future<Response> uploadAssetWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
+  Future<Response> uploadAssetWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, List<AssetMetadataUpsertItemDto> metadata, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets';
 
@@ -936,6 +1162,10 @@ class AssetsApi {
       hasFields = true;
       mp.fields[r'livePhotoVideoId'] = parameterToString(livePhotoVideoId);
     }
+    if (metadata != null) {
+      hasFields = true;
+      mp.fields[r'metadata'] = parameterToString(metadata);
+    }
     if (sidecarData != null) {
       hasFields = true;
       mp.fields[r'sidecarData'] = sidecarData.field;
@@ -974,6 +1204,8 @@ class AssetsApi {
   ///
   /// * [DateTime] fileModifiedAt (required):
   ///
+  /// * [List<AssetMetadataUpsertItemDto>] metadata (required):
+  ///
   /// * [String] key:
   ///
   /// * [String] slug:
@@ -992,8 +1224,8 @@ class AssetsApi {
   /// * [MultipartFile] sidecarData:
   ///
   /// * [AssetVisibility] visibility:
-  Future<AssetMediaResponseDto?> uploadAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
-    final response = await uploadAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, slug: slug, xImmichChecksum: xImmichChecksum, duration: duration, filename: filename, isFavorite: isFavorite, livePhotoVideoId: livePhotoVideoId, sidecarData: sidecarData, visibility: visibility, );
+  Future<AssetMediaResponseDto?> uploadAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, List<AssetMetadataUpsertItemDto> metadata, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
+    final response = await uploadAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, metadata,  key: key, slug: slug, xImmichChecksum: xImmichChecksum, duration: duration, filename: filename, isFavorite: isFavorite, livePhotoVideoId: livePhotoVideoId, sidecarData: sidecarData, visibility: visibility, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

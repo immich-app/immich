@@ -2124,6 +2124,203 @@
         "description": "This endpoint requires the `asset.update` permission."
       }
     },
+    "/assets/{id}/metadata": {
+      "get": {
+        "operationId": "getAssetMetadata",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetMetadataResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.read",
+        "description": "This endpoint requires the `asset.read` permission."
+      },
+      "put": {
+        "operationId": "updateAssetMetadata",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetMetadataUpsertDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetMetadataResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.update",
+        "description": "This endpoint requires the `asset.update` permission."
+      }
+    },
+    "/assets/{id}/metadata/{key}": {
+      "delete": {
+        "operationId": "deleteAssetMetadata",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/AssetMetadataKey"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.update",
+        "description": "This endpoint requires the `asset.update` permission."
+      },
+      "get": {
+        "operationId": "getAssetMetadataByKey",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/AssetMetadataKey"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetMetadataResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.read",
+        "description": "This endpoint requires the `asset.read` permission."
+      }
+    },
     "/assets/{id}/original": {
       "get": {
         "operationId": "downloadAsset",
@@ -10445,6 +10642,12 @@
             "format": "uuid",
             "type": "string"
           },
+          "metadata": {
+            "items": {
+              "$ref": "#/components/schemas/AssetMetadataUpsertItemDto"
+            },
+            "type": "array"
+          },
           "sidecarData": {
             "format": "binary",
             "type": "string"
@@ -10462,7 +10665,8 @@
           "deviceAssetId",
           "deviceId",
           "fileCreatedAt",
-          "fileModifiedAt"
+          "fileModifiedAt",
+          "metadata"
         ],
         "type": "object"
       },
@@ -10536,6 +10740,69 @@
           "duplicate"
         ],
         "type": "string"
+      },
+      "AssetMetadataKey": {
+        "enum": [
+          "mobile-app"
+        ],
+        "type": "string"
+      },
+      "AssetMetadataResponseDto": {
+        "properties": {
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetMetadataKey"
+              }
+            ]
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "key",
+          "updatedAt",
+          "value"
+        ],
+        "type": "object"
+      },
+      "AssetMetadataUpsertDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AssetMetadataUpsertItemDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "AssetMetadataUpsertItemDto": {
+        "properties": {
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetMetadataKey"
+              }
+            ]
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object"
       },
       "AssetOrder": {
         "enum": [
@@ -14756,6 +15023,48 @@
         ],
         "type": "object"
       },
+      "SyncAssetMetadataDeleteV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetMetadataKey"
+              }
+            ]
+          }
+        },
+        "required": [
+          "assetId",
+          "key"
+        ],
+        "type": "object"
+      },
+      "SyncAssetMetadataV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetMetadataKey"
+              }
+            ]
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "assetId",
+          "key",
+          "value"
+        ],
+        "type": "object"
+      },
       "SyncAssetV1": {
         "properties": {
           "checksum": {
@@ -14926,6 +15235,8 @@
           "AssetV1",
           "AssetDeleteV1",
           "AssetExifV1",
+          "AssetMetadataV1",
+          "AssetMetadataDeleteV1",
           "PartnerV1",
           "PartnerDeleteV1",
           "PartnerAssetV1",
@@ -15183,6 +15494,7 @@
           "AlbumAssetExifsV1",
           "AssetsV1",
           "AssetExifsV1",
+          "AssetMetadataV1",
           "AuthUsersV1",
           "MemoriesV1",
           "MemoryToAssetsV1",

@@ -73,6 +73,7 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.PeopleV1,
   SyncRequestType.AssetFacesV1,
   SyncRequestType.UserMetadataV1,
+  SyncRequestType.AssetMetadataV1,
 ];
 
 const throwSessionRequired = () => {
@@ -146,6 +147,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.PartnersV1]: () => this.syncPartnersV1(response, checkpointMap, auth),
       [SyncRequestType.AssetsV1]: () => this.syncAssetsV1(response, checkpointMap, auth),
       [SyncRequestType.AssetExifsV1]: () => this.syncAssetExifsV1(response, checkpointMap, auth),
+      [SyncRequestType.AssetMetadataV1]: () => this.syncAssetMetadataV1(response, checkpointMap, auth),
       [SyncRequestType.PartnerAssetsV1]: () => this.syncPartnerAssetsV1(response, checkpointMap, auth, session.id),
       [SyncRequestType.PartnerAssetExifsV1]: () =>
         this.syncPartnerAssetExifsV1(response, checkpointMap, auth, session.id),
@@ -642,6 +644,22 @@ export class SyncService extends BaseService {
 
     const upsertType = SyncEntityType.UserMetadataV1;
     const upserts = this.syncRepository.userMetadata.getUpserts(auth.user.id, checkpointMap[upsertType]);
+
+    for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
+
+  private async syncAssetMetadataV1(response: Writable, checkpointMap: CheckpointMap, auth: AuthDto) {
+    const deleteType = SyncEntityType.AssetMetadataDeleteV1;
+    const deletes = this.syncRepository.assetMetadata.getDeletes(auth.user.id, checkpointMap[deleteType]);
+
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.AssetMetadataV1;
+    const upserts = this.syncRepository.assetMetadata.getUpserts(auth.user.id, checkpointMap[upsertType]);
 
     for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });

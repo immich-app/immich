@@ -447,6 +447,35 @@ where
 order by
   "asset_face"."updateId" asc
 
+-- SyncRepository.assetMetadata.getDeletes
+select
+  "asset_metadata_audit"."id",
+  "assetId",
+  "key"
+from
+  "asset_metadata_audit"
+  left join "asset" on "asset"."id" = "asset_metadata_audit"."assetId"
+where
+  "asset"."ownerId" = $1
+  and "asset_metadata_audit"."deletedAt" < now() - interval '1 millisecond'
+order by
+  "asset_metadata_audit"."id" asc
+
+-- SyncRepository.assetMetadata.getUpserts
+select
+  "assetId",
+  "key",
+  "value",
+  "asset_metadata"."updateId"
+from
+  "asset_metadata"
+  inner join "asset" on "asset"."id" = "asset_metadata"."assetId"
+where
+  "asset"."ownerId" = $1
+  and "asset_metadata"."updatedAt" < now() - interval '1 millisecond'
+order by
+  "asset_metadata"."updateId" asc
+
 -- SyncRepository.authUser.getUpserts
 select
   "id",
