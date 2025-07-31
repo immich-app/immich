@@ -5,9 +5,9 @@ import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/log.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
-class LogRepository extends DriftLoggerDatabaseRepository {
+class LogRepository {
   final DriftLogger _db;
-  const LogRepository(this._db) : super(_db);
+  const LogRepository(this._db);
 
   static LogRepository? instance;
 
