@@ -4,9 +4,9 @@
 
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { getAssetRatio } from '$lib/utils/asset-utils';
+import { JustifiedLayout as JustifiedLayoutJs } from '$lib/utils/justified-layout';
 import { isTimelineAsset } from '$lib/utils/timeline-util';
 import type { AssetResponseDto } from '@immich/sdk';
-import createJustifiedLayout from 'justified-layout';
 
 export type getJustifiedLayoutFromAssetsFunction = typeof getJustifiedLayoutFromAssets;
 
@@ -39,79 +39,32 @@ export function getJustifiedLayoutFromAssets(
 }
 
 // commented out until a solution for top level awaits on safari is fixed
-// function wasmJustifiedLayout(assets: AssetResponseDto[], options: LayoutOptions) {
+// function wasmJustifiedLayout(assets: (TimelineAsset | AssetResponseDto)[], options: LayoutOptions) {
 //   const aspectRatios = new Float32Array(assets.length);
 //   // eslint-disable-next-line unicorn/no-for-loop
 //   for (let i = 0; i < assets.length; i++) {
-//     const { width, height } = getAssetRatio(assets[i]);
-//     aspectRatios[i] = width / height;
+//     if (isTimelineAsset(assets[i])) {
+//       aspectRatios[i] = assets[i].ratio;
+//     } else {
+//       const { width, height } = getAssetRatio(assets[i]);
+//       aspectRatios[i] = width / height;
+//     }
 //   }
 //   return new JustifiedLayout(aspectRatios, options);
 // }
 
-type Geometry = ReturnType<typeof createJustifiedLayout>;
-class Adapter {
-  result;
-  width;
-  constructor(result: Geometry) {
-    this.result = result;
-    this.width = 0;
-    for (const box of this.result.boxes) {
-      if (box.top === 0) {
-        this.width = box.left + box.width;
-      } else {
-        break;
-      }
-    }
-  }
-
-  get containerWidth() {
-    return this.width;
-  }
-
-  get containerHeight() {
-    return this.result.containerHeight;
-  }
-
-  getTop(boxIdx: number) {
-    return this.result.boxes[boxIdx]?.top;
-  }
-
-  getLeft(boxIdx: number) {
-    return this.result.boxes[boxIdx]?.left;
-  }
-
-  getWidth(boxIdx: number) {
-    return this.result.boxes[boxIdx]?.width;
-  }
-
-  getHeight(boxIdx: number) {
-    return this.result.boxes[boxIdx]?.height;
-  }
-}
-
 export function justifiedLayout(assets: (TimelineAsset | AssetResponseDto)[], options: CommonLayoutOptions) {
-  const adapter = {
-    targetRowHeight: options.rowHeight,
-    containerWidth: options.rowWidth,
-    boxSpacing: options.spacing,
-    targetRowHeightTolerange: options.heightTolerance,
-    containerPadding: 0,
-  };
-
-  const result = createJustifiedLayout(
-    assets.map((asset) => (isTimelineAsset(asset) ? asset.ratio : getAssetRatio(asset))),
-    adapter,
+  return new JustifiedLayoutJs(
+    assets.map((asset) => {
+      if (isTimelineAsset(asset)) {
+        return asset.ratio;
+      }
+      const { width, height } = getAssetRatio(asset);
+      return width / height;
+    }),
+    options,
   );
-  return new Adapter(result);
 }
-
-export const emptyGeometry = () =>
-  new Adapter({
-    containerHeight: 0,
-    widowCount: 0,
-    boxes: [],
-  });
 
 export type CommonPosition = {
   top: number;
