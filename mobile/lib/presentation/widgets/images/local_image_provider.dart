@@ -12,11 +12,7 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
   final Size size;
   final DateTime? updatedAt;
 
-  const LocalThumbProvider({
-    required this.id,
-    required this.size,
-    this.updatedAt,
-  });
+  const LocalThumbProvider({required this.id, required this.size, this.updatedAt});
 
   @override
   Future<LocalThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -24,10 +20,7 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    LocalThumbProvider key,
-    ImageDecoderCallback decode,
-  ) {
+  ImageStreamCompleter loadImage(LocalThumbProvider key, ImageDecoderCallback decode) {
     return OneFrameImageStreamCompleter(
       _codec(key),
       informationCollector: () => <DiagnosticsNode>[
@@ -71,10 +64,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    LocalFullImageProvider key,
-    ImageDecoderCallback decode,
-  ) {
+  ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
     return OneFrameImageStreamCompleter(_codec(key));
   }
 

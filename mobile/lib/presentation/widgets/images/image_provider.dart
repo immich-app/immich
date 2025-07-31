@@ -32,10 +32,7 @@ ImageProvider getThumbnailImageProvider({
   String? remoteId,
   Size size = const Size.square(kTimelineThumbnailSize),
 }) {
-  assert(
-    asset != null || remoteId != null,
-    'Either asset or remoteId must be provided',
-  );
+  assert(asset != null || remoteId != null, 'Either asset or remoteId must be provided');
 
   if (remoteId != null) {
     return RemoteThumbProvider(assetId: remoteId);

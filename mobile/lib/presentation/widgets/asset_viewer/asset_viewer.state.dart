@@ -93,10 +93,7 @@ class AssetViewerStateNotifier extends AutoDisposeNotifier<AssetViewerState> {
     if (showing == state.showingBottomSheet) {
       return;
     }
-    state = state.copyWith(
-      showingBottomSheet: showing,
-      showingControls: showing || state.showingControls,
-    );
+    state = state.copyWith(showingBottomSheet: showing, showingControls: showing || state.showingControls);
     if (showing) {
       ref.read(videoPlayerControlsProvider.notifier).pause();
     }

@@ -147,11 +147,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Precache both thumbnail and full image for smooth transitions
     unawaited(
       Future.wait([
-        precacheImage(
-          getThumbnailImageProvider(asset: asset),
-          context,
-          onError: (_, __) {},
-        ),
+        precacheImage(getThumbnailImageProvider(asset: asset), context, onError: (_, __) {}),
         precacheImage(getFullImageProvider(asset, size: screenSize), context, onError: (_, __) {}),
       ]),
     );
@@ -481,10 +477,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       width: double.infinity,
       height: double.infinity,
       color: backgroundColor,
-      child: Thumbnail.fromBaseAsset(
-        asset: asset,
-        fit: BoxFit.contain,
-      ),
+      child: Thumbnail.fromBaseAsset(asset: asset, fit: BoxFit.contain),
     );
   }
 
@@ -534,10 +527,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         width: ctx.width,
         height: ctx.height,
         color: backgroundColor,
-        child: Thumbnail.fromBaseAsset(
-          asset: asset,
-          fit: BoxFit.contain,
-        ),
+        child: Thumbnail.fromBaseAsset(asset: asset, fit: BoxFit.contain),
       ),
     );
   }

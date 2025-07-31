@@ -36,11 +36,7 @@ class AssetMediaRepository {
     }
   }
 
-  Future<Uint8List?> getThumbnail(
-    String id, {
-    int quality = 80,
-    ui.Size size = const ui.Size.square(256),
-  }) =>
+  Future<Uint8List?> getThumbnail(String id, {int quality = 80, ui.Size size = const ui.Size.square(256)}) =>
       AssetEntity(
         id: id,
         // The below fields are not used in thumbnailDataWithSize but are required
@@ -49,8 +45,5 @@ class AssetMediaRepository {
         typeInt: AssetType.image.index,
         width: size.width.toInt(),
         height: size.height.toInt(),
-      ).thumbnailDataWithSize(
-        ThumbnailSize(size.width.toInt(), size.height.toInt()),
-        quality: quality,
-      );
+      ).thumbnailDataWithSize(ThumbnailSize(size.width.toInt(), size.height.toInt()), quality: quality);
 }

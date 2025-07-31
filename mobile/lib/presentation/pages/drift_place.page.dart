@@ -164,9 +164,7 @@ class _PlaceTile extends StatelessWidget {
       onTap: () => context.pushRoute(DriftPlaceDetailRoute(place: place.$1)),
       title: Text(place.$1, style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
       leading: ClipRRect(
-        borderRadius: const BorderRadius.all(
-          Radius.circular(20),
-        ),
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
         child: Thumbnail(
           imageProvider: RemoteThumbProvider(assetId: place.$2),
           size: const Size(80, 80),
