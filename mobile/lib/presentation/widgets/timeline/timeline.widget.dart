@@ -29,7 +29,7 @@ class Timeline extends StatelessWidget {
     this.topSliverWidgetHeight,
     this.showStorageIndicator = false,
     this.withStack = false,
-    this.appBar,
+    this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
     this.bottomSheet = const GeneralBottomSheet(),
     this.groupBy,
   });
@@ -170,10 +170,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
           final double appBarExpandedHeight = widget.appBar != null && widget.appBar is MesmerizingSliverAppBar
               ? 200
               : 0;
-          final topPadding = context.padding.top + (widget.appBar == null ? kToolbarHeight : kToolbarHeight) + 10;
+          final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
 
           const scrubberBottomPadding = 100.0;
-          final bottomPadding = context.padding.bottom + scrubberBottomPadding;
+          final bottomPadding = context.padding.bottom + (widget.appBar == null ? 0 : scrubberBottomPadding);
 
           return PrimaryScrollController(
             controller: _scrollController,
@@ -189,10 +189,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                     primary: true,
                     cacheExtent: maxHeight * 2,
                     slivers: [
-                      if (isSelectionMode)
-                        const SelectionSliverAppBar()
-                      else
-                        widget.appBar ?? const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
+                      if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
                       if (widget.topSliverWidget != null) widget.topSliverWidget!,
                       _SliverSegmentedList(
                         segments: segments,
