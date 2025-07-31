@@ -141,12 +141,14 @@ class DriftLogger extends $DriftLogger implements IDatabaseRepository {
 
   @override
   int get schemaVersion => 1;
-}
-
-class DriftLoggerDatabaseRepository implements IDatabaseRepository {
-  final DriftLogger _db;
-  const DriftLoggerDatabaseRepository(this._db);
 
   @override
-  Future<T> transaction<T>(Future<T> Function() callback) => _db.transaction(callback);
+  MigrationStrategy get migration => MigrationStrategy(
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+      await customStatement('PRAGMA synchronous = NORMAL');
+      await customStatement('PRAGMA journal_mode = WAL');
+      await customStatement('PRAGMA busy_timeout = 500');
+    },
+  );
 }

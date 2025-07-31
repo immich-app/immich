@@ -31,9 +31,7 @@ class LogRepository extends DriftLoggerDatabaseRepository {
   Future<List<LogMessage>> getAll() async {
     final query = _db.logMessageEntity.select()..orderBy([(row) => OrderingTerm.desc(row.createdAt)]);
 
-    return query.map((log) {
-      return log.toDto();
-    }).get();
+    return query.map((log) => log.toDto()).get();
   }
 
   LogMessageEntityCompanion _toEntityCompanion(LogMessage log) {

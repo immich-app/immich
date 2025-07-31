@@ -109,6 +109,7 @@ class LogService {
   }
 
   Future<void> flush() {
+    _flushTimer?.cancel();
     return _flushBuffer();
   }
 
