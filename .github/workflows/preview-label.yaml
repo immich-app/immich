@@ -33,7 +33,7 @@ jobs:
               repo: context.repo.repo,
               name: 'preview'
             })
-      
+
       - uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2.8.2
         with:
           message-id: 'preview-status'
