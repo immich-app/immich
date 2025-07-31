@@ -202,6 +202,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
   @override
   Widget build(BuildContext context) {
+    print("Building RemoteAlbumPage for album: ${widget.album.name}");
     return ProviderScope(
       overrides: [
         timelineServiceProvider.overrideWith((ref) {
