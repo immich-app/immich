@@ -84,7 +84,11 @@ void main() {
     when(() => mockSyncStreamRepo.updateAssetFacesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteAssetFacesV1(any())).thenAnswer(successHandler);
 
-    sut = SyncStreamService(syncApiRepository: mockSyncApiRepo, syncStreamRepository: mockSyncStreamRepo, assetService: mockAssetService);
+    sut = SyncStreamService(
+      syncApiRepository: mockSyncApiRepo,
+      syncStreamRepository: mockSyncStreamRepo,
+      assetService: mockAssetService,
+    );
   });
 
   Future<void> simulateEvents(List<SyncEvent> events) async {
