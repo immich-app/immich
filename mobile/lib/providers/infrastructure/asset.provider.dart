@@ -5,9 +5,8 @@ import 'package:immich_mobile/infrastructure/repositories/remote_asset.repositor
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
+import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:logging/logging.dart';
-
-import '../../repositories/local_files_manager.repository.dart';
 
 final localAssetRepository = Provider<DriftLocalAssetRepository>(
   (ref) => DriftLocalAssetRepository(ref.watch(driftProvider)),

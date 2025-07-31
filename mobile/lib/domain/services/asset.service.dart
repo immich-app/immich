@@ -2,13 +2,12 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
+import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
-
-import '../../infrastructure/repositories/storage.repository.dart';
-import '../../repositories/local_files_manager.repository.dart';
 
 class AssetService {
   final AppSettingsService _appSettingsService;
