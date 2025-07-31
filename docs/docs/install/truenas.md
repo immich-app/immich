@@ -35,75 +35,45 @@ You may also configure environment variables at any time after deploying the app
 
 ### Setting up Storage Datasets
 
-<Tabs groupId="truenas-storage-tabs">
-  <TabItem value="truenas-new-storage" label="New Storage Configuration" default>
+Before beginning app installation, [create the datasets](https://www.truenas.com/docs/scale/scaletutorials/storage/datasets/datasetsscale/) to use in the **Storage Configuration** section during installation.
 
-    Before beginning app installation, [create the datasets](https://www.truenas.com/docs/scale/scaletutorials/storage/datasets/datasetsscale/) to use in the **Storage Configuration** section during installation.
+In TrueNAS, Immich requires 2 datasets for the application to function correctly: `data` and `pgData`. You can set the datasets to any names to match your naming conventions or preferences.
+You can organise these as one parent with two child datasets, for example `/mnt/tank/immich/data` and `/mnt/tank/immich/pgData`.
 
-    In TrueNAS, Immich requires 2 datasets for the application to function correctly: `data` and `pgData`. You can set the datasets to any names to match your naming conventions or preferences.
-    You can organise these as one parent with two child datasets, for example `/mnt/tank/immich/data` and `/mnt/tank/immich/pgData`.
+<img
+src={require('./img/truenas/truenas12.webp').default}
+width="30%"
+alt="Immich App Widget"
+className="border rounded-xl"
+/>
 
-    <img
-    src={require('./img/truenas/truenas12.webp').default}
-    width="30%"
-    alt="Immich App Widget"
-    className="border rounded-xl"
-    />
+:::info Datasets Permissions
 
-    :::info Datasets Permissions
+The **pgData** dataset must be owned by the user `netdata` (UID 999) for Postgres to start.
 
-    The **pgData** dataset must be owned by the user `netdata` (UID 999) for Postgres to start.
+The `data` dataset must have given the **_modify_** permission to the user who will run Immich.
 
-    The `data` dataset must have given the ***modify*** permission to the user who will run Immich.
+Since TrueNAS Community Edition 24.10.2.2 and later, Immich can be run as any user and group, the default user being `apps` (UID 568) and the default group being `apps` (GID 568). This user, either `apps` or another user you choose, must have **_modify_** permissions on the **data** dataset.
 
-    Since TrueNAS Community Edition 24.10.2.2 and later, Immich can be run as any user and group, the default user being `apps` (UID 568) and the default group being `apps` (GID 568). This user, either `apps` or another user you choose, must have ***modify*** permissions on the **data** dataset.
+For an easy setup:
 
-    For an easy setup:
-      - Select `Dataset Preset` **Apps** instead of **Generic** when creating the `data` dataset. This will automatically give the correct permissions to the dataset. If you want to use another user for Immich, you can keep the **Generic** preset, but you will need to give the ***modify*** permission to that other user.
-      - For the `pgData` dataset, you can keep the default preset **Generic** as permissions can be set during the installation of the Immich app (See [Storage Configuration](#storage-configuration) section).
-    :::
+- Select `Dataset Preset` **Apps** instead of **Generic** when creating the `data` dataset. This will automatically give the correct permissions to the dataset. If you want to use another user for Immich, you can keep the **Generic** preset, but you will need to give the **_modify_** permission to that other user.
+- For the `pgData` dataset, you can keep the default preset **Generic** as permissions can be set during the installation of the Immich app (See [Storage Configuration](#storage-configuration) section).
+  :::
 
-    :::tip
-    To improve performance, Immich recommends using SSDs for the database. If you have a pool made of SSDs, you can create the `pgData` dataset on that pool.
+:::tip
+To improve performance, Immich recommends using SSDs for the database. If you have a pool made of SSDs, you can create the `pgData` dataset on that pool.
 
-    Thumbnails can also be stored on the SSDs for faster access. This is an advanced option and not required for Immich to run. More information on how you can use multiple datasets to manage Immich storage in a finer-grained manner can be found in the [Advanced: Multiple Datasets for Immich Storage](#advanced-multiple-datasets-for-immich-storage) section below.
-    :::
+Thumbnails can also be stored on the SSDs for faster access. This is an advanced option and not required for Immich to run. More information on how you can use multiple datasets to manage Immich storage in a finer-grained manner can be found in the [Advanced: Multiple Datasets for Immich Storage](#advanced-multiple-datasets-for-immich-storage) section below.
+:::
 
-    :::warning
-    If you just created the datasets using the **Apps** preset, you can skip this warning section.
+:::warning
+If you just created the datasets using the **Apps** preset, you can skip this warning section.
 
-    If the **data** dataset uses ACL it must have [ACL mode](https://www.truenas.com/docs/scale/scaletutorials/datasets/permissionsscale/) set to `Passthrough` if you plan on using a [storage template](/docs/administration/storage-template.mdx) and the dataset is configured for network sharing (its ACL type is set to `SMB/NFSv4`). When the template is applied and files need to be moved from **upload** to **library** (internal folder created by Immich within the **data** dataset), Immich performs `chmod` internally and must be allowed to execute the command. [More info.](https://github.com/immich-app/immich/pull/13017)
+If the **data** dataset uses ACL it must have [ACL mode](https://www.truenas.com/docs/scale/scaletutorials/datasets/permissionsscale/) set to `Passthrough` if you plan on using a [storage template](/docs/administration/storage-template.mdx) and the dataset is configured for network sharing (its ACL type is set to `SMB/NFSv4`). When the template is applied and files need to be moved from **upload** to **library** (internal folder created by Immich within the **data** dataset), Immich performs `chmod` internally and must be allowed to execute the command. [More info.](https://github.com/immich-app/immich/pull/13017)
 
-    To change or verify the ACL mode, go to the **Datasets** screen, select the **library** dataset, click on the **Edit** button next to **Dataset Details**, then click on the ** Advanced Options** tab, scroll down to the **ACL Mode** section, and select `Passthrough` from the dropdown menu. Click **Save** to apply the changes. If the option is greyed out, set the **ACL Type** to `SMB/NFSv4` first, then you can change the **ACL Mode** to `Passthrough`.
-    :::
-
-  </TabItem>
-
-  <TabItem value="truenas-old-storage" label="Old Storage Configuration (Will be deprecated)">
-    :::danger Legacy Storage Configuration
-    New installations of Immich on TrueNAS Community Edition can't use the old storage configuration anymore. This section is kept for legacy purposes only.
-    As it will be deprecated in the future, users are encouraged to migrate to the new storage configuration. For more information, see the [Migrating from Old Storage Configuration](#migrating-from-old-storage-configuration) section below.
-    :::
-
-    Before beginning app installation, [create the datasets](https://www.truenas.com/docs/scale/scaletutorials/storage/datasets/datasetsscale/) to use in the **Storage Configuration** section during installation.
-    Immich requires seven datasets: `library`, `upload`, `thumbs`, `profile`, `video`, `backups`, and `pgData`.
-    You can organise these as one parent with seven child datasets, for example `/mnt/tank/immich/library`, `/mnt/tank/immich/upload`, and so on.
-
-    <img
-    src={require('./img/truenas/truenas12.webp').default}
-    width="30%"
-    alt="Immich App Widget"
-    className="border rounded-xl"
-    />
-
-    :::info Permissions
-    The **pgData** dataset must be owned by the user `netdata` (UID 999) for postgres to start. The other datasets must be owned by the user `root` (UID 0) or a group that includes the user `root` (UID 0) for immich to have the necessary permissions.
-
-    If the **library** dataset uses ACL it must have [ACL mode](https://www.truenas.com/docs/core/coretutorials/storage/pools/permissions/#access-control-lists) set to `Passthrough` if you plan on using a [storage template](/docs/administration/storage-template.mdx) and the dataset is configured for network sharing (its ACL type is set to `SMB/NFSv4`). When the template is applied and files need to be moved from **upload** to **library**, Immich performs `chmod` internally and needs to be allowed to execute the command. [More info.](https://github.com/immich-app/immich/pull/13017)
-    :::
-
-  </TabItem>
-</Tabs>
+To change or verify the ACL mode, go to the **Datasets** screen, select the **library** dataset, click on the **Edit** button next to **Dataset Details**, then click on the ** Advanced Options** tab, scroll down to the **ACL Mode** section, and select `Passthrough` from the dropdown menu. Click **Save** to apply the changes. If the option is greyed out, set the **ACL Type** to `SMB/NFSv4` first, then you can change the **ACL Mode** to `Passthrough`.
+:::
 
 ## Installing the Immich Application
 
@@ -134,7 +104,7 @@ className="border rounded-xl"
 </div>
 
 Application configuration settings are presented in several sections, each explained below.
-To find specific fields, click in the **Search Input Fields** search field, scroll down to a particular section or click on the section heading on the navigation area in the upper-right corner.
+To find specific fields, click in the **Search Input Fields** search field, scroll down to a particular section, or click on the section heading on the navigation area in the upper-right corner.
 
 ### Application Name and Version
 
@@ -149,9 +119,7 @@ className="border rounded-xl mb-4"
 Keep the default value or enter a name in the **Application Name** field.  
 Change it if you’re deploying a second instance.
 
-**_Version_**  
-Keep the default version number in **Version**.  
-When a new version becomes available, an update badge appears, and the **Installed Applications** screen shows a button to update it.
+**_Version_** Immich version within TrueNAS catalog (Different from Immich release version).
 
 ### Immich Configuration
 
@@ -163,7 +131,6 @@ className="border rounded-xl mb-4"
 />
 
 The **Timezone** is set to the system default, which usually matches your local timezone. You can change it to another timezone if you prefer.
-**Timezone** is only used by the Immich `exiftool` microservice if it cannot be determined from the image metadata.
 
 **Enable Machine Learning** is enabled by default. It allows Immich to use machine learning features such as face recognition, image search, and smart duplicate detection. Untick this option if you do not want to use these features.
 
@@ -184,7 +151,7 @@ Keep the **Log Level** to the default `Log` value.
 
 Leave **Hugging Face Endpoint** blank. (This is used to download ML models from a different source.)
 
-**Database Storage Type** set it to the type of storage (**HDD** or **SSD**) the pool, where the **pgData** dataset is located, uses.
+Set **Database Storage Type** to the type of storage (**HDD** or **SSD**) that the pool where the **pgData** dataset is located uses.
 
 **Additional Environment Variables** can be left blank.
 
@@ -194,14 +161,13 @@ Leave **Hugging Face Endpoint** blank. (This is used to download ML models from 
 Environment Variables can be set by clicking the **Add** button and filling in the **Name** and **Value** fields.
 
 <img
-src={require('./img/truenas/truenas11.webp').default}
+src={require('./img/truenas/truenas06.webp').default}
 width="40%"
 alt="Environment Variables"
 className="border rounded-xl"
 />
 
-They are used to add custom configuration options or to enable specific features. As an example, if enough RAM can be reserved for Immich at all time on your system, and that machine learning is enabled, it is possible to add the environment variable: `MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL` to keep the CLIP model in memory for faster load on the first request.
-
+They are used to add custom configuration options or to enable specific features.
 More information on available environment variables can be found in the **[Environment Variables documentation](/docs/install/environment-variables/)**.
 
 :::info
@@ -215,7 +181,7 @@ Some examples are: `IMMICH_VERSION`, `UPLOAD_LOCATION`, `DB_DATA_LOCATION`, `TZ`
 ### Network Configuration
 
 <img
-src={require('./img/truenas/truenas06.webp').default}
+src={require('./img/truenas/truenas07.webp').default}
 width="40%"
 alt="Networking Settings"
 className="border rounded-xl"
@@ -227,63 +193,30 @@ className="border rounded-xl"
 
 - **Host IPs**: Leave the default blank value.
 
-:::note Advanced Users
-**Host IPs** feature can be used to bind one or multiple IP addresses of the TrueNAS system to an App. Lawrence Systems' tutorial on [How To Assign Per-App IPs in TrueNAS](https://www.youtube.com/watch?v=P6WrEp64qzg&) explains how to use this feature.
-:::
-
 ### Storage Configuration
 
 :::danger Default Settings (Not recommended)
 The default setting for datasets is **ixVolume (dataset created automatically by the system)**. This is not recommended as this results in your data being harder to access manually and can result in data loss if you delete the immich app. It is also harder to manage snapshots and replication tasks. It is recommended to use the **Host Path (Path that already exists on the system)** option instead.
 :::
 
-<Tabs groupId="truenas-storage-tabs">
-  <TabItem value="truenas-new-storage" label="New Storage Configuration" default>
+The storage configuration section allows you to set up the storage locations for Immich data. You can select the datasets created in the previous step.
 
-    The storage configuration section allows you to set up the storage locations for Immich data. You can select the datasets created in the previous step.
+For the Data Storage, select **Host Path (Path that already exists on the system)** and then select the dataset you created for Immich data storage, for example, `data`.
 
-    For the Data Storage, select **Host Path (Path that already exists on the system)** and then select the dataset you created for Immich data storage, for example, `data`.
+The Machine Learning cache can be left with default _Temporary_
 
-    The Machine Learning cache can be left with default *Temporary*
+For the Postgres Data Storage, select **Host Path (Path that already exists on the system)** and then select the dataset you created for Postgres data storage, for example, `pgData`.
 
-    For the Postgres Data Storage, select **Host Path (Path that already exists on the system)** and then select the dataset you created for Postgres data storage, for example, `pgData`.
+<img
+src={require('./img/truenas/truenas08.webp').default}
+width="50%"
+alt="Configure Storage Volumes"
+className="border rounded-xl"
+/>
 
-    <img
-    src={require('./img/truenas/truenas13.webp').default}
-    width="50%"
-    alt="Configure Storage ixVolumes"
-    className="border rounded-xl"
-    />
-
-    :::info
-    **Postgres Data Storage** once **Host Path** is selected, a checkbox appears with ***Automatic Permissions***, if you have not set the ownership of the **pgData** dataset to `netdata` (UID 999), tick this box as it will set the user ownership to `netdata` (UID 999) and the group ownership to `docker` (GID 999) automatically. If you have set the ownership of the **pgData** dataset to `netdata` (UID 999), you can leave this box unticked.
-    :::
-
-  </TabItem>
-  <TabItem value="truenas-old-storage" label="Old Storage Configuration (Will be deprecated)">
-    Immich requires seven storage datasets.
-
-    <img
-    src={require('./img/truenas/truenas07.webp').default}
-    width="20%"
-    alt="Configure Storage ixVolumes"
-    className="border rounded-xl"
-    />
-
-    For each Storage option select **Host Path (Path that already exists on the system)** and then select the matching dataset [created before installing the app](#setting-up-storage-datasets): **Immich Library Storage**: `library`, **Immich Uploads Storage**: `upload`, **Immich Thumbs Storage**: `thumbs`, **Immich Profile Storage**: `profile`, **Immich Video Storage**: `video`, **Immich Backups Storage**: `backups`, **Postgres Data Storage**: `pgData`.
-
-    <img
-    src={require('./img/truenas/truenas08.webp').default}
-    width="40%"
-    alt="Configure Storage Host Paths"
-    className="border rounded-xl"
-    />
-    The image above has example values.
-
-        <br/>
-
-  </TabItem>
-</Tabs>
+:::info
+**Postgres Data Storage**
+Once **Host Path** is selected, a checkbox appears with **_Automatic Permissions_**. If you have not set the ownership of the **pgData** dataset to `netdata` (UID 999), tick this box as it will set the user ownership to `netdata` (UID 999) and the group ownership to `docker` (GID 999) automatically. If you have set the ownership of the **pgData** dataset to `netdata` (UID 999), you can leave this box unticked.
 
 ### Additional Storage (Advanced Users)
 
@@ -297,7 +230,7 @@ This feature should only be used by advanced users. If this is your first time i
 :::
 
 <img
-src={require('./img/truenas/truenas10.webp').default}
+src={require('./img/truenas/truenas09.webp').default}
 width="40%"
 alt="Add External Libraries with Additional Storage"
 className="border rounded-xl"
@@ -306,7 +239,7 @@ className="border rounded-xl"
 You may configure [External Libraries](/docs/features/libraries) by mounting them using **Additional Storage**.
 
 The dataset that contains your external library files must at least give **read** access to the user running Immich (Default: `apps` (UID 568), `apps` (GID 568)).
-If you want to be able to delete files from the external library using Immich, you will need to give the **modify** permission to the user running Immich.
+If you want to be able to delete files or edit metadata in the external library using Immich, you will need to give the **modify** permission to the user running Immich.
 
 - **Mount Path** is the location you will need to copy and paste into the External Library settings within Immich.
 - **Host Path** is the location on the TrueNAS Community Edition server where your external library is located.
@@ -350,7 +283,7 @@ To mount these datasets:
 
 Below is an example of how to set up the additional storage for the `thumbs` dataset:
 <img
-src={require('./img/truenas/truenas14.webp').default}
+src={require('./img/truenas/truenas10.webp').default}
 width="40%"
 alt="Use Multiple Datasets for Immich Storage with Additional Storage"
 className="border rounded-xl"
@@ -363,13 +296,12 @@ className="border rounded-xl"
 ### Resources Configuration
 
 <img
-src={require('./img/truenas/truenas09.webp').default}
+src={require('./img/truenas/truenas11.webp').default}
 width="40%"
-alt="Resource Limits"
 className="border rounded-xl"
 />
 
-- **CPU**: Depending on your system resources, you can keep the default value of `2` threads or specify a different number. Increasing this value can improve performance, Immich recommends `4` cores. System with Multi-/Hyper-threading have 2 threads per core (TrueNAS Dashboard shows the number of threads, so you can use that to determine how many threads you have available).
+- **CPU**: Depending on your system resources, you can keep the default value of `2` threads or specify a different number. Immich recommends at least `8` threads.
 
 - **Memory**: Limit in MB of RAM. Immich recommends at least 6000 MB (6GB). If you selected **Enable Machine Learning** in **Immich Configuration**, you should probably set this above 8000 MB.
 
@@ -429,16 +361,13 @@ To update the app to the latest version:
 
 ## Migration
 
-<details>
-<summary>Migrating from Old Storage Configuration</summary>
-
 ## Migrating from Old Storage Configuration
 
 :::note Old TrueNAS Versions Permissions
 If you were using an older version of TrueNAS (before 24.10.2.2), the datasets, except the one for **pgData** had only to be owned by the `root` user (UID 0). You might have to add the **modify** permission to the `apps` user (UID 568) or the user you want to run Immich as, to all of them, except **pgData**. The steps to add or change ACL permissions are described in the [TrueNAS documentation](https://www.truenas.com/docs/scale/scaletutorials/datasets/permissionsscale/).
 :::
 
-It exists two ways to migrate from the old storage configuration to the new one, depending on whether you want to keep the old datasets or not.
+There are two ways to migrate from the old storage configuration to the new one, depending on whether you want to keep the old datasets or not.
 
 <Tabs groupId="truenas-migration-tabs">
   <TabItem value="migrate-new-dataset" label="Migrate data to a new dataset" default>
@@ -461,7 +390,7 @@ To migrate from the old storage configuration to the new one, you will need to c
    Make sure to replace `/mnt/tank/immich/` with the correct path to your old datasets and `/mnt/tank/immich/data/` with the correct path to your new dataset.
 
    :::warning
-   Make sure that for each folder, the .immich file is copied as well, as it contains important metadata for Immich. If for some reason the .immich file is not copied, you can copy it manually with the rscync command, for example:
+   Make sure that for each folder, the .immich file is copied as well, as it contains important metadata for Immich. If for some reason the .immich file is not copied, you can copy it manually with the rsync command, for example:
 
    ```bash
     rsync -av /mnt/tank/immich/library/.immich /mnt/tank/immich/data/library/
@@ -511,5 +440,3 @@ If everything went well, you should now be able to access Immich with the new st
 
   </TabItem>
 </Tabs>
-
-</details>
