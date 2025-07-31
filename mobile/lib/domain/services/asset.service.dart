@@ -101,12 +101,12 @@ class AssetService {
     return _localAssetRepository.getHashedCount();
   }
 
-  Future<void> handleRemoteTrashChanges(Iterable<({String checksum, DateTime? deletedAt})> syncData) async {
+  Future<void> handleRemoteTrashChanges(Iterable<({String checksum, DateTime? deletedAt})> syncItems) async {
     if (_platform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid)) {
-      final trashedItems = syncData.where((item) => item.deletedAt != null);
+      final trashedItems = syncItems.where((item) => item.deletedAt != null);
 
       if (trashedItems.isNotEmpty) {
-        final trashedAssetsChecksums = trashedItems.map((syncAsset) => syncAsset.checksum);
+        final trashedAssetsChecksums = trashedItems.map((syncItem) => syncItem.checksum);
         final localAssetsToTrash = await _localAssetRepository.getAssetsByChecksums(trashedAssetsChecksums);
         if (localAssetsToTrash.isNotEmpty) {
           final mediaUrls = await Future.wait(
@@ -118,9 +118,9 @@ class AssetService {
           await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
         }
       }
-      final modifiedItems = syncData.where((e) => e.deletedAt == null);
+      final modifiedItems = syncItems.where((e) => e.deletedAt == null);
       if (modifiedItems.isNotEmpty) {
-        final modifiedChecksums = modifiedItems.map((syncAsset) => syncAsset.checksum);
+        final modifiedChecksums = modifiedItems.map((syncItem) => syncItem.checksum);
         final remoteAssetsToRestore = await _remoteAssetRepository.getAssetsByChecksums(
           modifiedChecksums,
           isTrashed: true,
