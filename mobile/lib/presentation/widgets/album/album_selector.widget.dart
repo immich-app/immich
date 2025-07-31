@@ -444,7 +444,11 @@ class _AlbumList extends ConsumerWidget {
               leading: album.thumbnailAssetId != null
                   ? ClipRRect(
                       borderRadius: const BorderRadius.all(Radius.circular(15)),
-                      child: SizedBox(width: 80, height: 80, child: Thumbnail(imageProvider: RemoteThumbProvider(assetId: album.thumbnailAssetId!))),
+                      child: SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: Thumbnail(imageProvider: RemoteThumbProvider(assetId: album.thumbnailAssetId!)),
+                      ),
                     )
                   : SizedBox(
                       width: 80,

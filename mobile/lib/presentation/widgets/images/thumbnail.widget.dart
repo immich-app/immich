@@ -41,8 +41,8 @@ class Thumbnail extends StatefulWidget {
     this.size = const ui.Size.square(kTimelineThumbnailSize),
     this.thumbhashMode = ThumbhashMode.enabled,
     super.key,
-  })  : blurhash = asset.thumbhash,
-        imageProvider = _getImageProviderFromAsset(asset, size);
+  }) : blurhash = asset.thumbhash,
+       imageProvider = _getImageProviderFromAsset(asset, size);
 
   Thumbnail.fromBaseAsset({
     required BaseAsset? asset,
@@ -50,11 +50,11 @@ class Thumbnail extends StatefulWidget {
     this.size = const ui.Size.square(kTimelineThumbnailSize),
     this.thumbhashMode = ThumbhashMode.enabled,
     super.key,
-  })  : blurhash = switch (asset) {
-          RemoteAsset() => asset.thumbHash,
-          _ => null,
-        },
-        imageProvider = _getImageProviderFromBaseAsset(asset, size);
+  }) : blurhash = switch (asset) {
+         RemoteAsset() => asset.thumbHash,
+         _ => null,
+       },
+       imageProvider = _getImageProviderFromBaseAsset(asset, size);
 
   static ImageProvider? _getImageProviderFromAsset(Asset asset, ui.Size size) {
     if (asset.localId != null) {
@@ -65,10 +65,7 @@ class Thumbnail extends StatefulWidget {
     return null;
   }
 
-  static ImageProvider? _getImageProviderFromBaseAsset(
-    BaseAsset? asset,
-    ui.Size size,
-  ) {
+  static ImageProvider? _getImageProviderFromBaseAsset(BaseAsset? asset, ui.Size size) {
     switch (asset) {
       case RemoteAsset():
         if (asset.localId != null) {
@@ -217,19 +214,12 @@ class _ThumbnailState extends State<Thumbnail> {
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     final gradient = _gradientCache[colorScheme] ??= LinearGradient(
-      colors: [
-        colorScheme.surfaceContainer,
-        colorScheme.surfaceContainer.darken(amount: .1),
-      ],
+      colors: [colorScheme.surfaceContainer, colorScheme.surfaceContainer.darken(amount: .1)],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
     );
 
-    return _ThumbnailLeaf(
-      image: _providerImage,
-      fit: widget.fit,
-      placeholderGradient: gradient,
-    );
+    return _ThumbnailLeaf(image: _providerImage, fit: widget.fit, placeholderGradient: gradient);
   }
 
   @override
@@ -245,26 +235,15 @@ class _ThumbnailLeaf extends LeafRenderObjectWidget {
   final BoxFit fit;
   final Gradient placeholderGradient;
 
-  const _ThumbnailLeaf({
-    required this.image,
-    required this.fit,
-    required this.placeholderGradient,
-  });
+  const _ThumbnailLeaf({required this.image, required this.fit, required this.placeholderGradient});
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _ThumbnailRenderBox(
-      image: image,
-      fit: fit,
-      placeholderGradient: placeholderGradient,
-    );
+    return _ThumbnailRenderBox(image: image, fit: fit, placeholderGradient: placeholderGradient);
   }
 
   @override
-  void updateRenderObject(
-    BuildContext context,
-    _ThumbnailRenderBox renderObject,
-  ) {
+  void updateRenderObject(BuildContext context, _ThumbnailRenderBox renderObject) {
     renderObject.fit = fit;
     renderObject.image = image;
     renderObject.placeholderGradient = placeholderGradient;
@@ -285,14 +264,11 @@ class _ThumbnailRenderBox extends RenderBox {
   @override
   bool isRepaintBoundary = true;
 
-  _ThumbnailRenderBox({
-    required ui.Image? image,
-    required BoxFit fit,
-    required Gradient placeholderGradient,
-  })  : _image = image,
-        _fit = fit,
-        _placeholderGradient = placeholderGradient,
-        _lastImageRequest = DateTime.now();
+  _ThumbnailRenderBox({required ui.Image? image, required BoxFit fit, required Gradient placeholderGradient})
+    : _image = image,
+      _fit = fit,
+      _placeholderGradient = placeholderGradient,
+      _lastImageRequest = DateTime.now();
 
   @override
   void paint(PaintingContext context, Offset offset) {
