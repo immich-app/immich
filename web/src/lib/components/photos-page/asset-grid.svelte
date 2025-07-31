@@ -26,12 +26,7 @@
   import { searchStore } from '$lib/stores/search.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
-  import {
-    deleteAssets,
-    refreshStackedAssetInTimeline,
-    updateStackedAssetInTimeline,
-    updateUnstackedAssetInTimeline,
-  } from '$lib/utils/actions';
+  import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import {
@@ -421,7 +416,7 @@
   const onStackAssets = async () => {
     const result = await stackAssets(assetInteraction.selectedAssets);
 
-    timelineManager.stackAssets(result);//updateStackedAssetInTimeline(timelineManager, result);
+    timelineManager.stackAssets(result); //updateStackedAssetInTimeline(timelineManager, result);
 
     onEscape();
   };
@@ -525,18 +520,18 @@
       }
 
       case AssetAction.UNSTACK: {
-        timelineManager.unstackAssets(action.assets);//updateUnstackedAssetInTimeline(timelineManager, action.assets);
+        timelineManager.unstackAssets(action.assets);
         break;
       }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
         timelineManager.addAssets([toTimelineAsset(action.asset)]);
         if (action.stack) {
-          timelineManager.refreshStack(action.stack)//refreshStackedAssetInTimeline(timelineManager, action.stack);
+          timelineManager.refreshStack(action.stack);
         }
         break;
       }
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
-        timelineManager.refreshStack(action.stack, true);//refreshStackedAssetInTimeline(timelineManager, action.stack, true);
+        timelineManager.refreshStack(action.stack, true);
         break;
       }
     }

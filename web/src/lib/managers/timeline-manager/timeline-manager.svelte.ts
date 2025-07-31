@@ -546,6 +546,13 @@ export class TimelineManager {
     return this.#options.order ?? AssetOrder.Desc;
   }
 
+  /**
+   * Update the asset stack state in the asset store based on the provided stack response.
+   * This function updates the stack information so that the icon is shown for the primary asset
+   * and removes any assets from the timeline that are marked for deletion.
+   *
+   * @param {StackResponse} stackResponse - The stack response containing the stack and assets to delete.
+   */
   stackAssets({ stack, toDeleteIds }: StackResponse) {
     if (stack) {
       this.updateAssetOperation([stack.primaryAssetId], (asset) => {
@@ -560,6 +567,14 @@ export class TimelineManager {
     }
   }
 
+  /**
+   * Update the timeline manager to reflect the unstacked state of assets.
+   * This function updates the stack property of each asset to undefined, effectively unstacking them.
+   * It also adds the unstacked assets back to the timeline manager.
+   *
+   * @param timelineManager - The timeline manager to update.
+   * @param assets - The array of asset response DTOs to update in the timeline manager.
+   */
   unstackAssets(assets: TimelineAsset[]) {
     this.updateAssetOperation(
       assets.map(({ id }) => id),
