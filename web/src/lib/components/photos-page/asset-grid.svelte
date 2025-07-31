@@ -416,7 +416,7 @@
   const onStackAssets = async () => {
     const result = await stackAssets(assetInteraction.selectedAssets);
 
-    timelineManager.stackAssets(result); //updateStackedAssetInTimeline(timelineManager, result);
+    timelineManager.stackAssets(result);
 
     onEscape();
   };
