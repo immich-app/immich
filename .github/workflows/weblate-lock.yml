@@ -38,7 +38,7 @@ jobs:
             exit 1
           fi
       - name: Find Pull Request
-        uses: juliangruber/find-pull-request-action@48b6133aa6c826f267ebd33aa2d29470f9d9e7d0 # v1.9.0
+        uses: juliangruber/find-pull-request-action@952b3bb1ddb2dcc0aa3479e98bb1c2d1a922f096 # v1.10.0
         id: find-pr
         with:
           branch: chore/translations
@@ -52,6 +52,6 @@ jobs:
     permissions: {}
     if: always()
     steps:
-      - uses: immich-app/devtools/actions/success-check@6b81b1572e466f7f48ba3c823159ce3f4a4d66a6 # success-check-action-0.0.3
+      - uses: immich-app/devtools/actions/success-check@68f10eb389bb02a3cf9d1156111964c549eb421b # 0.0.4
         with:
           needs: ${{ toJSON(needs) }}

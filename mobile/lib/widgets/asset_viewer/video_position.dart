@@ -17,12 +17,8 @@ class VideoPosition extends HookConsumerWidget {
     final isCasting = ref.watch(castProvider).isCasting;
 
     final (position, duration) = isCasting
-        ? ref.watch(
-            castProvider.select((c) => (c.currentTime, c.duration)),
-          )
-        : ref.watch(
-            videoPlaybackValueProvider.select((v) => (v.position, v.duration)),
-          );
+        ? ref.watch(castProvider.select((c) => (c.currentTime, c.duration)))
+        : ref.watch(videoPlaybackValueProvider.select((v) => (v.position, v.duration)));
 
     final wasPlaying = useRef<bool>(true);
     return duration == Duration.zero
@@ -34,28 +30,21 @@ class VideoPosition extends HookConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    FormattedDuration(position),
-                    FormattedDuration(duration),
-                  ],
+                  children: [FormattedDuration(position), FormattedDuration(duration)],
                 ),
               ),
               Row(
                 children: [
                   Expanded(
                     child: Slider(
-                      value: min(
-                        position.inMicroseconds / duration.inMicroseconds * 100,
-                        100,
-                      ),
+                      value: min(position.inMicroseconds / duration.inMicroseconds * 100, 100),
                       min: 0,
                       max: 100,
                       thumbColor: Colors.white,
                       activeColor: Colors.white,
                       inactiveColor: whiteOpacity75,
                       onChangeStart: (value) {
-                        final state =
-                            ref.read(videoPlaybackValueProvider).state;
+                        final state = ref.read(videoPlaybackValueProvider).state;
                         wasPlaying.value = state != VideoPlaybackState.paused;
                         ref.read(videoPlayerControlsProvider.notifier).pause();
                       },
@@ -68,19 +57,14 @@ class VideoPosition extends HookConsumerWidget {
                         final seekToDuration = (duration * (value / 100.0));
 
                         if (isCasting) {
-                          ref
-                              .read(castProvider.notifier)
-                              .seekTo(seekToDuration);
+                          ref.read(castProvider.notifier).seekTo(seekToDuration);
                           return;
                         }
 
-                        ref
-                            .read(videoPlayerControlsProvider.notifier)
-                            .position = seekToDuration.inSeconds.toDouble();
+                        ref.read(videoPlayerControlsProvider.notifier).position = seekToDuration.inSeconds.toDouble();
 
                         // This immediately updates the slider position without waiting for the video to update
-                        ref.read(videoPlaybackValueProvider.notifier).position =
-                            seekToDuration;
+                        ref.read(videoPlaybackValueProvider.notifier).position = seekToDuration;
                       },
                     ),
                   ),
@@ -104,10 +88,7 @@ class _VideoPositionPlaceholder extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 12.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              FormattedDuration(Duration.zero),
-              FormattedDuration(Duration.zero),
-            ],
+            children: [FormattedDuration(Duration.zero), FormattedDuration(Duration.zero)],
           ),
         ),
         Row(

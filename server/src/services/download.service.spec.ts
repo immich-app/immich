@@ -1,10 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
+import { Readable } from 'node:stream';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { DownloadService } from 'src/services/download.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
-import { Readable } from 'typeorm/platform/PlatformTools.js';
 import { vitest } from 'vitest';
 
 const downloadResponse: DownloadResponseDto = {
@@ -46,7 +46,11 @@ describe(DownloadService.name, () => {
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledTimes(1);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(
+        1,
+        expect.stringContaining('/data/library/IMG_123.jpg'),
+        'IMG_123.jpg',
+      );
     });
 
     it('should log a warning if the original path could not be resolved', async () => {
@@ -70,8 +74,8 @@ describe(DownloadService.name, () => {
 
       expect(mocks.logger.warn).toHaveBeenCalledTimes(2);
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_456.jpg', 'IMG_456.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/IMG_456.jpg', 'IMG_456.jpg');
     });
 
     it('should download an archive', async () => {
@@ -93,8 +97,8 @@ describe(DownloadService.name, () => {
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_456.jpg', 'IMG_456.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/IMG_456.jpg', 'IMG_456.jpg');
     });
 
     it('should handle duplicate file names', async () => {
@@ -116,8 +120,8 @@ describe(DownloadService.name, () => {
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_123.jpg', 'IMG_123+1.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/IMG_123.jpg', 'IMG_123+1.jpg');
     });
 
     it('should be deterministic', async () => {
@@ -139,8 +143,8 @@ describe(DownloadService.name, () => {
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_123.jpg', 'IMG_123+1.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/IMG_123.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/IMG_123.jpg', 'IMG_123+1.jpg');
     });
 
     it('should resolve symlinks', async () => {
@@ -279,9 +283,15 @@ describe(DownloadService.name, () => {
       mocks.downloadRepository.downloadAssetIds.mockReturnValue(
         makeStream([{ id: 'asset-1', livePhotoVideoId: 'asset-3', size: 5000 }]),
       );
+
       mocks.downloadRepository.downloadMotionAssetIds.mockReturnValue(
         makeStream([
-          { id: 'asset-2', livePhotoVideoId: null, size: 23_456, originalPath: 'upload/encoded-video/uuid-MP.mp4' },
+          {
+            id: 'asset-2',
+            livePhotoVideoId: null,
+            size: 23_456,
+            originalPath: '/data/encoded-video/uuid-MP.mp4',
+          },
         ]),
       );
 

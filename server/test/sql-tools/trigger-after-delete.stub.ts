@@ -14,14 +14,15 @@ const test_fn = registerFunction({
 })
 export class Table1 {}
 
-export const description = 'should create a trigger ';
+export const description = 'should create a trigger';
 export const schema: DatabaseSchema = {
-  name: 'postgres',
+  databaseName: 'postgres',
   schemaName: 'public',
   functions: [expect.any(Object)],
   enums: [],
   extensions: [],
   parameters: [],
+  overrides: [],
   tables: [
     {
       name: 'table1',

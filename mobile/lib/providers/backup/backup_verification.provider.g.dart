@@ -13,14 +13,14 @@ String _$backupVerificationHash() =>
 @ProviderFor(BackupVerification)
 final backupVerificationProvider =
     AutoDisposeNotifierProvider<BackupVerification, bool>.internal(
-  BackupVerification.new,
-  name: r'backupVerificationProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$backupVerificationHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      BackupVerification.new,
+      name: r'backupVerificationProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$backupVerificationHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$BackupVerification = AutoDisposeNotifier<bool>;
 // ignore_for_file: type=lint

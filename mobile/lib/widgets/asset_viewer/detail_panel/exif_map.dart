@@ -9,12 +9,9 @@ import 'package:url_launcher/url_launcher.dart';
 class ExifMap extends StatelessWidget {
   final ExifInfo exifInfo;
   final String? markerId;
+  final MapCreatedCallback? onMapCreated;
 
-  const ExifMap({
-    super.key,
-    required this.exifInfo,
-    this.markerId = 'marker',
-  });
+  const ExifMap({super.key, required this.exifInfo, this.markerId = 'marker', this.onMapCreated});
 
   @override
   Widget build(BuildContext context) {
@@ -33,20 +30,13 @@ class ExifMap extends StatelessWidget {
         Uri uri = Uri(
           scheme: 'geo',
           host: '$latitude,$longitude',
-          queryParameters: {
-            'z': '$zoomLevel',
-            'q': '$latitude,$longitude',
-          },
+          queryParameters: {'z': '$zoomLevel', 'q': '$latitude,$longitude'},
         );
         if (await canLaunchUrl(uri)) {
           return uri;
         }
       } else if (Platform.isIOS) {
-        var params = {
-          'll': '$latitude,$longitude',
-          'q': '$latitude,$longitude',
-          'z': '$zoomLevel',
-        };
+        var params = {'ll': '$latitude,$longitude', 'q': '$latitude,$longitude', 'z': '$zoomLevel'};
         Uri uri = Uri.https('maps.apple.com', '/', params);
         if (await canLaunchUrl(uri)) {
           return uri;
@@ -64,10 +54,7 @@ class ExifMap extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         return MapThumbnail(
-          centre: LatLng(
-            exifInfo.latitude ?? 0,
-            exifInfo.longitude ?? 0,
-          ),
+          centre: LatLng(exifInfo.latitude ?? 0, exifInfo.longitude ?? 0),
           height: 150,
           width: constraints.maxWidth,
           zoom: 12.0,
@@ -82,6 +69,7 @@ class ExifMap extends StatelessWidget {
             debugPrint('Opening Map Uri: $uri');
             launchUrl(uri);
           },
+          onCreated: onMapCreated,
         );
       },
     );

@@ -19,28 +19,20 @@ class AlbumPreviewPage extends HookConsumerWidget {
     final assets = useState<List<Asset>>([]);
 
     getAssetsInAlbum() async {
-      assets.value = await ref
-          .read(albumMediaRepositoryProvider)
-          .getAssets(album.localId!);
+      assets.value = await ref.read(albumMediaRepositoryProvider).getAssets(album.localId!);
     }
 
-    useEffect(
-      () {
-        getAssetsInAlbum();
-        return null;
-      },
-      [],
-    );
+    useEffect(() {
+      getAssetsInAlbum();
+      return null;
+    }, []);
 
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
         title: Column(
           children: [
-            Text(
-              album.name,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ),
+            Text(album.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
             Padding(
               padding: const EdgeInsets.only(top: 4.0),
               child: Text(
@@ -54,10 +46,7 @@ class AlbumPreviewPage extends HookConsumerWidget {
             ),
           ],
         ),
-        leading: IconButton(
-          onPressed: () => context.maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-        ),
+        leading: IconButton(onPressed: () => context.maybePop(), icon: const Icon(Icons.arrow_back_ios_new_rounded)),
       ),
       body: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -67,11 +56,7 @@ class AlbumPreviewPage extends HookConsumerWidget {
         ),
         itemCount: assets.value.length,
         itemBuilder: (context, index) {
-          return ImmichThumbnail(
-            asset: assets.value[index],
-            width: 100,
-            height: 100,
-          );
+          return ImmichThumbnail(asset: assets.value[index], width: 100, height: 100);
         },
       ),
     );

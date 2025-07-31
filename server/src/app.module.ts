@@ -5,7 +5,7 @@ import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
-import { commands } from 'src/commands';
+import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
 import { ImmichWorker } from 'src/enum';
@@ -73,11 +73,11 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
     );
 
     this.eventRepository.setup({ services });
-    await this.eventRepository.emit('app.bootstrap');
+    await this.eventRepository.emit('AppBootstrap');
   }
 
   async onModuleDestroy() {
-    await this.eventRepository.emit('app.shutdown');
+    await this.eventRepository.emit('AppShutdown');
     await teardownTelemetry();
   }
 }
@@ -85,19 +85,19 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
 @Module({
   imports: [...imports, ScheduleModule.forRoot()],
   controllers: [...controllers],
-  providers: [...common, ...middleware, { provide: IWorker, useValue: ImmichWorker.API }],
+  providers: [...common, ...middleware, { provide: IWorker, useValue: ImmichWorker.Api }],
 })
 export class ApiModule extends BaseModule {}
 
 @Module({
   imports: [...imports],
-  providers: [...common, { provide: IWorker, useValue: ImmichWorker.MICROSERVICES }, SchedulerRegistry],
+  providers: [...common, { provide: IWorker, useValue: ImmichWorker.Microservices }, SchedulerRegistry],
 })
 export class MicroservicesModule extends BaseModule {}
 
 @Module({
   imports: [...imports],
-  providers: [...common, ...commands, SchedulerRegistry],
+  providers: [...common, ...commandsAndQuestions, SchedulerRegistry],
 })
 export class ImmichAdminModule implements OnModuleDestroy {
   constructor(private service: CliService) {}

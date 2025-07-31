@@ -5,54 +5,67 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
-final multiSelectProvider =
-    NotifierProvider<MultiSelectNotifier, MultiSelectState>(
+final multiSelectProvider = NotifierProvider<MultiSelectNotifier, MultiSelectState>(
   MultiSelectNotifier.new,
   dependencies: [timelineServiceProvider],
 );
 
 class MultiSelectState {
   final Set<BaseAsset> selectedAssets;
+  final Set<BaseAsset> lockedSelectionAssets;
+  final bool forceEnable;
 
-  MultiSelectState({
-    required this.selectedAssets,
-  });
+  const MultiSelectState({required this.selectedAssets, required this.lockedSelectionAssets, this.forceEnable = false});
 
   bool get isEnabled => selectedAssets.isNotEmpty;
 
+  /// Cloud only
+  bool get hasRemote =>
+      selectedAssets.any((asset) => asset.storage == AssetState.remote || asset.storage == AssetState.merged);
+
+  bool get hasLocal => selectedAssets.any((asset) => asset.storage == AssetState.local);
+
+  bool get hasMerged => selectedAssets.any((asset) => asset.storage == AssetState.merged);
+
   MultiSelectState copyWith({
     Set<BaseAsset>? selectedAssets,
+    Set<BaseAsset>? lockedSelectionAssets,
+    bool? forceEnable,
   }) {
     return MultiSelectState(
       selectedAssets: selectedAssets ?? this.selectedAssets,
+      lockedSelectionAssets: lockedSelectionAssets ?? this.lockedSelectionAssets,
+      forceEnable: forceEnable ?? this.forceEnable,
     );
   }
 
   @override
-  String toString() => 'MultiSelectState(selectedAssets: $selectedAssets)';
+  String toString() =>
+      'MultiSelectState(selectedAssets: $selectedAssets, lockedSelectionAssets: $lockedSelectionAssets, forceEnable: $forceEnable)';
 
   @override
   bool operator ==(covariant MultiSelectState other) {
     if (identical(this, other)) return true;
-    final listEquals = const DeepCollectionEquality().equals;
+    final setEquals = const DeepCollectionEquality().equals;
 
-    return listEquals(other.selectedAssets, selectedAssets);
+    return setEquals(other.selectedAssets, selectedAssets) &&
+        setEquals(other.lockedSelectionAssets, lockedSelectionAssets) &&
+        other.forceEnable == forceEnable;
   }
 
   @override
-  int get hashCode => selectedAssets.hashCode;
+  int get hashCode => selectedAssets.hashCode ^ lockedSelectionAssets.hashCode ^ forceEnable.hashCode;
 }
 
 class MultiSelectNotifier extends Notifier<MultiSelectState> {
-  late final TimelineService _timelineService;
+  MultiSelectNotifier([this._defaultState]);
+  final MultiSelectState? _defaultState;
+
+  TimelineService get _timelineService => ref.read(timelineServiceProvider);
 
   @override
   MultiSelectState build() {
-    _timelineService = ref.read(timelineServiceProvider);
-
-    return MultiSelectState(
-      selectedAssets: {},
-    );
+    return _defaultState ?? const MultiSelectState(selectedAssets: {}, lockedSelectionAssets: {}, forceEnable: false);
   }
 
   void selectAsset(BaseAsset asset) {
@@ -60,9 +73,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
       return;
     }
 
-    state = state.copyWith(
-      selectedAssets: {...state.selectedAssets, asset},
-    );
+    state = state.copyWith(selectedAssets: {...state.selectedAssets, asset});
   }
 
   void deselectAsset(BaseAsset asset) {
@@ -70,9 +81,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
       return;
     }
 
-    state = state.copyWith(
-      selectedAssets: state.selectedAssets.where((a) => a != asset).toSet(),
-    );
+    state = state.copyWith(selectedAssets: state.selectedAssets.where((a) => a != asset).toSet());
   }
 
   void toggleAssetSelection(BaseAsset asset) {
@@ -83,6 +92,10 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     }
   }
 
+  void reset() {
+    state = const MultiSelectState(selectedAssets: {}, lockedSelectionAssets: {}, forceEnable: false);
+  }
+
   /// Bucket bulk operations
   void selectBucket(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
@@ -90,9 +103,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
 
     selectedAssets.addAll(assets);
 
-    state = state.copyWith(
-      selectedAssets: selectedAssets,
-    );
+    state = state.copyWith(selectedAssets: selectedAssets);
   }
 
   void deselectBucket(int offset, int bucketCount) async {
@@ -113,8 +124,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     if (bucketAssets.isEmpty) return;
 
     // Check if all assets in this bucket are currently selected
-    final allSelected =
-        bucketAssets.every((asset) => state.selectedAssets.contains(asset));
+    final allSelected = bucketAssets.every((asset) => state.selectedAssets.contains(asset));
 
     final selectedAssets = state.selectedAssets.toSet();
 
@@ -128,17 +138,17 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
 
     state = state.copyWith(selectedAssets: selectedAssets);
   }
+
+  void setLockedSelectionAssets(Set<BaseAsset> assets) {
+    state = state.copyWith(lockedSelectionAssets: assets);
+  }
 }
 
-final bucketSelectionProvider = Provider.family<bool, List<BaseAsset>>(
-  (ref, bucketAssets) {
-    final selectedAssets =
-        ref.watch(multiSelectProvider.select((s) => s.selectedAssets));
+final bucketSelectionProvider = Provider.family<bool, List<BaseAsset>>((ref, bucketAssets) {
+  final selectedAssets = ref.watch(multiSelectProvider.select((s) => s.selectedAssets));
 
-    if (bucketAssets.isEmpty) return false;
+  if (bucketAssets.isEmpty) return false;
 
-    // Check if all assets in the bucket are selected
-    return bucketAssets.every((asset) => selectedAssets.contains(asset));
-  },
-  dependencies: [multiSelectProvider],
-);
+  // Check if all assets in the bucket are selected
+  return bucketAssets.every((asset) => selectedAssets.contains(asset));
+}, dependencies: [multiSelectProvider, timelineServiceProvider]);

@@ -25,9 +25,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
             context.maybePop(true);
           },
           splashRadius: 24,
-          icon: const Icon(
-            Icons.arrow_back_ios_rounded,
-          ),
+          icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
       ),
       body: ListView.builder(
@@ -37,17 +35,13 @@ class FailedBackupStatusPage extends HookConsumerWidget {
           var errorAsset = errorBackupList.elementAt(index);
 
           return Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12.0,
-              vertical: 4,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
             child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15), // if you need this
-                side: const BorderSide(
-                  color: Colors.black12,
-                  width: 1,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(15), // if you need this
                 ),
+                side: BorderSide(color: Colors.black12, width: 1),
               ),
               elevation: 0,
               child: Row(
@@ -55,12 +49,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minWidth: 100,
-                      minHeight: 100,
-                      maxWidth: 100,
-                      maxHeight: 150,
-                    ),
+                    constraints: const BoxConstraints(minWidth: 100, minHeight: 100, maxWidth: 100, maxHeight: 150),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(15),
@@ -69,11 +58,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                       clipBehavior: Clip.hardEdge,
                       child: Image(
                         fit: BoxFit.cover,
-                        image: ImmichLocalThumbnailProvider(
-                          asset: errorAsset.asset,
-                          height: 512,
-                          width: 512,
-                        ),
+                        image: ImmichLocalThumbnailProvider(asset: errorAsset.asset, height: 512, width: 512),
                       ),
                     ),
                   ),
@@ -89,22 +74,14 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                             children: [
                               Text(
                                 DateFormat.yMMMMd().format(
-                                  DateTime.parse(
-                                    errorAsset.fileCreatedAt.toString(),
-                                  ).toLocal(),
+                                  DateTime.parse(errorAsset.fileCreatedAt.toString()).toLocal(),
                                 ),
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: context.isDarkTheme
-                                      ? Colors.white70
-                                      : Colors.grey[800],
+                                  color: context.isDarkTheme ? Colors.white70 : Colors.grey[800],
                                 ),
                               ),
-                              Icon(
-                                Icons.error,
-                                color: Colors.red.withAlpha(200),
-                                size: 18,
-                              ),
+                              Icon(Icons.error, color: Colors.red.withAlpha(200), size: 18),
                             ],
                           ),
                           Padding(
@@ -113,19 +90,14 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                               errorAsset.fileName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: context.primaryColor,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.bold, color: context.primaryColor),
                             ),
                           ),
                           Text(
                             errorAsset.errorMessage,
                             style: TextStyle(
                               fontWeight: FontWeight.w500,
-                              color: context.isDarkTheme
-                                  ? Colors.white70
-                                  : Colors.grey[800],
+                              color: context.isDarkTheme ? Colors.white70 : Colors.grey[800],
                             ),
                           ),
                         ],

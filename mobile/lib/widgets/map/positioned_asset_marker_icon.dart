@@ -35,10 +35,7 @@ class PositionedAssetMarkerIcon extends StatelessWidget {
         onTap: () => onTap?.call(),
         child: SizedBox.square(
           dimension: size,
-          child: _AssetMarkerIcon(
-            id: assetRemoteId,
-            key: Key(assetRemoteId),
-          ),
+          child: _AssetMarkerIcon(id: assetRemoteId, key: Key(assetRemoteId)),
         ),
       ),
     );
@@ -46,10 +43,7 @@ class PositionedAssetMarkerIcon extends StatelessWidget {
 }
 
 class _AssetMarkerIcon extends StatelessWidget {
-  const _AssetMarkerIcon({
-    required this.id,
-    super.key,
-  });
+  const _AssetMarkerIcon({required this.id, super.key});
 
   final String id;
 
@@ -71,10 +65,7 @@ class _AssetMarkerIcon extends StatelessWidget {
                   primaryRadius: constraints.maxHeight * 0.06,
                   secondaryRadius: constraints.maxHeight * 0.038,
                 ),
-                child: SizedBox(
-                  height: constraints.maxHeight * 0.14,
-                  width: constraints.maxWidth * 0.14,
-                ),
+                child: SizedBox(height: constraints.maxHeight * 0.14, width: constraints.maxWidth * 0.14),
               ),
             ),
             Positioned(
@@ -89,8 +80,7 @@ class _AssetMarkerIcon extends StatelessWidget {
                     imageUrl,
                     cacheKey: cacheKey,
                     headers: ApiService.getRequestHeaders(),
-                    errorListener: (_) =>
-                        const Icon(Icons.image_not_supported_outlined),
+                    errorListener: (_) => const Icon(Icons.image_not_supported_outlined),
                   ),
                 ),
               ),
@@ -108,7 +98,7 @@ class _PinPainter extends CustomPainter {
   final double primaryRadius;
   final double secondaryRadius;
 
-  _PinPainter({
+  const _PinPainter({
     required this.primaryColor,
     required this.secondaryColor,
     required this.primaryRadius,
@@ -130,26 +120,11 @@ class _PinPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
-    canvas.drawCircle(
-      Offset(size.width / 2, size.height),
-      primaryRadius,
-      primaryBrush,
-    );
-    canvas.drawCircle(
-      Offset(size.width / 2, size.height),
-      secondaryRadius,
-      secondaryBrush,
-    );
+    canvas.drawCircle(Offset(size.width / 2, size.height), primaryRadius, primaryBrush);
+    canvas.drawCircle(Offset(size.width / 2, size.height), secondaryRadius, secondaryBrush);
     canvas.drawPath(getTrianglePath(size.width, size.height), primaryBrush);
     // The line is to make the above triangluar path more prominent since it has a slight curve
-    canvas.drawLine(
-      Offset(size.width / 2, 0),
-      Offset(
-        size.width / 2,
-        size.height,
-      ),
-      lineBrush,
-    );
+    canvas.drawLine(Offset(size.width / 2, 0), Offset(size.width / 2, size.height), lineBrush);
   }
 
   Path getTrianglePath(double x, double y) {
@@ -158,24 +133,13 @@ class _PinPainter extends CustomPainter {
     final secondEndPoint = Offset(x, 0);
 
     return Path()
-      ..quadraticBezierTo(
-        controlPoint.dx,
-        controlPoint.dy,
-        firstEndPoint.dx,
-        firstEndPoint.dy,
-      )
-      ..quadraticBezierTo(
-        controlPoint.dx,
-        controlPoint.dy,
-        secondEndPoint.dx,
-        secondEndPoint.dy,
-      )
+      ..quadraticBezierTo(controlPoint.dx, controlPoint.dy, firstEndPoint.dx, firstEndPoint.dy)
+      ..quadraticBezierTo(controlPoint.dx, controlPoint.dy, secondEndPoint.dx, secondEndPoint.dy)
       ..lineTo(0, 0);
   }
 
   @override
   bool shouldRepaint(_PinPainter old) {
-    return old.primaryColor != primaryColor ||
-        old.secondaryColor != secondaryColor;
+    return old.primaryColor != primaryColor || old.secondaryColor != secondaryColor;
   }
 }

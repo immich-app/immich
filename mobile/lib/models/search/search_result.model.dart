@@ -6,19 +6,10 @@ class SearchResult {
   final List<Asset> assets;
   final int? nextPage;
 
-  SearchResult({
-    required this.assets,
-    this.nextPage,
-  });
+  const SearchResult({required this.assets, this.nextPage});
 
-  SearchResult copyWith({
-    List<Asset>? assets,
-    int? nextPage,
-  }) {
-    return SearchResult(
-      assets: assets ?? this.assets,
-      nextPage: nextPage ?? this.nextPage,
-    );
+  SearchResult copyWith({List<Asset>? assets, int? nextPage}) {
+    return SearchResult(assets: assets ?? this.assets, nextPage: nextPage ?? this.nextPage);
   }
 
   @override

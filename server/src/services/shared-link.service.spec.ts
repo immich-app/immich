@@ -95,26 +95,26 @@ describe(SharedLinkService.name, () => {
 
   describe('create', () => {
     it('should not allow an album shared link without an albumId', async () => {
-      await expect(sut.create(authStub.admin, { type: SharedLinkType.ALBUM, assetIds: [] })).rejects.toBeInstanceOf(
+      await expect(sut.create(authStub.admin, { type: SharedLinkType.Album, assetIds: [] })).rejects.toBeInstanceOf(
         BadRequestException,
       );
     });
 
     it('should not allow non-owners to create album shared links', async () => {
       await expect(
-        sut.create(authStub.admin, { type: SharedLinkType.ALBUM, assetIds: [], albumId: 'album-1' }),
+        sut.create(authStub.admin, { type: SharedLinkType.Album, assetIds: [], albumId: 'album-1' }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should not allow individual shared links with no assets', async () => {
       await expect(
-        sut.create(authStub.admin, { type: SharedLinkType.INDIVIDUAL, assetIds: [] }),
+        sut.create(authStub.admin, { type: SharedLinkType.Individual, assetIds: [] }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should require asset ownership to make an individual shared link', async () => {
       await expect(
-        sut.create(authStub.admin, { type: SharedLinkType.INDIVIDUAL, assetIds: ['asset-1'] }),
+        sut.create(authStub.admin, { type: SharedLinkType.Individual, assetIds: ['asset-1'] }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
@@ -122,20 +122,21 @@ describe(SharedLinkService.name, () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.oneAsset.id]));
       mocks.sharedLink.create.mockResolvedValue(sharedLinkStub.valid);
 
-      await sut.create(authStub.admin, { type: SharedLinkType.ALBUM, albumId: albumStub.oneAsset.id });
+      await sut.create(authStub.admin, { type: SharedLinkType.Album, albumId: albumStub.oneAsset.id });
 
       expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
         new Set([albumStub.oneAsset.id]),
       );
       expect(mocks.sharedLink.create).toHaveBeenCalledWith({
-        type: SharedLinkType.ALBUM,
+        type: SharedLinkType.Album,
         userId: authStub.admin.user.id,
         albumId: albumStub.oneAsset.id,
         allowDownload: true,
         allowUpload: true,
         description: null,
         expiresAt: null,
+        slug: null,
         showExif: true,
         key: Buffer.from('random-bytes', 'utf8'),
       });
@@ -146,7 +147,7 @@ describe(SharedLinkService.name, () => {
       mocks.sharedLink.create.mockResolvedValue(sharedLinkStub.individual);
 
       await sut.create(authStub.admin, {
-        type: SharedLinkType.INDIVIDUAL,
+        type: SharedLinkType.Individual,
         assetIds: [assetStub.image.id],
         showMetadata: true,
         allowDownload: true,
@@ -159,10 +160,11 @@ describe(SharedLinkService.name, () => {
         false,
       );
       expect(mocks.sharedLink.create).toHaveBeenCalledWith({
-        type: SharedLinkType.INDIVIDUAL,
+        type: SharedLinkType.Individual,
         userId: authStub.admin.user.id,
         albumId: null,
         allowDownload: true,
+        slug: null,
         allowUpload: true,
         assetIds: [assetStub.image.id],
         description: null,
@@ -177,7 +179,7 @@ describe(SharedLinkService.name, () => {
       mocks.sharedLink.create.mockResolvedValue(sharedLinkStub.individual);
 
       await sut.create(authStub.admin, {
-        type: SharedLinkType.INDIVIDUAL,
+        type: SharedLinkType.Individual,
         assetIds: [assetStub.image.id],
         showMetadata: false,
         allowDownload: true,
@@ -190,7 +192,7 @@ describe(SharedLinkService.name, () => {
         false,
       );
       expect(mocks.sharedLink.create).toHaveBeenCalledWith({
-        type: SharedLinkType.INDIVIDUAL,
+        type: SharedLinkType.Individual,
         userId: authStub.admin.user.id,
         albumId: null,
         allowDownload: false,
@@ -199,6 +201,7 @@ describe(SharedLinkService.name, () => {
         description: null,
         expiresAt: null,
         showExif: false,
+        slug: null,
         key: Buffer.from('random-bytes', 'utf8'),
       });
     });
@@ -223,6 +226,7 @@ describe(SharedLinkService.name, () => {
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authStub.user1.user.id, sharedLinkStub.valid.id);
       expect(mocks.sharedLink.update).toHaveBeenCalledWith({
         id: sharedLinkStub.valid.id,
+        slug: null,
         userId: authStub.user1.user.id,
         allowDownload: false,
       });
@@ -277,6 +281,7 @@ describe(SharedLinkService.name, () => {
       expect(mocks.sharedLink.update).toHaveBeenCalled();
       expect(mocks.sharedLink.update).toHaveBeenCalledWith({
         ...sharedLinkStub.individual,
+        slug: null,
         assetIds: ['asset-3'],
       });
     });

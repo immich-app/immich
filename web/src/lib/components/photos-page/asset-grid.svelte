@@ -13,7 +13,6 @@
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -30,8 +29,9 @@
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { toTimelineAsset, type ScrubberListener, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
+  import { getTimes, toTimelineAsset, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
   import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { modalManager } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
@@ -86,7 +86,7 @@
     empty,
   }: Props = $props();
 
-  let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
+  let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget, mutex } = assetViewingStore;
 
   let element: HTMLElement | undefined = $state();
 
@@ -338,7 +338,7 @@
 
       const monthsLength = timelineManager.months.length;
       for (let i = -1; i < monthsLength + 1; i++) {
-        let monthGroup: TimelinePlainYearMonth | undefined;
+        let monthGroup: TimelineYearMonth | undefined;
         let monthGroupHeight = 0;
         if (i === -1) {
           // lead-in
@@ -433,27 +433,32 @@
   };
 
   const handlePrevious = async () => {
+    const release = await mutex.acquire();
     const laterAsset = await timelineManager.getLaterAsset($viewingAsset);
 
     if (laterAsset) {
       const preloadAsset = await timelineManager.getLaterAsset(laterAsset);
-      const asset = await getAssetInfo({ id: laterAsset.id, key: authManager.key });
+      const asset = await getAssetInfo({ ...authManager.params, id: laterAsset.id });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: laterAsset.id });
     }
 
+    release();
     return !!laterAsset;
   };
 
   const handleNext = async () => {
+    const release = await mutex.acquire();
     const earlierAsset = await timelineManager.getEarlierAsset($viewingAsset);
+
     if (earlierAsset) {
       const preloadAsset = await timelineManager.getEarlierAsset(earlierAsset);
-      const asset = await getAssetInfo({ id: earlierAsset.id, key: authManager.key });
+      const asset = await getAssetInfo({ ...authManager.params, id: earlierAsset.id });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: earlierAsset.id });
     }
 
+    release();
     return !!earlierAsset;
   };
 
@@ -461,7 +466,7 @@
     const randomAsset = await timelineManager.getRandomAsset();
 
     if (randomAsset) {
-      const asset = await getAssetInfo({ id: randomAsset.id, key: authManager.key });
+      const asset = await getAssetInfo({ ...authManager.params, id: randomAsset.id });
       assetViewingStore.setAsset(asset);
       await navigate({ targetRoute: 'current', assetId: randomAsset.id });
       return asset;
@@ -511,6 +516,23 @@
 
       case AssetAction.UNSTACK: {
         updateUnstackedAssetInTimeline(timelineManager, action.assets);
+        break;
+      }
+      case AssetAction.REMOVE_ASSET_FROM_STACK: {
+        timelineManager.addAssets([toTimelineAsset(action.asset)]);
+        if (action.stack) {
+          //Have to unstack then restack assets in timeline in order to update the stack count in the timeline.
+          updateUnstackedAssetInTimeline(
+            timelineManager,
+            action.stack.assets.map((asset) => toTimelineAsset(asset)),
+          );
+          updateStackedAssetInTimeline(timelineManager, {
+            stack: action.stack,
+            toDeleteIds: action.stack.assets
+              .filter((asset) => asset.id !== action.stack?.primaryAssetId)
+              .map((asset) => asset.id),
+          });
+        }
         break;
       }
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
@@ -702,7 +724,7 @@
     }
 
     isShortcutModalOpen = true;
-    await modalManager.show(ShortcutsModal);
+    await modalManager.show(ShortcutsModal, {});
     isShortcutModalOpen = false;
   };
 
@@ -766,6 +788,13 @@
   $effect(() => {
     if (shiftKeyIsDown && lastAssetMouseEvent) {
       void selectAssetCandidates(lastAssetMouseEvent);
+    }
+  });
+
+  $effect(() => {
+    if ($showAssetViewer) {
+      const { localDateTime } = getTimes($viewingAsset.fileCreatedAt, DateTime.local().offset / 60);
+      void timelineManager.loadMonthGroup({ year: localDateTime.year, month: localDateTime.month });
     }
   });
 </script>
@@ -835,7 +864,7 @@
   style:margin-right={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}
-  bind:clientWidth={null, (v) => ((timelineManager.viewportWidth = v), updateSlidingWindow())}
+  bind:clientWidth={null, (v: number) => ((timelineManager.viewportWidth = v), updateSlidingWindow())}
   bind:this={element}
   onscroll={() => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
 >

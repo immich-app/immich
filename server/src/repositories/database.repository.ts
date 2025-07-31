@@ -3,7 +3,7 @@ import AsyncLock from 'async-lock';
 import { FileMigrationProvider, Kysely, Migrator, sql, Transaction } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { readdir } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import semver from 'semver';
 import {
   EXTENSION_NAMES,
@@ -15,18 +15,17 @@ import {
   VECTORCHORD_VERSION_RANGE,
   VECTORS_VERSION_RANGE,
 } from 'src/constants';
-import { DB } from 'src/db';
 import { GenerateSql } from 'src/decorators';
 import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { DB } from 'src/schema';
 import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
 import { vectorIndexQuery } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
-import { DataSource, QueryRunner } from 'typeorm';
 
 export let cachedVectorExtension: VectorExtension | undefined;
-export async function getVectorExtension(runner: Kysely<DB> | QueryRunner): Promise<VectorExtension> {
+export async function getVectorExtension(runner: Kysely<DB>): Promise<VectorExtension> {
   if (cachedVectorExtension) {
     return cachedVectorExtension;
   }
@@ -36,14 +35,8 @@ export async function getVectorExtension(runner: Kysely<DB> | QueryRunner): Prom
     return cachedVectorExtension;
   }
 
-  let availableExtensions: { name: VectorExtension }[];
   const query = `SELECT name FROM pg_available_extensions WHERE name IN (${VECTOR_EXTENSIONS.map((ext) => `'${ext}'`).join(', ')})`;
-  if (runner instanceof Kysely) {
-    const { rows } = await sql.raw<{ name: VectorExtension }>(query).execute(runner);
-    availableExtensions = rows;
-  } else {
-    availableExtensions = (await runner.query(query)) as { name: VectorExtension }[];
-  }
+  const { rows: availableExtensions } = await sql.raw<{ name: VectorExtension }>(query).execute(runner);
   const extensionNames = new Set(availableExtensions.map((row) => row.name));
   cachedVectorExtension = VECTOR_EXTENSIONS.find((ext) => extensionNames.has(ext));
   if (!cachedVectorExtension) {
@@ -53,8 +46,8 @@ export async function getVectorExtension(runner: Kysely<DB> | QueryRunner): Prom
 }
 
 export const probes: Record<VectorIndex, number> = {
-  [VectorIndex.CLIP]: 1,
-  [VectorIndex.FACE]: 1,
+  [VectorIndex.Clip]: 1,
+  [VectorIndex.Face]: 1,
 };
 
 @Injectable()
@@ -77,7 +70,7 @@ export class DatabaseRepository {
     return getVectorExtension(this.db);
   }
 
-  @GenerateSql({ params: [[DatabaseExtension.VECTORS]] })
+  @GenerateSql({ params: [[DatabaseExtension.Vectors]] })
   async getExtensionVersions(extensions: readonly DatabaseExtension[]): Promise<ExtensionVersion[]> {
     const { rows } = await sql<ExtensionVersion>`
       SELECT name, default_version as "availableVersion", installed_version as "installedVersion"
@@ -89,13 +82,13 @@ export class DatabaseRepository {
 
   getExtensionVersionRange(extension: VectorExtension): string {
     switch (extension) {
-      case DatabaseExtension.VECTORCHORD: {
+      case DatabaseExtension.VectorChord: {
         return VECTORCHORD_VERSION_RANGE;
       }
-      case DatabaseExtension.VECTORS: {
+      case DatabaseExtension.Vectors: {
         return VECTORS_VERSION_RANGE;
       }
-      case DatabaseExtension.VECTOR: {
+      case DatabaseExtension.Vector: {
         return VECTOR_VERSION_RANGE;
       }
       default: {
@@ -117,7 +110,7 @@ export class DatabaseRepository {
   async createExtension(extension: DatabaseExtension): Promise<void> {
     this.logger.log(`Creating ${EXTENSION_NAMES[extension]} extension`);
     await sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(extension)} CASCADE`.execute(this.db);
-    if (extension === DatabaseExtension.VECTORCHORD) {
+    if (extension === DatabaseExtension.VectorChord) {
       const dbName = sql.id(await this.getDatabaseName());
       await sql`ALTER DATABASE ${dbName} SET vchordrq.probes = 1`.execute(this.db);
       await sql`SET vchordrq.probes = 1`.execute(this.db);
@@ -147,8 +140,8 @@ export class DatabaseRepository {
     }
 
     await Promise.all([
-      this.db.schema.dropIndex(VectorIndex.CLIP).ifExists().execute(),
-      this.db.schema.dropIndex(VectorIndex.FACE).ifExists().execute(),
+      this.db.schema.dropIndex(VectorIndex.Clip).ifExists().execute(),
+      this.db.schema.dropIndex(VectorIndex.Face).ifExists().execute(),
     ]);
 
     await this.db.transaction().execute(async (tx) => {
@@ -156,14 +149,14 @@ export class DatabaseRepository {
 
       await sql`ALTER EXTENSION ${sql.raw(extension)} UPDATE TO ${sql.lit(targetVersion)}`.execute(tx);
 
-      if (extension === DatabaseExtension.VECTORS && (diff === 'major' || diff === 'minor')) {
+      if (extension === DatabaseExtension.Vectors && (diff === 'major' || diff === 'minor')) {
         await sql`SELECT pgvectors_upgrade()`.execute(tx);
         restartRequired = true;
       }
     });
 
     if (!restartRequired) {
-      await Promise.all([this.reindexVectors(VectorIndex.CLIP), this.reindexVectors(VectorIndex.FACE)]);
+      await Promise.all([this.reindexVectors(VectorIndex.Clip), this.reindexVectors(VectorIndex.Face)]);
     }
 
     return { restartRequired };
@@ -171,7 +164,7 @@ export class DatabaseRepository {
 
   async prewarm(index: VectorIndex): Promise<void> {
     const vectorExtension = await getVectorExtension(this.db);
-    if (vectorExtension !== DatabaseExtension.VECTORCHORD) {
+    if (vectorExtension !== DatabaseExtension.VectorChord) {
       return;
     }
     this.logger.debug(`Prewarming ${index}`);
@@ -196,19 +189,19 @@ export class DatabaseRepository {
       }
 
       switch (vectorExtension) {
-        case DatabaseExtension.VECTOR: {
+        case DatabaseExtension.Vector: {
           if (!row.indexdef.toLowerCase().includes('using hnsw')) {
             promises.push(this.reindexVectors(indexName));
           }
           break;
         }
-        case DatabaseExtension.VECTORS: {
+        case DatabaseExtension.Vectors: {
           if (!row.indexdef.toLowerCase().includes('using vectors')) {
             promises.push(this.reindexVectors(indexName));
           }
           break;
         }
-        case DatabaseExtension.VECTORCHORD: {
+        case DatabaseExtension.VectorChord: {
           const matches = row.indexdef.match(/(?<=lists = \[)\d+/g);
           const lists = matches && matches.length > 0 ? Number(matches[0]) : 1;
           promises.push(
@@ -264,7 +257,7 @@ export class DatabaseRepository {
         await sql`ALTER TABLE ${sql.raw(table)} ADD COLUMN embedding real[] NOT NULL`.execute(tx);
       }
       await sql`ALTER TABLE ${sql.raw(table)} ALTER COLUMN embedding SET DATA TYPE real[]`.execute(tx);
-      const schema = vectorExtension === DatabaseExtension.VECTORS ? 'vectors.' : '';
+      const schema = vectorExtension === DatabaseExtension.Vectors ? 'vectors.' : '';
       await sql`
         ALTER TABLE ${sql.raw(table)}
         ALTER COLUMN embedding
@@ -329,11 +322,11 @@ export class DatabaseRepository {
         .alterColumn('embedding', (col) => col.setDataType(sql.raw(`vector(${dimSize})`)))
         .execute();
       await sql
-        .raw(vectorIndexQuery({ vectorExtension, table: 'smart_search', indexName: VectorIndex.CLIP }))
+        .raw(vectorIndexQuery({ vectorExtension, table: 'smart_search', indexName: VectorIndex.Clip }))
         .execute(trx);
       await trx.schema.alterTable('smart_search').dropConstraint('dim_size_constraint').ifExists().execute();
     });
-    probes[VectorIndex.CLIP] = 1;
+    probes[VectorIndex.Clip] = 1;
 
     await sql`vacuum analyze ${sql.table('smart_search')}`.execute(this.db);
   }
@@ -364,48 +357,13 @@ export class DatabaseRepository {
     return count;
   }
 
-  async runMigrations(options?: { transaction?: 'all' | 'none' | 'each' }): Promise<void> {
-    const { database } = this.configRepository.getEnv();
+  async runMigrations(): Promise<void> {
+    this.logger.debug('Running migrations');
 
-    this.logger.log('Running migrations, this may take a while');
-
-    const tableExists = sql<{ result: string | null }>`select to_regclass('migrations') as "result"`;
-    const { rows } = await tableExists.execute(this.db);
-    const hasTypeOrmMigrations = !!rows[0]?.result;
-    if (hasTypeOrmMigrations) {
-      // eslint-disable-next-line unicorn/prefer-module
-      const dist = resolve(`${__dirname}/..`);
-
-      this.logger.debug('Running typeorm migrations');
-      const dataSource = new DataSource({
-        type: 'postgres',
-        entities: [],
-        subscribers: [],
-        migrations: [`${dist}/migrations` + '/*.{js,ts}'],
-        migrationsRun: false,
-        synchronize: false,
-        connectTimeoutMS: 10_000, // 10 seconds
-        parseInt8: true,
-        ...(database.config.connectionType === 'url'
-          ? { url: database.config.url }
-          : {
-              host: database.config.host,
-              port: database.config.port,
-              username: database.config.username,
-              password: database.config.password,
-              database: database.config.database,
-            }),
-      });
-      await dataSource.initialize();
-      await dataSource.runMigrations(options);
-      await dataSource.destroy();
-      this.logger.debug('Finished running typeorm migrations');
-    }
-
-    this.logger.debug('Running kysely migrations');
     const migrator = new Migrator({
       db: this.db,
       migrationLockTableName: 'kysely_migrations_lock',
+      allowUnorderedMigrations: this.configRepository.isDev(),
       migrationTableName: 'kysely_migrations',
       provider: new FileMigrationProvider({
         fs: { readdir },
@@ -428,11 +386,53 @@ export class DatabaseRepository {
     }
 
     if (error) {
-      this.logger.error(`Kysely migrations failed: ${error}`);
+      this.logger.error(`Migrations failed: ${error}`);
       throw error;
     }
 
-    this.logger.debug('Finished running kysely migrations');
+    this.logger.debug('Finished running migrations');
+  }
+
+  async migrateFilePaths(sourceFolder: string, targetFolder: string): Promise<void> {
+    // remove trailing slashes
+    if (sourceFolder.endsWith('/')) {
+      sourceFolder = sourceFolder.slice(0, -1);
+    }
+
+    if (targetFolder.endsWith('/')) {
+      targetFolder = targetFolder.slice(0, -1);
+    }
+
+    // escaping regex special characters with a backslash
+    const sourceRegex = '^' + sourceFolder.replaceAll(/[-[\]{}()*+?.,\\^$|#\s]/g, String.raw`\$&`);
+    const source = sql.raw(`'${sourceRegex}'`);
+    const target = sql.lit(targetFolder);
+
+    await this.db.transaction().execute(async (tx) => {
+      await tx
+        .updateTable('asset')
+        .set((eb) => ({
+          originalPath: eb.fn('REGEXP_REPLACE', ['originalPath', source, target]),
+          encodedVideoPath: eb.fn('REGEXP_REPLACE', ['encodedVideoPath', source, target]),
+          sidecarPath: eb.fn('REGEXP_REPLACE', ['sidecarPath', source, target]),
+        }))
+        .execute();
+
+      await tx
+        .updateTable('asset_file')
+        .set((eb) => ({ path: eb.fn('REGEXP_REPLACE', ['path', source, target]) }))
+        .execute();
+
+      await tx
+        .updateTable('person')
+        .set((eb) => ({ thumbnailPath: eb.fn('REGEXP_REPLACE', ['thumbnailPath', source, target]) }))
+        .execute();
+
+      await tx
+        .updateTable('user')
+        .set((eb) => ({ profileImagePath: eb.fn('REGEXP_REPLACE', ['profileImagePath', source, target]) }))
+        .execute();
+    });
   }
 
   async withLock<R>(lock: DatabaseLock, callback: () => Promise<R>): Promise<R> {

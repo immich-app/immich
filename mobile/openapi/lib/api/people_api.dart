@@ -16,7 +16,10 @@ class PeopleApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /people' operation and returns the [Response].
+  /// This endpoint requires the `person.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [PersonCreateDto] personCreateDto (required):
@@ -45,6 +48,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [PersonCreateDto] personCreateDto (required):
@@ -63,7 +68,99 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /people' operation and returns the [Response].
+  /// This endpoint requires the `person.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<Response> deletePeopleWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/people';
+
+    // ignore: prefer_final_locals
+    Object? postBody = bulkIdsDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `person.delete` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [BulkIdsDto] bulkIdsDto (required):
+  Future<void> deletePeople(BulkIdsDto bulkIdsDto,) async {
+    final response = await deletePeopleWithHttpInfo(bulkIdsDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// This endpoint requires the `person.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> deletePersonWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/people/{id}'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `person.delete` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> deletePerson(String id,) async {
+    final response = await deletePersonWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// This endpoint requires the `person.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] closestAssetId:
@@ -118,6 +215,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] closestAssetId:
@@ -146,7 +245,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /people/{id}' operation and returns the [Response].
+  /// This endpoint requires the `person.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -176,6 +278,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -194,7 +298,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /people/{id}/statistics' operation and returns the [Response].
+  /// This endpoint requires the `person.statistics` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -224,6 +331,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.statistics` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -242,7 +351,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /people/{id}/thumbnail' operation and returns the [Response].
+  /// This endpoint requires the `person.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -272,6 +384,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -290,7 +404,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /people/{id}/merge' operation and returns the [Response].
+  /// This endpoint requires the `person.merge` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -322,6 +439,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.merge` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -345,7 +464,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /people/{id}/reassign' operation and returns the [Response].
+  /// This endpoint requires the `person.reassign` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -377,6 +499,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.reassign` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -400,7 +524,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /people' operation and returns the [Response].
+  /// This endpoint requires the `person.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [PeopleUpdateDto] peopleUpdateDto (required):
@@ -429,6 +556,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [PeopleUpdateDto] peopleUpdateDto (required):
@@ -450,7 +579,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /people/{id}' operation and returns the [Response].
+  /// This endpoint requires the `person.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -482,6 +614,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

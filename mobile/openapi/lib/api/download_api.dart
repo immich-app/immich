@@ -16,13 +16,18 @@ class DownloadApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /download/archive' operation and returns the [Response].
+  /// This endpoint requires the `asset.download` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
-  Future<Response> downloadArchiveWithHttpInfo(AssetIdsDto assetIdsDto, { String? key, }) async {
+  ///
+  /// * [String] slug:
+  Future<Response> downloadArchiveWithHttpInfo(AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/download/archive';
 
@@ -36,6 +41,9 @@ class DownloadApi {
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
+    }
 
     const contentTypes = <String>['application/json'];
 
@@ -51,13 +59,17 @@ class DownloadApi {
     );
   }
 
+  /// This endpoint requires the `asset.download` permission.
+  ///
   /// Parameters:
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
-  Future<MultipartFile?> downloadArchive(AssetIdsDto assetIdsDto, { String? key, }) async {
-    final response = await downloadArchiveWithHttpInfo(assetIdsDto,  key: key, );
+  ///
+  /// * [String] slug:
+  Future<MultipartFile?> downloadArchive(AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
+    final response = await downloadArchiveWithHttpInfo(assetIdsDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -71,13 +83,18 @@ class DownloadApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /download/info' operation and returns the [Response].
+  /// This endpoint requires the `asset.download` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [DownloadInfoDto] downloadInfoDto (required):
   ///
   /// * [String] key:
-  Future<Response> getDownloadInfoWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
+  ///
+  /// * [String] slug:
+  Future<Response> getDownloadInfoWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/download/info';
 
@@ -90,6 +107,9 @@ class DownloadApi {
 
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
 
     const contentTypes = <String>['application/json'];
@@ -106,13 +126,17 @@ class DownloadApi {
     );
   }
 
+  /// This endpoint requires the `asset.download` permission.
+  ///
   /// Parameters:
   ///
   /// * [DownloadInfoDto] downloadInfoDto (required):
   ///
   /// * [String] key:
-  Future<DownloadResponseDto?> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
-    final response = await getDownloadInfoWithHttpInfo(downloadInfoDto,  key: key, );
+  ///
+  /// * [String] slug:
+  Future<DownloadResponseDto?> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String? key, String? slug, }) async {
+    final response = await getDownloadInfoWithHttpInfo(downloadInfoDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

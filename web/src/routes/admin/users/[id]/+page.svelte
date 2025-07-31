@@ -1,12 +1,12 @@
 <script lang="ts">
   import StatsCard from '$lib/components/admin-page/server-stats/stats-card.svelte';
+  import FeatureSetting from '$lib/components/admin-page/user/feature-setting.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
   import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
   import UserEditModal from '$lib/modals/UserEditModal.svelte';
@@ -29,6 +29,7 @@
     Heading,
     HStack,
     Icon,
+    modalManager,
     Stack,
     Text,
   } from '@immich/ui';
@@ -48,7 +49,6 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import FeatureSetting from '$lib/components/admin-page/user/feature-setting.svelte';
 
   interface Props {
     data: PageData;

@@ -7,16 +7,14 @@ const Symbol _zoneTxn = #zoneTxn;
 
 abstract class DatabaseRepository implements IDatabaseRepository {
   final Isar db;
-  DatabaseRepository(this.db);
+  const DatabaseRepository(this.db);
 
   bool get inTxn => Zone.current[_zoneTxn] != null;
 
-  Future<T> txn<T>(Future<T> Function() callback) =>
-      inTxn ? callback() : transaction(callback);
+  Future<T> txn<T>(Future<T> Function() callback) => inTxn ? callback() : transaction(callback);
 
   @override
-  Future<T> transaction<T>(Future<T> Function() callback) =>
-      db.writeTxn(callback);
+  Future<T> transaction<T>(Future<T> Function() callback) => db.writeTxn(callback);
 }
 
 extension Asd<T> on QueryBuilder<T, dynamic, dynamic> {

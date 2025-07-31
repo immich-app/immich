@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Kysely, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { AssetStack, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { DB } from 'src/schema';
+import { StackTable } from 'src/schema/tables/stack.table';
 import { asUuid, withDefaultVisibility } from 'src/utils/database';
 
 export interface StackSearch {
@@ -12,29 +13,34 @@ export interface StackSearch {
   primaryAssetId?: string;
 }
 
-const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>, withTags = false) => {
+const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
   return jsonArrayFrom(
     eb
-      .selectFrom('assets')
-      .selectAll('assets')
+      .selectFrom('asset')
+      .selectAll('asset')
       .innerJoinLateral(
-        (eb) => eb.selectFrom('exif').select(columns.exif).whereRef('exif.assetId', '=', 'assets.id').as('exifInfo'),
+        (eb) =>
+          eb
+            .selectFrom('asset_exif')
+            .select(columns.exif)
+            .whereRef('asset_exif.assetId', '=', 'asset.id')
+            .as('exifInfo'),
         (join) => join.onTrue(),
       )
       .$if(withTags, (eb) =>
         eb.select((eb) =>
           jsonArrayFrom(
             eb
-              .selectFrom('tags')
+              .selectFrom('tag')
               .select(columns.tag)
-              .innerJoin('tag_asset', 'tags.id', 'tag_asset.tagsId')
-              .whereRef('tag_asset.assetsId', '=', 'assets.id'),
+              .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagsId')
+              .whereRef('tag_asset.assetsId', '=', 'asset.id'),
           ).as('tags'),
         ),
       )
       .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo'))
-      .where('assets.deletedAt', 'is', null)
-      .whereRef('assets.stackId', '=', 'asset_stack.id')
+      .where('asset.deletedAt', 'is', null)
+      .whereRef('asset.stackId', '=', 'stack.id')
       .$call(withDefaultVisibility),
   ).as('assets');
 };
@@ -46,46 +52,46 @@ export class StackRepository {
   @GenerateSql({ params: [{ ownerId: DummyValue.UUID }] })
   search(query: StackSearch) {
     return this.db
-      .selectFrom('asset_stack')
-      .selectAll('asset_stack')
+      .selectFrom('stack')
+      .selectAll('stack')
       .select(withAssets)
-      .where('asset_stack.ownerId', '=', query.ownerId)
-      .$if(!!query.primaryAssetId, (eb) => eb.where('asset_stack.primaryAssetId', '=', query.primaryAssetId!))
+      .where('stack.ownerId', '=', query.ownerId)
+      .$if(!!query.primaryAssetId, (eb) => eb.where('stack.primaryAssetId', '=', query.primaryAssetId!))
       .execute();
   }
 
-  async create(entity: { ownerId: string; assetIds: string[] }) {
+  async create(entity: Omit<Insertable<StackTable>, 'primaryAssetId'>, assetIds: string[]) {
     return this.db.transaction().execute(async (tx) => {
       const stacks = await tx
-        .selectFrom('asset_stack')
-        .where('asset_stack.ownerId', '=', entity.ownerId)
-        .where('asset_stack.primaryAssetId', 'in', entity.assetIds)
-        .select('asset_stack.id')
+        .selectFrom('stack')
+        .where('stack.ownerId', '=', entity.ownerId)
+        .where('stack.primaryAssetId', 'in', assetIds)
+        .select('stack.id')
         .select((eb) =>
           jsonArrayFrom(
             eb
-              .selectFrom('assets')
-              .select('assets.id')
-              .whereRef('assets.stackId', '=', 'asset_stack.id')
-              .where('assets.deletedAt', 'is', null),
+              .selectFrom('asset')
+              .select('asset.id')
+              .whereRef('asset.stackId', '=', 'stack.id')
+              .where('asset.deletedAt', 'is', null),
           ).as('assets'),
         )
         .execute();
 
-      const assetIds = new Set<string>(entity.assetIds);
+      const uniqueIds = new Set<string>(assetIds);
 
       // children
       for (const stack of stacks) {
         if (stack.assets && stack.assets.length > 0) {
           for (const asset of stack.assets) {
-            assetIds.add(asset.id);
+            uniqueIds.add(asset.id);
           }
         }
       }
 
       if (stacks.length > 0) {
         await tx
-          .deleteFrom('asset_stack')
+          .deleteFrom('stack')
           .where(
             'id',
             'in',
@@ -95,26 +101,23 @@ export class StackRepository {
       }
 
       const newRecord = await tx
-        .insertInto('asset_stack')
-        .values({
-          ownerId: entity.ownerId,
-          primaryAssetId: entity.assetIds[0],
-        })
+        .insertInto('stack')
+        .values({ ...entity, primaryAssetId: assetIds[0] })
         .returning('id')
         .executeTakeFirstOrThrow();
 
       await tx
-        .updateTable('assets')
+        .updateTable('asset')
         .set({
           stackId: newRecord.id,
           updatedAt: new Date(),
         })
-        .where('id', 'in', [...assetIds])
+        .where('id', 'in', [...uniqueIds])
         .execute();
 
       return tx
-        .selectFrom('asset_stack')
-        .selectAll('asset_stack')
+        .selectFrom('stack')
+        .selectAll('stack')
         .select(withAssets)
         .where('id', '=', newRecord.id)
         .executeTakeFirstOrThrow();
@@ -123,19 +126,19 @@ export class StackRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string): Promise<void> {
-    await this.db.deleteFrom('asset_stack').where('id', '=', asUuid(id)).execute();
+    await this.db.deleteFrom('stack').where('id', '=', asUuid(id)).execute();
   }
 
   async deleteAll(ids: string[]): Promise<void> {
-    await this.db.deleteFrom('asset_stack').where('id', 'in', ids).execute();
+    await this.db.deleteFrom('stack').where('id', 'in', ids).execute();
   }
 
-  update(id: string, entity: Updateable<AssetStack>) {
+  update(id: string, entity: Updateable<StackTable>) {
     return this.db
-      .updateTable('asset_stack')
+      .updateTable('stack')
       .set(entity)
       .where('id', '=', asUuid(id))
-      .returningAll('asset_stack')
+      .returningAll('stack')
       .returning((eb) => withAssets(eb, true))
       .executeTakeFirstOrThrow();
   }
@@ -143,10 +146,20 @@ export class StackRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getById(id: string) {
     return this.db
-      .selectFrom('asset_stack')
+      .selectFrom('stack')
       .selectAll()
       .select((eb) => withAssets(eb, true))
       .where('id', '=', asUuid(id))
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  getForAssetRemoval(assetId: string) {
+    return this.db
+      .selectFrom('asset')
+      .leftJoin('stack', 'stack.id', 'asset.stackId')
+      .select(['stackId as id', 'stack.primaryAssetId'])
+      .where('asset.id', '=', assetId)
       .executeTakeFirst();
   }
 }

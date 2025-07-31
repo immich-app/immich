@@ -2,18 +2,16 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logging/logging.dart';
 
-final localFileManagerServiceProvider = Provider<LocalFilesManagerService>(
-  (ref) => LocalFilesManagerService(),
-);
+final localFileManagerServiceProvider = Provider<LocalFilesManagerService>((ref) => const LocalFilesManagerService());
 
 class LocalFilesManagerService {
+  const LocalFilesManagerService();
   static final Logger _logger = Logger('LocalFilesManager');
   static const MethodChannel _channel = MethodChannel('file_trash');
 
   Future<bool> moveToTrash(List<String> mediaUrls) async {
     try {
-      return await _channel
-          .invokeMethod('moveToTrash', {'mediaUrls': mediaUrls});
+      return await _channel.invokeMethod('moveToTrash', {'mediaUrls': mediaUrls});
     } catch (e, s) {
       _logger.warning('Error moving file to trash', e, s);
       return false;
@@ -22,10 +20,7 @@ class LocalFilesManagerService {
 
   Future<bool> restoreFromTrash(String fileName, int type) async {
     try {
-      return await _channel.invokeMethod(
-        'restoreFromTrash',
-        {'fileName': fileName, 'type': type},
-      );
+      return await _channel.invokeMethod('restoreFromTrash', {'fileName': fileName, 'type': type});
     } catch (e, s) {
       _logger.warning('Error restore file from trash', e, s);
       return false;

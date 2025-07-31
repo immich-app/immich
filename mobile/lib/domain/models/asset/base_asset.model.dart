@@ -1,5 +1,5 @@
-part 'asset.model.dart';
 part 'local_asset.model.dart';
+part 'remote_asset.model.dart';
 
 enum AssetType {
   // do not change this order!
@@ -9,11 +9,7 @@ enum AssetType {
   audio,
 }
 
-enum AssetState {
-  local,
-  remote,
-  merged,
-}
+enum AssetState { local, remote, merged }
 
 sealed class BaseAsset {
   final String name;
@@ -25,6 +21,7 @@ sealed class BaseAsset {
   final int? height;
   final int? durationInSeconds;
   final bool isFavorite;
+  final String? livePhotoVideoId;
 
   const BaseAsset({
     required this.name,
@@ -36,11 +33,30 @@ sealed class BaseAsset {
     this.height,
     this.durationInSeconds,
     this.isFavorite = false,
+    this.livePhotoVideoId,
   });
 
   bool get isImage => type == AssetType.image;
   bool get isVideo => type == AssetType.video;
+
+  bool get isMotionPhoto => livePhotoVideoId != null;
+
+  Duration get duration {
+    final durationInSeconds = this.durationInSeconds;
+    if (durationInSeconds != null) {
+      return Duration(seconds: durationInSeconds);
+    }
+    return const Duration();
+  }
+
+  bool get hasRemote => storage == AssetState.remote || storage == AssetState.merged;
+  bool get hasLocal => storage == AssetState.local || storage == AssetState.merged;
+  bool get isLocalOnly => storage == AssetState.local;
+  bool get isRemoteOnly => storage == AssetState.remote;
+
+  // Overridden in subclasses
   AssetState get storage;
+  String get heroTag;
 
   @override
   String toString() {

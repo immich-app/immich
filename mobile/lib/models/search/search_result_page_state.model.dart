@@ -8,7 +8,7 @@ class SearchResultPageState {
   final bool isSmart;
   final List<Asset> searchResult;
 
-  SearchResultPageState({
+  const SearchResultPageState({
     required this.isLoading,
     required this.isSuccess,
     required this.isError,
@@ -52,10 +52,6 @@ class SearchResultPageState {
 
   @override
   int get hashCode {
-    return isLoading.hashCode ^
-        isSuccess.hashCode ^
-        isError.hashCode ^
-        isSmart.hashCode ^
-        searchResult.hashCode;
+    return isLoading.hashCode ^ isSuccess.hashCode ^ isError.hashCode ^ isSmart.hashCode ^ searchResult.hashCode;
   }
 }

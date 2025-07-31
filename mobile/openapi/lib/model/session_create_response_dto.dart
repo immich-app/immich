@@ -19,6 +19,7 @@ class SessionCreateResponseDto {
     required this.deviceType,
     this.expiresAt,
     required this.id,
+    required this.isPendingSyncReset,
     required this.token,
     required this.updatedAt,
   });
@@ -41,6 +42,8 @@ class SessionCreateResponseDto {
 
   String id;
 
+  bool isPendingSyncReset;
+
   String token;
 
   String updatedAt;
@@ -53,6 +56,7 @@ class SessionCreateResponseDto {
     other.deviceType == deviceType &&
     other.expiresAt == expiresAt &&
     other.id == id &&
+    other.isPendingSyncReset == isPendingSyncReset &&
     other.token == token &&
     other.updatedAt == updatedAt;
 
@@ -65,11 +69,12 @@ class SessionCreateResponseDto {
     (deviceType.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (id.hashCode) +
+    (isPendingSyncReset.hashCode) +
     (token.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SessionCreateResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, token=$token, updatedAt=$updatedAt]';
+  String toString() => 'SessionCreateResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, token=$token, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -83,6 +88,7 @@ class SessionCreateResponseDto {
     //  json[r'expiresAt'] = null;
     }
       json[r'id'] = this.id;
+      json[r'isPendingSyncReset'] = this.isPendingSyncReset;
       json[r'token'] = this.token;
       json[r'updatedAt'] = this.updatedAt;
     return json;
@@ -103,6 +109,7 @@ class SessionCreateResponseDto {
         deviceType: mapValueOfType<String>(json, r'deviceType')!,
         expiresAt: mapValueOfType<String>(json, r'expiresAt'),
         id: mapValueOfType<String>(json, r'id')!,
+        isPendingSyncReset: mapValueOfType<bool>(json, r'isPendingSyncReset')!,
         token: mapValueOfType<String>(json, r'token')!,
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
       );
@@ -157,6 +164,7 @@ class SessionCreateResponseDto {
     'deviceOS',
     'deviceType',
     'id',
+    'isPendingSyncReset',
     'token',
     'updatedAt',
   };

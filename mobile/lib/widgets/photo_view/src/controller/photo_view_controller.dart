@@ -37,6 +37,13 @@ abstract class PhotoViewControllerBase<T extends PhotoViewControllerValue> {
   /// Closes streams and removes eventual listeners.
   void dispose();
 
+  void positionAnimationBuilder(void Function(Offset)? value);
+  void scaleAnimationBuilder(void Function(double)? value);
+  void rotationAnimationBuilder(void Function(double)? value);
+
+  /// Animates multiple fields of the state
+  void animateMultiple({Offset? position, double? scale, double? rotation});
+
   /// Add a listener that will ignore updates made internally
   ///
   /// Since it is made for internal use, it is not performatic to use more than one
@@ -65,12 +72,7 @@ abstract class PhotoViewControllerBase<T extends PhotoViewControllerValue> {
   Offset? rotationFocusPoint;
 
   /// Update multiple fields of the state with only one update streamed.
-  void updateMultiple({
-    Offset? position,
-    double? scale,
-    double? rotation,
-    Offset? rotationFocusPoint,
-  });
+  void updateMultiple({Offset? position, double? scale, double? rotation, Offset? rotationFocusPoint});
 }
 
 /// The state value stored and streamed by [PhotoViewController].
@@ -99,11 +101,7 @@ class PhotoViewControllerValue {
           rotationFocusPoint == other.rotationFocusPoint;
 
   @override
-  int get hashCode =>
-      position.hashCode ^
-      scale.hashCode ^
-      rotation.hashCode ^
-      rotationFocusPoint.hashCode;
+  int get hashCode => position.hashCode ^ scale.hashCode ^ rotation.hashCode ^ rotationFocusPoint.hashCode;
 
   @override
   String toString() {
@@ -118,21 +116,17 @@ class PhotoViewControllerValue {
 ///
 /// For details of fields and methods, check [PhotoViewControllerBase].
 ///
-class PhotoViewController
-    implements PhotoViewControllerBase<PhotoViewControllerValue> {
-  PhotoViewController({
-    Offset initialPosition = Offset.zero,
-    double initialRotation = 0.0,
-    double? initialScale,
-  })  : _valueNotifier = IgnorableValueNotifier(
-          PhotoViewControllerValue(
-            position: initialPosition,
-            rotation: initialRotation,
-            scale: initialScale,
-            rotationFocusPoint: null,
-          ),
+class PhotoViewController implements PhotoViewControllerBase<PhotoViewControllerValue> {
+  PhotoViewController({Offset initialPosition = Offset.zero, double initialRotation = 0.0, double? initialScale})
+    : _valueNotifier = IgnorableValueNotifier(
+        PhotoViewControllerValue(
+          position: initialPosition,
+          rotation: initialRotation,
+          scale: initialScale,
+          rotationFocusPoint: null,
         ),
-        super() {
+      ),
+      super() {
     initial = value;
     prevValue = initial;
 
@@ -147,11 +141,30 @@ class PhotoViewController
 
   late StreamController<PhotoViewControllerValue> _outputCtrl;
 
+  late void Function(Offset)? _animatePosition;
+  late void Function(double)? _animateScale;
+  late void Function(double)? _animateRotation;
+
   @override
   Stream<PhotoViewControllerValue> get outputStateStream => _outputCtrl.stream;
 
   @override
   late PhotoViewControllerValue prevValue;
+
+  @override
+  void positionAnimationBuilder(void Function(Offset)? value) {
+    _animatePosition = value;
+  }
+
+  @override
+  void scaleAnimationBuilder(void Function(double)? value) {
+    _animateScale = value;
+  }
+
+  @override
+  void rotationAnimationBuilder(void Function(double)? value) {
+    _animateRotation = value;
+  }
 
   @override
   void reset() {
@@ -170,6 +183,21 @@ class PhotoViewController
   @override
   void removeIgnorableListener(VoidCallback callback) {
     _valueNotifier.removeIgnorableListener(callback);
+  }
+
+  @override
+  void animateMultiple({Offset? position, double? scale, double? rotation}) {
+    if (position != null && _animatePosition != null) {
+      _animatePosition!(position);
+    }
+
+    if (scale != null && _animateScale != null) {
+      _animateScale!(scale);
+    }
+
+    if (rotation != null && _animateRotation != null) {
+      _animateRotation!(rotation);
+    }
   }
 
   @override
@@ -263,12 +291,7 @@ class PhotoViewController
   Offset? get rotationFocusPoint => value.rotationFocusPoint;
 
   @override
-  void updateMultiple({
-    Offset? position,
-    double? scale,
-    double? rotation,
-    Offset? rotationFocusPoint,
-  }) {
+  void updateMultiple({Offset? position, double? scale, double? rotation, Offset? rotationFocusPoint}) {
     prevValue = value;
     value = PhotoViewControllerValue(
       position: position ?? value.position,

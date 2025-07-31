@@ -1,4 +1,6 @@
 import 'package:flutter/painting.dart';
+import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/image/immich_local_image_provider.dart';
 import 'package:immich_mobile/providers/image/immich_local_thumbnail_provider.dart';
 import 'package:immich_mobile/providers/image/immich_remote_image_provider.dart';
@@ -38,9 +40,12 @@ final class CustomImageCache implements ImageCache {
   /// [_large] is used for [ImmichLocalImageProvider] and [ImmichRemoteImageProvider]
   /// [_small] is used for [ImmichLocalThumbnailProvider] and [ImmichRemoteThumbnailProvider]
   ImageCache _cacheForKey(Object key) =>
-      (key is ImmichLocalImageProvider || key is ImmichRemoteImageProvider)
-          ? _large
-          : _small;
+      (key is ImmichLocalImageProvider ||
+          key is ImmichRemoteImageProvider ||
+          key is LocalFullImageProvider ||
+          key is RemoteFullImageProvider)
+      ? _large
+      : _small;
 
   @override
   bool containsKey(Object key) {
@@ -56,25 +61,21 @@ final class CustomImageCache implements ImageCache {
   int get currentSizeBytes => _small.currentSizeBytes + _large.currentSizeBytes;
 
   @override
-  bool evict(Object key, {bool includeLive = true}) =>
-      _cacheForKey(key).evict(key, includeLive: includeLive);
+  bool evict(Object key, {bool includeLive = true}) => _cacheForKey(key).evict(key, includeLive: includeLive);
 
   @override
   int get liveImageCount => _small.liveImageCount + _large.liveImageCount;
 
   @override
-  int get pendingImageCount =>
-      _small.pendingImageCount + _large.pendingImageCount;
+  int get pendingImageCount => _small.pendingImageCount + _large.pendingImageCount;
 
   @override
   ImageStreamCompleter? putIfAbsent(
     Object key,
     ImageStreamCompleter Function() loader, {
     ImageErrorListener? onError,
-  }) =>
-      _cacheForKey(key).putIfAbsent(key, loader, onError: onError);
+  }) => _cacheForKey(key).putIfAbsent(key, loader, onError: onError);
 
   @override
-  ImageCacheStatus statusForKey(Object key) =>
-      _cacheForKey(key).statusForKey(key);
+  ImageCacheStatus statusForKey(Object key) => _cacheForKey(key).statusForKey(key);
 }

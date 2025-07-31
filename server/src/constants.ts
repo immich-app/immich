@@ -25,14 +25,14 @@ export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
 } as const;
 
 export const VECTOR_EXTENSIONS = [
-  DatabaseExtension.VECTORCHORD,
-  DatabaseExtension.VECTORS,
-  DatabaseExtension.VECTOR,
+  DatabaseExtension.VectorChord,
+  DatabaseExtension.Vectors,
+  DatabaseExtension.Vector,
 ] as const;
 
 export const VECTOR_INDEX_TABLES = {
-  [VectorIndex.CLIP]: 'smart_search',
-  [VectorIndex.FACE]: 'face_search',
+  [VectorIndex.Clip]: 'smart_search',
+  [VectorIndex.Face]: 'face_search',
 } as const;
 
 export const VECTORCHORD_LIST_SLACK_FACTOR = 1.2;
@@ -47,14 +47,13 @@ export const serverVersion = new SemVer(version);
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
-export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
-
 export const MACHINE_LEARNING_PING_TIMEOUT = Number(process.env.MACHINE_LEARNING_PING_TIMEOUT || 2000);
 export const MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME = Number(
   process.env.MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME || 30_000,
 );
 
 export const citiesFile = 'cities500.txt';
+export const reverseGeocodeMaxDistance = 25_000;
 
 export const MOBILE_REDIRECT = 'app.immich:///oauth-callback';
 export const LOGIN_URL = '/auth/login?autoLaunch=0';

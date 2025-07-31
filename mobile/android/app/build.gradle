@@ -3,6 +3,8 @@ plugins {
   id "kotlin-android"
   id "dev.flutter.flutter-gradle-plugin"
   id 'com.google.devtools.ksp'
+  id 'org.jetbrains.kotlin.plugin.compose' version '2.0.20' // this version matches your Kotlin version
+
 }
 
 def localProperties = new Properties()
@@ -43,6 +45,10 @@ android {
 
   sourceSets {
     main.java.srcDirs += 'src/main/kotlin'
+  }
+
+  buildFeatures {
+    compose true
   }
 
   defaultConfig {
@@ -91,6 +97,8 @@ dependencies {
   def guava_version = '33.3.1-android'
   def glide_version = '4.16.0'
   def serialization_version = '1.8.1'
+  def compose_version = '1.1.1'
+  def gson_version = '2.10.1'
 
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
@@ -102,6 +110,17 @@ dependencies {
 
   ksp "com.github.bumptech.glide:ksp:$glide_version"
   coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
+
+  //Glance Widget
+  implementation "androidx.glance:glance-appwidget:$compose_version"
+  implementation "com.google.code.gson:gson:$gson_version"
+
+  // Glance Configure
+  implementation "androidx.activity:activity-compose:1.8.2"
+  implementation "androidx.compose.ui:ui:$compose_version"
+  implementation "androidx.compose.ui:ui-tooling:$compose_version"
+  implementation "androidx.compose.material3:material3:1.2.1"
+  implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.2"
 }
 
 // This is uncommented in F-Droid build script

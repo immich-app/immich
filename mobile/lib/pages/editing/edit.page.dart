@@ -29,54 +29,34 @@ class EditImagePage extends ConsumerWidget {
   final Image image;
   final bool isEdited;
 
-  const EditImagePage({
-    super.key,
-    required this.asset,
-    required this.image,
-    required this.isEdited,
-  });
+  const EditImagePage({super.key, required this.asset, required this.image, required this.isEdited});
   Future<Uint8List> _imageToUint8List(Image image) async {
     final Completer<Uint8List> completer = Completer();
-    image.image.resolve(const ImageConfiguration()).addListener(
-          ImageStreamListener(
-            (ImageInfo info, bool _) {
-              info.image
-                  .toByteData(format: ImageByteFormat.png)
-                  .then((byteData) {
-                if (byteData != null) {
-                  completer.complete(byteData.buffer.asUint8List());
-                } else {
-                  completer.completeError('Failed to convert image to bytes');
-                }
-              });
-            },
-            onError: (exception, stackTrace) =>
-                completer.completeError(exception),
-          ),
+    image.image
+        .resolve(const ImageConfiguration())
+        .addListener(
+          ImageStreamListener((ImageInfo info, bool _) {
+            info.image.toByteData(format: ImageByteFormat.png).then((byteData) {
+              if (byteData != null) {
+                completer.complete(byteData.buffer.asUint8List());
+              } else {
+                completer.completeError('Failed to convert image to bytes');
+              }
+            });
+          }, onError: (exception, stackTrace) => completer.completeError(exception)),
         );
     return completer.future;
   }
 
-  Future<void> _saveEditedImage(
-    BuildContext context,
-    Asset asset,
-    Image image,
-    WidgetRef ref,
-  ) async {
+  Future<void> _saveEditedImage(BuildContext context, Asset asset, Image image, WidgetRef ref) async {
     try {
       final Uint8List imageData = await _imageToUint8List(image);
-      await ref.read(fileMediaRepositoryProvider).saveImage(
-            imageData,
-            title: "${p.withoutExtension(asset.fileName)}_edited.jpg",
-          );
+      await ref
+          .read(fileMediaRepositoryProvider)
+          .saveImage(imageData, title: "${p.withoutExtension(asset.fileName)}_edited.jpg");
       await ref.read(albumProvider.notifier).refreshDeviceAlbums();
       context.navigator.popUntil((route) => route.isFirst);
-      ImmichToast.show(
-        durationInSecond: 3,
-        context: context,
-        msg: 'Image Saved!',
-        gravity: ToastGravity.CENTER,
-      );
+      ImmichToast.show(durationInSecond: 3, context: context, msg: 'Image Saved!', gravity: ToastGravity.CENTER);
     } catch (e) {
       ImmichToast.show(
         durationInSecond: 6,
@@ -94,37 +74,23 @@ class EditImagePage extends ConsumerWidget {
         title: Text("edit".tr()),
         backgroundColor: context.scaffoldBackgroundColor,
         leading: IconButton(
-          icon: Icon(
-            Icons.close_rounded,
-            color: context.primaryColor,
-            size: 24,
-          ),
+          icon: Icon(Icons.close_rounded, color: context.primaryColor, size: 24),
           onPressed: () => context.navigator.popUntil((route) => route.isFirst),
         ),
         actions: <Widget>[
           TextButton(
-            onPressed: isEdited
-                ? () => _saveEditedImage(context, asset, image, ref)
-                : null,
-            child: Text(
-              "save_to_gallery".tr(),
-              style: TextStyle(
-                color: isEdited ? context.primaryColor : Colors.grey,
-              ),
-            ),
+            onPressed: isEdited ? () => _saveEditedImage(context, asset, image, ref) : null,
+            child: Text("save_to_gallery".tr(), style: TextStyle(color: isEdited ? context.primaryColor : Colors.grey)),
           ),
         ],
       ),
       backgroundColor: context.scaffoldBackgroundColor,
       body: Center(
         child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: context.height * 0.7,
-            maxWidth: context.width * 0.9,
-          ),
+          constraints: BoxConstraints(maxHeight: context.height * 0.7, maxWidth: context.width * 0.9),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(7),
+              borderRadius: const BorderRadius.all(Radius.circular(7)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.2),
@@ -135,11 +101,8 @@ class EditImagePage extends ConsumerWidget {
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(7),
-              child: Image(
-                image: image.image,
-                fit: BoxFit.contain,
-              ),
+              borderRadius: const BorderRadius.all(Radius.circular(7)),
+              child: Image(image: image.image, fit: BoxFit.contain),
             ),
           ),
         ),
@@ -149,7 +112,7 @@ class EditImagePage extends ConsumerWidget {
         margin: const EdgeInsets.only(bottom: 60, right: 10, left: 10, top: 10),
         decoration: BoxDecoration(
           color: context.scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: const BorderRadius.all(Radius.circular(30)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -158,15 +121,9 @@ class EditImagePage extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 IconButton(
-                  icon: Icon(
-                    Icons.crop_rotate_rounded,
-                    color: context.themeData.iconTheme.color,
-                    size: 25,
-                  ),
+                  icon: Icon(Icons.crop_rotate_rounded, color: context.themeData.iconTheme.color, size: 25),
                   onPressed: () {
-                    context.pushRoute(
-                      CropImageRoute(asset: asset, image: image),
-                    );
+                    context.pushRoute(CropImageRoute(asset: asset, image: image));
                   },
                 ),
                 Text("crop".tr(), style: context.textTheme.displayMedium),
@@ -176,18 +133,9 @@ class EditImagePage extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 IconButton(
-                  icon: Icon(
-                    Icons.filter,
-                    color: context.themeData.iconTheme.color,
-                    size: 25,
-                  ),
+                  icon: Icon(Icons.filter, color: context.themeData.iconTheme.color, size: 25),
                   onPressed: () {
-                    context.pushRoute(
-                      FilterImageRoute(
-                        asset: asset,
-                        image: image,
-                      ),
-                    );
+                    context.pushRoute(FilterImageRoute(asset: asset, image: image));
                   },
                 ),
                 Text("filter".tr(), style: context.textTheme.displayMedium),

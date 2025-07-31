@@ -14,19 +14,25 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   // Only used during backup to mirror the favorite status of the asset in the server
   BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
 
+  IntColumn get orientation => integer().withDefault(const Constant(0))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
 
 extension LocalAssetEntityDataDomainEx on LocalAssetEntityData {
   LocalAsset toDto() => LocalAsset(
-        id: id,
-        name: name,
-        checksum: checksum,
-        type: type,
-        createdAt: createdAt,
-        updatedAt: updatedAt,
-        durationInSeconds: durationInSeconds,
-        isFavorite: isFavorite,
-      );
+    id: id,
+    name: name,
+    checksum: checksum,
+    type: type,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
+    durationInSeconds: durationInSeconds,
+    isFavorite: isFavorite,
+    height: height,
+    width: width,
+    remoteId: null,
+    orientation: orientation,
+  );
 }

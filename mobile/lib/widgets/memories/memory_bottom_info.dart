@@ -16,46 +16,35 @@ class MemoryBottomInfo extends StatelessWidget {
     final df = DateFormat.yMMMMd();
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              memory.title,
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 13.0,
-                fontWeight: FontWeight.w500,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                memory.title,
+                style: TextStyle(color: Colors.grey[400], fontSize: 13.0, fontWeight: FontWeight.w500),
               ),
-            ),
-            Text(
-              df.format(
-                memory.assets[0].fileCreatedAt,
+              Text(
+                df.format(memory.assets[0].fileCreatedAt),
+                style: const TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.w500),
               ),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15.0,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        MaterialButton(
-          minWidth: 0,
-          onPressed: () {
-            context.maybePop();
-            scrollToDateNotifierProvider
-                .scrollToDate(memory.assets[0].fileCreatedAt);
-          },
-          shape: const CircleBorder(),
-          color: Colors.white.withValues(alpha: 0.2),
-          elevation: 0,
-          child: const Icon(
-            Icons.open_in_new,
-            color: Colors.white,
+            ],
           ),
-        ),
-      ]),
+          MaterialButton(
+            minWidth: 0,
+            onPressed: () {
+              context.maybePop();
+              scrollToDateNotifierProvider.scrollToDate(memory.assets[0].fileCreatedAt);
+            },
+            shape: const CircleBorder(),
+            color: Colors.white.withValues(alpha: 0.2),
+            elevation: 0,
+            child: const Icon(Icons.open_in_new, color: Colors.white),
+          ),
+        ],
+      ),
     );
   }
 }

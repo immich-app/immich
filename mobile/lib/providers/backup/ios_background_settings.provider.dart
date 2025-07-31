@@ -7,7 +7,7 @@ class IOSBackgroundSettings {
   final DateTime? timeOfLastFetch;
   final DateTime? timeOfLastProcessing;
 
-  IOSBackgroundSettings({
+  const IOSBackgroundSettings({
     required this.appRefreshEnabled,
     required this.numberOfBackgroundTasksQueued,
     this.timeOfLastFetch,
@@ -15,21 +15,17 @@ class IOSBackgroundSettings {
   });
 }
 
-class IOSBackgroundSettingsNotifier
-    extends StateNotifier<IOSBackgroundSettings?> {
+class IOSBackgroundSettingsNotifier extends StateNotifier<IOSBackgroundSettings?> {
   final BackgroundService _service;
   IOSBackgroundSettingsNotifier(this._service) : super(null);
 
   IOSBackgroundSettings? get settings => state;
 
   Future<IOSBackgroundSettings> refresh() async {
-    final lastFetchTime =
-        await _service.getIOSBackupLastRun(IosBackgroundTask.fetch);
-    final lastProcessingTime =
-        await _service.getIOSBackupLastRun(IosBackgroundTask.processing);
+    final lastFetchTime = await _service.getIOSBackupLastRun(IosBackgroundTask.fetch);
+    final lastProcessingTime = await _service.getIOSBackupLastRun(IosBackgroundTask.processing);
     int numberOfProcesses = await _service.getIOSBackupNumberOfProcesses();
-    final appRefreshEnabled =
-        await _service.getIOSBackgroundAppRefreshEnabled();
+    final appRefreshEnabled = await _service.getIOSBackgroundAppRefreshEnabled();
 
     // If this is enabled and there are no background processes,
     // the user just enabled app refresh in Settings.
@@ -53,7 +49,6 @@ class IOSBackgroundSettingsNotifier
   }
 }
 
-final iOSBackgroundSettingsProvider = StateNotifierProvider<
-    IOSBackgroundSettingsNotifier, IOSBackgroundSettings?>(
+final iOSBackgroundSettingsProvider = StateNotifierProvider<IOSBackgroundSettingsNotifier, IOSBackgroundSettings?>(
   (ref) => IOSBackgroundSettingsNotifier(ref.watch(backgroundServiceProvider)),
 );

@@ -27,8 +27,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final BackUpState backupState = ref.watch(backupProvider);
-    final bool isEnableAutoBackup =
-        backupState.backgroundBackup || backupState.autoBackup;
+    final bool isEnableAutoBackup = backupState.backgroundBackup || backupState.autoBackup;
     final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
     final user = ref.watch(currentUserProvider);
     final isDarkTheme = context.isDarkTheme;
@@ -37,42 +36,24 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     buildProfileIndicator() {
       return InkWell(
-        onTap: () => showDialog(
-          context: context,
-          useRootNavigator: false,
-          builder: (ctx) => const ImmichAppBarDialog(),
-        ),
-        borderRadius: BorderRadius.circular(12),
+        onTap: () =>
+            showDialog(context: context, useRootNavigator: false, builder: (ctx) => const ImmichAppBarDialog()),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Badge(
           label: Container(
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(widgetSize / 2),
-            ),
-            child: const Icon(
-              Icons.info,
-              color: Color.fromARGB(255, 243, 188, 106),
-              size: widgetSize / 2,
-            ),
+            decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(widgetSize / 2)),
+            child: const Icon(Icons.info, color: Color.fromARGB(255, 243, 188, 106), size: widgetSize / 2),
           ),
           backgroundColor: Colors.transparent,
           alignment: Alignment.bottomRight,
-          isLabelVisible: serverInfoState.isVersionMismatch ||
-              ((user?.isAdmin ?? false) &&
-                  serverInfoState.isNewReleaseAvailable),
+          isLabelVisible:
+              serverInfoState.isVersionMismatch || ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable),
           offset: const Offset(-2, -12),
           child: user == null
-              ? const Icon(
-                  Icons.face_outlined,
-                  size: widgetSize,
-                )
+              ? const Icon(Icons.face_outlined, size: widgetSize)
               : Semantics(
                   label: "logged_in_as".tr(namedArgs: {"user": user.name}),
-                  child: UserCircleAvatar(
-                    radius: 17,
-                    size: 31,
-                    user: user,
-                  ),
+                  child: UserCircleAvatar(radius: 17, size: 31, user: user),
                 ),
         ),
       );
@@ -92,8 +73,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
               semanticsLabel: 'backup_controller_page_backup'.tr(),
             ),
           );
-        } else if (backupState.backupProgress !=
-                BackUpProgressEnum.inBackground &&
+        } else if (backupState.backupProgress != BackUpProgressEnum.inBackground &&
             backupState.backupProgress != BackUpProgressEnum.manualInProgress) {
           return Icon(
             Icons.check_outlined,
@@ -120,16 +100,14 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
       return InkWell(
         onTap: () => context.pushRoute(const BackupControllerRoute()),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Badge(
           label: Container(
             width: widgetSize / 2,
             height: widgetSize / 2,
             decoration: BoxDecoration(
               color: badgeBackground,
-              border: Border.all(
-                color: context.colorScheme.outline.withValues(alpha: .3),
-              ),
+              border: Border.all(color: context.colorScheme.outline.withValues(alpha: .3)),
               borderRadius: BorderRadius.circular(widgetSize / 2),
             ),
             child: indicatorIcon,
@@ -138,22 +116,14 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           alignment: Alignment.bottomRight,
           isLabelVisible: indicatorIcon != null,
           offset: const Offset(-2, -12),
-          child: Icon(
-            Icons.backup_rounded,
-            size: widgetSize,
-            color: context.primaryColor,
-          ),
+          child: Icon(Icons.backup_rounded, size: widgetSize, color: context.primaryColor),
         ),
       );
     }
 
     return AppBar(
       backgroundColor: context.themeData.appBarTheme.backgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(5),
-        ),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
       automaticallyImplyLeading: false,
       centerTitle: false,
       title: Builder(
@@ -179,12 +149,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
       ),
       actions: [
         if (actions != null)
-          ...actions!.map(
-            (action) => Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: action,
-            ),
-          ),
+          ...actions!.map((action) => Padding(padding: const EdgeInsets.only(right: 16), child: action)),
         if (kDebugMode || kProfileMode)
           IconButton(
             icon: const Icon(Icons.science_rounded),
@@ -195,25 +160,13 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             padding: const EdgeInsets.only(right: 12),
             child: IconButton(
               onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => const CastDialog(),
-                );
+                showDialog(context: context, builder: (context) => const CastDialog());
               },
-              icon: Icon(
-                isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded,
-              ),
+              icon: Icon(isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded),
             ),
           ),
-        if (showUploadButton)
-          Padding(
-            padding: const EdgeInsets.only(right: 20),
-            child: buildBackupIndicator(),
-          ),
-        Padding(
-          padding: const EdgeInsets.only(right: 20),
-          child: buildProfileIndicator(),
-        ),
+        if (showUploadButton) Padding(padding: const EdgeInsets.only(right: 20), child: buildBackupIndicator()),
+        Padding(padding: const EdgeInsets.only(right: 20), child: buildProfileIndicator()),
       ],
     );
   }

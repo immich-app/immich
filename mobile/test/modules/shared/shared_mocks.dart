@@ -3,9 +3,7 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockCurrentUserProvider extends StateNotifier<UserDto?>
-    with Mock
-    implements CurrentUserProvider {
+class MockCurrentUserProvider extends StateNotifier<UserDto?> with Mock implements CurrentUserProvider {
   MockCurrentUserProvider() : super(null);
 
   @override

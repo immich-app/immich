@@ -13,12 +13,7 @@ class ServerFeatures {
     required this.passwordLogin,
   });
 
-  ServerFeatures copyWith({
-    bool? trash,
-    bool? map,
-    bool? oauthEnabled,
-    bool? passwordLogin,
-  }) {
+  ServerFeatures copyWith({bool? trash, bool? map, bool? oauthEnabled, bool? passwordLogin}) {
     return ServerFeatures(
       trash: trash ?? this.trash,
       map: map ?? this.map,
@@ -33,10 +28,10 @@ class ServerFeatures {
   }
 
   ServerFeatures.fromDto(ServerFeaturesDto dto)
-      : trash = dto.trash,
-        map = dto.map,
-        oauthEnabled = dto.oauth,
-        passwordLogin = dto.passwordLogin;
+    : trash = dto.trash,
+      map = dto.map,
+      oauthEnabled = dto.oauth,
+      passwordLogin = dto.passwordLogin;
 
   @override
   bool operator ==(covariant ServerFeatures other) {
@@ -50,9 +45,6 @@ class ServerFeatures {
 
   @override
   int get hashCode {
-    return trash.hashCode ^
-        map.hashCode ^
-        oauthEnabled.hashCode ^
-        passwordLogin.hashCode;
+    return trash.hashCode ^ map.hashCode ^ oauthEnabled.hashCode ^ passwordLogin.hashCode;
   }
 }

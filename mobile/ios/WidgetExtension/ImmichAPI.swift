@@ -2,14 +2,20 @@ import Foundation
 import SwiftUI
 import WidgetKit
 
-enum WidgetError: Error {
+let IMMICH_SHARE_GROUP = "group.app.immich.share"
+
+enum WidgetError: Error, Codable {
   case noLogin
   case fetchFailed
-  case unknown
   case albumNotFound
+  case noAssetsAvailable
+}
+
+enum FetchError: Error {
   case unableToResize
   case invalidImage
   case invalidURL
+  case fetchFailed
 }
 
 extension WidgetError: LocalizedError {
@@ -23,15 +29,9 @@ extension WidgetError: LocalizedError {
 
     case .albumNotFound:
       return "Album not found"
-        
-    case .invalidURL:
-      return "An invalid URL was used"
-        
-    case .invalidImage:
-      return "An invalid image was received"
 
-    default:
-      return "An unknown error occured"
+    case .noAssetsAvailable:
+      return "No assets available"
     }
   }
 }
@@ -43,20 +43,25 @@ enum AssetType: String, Codable {
   case other = "OTHER"
 }
 
-struct SearchResult: Codable {
+struct Asset: Codable {
   let id: String
   let type: AssetType
+
+  var deepLink: URL? {
+    return URL(string: "immich://asset?id=\(id)")
+  }
 }
 
-struct SearchFilters: Codable {
-  var type: AssetType = .image
-  let size: Int
+struct SearchFilter: Codable {
+  var type = AssetType.image
+  var size = 1
   var albumIds: [String] = []
+  var isFavorite: Bool? = nil
 }
 
 struct MemoryResult: Codable {
   let id: String
-  var assets: [SearchResult]
+  var assets: [Asset]
   let type: String
 
   struct MemoryData: Codable {
@@ -66,9 +71,34 @@ struct MemoryResult: Codable {
   let data: MemoryData
 }
 
-struct Album: Codable {
+struct Album: Codable, Equatable {
   let id: String
   let albumName: String
+
+  static let NONE = Album(id: "NONE", albumName: "None")
+  static let FAVORITES = Album(id: "FAVORITES", albumName: "Favorites")
+
+  var filter: SearchFilter {
+    switch self {
+    case Album.NONE:
+      return SearchFilter()
+    case Album.FAVORITES:
+      return SearchFilter(isFavorite: true)
+
+    // regular album
+    default:
+      return SearchFilter(albumIds: [id])
+    }
+  }
+
+  var isVirtual: Bool {
+    switch self {
+    case Album.NONE, Album.FAVORITES:
+      return true
+    default:
+      return false
+    }
+  }
 }
 
 // MARK: API
@@ -82,7 +112,7 @@ class ImmichAPI {
 
   init() async throws {
     // fetch the credentials from the UserDefaults store that dart placed here
-    guard let defaults = UserDefaults(suiteName: "group.app.immich.share"),
+    guard let defaults = UserDefaults(suiteName: IMMICH_SHARE_GROUP),
       let serverURL = defaults.string(forKey: "widget_server_url"),
       let sessionKey = defaults.string(forKey: "widget_auth_token")
     else {
@@ -126,8 +156,9 @@ class ImmichAPI {
     return components?.url
   }
 
-  func fetchSearchResults(with filters: SearchFilters) async throws
-    -> [SearchResult]
+  func fetchSearchResults(with filters: SearchFilter = Album.NONE.filter)
+    async throws
+    -> [Asset]
   {
     // get URL
     guard
@@ -147,7 +178,7 @@ class ImmichAPI {
     let (data, _) = try await URLSession.shared.data(for: request)
 
     // decode data
-    return try JSONDecoder().decode([SearchResult].self, from: data)
+    return try JSONDecoder().decode([Asset].self, from: data)
   }
 
   func fetchMemory(for date: Date) async throws -> [MemoryResult] {
@@ -172,7 +203,7 @@ class ImmichAPI {
     return try JSONDecoder().decode([MemoryResult].self, from: data)
   }
 
-  func fetchImage(asset: SearchResult) async throws(WidgetError) -> UIImage {
+  func fetchImage(asset: Asset) async throws(FetchError) -> UIImage {
     let thumbnailParams = [URLQueryItem(name: "size", value: "preview")]
     let assetEndpoint = "/assets/" + asset.id + "/thumbnail"
 
@@ -185,18 +216,25 @@ class ImmichAPI {
     else {
       throw .invalidURL
     }
-    
-    guard let imageSource = CGImageSourceCreateWithURL(fetchURL as CFURL, nil) else {
+
+    guard let imageSource = CGImageSourceCreateWithURL(fetchURL as CFURL, nil)
+    else {
       throw .invalidURL
     }
 
     let decodeOptions: [NSString: Any] = [
-        kCGImageSourceCreateThumbnailFromImageAlways: true,
-        kCGImageSourceThumbnailMaxPixelSize: 400,
-        kCGImageSourceCreateThumbnailWithTransform: true
+      kCGImageSourceCreateThumbnailFromImageAlways: true,
+      kCGImageSourceThumbnailMaxPixelSize: 512,
+      kCGImageSourceCreateThumbnailWithTransform: true,
     ]
-    
-    guard let thumbnail = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, decodeOptions as CFDictionary) else {
+
+    guard
+      let thumbnail = CGImageSourceCreateThumbnailAtIndex(
+        imageSource,
+        0,
+        decodeOptions as CFDictionary
+      )
+    else {
       throw .fetchFailed
     }
 

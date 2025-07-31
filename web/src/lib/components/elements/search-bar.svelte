@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { SearchOptions } from '$lib/utils/dipatch';
-  import { mdiClose, mdiMagnify } from '@mdi/js';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-  import { t } from 'svelte-i18n';
   import { IconButton } from '@immich/ui';
+  import { mdiClose, mdiMagnify } from '@mdi/js';
+  import { t } from 'svelte-i18n';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   interface Props {
     name: string;

@@ -5,22 +5,15 @@ import "package:immich_mobile/widgets/photo_view/src/photo_view_computed_scale.d
 import 'package:immich_mobile/widgets/photo_view/src/photo_view_scale_state.dart';
 
 /// Given a [PhotoViewScaleState], returns a scale value considering [scaleBoundaries].
-double getScaleForScaleState(
-  PhotoViewScaleState scaleState,
-  ScaleBoundaries scaleBoundaries,
-) {
+double getScaleForScaleState(PhotoViewScaleState scaleState, ScaleBoundaries scaleBoundaries) {
   return switch (scaleState) {
     PhotoViewScaleState.initial ||
     PhotoViewScaleState.zoomedIn ||
-    PhotoViewScaleState.zoomedOut =>
-      _clampSize(scaleBoundaries.initialScale, scaleBoundaries),
+    PhotoViewScaleState.zoomedOut => _clampSize(scaleBoundaries.initialScale, scaleBoundaries),
     PhotoViewScaleState.covering => _clampSize(
-        _scaleForCovering(
-          scaleBoundaries.outerSize,
-          scaleBoundaries.childSize,
-        ),
-        scaleBoundaries,
-      ),
+      _scaleForCovering(scaleBoundaries.outerSize, scaleBoundaries.childSize),
+      scaleBoundaries,
+    ),
     PhotoViewScaleState.originalSize => _clampSize(1.0, scaleBoundaries),
   };
 }
@@ -28,13 +21,7 @@ double getScaleForScaleState(
 /// Internal class to wraps custom scale boundaries (min, max and initial)
 /// Also, stores values regarding the two sizes: the container and the child.
 class ScaleBoundaries {
-  const ScaleBoundaries(
-    this._minScale,
-    this._maxScale,
-    this._initialScale,
-    this.outerSize,
-    this.childSize,
-  );
+  const ScaleBoundaries(this._minScale, this._maxScale, this._initialScale, this.outerSize, this.childSize);
 
   final dynamic _minScale;
   final dynamic _maxScale;
@@ -101,11 +88,7 @@ class ScaleBoundaries {
 
   @override
   int get hashCode =>
-      _minScale.hashCode ^
-      _maxScale.hashCode ^
-      _initialScale.hashCode ^
-      outerSize.hashCode ^
-      childSize.hashCode;
+      _minScale.hashCode ^ _maxScale.hashCode ^ _initialScale.hashCode ^ outerSize.hashCode ^ childSize.hashCode;
 }
 
 double _scaleForContained(Size size, Size childSize) {

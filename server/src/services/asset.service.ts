@@ -23,7 +23,7 @@ import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUn
 @Injectable()
 export class AssetService extends BaseService {
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
-    if (dto.visibility === AssetVisibility.LOCKED) {
+    if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
     }
 
@@ -46,7 +46,7 @@ export class AssetService extends BaseService {
   }
 
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.ASSET_READ, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
 
     const asset = await this.assetRepository.getById(id, {
       exifInfo: true,
@@ -78,7 +78,7 @@ export class AssetService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
 
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
     const repos = { asset: this.assetRepository, event: this.eventRepository };
@@ -114,7 +114,7 @@ export class AssetService extends BaseService {
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
     const { ids, description, dateTimeOriginal, latitude, longitude, ...options } = dto;
-    await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids });
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
     if (
       description !== undefined ||
@@ -125,7 +125,7 @@ export class AssetService extends BaseService {
       await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
       await this.jobRepository.queueAll(
         ids.map((id) => ({
-          name: JobName.SIDECAR_WRITE,
+          name: JobName.SidecarWrite,
           data: { id, description, dateTimeOriginal, latitude, longitude },
         })),
       );
@@ -139,13 +139,13 @@ export class AssetService extends BaseService {
     ) {
       await this.assetRepository.updateAll(ids, options);
 
-      if (options.visibility === AssetVisibility.LOCKED) {
+      if (options.visibility === AssetVisibility.Locked) {
         await this.albumRepository.removeAssetsFromAll(ids);
       }
     }
   }
 
-  @OnJob({ name: JobName.ASSET_DELETION_CHECK, queue: QueueName.BACKGROUND_TASK })
+  @OnJob({ name: JobName.AssetDeleteCheck, queue: QueueName.BackgroundTask })
   async handleAssetDeletionCheck(): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: false });
     const trashedDays = config.trash.enabled ? config.trash.days : 0;
@@ -158,7 +158,7 @@ export class AssetService extends BaseService {
       if (chunk.length > 0) {
         await this.jobRepository.queueAll(
           chunk.map(({ id, isOffline }) => ({
-            name: JobName.ASSET_DELETION,
+            name: JobName.AssetDelete,
             data: { id, deleteOnDisk: !isOffline },
           })),
         );
@@ -176,17 +176,17 @@ export class AssetService extends BaseService {
 
     await queueChunk();
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.ASSET_DELETION, queue: QueueName.BACKGROUND_TASK })
-  async handleAssetDeletion(job: JobOf<JobName.ASSET_DELETION>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetDelete, queue: QueueName.BackgroundTask })
+  async handleAssetDeletion(job: JobOf<JobName.AssetDelete>): Promise<JobStatus> {
     const { id, deleteOnDisk } = job;
 
     const asset = await this.assetJobRepository.getForAssetDeletion(id);
 
     if (!asset) {
-      return JobStatus.FAILED;
+      return JobStatus.Failed;
     }
 
     // Replace the parent of the stack children with a new asset
@@ -208,14 +208,14 @@ export class AssetService extends BaseService {
       await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
     }
 
-    await this.eventRepository.emit('asset.delete', { assetId: id, userId: asset.ownerId });
+    await this.eventRepository.emit('AssetDelete', { assetId: id, userId: asset.ownerId });
 
     // delete the motion if it is not used by another asset
     if (asset.livePhotoVideoId) {
       const count = await this.assetRepository.getLivePhotoCount(asset.livePhotoVideoId);
       if (count === 0) {
         await this.jobRepository.queue({
-          name: JobName.ASSET_DELETION,
+          name: JobName.AssetDelete,
           data: { id: asset.livePhotoVideoId, deleteOnDisk },
         });
       }
@@ -228,46 +228,49 @@ export class AssetService extends BaseService {
       files.push(asset.sidecarPath, asset.originalPath);
     }
 
-    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
+    await this.jobRepository.queue({ name: JobName.FileDelete, data: { files } });
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   async deleteAll(auth: AuthDto, dto: AssetBulkDeleteDto): Promise<void> {
     const { ids, force } = dto;
 
-    await this.requireAccess({ auth, permission: Permission.ASSET_DELETE, ids });
+    await this.requireAccess({ auth, permission: Permission.AssetDelete, ids });
     await this.assetRepository.updateAll(ids, {
       deletedAt: new Date(),
-      status: force ? AssetStatus.DELETED : AssetStatus.TRASHED,
+      status: force ? AssetStatus.Deleted : AssetStatus.Trashed,
     });
-    await this.eventRepository.emit(force ? 'assets.delete' : 'assets.trash', { assetIds: ids, userId: auth.user.id });
+    await this.eventRepository.emit(force ? 'AssetDeleteAll' : 'AssetTrashAll', {
+      assetIds: ids,
+      userId: auth.user.id,
+    });
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {
-    await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds });
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.assetIds });
 
     const jobs: JobItem[] = [];
 
     for (const id of dto.assetIds) {
       switch (dto.name) {
         case AssetJobName.REFRESH_FACES: {
-          jobs.push({ name: JobName.FACE_DETECTION, data: { id } });
+          jobs.push({ name: JobName.AssetDetectFaces, data: { id } });
           break;
         }
 
         case AssetJobName.REFRESH_METADATA: {
-          jobs.push({ name: JobName.METADATA_EXTRACTION, data: { id } });
+          jobs.push({ name: JobName.AssetExtractMetadata, data: { id } });
           break;
         }
 
         case AssetJobName.REGENERATE_THUMBNAIL: {
-          jobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id } });
+          jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id } });
           break;
         }
 
         case AssetJobName.TRANSCODE_VIDEO: {
-          jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id } });
+          jobs.push({ name: JobName.AssetEncodeVideo, data: { id } });
           break;
         }
       }
@@ -289,7 +292,7 @@ export class AssetService extends BaseService {
     const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating }, _.isUndefined);
     if (Object.keys(writes).length > 0) {
       await this.assetRepository.upsertExif({ assetId: id, ...writes });
-      await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id, ...writes } });
+      await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id, ...writes } });
     }
   }
 }

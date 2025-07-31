@@ -14,42 +14,29 @@ class MemoryCard extends StatelessWidget {
   final bool showTitle;
   final Function()? onVideoEnded;
 
-  const MemoryCard({
-    required this.asset,
-    required this.title,
-    required this.showTitle,
-    this.onVideoEnded,
-    super.key,
-  });
+  const MemoryCard({required this.asset, required this.title, required this.showTitle, this.onVideoEnded, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Card(
       color: Colors.black,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(25.0),
-        side: const BorderSide(
-          color: Colors.black,
-          width: 1.0,
-        ),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(25.0)),
+        side: BorderSide(color: Colors.black, width: 1.0),
       ),
       clipBehavior: Clip.hardEdge,
       child: Stack(
         children: [
-          SizedBox.expand(
-            child: _BlurredBackdrop(asset: asset),
-          ),
+          SizedBox.expand(child: _BlurredBackdrop(asset: asset)),
           LayoutBuilder(
             builder: (context, constraints) {
               // Determine the fit using the aspect ratio
               BoxFit fit = BoxFit.contain;
               if (asset.width != null && asset.height != null) {
                 final aspectRatio = asset.width! / asset.height!;
-                final phoneAspectRatio =
-                    constraints.maxWidth / constraints.maxHeight;
+                final phoneAspectRatio = constraints.maxWidth / constraints.maxHeight;
                 // Look for a 25% difference in either direction
-                if (phoneAspectRatio * .75 < aspectRatio &&
-                    phoneAspectRatio * 1.25 > aspectRatio) {
+                if (phoneAspectRatio * .75 < aspectRatio && phoneAspectRatio * 1.25 > aspectRatio) {
                   // Cover to look nice if we have nearly the same aspect ratio
                   fit = BoxFit.cover;
                 }
@@ -58,12 +45,7 @@ class MemoryCard extends StatelessWidget {
               if (asset.isImage) {
                 return Hero(
                   tag: 'memory-${asset.id}',
-                  child: ImmichImage(
-                    asset,
-                    fit: fit,
-                    height: double.infinity,
-                    width: double.infinity,
-                  ),
+                  child: ImmichImage(asset, fit: fit, height: double.infinity, width: double.infinity),
                 );
               } else {
                 return Hero(
@@ -76,12 +58,7 @@ class MemoryCard extends StatelessWidget {
                       asset: asset,
                       showControls: false,
                       playbackDelayFactor: 2,
-                      image: ImmichImage(
-                        asset,
-                        width: context.width,
-                        height: context.height,
-                        fit: BoxFit.contain,
-                      ),
+                      image: ImmichImage(asset, width: context.width, height: context.height, fit: BoxFit.contain),
                     ),
                   ),
                 );
@@ -94,10 +71,7 @@ class MemoryCard extends StatelessWidget {
               bottom: 18.0,
               child: Text(
                 title,
-                style: context.textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: context.textTheme.headlineMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w500),
               ),
             ),
         ],
@@ -118,16 +92,9 @@ class _BlurredBackdrop extends HookWidget {
       // Use a nice cheap blur hash image decoration
       return Container(
         decoration: BoxDecoration(
-          image: DecorationImage(
-            image: MemoryImage(
-              blurhash,
-            ),
-            fit: BoxFit.cover,
-          ),
+          image: DecorationImage(image: MemoryImage(blurhash), fit: BoxFit.cover),
         ),
-        child: Container(
-          color: Colors.black.withValues(alpha: 0.2),
-        ),
+        child: Container(color: Colors.black.withValues(alpha: 0.2)),
       );
     } else {
       // Fall back to using a more expensive image filtered
@@ -138,17 +105,11 @@ class _BlurredBackdrop extends HookWidget {
         child: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: ImmichImage.imageProvider(
-                asset: asset,
-                height: context.height,
-                width: context.width,
-              ),
+              image: ImmichImage.imageProvider(asset: asset, height: context.height, width: context.width),
               fit: BoxFit.cover,
             ),
           ),
-          child: Container(
-            color: Colors.black.withValues(alpha: 0.2),
-          ),
+          child: Container(color: Colors.black.withValues(alpha: 0.2)),
         ),
       );
     }

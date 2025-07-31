@@ -4,12 +4,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
-import 'package:immich_mobile/widgets/map/map_settings_sheet.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
+import 'package:immich_mobile/widgets/map/map_settings_sheet.dart';
 
 class MapAppBar extends HookWidget implements PreferredSizeWidget {
   final ValueNotifier<Set<Asset>> selectedAssets;
@@ -22,9 +22,8 @@ class MapAppBar extends HookWidget implements PreferredSizeWidget {
       padding: EdgeInsets.only(top: context.padding.top + 25),
       child: ValueListenableBuilder(
         valueListenable: selectedAssets,
-        builder: (ctx, value, child) => value.isNotEmpty
-            ? _SelectionRow(selectedAssets: selectedAssets)
-            : _NonSelectionRow(),
+        builder: (ctx, value, child) =>
+            value.isNotEmpty ? _SelectionRow(selectedAssets: selectedAssets) : const _NonSelectionRow(),
       ),
     );
   }
@@ -34,6 +33,8 @@ class MapAppBar extends HookWidget implements PreferredSizeWidget {
 }
 
 class _NonSelectionRow extends StatelessWidget {
+  const _NonSelectionRow();
+
   @override
   Widget build(BuildContext context) {
     void onSettingsPressed() {
@@ -51,16 +52,12 @@ class _NonSelectionRow extends StatelessWidget {
       children: [
         ElevatedButton(
           onPressed: () => context.maybePop(),
-          style: ElevatedButton.styleFrom(
-            shape: const CircleBorder(),
-          ),
+          style: ElevatedButton.styleFrom(shape: const CircleBorder()),
           child: const Icon(Icons.arrow_back_ios_new_rounded),
         ),
         ElevatedButton(
           onPressed: onSettingsPressed,
-          style: ElevatedButton.styleFrom(
-            shape: const CircleBorder(),
-          ),
+          style: ElevatedButton.styleFrom(shape: const CircleBorder()),
           child: const Icon(Icons.more_vert_rounded),
         ),
       ],
@@ -77,10 +74,7 @@ class _SelectionRow extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isProcessing = useProcessingOverlay();
 
-    Future<void> handleProcessing(
-      FutureOr<void> Function() action, [
-      bool reloadMarkers = false,
-    ]) async {
+    Future<void> handleProcessing(FutureOr<void> Function() action, [bool reloadMarkers = false]) async {
       isProcessing.value = true;
       await action();
       // Reset state
@@ -100,9 +94,7 @@ class _SelectionRow extends HookConsumerWidget {
             icon: const Icon(Icons.close_rounded),
             label: Text(
               '${selectedAssets.value.length}',
-              style: context.textTheme.titleMedium?.copyWith(
-                color: context.colorScheme.onPrimary,
-              ),
+              style: context.textTheme.titleMedium?.copyWith(color: context.colorScheme.onPrimary),
             ),
           ),
         ),
@@ -111,43 +103,20 @@ class _SelectionRow extends HookConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               ElevatedButton(
-                onPressed: () => handleProcessing(
-                  () => handleShareAssets(
-                    ref,
-                    context,
-                    selectedAssets.value.toList(),
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
-                ),
+                onPressed: () => handleProcessing(() => handleShareAssets(ref, context, selectedAssets.value.toList())),
+                style: ElevatedButton.styleFrom(shape: const CircleBorder()),
                 child: const Icon(Icons.ios_share_rounded),
               ),
               ElevatedButton(
-                onPressed: () => handleProcessing(
-                  () => handleFavoriteAssets(
-                    ref,
-                    context,
-                    selectedAssets.value.toList(),
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
-                ),
+                onPressed: () =>
+                    handleProcessing(() => handleFavoriteAssets(ref, context, selectedAssets.value.toList())),
+                style: ElevatedButton.styleFrom(shape: const CircleBorder()),
                 child: const Icon(Icons.favorite),
               ),
               ElevatedButton(
-                onPressed: () => handleProcessing(
-                  () => handleArchiveAssets(
-                    ref,
-                    context,
-                    selectedAssets.value.toList(),
-                  ),
-                  true,
-                ),
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
-                ),
+                onPressed: () =>
+                    handleProcessing(() => handleArchiveAssets(ref, context, selectedAssets.value.toList()), true),
+                style: ElevatedButton.styleFrom(shape: const CircleBorder()),
                 child: const Icon(Icons.archive),
               ),
             ],

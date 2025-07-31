@@ -30,8 +30,7 @@ class PinInput extends StatelessWidget {
       final minimumPadding = 18.0;
       final gapWidth = 3.0;
       final screenWidth = context.width;
-      final pinWidth =
-          (screenWidth - (minimumPadding * 2) - (gapWidth * 5)) / (length ?? 6);
+      final pinWidth = (screenWidth - (minimumPadding * 2) - (gapWidth * 5)) / (length ?? 6);
 
       if (pinWidth > 60) {
         return const Size(60, 64);
@@ -44,11 +43,7 @@ class PinInput extends StatelessWidget {
     final defaultPinTheme = PinTheme(
       width: getPinSize().width,
       height: getPinSize().height,
-      textStyle: TextStyle(
-        fontSize: 24,
-        color: context.colorScheme.onSurface,
-        fontFamily: 'Overpass Mono',
-      ),
+      textStyle: TextStyle(fontSize: 24, color: context.colorScheme.onSurface, fontFamily: 'Overpass Mono'),
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(Radius.circular(19)),
         border: Border.all(color: context.colorScheme.surfaceBright),
@@ -62,8 +57,7 @@ class PinInput extends StatelessWidget {
         if (label != null) ...[
           Text(
             label!,
-            style: context.textTheme.displayLarge
-                ?.copyWith(color: context.colorScheme.onSurface.withAlpha(200)),
+            style: context.textTheme.displayLarge?.copyWith(color: context.colorScheme.onSurface.withAlpha(200)),
           ),
           const SizedBox(height: 4),
         ],
@@ -72,34 +66,19 @@ class PinInput extends StatelessWidget {
           forceErrorState: hasError ?? false,
           autofocus: autoFocus ?? false,
           obscureText: obscureText ?? false,
-          obscuringWidget: Icon(
-            Icons.vpn_key_rounded,
-            color: context.primaryColor,
-            size: 20,
-          ),
-          separatorBuilder: (index) => const SizedBox(
-            height: 64,
-            width: 3,
-          ),
+          obscuringWidget: Icon(Icons.vpn_key_rounded, color: context.primaryColor, size: 20),
+          separatorBuilder: (index) => const SizedBox(height: 64, width: 3),
           cursor: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Container(
-                margin: const EdgeInsets.only(bottom: 9),
-                width: 18,
-                height: 2,
-                color: context.primaryColor,
-              ),
+              Container(margin: const EdgeInsets.only(bottom: 9), width: 18, height: 2, color: context.primaryColor),
             ],
           ),
           defaultPinTheme: defaultPinTheme,
           focusedPinTheme: defaultPinTheme.copyWith(
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.all(Radius.circular(19)),
-              border: Border.all(
-                color: context.primaryColor.withValues(alpha: 0.5),
-                width: 2,
-              ),
+              border: Border.all(color: context.primaryColor.withValues(alpha: 0.5), width: 2),
               color: context.colorScheme.surfaceContainerHigh,
             ),
           ),
@@ -107,10 +86,7 @@ class PinInput extends StatelessWidget {
             decoration: BoxDecoration(
               color: context.colorScheme.error.withAlpha(15),
               borderRadius: const BorderRadius.all(Radius.circular(19)),
-              border: Border.all(
-                color: context.colorScheme.error.withAlpha(100),
-                width: 2,
-              ),
+              border: Border.all(color: context.colorScheme.error.withAlpha(100), width: 2),
             ),
           ),
           pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,

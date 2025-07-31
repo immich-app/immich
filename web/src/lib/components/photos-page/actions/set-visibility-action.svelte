@@ -1,12 +1,10 @@
 <script lang="ts">
   import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
-
   import type { OnSetVisibility } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetVisibility, updateAssets } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, modalManager } from '@immich/ui';
   import { mdiLockOpenVariantOutline, mdiLockOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -26,6 +24,7 @@
       prompt: unlock ? $t('remove_from_locked_folder_confirmation') : $t('move_to_locked_folder_confirmation'),
       confirmText: $t('move'),
       confirmColor: unlock ? 'danger' : 'primary',
+      icon: unlock ? mdiLockOpenVariantOutline : mdiLockOutline,
     });
 
     if (!isConfirmed) {

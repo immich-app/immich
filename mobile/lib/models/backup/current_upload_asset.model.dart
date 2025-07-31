@@ -9,7 +9,7 @@ class CurrentUploadAsset {
   final int? fileSize;
   final bool? iCloudAsset;
 
-  CurrentUploadAsset({
+  const CurrentUploadAsset({
     required this.id,
     required this.fileCreatedAt,
     required this.fileName,
@@ -53,13 +53,11 @@ class CurrentUploadAsset {
   factory CurrentUploadAsset.fromMap(Map<String, dynamic> map) {
     return CurrentUploadAsset(
       id: map['id'] as String,
-      fileCreatedAt:
-          DateTime.fromMillisecondsSinceEpoch(map['fileCreatedAt'] as int),
+      fileCreatedAt: DateTime.fromMillisecondsSinceEpoch(map['fileCreatedAt'] as int),
       fileName: map['fileName'] as String,
       fileType: map['fileType'] as String,
       fileSize: map['fileSize'] as int,
-      iCloudAsset:
-          map['iCloudAsset'] != null ? map['iCloudAsset'] as bool : null,
+      iCloudAsset: map['iCloudAsset'] != null ? map['iCloudAsset'] as bool : null,
     );
   }
 

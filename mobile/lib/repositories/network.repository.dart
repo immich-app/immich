@@ -12,7 +12,7 @@ final networkRepositoryProvider = Provider((_) {
 class NetworkRepository {
   final NetworkInfo _networkInfo;
 
-  NetworkRepository(this._networkInfo);
+  const NetworkRepository(this._networkInfo);
 
   Future<String?> getWifiName() {
     if (Platform.isAndroid) {

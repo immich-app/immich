@@ -4,8 +4,9 @@ import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
-import { DB, Sessions } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { DB } from 'src/schema';
+import { SessionTable } from 'src/schema/tables/session.table';
 import { asUuid } from 'src/utils/database';
 
 export type SessionSearchOptions = { updatedBefore: Date };
@@ -16,7 +17,7 @@ export class SessionRepository {
 
   cleanup() {
     return this.db
-      .deleteFrom('sessions')
+      .deleteFrom('session')
       .where((eb) =>
         eb.or([
           eb('updatedAt', '<=', DateTime.now().minus({ days: 90 }).toJSDate()),
@@ -30,7 +31,7 @@ export class SessionRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   get(id: string) {
     return this.db
-      .selectFrom('sessions')
+      .selectFrom('session')
       .select(['id', 'expiresAt', 'pinExpiresAt'])
       .where('id', '=', id)
       .executeTakeFirst();
@@ -39,20 +40,20 @@ export class SessionRepository {
   @GenerateSql({ params: [DummyValue.STRING] })
   getByToken(token: string) {
     return this.db
-      .selectFrom('sessions')
+      .selectFrom('session')
       .select((eb) => [
         ...columns.authSession,
         jsonObjectFrom(
           eb
-            .selectFrom('users')
+            .selectFrom('user')
             .select(columns.authUser)
-            .whereRef('users.id', '=', 'sessions.userId')
-            .where('users.deletedAt', 'is', null),
+            .whereRef('user.id', '=', 'session.userId')
+            .where('user.deletedAt', 'is', null),
         ).as('user'),
       ])
-      .where('sessions.token', '=', token)
+      .where('session.token', '=', token)
       .where((eb) =>
-        eb.or([eb('sessions.expiresAt', 'is', null), eb('sessions.expiresAt', '>', DateTime.now().toJSDate())]),
+        eb.or([eb('session.expiresAt', 'is', null), eb('session.expiresAt', '>', DateTime.now().toJSDate())]),
       )
       .executeTakeFirst();
   }
@@ -60,38 +61,48 @@ export class SessionRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getByUserId(userId: string) {
     return this.db
-      .selectFrom('sessions')
-      .innerJoin('users', (join) => join.onRef('users.id', '=', 'sessions.userId').on('users.deletedAt', 'is', null))
-      .selectAll('sessions')
-      .where('sessions.userId', '=', userId)
+      .selectFrom('session')
+      .innerJoin('user', (join) => join.onRef('user.id', '=', 'session.userId').on('user.deletedAt', 'is', null))
+      .selectAll('session')
+      .where('session.userId', '=', userId)
       .where((eb) =>
-        eb.or([eb('sessions.expiresAt', 'is', null), eb('sessions.expiresAt', '>', DateTime.now().toJSDate())]),
+        eb.or([eb('session.expiresAt', 'is', null), eb('session.expiresAt', '>', DateTime.now().toJSDate())]),
       )
-      .orderBy('sessions.updatedAt', 'desc')
-      .orderBy('sessions.createdAt', 'desc')
+      .orderBy('session.updatedAt', 'desc')
+      .orderBy('session.createdAt', 'desc')
       .execute();
   }
 
-  create(dto: Insertable<Sessions>) {
-    return this.db.insertInto('sessions').values(dto).returningAll().executeTakeFirstOrThrow();
+  create(dto: Insertable<SessionTable>) {
+    return this.db.insertInto('session').values(dto).returningAll().executeTakeFirstOrThrow();
   }
 
-  update(id: string, dto: Updateable<Sessions>) {
+  update(id: string, dto: Updateable<SessionTable>) {
     return this.db
-      .updateTable('sessions')
+      .updateTable('session')
       .set(dto)
-      .where('sessions.id', '=', asUuid(id))
+      .where('session.id', '=', asUuid(id))
       .returningAll()
       .executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string) {
-    await this.db.deleteFrom('sessions').where('id', '=', asUuid(id)).execute();
+    await this.db.deleteFrom('session').where('id', '=', asUuid(id)).execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async lockAll(userId: string) {
-    await this.db.updateTable('sessions').set({ pinExpiresAt: null }).where('userId', '=', userId).execute();
+    await this.db.updateTable('session').set({ pinExpiresAt: null }).where('userId', '=', userId).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async resetSyncProgress(sessionId: string) {
+    await this.db.transaction().execute((tx) => {
+      return Promise.all([
+        tx.updateTable('session').set({ isPendingSyncReset: false }).where('id', '=', sessionId).execute(),
+        tx.deleteFrom('session_sync_checkpoint').where('sessionId', '=', sessionId).execute(),
+      ]);
+    });
   }
 }

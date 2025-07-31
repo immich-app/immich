@@ -3,6 +3,8 @@ class ExifInfo {
   final int? fileSize;
   final String? description;
   final bool isFlipped;
+  final double? width;
+  final double? height;
   final String? orientation;
   final String? timeZone;
   final DateTime? dateTimeOriginal;
@@ -23,8 +25,7 @@ class ExifInfo {
   final int? iso;
   final double? exposureSeconds;
 
-  bool get hasCoordinates =>
-      latitude != null && longitude != null && latitude != 0 && longitude != 0;
+  bool get hasCoordinates => latitude != null && longitude != null && latitude != 0 && longitude != 0;
 
   String get exposureTime {
     if (exposureSeconds == null) {
@@ -45,6 +46,8 @@ class ExifInfo {
     this.fileSize,
     this.description,
     this.orientation,
+    this.width,
+    this.height,
     this.timeZone,
     this.dateTimeOriginal,
     this.isFlipped = false,
@@ -68,6 +71,9 @@ class ExifInfo {
 
     return other.fileSize == fileSize &&
         other.description == description &&
+        other.isFlipped == isFlipped &&
+        other.width == width &&
+        other.height == height &&
         other.orientation == orientation &&
         other.timeZone == timeZone &&
         other.dateTimeOriginal == dateTimeOriginal &&
@@ -91,6 +97,9 @@ class ExifInfo {
     return fileSize.hashCode ^
         description.hashCode ^
         orientation.hashCode ^
+        isFlipped.hashCode ^
+        width.hashCode ^
+        height.hashCode ^
         timeZone.hashCode ^
         dateTimeOriginal.hashCode ^
         latitude.hashCode ^
@@ -114,6 +123,9 @@ class ExifInfo {
 fileSize: ${fileSize ?? 'NA'},
 description: ${description ?? 'NA'},
 orientation: ${orientation ?? 'NA'},
+width: ${width ?? 'NA'},
+height: ${height ?? 'NA'},
+isFlipped: $isFlipped,
 timeZone: ${timeZone ?? 'NA'},
 dateTimeOriginal: ${dateTimeOriginal ?? 'NA'},
 latitude: ${latitude ?? 'NA'},

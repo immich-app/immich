@@ -10,13 +10,13 @@
   import { afterNavigate } from '$app/navigation';
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
+  import { modalManager } from '@immich/ui';
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
@@ -56,6 +56,7 @@
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
     rounded?: boolean;
     showSimpleControls?: boolean;
+    autoFitBounds?: boolean;
   }
 
   let {
@@ -73,9 +74,21 @@
     popup,
     rounded = false,
     showSimpleControls = true,
+    autoFitBounds = true,
   }: Props = $props();
 
-  const initialCenter = center;
+  // Calculate initial bounds from markers once during initialization
+  const initialBounds = (() => {
+    if (!autoFitBounds || center || zoom !== undefined || !mapMarkers || mapMarkers.length === 0) {
+      return undefined;
+    }
+
+    const bounds = new maplibregl.LngLatBounds();
+    for (const marker of mapMarkers) {
+      bounds.extend([marker.lon, marker.lat]);
+    }
+    return bounds;
+  })();
 
   let map: maplibregl.Map | undefined = $state();
   let marker: maplibregl.Marker | null = null;
@@ -189,7 +202,7 @@
 
     return await getMapMarkers(
       {
-        isArchived: includeArchived && undefined,
+        isArchived: includeArchived || undefined,
         isFavorite: onlyFavorites || undefined,
         fileCreatedAfter: fileCreatedAfter || undefined,
         fileCreatedBefore,
@@ -277,7 +290,9 @@
   style=""
   class="h-full {rounded ? 'rounded-2xl' : 'rounded-none'}"
   {zoom}
-  center={initialCenter}
+  {center}
+  bounds={initialBounds}
+  fitBoundsOptions={{ padding: 50, maxZoom: 15 }}
   attributionControl={false}
   diffStyleUpdates={true}
   onload={(event) => {

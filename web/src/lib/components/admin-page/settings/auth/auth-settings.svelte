@@ -6,9 +6,9 @@
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import AuthDisableLoginConfirmModal from '$lib/modals/AuthDisableLoginConfirmModal.svelte';
   import { OAuthTokenEndpointAuthMethod, type SystemConfigDto } from '@immich/sdk';
+  import { modalManager } from '@immich/ui';
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -165,6 +165,16 @@
                 required={true}
                 disabled={disabled || !config.oauth.enabled}
                 isEdited={!(config.oauth.storageLabelClaim == savedConfig.oauth.storageLabelClaim)}
+              />
+
+              <SettingInputField
+                inputType={SettingInputFieldType.TEXT}
+                label={$t('admin.oauth_role_claim').toUpperCase()}
+                description={$t('admin.oauth_role_claim_description')}
+                bind:value={config.oauth.roleClaim}
+                required={true}
+                disabled={disabled || !config.oauth.enabled}
+                isEdited={!(config.oauth.roleClaim == savedConfig.oauth.roleClaim)}
               />
 
               <SettingInputField

@@ -20,7 +20,6 @@ Immich supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an i
 Before enabling OAuth in Immich, a new client application needs to be configured in the 3rd-party authentication server. While the specifics of this setup vary from provider to provider, the general approach should be the same.
 
 1. Create a new (Client) Application
-
    1. The **Provider** type should be `OpenID Connect` or `OAuth2`
    2. The **Client type** should be `Confidential`
    3. The **Application** type should be `Web`
@@ -29,7 +28,6 @@ Before enabling OAuth in Immich, a new client application needs to be configured
 2. Configure Redirect URIs/Origins
 
    The **Sign-in redirect URIs** should include:
-
    - `app.immich:///oauth-callback` - for logging in with OAuth from the [Mobile App](/docs/features/mobile-app.mdx)
    - `http://DOMAIN:PORT/auth/login` - for logging in with OAuth from the Web Client
    - `http://DOMAIN:PORT/user-settings` - for manually linking OAuth in the Web Client
@@ -37,21 +35,17 @@ Before enabling OAuth in Immich, a new client application needs to be configured
    Redirect URIs should contain all the domains you will be using to access Immich. Some examples include:
 
    Mobile
-
    - `app.immich:///oauth-callback` (You **MUST** include this for iOS and Android mobile apps to work properly)
 
    Localhost
-
    - `http://localhost:2283/auth/login`
    - `http://localhost:2283/user-settings`
 
    Local IP
-
    - `http://192.168.0.200:2283/auth/login`
    - `http://192.168.0.200:2283/user-settings`
 
    Hostname
-
    - `https://immich.example.com/auth/login`
    - `https://immich.example.com/user-settings`
 
@@ -68,8 +62,9 @@ Once you have a new OAuth client application configured, Immich can be configure
 | Scope                                                | string  | openid email profile | Full list of scopes to send with the request (space delimited)                      |
 | Signing Algorithm                                    | string  | RS256                | The algorithm used to sign the id token (examples: RS256, HS256)                    |
 | Storage Label Claim                                  | string  | preferred_username   | Claim mapping for the user's storage label**¹**                                     |
+| Role Claim                                           | string  | immich_role          | Claim mapping for the user's role. (should return "user" or "admin")**¹**           |
 | Storage Quota Claim                                  | string  | immich_quota         | Claim mapping for the user's storage**¹**                                           |
-| Default Storage Quota (GiB)                          | number  | 0                    | Default quota for user without storage quota claim (Enter 0 for unlimited quota)    |
+| Default Storage Quota (GiB)                          | number  | 0                    | Default quota for user without storage quota claim (empty for unlimited quota)      |
 | Button Text                                          | string  | Login with OAuth     | Text for the OAuth button on the web                                                |
 | Auto Register                                        | boolean | true                 | When true, will automatically register a user the first time they sign in           |
 | [Auto Launch](#auto-launch)                          | boolean | false                | When true, will skip the login page and automatically start the OAuth login process |
@@ -112,6 +107,89 @@ Immich has a route (`/api/oauth/mobile-redirect`) that is already configured to 
 ## Example Configuration
 
 <details>
+<summary>Authelia Example</summary>
+
+### Authelia Example
+
+Here's an example of OAuth configured for Authelia:
+
+This assumes there exist an attribute `immichquota` in the user schema, which is used to set the user's storage quota in Immich.
+The configuration concerning the quota is optional.
+
+```yaml
+authentication_backend:
+  ldap:
+    # The LDAP server configuration goes here.
+    # See: https://www.authelia.com/c/ldap
+    attributes:
+      extra:
+        immichquota: # The attribute name from LDAP
+          name: 'immich_quota'
+          multi_valued: false
+          value_type: 'integer'
+identity_providers:
+  oidc:
+    ## The other portions of the mandatory OpenID Connect 1.0 configuration go here.
+    ## See: https://www.authelia.com/c/oidc
+    claims_policies:
+      immich_policy:
+        custom_claims:
+          immich_quota:
+            attribute: 'immich_quota'
+    scopes:
+      immich_scope:
+        claims:
+          - 'immich_quota'
+
+    clients:
+      - client_id: 'immich'
+        client_name: 'Immich'
+        # https://www.authelia.com/integration/openid-connect/frequently-asked-questions/#how-do-i-generate-a-client-identifier-or-client-secret
+        client_secret: $pbkdf2-sha512$310000$c8p78n7pUMln0jzvd4aK4Q$JNRBzwAo0ek5qKn50cFzzvE9RXV88h1wJn5KGiHrD0YKtZaR/nCb2CJPOsKaPK0hjf.9yHxzQGZziziccp6Yng'
+        public: false
+        require_pkce: false
+        redirect_uris:
+          - 'https://example.immich.app/auth/login'
+          - 'https://example.immich.app/user-settings'
+          - 'app.immich:///oauth-callback'
+        scopes:
+          - 'openid'
+          - 'profile'
+          - 'email'
+          - 'immich_scope'
+        claims_policy: 'immich_policy'
+        response_types:
+          - 'code'
+        grant_types:
+          - 'authorization_code'
+        id_token_signed_response_alg: 'RS256'
+        userinfo_signed_response_alg: 'RS256'
+        token_endpoint_auth_method: 'client_secret_post'
+```
+
+Configuration of OAuth in Immich System Settings
+
+| Setting                            | Value                                                               |
+| ---------------------------------- | ------------------------------------------------------------------- |
+| Issuer URL                         | `https://example.immich.app/.well-known/openid-configuration`       |
+| Client ID                          | immich                                                              |
+| Client Secret                      | 0v89FXkQOWO\***\*\*\*\*\***\*\*\***\*\*\*\*\***mprbvXD549HH6s1iw... |
+| Token Endpoint Auth Method         | client_secret_post                                                  |
+| Scope                              | openid email profile immich_scope                                   |
+| ID Token Signed Response Algorithm | RS256                                                               |
+| Userinfo Signed Response Algorithm | RS256                                                               |
+| Storage Label Claim                | uid                                                                 |
+| Storage Quota Claim                | immich_quota                                                        |
+| Default Storage Quota (GiB)        | 0 (empty for unlimited quota)                                       |
+| Button Text                        | Sign in with Authelia (optional)                                    |
+| Auto Register                      | Enabled (optional)                                                  |
+| Auto Launch                        | Enabled (optional)                                                  |
+| Mobile Redirect URI Override       | Disable                                                             |
+| Mobile Redirect URI                |                                                                     |
+
+</details>
+
+<details>
 <summary>Authentik Example</summary>
 
 ### Authentik Example
@@ -133,7 +211,7 @@ Configuration of OAuth in Immich System Settings
 | Signing Algorithm            | RS256                                                                              |
 | Storage Label Claim          | preferred_username                                                                 |
 | Storage Quota Claim          | immich_quota                                                                       |
-| Default Storage Quota (GiB)  | 0 (0 for unlimited quota)                                                          |
+| Default Storage Quota (GiB)  | 0 (empty for unlimited quota)                                                      |
 | Button Text                  | Sign in with Authentik (optional)                                                  |
 | Auto Register                | Enabled (optional)                                                                 |
 | Auto Launch                  | Enabled (optional)                                                                 |
@@ -164,7 +242,7 @@ Configuration of OAuth in Immich System Settings
 | Signing Algorithm            | RS256                                                                        |
 | Storage Label Claim          | preferred_username                                                           |
 | Storage Quota Claim          | immich_quota                                                                 |
-| Default Storage Quota (GiB)  | 0 (0 for unlimited quota)                                                    |
+| Default Storage Quota (GiB)  | 0 (empty for unlimited quota)                                                |
 | Button Text                  | Sign in with Google (optional)                                               |
 | Auto Register                | Enabled (optional)                                                           |
 | Auto Launch                  | Enabled                                                                      |

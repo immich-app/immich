@@ -8,11 +8,7 @@ class AdvancedBottomSheet extends HookConsumerWidget {
   final Asset assetDetail;
   final ScrollController? scrollController;
 
-  const AdvancedBottomSheet({
-    super.key,
-    required this.assetDetail,
-    this.scrollController,
-  });
+  const AdvancedBottomSheet({super.key, required this.assetDetail, this.scrollController});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,27 +22,15 @@ class AdvancedBottomSheet extends HookConsumerWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Align(
-                  child: Text(
-                    "ADVANCED INFO",
-                    style: TextStyle(fontSize: 12.0),
-                  ),
-                ),
+                const Align(child: Text("ADVANCED INFO", style: TextStyle(fontSize: 12.0))),
                 const SizedBox(height: 32.0),
                 Container(
                   decoration: BoxDecoration(
-                    color: context.isDarkTheme
-                        ? Colors.grey[900]
-                        : Colors.grey[200],
-                    borderRadius: BorderRadius.circular(15.0),
+                    color: context.isDarkTheme ? Colors.grey[900] : Colors.grey[200],
+                    borderRadius: const BorderRadius.all(Radius.circular(15.0)),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.only(
-                      right: 16.0,
-                      left: 16,
-                      top: 8,
-                      bottom: 16,
-                    ),
+                    padding: const EdgeInsets.only(right: 16.0, left: 16, top: 8, bottom: 16),
                     child: ListView(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -55,29 +39,18 @@ class AdvancedBottomSheet extends HookConsumerWidget {
                           alignment: Alignment.centerRight,
                           child: IconButton(
                             onPressed: () {
-                              Clipboard.setData(
-                                ClipboardData(
-                                  text: assetDetail.toString(),
-                                ),
-                              ).then((_) {
+                              Clipboard.setData(ClipboardData(text: assetDetail.toString())).then((_) {
                                 context.scaffoldMessenger.showSnackBar(
                                   SnackBar(
                                     content: Text(
                                       "Copied to clipboard",
-                                      style:
-                                          context.textTheme.bodyLarge?.copyWith(
-                                        color: context.primaryColor,
-                                      ),
+                                      style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
                                     ),
                                   ),
                                 );
                               });
                             },
-                            icon: Icon(
-                              Icons.copy,
-                              size: 16.0,
-                              color: context.primaryColor,
-                            ),
+                            icon: Icon(Icons.copy, size: 16.0, color: context.primaryColor),
                           ),
                         ),
                         SelectableText(

@@ -9,6 +9,9 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+formatter:  
+  page_width: 120
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`
@@ -106,6 +109,7 @@ custom_lint:
         - lib/utils/{image_url_builder,openapi_patching}.dart # utils are fine
         - test/modules/utils/openapi_patching_test.dart # filename is self-explanatory...
         - lib/domain/services/sync_stream.service.dart # Making sure to comply with the type from database
+        - lib/domain/services/search.service.dart
 
         # refactor
         - lib/models/map/map_marker.model.dart
@@ -146,6 +150,7 @@ dart_code_metrics:
   #  - no-empty-block
   #  - no-equal-then-else
   #  - prefer-correct-test-file-name
+    - prefer-const-border-radius
   #  - prefer-match-file-name
   #  - prefer-return-await
   #  - avoid-self-assignment
@@ -290,7 +295,8 @@ dart_code_metrics:
     # Style
   #  - prefer-trailing-comma
   #  - unnecessary-trailing-comma
-  #  - prefer-declaring-const-constructor
+    - prefer-declaring-const-constructor
   #  - prefer-single-widget-per-file
+    - prefer-switch-expression
   #  - prefer-prefixed-global-constants
   #  - prefer-correct-callback-field-name

@@ -151,6 +151,9 @@ String parameterToString(dynamic value) {
   if (value is UserAvatarColor) {
     return UserAvatarColorTypeTransformer().encode(value).toString();
   }
+  if (value is UserMetadataKey) {
+    return UserMetadataKeyTypeTransformer().encode(value).toString();
+  }
   if (value is UserStatus) {
     return UserStatusTypeTransformer().encode(value).toString();
   }

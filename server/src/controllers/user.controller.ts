@@ -21,7 +21,7 @@ import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
-import { RouteKey } from 'src/enum';
+import { Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -30,7 +30,7 @@ import { sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Users')
-@Controller(RouteKey.USER)
+@Controller(RouteKey.User)
 export class UserController {
   constructor(
     private service: UserService,
@@ -38,31 +38,31 @@ export class UserController {
   ) {}
 
   @Get()
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserRead })
   searchUsers(@Auth() auth: AuthDto): Promise<UserResponseDto[]> {
     return this.service.search(auth);
   }
 
   @Get('me')
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserRead })
   getMyUser(@Auth() auth: AuthDto): Promise<UserAdminResponseDto> {
     return this.service.getMe(auth);
   }
 
   @Put('me')
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserUpdate })
   updateMyUser(@Auth() auth: AuthDto, @Body() dto: UserUpdateMeDto): Promise<UserAdminResponseDto> {
     return this.service.updateMe(auth, dto);
   }
 
   @Get('me/preferences')
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserPreferenceRead })
   getMyPreferences(@Auth() auth: AuthDto): Promise<UserPreferencesResponseDto> {
     return this.service.getMyPreferences(auth);
   }
 
   @Put('me/preferences')
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserPreferenceUpdate })
   updateMyPreferences(
     @Auth() auth: AuthDto,
     @Body() dto: UserPreferencesUpdateDto,
@@ -71,43 +71,43 @@ export class UserController {
   }
 
   @Get('me/license')
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserLicenseRead })
   getUserLicense(@Auth() auth: AuthDto): Promise<LicenseResponseDto> {
     return this.service.getLicense(auth);
   }
 
   @Put('me/license')
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserLicenseUpdate })
   async setUserLicense(@Auth() auth: AuthDto, @Body() license: LicenseKeyDto): Promise<LicenseResponseDto> {
     return this.service.setLicense(auth, license);
   }
 
   @Delete('me/license')
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserLicenseDelete })
   async deleteUserLicense(@Auth() auth: AuthDto): Promise<void> {
     await this.service.deleteLicense(auth);
   }
 
   @Get('me/onboarding')
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserOnboardingRead })
   getUserOnboarding(@Auth() auth: AuthDto): Promise<OnboardingResponseDto> {
     return this.service.getOnboarding(auth);
   }
 
   @Put('me/onboarding')
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserOnboardingUpdate })
   async setUserOnboarding(@Auth() auth: AuthDto, @Body() Onboarding: OnboardingDto): Promise<OnboardingResponseDto> {
     return this.service.setOnboarding(auth, Onboarding);
   }
 
   @Delete('me/onboarding')
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserOnboardingDelete })
   async deleteUserOnboarding(@Auth() auth: AuthDto): Promise<void> {
     await this.service.deleteOnboarding(auth);
   }
 
   @Get(':id')
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserRead })
   getUser(@Param() { id }: UUIDParamDto): Promise<UserResponseDto> {
     return this.service.get(id);
   }
@@ -116,7 +116,7 @@ export class UserController {
   @ApiConsumes('multipart/form-data')
   @ApiBody({ description: 'A new avatar for the user', type: CreateProfileImageDto })
   @Post('profile-image')
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserProfileImageUpdate })
   createProfileImage(
     @Auth() auth: AuthDto,
     @UploadedFile() fileInfo: Express.Multer.File,
@@ -126,14 +126,14 @@ export class UserController {
 
   @Delete('profile-image')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserProfileImageDelete })
   deleteProfileImage(@Auth() auth: AuthDto): Promise<void> {
     return this.service.deleteProfileImage(auth);
   }
 
   @Get(':id/profile-image')
   @FileResponse()
-  @Authenticated()
+  @Authenticated({ permission: Permission.UserProfileImageRead })
   async getProfileImage(@Res() res: Response, @Next() next: NextFunction, @Param() { id }: UUIDParamDto) {
     await sendFile(res, next, () => this.service.getProfileImage(id), this.logger);
   }

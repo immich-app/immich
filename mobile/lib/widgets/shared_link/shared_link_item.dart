@@ -33,10 +33,7 @@ class SharedLinkItem extends ConsumerWidget {
     var expiresText = "shared_link_expires_never".tr();
     if (sharedLink.expiresAt != null) {
       if (isExpired()) {
-        return Text(
-          "expired",
-          style: TextStyle(color: Colors.red[300]),
-        ).tr();
+        return Text("expired", style: TextStyle(color: Colors.red[300])).tr();
       }
       final difference = sharedLink.expiresAt!.difference(DateTime.now());
       debugPrint("Difference: $difference");
@@ -45,40 +42,28 @@ class SharedLinkItem extends ConsumerWidget {
         if (difference.inHours % 24 > 12) {
           dayDifference += 1;
         }
-        expiresText = "shared_link_expires_days"
-            .tr(namedArgs: {'count': dayDifference.toString()});
+        expiresText = "shared_link_expires_days".tr(namedArgs: {'count': dayDifference.toString()});
       } else if (difference.inHours > 0) {
-        expiresText = "shared_link_expires_hours"
-            .tr(namedArgs: {'count': difference.inHours.toString()});
+        expiresText = "shared_link_expires_hours".tr(namedArgs: {'count': difference.inHours.toString()});
       } else if (difference.inMinutes > 0) {
-        expiresText = "shared_link_expires_minutes"
-            .tr(namedArgs: {'count': difference.inMinutes.toString()});
+        expiresText = "shared_link_expires_minutes".tr(namedArgs: {'count': difference.inMinutes.toString()});
       } else if (difference.inSeconds > 0) {
-        expiresText = "shared_link_expires_seconds"
-            .tr(namedArgs: {'count': difference.inSeconds.toString()});
+        expiresText = "shared_link_expires_seconds".tr(namedArgs: {'count': difference.inSeconds.toString()});
       }
     }
-    return Text(
-      expiresText,
-      style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
-    );
+    return Text(expiresText, style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]));
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = context.colorScheme;
     final isDarkMode = colorScheme.brightness == Brightness.dark;
-    final thumbnailUrl = sharedLink.thumbAssetId != null
-        ? getThumbnailUrlForRemoteId(sharedLink.thumbAssetId!)
-        : null;
+    final thumbnailUrl = sharedLink.thumbAssetId != null ? getThumbnailUrlForRemoteId(sharedLink.thumbAssetId!) : null;
     final imageSize = math.min(context.width / 4, 100.0);
 
     void copyShareLinkToClipboard() {
-      final externalDomain = ref.read(
-        serverInfoProvider.select((s) => s.serverConfig.externalDomain),
-      );
-      var serverUrl =
-          externalDomain.isNotEmpty ? externalDomain : getServerUrl();
+      final externalDomain = ref.read(serverInfoProvider.select((s) => s.serverConfig.externalDomain));
+      var serverUrl = externalDomain.isNotEmpty ? externalDomain : getServerUrl();
       if (serverUrl != null && !serverUrl.endsWith('/')) {
         serverUrl += '/';
       }
@@ -92,16 +77,12 @@ class SharedLinkItem extends ConsumerWidget {
         return;
       }
 
-      Clipboard.setData(
-        ClipboardData(text: "${serverUrl}share/${sharedLink.key}"),
-      ).then((_) {
+      Clipboard.setData(ClipboardData(text: "${serverUrl}share/${sharedLink.key}")).then((_) {
         context.scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(
               "shared_link_clipboard_copied_massage",
-              style: context.textTheme.bodyLarge?.copyWith(
-                color: context.primaryColor,
-              ),
+              style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
             ).tr(),
             duration: const Duration(seconds: 2),
           ),
@@ -116,9 +97,7 @@ class SharedLinkItem extends ConsumerWidget {
           return ConfirmDialog(
             title: "delete_shared_link_dialog_title",
             content: "confirm_delete_shared_link",
-            onOk: () => ref
-                .read(sharedLinksStateProvider.notifier)
-                .deleteLink(sharedLink.id),
+            onOk: () => ref.read(sharedLinksStateProvider.notifier).deleteLink(sharedLink.id),
           );
         },
       );
@@ -129,14 +108,9 @@ class SharedLinkItem extends ConsumerWidget {
         return Container(
           height: imageSize * 1.2,
           width: imageSize,
-          decoration: BoxDecoration(
-            color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-          ),
+          decoration: BoxDecoration(color: isDarkMode ? Colors.grey[800] : Colors.grey[200]),
           child: Center(
-            child: Icon(
-              Icons.image_not_supported_outlined,
-              color: isDarkMode ? Colors.grey[100] : Colors.grey[700],
-            ),
+            child: Icon(Icons.image_not_supported_outlined, color: isDarkMode ? Colors.grey[100] : Colors.grey[700]),
           ),
         );
       }
@@ -169,9 +143,7 @@ class SharedLinkItem extends ConsumerWidget {
               color: isDarkMode ? Colors.black : Colors.white,
             ),
           ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(25)),
-          ),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(25))),
         ),
       );
     }
@@ -181,8 +153,7 @@ class SharedLinkItem extends ConsumerWidget {
         children: [
           if (sharedLink.allowUpload) buildInfoChip("upload".tr()),
           if (sharedLink.allowDownload) buildInfoChip("download".tr()),
-          if (sharedLink.showMetadata)
-            buildInfoChip("shared_link_info_chip_metadata".tr()),
+          if (sharedLink.showMetadata) buildInfoChip("shared_link_info_chip_metadata".tr()),
         ],
       );
     }
@@ -197,8 +168,7 @@ class SharedLinkItem extends ConsumerWidget {
             iconSize: actionIconSize,
             icon: const Icon(Icons.delete_outline),
             style: const ButtonStyle(
-              tapTargetSize:
-                  MaterialTapTargetSize.shrinkWrap, // the '2023' part
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
             ),
             onPressed: deleteShareLink,
           ),
@@ -208,11 +178,9 @@ class SharedLinkItem extends ConsumerWidget {
             iconSize: actionIconSize,
             icon: const Icon(Icons.edit_outlined),
             style: const ButtonStyle(
-              tapTargetSize:
-                  MaterialTapTargetSize.shrinkWrap, // the '2023' part
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
             ),
-            onPressed: () => context
-                .pushRoute(SharedLinkEditRoute(existingLink: sharedLink)),
+            onPressed: () => context.pushRoute(SharedLinkEditRoute(existingLink: sharedLink)),
           ),
           IconButton(
             splashRadius: 25,
@@ -220,8 +188,7 @@ class SharedLinkItem extends ConsumerWidget {
             iconSize: actionIconSize,
             icon: const Icon(Icons.copy_outlined),
             style: const ButtonStyle(
-              tapTargetSize:
-                  MaterialTapTargetSize.shrinkWrap, // the '2023' part
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
             ),
             onPressed: copyShareLinkToClipboard,
           ),
@@ -240,12 +207,9 @@ class SharedLinkItem extends ConsumerWidget {
               verticalOffset: 0,
               decoration: BoxDecoration(
                 color: colorScheme.primary.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
               ),
-              textStyle: TextStyle(
-                color: isDarkMode ? Colors.black : Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+              textStyle: TextStyle(color: isDarkMode ? Colors.black : Colors.white, fontWeight: FontWeight.bold),
               message: sharedLink.title,
               preferBelow: false,
               triggerMode: TooltipTriggerMode.tap,
@@ -268,25 +232,16 @@ class SharedLinkItem extends ConsumerWidget {
                   verticalOffset: 0,
                   decoration: BoxDecoration(
                     color: colorScheme.primary.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
                   ),
-                  textStyle: TextStyle(
-                    color: isDarkMode ? Colors.black : Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  textStyle: TextStyle(color: isDarkMode ? Colors.black : Colors.white, fontWeight: FontWeight.bold),
                   message: sharedLink.description ?? "",
                   preferBelow: false,
                   triggerMode: TooltipTriggerMode.tap,
-                  child: Text(
-                    sharedLink.description ?? "",
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: Text(sharedLink.description ?? "", overflow: TextOverflow.ellipsis),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(right: 15),
-                child: buildSharedLinkActions(),
-              ),
+              Padding(padding: const EdgeInsets.only(right: 15), child: buildSharedLinkActions()),
             ],
           ),
           buildBottomInfo(),
@@ -300,24 +255,13 @@ class SharedLinkItem extends ConsumerWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 15),
-              child: buildThumbnail(),
-            ),
+            Padding(padding: const EdgeInsets.only(left: 15), child: buildThumbnail()),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 15),
-                child: buildSharedLinkDetails(),
-              ),
+              child: Padding(padding: const EdgeInsets.only(left: 15), child: buildSharedLinkDetails()),
             ),
           ],
         ),
-        const Padding(
-          padding: EdgeInsets.all(20),
-          child: Divider(
-            height: 0,
-          ),
-        ),
+        const Padding(padding: EdgeInsets.all(20), child: Divider(height: 0)),
       ],
     );
   }

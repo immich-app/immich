@@ -30,59 +30,45 @@ class BackupControllerPage extends HookConsumerWidget {
     final hasAnyAlbum = backupState.selectedBackupAlbums.isNotEmpty;
     final didGetBackupInfo = useState(false);
 
-    bool hasExclusiveAccess =
-        backupState.backupProgress != BackUpProgressEnum.inBackground;
-    bool shouldBackup = backupState.allUniqueAssets.length -
-                    backupState.selectedAlbumsBackupAssetsIds.length ==
-                0 ||
+    bool hasExclusiveAccess = backupState.backupProgress != BackUpProgressEnum.inBackground;
+    bool shouldBackup =
+        backupState.allUniqueAssets.length - backupState.selectedAlbumsBackupAssetsIds.length == 0 ||
             !hasExclusiveAccess
         ? false
         : true;
 
-    useEffect(
-      () {
-        // Update the background settings information just to make sure we
-        // have the latest, since the platform channel will not update
-        // automatically
-        if (Platform.isIOS) {
-          ref.watch(iOSBackgroundSettingsProvider.notifier).refresh();
-        }
+    useEffect(() {
+      // Update the background settings information just to make sure we
+      // have the latest, since the platform channel will not update
+      // automatically
+      if (Platform.isIOS) {
+        ref.watch(iOSBackgroundSettingsProvider.notifier).refresh();
+      }
 
-        ref
-            .watch(websocketProvider.notifier)
-            .stopListenToEvent('on_upload_success');
+      ref.watch(websocketProvider.notifier).stopListenToEvent('on_upload_success');
 
-        return () {
-          WakelockPlus.disable();
-        };
-      },
-      [],
-    );
+      return () {
+        WakelockPlus.disable();
+      };
+    }, []);
 
-    useEffect(
-      () {
-        if (backupState.backupProgress == BackUpProgressEnum.idle &&
-            !didGetBackupInfo.value) {
-          ref.watch(backupProvider.notifier).getBackupInfo();
-          didGetBackupInfo.value = true;
-        }
-        return null;
-      },
-      [backupState.backupProgress],
-    );
+    useEffect(() {
+      if (backupState.backupProgress == BackUpProgressEnum.idle && !didGetBackupInfo.value) {
+        ref.watch(backupProvider.notifier).getBackupInfo();
+        didGetBackupInfo.value = true;
+      }
+      return null;
+    }, [backupState.backupProgress]);
 
-    useEffect(
-      () {
-        if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
-          WakelockPlus.enable();
-        } else {
-          WakelockPlus.disable();
-        }
+    useEffect(() {
+      if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
+        WakelockPlus.enable();
+      } else {
+        WakelockPlus.disable();
+      }
 
-        return null;
-      },
-      [backupState.backupProgress],
-    );
+      return null;
+    }, [backupState.backupProgress]);
 
     Widget buildSelectedAlbumName() {
       var text = "backup_controller_page_backup_selected".tr();
@@ -101,9 +87,7 @@ class BackupControllerPage extends HookConsumerWidget {
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
             text.trim().substring(0, text.length - 2),
-            style: context.textTheme.labelLarge?.copyWith(
-              color: context.primaryColor,
-            ),
+            style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
           ),
         );
       } else {
@@ -111,9 +95,7 @@ class BackupControllerPage extends HookConsumerWidget {
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
             "backup_controller_page_none_selected".tr(),
-            style: context.textTheme.labelLarge?.copyWith(
-              color: context.primaryColor,
-            ),
+            style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
           ),
         );
       }
@@ -132,9 +114,7 @@ class BackupControllerPage extends HookConsumerWidget {
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
             text.trim().substring(0, text.length - 2),
-            style: context.textTheme.labelLarge?.copyWith(
-              color: Colors.red[300],
-            ),
+            style: context.textTheme.labelLarge?.copyWith(color: Colors.red[300]),
           ),
         );
       } else {
@@ -147,20 +127,14 @@ class BackupControllerPage extends HookConsumerWidget {
         padding: const EdgeInsets.only(top: 8.0),
         child: Card(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(
-              color: context.colorScheme.outlineVariant,
-              width: 1,
-            ),
+            borderRadius: const BorderRadius.all(Radius.circular(20)),
+            side: BorderSide(color: context.colorScheme.outlineVariant, width: 1),
           ),
           elevation: 0,
           borderOnForeground: false,
           child: ListTile(
             minVerticalPadding: 18,
-            title: Text(
-              "backup_controller_page_albums",
-              style: context.textTheme.titleMedium,
-            ).tr(),
+            title: Text("backup_controller_page_albums", style: context.textTheme.titleMedium).tr(),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Column(
@@ -168,9 +142,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 children: [
                   Text(
                     "backup_controller_page_to_backup",
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: context.colorScheme.onSurfaceSecondary,
-                    ),
+                    style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                   ).tr(),
                   buildSelectedAlbumName(),
                   buildExcludedAlbumName(),
@@ -181,18 +153,11 @@ class BackupControllerPage extends HookConsumerWidget {
               onPressed: () async {
                 await context.pushRoute(const BackupAlbumSelectionRoute());
                 // waited until returning from selection
-                await ref
-                    .read(backupProvider.notifier)
-                    .backupAlbumSelectionDone();
+                await ref.read(backupProvider.notifier).backupAlbumSelectionDone();
                 // waited until backup albums are stored in DB
                 ref.read(albumProvider.notifier).refreshDeviceAlbums();
               },
-              child: const Text(
-                "select",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ).tr(),
+              child: const Text("select", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
             ),
           ),
         ),
@@ -201,21 +166,18 @@ class BackupControllerPage extends HookConsumerWidget {
 
     void startBackup() {
       ref.watch(errorBackupListProvider.notifier).empty();
-      if (ref.watch(backupProvider).backupProgress !=
-          BackUpProgressEnum.inBackground) {
+      if (ref.watch(backupProvider).backupProgress != BackUpProgressEnum.inBackground) {
         ref.watch(backupProvider.notifier).startBackupProcess();
       }
     }
 
     Widget buildBackupButton() {
       return Padding(
-        padding: const EdgeInsets.only(
-          top: 24,
-        ),
+        padding: const EdgeInsets.only(top: 24),
         child: Container(
-          child: backupState.backupProgress == BackUpProgressEnum.inProgress ||
-                  backupState.backupProgress ==
-                      BackUpProgressEnum.manualInProgress
+          child:
+              backupState.backupProgress == BackUpProgressEnum.inProgress ||
+                  backupState.backupProgress == BackUpProgressEnum.manualInProgress
               ? ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.grey[50],
@@ -223,29 +185,19 @@ class BackupControllerPage extends HookConsumerWidget {
                     // padding: const EdgeInsets.all(14),
                   ),
                   onPressed: () {
-                    if (backupState.backupProgress ==
-                        BackUpProgressEnum.manualInProgress) {
+                    if (backupState.backupProgress == BackUpProgressEnum.manualInProgress) {
                       ref.read(manualUploadProvider.notifier).cancelBackup();
                     } else {
                       ref.read(backupProvider.notifier).cancelBackup();
                     }
                   },
-                  child: const Text(
-                    "cancel",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ).tr(),
+                  child: const Text("cancel", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)).tr(),
                 )
               : ElevatedButton(
                   onPressed: shouldBackup ? startBackup : null,
                   child: const Text(
                     "backup_controller_page_start_backup",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ).tr(),
                 ),
         ),
@@ -255,36 +207,28 @@ class BackupControllerPage extends HookConsumerWidget {
     buildBackgroundBackupInfo() {
       return const ListTile(
         leading: Icon(Icons.info_outline_rounded),
-        title: Text(
-          "Background backup is currently running, cannot start manual backup",
-        ),
+        title: Text("Background backup is currently running, cannot start manual backup"),
       );
     }
 
     buildLoadingIndicator() {
       return const Padding(
         padding: EdgeInsets.only(top: 42.0),
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: const Text(
-          "backup_controller_page_backup",
-        ).tr(),
+        title: const Text("backup_controller_page_backup").tr(),
         leading: IconButton(
           onPressed: () {
             ref.watch(websocketProvider.notifier).listenUploadEvent();
             context.maybePop(true);
           },
           splashRadius: 24,
-          icon: const Icon(
-            Icons.arrow_back_ios_rounded,
-          ),
+          icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
         actions: [
           Padding(
@@ -292,9 +236,7 @@ class BackupControllerPage extends HookConsumerWidget {
             child: IconButton(
               onPressed: () => context.pushRoute(const BackupOptionsRoute()),
               splashRadius: 24,
-              icon: const Icon(
-                Icons.settings_outlined,
-              ),
+              icon: const Icon(Icons.settings_outlined),
             ),
           ),
         ],
@@ -334,10 +276,7 @@ class BackupControllerPage extends HookConsumerWidget {
                       if (!hasExclusiveAccess) buildBackgroundBackupInfo(),
                       buildBackupButton(),
                     ]
-                  : [
-                      buildFolderSelectionTile(),
-                      if (!didGetBackupInfo.value) buildLoadingIndicator(),
-                    ],
+                  : [buildFolderSelectionTile(), if (!didGetBackupInfo.value) buildLoadingIndicator()],
             ),
           ),
         ],

@@ -8,45 +8,33 @@ import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class AlbumInfoCard extends HookConsumerWidget {
   final AvailableAlbum album;
 
-  const AlbumInfoCard({
-    super.key,
-    required this.album,
-  });
+  const AlbumInfoCard({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool isSelected =
-        ref.watch(backupProvider).selectedBackupAlbums.contains(album);
-    final bool isExcluded =
-        ref.watch(backupProvider).excludedBackupAlbums.contains(album);
-    final syncAlbum = ref
-        .watch(appSettingsServiceProvider)
-        .getSetting(AppSettingsEnum.syncAlbums);
+    final bool isSelected = ref.watch(backupProvider).selectedBackupAlbums.contains(album);
+    final bool isExcluded = ref.watch(backupProvider).excludedBackupAlbums.contains(album);
+    final syncAlbum = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
 
     final isDarkTheme = context.isDarkTheme;
 
-    ColorFilter selectedFilter = ColorFilter.mode(
-      context.primaryColor.withAlpha(100),
-      BlendMode.darken,
-    );
-    ColorFilter excludedFilter =
-        ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
-    ColorFilter unselectedFilter =
-        const ColorFilter.mode(Colors.black, BlendMode.color);
+    ColorFilter selectedFilter = ColorFilter.mode(context.primaryColor.withAlpha(100), BlendMode.darken);
+    ColorFilter excludedFilter = ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
+    ColorFilter unselectedFilter = const ColorFilter.mode(Colors.black, BlendMode.color);
 
     buildSelectedTextBox() {
       if (isSelected) {
         return Chip(
           visualDensity: VisualDensity.compact,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
           label: Text(
             "album_info_card_backup_album_included",
             style: TextStyle(
@@ -60,7 +48,7 @@ class AlbumInfoCard extends HookConsumerWidget {
       } else if (isExcluded) {
         return Chip(
           visualDensity: VisualDensity.compact,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
           label: Text(
             "album_info_card_backup_album_excluded",
             style: TextStyle(
@@ -125,11 +113,11 @@ class AlbumInfoCard extends HookConsumerWidget {
         clipBehavior: Clip.hardEdge,
         margin: const EdgeInsets.all(1),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12), // if you need this
+          borderRadius: const BorderRadius.all(
+            Radius.circular(12), // if you need this
+          ),
           side: BorderSide(
-            color: isDarkTheme
-                ? const Color.fromARGB(255, 37, 35, 35)
-                : const Color(0xFFC9C9C9),
+            color: isDarkTheme ? const Color.fromARGB(255, 37, 35, 35) : const Color(0xFFC9C9C9),
             width: 1,
           ),
         ),
@@ -147,24 +135,16 @@ class AlbumInfoCard extends HookConsumerWidget {
                     child: const Image(
                       width: double.infinity,
                       height: double.infinity,
-                      image: AssetImage(
-                        'assets/immich-logo.png',
-                      ),
+                      image: AssetImage('assets/immich-logo.png'),
                       fit: BoxFit.cover,
                     ),
                   ),
-                  Positioned(
-                    bottom: 10,
-                    right: 25,
-                    child: buildSelectedTextBox(),
-                  ),
+                  Positioned(bottom: 10, right: 25, child: buildSelectedTextBox()),
                 ],
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(
-                left: 25,
-              ),
+              padding: const EdgeInsets.only(left: 25),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -175,21 +155,13 @@ class AlbumInfoCard extends HookConsumerWidget {
                       children: [
                         Text(
                           album.name,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: context.primaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(fontSize: 14, color: context.primaryColor, fontWeight: FontWeight.bold),
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 2.0),
                           child: Text(
-                            album.assetCount.toString() +
-                                (album.isAll ? " (${'all'.tr()})" : ""),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
+                            album.assetCount.toString() + (album.isAll ? " (${'all'.tr()})" : ""),
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                           ),
                         ),
                       ],
@@ -197,15 +169,9 @@ class AlbumInfoCard extends HookConsumerWidget {
                   ),
                   IconButton(
                     onPressed: () {
-                      context.pushRoute(
-                        AlbumPreviewRoute(album: album.album),
-                      );
+                      context.pushRoute(AlbumPreviewRoute(album: album.album));
                     },
-                    icon: Icon(
-                      Icons.image_outlined,
-                      color: context.primaryColor,
-                      size: 24,
-                    ),
+                    icon: Icon(Icons.image_outlined, color: context.primaryColor, size: 24),
                     splashRadius: 25,
                   ),
                 ],

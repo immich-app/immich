@@ -13,32 +13,23 @@ class ActivityTextField extends HookConsumerWidget {
   final String? likeId;
   final Function(String) onSubmit;
 
-  const ActivityTextField({
-    required this.onSubmit,
-    this.isEnabled = true,
-    this.likeId,
-    super.key,
-  });
+  const ActivityTextField({required this.onSubmit, this.isEnabled = true, this.likeId, super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final album = ref.watch(currentAlbumProvider)!;
     final asset = ref.watch(currentAssetProvider);
-    final activityNotifier = ref
-        .read(albumActivityProvider(album.remoteId!, asset?.remoteId).notifier);
+    final activityNotifier = ref.read(albumActivityProvider(album.remoteId!, asset?.remoteId).notifier);
     final user = ref.watch(currentUserProvider);
     final inputController = useTextEditingController();
     final inputFocusNode = useFocusNode();
     final liked = likeId != null;
 
     // Show keyboard immediately on activities open
-    useEffect(
-      () {
-        inputFocusNode.requestFocus();
-        return null;
-      },
-      [],
-    );
+    useEffect(() {
+      inputFocusNode.requestFocus();
+      return null;
+    }, []);
 
     // Pass text to callback and reset controller
     void onEditingComplete() {
@@ -71,31 +62,19 @@ class ActivityTextField extends HookConsumerWidget {
           prefixIcon: user != null
               ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: UserCircleAvatar(
-                    user: user,
-                    size: 30,
-                    radius: 15,
-                  ),
+                  child: UserCircleAvatar(user: user, size: 30, radius: 15),
                 )
               : null,
           suffixIcon: Padding(
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
-              icon: Icon(
-                liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-              ),
+              icon: Icon(liked ? Icons.favorite_rounded : Icons.favorite_border_rounded),
               onPressed: liked ? removeLike : addLike,
             ),
           ),
           suffixIconColor: liked ? Colors.red[700] : null,
-          hintText: !isEnabled
-              ? 'shared_album_activities_input_disable'.tr()
-              : 'say_something'.tr(),
-          hintStyle: TextStyle(
-            fontWeight: FontWeight.normal,
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
+          hintText: !isEnabled ? 'shared_album_activities_input_disable'.tr() : 'say_something'.tr(),
+          hintStyle: TextStyle(fontWeight: FontWeight.normal, fontSize: 14, color: Colors.grey[600]),
         ),
         onEditingComplete: onEditingComplete,
         onTapOutside: (_) => inputFocusNode.unfocus(),

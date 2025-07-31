@@ -44,8 +44,7 @@ class MapAssetGrid extends HookConsumerWidget {
     final cachedRenderList = useRef<RenderList?>(null);
     final lastRenderElementIndex = useRef<int?>(null);
     final assetInSheet = useValueNotifier<String?>(null);
-    final gridScrollThrottler =
-        useThrottler(interval: const Duration(milliseconds: 300));
+    final gridScrollThrottler = useThrottler(interval: const Duration(milliseconds: 300));
 
     // Add a cache for assets we've already loaded
     final assetCache = useRef<Map<String, Asset>>({});
@@ -67,8 +66,7 @@ class MapAssetGrid extends HookConsumerWidget {
 
         // Only fetch missing assets
         if (missingIds.isNotEmpty) {
-          final newAssets =
-              await ref.read(dbProvider).assets.getAllByRemoteId(missingIds);
+          final newAssets = await ref.read(dbProvider).assets.getAllByRemoteId(missingIds);
 
           // Add new assets to cache and current list
           for (final asset in newAssets) {
@@ -93,8 +91,7 @@ class MapAssetGrid extends HookConsumerWidget {
       final orderedPos = positions.sortedByField((p) => p.index);
       // Index of row where the items are mostly visible
       const partialOffset = 0.20;
-      final item = orderedPos
-          .firstWhereOrNull((p) => p.itemTrailingEdge > partialOffset);
+      final item = orderedPos.firstWhereOrNull((p) => p.itemTrailingEdge > partialOffset);
 
       // Guard no elements, reset state
       // Also fail fast when the sheet is just opened and the user is yet to scroll (i.e leading = 0)
@@ -103,8 +100,7 @@ class MapAssetGrid extends HookConsumerWidget {
         return;
       }
 
-      final renderElement =
-          cachedRenderList.value?.elements.elementAtOrNull(item.index);
+      final renderElement = cachedRenderList.value?.elements.elementAtOrNull(item.index);
       // Guard no render list or render element
       if (renderElement == null) {
         return;
@@ -123,18 +119,15 @@ class MapAssetGrid extends HookConsumerWidget {
       final rowOffset = renderElement.offset;
       // Column offset = (total trailingEdge - trailingEdge crossed) / offset for each asset
       final totalOffset = item.itemTrailingEdge - item.itemLeadingEdge;
-      final edgeOffset = (totalOffset - partialOffset) /
+      final edgeOffset =
+          (totalOffset - partialOffset) /
           // Round the total count to the next multiple of [assetsPerRow]
           ((renderElement.totalCount / assetsPerRow) * assetsPerRow).floor();
 
       // trailing should never be above the totalOffset
-      final columnOffset =
-          (totalOffset - math.min(item.itemTrailingEdge, totalOffset)) ~/
-              edgeOffset;
+      final columnOffset = (totalOffset - math.min(item.itemTrailingEdge, totalOffset)) ~/ edgeOffset;
       final assetOffset = rowOffset + columnOffset;
-      final selectedAsset = cachedRenderList.value?.allAssets
-          ?.elementAtOrNull(assetOffset)
-          ?.remoteId;
+      final selectedAsset = cachedRenderList.value?.allAssets?.elementAtOrNull(assetOffset)?.remoteId;
 
       if (selectedAsset != null) {
         onGridAssetChanged?.call(selectedAsset);
@@ -155,37 +148,32 @@ class MapAssetGrid extends HookConsumerWidget {
               heightFactor: 0.87,
               child: assetsInBounds.value.isNotEmpty
                   ? ref
-                      .watch(assetsTimelineProvider(assetsInBounds.value))
-                      .when(
-                        data: (renderList) {
-                          // Cache render list here to use it back during visibleItemsListener
-                          cachedRenderList.value = renderList;
-                          return ValueListenableBuilder(
-                            valueListenable: selectedAssets,
-                            builder: (_, value, __) => ImmichAssetGrid(
-                              shrinkWrap: true,
-                              renderList: renderList,
-                              showDragScroll: false,
-                              assetsPerRow: assetsPerRow,
-                              showMultiSelectIndicator: false,
-                              selectionActive: value.isNotEmpty,
-                              listener: onAssetsSelected,
-                              visibleItemsListener: (pos) => gridScrollThrottler
-                                  .run(() => handleVisibleItems(pos)),
-                            ),
-                          );
-                        },
-                        error: (error, stackTrace) {
-                          log.warning(
-                            "Cannot get assets in the current map bounds",
-                            error,
-                            stackTrace,
-                          );
-                          return const SizedBox.shrink();
-                        },
-                        loading: () => const SizedBox.shrink(),
-                      )
-                  : _MapNoAssetsInSheet(),
+                        .watch(assetsTimelineProvider(assetsInBounds.value))
+                        .when(
+                          data: (renderList) {
+                            // Cache render list here to use it back during visibleItemsListener
+                            cachedRenderList.value = renderList;
+                            return ValueListenableBuilder(
+                              valueListenable: selectedAssets,
+                              builder: (_, value, __) => ImmichAssetGrid(
+                                shrinkWrap: true,
+                                renderList: renderList,
+                                showDragScroll: false,
+                                assetsPerRow: assetsPerRow,
+                                showMultiSelectIndicator: false,
+                                selectionActive: value.isNotEmpty,
+                                listener: onAssetsSelected,
+                                visibleItemsListener: (pos) => gridScrollThrottler.run(() => handleVisibleItems(pos)),
+                              ),
+                            );
+                          },
+                          error: (error, stackTrace) {
+                            log.warning("Cannot get assets in the current map bounds", error, stackTrace);
+                            return const SizedBox.shrink();
+                          },
+                          loading: () => const SizedBox.shrink(),
+                        )
+                  : const _MapNoAssetsInSheet(),
             ),
           ),
           _MapSheetDragRegion(
@@ -201,13 +189,11 @@ class MapAssetGrid extends HookConsumerWidget {
 }
 
 class _MapNoAssetsInSheet extends StatelessWidget {
+  const _MapNoAssetsInSheet();
+
   @override
   Widget build(BuildContext context) {
-    const image = Image(
-      height: 150,
-      width: 150,
-      image: AssetImage('assets/lighthouse.png'),
-    );
+    const image = Image(height: 150, width: 150, image: AssetImage('assets/lighthouse.png'));
 
     return Center(
       child: ListView(
@@ -215,21 +201,12 @@ class _MapNoAssetsInSheet extends StatelessWidget {
         children: [
           context.isDarkTheme
               ? const InvertionFilter(
-                  child: SaturationFilter(
-                    saturation: -1,
-                    child: BrightnessFilter(
-                      brightness: -5,
-                      child: image,
-                    ),
-                  ),
+                  child: SaturationFilter(saturation: -1, child: BrightnessFilter(brightness: -5, child: image)),
                 )
               : image,
           const SizedBox(height: 20),
           Center(
-            child: Text(
-              "map_zoom_to_see_photos".tr(),
-              style: context.textTheme.displayLarge?.copyWith(fontSize: 18),
-            ),
+            child: Text("map_zoom_to_see_photos".tr(), style: context.textTheme.displayLarge?.copyWith(fontSize: 18)),
           ),
         ],
       ),
@@ -253,8 +230,7 @@ class _MapSheetDragRegion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final assetsInBoundsText = assetsInBoundCount > 0
-        ? "map_assets_in_bounds"
-            .tr(namedArgs: {'count': assetsInBoundCount.toString()})
+        ? "map_assets_in_bounds".tr(namedArgs: {'count': assetsInBoundCount.toString()})
         : "map_no_assets_in_bounds".tr();
 
     return SingleChildScrollView(
@@ -264,10 +240,7 @@ class _MapSheetDragRegion extends StatelessWidget {
         margin: EdgeInsets.zero,
         shape: context.isMobile
             ? const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(20),
-                  topLeft: Radius.circular(20),
-                ),
+                borderRadius: BorderRadius.only(topRight: Radius.circular(20), topLeft: Radius.circular(20)),
               )
             : const BeveledRectangleBorder(),
         elevation: 0.0,
@@ -285,8 +258,7 @@ class _MapSheetDragRegion extends StatelessWidget {
                     assetsInBoundsText,
                     style: TextStyle(
                       fontSize: 20,
-                      color: context.textTheme.displayLarge?.color
-                          ?.withValues(alpha: 0.75),
+                      color: context.textTheme.displayLarge?.color?.withValues(alpha: 0.75),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -302,10 +274,7 @@ class _MapSheetDragRegion extends StatelessWidget {
                   right: 18,
                   top: 24,
                   child: IconButton(
-                    icon: Icon(
-                      Icons.map_outlined,
-                      color: context.textTheme.displayLarge?.color,
-                    ),
+                    icon: Icon(Icons.map_outlined, color: context.textTheme.displayLarge?.color),
                     iconSize: 24,
                     tooltip: 'Zoom to bounds',
                     onPressed: () => onZoomToAsset?.call(value!),

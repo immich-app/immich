@@ -8,12 +8,7 @@ import 'package:logging/logging.dart';
 
 final log = Logger('AssetGridDataStructure');
 
-enum RenderAssetGridElementType {
-  assets,
-  assetRow,
-  groupDividerTitle,
-  monthTitle;
-}
+enum RenderAssetGridElementType { assets, assetRow, groupDividerTitle, monthTitle }
 
 class RenderAssetGridElement {
   final RenderAssetGridElementType type;
@@ -23,7 +18,7 @@ class RenderAssetGridElement {
   final int offset;
   final int totalCount;
 
-  RenderAssetGridElement(
+  const RenderAssetGridElement(
     this.type, {
     this.title,
     required this.date,
@@ -33,13 +28,7 @@ class RenderAssetGridElement {
   });
 }
 
-enum GroupAssetsBy {
-  day,
-  month,
-  auto,
-  none,
-  ;
-}
+enum GroupAssetsBy { day, month, auto, none }
 
 class RenderList {
   final List<RenderAssetGridElement> elements;
@@ -53,8 +42,7 @@ class RenderList {
   /// global offset of assets in [_buf]
   int _bufOffset = 0;
 
-  RenderList(this.elements, this.query, this.allAssets)
-      : totalAssets = allAssets?.length ?? query!.countSync();
+  RenderList(this.elements, this.query, this.allAssets) : totalAssets = allAssets?.length ?? query!.countSync();
 
   bool get isEmpty => totalAssets == 0;
 
@@ -88,12 +76,7 @@ class RenderList {
         // when scrolling backward, end shortly after the requested offset...
         // ... to guard against the user scrolling in the other direction
         // a tiny bit resulting in a another required load from the DB
-        final start = max(
-          0,
-          forward
-              ? offset - oppositeSize
-              : (len > batchSize ? offset : offset + count - len),
-        );
+        final start = max(0, forward ? offset - oppositeSize : (len > batchSize ? offset : offset + count - len));
         // load the calculated batch (start:start+len) from the DB and put it into the buffer
         _buf = query!.offset(start).limit(len).findAllSync();
         _bufOffset = start;
@@ -120,19 +103,14 @@ class RenderList {
       // request the asset from the database (not changing the buffer!)
       final asset = query!.offset(index).findFirstSync();
       if (asset == null) {
-        throw Exception(
-          "Asset at index $index does no longer exist in database",
-        );
+        throw Exception("Asset at index $index does no longer exist in database");
       }
       return asset;
     }
     throw Exception("RenderList has neither assets nor query");
   }
 
-  static Future<RenderList> fromQuery(
-    QueryBuilder<Asset, Asset, QAfterSortBy> query,
-    GroupAssetsBy groupBy,
-  ) =>
+  static Future<RenderList> fromQuery(QueryBuilder<Asset, Asset, QAfterSortBy> query, GroupAssetsBy groupBy) =>
       _buildRenderList(null, query, groupBy);
 
   static Future<RenderList> _buildRenderList(
@@ -148,17 +126,10 @@ class RenderList {
     if (groupBy == GroupAssetsBy.none) {
       final int total = assets?.length ?? query!.countSync();
 
-      final dateLoader = query != null
-          ? DateBatchLoader(
-              query: query,
-              batchSize: 1000 * sectionSize,
-            )
-          : null;
+      final dateLoader = query != null ? DateBatchLoader(query: query, batchSize: 1000 * sectionSize) : null;
 
       for (int i = 0; i < total; i += sectionSize) {
-        final date = assets != null
-            ? assets[i].fileCreatedAt
-            : await dateLoader?.getDate(i);
+        final date = assets != null ? assets[i].fileCreatedAt : await dateLoader?.getDate(i);
 
         final int count = i + sectionSize > total ? total - i : sectionSize;
         if (date == null) break;
@@ -175,11 +146,8 @@ class RenderList {
       return RenderList(elements, query, assets);
     }
 
-    final formatSameYear =
-        groupBy == GroupAssetsBy.month ? DateFormat.MMMM() : DateFormat.MMMEd();
-    final formatOtherYear = groupBy == GroupAssetsBy.month
-        ? DateFormat.yMMMM()
-        : DateFormat.yMMMEd();
+    final formatSameYear = groupBy == GroupAssetsBy.month ? DateFormat.MMMM() : DateFormat.MMMEd();
+    final formatOtherYear = groupBy == GroupAssetsBy.month ? DateFormat.yMMMM() : DateFormat.yMMMEd();
     final currentYear = DateTime.now().year;
     final formatMergedSameYear = DateFormat.MMMd();
     final formatMergedOtherYear = DateFormat.yMMMd();
@@ -193,16 +161,9 @@ class RenderList {
     int lastMonthIndex = 0;
 
     String formatDateRange(DateTime from, DateTime to) {
-      final startDate = (from.year == currentYear
-              ? formatMergedSameYear
-              : formatMergedOtherYear)
-          .format(from);
-      final endDate = (to.year == currentYear
-              ? formatMergedSameYear
-              : formatMergedOtherYear)
-          .format(to);
-      if (DateTime(from.year, from.month, from.day) ==
-          DateTime(to.year, to.month, to.day)) {
+      final startDate = (from.year == currentYear ? formatMergedSameYear : formatMergedOtherYear).format(from);
+      final endDate = (to.year == currentYear ? formatMergedSameYear : formatMergedOtherYear).format(to);
+      if (DateTime(from.year, from.month, from.day) == DateTime(to.year, to.month, to.day)) {
         // format range with time when both dates are on the same day
         final startTime = DateFormat.Hm().format(from);
         final endTime = DateFormat.Hm().format(to);
@@ -212,10 +173,7 @@ class RenderList {
     }
 
     void mergeMonth() {
-      if (last != null &&
-          groupBy == GroupAssetsBy.auto &&
-          monthCount <= 30 &&
-          elements.length > lastMonthIndex + 1) {
+      if (last != null && groupBy == GroupAssetsBy.auto && monthCount <= 30 && elements.length > lastMonthIndex + 1) {
         // merge all days into a single section
         assert(elements[lastMonthIndex].date.month == last.month);
         final e = elements[lastMonthIndex];
@@ -233,8 +191,7 @@ class RenderList {
     }
 
     void addElems(DateTime d, DateTime? prevDate) {
-      final bool newMonth =
-          last == null || last.year != d.year || last.month != d.month;
+      final bool newMonth = last == null || last.year != d.year || last.month != d.month;
       if (newMonth) {
         mergeMonth();
         lastMonthIndex = elements.length;
@@ -243,11 +200,11 @@ class RenderList {
       for (int j = 0; j < count; j += sectionSize) {
         final type = j == 0
             ? (groupBy != GroupAssetsBy.month && newMonth
-                ? RenderAssetGridElementType.monthTitle
-                : RenderAssetGridElementType.groupDividerTitle)
+                  ? RenderAssetGridElementType.monthTitle
+                  : RenderAssetGridElementType.groupDividerTitle)
             : (groupBy == GroupAssetsBy.auto
-                ? RenderAssetGridElementType.groupDividerTitle
-                : RenderAssetGridElementType.assets);
+                  ? RenderAssetGridElementType.groupDividerTitle
+                  : RenderAssetGridElementType.assets);
         final sectionCount = j + sectionSize > count ? count - j : sectionSize;
         assert(sectionCount > 0 && sectionCount <= sectionSize);
         elements.add(
@@ -258,12 +215,8 @@ class RenderList {
             totalCount: groupBy == GroupAssetsBy.auto ? sectionCount : count,
             offset: lastOffset + j,
             title: j == 0
-                ? (d.year == currentYear
-                    ? formatSameYear.format(d)
-                    : formatOtherYear.format(d))
-                : (groupBy == GroupAssetsBy.auto
-                    ? formatDateRange(d, prevDate ?? d)
-                    : null),
+                ? (d.year == currentYear ? formatSameYear.format(d) : formatOtherYear.format(d))
+                : (groupBy == GroupAssetsBy.auto ? formatDateRange(d, prevDate ?? d) : null),
           ),
         );
       }
@@ -277,18 +230,10 @@ class RenderList {
       // TODO replace with groupBy once Isar supports such queries
       final dates = assets != null
           ? assets.map((a) => a.fileCreatedAt)
-          : await query!
-              .offset(offset)
-              .limit(pageSize)
-              .fileCreatedAtProperty()
-              .findAll();
+          : await query!.offset(offset).limit(pageSize).fileCreatedAtProperty().findAll();
       int i = 0;
       for (final date in dates) {
-        final d = DateTime(
-          date.year,
-          date.month,
-          groupBy == GroupAssetsBy.month ? 1 : date.day,
-        );
+        final d = DateTime(date.year, date.month, groupBy == GroupAssetsBy.month ? 1 : date.day);
         current ??= d;
         if (current != d) {
           addElems(current, prevDate);
@@ -315,10 +260,7 @@ class RenderList {
 
   static RenderList empty() => RenderList([], null, []);
 
-  static Future<RenderList> fromAssets(
-    List<Asset> assets,
-    GroupAssetsBy groupBy,
-  ) =>
+  static Future<RenderList> fromAssets(List<Asset> assets, GroupAssetsBy groupBy) =>
       _buildRenderList(assets, null, groupBy);
 
   /// Deletes an asset from the render list and clears the buffer
@@ -337,10 +279,7 @@ class DateBatchLoader {
   List<DateTime> _buffer = [];
   int _bufferStart = 0;
 
-  DateBatchLoader({
-    required this.query,
-    required this.batchSize,
-  });
+  DateBatchLoader({required this.query, required this.batchSize});
 
   Future<DateTime?> getDate(int index) async {
     if (!_isIndexInBuffer(index)) {
@@ -357,11 +296,7 @@ class DateBatchLoader {
   Future<void> _loadBatch(int targetIndex) async {
     final batchStart = (targetIndex ~/ batchSize) * batchSize;
 
-    _buffer = await query
-        .offset(batchStart)
-        .limit(batchSize)
-        .fileCreatedAtProperty()
-        .findAll();
+    _buffer = await query.offset(batchStart).limit(batchSize).fileCreatedAtProperty().findAll();
 
     _bufferStart = batchStart;
   }

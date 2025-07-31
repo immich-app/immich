@@ -56,9 +56,9 @@ Internally, Immich uses the [glob](https://www.npmjs.com/package/glob) package t
 
 ### Automatic watching (EXPERIMENTAL)
 
-This feature - currently hidden in the config file - is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Immich without needing to rescan.
+This feature is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Immich without needing to rescan.
 
-If your photos are on a network drive, automatic file watching likely won't work. In that case, you will have to rely on a periodic library refresh to pull in your changes.
+If your photos are on a network drive, automatic file watching likely won't work. In that case, you will have to rely on a [periodic library refresh](#set-custom-scan-interval) to pull in your changes.
 
 #### Troubleshooting
 
@@ -72,7 +72,9 @@ In rare cases, the library watcher can hang, preventing Immich from starting up.
 
 ### Nightly job
 
-There is an automatic scan job that is scheduled to run once a day. This job also cleans up any libraries stuck in deletion. It is possible to trigger the cleanup by clicking "Scan all libraries" in the library management page.
+There is an automatic scan job that is scheduled to run once a day. Its schedule is configurable, see [Set Custom Scan Interval](#set-custom-scan-interval).
+
+This job also cleans up any libraries stuck in deletion. It is possible to trigger the cleanup by clicking "Scan all libraries" in the library management page.
 
 ## Usage
 
@@ -91,7 +93,7 @@ The `immich-server` container will need access to the gallery. Modify your docke
 ```diff title="docker-compose.yml"
   immich-server:
     volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}:/data
 +     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
 +     - /home/user/old-pics:/mnt/media/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
@@ -112,7 +114,7 @@ _Remember to run `docker compose up -d` to register the changes. Make sure you c
 
 These actions must be performed by the Immich administrator.
 
-- Click on your avatar on the upper right corner
+- Click on your avatar in the upper right corner
 - Click on Administration -> External Libraries
 - Click on Create an external library…
 - Select which user owns the library, this can not be changed later
@@ -159,9 +161,7 @@ Within seconds, the assets from the old-pics and videos folders should show up i
 
 Folder view provides an additional view besides the timeline that is similar to a file explorer. It allows you to navigate through the folders and files in the library. This feature is handy for a highly curated and customized external library or a nicely configured storage template.
 
-You can enable this feature under [`Account Settings > Features > Folder View`](https://my.immich.app/user-settings?isOpen=feature+folders)
-
-The UI is currently only available for the web; mobile will come in a subsequent release.
+You can enable this feature under [`Account Settings > Features > Folders`](https://my.immich.app/user-settings?isOpen=feature+folders)
 
 <img src={require('./img/folder-view-1.webp').default} width="100%" title='Folder-view' />
 
@@ -171,7 +171,7 @@ The UI is currently only available for the web; mobile will come in a subsequent
 Only an admin can do this.
 :::
 
-You can define a custom interval for the trigger external library rescan under Administration -> Settings -> Library.  
+You can define a custom interval for the trigger external library rescan under Administration -> Settings -> External Library.  
 You can set the scanning interval using the preset or cron format. For more information you can refer to [Crontab Guru](https://crontab.guru/).
 
 <img src={require('./img/library-custom-scan-interval.webp').default} width="75%" title='Set custom scan interval for external library' />

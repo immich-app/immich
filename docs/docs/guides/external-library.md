@@ -12,7 +12,7 @@ If you want Immich to be able to delete the images in the external library or ad
 ```diff
 immich-server:
     volumes:
-        - ${UPLOAD_LOCATION}:/usr/src/app/upload
+        - ${UPLOAD_LOCATION}:/data
 +       - /home/user/photos1:/home/user/photos1:ro
 +       - /mnt/photos2:/mnt/photos2:ro # you can delete this line if you only have one mount point, or you can add more lines if you have more than two
 ```
@@ -41,7 +41,7 @@ In the Immich web UI:
 - Click Add path
   <img src={require('./img/add-path-button.webp').default} width="50%" title="Add Path button" />
 
-- Enter **/usr/src/app/external** as the path and click Add
+- Enter **/home/user/photos1** as the path and click Add
   <img src={require('./img/add-path-field.webp').default} width="50%" title="Add Path field" />
 
 - Save the new path

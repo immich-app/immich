@@ -16,7 +16,7 @@ name: immich-dev
 services:
   immich-server:
     container_name: immich_server
-    command: ['/usr/src/app/bin/immich-dev']
+    command: ['immich-dev']
     image: immich-server-dev:latest
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -27,11 +27,11 @@ services:
       target: dev
     restart: unless-stopped
     volumes:
-      - ../server:/usr/src/app
-      - ../open-api:/usr/src/open-api
-      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
-      - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
-      - /usr/src/app/node_modules
+      - ../server:/usr/src/app/server
+      - ../open-api:/usr/src/app/open-api
+      - ${UPLOAD_LOCATION}/photos:/data
+      - ${UPLOAD_LOCATION}/photos/upload:/data/upload
+      - /usr/src/app/server/node_modules
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
@@ -69,19 +69,20 @@ services:
     # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
     # user: 0:0
     build:
-      context: ../web
-    command: ['/usr/src/app/bin/immich-web']
+      context: ../
+      dockerfile: web/Dockerfile
+    command: ['immich-web']
     env_file:
       - .env
     ports:
       - 3000:3000
       - 24678:24678
     volumes:
-      - ../web:/usr/src/app
-      - ../i18n:/usr/src/i18n
-      - ../open-api/:/usr/src/open-api/
+      - ../web:/usr/src/app/web
+      - ../i18n:/usr/src/app/i18n
+      - ../open-api/:/usr/src/app/open-api/
       # - ../../ui:/usr/ui
-      - /usr/src/app/node_modules
+      - /usr/src/app/web/node_modules
     ulimits:
       nofile:
         soft: 1048576
@@ -116,13 +117,13 @@ services:
 
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:8-bookworm@sha256:fec42f399876eb6faf9e008570597741c87ff7662a54185593e74b09ce83d177
+    image: docker.io/valkey/valkey:8-bookworm@sha256:facc1d2c3462975c34e10fccb167bfa92b0e0dbd992fc282c29a61c3243afb11
     healthcheck:
       test: redis-cli ping || exit 1
 
   database:
     container_name: immich_postgres
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:5f6a838e4e44c8e0e019d0ebfe3ee8952b69afc2809b2c25f7b0119641978e91
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:32324a2f41df5de9efe1af166b7008c3f55646f8d0e00d9550c16c9822366b4a
     env_file:
       - .env
     environment:
@@ -134,6 +135,7 @@ services:
       - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    shm_size: 128mb
   # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
   # immich-prometheus:
   #   container_name: immich_prometheus

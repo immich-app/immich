@@ -11,13 +11,13 @@ class SSLClientCertStoreVal {
   final Uint8List data;
   final String? password;
 
-  SSLClientCertStoreVal(this.data, this.password);
+  const SSLClientCertStoreVal(this.data, this.password);
 
-  void save() {
+  Future<void> save() async {
     final b64Str = base64Encode(data);
-    Store.put(StoreKey.sslClientCertData, b64Str);
+    await Store.put(StoreKey.sslClientCertData, b64Str);
     if (password != null) {
-      Store.put(StoreKey.sslClientPasswd, password!);
+      await Store.put(StoreKey.sslClientPasswd, password!);
     }
   }
 
@@ -31,8 +31,8 @@ class SSLClientCertStoreVal {
     return SSLClientCertStoreVal(certData, passwd);
   }
 
-  static void delete() {
-    Store.delete(StoreKey.sslClientCertData);
-    Store.delete(StoreKey.sslClientPasswd);
+  static Future<void> delete() async {
+    await Store.delete(StoreKey.sslClientCertData);
+    await Store.delete(StoreKey.sslClientPasswd);
   }
 }

@@ -31,11 +31,7 @@ class AlbumTitleTextField extends ConsumerWidget {
         ref.watch(albumTitleProvider.notifier).setAlbumTitle(v);
       },
       focusNode: albumTitleTextFieldFocusNode,
-      style: TextStyle(
-        fontSize: 28,
-        color: context.colorScheme.onSurface,
-        fontWeight: FontWeight.bold,
-      ),
+      style: TextStyle(fontSize: 28, color: context.colorScheme.onSurface, fontWeight: FontWeight.bold),
       controller: albumTitleController,
       onTap: () {
         isAlbumTitleTextFieldFocus.value = true;
@@ -52,20 +48,17 @@ class AlbumTitleTextField extends ConsumerWidget {
                   albumTitleController.clear();
                   isAlbumTitleEmpty.value = true;
                 },
-                icon: Icon(
-                  Icons.cancel_rounded,
-                  color: context.primaryColor,
-                ),
+                icon: Icon(Icons.cancel_rounded, color: context.primaryColor),
                 splashRadius: 10,
               )
             : null,
-        enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.transparent),
-          borderRadius: BorderRadius.circular(10),
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.transparent),
-          borderRadius: BorderRadius.circular(10),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         hintText: 'add_a_title'.tr(),
         hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(

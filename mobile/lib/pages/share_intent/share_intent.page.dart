@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
@@ -37,9 +38,7 @@ class ShareIntentPage extends HookConsumerWidget {
 
     void upload() async {
       for (final attachment in candidates) {
-        await ref
-            .read(shareIntentUploadProvider.notifier)
-            .upload(attachment.file);
+        await ref.read(shareIntentUploadProvider.notifier).upload(attachment.file);
       }
 
       isUploaded.value = true;
@@ -61,22 +60,16 @@ class ShareIntentPage extends HookConsumerWidget {
       appBar: AppBar(
         title: Column(
           children: [
-            const Text('upload_to_immich').tr(
-              namedArgs: {'count': candidates.length.toString()},
-            ),
+            const Text('upload_to_immich').tr(namedArgs: {'count': candidates.length.toString()}),
             Text(
               currentEndpoint,
-              style: context.textTheme.labelMedium?.copyWith(
-                color: context.colorScheme.onSurface.withAlpha(200),
-              ),
+              style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.onSurface.withAlpha(200)),
             ),
           ],
         ),
         leading: IconButton(
           onPressed: () {
-            context.navigateTo(
-              const TabControllerRoute(),
-            );
+            context.navigateTo(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute());
           },
           icon: const Icon(Icons.arrow_back),
         ),
@@ -85,16 +78,10 @@ class ShareIntentPage extends HookConsumerWidget {
         itemCount: attachments.length,
         itemBuilder: (context, index) {
           final attachment = attachments[index];
-          final target = candidates.firstWhere(
-            (element) => element.id == attachment.id,
-            orElse: () => attachment,
-          );
+          final target = candidates.firstWhere((element) => element.id == attachment.id, orElse: () => attachment);
 
           return Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 4.0,
-              horizontal: 16,
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16),
             child: LargeLeadingTile(
               onTap: () => toggleSelection(attachment),
               disabled: isUploaded.value,
@@ -104,21 +91,11 @@ class ShareIntentPage extends HookConsumerWidget {
                   ClipRRect(
                     borderRadius: const BorderRadius.all(Radius.circular(16)),
                     child: attachment.isImage
-                        ? Image.file(
-                            attachment.file,
-                            width: 64,
-                            height: 64,
-                            fit: BoxFit.cover,
-                          )
+                        ? Image.file(attachment.file, width: 64, height: 64, fit: BoxFit.cover)
                         : const SizedBox(
                             width: 64,
                             height: 64,
-                            child: Center(
-                              child: Icon(
-                                Icons.videocam,
-                                color: Colors.white,
-                              ),
-                            ),
+                            child: Center(child: Icon(Icons.videocam, color: Colors.white)),
                           ),
                   ),
                   if (attachment.isImage)
@@ -129,25 +106,13 @@ class ShareIntentPage extends HookConsumerWidget {
                         Icons.image,
                         color: Colors.white,
                         size: 20,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(0, 0),
-                            blurRadius: 8.0,
-                            color: Colors.black45,
-                          ),
-                        ],
+                        shadows: [Shadow(offset: Offset(0, 0), blurRadius: 8.0, color: Colors.black45)],
                       ),
                     ),
                 ],
               ),
-              title: Text(
-                attachment.fileName,
-                style: context.textTheme.titleSmall,
-              ),
-              subtitle: Text(
-                attachment.fileSize,
-                style: context.textTheme.labelLarge,
-              ),
+              title: Text(attachment.fileName, style: context.textTheme.titleSmall),
+              subtitle: Text(attachment.fileSize, style: context.textTheme.labelLarge),
               trailing: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: UploadStatusIcon(
@@ -167,9 +132,7 @@ class ShareIntentPage extends HookConsumerWidget {
             height: 48,
             child: ElevatedButton(
               onPressed: isUploaded.value ? null : upload,
-              child: isUploaded.value
-                  ? UploadingText(candidates: candidates)
-                  : const Text('upload').tr(),
+              child: isUploaded.value ? UploadingText(candidates: candidates) : const Text('upload').tr(),
             ),
           ),
         ),
@@ -188,22 +151,14 @@ class UploadingText extends StatelessWidget {
       return element.status == UploadStatus.complete;
     }).length;
 
-    return const Text("shared_intent_upload_button_progress_text").tr(
-      namedArgs: {
-        'current': uploadedCount.toString(),
-        'total': candidates.length.toString(),
-      },
-    );
+    return const Text(
+      "shared_intent_upload_button_progress_text",
+    ).tr(namedArgs: {'current': uploadedCount.toString(), 'total': candidates.length.toString()});
   }
 }
 
 class UploadStatusIcon extends StatelessWidget {
-  const UploadStatusIcon({
-    super.key,
-    required this.status,
-    required this.selected,
-    this.progress = 0,
-  });
+  const UploadStatusIcon({super.key, required this.status, required this.selected, this.progress = 0});
 
   final UploadStatus status;
   final double progress;
@@ -221,55 +176,42 @@ class UploadStatusIcon extends StatelessWidget {
 
     final statusIcon = switch (status) {
       UploadStatus.enqueued => Icon(
-          Icons.check_circle_rounded,
-          color: context.primaryColor,
-          semanticLabel: 'enqueued'.tr(),
-        ),
+        Icons.check_circle_rounded,
+        color: context.primaryColor,
+        semanticLabel: 'enqueued'.tr(),
+      ),
       UploadStatus.running => Stack(
-          alignment: AlignmentDirectional.center,
-          children: [
-            SizedBox(
-              width: 40,
-              height: 40,
-              child: TweenAnimationBuilder(
-                tween: Tween<double>(begin: 0.0, end: progress),
-                duration: const Duration(milliseconds: 500),
-                builder: (context, value, _) => CircularProgressIndicator(
-                  backgroundColor: context.colorScheme.surfaceContainerLow,
-                  strokeWidth: 3,
-                  value: value,
-                  semanticsLabel: 'uploading'.tr(),
-                ),
+        alignment: AlignmentDirectional.center,
+        children: [
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: TweenAnimationBuilder(
+              tween: Tween<double>(begin: 0.0, end: progress),
+              duration: const Duration(milliseconds: 500),
+              builder: (context, value, _) => CircularProgressIndicator(
+                backgroundColor: context.colorScheme.surfaceContainerLow,
+                strokeWidth: 3,
+                value: value,
+                semanticsLabel: 'uploading'.tr(),
               ),
             ),
-            Text(
-              (progress * 100).toStringAsFixed(0),
-              style: context.textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      UploadStatus.complete => Icon(
-          Icons.check_circle_rounded,
-          color: Colors.green,
-          semanticLabel: 'completed'.tr(),
-        ),
-      UploadStatus.notFound || UploadStatus.failed => Icon(
-          Icons.error_rounded,
-          color: Colors.red,
-          semanticLabel: 'failed'.tr(),
-        ),
-      UploadStatus.canceled => Icon(
-          Icons.cancel_rounded,
-          color: Colors.red,
-          semanticLabel: 'canceled'.tr(),
-        ),
-      UploadStatus.waitingtoRetry || UploadStatus.paused => Icon(
-          Icons.pause_circle_rounded,
-          color: context.primaryColor,
-          semanticLabel: 'paused'.tr(),
-        ),
+          ),
+          Text(
+            (progress * 100).toStringAsFixed(0),
+            style: context.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+      UploadStatus.complete => Icon(Icons.check_circle_rounded, color: Colors.green, semanticLabel: 'completed'.tr()),
+      UploadStatus.notFound ||
+      UploadStatus.failed => Icon(Icons.error_rounded, color: Colors.red, semanticLabel: 'failed'.tr()),
+      UploadStatus.canceled => Icon(Icons.cancel_rounded, color: Colors.red, semanticLabel: 'canceled'.tr()),
+      UploadStatus.waitingToRetry || UploadStatus.paused => Icon(
+        Icons.pause_circle_rounded,
+        color: context.primaryColor,
+        semanticLabel: 'paused'.tr(),
+      ),
     };
 
     return statusIcon;

@@ -9,9 +9,7 @@ import 'package:immich_mobile/widgets/settings/settings_sub_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
 class LayoutSettings extends HookConsumerWidget {
-  const LayoutSettings({
-    super.key,
-  });
+  const LayoutSettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,8 +27,7 @@ class LayoutSettings extends HookConsumerWidget {
         ),
         SettingsSliderListTile(
           valueNotifier: tilesPerRow,
-          text: 'theme_setting_asset_list_tiles_per_row_title'
-              .tr(namedArgs: {'count': "${tilesPerRow.value}"}),
+          text: 'theme_setting_asset_list_tiles_per_row_title'.tr(namedArgs: {'count': "${tilesPerRow.value}"}),
           label: "${tilesPerRow.value}",
           maxValue: 6,
           minValue: 2,

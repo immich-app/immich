@@ -10,17 +10,9 @@ class DownloadInfo {
   // enum
   final TaskStatus status;
 
-  DownloadInfo({
-    required this.fileName,
-    required this.progress,
-    required this.status,
-  });
+  const DownloadInfo({required this.fileName, required this.progress, required this.status});
 
-  DownloadInfo copyWith({
-    String? fileName,
-    double? progress,
-    TaskStatus? status,
-  }) {
+  DownloadInfo copyWith({String? fileName, double? progress, TaskStatus? status}) {
     return DownloadInfo(
       fileName: fileName ?? this.fileName,
       progress: progress ?? this.progress,
@@ -29,11 +21,7 @@ class DownloadInfo {
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'fileName': fileName,
-      'progress': progress,
-      'status': status.index,
-    };
+    return <String, dynamic>{'fileName': fileName, 'progress': progress, 'status': status.index};
   }
 
   factory DownloadInfo.fromMap(Map<String, dynamic> map) {
@@ -46,20 +34,16 @@ class DownloadInfo {
 
   String toJson() => json.encode(toMap());
 
-  factory DownloadInfo.fromJson(String source) =>
-      DownloadInfo.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory DownloadInfo.fromJson(String source) => DownloadInfo.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() =>
-      'DownloadInfo(fileName: $fileName, progress: $progress, status: $status)';
+  String toString() => 'DownloadInfo(fileName: $fileName, progress: $progress, status: $status)';
 
   @override
   bool operator ==(covariant DownloadInfo other) {
     if (identical(this, other)) return true;
 
-    return other.fileName == fileName &&
-        other.progress == progress &&
-        other.status == status;
+    return other.fileName == fileName && other.progress == progress && other.status == status;
   }
 
   @override
@@ -71,17 +55,9 @@ class DownloadState {
   final TaskStatus downloadStatus;
   final Map<String, DownloadInfo> taskProgress;
   final bool showProgress;
-  DownloadState({
-    required this.downloadStatus,
-    required this.taskProgress,
-    required this.showProgress,
-  });
+  const DownloadState({required this.downloadStatus, required this.taskProgress, required this.showProgress});
 
-  DownloadState copyWith({
-    TaskStatus? downloadStatus,
-    Map<String, DownloadInfo>? taskProgress,
-    bool? showProgress,
-  }) {
+  DownloadState copyWith({TaskStatus? downloadStatus, Map<String, DownloadInfo>? taskProgress, bool? showProgress}) {
     return DownloadState(
       downloadStatus: downloadStatus ?? this.downloadStatus,
       taskProgress: taskProgress ?? this.taskProgress,
@@ -104,6 +80,5 @@ class DownloadState {
   }
 
   @override
-  int get hashCode =>
-      downloadStatus.hashCode ^ taskProgress.hashCode ^ showProgress.hashCode;
+  int get hashCode => downloadStatus.hashCode ^ taskProgress.hashCode ^ showProgress.hashCode;
 }

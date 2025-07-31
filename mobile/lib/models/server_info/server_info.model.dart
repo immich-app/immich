@@ -13,7 +13,7 @@ class ServerInfo {
   final bool isNewReleaseAvailable;
   final String versionMismatchErrorMessage;
 
-  ServerInfo({
+  const ServerInfo({
     required this.serverVersion,
     required this.latestVersion,
     required this.serverFeatures,
@@ -41,10 +41,8 @@ class ServerInfo {
       serverConfig: serverConfig ?? this.serverConfig,
       serverDiskInfo: serverDiskInfo ?? this.serverDiskInfo,
       isVersionMismatch: isVersionMismatch ?? this.isVersionMismatch,
-      isNewReleaseAvailable:
-          isNewReleaseAvailable ?? this.isNewReleaseAvailable,
-      versionMismatchErrorMessage:
-          versionMismatchErrorMessage ?? this.versionMismatchErrorMessage,
+      isNewReleaseAvailable: isNewReleaseAvailable ?? this.isNewReleaseAvailable,
+      versionMismatchErrorMessage: versionMismatchErrorMessage ?? this.versionMismatchErrorMessage,
     );
   }
 

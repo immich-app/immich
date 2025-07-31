@@ -8,20 +8,21 @@ extension Album: @unchecked Sendable, AppEntity, Identifiable {
 
   struct AlbumQuery: EntityQuery {
     func entities(for identifiers: [Album.ID]) async throws -> [Album] {
-      // use cached albums to search
-      var albums = (try? await AlbumCache.shared.getAlbums()) ?? []
-      albums.insert(NO_ALBUM, at: 0)
-
-      return albums.filter {
+      return await suggestedEntities().filter {
         identifiers.contains($0.id)
       }
     }
 
-    func suggestedEntities() async throws -> [Album] {
-      var albums = (try? await AlbumCache.shared.getAlbums(refresh: true)) ?? []
-      albums.insert(NO_ALBUM, at: 0)
+    func suggestedEntities() async -> [Album] {
+      let albums = (try? await AlbumCache.shared.getAlbums()) ?? []
 
-      return albums
+      let options =
+        [
+          NONE,
+          FAVORITES,
+        ] + albums
+
+      return options
     }
   }
 
@@ -35,8 +36,6 @@ extension Album: @unchecked Sendable, AppEntity, Identifiable {
   }
 }
 
-let NO_ALBUM = Album(id: "NONE", albumName: "None")
-
 struct RandomConfigurationAppIntent: WidgetConfigurationIntent {
   static var title: LocalizedStringResource { "Select Album" }
   static var description: IntentDescription {
@@ -45,7 +44,7 @@ struct RandomConfigurationAppIntent: WidgetConfigurationIntent {
 
   @Parameter(title: "Album")
   var album: Album?
-  
+
   @Parameter(title: "Show Album Name", default: false)
   var showAlbumName: Bool
 }
@@ -54,7 +53,7 @@ struct RandomConfigurationAppIntent: WidgetConfigurationIntent {
 
 struct ImmichRandomProvider: AppIntentTimelineProvider {
   func placeholder(in context: Context) -> ImageEntry {
-    ImageEntry(date: Date(), image: nil)
+    ImageEntry(date: Date())
   }
 
   func snapshot(
@@ -63,29 +62,25 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
   ) async
     -> ImageEntry
   {
+    let cacheKey = "random_none_\(context.family.rawValue)"
+
     guard let api = try? await ImmichAPI() else {
-      return ImageEntry(date: Date(), image: nil, error: .noLogin)
+      return ImageEntry.handleError(for: cacheKey, error: .noLogin).entries
+        .first!
     }
 
     guard
       let randomImage = try? await api.fetchSearchResults(
-        with: SearchFilters(size: 1)
-      ).first
-    else {
-      return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
-    }
-
-    guard
-      var entry = try? await buildEntry(
+        with: Album.NONE.filter
+      ).first,
+      let entry = try? await ImageEntry.build(
         api: api,
         asset: randomImage,
         dateOffset: 0
       )
     else {
-      return ImageEntry(date: Date(), image: nil, error: .fetchFailed)
+      return ImageEntry.handleError(for: cacheKey).entries.first!
     }
-
-    entry.resize()
 
     return entry
   }
@@ -99,50 +94,41 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
     var entries: [ImageEntry] = []
     let now = Date()
 
+    // nil if album is NONE or nil
+    let album = configuration.album ?? Album.NONE
+    let albumName = album.isVirtual ? nil : album.albumName
+
+    let cacheKey = "random_\(album.id)_\(context.family.rawValue)"
+
     // If we don't have a server config, return an entry with an error
     guard let api = try? await ImmichAPI() else {
-      entries.append(ImageEntry(date: now, image: nil, error: .noLogin))
-      return Timeline(entries: entries, policy: .atEnd)
+      return ImageEntry.handleError(for: cacheKey, error: .noLogin)
     }
 
-    // nil if album is NONE or nil
-    let albumId =
-      configuration.album?.id != "NONE" ? configuration.album?.id : nil
-    var albumName: String? = albumId != nil ? configuration.album?.albumName : nil
-    
-    if albumId != nil {
-      // make sure the album exists on server, otherwise show error
-      guard let albums = try? await api.fetchAlbums() else {
-        entries.append(ImageEntry(date: now, image: nil, error: .fetchFailed))
-        return Timeline(entries: entries, policy: .atEnd)
-      }
-
-      if !albums.contains(where: { $0.id == albumId }) {
-        entries.append(ImageEntry(date: now, image: nil, error: .albumNotFound))
-        return Timeline(entries: entries, policy: .atEnd)
-      }
-    }
-
-    entries.append(
-      contentsOf: (try? await generateRandomEntries(
+    // build entries
+    // this must be a do/catch since we need to
+    // distinguish between a network fail and an empty search
+    do {
+      let search = try await generateRandomEntries(
         api: api,
         now: now,
         count: 12,
-        albumId: albumId,
+        filter: album.filter,
         subtitle: configuration.showAlbumName ? albumName : nil
-      ))
-        ?? []
-    )
+      )
 
-    // If we fail to fetch images, we still want to add an entry with a nil image and an error
-    if entries.count == 0 {
-      entries.append(ImageEntry(date: now, image: nil, error: .fetchFailed))
+      // Load or save a cached asset for when network conditions are bad
+      if search.count == 0 {
+        return ImageEntry.handleError(for: cacheKey, error: .noAssetsAvailable)
+      }
+
+      entries.append(contentsOf: search)
+    } catch {
+      return ImageEntry.handleError(for: cacheKey)
     }
 
-    // Resize all images to something that can be stored by iOS
-    for i in entries.indices {
-      entries[i].resize()
-    }
+    // cache the last image
+    try? entries.last!.cache(for: cacheKey)
 
     return Timeline(entries: entries, policy: .atEnd)
   }

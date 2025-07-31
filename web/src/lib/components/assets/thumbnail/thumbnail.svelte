@@ -270,13 +270,13 @@
         {/if}
 
         <!-- Favorite asset star -->
-        {#if !authManager.key && asset.isFavorite}
+        {#if !authManager.isSharedLink && asset.isFavorite}
           <div class="absolute bottom-2 start-2">
             <Icon path={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
-        {#if !authManager.key && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
+        {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
           <div class={['absolute start-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
@@ -343,11 +343,12 @@
         <div class="absolute top-0 h-full w-full">
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
+            enablePlayback={mouseOver && $playVideoThumbnailOnHover}
             pauseIcon={mdiMotionPauseOutline}
             playIcon={mdiMotionPlayOutline}
             showTime={false}
             curve={selected}
-            playbackOnIconHover
+            playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
         </div>
       {/if}

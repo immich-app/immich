@@ -13,8 +13,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 /// The remote image provider
-class ImmichRemoteThumbnailProvider
-    extends ImageProvider<ImmichRemoteThumbnailProvider> {
+class ImmichRemoteThumbnailProvider extends ImageProvider<ImmichRemoteThumbnailProvider> {
   /// The [Asset.remoteId] of the asset to fetch
   final String assetId;
 
@@ -24,51 +23,27 @@ class ImmichRemoteThumbnailProvider
   /// The image cache manager
   final CacheManager? cacheManager;
 
-  ImmichRemoteThumbnailProvider({
-    required this.assetId,
-    this.height,
-    this.width,
-    this.cacheManager,
-  });
+  const ImmichRemoteThumbnailProvider({required this.assetId, this.height, this.width, this.cacheManager});
 
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
   @override
-  Future<ImmichRemoteThumbnailProvider> obtainKey(
-    ImageConfiguration configuration,
-  ) {
+  Future<ImmichRemoteThumbnailProvider> obtainKey(ImageConfiguration configuration) {
     return SynchronousFuture(this);
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    ImmichRemoteThumbnailProvider key,
-    ImageDecoderCallback decode,
-  ) {
+  ImageStreamCompleter loadImage(ImmichRemoteThumbnailProvider key, ImageDecoderCallback decode) {
     final cache = cacheManager ?? ThumbnailImageCacheManager();
-    return MultiImageStreamCompleter(
-      codec: _codec(key, cache, decode),
-      scale: 1.0,
-    );
+    return MultiImageStreamCompleter(codec: _codec(key, cache, decode), scale: 1.0);
   }
 
   // Streams in each stage of the image as we ask for it
-  Stream<ui.Codec> _codec(
-    ImmichRemoteThumbnailProvider key,
-    CacheManager cache,
-    ImageDecoderCallback decode,
-  ) async* {
+  Stream<ui.Codec> _codec(ImmichRemoteThumbnailProvider key, CacheManager cache, ImageDecoderCallback decode) async* {
     // Load a preview to the chunk events
-    final preview = getThumbnailUrlForRemoteId(
-      key.assetId,
-      type: api.AssetMediaSize.thumbnail,
-    );
+    final preview = getThumbnailUrlForRemoteId(key.assetId, type: api.AssetMediaSize.thumbnail);
 
-    yield await ImageLoader.loadImageFromCache(
-      preview,
-      cache: cache,
-      decode: decode,
-    );
+    yield await ImageLoader.loadImageFromCache(preview, cache: cache, decode: decode);
   }
 
   @override

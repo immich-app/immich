@@ -11,7 +11,6 @@ import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 
 final syncStreamServiceProvider = Provider(
   (ref) => SyncStreamService(
@@ -21,19 +20,14 @@ final syncStreamServiceProvider = Provider(
   ),
 );
 
-final syncApiRepositoryProvider = Provider(
-  (ref) => SyncApiRepository(ref.watch(apiServiceProvider)),
-);
+final syncApiRepositoryProvider = Provider((ref) => SyncApiRepository(ref.watch(apiServiceProvider)));
 
-final syncStreamRepositoryProvider = Provider(
-  (ref) => SyncStreamRepository(ref.watch(driftProvider)),
-);
+final syncStreamRepositoryProvider = Provider((ref) => SyncStreamRepository(ref.watch(driftProvider)));
 
 final localSyncServiceProvider = Provider(
   (ref) => LocalSyncService(
     localAlbumRepository: ref.watch(localAlbumRepository),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
-    storeService: ref.watch(storeServiceProvider),
   ),
 );
 

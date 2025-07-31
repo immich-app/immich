@@ -1,53 +1,63 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { person_delete_audit } from 'src/schema/functions';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
+  AfterDeleteTrigger,
   Check,
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
+  Generated,
   PrimaryGeneratedColumn,
   Table,
+  Timestamp,
   UpdateDateColumn,
 } from 'src/sql-tools';
 
 @Table('person')
-@UpdatedAtTrigger('person_updated_at')
-@Check({ name: 'CHK_b0f82b0ed662bfc24fbb58bb45', expression: `"birthDate" <= CURRENT_DATE` })
+@UpdatedAtTrigger('person_updatedAt')
+@AfterDeleteTrigger({
+  scope: 'statement',
+  function: person_delete_audit,
+  referencingOldTableAs: 'old',
+  when: 'pg_trigger_depth() = 0',
+})
+@Check({ name: 'person_birthDate_chk', expression: `"birthDate" <= CURRENT_DATE` })
 export class PersonTable {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt!: Generated<Timestamp>;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt!: Generated<Timestamp>;
 
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   ownerId!: string;
 
   @Column({ default: '' })
-  name!: string;
+  name!: Generated<string>;
 
   @Column({ default: '' })
-  thumbnailPath!: string;
+  thumbnailPath!: Generated<string>;
 
   @Column({ type: 'boolean', default: false })
-  isHidden!: boolean;
+  isHidden!: Generated<boolean>;
 
   @Column({ type: 'date', nullable: true })
-  birthDate!: Date | string | null;
+  birthDate!: Timestamp | null;
 
   @ForeignKeyColumn(() => AssetFaceTable, { onDelete: 'SET NULL', nullable: true })
   faceAssetId!: string | null;
 
   @Column({ type: 'boolean', default: false })
-  isFavorite!: boolean;
+  isFavorite!: Generated<boolean>;
 
   @Column({ type: 'character varying', nullable: true, default: null })
-  color?: string | null;
+  color!: string | null;
 
-  @UpdateIdColumn({ indexName: 'IDX_person_update_id' })
-  updateId!: string;
+  @UpdateIdColumn({ index: true })
+  updateId!: Generated<string>;
 }

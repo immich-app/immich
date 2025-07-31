@@ -5,17 +5,13 @@ class AlbumViewerPageState {
   final String editTitleText;
   final String editDescriptionText;
 
-  AlbumViewerPageState({
+  const AlbumViewerPageState({
     required this.isEditAlbum,
     required this.editTitleText,
     required this.editDescriptionText,
   });
 
-  AlbumViewerPageState copyWith({
-    bool? isEditAlbum,
-    String? editTitleText,
-    String? editDescriptionText,
-  }) {
+  AlbumViewerPageState copyWith({bool? isEditAlbum, String? editTitleText, String? editDescriptionText}) {
     return AlbumViewerPageState(
       isEditAlbum: isEditAlbum ?? this.isEditAlbum,
       editTitleText: editTitleText ?? this.editTitleText,
@@ -43,8 +39,7 @@ class AlbumViewerPageState {
 
   String toJson() => json.encode(toMap());
 
-  factory AlbumViewerPageState.fromJson(String source) =>
-      AlbumViewerPageState.fromMap(json.decode(source));
+  factory AlbumViewerPageState.fromJson(String source) => AlbumViewerPageState.fromMap(json.decode(source));
 
   @override
   String toString() =>
@@ -61,8 +56,5 @@ class AlbumViewerPageState {
   }
 
   @override
-  int get hashCode =>
-      isEditAlbum.hashCode ^
-      editTitleText.hashCode ^
-      editDescriptionText.hashCode;
+  int get hashCode => isEditAlbum.hashCode ^ editTitleText.hashCode ^ editDescriptionText.hashCode;
 }

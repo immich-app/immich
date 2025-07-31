@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import LibraryExclusionPatternModal from '$lib/modals/LibraryExclusionPatternModal.svelte';
   import { type LibraryResponseDto } from '@immich/sdk';
-  import { Button, IconButton } from '@immich/ui';
+  import { Button, IconButton, modalManager } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';

@@ -19,31 +19,31 @@ export class NotificationController {
   constructor(private service: NotificationService) {}
 
   @Get()
-  @Authenticated({ permission: Permission.NOTIFICATION_READ })
+  @Authenticated({ permission: Permission.NotificationRead })
   getNotifications(@Auth() auth: AuthDto, @Query() dto: NotificationSearchDto): Promise<NotificationDto[]> {
     return this.service.search(auth, dto);
   }
 
   @Put()
-  @Authenticated({ permission: Permission.NOTIFICATION_UPDATE })
+  @Authenticated({ permission: Permission.NotificationUpdate })
   updateNotifications(@Auth() auth: AuthDto, @Body() dto: NotificationUpdateAllDto): Promise<void> {
     return this.service.updateAll(auth, dto);
   }
 
   @Delete()
-  @Authenticated({ permission: Permission.NOTIFICATION_DELETE })
+  @Authenticated({ permission: Permission.NotificationDelete })
   deleteNotifications(@Auth() auth: AuthDto, @Body() dto: NotificationDeleteAllDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
 
   @Get(':id')
-  @Authenticated({ permission: Permission.NOTIFICATION_READ })
+  @Authenticated({ permission: Permission.NotificationRead })
   getNotification(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<NotificationDto> {
     return this.service.get(auth, id);
   }
 
   @Put(':id')
-  @Authenticated({ permission: Permission.NOTIFICATION_UPDATE })
+  @Authenticated({ permission: Permission.NotificationUpdate })
   updateNotification(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -53,7 +53,7 @@ export class NotificationController {
   }
 
   @Delete(':id')
-  @Authenticated({ permission: Permission.NOTIFICATION_DELETE })
+  @Authenticated({ permission: Permission.NotificationDelete })
   deleteNotification(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }
