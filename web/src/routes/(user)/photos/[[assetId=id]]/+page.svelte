@@ -27,12 +27,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { preferences, user } from '$lib/stores/user.store';
-  import {
-    updateStackedAssetInTimeline,
-    updateUnstackedAssetInTimeline,
-    type OnLink,
-    type OnUnlink,
-  } from '$lib/utils/actions';
+  import { type OnLink, type OnUnlink } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { AssetVisibility } from '@immich/sdk';
 
@@ -131,8 +126,8 @@
       {#if assetInteraction.selectedAssets.length > 1 || isAssetStackSelected}
         <StackAction
           unstack={isAssetStackSelected}
-          onStack={(result) => updateStackedAssetInTimeline(timelineManager, result)}
-          onUnstack={(assets) => updateUnstackedAssetInTimeline(timelineManager, assets)}
+          onStack={(result) => timelineManager.stackAssets(result)}
+          onUnstack={(assets) => timelineManager.unstackAssets(assets)}
         />
       {/if}
       {#if isLinkActionAvailable}

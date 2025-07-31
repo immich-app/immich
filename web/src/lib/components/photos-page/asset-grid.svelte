@@ -421,7 +421,7 @@
   const onStackAssets = async () => {
     const result = await stackAssets(assetInteraction.selectedAssets);
 
-    updateStackedAssetInTimeline(timelineManager, result);
+    timelineManager.stackAssets(result);//updateStackedAssetInTimeline(timelineManager, result);
 
     onEscape();
   };
@@ -525,18 +525,18 @@
       }
 
       case AssetAction.UNSTACK: {
-        updateUnstackedAssetInTimeline(timelineManager, action.assets);
+        timelineManager.unstackAssets(action.assets);//updateUnstackedAssetInTimeline(timelineManager, action.assets);
         break;
       }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
         timelineManager.addAssets([toTimelineAsset(action.asset)]);
         if (action.stack) {
-          refreshStackedAssetInTimeline(timelineManager, action.stack);
+          timelineManager.refreshStack(action.stack)//refreshStackedAssetInTimeline(timelineManager, action.stack);
         }
         break;
       }
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
-        refreshStackedAssetInTimeline(timelineManager, action.stack, true);
+        timelineManager.refreshStack(action.stack, true);//refreshStackedAssetInTimeline(timelineManager, action.stack, true);
         break;
       }
     }

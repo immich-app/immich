@@ -1,4 +1,4 @@
-import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
+import { AssetOrder, getAssetInfo, getTimeBuckets, type StackResponseDto } from '@immich/sdk';
 
 import { authManager } from '$lib/managers/auth-manager.svelte';
 
@@ -23,6 +23,7 @@ import {
   retrieveRange as retrieveRangeUtil,
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
+import type { StackResponse } from '$lib/utils/asset-utils';
 import { DayGroup } from './day-group.svelte';
 import { isMismatched, updateObject } from './internal/utils.svelte';
 import { MonthGroup } from './month-group.svelte';
@@ -543,5 +544,44 @@ export class TimelineManager {
 
   getAssetOrder() {
     return this.#options.order ?? AssetOrder.Desc;
+  }
+
+  stackAssets({ stack, toDeleteIds }: StackResponse) {
+    if (stack) {
+      this.updateAssetOperation([stack.primaryAssetId], (asset) => {
+        asset.stack = {
+          id: stack.id,
+          primaryAssetId: stack.primaryAssetId,
+          assetCount: stack.assets.length,
+        };
+        return { remove: false };
+      });
+      this.removeAssets(toDeleteIds);
+    }
+  }
+
+  unstackAssets(assets: TimelineAsset[]) {
+    this.updateAssetOperation(
+      assets.map(({ id }) => id),
+      (asset) => {
+        asset.stack = null;
+        return { remove: false };
+      },
+    );
+    this.addAssets(assets);
+  }
+
+  refreshStack(stack: StackResponseDto, addPrimaryAsset: boolean = false) {
+    if (stack) {
+      if (addPrimaryAsset) {
+        this.addAssets(
+          stack.assets.filter((asset) => asset.id === stack.primaryAssetId).map((asset) => toTimelineAsset(asset)),
+        );
+      }
+      this.stackAssets({
+        stack,
+        toDeleteIds: stack.assets.filter((asset) => asset.id !== stack.primaryAssetId).map(({ id }) => id),
+      });
+    }
   }
 }
