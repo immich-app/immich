@@ -2,10 +2,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart' as old_asset_entity;
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
 
 final castProvider = StateNotifierProvider<CastNotifier, CastManagerState>(
   (ref) => CastNotifier(ref.watch(gCastServiceProvider)),
+  dependencies: [apiServiceProvider],
 );
 
 class CastNotifier extends StateNotifier<CastManagerState> {

@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -16,6 +17,11 @@ class AuthGuard extends AutoRouteGuard {
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
     resolver.next(true);
+
+    if (ImageUrlBuilder.isSharedLink()) {
+      // If the URL is a shared link, we don't need to validate the access token
+      return;
+    }
 
     try {
       // Look in the store for an access token

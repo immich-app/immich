@@ -6,8 +6,8 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart' as beta_asset_provider;
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart' as beta_asset_provider;
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -80,6 +80,7 @@ class DeepLinkService {
       "memory" => await _buildMemoryDeepLink(queryParams['id'] ?? ''),
       "asset" => await _buildAssetDeepLink(queryParams['id'] ?? ''),
       "album" => await _buildAlbumDeepLink(queryParams['id'] ?? ''),
+      "sharedlink" => await _buildSharedLinkDeepLink(queryParams['key'] ?? '', queryParams['instanceUrl'] ?? ''),
       _ => null,
     };
 
@@ -99,18 +100,24 @@ class DeepLinkService {
     final path = link.uri.path;
 
     const uuidRegex = r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
+    const b64Regex = r'^[A-Za-z0-9_-]+$';
     final assetRegex = RegExp('/photos/($uuidRegex)');
     final albumRegex = RegExp('/albums/($uuidRegex)');
+    final sharedLinkRegex = RegExp('/share/($b64Regex)');
 
     PageRouteInfo<dynamic>? deepLinkRoute;
+
     if (assetRegex.hasMatch(path)) {
       final assetId = assetRegex.firstMatch(path)?.group(1) ?? '';
       deepLinkRoute = await _buildAssetDeepLink(assetId);
     } else if (albumRegex.hasMatch(path)) {
       final albumId = albumRegex.firstMatch(path)?.group(1) ?? '';
       deepLinkRoute = await _buildAlbumDeepLink(albumId);
+    } else if (sharedLinkRegex.hasMatch(path)) {
+      final shareKey = sharedLinkRegex.firstMatch(path)?.group(1) ?? '';
+      final instanceUrl = link.uri.queryParameters['instanceUrl'] ?? '';
+      deepLinkRoute = await _buildSharedLinkDeepLink(shareKey, instanceUrl);
     }
-
     // Deep link resolution failed, safely handle it based on the app state
     if (deepLinkRoute == null) {
       if (isColdStart) return DeepLink.defaultPath;
@@ -184,5 +191,9 @@ class DeepLinkService {
       _currentAlbum.set(album);
       return AlbumViewerRoute(albumId: album.id);
     }
+  }
+
+  Future<PageRouteInfo?> _buildSharedLinkDeepLink(String shareKey, String instanceUrl) async {
+    return RemoteSharedLinkRoute(shareKey: shareKey, endpoint: instanceUrl);
   }
 }

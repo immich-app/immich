@@ -1,12 +1,15 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/stack.model.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart' hide AssetType;
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-import 'package:openapi/api.dart';
+import 'package:openapi/api.dart' as api show AssetVisibility;
+import 'package:openapi/api.dart' hide AssetVisibility;
 
 final assetApiRepositoryProvider = Provider(
   (ref) => AssetApiRepository(
@@ -107,4 +110,42 @@ extension on StackResponseDto {
   StackResponse toStack() {
     return StackResponse(id: id, primaryAssetId: primaryAssetId, assetIds: assets.map((asset) => asset.id).toList());
   }
+}
+
+extension RemoteAssetDtoExt on AssetResponseDto {
+  RemoteAsset toDto() {
+    return RemoteAsset(
+      id: id,
+      name: originalFileName,
+      checksum: checksum,
+      createdAt: fileCreatedAt,
+      updatedAt: updatedAt,
+      ownerId: ownerId,
+      visibility: switch (visibility) {
+        api.AssetVisibility.timeline => AssetVisibility.timeline,
+        api.AssetVisibility.hidden => AssetVisibility.hidden,
+        api.AssetVisibility.archive => AssetVisibility.archive,
+        api.AssetVisibility.locked => AssetVisibility.locked,
+        _ => AssetVisibility.timeline,
+      },
+      durationInSeconds: duration.toDuration()?.inSeconds ?? 0,
+      height: exifInfo?.exifImageHeight?.toInt(),
+      width: exifInfo?.exifImageWidth?.toInt(),
+      isFavorite: isFavorite,
+      livePhotoVideoId: livePhotoVideoId,
+      thumbHash: thumbhash,
+      localId: null,
+      type: type.toType(),
+    );
+  }
+}
+
+extension on AssetTypeEnum {
+  AssetType toType() => switch (this) {
+    AssetTypeEnum.IMAGE => AssetType.image,
+    AssetTypeEnum.VIDEO => AssetType.video,
+    AssetTypeEnum.AUDIO => AssetType.audio,
+    AssetTypeEnum.OTHER => AssetType.other,
+    _ => throw Exception('Unknown AssetType value: $this'),
+  };
 }

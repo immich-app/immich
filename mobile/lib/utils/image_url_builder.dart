@@ -36,7 +36,7 @@ String getAlbumThumbNailCacheKey(final Album album, {AssetMediaSize type = Asset
 }
 
 String getOriginalUrlForRemoteId(final String id) {
-  return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/original';
+  return ImageUrlBuilder.build('/assets/$id/original');
 }
 
 String getImageCacheKey(final Asset asset) {
@@ -46,16 +46,51 @@ String getImageCacheKey(final Asset asset) {
 }
 
 String getThumbnailUrlForRemoteId(final String id, {AssetMediaSize type = AssetMediaSize.thumbnail}) {
-  return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail?size=${type.value}';
+  return ImageUrlBuilder.build('/assets/$id/thumbnail?size=${type.value}');
 }
 
-String getPreviewUrlForRemoteId(final String id) =>
-    '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail?size=${AssetMediaSize.preview}';
+String getPreviewUrlForRemoteId(final String id) {
+  return ImageUrlBuilder.build('/assets/$id/thumbnail?size=${AssetMediaSize.preview}');
+}
 
 String getPlaybackUrlForRemoteId(final String id) {
-  return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/video/playback?';
+  return ImageUrlBuilder.build('/assets/$id/video/playback?');
 }
 
 String getFaceThumbnailUrl(final String personId) {
-  return '${Store.get(StoreKey.serverEndpoint)}/people/$personId/thumbnail';
+  return ImageUrlBuilder.build('/people/$personId/thumbnail');
+}
+
+class ImageUrlBuilder {
+  static String? host;
+  static Map<String, String>? queryParams;
+
+  static void setHost(String? host) {
+    ImageUrlBuilder.host = host;
+  }
+
+  static bool isSharedLink() {
+    return ImageUrlBuilder.host != null && ImageUrlBuilder.queryParams!.containsKey('key');
+  }
+
+  static void setParameter(String key, String value) {
+    ImageUrlBuilder.queryParams ??= {};
+    ImageUrlBuilder.queryParams![key] = value;
+  }
+
+  static String build(String path) {
+    final endpoint = host ?? Store.get(StoreKey.serverEndpoint);
+
+    final uri = Uri.parse('$endpoint$path');
+    if (queryParams == null || queryParams!.isEmpty) {
+      return uri.toString();
+    }
+    final updatedUri = uri.replace(queryParameters: {...uri.queryParameters, ...queryParams!});
+    return updatedUri.toString();
+  }
+
+  static void clear() {
+    ImageUrlBuilder.host = null;
+    ImageUrlBuilder.queryParams = null;
+  }
 }

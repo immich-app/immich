@@ -158,6 +158,7 @@ class TimelineService {
   BaseAsset getRandomAsset() => _buffer.elementAt(math.Random().nextInt(_buffer.length));
 
   BaseAsset getAsset(int index) {
+    print("buffer len: " + _buffer.length.toString());
     if (!hasRange(index, 1)) {
       throw RangeError(
         'TimelineService::getAsset Index $index not in buffer range [$_bufferOffset, ${_bufferOffset + _buffer.length})',

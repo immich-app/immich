@@ -2168,6 +2168,58 @@ class RemoteMediaSummaryRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [RemoteSharedLinkPage]
+class RemoteSharedLinkRoute extends PageRouteInfo<RemoteSharedLinkRouteArgs> {
+  RemoteSharedLinkRoute({
+    Key? key,
+    required String shareKey,
+    required String endpoint,
+    List<PageRouteInfo>? children,
+  }) : super(
+         RemoteSharedLinkRoute.name,
+         args: RemoteSharedLinkRouteArgs(
+           key: key,
+           shareKey: shareKey,
+           endpoint: endpoint,
+         ),
+         initialChildren: children,
+       );
+
+  static const String name = 'RemoteSharedLinkRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<RemoteSharedLinkRouteArgs>();
+      return RemoteSharedLinkPage(
+        key: args.key,
+        shareKey: args.shareKey,
+        endpoint: args.endpoint,
+      );
+    },
+  );
+}
+
+class RemoteSharedLinkRouteArgs {
+  const RemoteSharedLinkRouteArgs({
+    this.key,
+    required this.shareKey,
+    required this.endpoint,
+  });
+
+  final Key? key;
+
+  final String shareKey;
+
+  final String endpoint;
+
+  @override
+  String toString() {
+    return 'RemoteSharedLinkRouteArgs{key: $key, shareKey: $shareKey, endpoint: $endpoint}';
+  }
+}
+
+/// generated route for
 /// [SearchPage]
 class SearchRoute extends PageRouteInfo<SearchRouteArgs> {
   SearchRoute({

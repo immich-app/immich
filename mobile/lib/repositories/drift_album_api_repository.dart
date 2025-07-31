@@ -1,7 +1,9 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/album/shared_album.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
+import 'package:immich_mobile/repositories/asset_api.repository.dart';
 // ignore: import_rule_openapi
 import 'package:openapi/api.dart';
 
@@ -87,6 +89,11 @@ class DriftAlbumApiRepository extends ApiRepository {
     final response = await checkNull(_api.addUsersToAlbum(albumId, AddUsersDto(albumUsers: albumUsers)));
     return response.toRemoteAlbum();
   }
+
+  Future<SharedRemoteAlbum?> getShared(String albumId) async {
+    final responseDto = await checkNull(_api.getAlbumInfo(albumId));
+    return responseDto.toSharedRemoteAlbum();
+  }
 }
 
 extension on AlbumResponseDto {
@@ -103,6 +110,23 @@ extension on AlbumResponseDto {
       order: order == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
       assetCount: assetCount,
       ownerName: owner.name,
+    );
+  }
+
+  SharedRemoteAlbum toSharedRemoteAlbum() {
+    return SharedRemoteAlbum(
+      id: id,
+      name: albumName,
+      ownerId: owner.id,
+      description: description,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      thumbnailAssetId: albumThumbnailAssetId,
+      isActivityEnabled: isActivityEnabled,
+      order: order == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
+      assetCount: assetCount,
+      ownerName: owner.name,
+      assets: assets.map((e) => e.toDto()).toList(),
     );
   }
 }

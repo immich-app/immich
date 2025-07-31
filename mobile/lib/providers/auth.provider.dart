@@ -28,7 +28,7 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
     ref.watch(secureStorageServiceProvider),
     ref.watch(widgetServiceProvider),
   );
-});
+}, dependencies: [apiServiceProvider]);
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
