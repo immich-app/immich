@@ -49,19 +49,19 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
         external fun wrapAsBuffer(address: Long, capacity: Int): ByteBuffer
     }
 
-    override fun setThumbnailToBuffer(
+    override fun getThumbnailBuffer(
         assetId: String, width: Long, height: Long, callback: (Result<Map<String, Long>>) -> Unit
     ) {
         threadPool.execute {
             try {
-                setThumbnailToBufferInternal(assetId, width, height, callback)
+                getThumbnailBufferInternal(assetId, width, height, callback)
             } catch (e: Exception) {
                 callback(Result.failure(e))
             }
         }
     }
 
-    private fun setThumbnailToBufferInternal(
+    private fun getThumbnailBufferInternal(
         assetId: String, width: Long, height: Long, callback: (Result<Map<String, Long>>) -> Unit
     ) {
         val targetWidth = width.toInt()

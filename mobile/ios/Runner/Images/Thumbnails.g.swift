@@ -70,7 +70,7 @@ class ThumbnailsPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol ThumbnailApi {
-  func setThumbnailToBuffer(assetId: String, width: Int64, height: Int64, completion: @escaping (Result<[String: Int64], Error>) -> Void)
+  func getThumbnailBuffer(assetId: String, width: Int64, height: Int64, completion: @escaping (Result<[String: Int64], Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -79,14 +79,14 @@ class ThumbnailApiSetup {
   /// Sets up an instance of `ThumbnailApi` to handle messages through the `binaryMessenger`.
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: ThumbnailApi?, messageChannelSuffix: String = "") {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
-    let setThumbnailToBufferChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ThumbnailApi.setThumbnailToBuffer\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let getThumbnailBufferChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ThumbnailApi.getThumbnailBuffer\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      setThumbnailToBufferChannel.setMessageHandler { message, reply in
+      getThumbnailBufferChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let assetIdArg = args[0] as! String
         let widthArg = args[1] as! Int64
         let heightArg = args[2] as! Int64
-        api.setThumbnailToBuffer(assetId: assetIdArg, width: widthArg, height: heightArg) { result in
+        api.getThumbnailBuffer(assetId: assetIdArg, width: widthArg, height: heightArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -96,7 +96,7 @@ class ThumbnailApiSetup {
         }
       }
     } else {
-      setThumbnailToBufferChannel.setMessageHandler(nil)
+      getThumbnailBufferChannel.setMessageHandler(nil)
     }
   }
 }

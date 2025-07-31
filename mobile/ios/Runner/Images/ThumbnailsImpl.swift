@@ -23,7 +23,7 @@ class ThumbnailApiImpl: ThumbnailApi {
   private static let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
   private static let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue).rawValue
   
-  func setThumbnailToBuffer(assetId: String, width: Int64, height: Int64, completion: @escaping (Result<[String: Int64], any Error>) -> Void) {
+  func getThumbnailBuffer(assetId: String, width: Int64, height: Int64, completion: @escaping (Result<[String: Int64], any Error>) -> Void) {
     Self.processingQueue.async {
       guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: Self.fetchOptions).firstObject
       else { completion(.failure(PigeonError(code: "", message: "Could not get asset data for \(assetId)", details: nil))); return }

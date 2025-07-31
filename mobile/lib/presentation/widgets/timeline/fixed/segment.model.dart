@@ -112,20 +112,9 @@ class _FixedSegmentRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final timelineService = ref.read(timelineServiceProvider);
-
-    if (timelineService.hasRange(assetIndex, assetCount)) {
-      return _buildAssetRow(context, timelineService.getAssets(assetIndex, assetCount), timelineService);
-    }
-
     try {
       final assets = timelineService.getAssets(assetIndex, assetCount);
-      return FutureBuilder<List<BaseAsset>>(
-        future: null,
-        initialData: assets,
-        builder: (context, snapshot) {
-          return _buildAssetRow(context, snapshot.data, timelineService);
-        },
-      );
+      return _buildAssetRow(context, assets, timelineService);
     } catch (e) {
       return FutureBuilder<List<BaseAsset>>(
         future: timelineService.loadAssets(assetIndex, assetCount),
@@ -137,22 +126,21 @@ class _FixedSegmentRow extends ConsumerWidget {
   }
 
   Widget _buildAssetRow(BuildContext context, List<BaseAsset>? assets, TimelineService timelineService) {
+    final assetIndex = this.assetIndex;
     return FixedTimelineRow(
       dimension: tileHeight,
       spacing: spacing,
       textDirection: Directionality.of(context),
-      children: [
-        for (int i = 0; i < assetCount; i++)
-          TimelineAssetIndexWrapper(
-            assetIndex: assetIndex + i,
-            segmentIndex: 0, // For simplicity, using 0 for now
-            child: _AssetTileWidget(
-              key: ValueKey(i.hashCode ^ (assetIndex + i).hashCode ^ timelineService.hashCode),
-              asset: assets == null ? null : assets[i],
-              assetIndex: assetIndex + i,
-            ),
-          ),
-      ],
+      children: List.generate(assetCount, (i) {
+        final curAssetIndex = assetIndex + i;
+        return TimelineAssetIndexWrapper(
+          // this key is intentionally generic to preserve the state of the widget and its subtree
+          key: ValueKey(i.hashCode ^ timelineService.hashCode),
+          assetIndex: curAssetIndex,
+          segmentIndex: 0, // For simplicity, using 0 for now
+          child: _AssetTileWidget(asset: assets?[i], assetIndex: curAssetIndex),
+        );
+      }, growable: false),
     );
   }
 }
@@ -161,7 +149,7 @@ class _AssetTileWidget extends ConsumerWidget {
   final BaseAsset? asset;
   final int assetIndex;
 
-  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex});
+  const _AssetTileWidget({required this.asset, required this.assetIndex});
 
   Future _handleOnTap(BuildContext ctx, WidgetRef ref, int assetIndex, BaseAsset asset, int? heroOffset) async {
     final multiSelectState = ref.read(multiSelectProvider);

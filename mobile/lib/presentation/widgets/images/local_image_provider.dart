@@ -10,9 +10,8 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
 
   final String id;
   final Size size;
-  final DateTime? updatedAt;
 
-  const LocalThumbProvider({required this.id, required this.size, this.updatedAt});
+  const LocalThumbProvider({required this.id, required this.size});
 
   @override
   Future<LocalThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -25,7 +24,6 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
       _codec(key),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<String>('Id', key.id),
-        DiagnosticsProperty<DateTime>('Updated at', key.updatedAt),
         DiagnosticsProperty<Size>('Size', key.size),
       ],
     );
@@ -40,13 +38,13 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is LocalThumbProvider) {
-      return id == other.id && size == other.size && updatedAt == other.updatedAt;
+      return id == other.id && size == other.size;
     }
     return false;
   }
 
   @override
-  int get hashCode => id.hashCode ^ updatedAt.hashCode;
+  int get hashCode => id.hashCode ^ size.hashCode;
 }
 
 class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
