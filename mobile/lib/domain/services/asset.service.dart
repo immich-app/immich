@@ -3,19 +3,36 @@ import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
 
+import '../../infrastructure/repositories/storage.repository.dart';
+import '../../repositories/local_files_manager.repository.dart';
+
 class AssetService {
+  final AppSettingsService _appSettingsService;
   final RemoteAssetRepository _remoteAssetRepository;
   final DriftLocalAssetRepository _localAssetRepository;
+  final LocalFilesManagerRepository _localFilesManager;
+  final StorageRepository _storageRepository;
   final Platform _platform;
+  final Logger _logger;
 
   const AssetService({
+    required AppSettingsService appSettingsService,
     required RemoteAssetRepository remoteAssetRepository,
     required DriftLocalAssetRepository localAssetRepository,
-  }) : _remoteAssetRepository = remoteAssetRepository,
+    required LocalFilesManagerRepository localFilesManager,
+    required StorageRepository storageRepository,
+    required Logger logger,
+  }) : _appSettingsService = appSettingsService,
+       _remoteAssetRepository = remoteAssetRepository,
        _localAssetRepository = localAssetRepository,
-       _platform = const LocalPlatform();
+       _localFilesManager = localFilesManager,
+       _storageRepository = storageRepository,
+       _platform = const LocalPlatform(),
+       _logger = logger;
 
   Stream<BaseAsset?> watchAsset(BaseAsset asset) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).id;
@@ -83,5 +100,35 @@ class AssetService {
 
   Future<int> getLocalHashedCount() {
     return _localAssetRepository.getHashedCount();
+  }
+
+  Future<void> handleRemoteTrashChanges(Iterable<({String checksum, DateTime? deletedAt})> syncData) async {
+    if (_platform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid)) {}
+    final trashedItems = syncData.where((item) => item.deletedAt != null);
+
+    if (trashedItems.isNotEmpty) {
+      final trashedAssetsChecksums = trashedItems.map((syncAsset) => syncAsset.checksum);
+      final localAssetsToTrash = await _localAssetRepository.getAssetsByChecksums(trashedAssetsChecksums);
+      if (localAssetsToTrash.isNotEmpty) {
+        final mediaUrls = await Future.wait(
+          localAssetsToTrash.map(
+            (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
+          ),
+        );
+        _logger.fine("Moving to trash ${mediaUrls.join(", ")} assets");
+        await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
+      }
+    }
+    final modifiedItems = syncData.where((e) => e.deletedAt == null);
+    if (modifiedItems.isNotEmpty) {
+      final modifiedChecksums = modifiedItems.map((syncAsset) => syncAsset.checksum);
+      final remoteAssetsToRestore = await _remoteAssetRepository.getAssetsByChecksums(modifiedChecksums, isTrashed: true);
+      if (remoteAssetsToRestore.isNotEmpty) {
+        _logger.fine("Restoring from trash ${remoteAssetsToRestore.map((e) => e.name).join(", ")} assets");
+        for (final remoteAsset in remoteAssetsToRestore) {
+          await _localFilesManager.restoreFromTrash(remoteAsset.name, remoteAsset.type.index);
+        }
+      }
+    }
   }
 }

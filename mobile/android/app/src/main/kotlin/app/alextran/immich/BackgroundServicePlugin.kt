@@ -5,6 +5,7 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -37,6 +38,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
   private val permissionRequestCode = 1001
   private val trashRequestCode = 1002
   private var activityBinding: ActivityPluginBinding? = null
+  private var lastToggledUris: List<Uri>? = null
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     onAttachedToEngine(binding.applicationContext, binding.binaryMessenger)
@@ -231,7 +233,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
         result.error("TrashError", "Activity or ContentResolver not available", null)
         return
       }
-
+      lastToggledUris = contentUris
       try {
         val pendingIntent = MediaStore.createTrashRequest(contentResolver, contentUris, isTrashed)
         pendingResult = result // Store for onActivityResult
@@ -309,6 +311,35 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
 
     if (requestCode == trashRequestCode) {
       val approved = resultCode == Activity.RESULT_OK
+      if (approved) {
+        lastToggledUris?.forEach { uri ->
+          val projection = arrayOf(MediaStore.MediaColumns.DATA)
+          try {
+            val cursor = context?.contentResolver?.query(uri, projection, null, null, null)
+            if (cursor == null) {
+              Log.w(TAG, "Cursor is null for URI: $uri")
+              return@forEach
+            }
+
+            cursor.use {
+              if (it.moveToFirst()) {
+                val path = it.getStringOrNull(it.getColumnIndex(MediaStore.MediaColumns.DATA))
+                if (!path.isNullOrBlank()) {
+                  Log.i(TAG, "Scanning updated file: $path")
+                  MediaScannerConnection.scanFile(context, arrayOf(path), null, null)
+                } else {
+                  Log.w(TAG, "Path is null or blank for URI: $uri")
+                }
+              } else {
+                Log.w(TAG, "Cursor is empty for URI: $uri")
+              }
+            }
+          } catch (e: Exception) {
+            Log.e(TAG, "Error during rescan for URI: $uri", e)
+          }
+        }
+      }
+      lastToggledUris = null
       pendingResult?.success(approved)
       pendingResult = null
       return true
