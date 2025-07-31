@@ -81,19 +81,19 @@ class FixedSegment extends Segment {
   }
 
   const FixedSegment.empty()
-      : this(
-          firstIndex: 0,
-          lastIndex: 0,
-          startOffset: 0,
-          endOffset: 0,
-          firstAssetIndex: 0,
-          bucket: const Bucket(assetCount: 0),
-          tileHeight: 1,
-          columnCount: 0,
-          headerExtent: 0,
-          spacing: 0,
-          header: HeaderType.none,
-        );
+    : this(
+        firstIndex: 0,
+        lastIndex: 0,
+        startOffset: 0,
+        endOffset: 0,
+        firstAssetIndex: 0,
+        bucket: const Bucket(assetCount: 0),
+        tileHeight: 1,
+        columnCount: 0,
+        headerExtent: 0,
+        spacing: 0,
+        header: HeaderType.none,
+      );
 }
 
 class _FixedSegmentRow extends ConsumerWidget {

@@ -79,10 +79,10 @@ class ThumbnailTile extends ConsumerWidget {
                     child: Thumbnail.fromBaseAsset(
                       asset: asset,
                       thumbhashMode: isScrubbing
-                              ? ThumbhashMode.only
+                          ? ThumbhashMode.only
                           : asset != null && asset.hasLocal
-                              ? ThumbhashMode.disabled
-                              : ThumbhashMode.enabled,
+                          ? ThumbhashMode.disabled
+                          : ThumbhashMode.enabled,
                     ),
                   ),
                 ),
@@ -91,23 +91,17 @@ class ThumbnailTile extends ConsumerWidget {
                       ? const Align(
                           alignment: Alignment.topRight,
                           child: Padding(
-                            padding: EdgeInsets.only(
-                              right: 10.0,
-                              top: 24.0,
-                            ),
+                            padding: EdgeInsets.only(right: 10.0, top: 24.0),
                             child: _TileOverlayIcon(Icons.burst_mode_rounded),
                           ),
                         )
                       : const Align(
                           alignment: Alignment.topRight,
                           child: Padding(
-                            padding: EdgeInsets.only(
-                              right: 10.0,
-                              top: 6.0,
-                            ),
+                            padding: EdgeInsets.only(right: 10.0, top: 6.0),
                             child: _TileOverlayIcon(Icons.burst_mode_rounded),
-                    ),
-                  ),
+                          ),
+                        ),
                 if (asset != null && asset.isVideo)
                   Align(
                     alignment: Alignment.topRight,

@@ -102,10 +102,7 @@ class _BlurredBackdrop extends HookWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: getFullImageProvider(
-              asset,
-              size: Size(context.width, context.height),
-            ),
+            image: getFullImageProvider(asset, size: Size(context.width, context.height)),
             fit: BoxFit.cover,
           ),
         ),
