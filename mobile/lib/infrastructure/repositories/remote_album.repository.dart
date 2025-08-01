@@ -173,15 +173,14 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
             id: user.id,
             email: user.email,
             name: user.name,
-            profileImagePath: user.profileImagePath?.isEmpty == true ? null : user.profileImagePath,
             isAdmin: user.isAdmin,
             updatedAt: user.updatedAt,
-            quotaSizeInBytes: user.quotaSizeInBytes ?? 0,
-            quotaUsageInBytes: user.quotaUsageInBytes,
             memoryEnabled: true,
             inTimeline: false,
             isPartnerSharedBy: false,
             isPartnerSharedWith: false,
+            profileChangedAt: user.profileChangedAt,
+            hasProfileImage: user.hasProfileImage,
           ),
         )
         .get();

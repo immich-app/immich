@@ -236,6 +236,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           id: asset.id,
           orientation: Value(asset.orientation),
           checksum: const Value(null),
+          isFavorite: Value(asset.isFavorite),
         );
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,

@@ -413,6 +413,11 @@ export enum LogLevel {
   Fatal = 'fatal',
 }
 
+export enum ApiCustomExtension {
+  Permission = 'x-immich-permission',
+  AdminOnly = 'x-immich-admin-only',
+}
+
 export enum MetadataKey {
   AuthRoute = 'auth_route',
   AdminRoute = 'admin_route',
@@ -475,6 +480,8 @@ export enum DatabaseExtension {
 export enum BootstrapEventPriority {
   // Database service should be initialized before anything else, most other services need database access
   DatabaseService = -200,
+  // Detect and configure the media location before jobs are queued which may use it
+  StorageService = -195,
   // Other services may need to queue jobs on bootstrap.
   JobService = -190,
   // Initialise config after other bootstrap services, stop other services from using config on bootstrap

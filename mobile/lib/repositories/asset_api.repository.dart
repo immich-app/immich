@@ -66,6 +66,10 @@ class AssetApiRepository extends ApiRepository {
     return _api.updateAssets(AssetBulkUpdateDto(ids: ids, latitude: location.latitude, longitude: location.longitude));
   }
 
+  Future<void> updateDateTime(List<String> ids, DateTime dateTime) async {
+    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, dateTimeOriginal: dateTime.toIso8601String()));
+  }
+
   Future<StackResponse> stack(List<String> ids) async {
     final responseDto = await checkNull(_stacksApi.createStack(StackCreateDto(assetIds: ids)));
 
@@ -92,6 +96,10 @@ class AssetApiRepository extends ApiRepository {
 
     // we need to get the MIME of the thumbnail once that gets added to the API
     return response.originalMimeType;
+  }
+
+  Future<void> updateDescription(String assetId, String description) {
+    return _api.updateAsset(assetId, UpdateAssetDto(description: description));
   }
 }
 

@@ -36,7 +36,6 @@ services:
     env_file:
       - .env
     environment:
-      IMMICH_MEDIA_LOCATION: /data
       IMMICH_REPOSITORY: immich-app/immich
       IMMICH_REPOSITORY_URL: https://github.com/immich-app/immich
       IMMICH_SOURCE_REF: local
@@ -124,7 +123,7 @@ services:
 
   database:
     container_name: immich_postgres
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:5f6a838e4e44c8e0e019d0ebfe3ee8952b69afc2809b2c25f7b0119641978e91
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:32324a2f41df5de9efe1af166b7008c3f55646f8d0e00d9550c16c9822366b4a
     env_file:
       - .env
     environment:

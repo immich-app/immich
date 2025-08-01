@@ -1556,6 +1556,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  scroll_date_picker:
+    dependency: "direct main"
+    description:
+      name: scroll_date_picker
+      sha256: "1b00a3e24d92c77aa84d5856cfe6a57fd5df5f645ce1a6af0feb3ec84bdffb34"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.8.0"
   scrollable_positioned_list:
     dependency: "direct main"
     description:

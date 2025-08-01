@@ -312,6 +312,7 @@ extension on Iterable<PlatformAsset> {
         height: e.height,
         durationInSeconds: e.durationInSeconds,
         orientation: e.orientation,
+        isFavorite: e.isFavorite,
       ),
     ).toList();
   }

@@ -16,7 +16,10 @@ class StacksApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /stacks' operation and returns the [Response].
+  /// This endpoint requires the `stack.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [StackCreateDto] stackCreateDto (required):
@@ -45,6 +48,8 @@ class StacksApi {
     );
   }
 
+  /// This endpoint requires the `stack.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [StackCreateDto] stackCreateDto (required):
@@ -63,7 +68,10 @@ class StacksApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /stacks/{id}' operation and returns the [Response].
+  /// This endpoint requires the `stack.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -93,6 +101,8 @@ class StacksApi {
     );
   }
 
+  /// This endpoint requires the `stack.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -103,7 +113,10 @@ class StacksApi {
     }
   }
 
-  /// Performs an HTTP 'DELETE /stacks' operation and returns the [Response].
+  /// This endpoint requires the `stack.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
@@ -132,6 +145,8 @@ class StacksApi {
     );
   }
 
+  /// This endpoint requires the `stack.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
@@ -142,7 +157,10 @@ class StacksApi {
     }
   }
 
-  /// Performs an HTTP 'GET /stacks/{id}' operation and returns the [Response].
+  /// This endpoint requires the `stack.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -172,6 +190,8 @@ class StacksApi {
     );
   }
 
+  /// This endpoint requires the `stack.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -190,7 +210,10 @@ class StacksApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /stacks/{id}/assets/{assetId}' operation and returns the [Response].
+  /// This endpoint requires the `stack.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -223,6 +246,8 @@ class StacksApi {
     );
   }
 
+  /// This endpoint requires the `stack.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] assetId (required):
@@ -235,7 +260,10 @@ class StacksApi {
     }
   }
 
-  /// Performs an HTTP 'GET /stacks' operation and returns the [Response].
+  /// This endpoint requires the `stack.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] primaryAssetId:
@@ -268,6 +296,8 @@ class StacksApi {
     );
   }
 
+  /// This endpoint requires the `stack.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] primaryAssetId:
@@ -289,7 +319,10 @@ class StacksApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /stacks/{id}' operation and returns the [Response].
+  /// This endpoint requires the `stack.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -321,6 +354,8 @@ class StacksApi {
     );
   }
 
+  /// This endpoint requires the `stack.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
