@@ -170,27 +170,10 @@ where
 
 -- AssetRepository.getFileSamples
 select
-  "asset"."id",
-  "asset"."originalPath",
-  "asset"."sidecarPath",
-  "asset"."encodedVideoPath",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "path"
-        from
-          "asset_file"
-        where
-          "asset"."id" = "asset_file"."assetId"
-      ) as agg
-  ) as "files"
+  "assetId",
+  "path"
 from
-  "asset"
-where
-  "asset"."libraryId" is null
+  "asset_file"
 limit
   3
 

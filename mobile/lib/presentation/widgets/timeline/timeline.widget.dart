@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -97,10 +98,23 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   final Set<BaseAsset> _draggedAssets = HashSet();
   ScrollPhysics? _scrollPhysics;
 
+  int _perRow = 4;
+  double _scaleFactor = 3.0;
+  double _baseScaleFactor = 3.0;
+
   @override
   void initState() {
     super.initState();
     _eventSubscription = EventStream.shared.listen(_onEvent);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentTilesPerRow = ref.read(settingsProvider).get(Setting.tilesPerRow);
+      setState(() {
+        _perRow = currentTilesPerRow;
+        _scaleFactor = 7.0 - _perRow;
+        _baseScaleFactor = _scaleFactor;
+      });
+    });
   }
 
   void _onEvent(Event event) {
@@ -251,56 +265,82 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
           return PrimaryScrollController(
             controller: _scrollController,
-            child: TimelineDragRegion(
-              onStart: _setDragStartIndex,
-              onAssetEnter: _handleDragAssetEnter,
-              onEnd: _stopDrag,
-              onScroll: _dragScroll,
-              onScrollStart: () {
-                // Minimize the bottom sheet when drag selection starts
-                ref.read(timelineStateProvider.notifier).setScrolling(true);
+            child: RawGestureDetector(
+              gestures: {
+                CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomScaleGestureRecognizer>(
+                  () => CustomScaleGestureRecognizer(),
+                  (CustomScaleGestureRecognizer scale) {
+                    scale.onStart = (details) {
+                      _baseScaleFactor = _scaleFactor;
+                    };
+
+                    scale.onUpdate = (details) {
+                      final newScaleFactor = math.max(math.min(5.0, _baseScaleFactor * details.scale), 1.0);
+                      final newPerRow = 7 - newScaleFactor.toInt();
+
+                      if (newPerRow != _perRow) {
+                        setState(() {
+                          _scaleFactor = newScaleFactor;
+                          _perRow = newPerRow;
+                        });
+
+                        ref.read(settingsProvider.notifier).set(Setting.tilesPerRow, _perRow);
+                      }
+                    };
+                  },
+                ),
               },
-              child: Stack(
-                children: [
-                  Scrubber(
-                    layoutSegments: segments,
-                    timelineHeight: maxHeight,
-                    topPadding: topPadding,
-                    bottomPadding: bottomPadding,
-                    monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
-                    child: CustomScrollView(
-                      primary: true,
-                      physics: _scrollPhysics,
-                      cacheExtent: maxHeight * 2,
-                      slivers: [
-                        if (isSelectionMode)
-                          const SelectionSliverAppBar()
-                        else if (widget.appBar != null)
-                          widget.appBar!,
-                        if (widget.topSliverWidget != null) widget.topSliverWidget!,
-                        _SliverSegmentedList(
-                          segments: segments,
-                          delegate: SliverChildBuilderDelegate(
-                            (ctx, index) {
-                              if (index >= childCount) return null;
-                              final segment = segments.findByIndex(index);
-                              return segment?.builder(ctx, index) ?? const SizedBox.shrink();
-                            },
-                            childCount: childCount,
-                            addAutomaticKeepAlives: false,
-                            // We add repaint boundary around tiles, so skip the auto boundaries
-                            addRepaintBoundaries: false,
+              child: TimelineDragRegion(
+                onStart: _setDragStartIndex,
+                onAssetEnter: _handleDragAssetEnter,
+                onEnd: _stopDrag,
+                onScroll: _dragScroll,
+                onScrollStart: () {
+                  // Minimize the bottom sheet when drag selection starts
+                  ref.read(timelineStateProvider.notifier).setScrolling(true);
+                },
+                child: Stack(
+                  children: [
+                    Scrubber(
+                      layoutSegments: segments,
+                      timelineHeight: maxHeight,
+                      topPadding: topPadding,
+                      bottomPadding: bottomPadding,
+                      monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
+                      child: CustomScrollView(
+                        primary: true,
+                        physics: _scrollPhysics,
+                        cacheExtent: maxHeight * 2,
+                        slivers: [
+                          if (isSelectionMode)
+                            const SelectionSliverAppBar()
+                          else if (widget.appBar != null)
+                            widget.appBar!,
+                          if (widget.topSliverWidget != null) widget.topSliverWidget!,
+                          _SliverSegmentedList(
+                            segments: segments,
+                            delegate: SliverChildBuilderDelegate(
+                              (ctx, index) {
+                                if (index >= childCount) return null;
+                                final segment = segments.findByIndex(index);
+                                return segment?.builder(ctx, index) ?? const SizedBox.shrink();
+                              },
+                              childCount: childCount,
+                              addAutomaticKeepAlives: false,
+                              // We add repaint boundary around tiles, so skip the auto boundaries
+                              addRepaintBoundaries: false,
+                            ),
                           ),
-                        ),
-                        const SliverPadding(padding: EdgeInsets.only(bottom: scrubberBottomPadding)),
-                      ],
+                          const SliverPadding(padding: EdgeInsets.only(bottom: scrubberBottomPadding)),
+                        ],
+                      ),
                     ),
-                  ),
-                  if (!isSelectionMode && isMultiSelectEnabled) ...[
-                    const Positioned(top: 60, left: 25, child: _MultiSelectStatusButton()),
-                    if (widget.bottomSheet != null) widget.bottomSheet!,
+                    if (!isSelectionMode && isMultiSelectEnabled) ...[
+                      const Positioned(top: 60, left: 25, child: _MultiSelectStatusButton()),
+                      if (widget.bottomSheet != null) widget.bottomSheet!,
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           );
@@ -529,5 +569,13 @@ class _MultiSelectStatusButton extends ConsumerWidget {
         style: context.textTheme.titleMedium?.copyWith(height: 2.5, color: context.colorScheme.onPrimary),
       ),
     );
+  }
+}
+
+/// accepts a gesture even though it should reject it (because child won)
+class CustomScaleGestureRecognizer extends ScaleGestureRecognizer {
+  @override
+  void rejectGesture(int pointer) {
+    acceptGesture(pointer);
   }
 }
