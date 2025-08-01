@@ -13,6 +13,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_act
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -31,6 +32,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isInLockedView = ref.watch(inLockedViewProvider);
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final previousRouteName = ref.watch(previousRouteNameProvider);
     final showViewInTimelineButton = previousRouteName != TabShellRoute.name && previousRouteName != null;
@@ -82,7 +84,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           iconTheme: const IconThemeData(size: 22, color: Colors.white),
           actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
           shape: const Border(),
-          actions: isShowingSheet
+          actions: isShowingSheet || isReadonlyModeEnabled
               ? null
               : isInLockedView
               ? lockedViewActions
