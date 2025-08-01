@@ -86,11 +86,12 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       // Ensure proper cleanup before starting new background tasks
       try {
         await Future.wait([
-          backgroundManager.syncLocal().then((_) {
+          Future(() async {
+            await backgroundManager.syncLocal();
             Logger("AppLifeCycleNotifier").fine("Hashing assets after syncLocal");
             // Check if app is still active before hashing
-            if (state == AppLifeCycleEnum.resumed) {
-              backgroundManager.hashAssets();
+            if ([AppLifeCycleEnum.resumed, AppLifeCycleEnum.active].contains(state)) {
+              await backgroundManager.hashAssets();
             }
           }),
           backgroundManager.syncRemote(),
