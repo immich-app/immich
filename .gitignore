@@ -8,6 +8,7 @@
 
 docker/upload
 docker/library
+docker/postgres
 uploads
 coverage
 
@@ -25,3 +26,5 @@ mobile/ios/fastlane/report.xml
 
 vite.config.js.timestamp-*
 .pnpm-store
+
+KB/
