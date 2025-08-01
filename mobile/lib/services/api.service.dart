@@ -8,9 +8,9 @@ import 'package:http/http.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
+import 'package:immich_mobile/utils/user_agent.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
-import 'package:immich_mobile/utils/user_agent.dart';
 
 class ApiService implements Authentication {
   late ApiClient _apiClient;
@@ -45,7 +45,14 @@ class ApiService implements Authentication {
       setEndpoint(endpoint);
     }
   }
+
+  ApiService.shared(String endpoint, String sharedKey) {
+    setEndpoint(endpoint);
+    _queryParams = {'key': sharedKey};
+  }
+
   String? _accessToken;
+  Map<String, String>? _queryParams;
   final _log = Logger("ApiService");
 
   setEndpoint(String endpoint) {
@@ -208,6 +215,8 @@ class ApiService implements Authentication {
     return Future<void>(() {
       var headers = ApiService.getRequestHeaders();
       headerParams.addAll(headers);
+
+      queryParams.addAll(_queryParams?.entries.map((e) => QueryParam(e.key, e.value)) ?? []);
     });
   }
 
