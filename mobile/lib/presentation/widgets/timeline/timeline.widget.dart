@@ -101,7 +101,6 @@ class _SliverTimeline extends ConsumerStatefulWidget {
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   final _scrollController = ScrollController();
   StreamSubscription? _eventSubscription;
-  // late final KeepAliveLink asyncSegmentsLink;
 
   // Drag selection state
   bool _dragging = false;
