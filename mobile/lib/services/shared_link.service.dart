@@ -112,8 +112,8 @@ class SharedLinkService {
     return null;
   }
 
-  Future<SharedLink?> getMySharedLink() async {
-    final responseDto = await _apiService.sharedLinksApi.getMySharedLink();
+  Future<SharedLink?> getMySharedLink({String? password}) async {
+    final responseDto = await _apiService.sharedLinksApi.getMySharedLink(password: password);
     if (responseDto != null) {
       return SharedLink.fromDto(responseDto);
     }

@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/stack.model.dart';
@@ -103,6 +104,20 @@ class AssetApiRepository extends ApiRepository {
 
   Future<void> updateDescription(String assetId, String description) {
     return _api.updateAsset(assetId, UpdateAssetDto(description: description));
+  }
+
+  Future<String?> uploadAsset(XFile file) async {
+    final lastModified = await file.lastModified();
+    final deviceAssetId = "MOBILE-${file.name}-${lastModified.millisecondsSinceEpoch}";
+
+    final multipart = MultipartFile.fromBytes(
+      'assetData', // field should be 'assetData' to match the backend API
+      await file.readAsBytes(),
+      filename: file.name,
+    );
+
+    final asset = await _api.uploadAsset(multipart, deviceAssetId, "MOBILE", lastModified, lastModified);
+    return asset?.id;
   }
 }
 
