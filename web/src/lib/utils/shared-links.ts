@@ -17,7 +17,7 @@ export const asQueryString = ({ slug, key }: { slug?: string; key?: string }) =>
   return params.toString();
 };
 
-export const loadSharedLink = async ({ url, params }: { url: URL; params: { key?: string; slug?: string } }) => {
+export const loadSharedLink = async ({ url, params }: { url: URL; params: { key?: string; slug?: string; assetId?: string } }) => {
   const { key, slug } = params;
   await authenticate(url, { public: true });
 
@@ -26,7 +26,7 @@ export const loadSharedLink = async ({ url, params }: { url: URL; params: { key?
   const $t = await getFormatter();
 
   try {
-    const [sharedLink, asset] = await Promise.all([getMySharedLink({ key, slug }), getAssetInfoFromParam(params)]);
+    const [sharedLink, asset] = await Promise.all([getMySharedLink({ key, slug }), getAssetInfoFromParam({ assetId: params.assetId })]);
     setSharedLink(sharedLink);
     const assetCount = sharedLink.assets.length;
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
@@ -43,7 +43,7 @@ export const loadSharedLink = async ({ url, params }: { url: URL; params: { key?
       },
     };
   } catch (error) {
-    if (isHttpError(error) && error.data.message === 'Invalid password') {
+    if (isHttpError(error) && (error as any).data.message === 'Invalid password') {
       return {
         ...common,
         passwordRequired: true,
