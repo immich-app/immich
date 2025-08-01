@@ -86,7 +86,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _secureStorageService.delete(kSecuredPinCode);
       await _widgetService.clearCredentials();
 
-      await _authService.logout();
+      if (_apiService.apiClient.basePath.isNotEmpty) {
+        await _authService.logout();
+      } else {
+        _log.warning("No base path set for API client, skipping logout request.");
+      }
+
       await _uploadService.cancelBackup();
     } finally {
       await _cleanUp();
