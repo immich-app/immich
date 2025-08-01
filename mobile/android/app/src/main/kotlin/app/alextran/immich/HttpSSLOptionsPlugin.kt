@@ -52,15 +52,10 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         "apply" -> {
           val args = call.arguments<ArrayList<*>>()!!
 
-          var tm: Array<TrustManager>? = null
-          if (args[0] as Boolean) {
-            tm = arrayOf(AllowSelfSignedTrustManager(args[1] as? String))
-          }
-
           var km: Array<KeyManager>? = null
-          if (args[2] != null) {
-            val cert = ByteArrayInputStream(args[2] as ByteArray)
-            val password = (args[3] as String).toCharArray()
+          if (args[0] != null) {
+            val cert = ByteArrayInputStream(args[0] as ByteArray)
+            val password = (args[1] as String).toCharArray()
             val keyStore = KeyStore.getInstance("PKCS12")
             keyStore.load(cert, password)
             val keyManagerFactory =
@@ -70,10 +65,8 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
           }
 
           val sslContext = SSLContext.getInstance("TLS")
-          sslContext.init(km, tm, null)
+          sslContext.init(km, null, null)
           HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
-
-          HttpsURLConnection.setDefaultHostnameVerifier(AllowSelfSignedHostnameVerifier(args[1] as? String))
 
           result.success(true)
         }
@@ -82,65 +75,6 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
       }
     } catch (e: Throwable) {
       result.error("error", e.message, null)
-    }
-  }
-
-  @SuppressLint("CustomX509TrustManager")
-  class AllowSelfSignedTrustManager(private val serverHost: String?) : X509ExtendedTrustManager() {
-    private val defaultTrustManager: X509ExtendedTrustManager = getDefaultTrustManager()
-
-    override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) =
-      defaultTrustManager.checkClientTrusted(chain, authType)
-
-    override fun checkClientTrusted(
-      chain: Array<out X509Certificate>?, authType: String?, socket: Socket?
-    ) = defaultTrustManager.checkClientTrusted(chain, authType, socket)
-
-    override fun checkClientTrusted(
-      chain: Array<out X509Certificate>?, authType: String?, engine: SSLEngine?
-    ) = defaultTrustManager.checkClientTrusted(chain, authType, engine)
-
-    override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-      if (serverHost == null) return
-      defaultTrustManager.checkServerTrusted(chain, authType)
-    }
-
-    override fun checkServerTrusted(
-      chain: Array<out X509Certificate>?, authType: String?, socket: Socket?
-    ) {
-      if (serverHost == null) return
-      val socketAddress = socket?.remoteSocketAddress
-      if (socketAddress is InetSocketAddress && socketAddress.hostName == serverHost) return
-      defaultTrustManager.checkServerTrusted(chain, authType, socket)
-    }
-
-    override fun checkServerTrusted(
-      chain: Array<out X509Certificate>?, authType: String?, engine: SSLEngine?
-    ) {
-      if (serverHost == null || engine?.peerHost == serverHost) return
-      defaultTrustManager.checkServerTrusted(chain, authType, engine)
-    }
-
-    override fun getAcceptedIssuers(): Array<X509Certificate> = defaultTrustManager.acceptedIssuers
-
-    private fun getDefaultTrustManager(): X509ExtendedTrustManager {
-      val factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-      factory.init(null as KeyStore?)
-      return factory.trustManagers.filterIsInstance<X509ExtendedTrustManager>().first()
-    }
-  }
-
-  class AllowSelfSignedHostnameVerifier(private val serverHost: String?) : HostnameVerifier {
-    companion object {
-      private val _defaultHostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
-    }
-
-    override fun verify(hostname: String?, session: SSLSession?): Boolean {
-      if (serverHost == null || hostname == serverHost) {
-        return true
-      } else {
-        return _defaultHostnameVerifier.verify(hostname, session)
-      }
     }
   }
 }

@@ -390,8 +390,6 @@
   "advanced_settings_prefer_remote_title": "Prefer remote images",
   "advanced_settings_proxy_headers_subtitle": "Define proxy headers Immich should send with each network request",
   "advanced_settings_proxy_headers_title": "Proxy Headers",
-  "advanced_settings_self_signed_ssl_subtitle": "Skips SSL certificate verification for the server endpoint. Required for self-signed certificates.",
-  "advanced_settings_self_signed_ssl_title": "Allow self-signed SSL certificates",
   "advanced_settings_sync_remote_deletions_subtitle": "Automatically delete or restore an asset on this device when that action is taken on the web",
   "advanced_settings_sync_remote_deletions_title": "Sync remote deletions [EXPERIMENTAL]",
   "advanced_settings_tile_subtitle": "Advanced user's settings",
