@@ -13,7 +13,7 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 class ThumbnailTile extends ConsumerWidget {
   const ThumbnailTile(
     this.asset, {
-    this.size = const Size.square(kTimelineThumbnailTileSize),
+    this.size = kTimelineThumbnailTileSize,
     this.fit = BoxFit.cover,
     this.showStorageIndicator = true,
     this.lockSelection = false,

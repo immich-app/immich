@@ -473,10 +473,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     if (stackChildren != null && stackChildren.isNotEmpty) {
       asset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
     }
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: backgroundColor,
+    return Hero(
+      tag: '${asset.heroTag}_$heroOffset',
       child: Thumbnail.fromBaseAsset(asset: asset, fit: BoxFit.contain),
     );
   }

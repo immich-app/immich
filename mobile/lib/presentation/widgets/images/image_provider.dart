@@ -30,7 +30,7 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
 ImageProvider getThumbnailImageProvider({
   BaseAsset? asset,
   String? remoteId,
-  Size size = const Size.square(kTimelineThumbnailSize),
+  Size size = kTimelineThumbnailSize,
 }) {
   assert(asset != null || remoteId != null, 'Either asset or remoteId must be provided');
 
