@@ -69,6 +69,8 @@ export enum EntityType {
 export enum MemoryType {
   /** pictures taken on this day X years ago */
   OnThisDay = 'on_this_day',
+  /** smart grouped memories based on visual similarity */
+  SmartOnThisDay = 'smart_on_this_day',
 }
 
 export enum Permission {
