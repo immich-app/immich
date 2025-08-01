@@ -330,6 +330,7 @@
     isHover = isHoverScrollbar;
 
     if (isHoverScrollbar) {
+      event.preventDefault();
       handleMouseEvent({
         clientY: touch.clientY,
         isDragging: true,
@@ -348,6 +349,7 @@
   const onTouchMove = (event: TouchEvent) => {
     const touch = getTouch(event);
     if (touch && isDragging) {
+      event.preventDefault();
       handleMouseEvent({
         clientY: touch.clientY,
       });
@@ -357,14 +359,14 @@
   };
   /* eslint-enable tscompat/tscompat */
   onMount(() => {
-    document.addEventListener('touchmove', onTouchMove, { capture: true, passive: true });
+    document.addEventListener('touchmove', onTouchMove, { capture: true, passive: false });
     return () => {
       document.removeEventListener('touchmove', onTouchMove, true);
     };
   });
 
   onMount(() => {
-    document.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
+    document.addEventListener('touchstart', onTouchStart, { capture: true, passive: false });
     document.addEventListener('touchend', onTouchEnd, { capture: true, passive: true });
     return () => {
       document.removeEventListener('touchstart', onTouchStart, true);
