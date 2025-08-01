@@ -29,7 +29,7 @@ class Thumbnail extends StatefulWidget {
   const Thumbnail({
     this.imageProvider,
     this.fit = BoxFit.cover,
-    this.size = const ui.Size.square(kTimelineThumbnailSize),
+    this.size = kTimelineThumbnailSize,
     this.blurhash,
     this.thumbhashMode = ThumbhashMode.enabled,
     super.key,
@@ -38,7 +38,7 @@ class Thumbnail extends StatefulWidget {
   Thumbnail.fromAsset({
     required Asset asset,
     this.fit = BoxFit.cover,
-    this.size = const ui.Size.square(kTimelineThumbnailSize),
+    this.size = kTimelineThumbnailSize,
     this.thumbhashMode = ThumbhashMode.enabled,
     super.key,
   }) : blurhash = asset.thumbhash,
@@ -47,7 +47,7 @@ class Thumbnail extends StatefulWidget {
   Thumbnail.fromBaseAsset({
     required BaseAsset? asset,
     this.fit = BoxFit.cover,
-    this.size = const ui.Size.square(kTimelineThumbnailSize),
+    this.size = kTimelineThumbnailSize,
     this.thumbhashMode = ThumbhashMode.enabled,
     super.key,
   }) : blurhash = switch (asset) {
