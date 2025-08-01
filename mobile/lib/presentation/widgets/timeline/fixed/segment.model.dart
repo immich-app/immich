@@ -140,7 +140,7 @@ class _FixedSegmentRow extends ConsumerWidget {
           segmentIndex: 0, // For simplicity, using 0 for now
           child: _AssetTileWidget(asset: assets?[i], assetIndex: curAssetIndex),
         );
-      }),
+      }, growable: false),
     );
   }
 }
