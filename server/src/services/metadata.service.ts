@@ -102,7 +102,7 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
   }
 
   // round to nearest integer
-  return Number.isInteger(val) ? val : Math.round(val);
+  return Math.round(val);
 };
 
 const getLensModel = (exifTags: ImmichTags): string | null => {
