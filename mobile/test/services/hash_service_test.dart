@@ -9,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/device_asset.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/device_asset.repository.dart';
-import 'package:immich_mobile/services/background.service.dart';
+import 'package:immich_mobile/services/backgroundLegacy.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:photo_manager/photo_manager.dart';

@@ -24,7 +24,7 @@ import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
-import 'package:immich_mobile/services/background.service.dart';
+import 'package:immich_mobile/services/backgroundLegacy.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/backup_album.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';

@@ -8,7 +8,7 @@ import 'package:immich_mobile/domain/models/device_asset.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/device_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/device_asset.provider.dart';
-import 'package:immich_mobile/services/background.service.dart';
+import 'package:immich_mobile/services/backgroundLegacy.service.dart';
 import 'package:logging/logging.dart';
 
 class HashService {
