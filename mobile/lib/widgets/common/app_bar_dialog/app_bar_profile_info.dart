@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/upload_profile_image.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
@@ -48,6 +49,8 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
           if (user != null) {
             ref.read(currentUserProvider.notifier).refresh();
           }
+
+          ref.read(backupProvider.notifier).updateDiskInfo();
         }
       }
     }
