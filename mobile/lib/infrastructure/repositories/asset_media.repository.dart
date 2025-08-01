@@ -11,7 +11,7 @@ class AssetMediaRepository {
   const AssetMediaRepository();
 
   Future<ui.Codec> getLocalThumbnail(String localId, ui.Size size) async {
-    final info = await thumbnailApi.setThumbnailToBuffer(
+    final info = await thumbnailApi.getThumbnailBuffer(
       localId,
       width: size.width.toInt(),
       height: size.height.toInt(),

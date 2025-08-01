@@ -59,7 +59,7 @@ private open class ThumbnailsPigeonCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface ThumbnailApi {
-  fun setThumbnailToBuffer(assetId: String, width: Long, height: Long, callback: (Result<Map<String, Long>>) -> Unit)
+  fun getThumbnailBuffer(assetId: String, width: Long, height: Long, callback: (Result<Map<String, Long>>) -> Unit)
 
   companion object {
     /** The codec used by ThumbnailApi. */
@@ -71,14 +71,14 @@ interface ThumbnailApi {
     fun setUp(binaryMessenger: BinaryMessenger, api: ThumbnailApi?, messageChannelSuffix: String = "") {
       val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ThumbnailApi.setThumbnailToBuffer$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ThumbnailApi.getThumbnailBuffer$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val assetIdArg = args[0] as String
             val widthArg = args[1] as Long
             val heightArg = args[2] as Long
-            api.setThumbnailToBuffer(assetIdArg, widthArg, heightArg) { result: Result<Map<String, Long>> ->
+            api.getThumbnailBuffer(assetIdArg, widthArg, heightArg) { result: Result<Map<String, Long>> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(ThumbnailsPigeonUtils.wrapError(error))

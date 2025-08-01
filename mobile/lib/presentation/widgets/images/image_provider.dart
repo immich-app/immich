@@ -40,11 +40,7 @@ ImageProvider getThumbnailImageProvider({
 
   if (_shouldUseLocalAsset(asset!)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    return LocalThumbProvider(
-      id: id,
-      // updatedAt: asset.updatedAt, TODO
-      size: size,
-    );
+    return LocalThumbProvider(id: id, size: size);
   }
 
   final String assetId;
