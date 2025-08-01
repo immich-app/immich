@@ -56,7 +56,7 @@ Cancelable<T?> runInIsolateGentle<T>({
       log.severe("Error in runInIsolateGentle ${debugLabel == null ? '' : ' for $debugLabel'}", error, stack);
     } finally {
       try {
-        await LogService.I.flushBuffer();
+        await LogService.I.flush();
         await ref.read(driftProvider).close();
 
         // Close Isar safely

@@ -3,10 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
-// ignore: import_rule_isar
-import 'package:isar/isar.dart';
 
 const kDevLoggerTag = 'DEV';
 
@@ -14,28 +11,22 @@ abstract final class DLog {
   const DLog();
 
   static Stream<List<LogMessage>> watchLog() {
-    final db = Isar.getInstance();
-    if (db == null) {
+    final logger = LogRepository.getInstance();
+    if (logger == null) {
       return const Stream.empty();
     }
 
-    return db.loggerMessages
-        .filter()
-        .context1EqualTo(kDevLoggerTag)
-        .sortByCreatedAtDesc()
-        .watch(fireImmediately: true)
-        .map((logs) => logs.map((log) => log.toDto()).toList());
+    return logger.watchMessages(kDevLoggerTag);
   }
 
   static void clearLog() {
-    final db = Isar.getInstance();
+    final db = LogRepository.getInstance();
+
     if (db == null) {
       return;
     }
 
-    db.writeTxnSync(() {
-      db.loggerMessages.filter().context1EqualTo(kDevLoggerTag).deleteAllSync();
-    });
+    unawaited(db.deleteByLogger(kDevLoggerTag));
   }
 
   static void log(String message, [Object? error, StackTrace? stackTrace]) {
@@ -49,8 +40,8 @@ abstract final class DLog {
       debugPrint('StackTrace: $stackTrace');
     }
 
-    final isar = Isar.getInstance();
-    if (isar == null) {
+    final logger = LogRepository.getInstance();
+    if (logger == null) {
       return;
     }
 
@@ -63,6 +54,6 @@ abstract final class DLog {
       stack: stackTrace?.toString(),
     );
 
-    unawaited(IsarLogRepository(isar).insert(record));
+    unawaited(logger.insert(record));
   }
 }
