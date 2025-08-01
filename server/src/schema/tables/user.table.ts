@@ -81,4 +81,7 @@ export class UserTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @Column({ type: 'character varying', nullable: true, default: null })
+  appVersion!: string | null;
 }

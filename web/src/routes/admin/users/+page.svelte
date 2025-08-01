@@ -13,7 +13,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
-  import { websocketEvents } from '$lib/stores/websocket';
+  import { websocketEvents, websocketStore } from '$lib/stores/websocket';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import { Button, HStack, IconButton, Text, modalManager } from '@immich/ui';
@@ -30,6 +30,11 @@
   let { data }: Props = $props();
 
   let allUsers: UserAdminResponseDto[] = $state([]);
+
+  const { serverVersion } = websocketStore;
+  let formattedServerVersion = $derived(
+    $serverVersion ? `${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null,
+  );
 
   const refresh = async () => {
     allUsers = await searchUsersAdmin({ withDeleted: true });
@@ -96,6 +101,7 @@
             >
             <th class="hidden sm:block w-3/12 text-center text-sm font-medium">{$t('name')}</th>
             <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">{$t('has_quota')}</th>
+            <th class="w-2/12 text-center text-sm font-medium">{$t('app_version')}</th>
             <th class="w-4/12 lg:w-3/12 xl:w-2/12 text-center text-sm font-medium">{$t('action')}</th>
           </tr>
         </thead>
@@ -119,6 +125,17 @@
                       <Icon path={mdiInfinity} size="16" />
                     {/if}
                   </div>
+                </td>
+                <td class="w-2/12 text-ellipsis break-all px-2 text-sm">
+                  <span
+                    class={immichUser.appVersion &&
+                    formattedServerVersion &&
+                    immichUser.appVersion !== formattedServerVersion
+                      ? 'text-red-500'
+                      : ''}
+                  >
+                    {immichUser.appVersion ?? '-'}
+                  </span>
                 </td>
                 <td
                   class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm"

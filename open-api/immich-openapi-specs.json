@@ -16844,6 +16844,10 @@
       },
       "UserAdminResponseDto": {
         "properties": {
+          "appVersion": {
+            "nullable": true,
+            "type": "string"
+          },
           "avatarColor": {
             "allOf": [
               {
