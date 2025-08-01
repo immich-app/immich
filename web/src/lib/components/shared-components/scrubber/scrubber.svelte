@@ -462,6 +462,7 @@
   style:width
   style:height={height + 'px'}
   style:background-color={isDragging ? 'transparent' : 'transparent'}
+  style:touch-action="none"
   bind:this={scrollBar}
   onmouseenter={() => (isHover = true)}
   onmouseleave={() => (isHover = false)}
