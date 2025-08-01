@@ -11,11 +11,7 @@ class AssetMediaRepository {
   const AssetMediaRepository();
 
   Future<ui.Codec> getLocalThumbnail(String localId, ui.Size size) async {
-    final info = await thumbnailApi.getThumbnailBuffer(
-      localId,
-      width: size.width.toInt(),
-      height: size.height.toInt(),
-    );
+    final info = await thumbnailApi.getThumbnailBuffer(localId, width: size.width.toInt(), height: size.height.toInt());
 
     final pointer = Pointer<Uint8>.fromAddress(info['pointer']!);
     final actualWidth = info['width']!;
