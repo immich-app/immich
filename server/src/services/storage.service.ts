@@ -101,6 +101,10 @@ export class StorageService extends BaseService {
         const savedValue = await this.systemMetadataRepository.get(SystemMetadataKey.MediaLocation);
         let previous = savedValue?.location || '';
 
+        if (!previous && this.configRepository.getEnv().storage.mediaLocation) {
+          previous = current;
+        }
+
         if (!previous) {
           previous = path.startsWith('upload/') ? 'upload' : '/usr/src/app/upload';
         }
