@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 const int noDbId = -9223372036854775808; // from Isar
 const double downloadCompleted = -1;
 const double downloadFailed = -2;
@@ -26,8 +28,11 @@ const String kDownloadGroupLivePhoto = 'group_livephoto';
 
 // Timeline constants
 const int kTimelineNoneSegmentSize = 120;
-const int kTimelineAssetLoadBatchSize = 256;
+const int kTimelineAssetLoadBatchSize = 1024;
 const int kTimelineAssetLoadOppositeSize = 64;
+const Size kTimelineThumbnailTileSize = Size.square(256.0);
+const Size kTimelineThumbnailSize = Size.square(384.0);
+const int kTimelineImageCacheMemory = 250 * 1024 * 1024;
 
 // Widget keys
 const String kWidgetAuthToken = "widget_auth_token";

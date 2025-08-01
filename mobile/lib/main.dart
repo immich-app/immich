@@ -69,6 +69,8 @@ Future<void> initApp() async {
     }
   }
 
+  PaintingBinding.instance.imageCache.maximumSizeBytes = kTimelineImageCacheMemory;
+
   await DynamicTheme.fetchSystemPalette();
 
   final log = Logger("ImmichErrorLogger");
