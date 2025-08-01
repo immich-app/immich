@@ -15,12 +15,12 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
   /// should be the primary image to display. The [initialImage] is an optional
   /// image that will be emitted synchronously, useful as a thumbnail or placeholder.
   OneFramePlaceholderImageStreamCompleter(
-    Future<ImageInfo> image, {
+    Stream<ImageInfo> image, {
     ImageInfo? initialImage,
     InformationCollector? informationCollector,
   }) {
     _initialImage = initialImage;
-    image.then<void>(
+    image.listen(
       setImage,
       onError: (Object error, StackTrace stack) {
         reportError(

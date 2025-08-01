@@ -57,3 +57,25 @@ ImageProvider getThumbnailImageProvider({
 
 bool _shouldUseLocalAsset(BaseAsset asset) =>
     asset.hasLocal && (!asset.hasRemote || !AppSetting.get(Setting.preferRemoteImage));
+
+ImageInfo? getCachedImage(ImageProvider key) {
+  ImageInfo? thumbnail;
+  final ImageStreamCompleter? stream = PaintingBinding.instance.imageCache.putIfAbsent(
+    key,
+    () => throw Exception(), // don't bother loading if it isn't cacched
+  );
+
+  if (stream != null) {
+    void listener(ImageInfo info, bool synchronousCall) {
+      thumbnail = info;
+    }
+
+    try {
+      stream.addListener(ImageStreamListener(listener));
+    } finally {
+      stream.removeListener(ImageStreamListener(listener));
+    }
+  }
+
+  return thumbnail;
+}

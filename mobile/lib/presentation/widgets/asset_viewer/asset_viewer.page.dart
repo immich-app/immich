@@ -473,10 +473,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     if (stackChildren != null && stackChildren.isNotEmpty) {
       asset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
     }
-    return Hero(
-      tag: '${asset.heroTag}_$heroOffset',
-      child: Thumbnail.fromBaseAsset(asset: asset, fit: BoxFit.contain),
-    );
+    return Thumbnail.fromBaseAsset(asset: asset, fit: BoxFit.contain);
   }
 
   void _onScaleStateChanged(PhotoViewScaleState scaleState) {
