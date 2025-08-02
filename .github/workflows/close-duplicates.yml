@@ -1,7 +1,7 @@
 on:
-  issues: 
+  issues:
     types: [opened]
-  discussion: 
+  discussion:
     types: [created]
 
 name: Close likely duplicates
@@ -19,7 +19,7 @@ jobs:
         run: |
           BODY=$(echo """$EVENT""" | jq -r '.issue // .discussion | .body' | base64 -w 0)
           echo "body=$BODY" >> $GITHUB_OUTPUT
-  
+
   get_checkbox_json:
     runs-on: ubuntu-latest
     needs: get_body
@@ -68,7 +68,7 @@ jobs:
                   __typename
                 }
               }'
-              
+
       - name: Close discussion
         if: ${{ github.event_name == 'discussion' && github.event.discussion.category.name == 'Feature Request' }}
         env:
@@ -94,4 +94,3 @@ jobs:
                   __typename
                 }
               }'
-        
