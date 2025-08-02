@@ -4,7 +4,6 @@ sidebar_position: 80
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-import Admonition from '@theme/Admonition';
 
 # TrueNAS [Community]
 
@@ -42,8 +41,8 @@ In TrueNAS, Immich requires 2 datasets for the application to function correctly
 You can organise these as one parent with two child datasets, for example `/mnt/tank/immich/data` and `/mnt/tank/immich/pgData`.
 
 <img
-src={require('./img/truenas/truenas12.webp').default}
-width="30%"
+src={require('./img/truenas/truenas00.webp').default}
+width="40%"
 alt="Immich App Widget"
 className="border rounded-xl"
 />
@@ -58,6 +57,7 @@ Since TrueNAS Community Edition 24.10.2.2 and later, Immich can be run as any us
 
 For an easy setup:
 
+- Create the parent dataset `immich` keeping the default **Generic** preset.
 - Select `Dataset Preset` **Apps** instead of **Generic** when creating the `data` dataset. This will automatically give the correct permissions to the dataset. If you want to use another user for Immich, you can keep the **Generic** preset, but you will need to give the **_modify_** permission to that other user.
 - For the `pgData` dataset, you can keep the default preset **Generic** as permissions can be set during the installation of the Immich app (See [Storage Configuration](#storage-configuration) section).
   :::
@@ -125,7 +125,7 @@ Change it if you’re deploying a second instance.
 ### Immich Configuration
 
 <img
-src={require('./img/truenas/truenas05.webp').default}
+src={require('./img/truenas/truenas04.webp').default}
 width="40%"
 alt="Configuration Settings"
 className="border rounded-xl mb-4"
@@ -162,7 +162,7 @@ Set **Database Storage Type** to the type of storage (**HDD** or **SSD**) that t
 Environment Variables can be set by clicking the **Add** button and filling in the **Name** and **Value** fields.
 
 <img
-src={require('./img/truenas/truenas06.webp').default}
+src={require('./img/truenas/truenas05.webp').default}
 width="40%"
 alt="Environment Variables"
 className="border rounded-xl"
@@ -178,6 +178,25 @@ Some examples are: `IMMICH_VERSION`, `UPLOAD_LOCATION`, `DB_DATA_LOCATION`, `TZ`
 :::
 
 </details>
+
+### User and Group Configuration
+
+Application in TrueNAS runs as a specific user and group. Immich uses the default user `apps` (UID 568) and the default group `apps` (GID 568).
+
+<img
+src={require('./img/truenas/truenas06.webp').default}
+width="40%"
+alt="User and Group Configuration"
+className="border rounded-xl"
+/>
+
+- **User ID**: Keep the default value `apps` (UID 568) or define a different one if needed.
+
+- **Group ID**: Keep the default value `apps` (GID 568) or define a different one if needed.
+
+:::warning
+If you change the user or group, make sure that the datasets you created for Immich data storage have the correct permissions set for that user and group as specified in the [Setting up Storage Datasets](#setting-up-storage-datasets) section above.
+:::
 
 ### Network Configuration
 
@@ -210,7 +229,7 @@ For the Postgres Data Storage, select **Host Path (Path that already exists on t
 
 <img
 src={require('./img/truenas/truenas08.webp').default}
-width="50%"
+width="40%"
 alt="Configure Storage Volumes"
 className="border rounded-xl"
 />
@@ -218,6 +237,7 @@ className="border rounded-xl"
 :::info
 **Postgres Data Storage**
 Once **Host Path** is selected, a checkbox appears with **_Automatic Permissions_**. If you have not set the ownership of the **pgData** dataset to `netdata` (UID 999), tick this box as it will set the user ownership to `netdata` (UID 999) and the group ownership to `docker` (GID 999) automatically. If you have set the ownership of the **pgData** dataset to `netdata` (UID 999), you can leave this box unticked.
+:::
 
 ### Additional Storage (Advanced Users)
 
@@ -226,9 +246,9 @@ Once **Host Path** is selected, a checkbox appears with **_Automatic Permissions
 
 #### [External Libraries](/docs/features/libraries)
 
-<Admonition type="danger" title="Advanced Users Only">
+:::danger Advanced Users Only
 This feature should only be used by advanced users. If this is your first time installing Immich, then DO NOT mount an external library until you have a working setup.
-</Admonition>
+:::
 
 <img
 src={require('./img/truenas/truenas09.webp').default}
@@ -246,11 +266,11 @@ If you want to be able to delete files or edit metadata in the external library 
 - **Host Path** is the location on the TrueNAS Community Edition server where your external library is located.
 - **Read Only** is a checkbox that you can tick if you want to prevent Immich from modifying the files in the external library. This is useful if you want to use Immich to view and search your external library without modifying it.
 
-<Admonition type="warning">
+:::warning
 Each mount path MUST be something unique and should NOT be your library or upload location or a Linux directory like `/lib`.
 
 A general recommendation is to mount any external libraries to a path beginning with `/mnt` or `/media` followed by a unique name, such as `/mnt/external-libraries` or `/media/my-external-libraries`. If you plan to mount multiple external libraries, you can use paths like `/mnt/external-libraries/library1`, `/mnt/external-libraries/library2`, etc.
-</Admonition>
+:::
 
 </details>
 
@@ -259,9 +279,9 @@ A general recommendation is to mount any external libraries to a path beginning 
 
 #### Multiple Datasets for Immich Storage
 
-<Admonition type="danger" title="Advanced Users Only">
+:::danger Advanced Users Only
 This feature should only be used by advanced users.
-</Admonition>
+:::
 
 Immich can use multiple datasets for its storage, allowing you to manage your data more granularly, as it was done in the old storage configuration. This is useful if you want to separate your data into different datasets for performance or organisational reasons.
 
@@ -276,10 +296,10 @@ To mount these datasets:
 2. Select **Type** as **Host Path (Path that already exists on the system)**.
 3. Enter the **Mount Path** with `/data/<folder-name>`. The `<folder-name>` is the name of the folder you want to mount, for example, `library`, `upload`, `thumbs`, `profile`, `encoded-video`, or `backups`.
 
-<Admonition type="danger" title="Important">
+:::danger Important
 You have to write the full path, including `/data/`, as Immich expects the data to be in that location.  
 If you do not include this path, Immich will not be able to find the data and will not write the data to the location you specified.
-</Admonition>
+:::
 
 4. Select the **Host Path** as the dataset you created for that folder, for example, `/mnt/tank/immich/library`, `/mnt/tank/immich/upload`, etc.
 
@@ -320,7 +340,7 @@ The system opens the **Installed Applications** screen with the Immich app in th
 When the installation completes, it changes to **Running**.
 
 <img
-src={require('./img/truenas/truenas04.webp').default}
+src={require('./img/truenas/truenas12.webp').default}
 width="100%"
 alt="Immich Installed"
 className="border rounded-xl"
@@ -362,7 +382,7 @@ To update the app to the latest version:
 
 ## Migration
 
-## Migrating from Old Storage Configuration
+### Migrating from Old Storage Configuration
 
 :::note Old TrueNAS Versions Permissions
 If you were using an older version of TrueNAS (before 24.10.2.2), the datasets, except the one for **pgData** had only to be owned by the `root` user (UID 0). You might have to add the **modify** permission to the `apps` user (UID 568) or the user you want to run Immich as, to all of them, except **pgData**. The steps to add or change ACL permissions are described in the [TrueNAS documentation](https://www.truenas.com/docs/scale/scaletutorials/datasets/permissionsscale/).
