@@ -109,7 +109,7 @@ export class ServerController {
   }
 
   @Get('version-check')
-  @Authenticated()
+  @Authenticated({ permission: Permission.ServerVersionCheck })
   getVersionCheck(): Promise<VersionCheckStateResponseDto> {
     return this.systemMetadataService.getVersionCheckState();
   }

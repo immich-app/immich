@@ -172,6 +172,7 @@ export enum Permission {
   ServerApkLinks = 'server.apkLinks',
   ServerStorage = 'server.storage',
   ServerStatistics = 'server.statistics',
+  ServerVersionCheck = 'server.versionCheck',
 
   ServerLicenseRead = 'serverLicense.read',
   ServerLicenseUpdate = 'serverLicense.update',
