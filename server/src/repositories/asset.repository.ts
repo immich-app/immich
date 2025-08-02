@@ -276,6 +276,48 @@ export class AssetRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedArray()
+  getByIdsWithRelations(ids: string[], { exifInfo, faces, files, library, owner, smartSearch, stack, tags }: GetByIdsRelations = {}) {
+    return this.db
+      .selectFrom('asset')
+      .selectAll('asset')
+      .where('asset.id', '=', anyUuid(ids))
+      .$if(!!exifInfo, withExif)
+      .$if(!!faces, (qb) => qb.select(faces?.person ? withFacesAndPeople : withFaces).$narrowType<{ faces: NotNull }>())
+      .$if(!!library, (qb) => qb.select(withLibrary))
+      .$if(!!owner, (qb) => qb.select(withOwner))
+      .$if(!!smartSearch, withSmartSearch)
+      .$if(!!stack, (qb) =>
+        qb
+          .leftJoin('stack', 'stack.id', 'asset.stackId')
+          .$if(!stack!.assets, (qb) =>
+            qb.select((eb) => eb.fn.toJson(eb.table('stack')).$castTo<Stack | null>().as('stack')),
+          )
+          .$if(!!stack!.assets, (qb) =>
+            qb
+              .leftJoinLateral(
+                (eb) =>
+                  eb
+                    .selectFrom('asset as stacked')
+                    .selectAll('stack')
+                    .select((eb) => eb.fn('array_agg', [eb.table('stacked')]).as('assets'))
+                    .whereRef('stacked.stackId', '=', 'stack.id')
+                    .whereRef('stacked.id', '!=', 'stack.primaryAssetId')
+                    .where('stacked.deletedAt', 'is', null)
+                    .where('stacked.visibility', '=', AssetVisibility.Timeline)
+                    .groupBy('stack.id')
+                    .as('stacked_assets'),
+                (join) => join.on('stack.id', 'is not', null),
+              )
+              .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).$castTo<Stack | null>().as('stack')),
+          ),
+      )
+      .$if(!!files, (qb) => qb.select(withFiles))
+      .$if(!!tags, (qb) => qb.select(withTags))
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   async deleteAll(ownerId: string): Promise<void> {
     await this.db.deleteFrom('asset').where('ownerId', '=', ownerId).execute();

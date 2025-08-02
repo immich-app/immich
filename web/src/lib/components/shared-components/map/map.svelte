@@ -121,7 +121,7 @@
     }
 
     const mapSource = map?.getSource('geojson') as GeoJSONSource;
-    const leaves = await mapSource.getClusterLeaves(clusterId, 10_000, 0);
+    const leaves = await mapSource.getClusterLeaves(clusterId, Infinity, 0);
     const ids = leaves.map((leaf) => leaf.properties?.id);
     onSelect(ids);
   }
