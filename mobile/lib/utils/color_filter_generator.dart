@@ -27,9 +27,7 @@ class BrightnessFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColorFiltered(
-      colorFilter: ColorFilter.matrix(
-        _ColorFilterGenerator.brightnessAdjustMatrix(brightness),
-      ),
+      colorFilter: ColorFilter.matrix(_ColorFilterGenerator.brightnessAdjustMatrix(brightness)),
       child: child,
     );
   }
@@ -44,9 +42,7 @@ class SaturationFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColorFiltered(
-      colorFilter: ColorFilter.matrix(
-        _ColorFilterGenerator.saturationAdjustMatrix(saturation),
-      ),
+      colorFilter: ColorFilter.matrix(_ColorFilterGenerator.saturationAdjustMatrix(saturation)),
       child: child,
     );
   }
@@ -82,8 +78,7 @@ class _ColorFilterGenerator {
       ];
     }
 
-    double x =
-        ((1 + ((value > 0) ? ((3 * value) / 100) : (value / 100)))).toDouble();
+    double x = ((1 + ((value > 0) ? ((3 * value) / 100) : (value / 100)))).toDouble();
     double lumR = 0.3086;
     double lumG = 0.6094;
     double lumB = 0.082;

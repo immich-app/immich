@@ -1,6 +1,5 @@
 import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/infrastructure/entities/exif.entity.dart'
-    as entity;
+import 'package:immich_mobile/infrastructure/entities/exif.entity.dart' as entity;
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:isar/isar.dart';
 
@@ -34,9 +33,7 @@ class IsarExifRepository extends IsarDatabaseRepository {
 
   Future<List<ExifInfo>> updateAll(List<ExifInfo> exifInfos) {
     return transaction(() async {
-      await _db.exifInfos.putAll(
-        exifInfos.map(entity.ExifInfo.fromDto).toList(),
-      );
+      await _db.exifInfos.putAll(exifInfos.map(entity.ExifInfo.fromDto).toList());
       return exifInfos;
     });
   }

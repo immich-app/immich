@@ -188,8 +188,8 @@ export class SyncService extends BaseService {
 
     const upsertType = SyncEntityType.UserV1;
     const upserts = this.syncRepository.user.getUpserts(checkpointMap[upsertType]);
-    for await (const { updateId, ...data } of upserts) {
-      send(response, { type: upsertType, ids: [updateId], data });
+    for await (const { updateId, profileImagePath, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data: { ...data, hasProfileImage: !!profileImagePath } });
     }
   }
 

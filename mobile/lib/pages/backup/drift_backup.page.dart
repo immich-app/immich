@@ -39,10 +39,8 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
       return;
     }
 
-    await ref
-        .read(driftBackupProvider.notifier)
-        .getBackupStatus(currentUser.id);
-    await ref.read(driftBackupProvider.notifier).backup(currentUser.id);
+    await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+    await ref.read(driftBackupProvider.notifier).startBackup(currentUser.id);
   }
 
   Future<void> stopBackup() async {
@@ -53,35 +51,34 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
   Widget build(BuildContext context) {
     final selectedAlbum = ref
         .watch(backupAlbumProvider)
-        .where(
-          (album) => album.backupSelection == BackupSelection.selected,
-        )
+        .where((album) => album.backupSelection == BackupSelection.selected)
         .toList();
 
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Text(
-          "backup_controller_page_backup".t(),
-        ),
+        title: Text("backup_controller_page_backup".t()),
         leading: IconButton(
           onPressed: () {
             context.maybePop(true);
           },
           splashRadius: 24,
-          icon: const Icon(
-            Icons.arrow_back_ios_rounded,
-          ),
+          icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.pushRoute(const DriftBackupOptionsRoute());
+            },
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: "backup_options".t(context: context),
+          ),
+        ],
       ),
       body: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.only(
-              left: 16.0,
-              right: 16,
-              bottom: 32,
-            ),
+            padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 32),
             child: ListView(
               children: [
                 const SizedBox(height: 8),
@@ -91,15 +88,10 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                   const _BackupCard(),
                   const _RemainderCard(),
                   const Divider(),
-                  BackupToggleButton(
-                    onStart: () async => await startBackup(),
-                    onStop: () async => await stopBackup(),
-                  ),
+                  BackupToggleButton(onStart: () async => await startBackup(), onStop: () async => await stopBackup()),
                   TextButton.icon(
                     icon: const Icon(Icons.info_outline_rounded),
-                    onPressed: () => context.pushRoute(
-                      const DriftUploadDetailRoute(),
-                    ),
+                    onPressed: () => context.pushRoute(const DriftUploadDetailRoute()),
                     label: Text("view_details".t(context: context)),
                   ),
                 ],
@@ -121,9 +113,7 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
       String text = "backup_controller_page_backup_selected".tr();
       final albums = ref
           .watch(backupAlbumProvider)
-          .where(
-            (album) => album.backupSelection == BackupSelection.selected,
-          )
+          .where((album) => album.backupSelection == BackupSelection.selected)
           .toList();
 
       if (albums.isNotEmpty) {
@@ -139,9 +129,7 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
             text.trim().substring(0, text.length - 2),
-            style: context.textTheme.labelLarge?.copyWith(
-              color: context.primaryColor,
-            ),
+            style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
           ),
         );
       } else {
@@ -149,9 +137,7 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
             "backup_controller_page_none_selected".tr(),
-            style: context.textTheme.labelLarge?.copyWith(
-              color: context.primaryColor,
-            ),
+            style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
           ),
         );
       }
@@ -161,9 +147,7 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
       String text = "backup_controller_page_excluded".tr();
       final albums = ref
           .watch(backupAlbumProvider)
-          .where(
-            (album) => album.backupSelection == BackupSelection.excluded,
-          )
+          .where((album) => album.backupSelection == BackupSelection.excluded)
           .toList();
 
       if (albums.isNotEmpty) {
@@ -175,9 +159,7 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
             text.trim().substring(0, text.length - 2),
-            style: context.textTheme.labelLarge?.copyWith(
-              color: Colors.red[300],
-            ),
+            style: context.textTheme.labelLarge?.copyWith(color: Colors.red[300]),
           ),
         );
       } else {
@@ -188,19 +170,13 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: const BorderRadius.all(Radius.circular(20)),
-        side: BorderSide(
-          color: context.colorScheme.outlineVariant,
-          width: 1,
-        ),
+        side: BorderSide(color: context.colorScheme.outlineVariant, width: 1),
       ),
       elevation: 0,
       borderOnForeground: false,
       child: ListTile(
         minVerticalPadding: 18,
-        title: Text(
-          "backup_controller_page_albums",
-          style: context.textTheme.titleMedium,
-        ).tr(),
+        title: Text("backup_controller_page_albums", style: context.textTheme.titleMedium).tr(),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Column(
@@ -208,9 +184,7 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
             children: [
               Text(
                 "backup_controller_page_to_backup",
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: context.colorScheme.onSurfaceSecondary,
-                ),
+                style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
               ).tr(),
               buildSelectedAlbumName(),
               buildExcludedAlbumName(),
@@ -224,16 +198,9 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
             if (currentUser == null) {
               return;
             }
-            ref
-                .read(driftBackupProvider.notifier)
-                .getBackupStatus(currentUser.id);
+            ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
           },
-          child: const Text(
-            "select",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ).tr(),
+          child: const Text("select", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
         ),
       ),
     );
@@ -245,8 +212,7 @@ class _TotalCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final totalCount =
-        ref.watch(driftBackupProvider.select((p) => p.totalCount));
+    final totalCount = ref.watch(driftBackupProvider.select((p) => p.totalCount));
 
     return BackupInfoCard(
       title: "total".tr(),
@@ -261,8 +227,7 @@ class _BackupCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final backupCount =
-        ref.watch(driftBackupProvider.select((p) => p.backupCount));
+    final backupCount = ref.watch(driftBackupProvider.select((p) => p.backupCount));
 
     return BackupInfoCard(
       title: "backup_controller_page_backup".tr(),
@@ -277,8 +242,7 @@ class _RemainderCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final remainderCount =
-        ref.watch(driftBackupProvider.select((p) => p.remainderCount));
+    final remainderCount = ref.watch(driftBackupProvider.select((p) => p.remainderCount));
     return BackupInfoCard(
       title: "backup_controller_page_remainder".tr(),
       subtitle: "backup_controller_page_remainder_sub".tr(),

@@ -50,10 +50,7 @@ void main() async {
 
   runApp(
     ProviderScope(
-      overrides: [
-        dbProvider.overrideWithValue(db),
-        isarProvider.overrideWithValue(db),
-      ],
+      overrides: [dbProvider.overrideWithValue(db), isarProvider.overrideWithValue(db)],
       child: const MainWidget(),
     ),
   );
@@ -94,29 +91,20 @@ Future<void> initApp() async {
   initializeTimeZones();
 
   // Initialize the file downloader
-
   await FileDownloader().configure(
     // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
     globalConfig: (Config.holdingQueue, (6, 6, 3)),
   );
 
-  await FileDownloader().trackTasksInGroup(
-    kDownloadGroupLivePhoto,
-    markDownloadedComplete: false,
-  );
+  await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
 
   await FileDownloader().trackTasks();
 
-  LicenseRegistry.addLicense(
-    () async* {
-      for (final license in nonPubLicenses.entries) {
-        yield LicenseEntryWithLineBreaks(
-          [license.key],
-          license.value,
-        );
-      }
-    },
-  );
+  LicenseRegistry.addLicense(() async* {
+    for (final license in nonPubLicenses.entries) {
+      yield LicenseEntryWithLineBreaks([license.key], license.value);
+    }
+  });
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
@@ -126,8 +114,7 @@ class ImmichApp extends ConsumerStatefulWidget {
   ImmichAppState createState() => ImmichAppState();
 }
 
-class ImmichAppState extends ConsumerState<ImmichApp>
-    with WidgetsBindingObserver {
+class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
@@ -161,16 +148,12 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     // Sets the navigation bar color
-    SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.transparent,
-    );
+    SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent);
     if (Platform.isAndroid) {
       // Android 8 does not support transparent app bars
       final info = await DeviceInfoPlugin().androidInfo;
       if (info.version.sdkInt <= 26) {
-        overlayStyle = context.isDarkTheme
-            ? SystemUiOverlayStyle.dark
-            : SystemUiOverlayStyle.light;
+        overlayStyle = context.isDarkTheme ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light;
       }
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
@@ -180,40 +163,22 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   void _configureFileDownloaderNotifications() {
     FileDownloader().configureNotificationForGroup(
       kDownloadGroupImage,
-      running: TaskNotification(
-        'downloading_media'.tr(),
-        '${'file_name'.tr()}: {filename}',
-      ),
-      complete: TaskNotification(
-        'download_finished'.tr(),
-        '${'file_name'.tr()}: {filename}',
-      ),
+      running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
+      complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
       progressBar: true,
     );
 
     FileDownloader().configureNotificationForGroup(
       kDownloadGroupVideo,
-      running: TaskNotification(
-        'downloading_media'.tr(),
-        '${'file_name'.tr()}: {filename}',
-      ),
-      complete: TaskNotification(
-        'download_finished'.tr(),
-        '${'file_name'.tr()}: {filename}',
-      ),
+      running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
+      complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
       progressBar: true,
     );
 
     FileDownloader().configureNotificationForGroup(
       kManualUploadGroup,
-      running: TaskNotification(
-        'uploading_media'.tr(),
-        '${'file_name'.tr()}: {displayName}',
-      ),
-      complete: TaskNotification(
-        'upload_finished'.tr(),
-        '${'file_name'.tr()}: {displayName}',
-      ),
+      running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
+      complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
       progressBar: true,
     );
   }
@@ -222,23 +187,16 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     final deepLinkHandler = ref.read(deepLinkServiceProvider);
     final currentRouteName = ref.read(currentRouteNameProvider.notifier).state;
 
-    final isColdStart =
-        currentRouteName == null || currentRouteName == SplashScreenRoute.name;
+    final isColdStart = currentRouteName == null || currentRouteName == SplashScreenRoute.name;
 
     if (deepLink.uri.scheme == "immich") {
-      final proposedRoute = await deepLinkHandler.handleScheme(
-        deepLink,
-        isColdStart,
-      );
+      final proposedRoute = await deepLinkHandler.handleScheme(deepLink, isColdStart);
 
       return proposedRoute;
     }
 
     if (deepLink.uri.host == "my.immich.app") {
-      final proposedRoute = await deepLinkHandler.handleMyImmichApp(
-        deepLink,
-        isColdStart,
-      );
+      final proposedRoute = await deepLinkHandler.handleMyImmichApp(deepLink, isColdStart);
 
       return proposedRoute;
     }
@@ -279,9 +237,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     final immichTheme = ref.watch(immichThemeProvider);
 
     return ProviderScope(
-      overrides: [
-        localeProvider.overrideWithValue(context.locale),
-      ],
+      overrides: [localeProvider.overrideWithValue(context.locale)],
       child: MaterialApp.router(
         title: 'Immich',
         debugShowCheckedModeBanner: true,
@@ -289,18 +245,11 @@ class ImmichAppState extends ConsumerState<ImmichApp>
         supportedLocales: context.supportedLocales,
         locale: context.locale,
         themeMode: ref.watch(immichThemeModeProvider),
-        darkTheme: getThemeData(
-          colorScheme: immichTheme.dark,
-          locale: context.locale,
-        ),
-        theme: getThemeData(
-          colorScheme: immichTheme.light,
-          locale: context.locale,
-        ),
+        darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
+        theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
-          navigatorObservers: () =>
-              [AppNavigationObserver(ref: ref), HeroController()],
+          navigatorObservers: () => [AppNavigationObserver(ref: ref), HeroController()],
         ),
       ),
     );

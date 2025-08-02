@@ -6,5 +6,4 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'activity_service.provider.g.dart';
 
 @riverpod
-ActivityService activityService(Ref ref) =>
-    ActivityService(ref.watch(activityApiRepositoryProvider));
+ActivityService activityService(Ref ref) => ActivityService(ref.watch(activityApiRepositoryProvider));

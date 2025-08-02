@@ -25,13 +25,13 @@ class AddToAlbumSliverList extends HookConsumerWidget {
     final albumSortMode = ref.watch(albumSortByOptionsProvider);
     final albumSortIsReverse = ref.watch(albumSortOrderProvider);
     final sortedAlbums = albumSortMode.sortFn(albums, albumSortIsReverse);
-    final sortedSharedAlbums =
-        albumSortMode.sortFn(sharedAlbums, albumSortIsReverse);
+    final sortedSharedAlbums = albumSortMode.sortFn(sharedAlbums, albumSortIsReverse);
 
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-          childCount: albums.length + (sharedAlbums.isEmpty ? 0 : 1),
-          (context, index) {
+      delegate: SliverChildBuilderDelegate(childCount: albums.length + (sharedAlbums.isEmpty ? 0 : 1), (
+        context,
+        index,
+      ) {
         // Build shared expander
         if (index == 0 && sortedSharedAlbums.isNotEmpty) {
           return Padding(
@@ -47,9 +47,7 @@ class AddToAlbumSliverList extends HookConsumerWidget {
                   itemCount: sortedSharedAlbums.length,
                   itemBuilder: (context, index) => AlbumThumbnailListTile(
                     album: sortedSharedAlbums[index],
-                    onTap: enabled
-                        ? () => onAddToAlbum(sortedSharedAlbums[index])
-                        : () {},
+                    onTap: enabled ? () => onAddToAlbum(sortedSharedAlbums[index]) : () {},
                   ),
                 ),
               ],
@@ -60,10 +58,7 @@ class AddToAlbumSliverList extends HookConsumerWidget {
         // Build albums list
         final offset = index - (sharedAlbums.isNotEmpty ? 1 : 0);
         final album = sortedAlbums[offset];
-        return AlbumThumbnailListTile(
-          album: album,
-          onTap: enabled ? () => onAddToAlbum(album) : () {},
-        );
+        return AlbumThumbnailListTile(album: album, onTap: enabled ? () => onAddToAlbum(album) : () {});
       }),
     );
   }

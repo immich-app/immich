@@ -5,10 +5,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 class CameraInfo extends StatelessWidget {
   final ExifInfo exifInfo;
 
-  const CameraInfo({
-    super.key,
-    required this.exifInfo,
-  });
+  const CameraInfo({super.key, required this.exifInfo});
 
   @override
   Widget build(BuildContext context) {
@@ -16,18 +13,9 @@ class CameraInfo extends StatelessWidget {
     return ListTile(
       contentPadding: const EdgeInsets.all(0),
       dense: true,
-      leading: Icon(
-        Icons.camera,
-        color: textColor.withAlpha(200),
-      ),
-      title: Text(
-        "${exifInfo.make} ${exifInfo.model}",
-        style: context.textTheme.labelLarge,
-      ),
-      subtitle: exifInfo.f != null ||
-              exifInfo.exposureSeconds != null ||
-              exifInfo.mm != null ||
-              exifInfo.iso != null
+      leading: Icon(Icons.camera, color: textColor.withAlpha(200)),
+      title: Text("${exifInfo.make} ${exifInfo.model}", style: context.textTheme.labelLarge),
+      subtitle: exifInfo.f != null || exifInfo.exposureSeconds != null || exifInfo.mm != null || exifInfo.iso != null
           ? Text(
               "ƒ/${exifInfo.fNumber}   ${exifInfo.exposureTime}   ${exifInfo.focalLength} mm   ISO ${exifInfo.iso ?? ''} ",
               style: context.textTheme.bodySmall,

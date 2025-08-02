@@ -14,15 +14,7 @@ class SharedAlbumThumbnailImage extends HookConsumerWidget {
       onTap: () {
         // debugPrint("View ${asset.id}");
       },
-      child: Stack(
-        children: [
-          ImmichThumbnail(
-            asset: asset,
-            width: 500,
-            height: 500,
-          ),
-        ],
-      ),
+      child: Stack(children: [ImmichThumbnail(asset: asset, width: 500, height: 500)]),
     );
   }
 }

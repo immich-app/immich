@@ -14,8 +14,7 @@ class _Counter {
 }
 
 void main() {
-  test('Executes the method immediately if no calls received previously',
-      () async {
+  test('Executes the method immediately if no calls received previously', () async {
     var counter = _Counter();
     final throttler = Throttler(interval: const Duration(milliseconds: 300));
     throttler.run(() => counter.increment());

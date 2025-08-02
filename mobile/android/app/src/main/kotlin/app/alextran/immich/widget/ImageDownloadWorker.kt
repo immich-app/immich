@@ -69,7 +69,7 @@ class ImageDownloadWorker(
         .build()
 
       manager.enqueueUniqueWork(
-        "$uniqueWorkName-$appWidgetId",
+        "$uniqueWorkName-$appWidgetId-singleShot",
         ExistingWorkPolicy.REPLACE,
         workRequest
       )

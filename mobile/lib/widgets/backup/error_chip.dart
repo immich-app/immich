@@ -11,17 +11,13 @@ class BackupErrorChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hasErrors =
-        ref.watch(errorBackupListProvider.select((value) => value.isNotEmpty));
+    final hasErrors = ref.watch(errorBackupListProvider.select((value) => value.isNotEmpty));
     if (!hasErrors) {
       return const SizedBox();
     }
 
     return ActionChip(
-      avatar: const Icon(
-        Icons.info,
-        color: red400,
-      ),
+      avatar: const Icon(Icons.info, color: red400),
       elevation: 1,
       visualDensity: VisualDensity.compact,
       label: const BackupErrorChipText(),

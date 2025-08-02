@@ -51,7 +51,7 @@ RUN if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
 # Flutter SDK
 # https://flutter.dev/docs/development/tools/sdk/releases?tab=linux
 ENV FLUTTER_CHANNEL="stable"
-ENV FLUTTER_VERSION="3.32.6"
+ENV FLUTTER_VERSION="3.32.8"
 ENV FLUTTER_HOME=/flutter
 ENV PATH=${PATH}:${FLUTTER_HOME}/bin
 
@@ -130,7 +130,7 @@ ENV IMMICH_SOURCE_REF=${BUILD_SOURCE_REF}
 ENV IMMICH_SOURCE_COMMIT=${BUILD_SOURCE_COMMIT}
 ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE_COMMIT}
 
-VOLUME /usr/src/app/upload
+VOLUME /data
 EXPOSE 2283
 ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
 CMD ["start.sh"]

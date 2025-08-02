@@ -16,7 +16,10 @@ class JobsApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /jobs' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `job.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [JobCreateDto] jobCreateDto (required):
@@ -45,6 +48,8 @@ class JobsApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `job.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [JobCreateDto] jobCreateDto (required):
@@ -55,7 +60,9 @@ class JobsApi {
     }
   }
 
-  /// Performs an HTTP 'GET /jobs' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `job.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getAllJobsStatusWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/jobs';
@@ -81,6 +88,7 @@ class JobsApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `job.read` permission.
   Future<AllJobStatusResponseDto?> getAllJobsStatus() async {
     final response = await getAllJobsStatusWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -96,7 +104,10 @@ class JobsApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /jobs/{id}' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `job.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [JobName] id (required):
@@ -128,6 +139,8 @@ class JobsApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `job.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [JobName] id (required):

@@ -25,11 +25,7 @@ class SearchService {
   final SearchApiRepository _searchApiRepository;
 
   final _log = Logger("SearchService");
-  SearchService(
-    this._apiService,
-    this._assetRepository,
-    this._searchApiRepository,
-  );
+  SearchService(this._apiService, this._assetRepository, this._searchApiRepository);
 
   Future<List<String>?> getSearchSuggestions(
     SearchSuggestionType type, {
@@ -61,8 +57,7 @@ class SearchService {
       }
 
       return SearchResult(
-        assets: await _assetRepository
-            .getAllByRemoteId(response.assets.items.map((e) => e.id)),
+        assets: await _assetRepository.getAllByRemoteId(response.assets.items.map((e) => e.id)),
         nextPage: response.assets.nextPage?.toInt(),
       );
     } catch (error, stackTrace) {

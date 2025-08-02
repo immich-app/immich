@@ -20,22 +20,16 @@ import 'package:immich_mobile/widgets/album/shared_album_thumbnail_image.dart';
 class CreateAlbumPage extends HookConsumerWidget {
   final List<Asset>? assets;
 
-  const CreateAlbumPage({
-    super.key,
-    this.assets,
-  });
+  const CreateAlbumPage({super.key, this.assets});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albumTitleController =
-        useTextEditingController.fromValue(TextEditingValue.empty);
+    final albumTitleController = useTextEditingController.fromValue(TextEditingValue.empty);
     final albumTitleTextFieldFocusNode = useFocusNode();
     final albumDescriptionTextFieldFocusNode = useFocusNode();
     final isAlbumTitleTextFieldFocus = useState(false);
     final isAlbumTitleEmpty = useState(true);
-    final selectedAssets = useState<Set<Asset>>(
-      assets != null ? Set.from(assets!) : const {},
-    );
+    final selectedAssets = useState<Set<Asset>>(assets != null ? Set.from(assets!) : const {});
 
     void onBackgroundTapped() {
       albumTitleTextFieldFocusNode.unfocus();
@@ -45,19 +39,13 @@ class CreateAlbumPage extends HookConsumerWidget {
       if (albumTitleController.text.isEmpty) {
         albumTitleController.text = 'create_album_page_untitled'.tr();
         isAlbumTitleEmpty.value = false;
-        ref
-            .watch(albumTitleProvider.notifier)
-            .setAlbumTitle('create_album_page_untitled'.tr());
+        ref.watch(albumTitleProvider.notifier).setAlbumTitle('create_album_page_untitled'.tr());
       }
     }
 
     onSelectPhotosButtonPressed() async {
-      AssetSelectionPageResult? selectedAsset =
-          await context.pushRoute<AssetSelectionPageResult?>(
-        AlbumAssetSelectionRoute(
-          existingAssets: selectedAssets.value,
-          canDeselect: true,
-        ),
+      AssetSelectionPageResult? selectedAsset = await context.pushRoute<AssetSelectionPageResult?>(
+        AlbumAssetSelectionRoute(existingAssets: selectedAssets.value, canDeselect: true),
       );
       if (selectedAsset == null) {
         selectedAssets.value = const {};
@@ -68,10 +56,7 @@ class CreateAlbumPage extends HookConsumerWidget {
 
     buildTitleInputField() {
       return Padding(
-        padding: const EdgeInsets.only(
-          right: 10,
-          left: 10,
-        ),
+        padding: const EdgeInsets.only(right: 10, left: 10),
         child: AlbumTitleTextField(
           isAlbumTitleEmpty: isAlbumTitleEmpty,
           albumTitleTextFieldFocusNode: albumTitleTextFieldFocusNode,
@@ -83,10 +68,7 @@ class CreateAlbumPage extends HookConsumerWidget {
 
     buildDescriptionInputField() {
       return Padding(
-        padding: const EdgeInsets.only(
-          right: 10,
-          left: 10,
-        ),
+        padding: const EdgeInsets.only(right: 10, left: 10),
         child: AlbumViewerEditableDescription(
           albumDescription: '',
           descriptionFocusNode: albumDescriptionTextFieldFocusNode,
@@ -99,10 +81,7 @@ class CreateAlbumPage extends HookConsumerWidget {
         return SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.only(top: 200, left: 18),
-            child: Text(
-              'create_shared_album_page_share_add_assets',
-              style: context.textTheme.labelLarge,
-            ).tr(),
+            child: Text('create_shared_album_page_share_add_assets', style: context.textTheme.labelLarge).tr(),
           ),
         );
       }
@@ -118,20 +97,12 @@ class CreateAlbumPage extends HookConsumerWidget {
             child: FilledButton.icon(
               style: FilledButton.styleFrom(
                 alignment: Alignment.centerLeft,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(10),
-                  ),
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                 backgroundColor: context.colorScheme.surfaceContainerHigh,
               ),
               onPressed: onSelectPhotosButtonPressed,
-              icon: Icon(
-                Icons.add_rounded,
-                color: context.primaryColor,
-              ),
+              icon: Icon(Icons.add_rounded, color: context.primaryColor),
               label: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
@@ -179,17 +150,12 @@ class CreateAlbumPage extends HookConsumerWidget {
               crossAxisSpacing: 5.0,
               mainAxisSpacing: 5,
             ),
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                return GestureDetector(
-                  onTap: onBackgroundTapped,
-                  child: SharedAlbumThumbnailImage(
-                    asset: selectedAssets.value.elementAt(index),
-                  ),
-                );
-              },
-              childCount: selectedAssets.value.length,
-            ),
+            delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
+              return GestureDetector(
+                onTap: onBackgroundTapped,
+                child: SharedAlbumThumbnailImage(asset: selectedAssets.value.elementAt(index)),
+              );
+            }, childCount: selectedAssets.value.length),
           ),
         );
       }
@@ -199,10 +165,9 @@ class CreateAlbumPage extends HookConsumerWidget {
 
     Future<void> createAlbum() async {
       onBackgroundTapped();
-      var newAlbum = await ref.watch(albumProvider.notifier).createAlbum(
-            ref.read(albumTitleProvider),
-            selectedAssets.value,
-          );
+      var newAlbum = await ref
+          .watch(albumProvider.notifier)
+          .createAlbum(ref.read(albumTitleProvider), selectedAssets.value);
 
       if (newAlbum != null) {
         ref.read(albumProvider.notifier).refreshRemoteAlbums();
@@ -225,20 +190,15 @@ class CreateAlbumPage extends HookConsumerWidget {
           },
           icon: const Icon(Icons.close_rounded),
         ),
-        title: const Text(
-          'create_album',
-        ).tr(),
+        title: const Text('create_album').tr(),
         actions: [
           TextButton(
-            onPressed:
-                albumTitleController.text.isNotEmpty ? createAlbum : null,
+            onPressed: albumTitleController.text.isNotEmpty ? createAlbum : null,
             child: Text(
               'create'.tr(),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: albumTitleController.text.isNotEmpty
-                    ? context.primaryColor
-                    : context.themeData.disabledColor,
+                color: albumTitleController.text.isNotEmpty ? context.primaryColor : context.themeData.disabledColor,
               ),
             ),
           ),

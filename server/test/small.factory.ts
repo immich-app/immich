@@ -224,7 +224,7 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   livePhotoVideoId: null,
   localDateTime: newDate(),
   originalFileName: 'IMG_123.jpg',
-  originalPath: `upload/12/34/IMG_123.jpg`,
+  originalPath: `/data/12/34/IMG_123.jpg`,
   ownerId: newUuid(),
   sidecarPath: null,
   stackId: null,

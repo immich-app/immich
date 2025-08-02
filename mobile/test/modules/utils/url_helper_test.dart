@@ -28,9 +28,7 @@ void main() {
       expect(punycodeEncodeUrl(url), equals(expected));
     });
 
-    test(
-        'should encode multi-segment Unicode host with multiple non-ASCII segments',
-        () {
+    test('should encode multi-segment Unicode host with multiple non-ASCII segments', () {
       const url = 'https://bücher.münchen';
       const expected = 'https://xn--bcher-kva.xn--mnchen-3ya';
       expect(punycodeEncodeUrl(url), equals(expected));

@@ -7,6 +7,11 @@ import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
+/// This delete action has the following behavior:
+/// - Delete permanently on the server
+/// - Prompt to delete the asset locally
+///
+/// This action is used when the asset is selected in multi-selection mode in the trash page
 class DeleteTrashActionButton extends ConsumerWidget {
   final ActionSource source;
 
@@ -17,11 +22,10 @@ class DeleteTrashActionButton extends ConsumerWidget {
       return;
     }
 
-    final result =
-        await ref.read(actionProvider.notifier).deleteRemoteAndLocal(source);
+    final result = await ref.read(actionProvider.notifier).deleteRemoteAndLocal(source);
     ref.read(multiSelectProvider.notifier).reset();
 
-    final successMessage = 'restore_trash_action_prompt'.t(
+    final successMessage = 'assets_permanently_deleted_count'.t(
       context: context,
       args: {'count': result.count.toString()},
     );
@@ -29,9 +33,7 @@ class DeleteTrashActionButton extends ConsumerWidget {
     if (context.mounted) {
       ImmichToast.show(
         context: context,
-        msg: result.success
-            ? successMessage
-            : 'scaffold_body_error_occurred'.t(context: context),
+        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
         gravity: ToastGravity.BOTTOM,
         toastType: result.success ? ToastType.success : ToastType.error,
       );
@@ -41,17 +43,10 @@ class DeleteTrashActionButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return TextButton.icon(
-      icon: Icon(
-        Icons.delete_forever,
-        color: Colors.red[400],
-      ),
+      icon: Icon(Icons.delete_forever, color: Colors.red[400]),
       label: Text(
         "delete".t(context: context),
-        style: TextStyle(
-          fontSize: 14,
-          color: Colors.red[400],
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(fontSize: 14, color: Colors.red[400], fontWeight: FontWeight.bold),
       ),
       onPressed: () => _onTap(context, ref),
     );

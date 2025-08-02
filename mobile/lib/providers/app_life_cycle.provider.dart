@@ -27,14 +27,7 @@ import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-enum AppLifeCycleEnum {
-  active,
-  inactive,
-  paused,
-  resumed,
-  detached,
-  hidden,
-}
+enum AppLifeCycleEnum { active, inactive, paused, resumed, detached, hidden }
 
 class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   final Ref _ref;
@@ -58,8 +51,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     // Needs to be logged in
     if (isAuthenticated) {
       // switch endpoint if needed
-      final endpoint =
-          await _ref.read(authProvider.notifier).setOpenApiServiceEndpoint();
+      final endpoint = await _ref.read(authProvider.notifier).setOpenApiServiceEndpoint();
       if (kDebugMode) {
         debugPrint("Using server URL: $endpoint");
       }
@@ -94,21 +86,16 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       // Ensure proper cleanup before starting new background tasks
       try {
         await Future.wait([
-          backgroundManager.syncLocal().then(
-            (_) {
-              Logger("AppLifeCycleNotifier")
-                  .fine("Hashing assets after syncLocal");
-              // Check if app is still active before hashing
-              if (state == AppLifeCycleEnum.resumed) {
-                backgroundManager.hashAssets();
-              }
-            },
-          ),
+          backgroundManager.syncLocal().then((_) {
+            Logger("AppLifeCycleNotifier").fine("Hashing assets after syncLocal");
+            // Check if app is still active before hashing
+            if (state == AppLifeCycleEnum.resumed) {
+              backgroundManager.hashAssets();
+            }
+          }),
           backgroundManager.syncRemote(),
         ]).then((_) async {
-          final isEnableBackup = _ref
-              .read(appSettingsServiceProvider)
-              .getSetting(AppSettingsEnum.enableBackup);
+          final isEnableBackup = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
 
           if (isEnableBackup) {
             final currentUser = _ref.read(currentUserProvider);
@@ -116,29 +103,19 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
               return;
             }
 
-            await _ref
-                .read(driftBackupProvider.notifier)
-                .handleBackupResume(currentUser.id);
+            await _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
           }
         });
       } catch (e, stackTrace) {
-        Logger("AppLifeCycleNotifier").severe(
-          "Error during background sync",
-          e,
-          stackTrace,
-        );
+        Logger("AppLifeCycleNotifier").severe("Error during background sync", e, stackTrace);
       }
     }
 
     _ref.read(websocketProvider.notifier).connect();
 
-    await _ref
-        .read(notificationPermissionProvider.notifier)
-        .getNotificationPermission();
+    await _ref.read(notificationPermissionProvider.notifier).getNotificationPermission();
 
-    await _ref
-        .read(galleryPermissionNotifier.notifier)
-        .getGalleryPermissionStatus();
+    await _ref.read(galleryPermissionNotifier.notifier).getGalleryPermissionStatus();
 
     if (!Store.isBetaTimelineEnabled) {
       await _ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
@@ -159,8 +136,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     if (_ref.read(authProvider).isAuthenticated) {
       if (!Store.isBetaTimelineEnabled) {
         // Do not cancel backup if manual upload is in progress
-        if (_ref.read(backupProvider.notifier).backupProgress !=
-            BackUpProgressEnum.manualInProgress) {
+        if (_ref.read(backupProvider.notifier).backupProgress != BackUpProgressEnum.manualInProgress) {
           _ref.read(backupProvider.notifier).cancelBackup();
         }
       }
@@ -213,7 +189,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   }
 }
 
-final appStateProvider =
-    StateNotifierProvider<AppLifeCycleNotifier, AppLifeCycleEnum>((ref) {
+final appStateProvider = StateNotifierProvider<AppLifeCycleNotifier, AppLifeCycleEnum>((ref) {
   return AppLifeCycleNotifier(ref);
 });

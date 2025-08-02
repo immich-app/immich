@@ -49,11 +49,9 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
 
       // Cancel uploads
       await Store.put(StoreKey.backgroundBackup, false);
-      ref.read(backupProvider.notifier).configureBackgroundBackup(
-            enabled: false,
-            onBatteryInfo: () {},
-            onError: (_) {},
-          );
+      ref
+          .read(backupProvider.notifier)
+          .configureBackgroundBackup(enabled: false, onBatteryInfo: () {}, onError: (_) {});
       ref.read(backupProvider.notifier).setAutoBackup(false);
       ref.read(backupProvider.notifier).cancelBackup();
       ref.read(manualUploadProvider.notifier).cancelBackup();
@@ -61,20 +59,12 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
       ref.read(websocketProvider.notifier).stopListenToOldEvents();
       ref.read(websocketProvider.notifier).startListeningToBetaEvents();
 
-      final permission = await ref
-          .read(galleryPermissionNotifier.notifier)
-          .requestGalleryPermission();
+      final permission = await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
 
       if (permission.isGranted) {
         await ref.read(backgroundSyncProvider).syncLocal(full: true);
-        await migrateDeviceAssetToSqlite(
-          ref.read(isarProvider),
-          ref.read(driftProvider),
-        );
-        await migrateBackupAlbumsToSqlite(
-          ref.read(isarProvider),
-          ref.read(driftProvider),
-        );
+        await migrateDeviceAssetToSqlite(ref.read(isarProvider), ref.read(driftProvider));
+        await migrateBackupAlbumsToSqlite(ref.read(isarProvider), ref.read(driftProvider));
       }
     } else {
       await ref.read(backgroundSyncProvider).cancel();
@@ -100,16 +90,8 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
             AnimatedSwitcher(
               duration: Durations.long4,
               child: hasMigrated
-                  ? const Icon(
-                      Icons.check_circle_rounded,
-                      color: Colors.green,
-                      size: 48.0,
-                    )
-                  : const SizedBox(
-                      width: 50.0,
-                      height: 50.0,
-                      child: CircularProgressIndicator(),
-                    ),
+                  ? const Icon(Icons.check_circle_rounded, color: Colors.green, size: 48.0)
+                  : const SizedBox(width: 50.0, height: 50.0, child: CircularProgressIndicator()),
             ),
             const SizedBox(height: 16.0),
             Center(
@@ -138,9 +120,7 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
                       child: ElevatedButton(
                         onPressed: () {
                           context.replaceRoute(
-                            widget.switchingToBeta
-                                ? const TabShellRoute()
-                                : const TabControllerRoute(),
+                            widget.switchingToBeta ? const TabShellRoute() : const TabControllerRoute(),
                           );
                         },
                         child: const Text("Continue"),

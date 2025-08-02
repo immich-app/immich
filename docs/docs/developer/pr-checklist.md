@@ -38,6 +38,19 @@ Run all server checks with `npm run check:all`
 You can use `npm run __:fix` to potentially correct some issues automatically for `npm run format` and `lint`.
 :::
 
+## Mobile Checks
+
+The following commands must be executed from within the mobile app directory of the codebase.
+
+- [ ] `make build` (auto-generate files using build_runner)
+- [ ] `make analyze` (static analysis via Dart Analyzer and DCM)
+- [ ] `make format` (formatting via Dart Formatter)
+- [ ] `make test` (unit tests)
+
+:::info Auto Fix
+You can use `dart fix --apply` and `dcm fix lib` to potentially correct some issues automatically for `make analyze`.
+:::
+
 ## OpenAPI
 
 The OpenAPI client libraries need to be regenerated whenever there are changes to the `immich-openapi-specs.json` file. Note that you should not modify this file directly as it is auto-generated. See [OpenAPI](/docs/developer/open-api.md) for more details.

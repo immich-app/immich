@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.136.0",
+  "version": "1.137.3",
   "license": "GNU Affero General Public License version 3",
   "type": "module",
   "scripts": {
@@ -28,7 +28,7 @@
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.9.8",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@immich/ui": "^0.23.5",
+    "@immich/ui": "^0.23.6",
     "@mapbox/mapbox-gl-rtl-text": "0.2.3",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.11.5",
@@ -85,7 +85,7 @@
     "autoprefixer": "^10.4.17",
     "dotenv": "^17.0.0",
     "eslint": "^9.18.0",
-    "eslint-config-prettier": "^10.0.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-p": "^0.25.0",
     "eslint-plugin-compat": "^6.0.2",
     "eslint-plugin-svelte": "^3.9.0",

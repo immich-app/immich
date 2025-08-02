@@ -12,20 +12,14 @@ class RemoveFromAlbumActionButton extends ConsumerWidget {
   final String albumId;
   final ActionSource source;
 
-  const RemoveFromAlbumActionButton({
-    super.key,
-    required this.albumId,
-    required this.source,
-  });
+  const RemoveFromAlbumActionButton({super.key, required this.albumId, required this.source});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
 
-    final result = await ref
-        .read(actionProvider.notifier)
-        .removeFromAlbum(source, albumId);
+    final result = await ref.read(actionProvider.notifier).removeFromAlbum(source, albumId);
     ref.read(multiSelectProvider.notifier).reset();
 
     final successMessage = 'remove_from_album_action_prompt'.t(
@@ -36,9 +30,7 @@ class RemoveFromAlbumActionButton extends ConsumerWidget {
     if (context.mounted) {
       ImmichToast.show(
         context: context,
-        msg: result.success
-            ? successMessage
-            : 'scaffold_body_error_occurred'.t(context: context),
+        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
         gravity: ToastGravity.BOTTOM,
         toastType: result.success ? ToastType.success : ToastType.error,
       );

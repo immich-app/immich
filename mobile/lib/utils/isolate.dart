@@ -9,6 +9,7 @@ import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
+import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:logging/logging.dart';
 import 'package:worker_manager/worker_manager.dart';
 
@@ -16,8 +17,7 @@ class InvalidIsolateUsageException implements Exception {
   const InvalidIsolateUsageException();
 
   @override
-  String toString() =>
-      "IsolateHelper should only be used from the root isolate";
+  String toString() => "IsolateHelper should only be used from the root isolate";
 }
 
 // !! Should be used only from the root isolate
@@ -48,17 +48,12 @@ Cancelable<T?> runInIsolateGentle<T>({
     Logger log = Logger("IsolateLogger");
 
     try {
+      HttpSSLOptions.apply(applyNative: false);
       return await computation(ref);
     } on CanceledError {
-      log.warning(
-        "Computation cancelled ${debugLabel == null ? '' : ' for $debugLabel'}",
-      );
+      log.warning("Computation cancelled ${debugLabel == null ? '' : ' for $debugLabel'}");
     } catch (error, stack) {
-      log.severe(
-        "Error in runInIsolateGentle ${debugLabel == null ? '' : ' for $debugLabel'}",
-        error,
-        stack,
-      );
+      log.severe("Error in runInIsolateGentle ${debugLabel == null ? '' : ' for $debugLabel'}", error, stack);
     } finally {
       try {
         await LogService.I.flushBuffer();

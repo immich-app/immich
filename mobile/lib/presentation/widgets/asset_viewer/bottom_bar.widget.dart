@@ -4,6 +4,8 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
@@ -23,14 +25,9 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
-    final isSheetOpen = ref.watch(
-      assetViewerProvider.select((s) => s.showingBottomSheet),
-    );
-    int opacity = ref.watch(
-      assetViewerProvider.select((state) => state.backgroundOpacity),
-    );
-    final showControls =
-        ref.watch(assetViewerProvider.select((s) => s.showingControls));
+    final isSheetOpen = ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
+    int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
+    final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
     if (!showControls) {
       opacity = 0;
@@ -38,10 +35,11 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final actions = <Widget>[
       const ShareActionButton(source: ActionSource.viewer),
-      if (asset.isLocalOnly)
-        const UploadActionButton(source: ActionSource.viewer),
-      if (asset.hasRemote && isOwner)
-        const ArchiveActionButton(source: ActionSource.viewer),
+      if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
+      if (asset.hasRemote && isOwner) const ArchiveActionButton(source: ActionSource.viewer),
+      asset.isLocalOnly
+          ? const DeleteLocalActionButton(source: ActionSource.viewer)
+          : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
     ];
 
     return IgnorePointer(
@@ -55,27 +53,20 @@ class ViewerBottomBar extends ConsumerWidget {
               ? const SizedBox.shrink()
               : Theme(
                   data: context.themeData.copyWith(
-                    iconTheme:
-                        const IconThemeData(size: 22, color: Colors.white),
+                    iconTheme: const IconThemeData(size: 22, color: Colors.white),
                     textTheme: context.themeData.textTheme.copyWith(
-                      labelLarge:
-                          context.themeData.textTheme.labelLarge?.copyWith(
-                        color: Colors.white,
-                      ),
+                      labelLarge: context.themeData.textTheme.labelLarge?.copyWith(color: Colors.white),
                     ),
                   ),
                   child: Container(
-                    height: context.padding.bottom + (asset.isVideo ? 160 : 80),
+                    height: context.padding.bottom + (asset.isVideo ? 160 : 90),
                     color: Colors.black.withAlpha(125),
                     padding: EdgeInsets.only(bottom: context.padding.bottom),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (asset.isVideo) const VideoControls(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: actions,
-                        ),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
                       ],
                     ),
                   ),

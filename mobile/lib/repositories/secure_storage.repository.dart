@@ -1,8 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-final secureStorageRepositoryProvider =
-    Provider((ref) => const SecureStorageRepository(FlutterSecureStorage()));
+final secureStorageRepositoryProvider = Provider((ref) => const SecureStorageRepository(FlutterSecureStorage()));
 
 class SecureStorageRepository {
   final FlutterSecureStorage _secureStorage;

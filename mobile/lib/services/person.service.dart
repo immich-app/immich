@@ -11,10 +11,10 @@ part 'person.service.g.dart';
 
 @riverpod
 PersonService personService(Ref ref) => PersonService(
-      ref.watch(personApiRepositoryProvider),
-      ref.watch(assetApiRepositoryProvider),
-      ref.read(assetRepositoryProvider),
-    );
+  ref.watch(personApiRepositoryProvider),
+  ref.watch(assetApiRepositoryProvider),
+  ref.read(assetRepositoryProvider),
+);
 
 class PersonService {
   final Logger _log = Logger("PersonService");
@@ -22,11 +22,7 @@ class PersonService {
   final AssetApiRepository _assetApiRepository;
   final AssetRepository _assetRepository;
 
-  PersonService(
-    this._personApiRepository,
-    this._assetApiRepository,
-    this._assetRepository,
-  );
+  PersonService(this._personApiRepository, this._assetApiRepository, this._assetRepository);
 
   Future<List<PersonDto>> getAllPeople() async {
     try {
@@ -40,8 +36,7 @@ class PersonService {
   Future<List<Asset>> getPersonAssets(String id) async {
     try {
       final assets = await _assetApiRepository.search(personIds: [id]);
-      return await _assetRepository
-          .getAllByRemoteId(assets.map((a) => a.remoteId!));
+      return await _assetRepository.getAllByRemoteId(assets.map((a) => a.remoteId!));
     } catch (error, stack) {
       _log.severe("Error while fetching person assets", error, stack);
     }

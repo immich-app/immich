@@ -66,6 +66,7 @@ select
   "asset"."duration",
   "asset"."livePhotoVideoId",
   "asset"."stackId",
+  "asset"."libraryId",
   "asset"."updateId"
 from
   "asset"
@@ -95,6 +96,7 @@ select
   "asset"."duration",
   "asset"."livePhotoVideoId",
   "asset"."stackId",
+  "asset"."libraryId",
   "asset"."updateId"
 from
   "asset"
@@ -357,6 +359,7 @@ select
   "asset"."duration",
   "asset"."livePhotoVideoId",
   "asset"."stackId",
+  "asset"."libraryId",
   "asset"."updateId"
 from
   "asset"
@@ -452,14 +455,14 @@ select
   "avatarColor",
   "deletedAt",
   "updateId",
+  "profileImagePath",
+  "profileChangedAt",
   "isAdmin",
   "pinCode",
   "oauthId",
   "storageLabel",
   "quotaSizeInBytes",
-  "quotaUsageInBytes",
-  "profileImagePath",
-  "profileChangedAt"
+  "quotaUsageInBytes"
 from
   "user"
 where
@@ -605,6 +608,7 @@ select
   "asset"."duration",
   "asset"."livePhotoVideoId",
   "asset"."stackId",
+  "asset"."libraryId",
   "asset"."updateId"
 from
   "asset"
@@ -652,6 +656,7 @@ select
   "asset"."duration",
   "asset"."livePhotoVideoId",
   "asset"."stackId",
+  "asset"."libraryId",
   "asset"."updateId"
 from
   "asset"
@@ -896,7 +901,9 @@ select
   "email",
   "avatarColor",
   "deletedAt",
-  "updateId"
+  "updateId",
+  "profileImagePath",
+  "profileChangedAt"
 from
   "user"
 where

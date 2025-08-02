@@ -1,11 +1,6 @@
 part of 'base_asset.model.dart';
 
-enum AssetVisibility {
-  timeline,
-  hidden,
-  archive,
-  locked,
-}
+enum AssetVisibility { timeline, hidden, archive, locked }
 
 // Model for an asset stored in the server
 class RemoteAsset extends BaseAsset {
@@ -36,8 +31,7 @@ class RemoteAsset extends BaseAsset {
   });
 
   @override
-  AssetState get storage =>
-      localId == null ? AssetState.remote : AssetState.merged;
+  AssetState get storage => localId == null ? AssetState.remote : AssetState.merged;
 
   @override
   String get heroTag => '${localId ?? checksum}_$id';

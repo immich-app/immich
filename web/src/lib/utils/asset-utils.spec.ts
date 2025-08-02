@@ -33,21 +33,21 @@ describe('get asset filename', () => {
       {
         asset: {
           originalFileName: 'filename',
-          originalPath: 'upload/library/test/2016/2016-08-30/filename.jpg',
+          originalPath: '/data/library/test/2016/2016-08-30/filename.jpg',
         },
         result: 'filename.jpg',
       },
       {
         asset: {
           originalFileName: 'new-filename',
-          originalPath: 'upload/library/89d14e47-a40d-4cae-a347-a914cdef1f22/2016/2016-08-30/filename.jpg',
+          originalPath: '/data/library/89d14e47-a40d-4cae-a347-a914cdef1f22/2016/2016-08-30/filename.jpg',
         },
         result: 'new-filename.jpg',
       },
       {
         asset: {
           originalFileName: 'new-filename.txt',
-          originalPath: 'upload/library/test/2016/2016-08-30/filename.txt.jpg',
+          originalPath: '/data/library/test/2016/2016-08-30/filename.txt.jpg',
         },
         result: 'new-filename.txt.jpg',
       },

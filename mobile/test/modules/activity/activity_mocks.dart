@@ -6,9 +6,7 @@ import 'package:mocktail/mocktail.dart';
 
 class ActivityServiceMock extends Mock implements ActivityService {}
 
-class MockAlbumActivity extends AlbumActivityInternal
-    with Mock
-    implements AlbumActivity {
+class MockAlbumActivity extends AlbumActivityInternal with Mock implements AlbumActivity {
   List<Activity>? initActivities;
   MockAlbumActivity([this.initActivities]);
 
@@ -18,6 +16,4 @@ class MockAlbumActivity extends AlbumActivityInternal
   }
 }
 
-class ActivityStatisticsMock extends ActivityStatisticsInternal
-    with Mock
-    implements ActivityStatistics {}
+class ActivityStatisticsMock extends ActivityStatisticsInternal with Mock implements ActivityStatistics {}

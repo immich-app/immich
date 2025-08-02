@@ -90,7 +90,7 @@ jobs:
         env:
           CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
-          echo "ERROR: Generated files not up to date! Run make_build inside the mobile directory"
+          echo "ERROR: Generated files not up to date! Run 'make build' and 'make pigeon' inside the mobile directory"
           echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
@@ -98,7 +98,7 @@ jobs:
         run: dart analyze --fatal-infos
 
       - name: Run dart format
-        run: dart format lib/ --set-exit-if-changed
+        run: make format
 
       - name: Run dart custom_lint
         run: dart run custom_lint
@@ -129,7 +129,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@181d5eefc20863364f96762470ba6f862bdef56b # v3.29.2
+        uses: github/codeql-action/upload-sarif@4e828ff8d448a8a6e532957b1811f387a63867e8 # v3.29.4
         with:
           sarif_file: results.sarif
           category: zizmor

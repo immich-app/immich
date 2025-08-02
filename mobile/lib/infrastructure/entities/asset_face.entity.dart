@@ -8,12 +8,9 @@ class AssetFaceEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get id => text()();
 
-  TextColumn get assetId =>
-      text().references(RemoteAssetEntity, #id, onDelete: KeyAction.cascade)();
+  TextColumn get assetId => text().references(RemoteAssetEntity, #id, onDelete: KeyAction.cascade)();
 
-  TextColumn get personId => text()
-      .nullable()
-      .references(PersonEntity, #id, onDelete: KeyAction.setNull)();
+  TextColumn get personId => text().nullable().references(PersonEntity, #id, onDelete: KeyAction.setNull)();
 
   IntColumn get imageWidth => integer()();
 

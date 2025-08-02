@@ -22,19 +22,13 @@ class DriftAlbumInfoListTile extends HookConsumerWidget {
     final bool isSelected = album.backupSelection == BackupSelection.selected;
     final bool isExcluded = album.backupSelection == BackupSelection.excluded;
 
-    final syncAlbum = ref
-        .watch(appSettingsServiceProvider)
-        .getSetting(AppSettingsEnum.syncAlbums);
+    final syncAlbum = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
 
     buildTileColor() {
       if (isSelected) {
-        return context.isDarkTheme
-            ? context.primaryColor.withAlpha(100)
-            : context.primaryColor.withAlpha(25);
+        return context.isDarkTheme ? context.primaryColor.withAlpha(100) : context.primaryColor.withAlpha(25);
       } else if (isExcluded) {
-        return context.isDarkTheme
-            ? Colors.red[300]?.withAlpha(150)
-            : Colors.red[100]?.withAlpha(150);
+        return context.isDarkTheme ? Colors.red[300]?.withAlpha(150) : Colors.red[100]?.withAlpha(150);
       } else {
         return Colors.transparent;
       }
@@ -42,23 +36,14 @@ class DriftAlbumInfoListTile extends HookConsumerWidget {
 
     buildIcon() {
       if (isSelected) {
-        return Icon(
-          Icons.check_circle_rounded,
-          color: context.colorScheme.primary,
-        );
+        return Icon(Icons.check_circle_rounded, color: context.colorScheme.primary);
       }
 
       if (isExcluded) {
-        return Icon(
-          Icons.remove_circle_rounded,
-          color: context.colorScheme.error,
-        );
+        return Icon(Icons.remove_circle_rounded, color: context.colorScheme.error);
       }
 
-      return Icon(
-        Icons.circle,
-        color: context.colorScheme.surfaceContainerHighest,
-      );
+      return Icon(Icons.circle, color: context.colorScheme.surfaceContainerHighest);
     }
 
     return GestureDetector(
@@ -96,23 +81,13 @@ class DriftAlbumInfoListTile extends HookConsumerWidget {
           }
         },
         leading: buildIcon(),
-        title: Text(
-          album.name,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: Text(album.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
         subtitle: Text(album.assetCount.toString()),
         trailing: IconButton(
           onPressed: () {
             context.pushRoute(LocalTimelineRoute(album: album));
           },
-          icon: Icon(
-            Icons.image_outlined,
-            color: context.primaryColor,
-            size: 24,
-          ),
+          icon: Icon(Icons.image_outlined, color: context.primaryColor, size: 24),
           splashRadius: 25,
         ),
       ),

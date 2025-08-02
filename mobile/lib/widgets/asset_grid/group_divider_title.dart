@@ -30,14 +30,10 @@ class GroupDividerTitle extends HookConsumerWidget {
     final appSettingService = ref.watch(appSettingsServiceProvider);
     final groupBy = useState(GroupAssetsBy.day);
 
-    useEffect(
-      () {
-        groupBy.value = GroupAssetsBy.values[
-            appSettingService.getSetting<int>(AppSettingsEnum.groupAssetsBy)];
-        return null;
-      },
-      [],
-    );
+    useEffect(() {
+      groupBy.value = GroupAssetsBy.values[appSettingService.getSetting<int>(AppSettingsEnum.groupAssetsBy)];
+      return null;
+    }, []);
 
     void handleTitleIconClick() {
       ref.read(hapticFeedbackProvider.notifier).heavyImpact();
@@ -60,9 +56,7 @@ class GroupDividerTitle extends HookConsumerWidget {
           Text(
             text,
             style: groupBy.value == GroupAssetsBy.month
-                ? context.textTheme.bodyLarge?.copyWith(
-                    fontSize: 24.0,
-                  )
+                ? context.textTheme.bodyLarge?.copyWith(fontSize: 24.0)
                 : context.textTheme.labelLarge?.copyWith(
                     color: context.textTheme.labelLarge?.color?.withAlpha(250),
                     fontWeight: FontWeight.w500,
@@ -75,14 +69,12 @@ class GroupDividerTitle extends HookConsumerWidget {
                 ? Icon(
                     Icons.check_circle_rounded,
                     color: context.primaryColor,
-                    semanticLabel:
-                        "unselect_all_in".tr(namedArgs: {"group": text}),
+                    semanticLabel: "unselect_all_in".tr(namedArgs: {"group": text}),
                   )
                 : Icon(
                     Icons.check_circle_outline_rounded,
                     color: context.colorScheme.onSurfaceSecondary,
-                    semanticLabel:
-                        "select_all_in".tr(namedArgs: {"group": text}),
+                    semanticLabel: "select_all_in".tr(namedArgs: {"group": text}),
                   ),
           ),
         ],
