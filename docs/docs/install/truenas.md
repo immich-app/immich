@@ -402,7 +402,6 @@ To migrate from the old storage configuration to the new one, you will need to c
 
 4. **Update the permissions** as the permissions of the data that have been copied has been preserved, to ensure that the `apps` user (UID 568) has the correct permissions on all the copied data. If you just created the dataset with the **Apps** preset, from the TrueNAS web interface, go to the **Datasets** screen, select the **data** dataset, click on the **Edit** button next to **Permissions**, tick the "Apply permissions recursively" checkbox, and click **Save**. This will apply the correct permissions to all the copied data.
 5. **Update the Immich app** to use the new dataset:
-
    - Go to the **Installed Applications** screen and select Immich from the list of installed applications.
    - Click **Edit** on the **Application Info** widget.
    - In the **Storage Configuration** section, untick the " Use Old Storage Configuration (Deprecated) " checkbox.
