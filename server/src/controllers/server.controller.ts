@@ -36,17 +36,10 @@ export class ServerController {
     return this.service.getAboutInfo();
   }
 
-<<<<<<< HEAD
   @Get('apk-links')
   @Authenticated({ permission: Permission.ServerApkLinks })
   getApkLinks(): ServerApkLinksDto {
     return this.service.getApkLinks();
-=======
-  @Get('android-links')
-  @Authenticated()
-  getAndroidLinks(): ServerApkLinksDto {
-    return this.service.getAndroidLinks();
->>>>>>> 6bc84b4ba (rename the dto and the service)
   }
 
   @Get('storage')
