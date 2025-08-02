@@ -56,7 +56,7 @@
     "confirm_user_pin_code_reset": "Вы ўпэўнены ў тым, што жадаеце скінуць PIN-код {user}?",
     "create_job": "Стварыць заданне",
     "cron_expression": "Выраз Cron",
-    "cron_expression_description": "Усталюйце інтэрвал сканавання, выкарыстоўваючы фармат cron. Для атрымання дадатковай інфармацыі, калі ласка, звярніцеся, напрыклад, да <link>Crontab Guru</link>",
+    "cron_expression_description": "Задайце інтэрвал сканавання, выкарыстоўваючы фармат cron. Для атрымання дадатковай інфармацыі, звярніцеся, напрыклад, да <link>Crontab Guru</link>",
     "cron_expression_presets": "Прадустаноўкі выразаў Cron",
     "disable_login": "Адключыць уваход",
     "duplicate_detection_job_description": "Запусціць машыннае навучанне на актывах для выяўлення падобных выяў. Залежыць ад Smart Search",
