@@ -6506,7 +6506,10 @@
         ],
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "server.versionCheck",
+        "description": "This endpoint is an admin-only route, and requires the `server.versionCheck` permission."
       }
     },
     "/server/version-history": {
@@ -12631,6 +12634,7 @@
           "server.apkLinks",
           "server.storage",
           "server.statistics",
+          "server.versionCheck",
           "serverLicense.read",
           "serverLicense.update",
           "serverLicense.delete",
