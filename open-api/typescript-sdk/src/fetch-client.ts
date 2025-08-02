@@ -3553,7 +3553,7 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * This endpoint is an admin-only route, and requires the `server.versionCheck` permission.
+ * This endpoint requires the `server.versionCheck` permission.
  */
 export function getVersionCheck(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
