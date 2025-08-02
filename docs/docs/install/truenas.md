@@ -4,6 +4,7 @@ sidebar_position: 80
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import Admonition from '@theme/Admonition';
 
 # TrueNAS [Community]
 
@@ -225,9 +226,9 @@ Once **Host Path** is selected, a checkbox appears with **_Automatic Permissions
 
 #### [External Libraries](/docs/features/libraries)
 
-:::danger Advanced Users Only
+<Admonition type="danger" title="Advanced Users Only">
 This feature should only be used by advanced users. If this is your first time installing Immich, then DO NOT mount an external library until you have a working setup.
-:::
+</Admonition>
 
 <img
 src={require('./img/truenas/truenas09.webp').default}
@@ -245,12 +246,11 @@ If you want to be able to delete files or edit metadata in the external library 
 - **Host Path** is the location on the TrueNAS Community Edition server where your external library is located.
 - **Read Only** is a checkbox that you can tick if you want to prevent Immich from modifying the files in the external library. This is useful if you want to use Immich to view and search your external library without modifying it.
 
-:::warning
+<Admonition type="warning">
 Each mount path MUST be something unique and should NOT be your library or upload location or a Linux directory like `/lib`.
 
 A general recommendation is to mount any external libraries to a path beginning with `/mnt` or `/media` followed by a unique name, such as `/mnt/external-libraries` or `/media/my-external-libraries`. If you plan to mount multiple external libraries, you can use paths like `/mnt/external-libraries/library1`, `/mnt/external-libraries/library2`, etc.
-
-:::
+</Admonition>
 
 </details>
 
@@ -259,9 +259,9 @@ A general recommendation is to mount any external libraries to a path beginning 
 
 #### Multiple Datasets for Immich Storage
 
-:::danger Advanced Users Only
+<Admonition type="danger" title="Advanced Users Only">
 This feature should only be used by advanced users.
-:::
+</Admonition>
 
 Immich can use multiple datasets for its storage, allowing you to manage your data more granularly, as it was done in the old storage configuration. This is useful if you want to separate your data into different datasets for performance or organisational reasons.
 
@@ -274,14 +274,15 @@ To mount these datasets:
 
 1. Add an **Additional Storage** entry for each dataset you want to use.
 2. Select **Type** as **Host Path (Path that already exists on the system)**.
-3. Enter the **Mount Path** with `/usr/src/app/upload/<folder-name>`. The `<folder-name>` is the name of the folder you want to mount, for example, `library`, `upload`, `thumbs`, `profile`, `encoded-video`, or `backups`.
-   :::danger
-   You have to write the full path, including `/usr/src/app/upload/`, as Immich expects the data to be in that location.
-   If you do not include this path, Immich will not be able to find the data and will not write the data to the location you specified.
-   :::
+3. Enter the **Mount Path** with `/data/<folder-name>`. The `<folder-name>` is the name of the folder you want to mount, for example, `library`, `upload`, `thumbs`, `profile`, `encoded-video`, or `backups`.
+
+<Admonition type="danger" title="Important">
+You have to write the full path, including `/data/`, as Immich expects the data to be in that location.  
+If you do not include this path, Immich will not be able to find the data and will not write the data to the location you specified.
+</Admonition>
+
 4. Select the **Host Path** as the dataset you created for that folder, for example, `/mnt/tank/immich/library`, `/mnt/tank/immich/upload`, etc.
 
-Below is an example of how to set up the additional storage for the `thumbs` dataset:
 <img
 src={require('./img/truenas/truenas10.webp').default}
 width="40%"
@@ -428,7 +429,7 @@ If everything went well, you should now be able to access Immich with the new st
           - For the **Postgres Data Storage**, keep **Host Path (Path that already exists on the system)** and then select the existing dataset you used for Postgres data storage, for example, `pgData`.
           - Following the instructions in the [Multiple Datasets for Immich Storage](#additional-storage-advanced-users) section, you can add, **for each old dataset**, a new Additional Storage with the following settings:
             - **Type**: `Host Path (Path that already exists on the system)`
-            - **Mount Path**: `/usr/src/app/upload/<folder-name>` (e.g. `/usr/src/app/upload/library`)
+            - **Mount Path**: `/data/<folder-name>` (e.g. `/data/library`)
             - **Host Path**: `/mnt/<your-pool-name>/<dataset-name>` (e.g. `/mnt/tank/immich/library`)
             - **Read Only**: Keep it unticked as Immich needs to write to these datasets.
 
