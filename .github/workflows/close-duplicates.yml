@@ -5,10 +5,7 @@ on:
     types: [created]
 
 name: Close likely duplicates
-
-permissions:
-  issues: write
-  discussions: write
+permissions: {}
 
 jobs:
   get_body:
@@ -42,6 +39,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: get_checkbox_json
     if: ${{ !fromJSON(needs.get_checkbox_json.outputs.json).items[0].list[0].checked }}
+    permissions:
+      issues: write
+      discussions: write
     steps:
       - name: Close issue
         if: ${{ github.event_name == 'issues' }}
