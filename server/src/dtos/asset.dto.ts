@@ -90,6 +90,8 @@ export class AssetIdsDto {
   assetIds!: string[];
 }
 
+export class AssetBulkGetDto extends BulkIdsDto {}
+
 export enum AssetJobName {
   REFRESH_FACES = 'refresh-faces',
   REFRESH_METADATA = 'refresh-metadata',

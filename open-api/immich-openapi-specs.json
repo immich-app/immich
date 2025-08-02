@@ -1732,6 +1732,70 @@
         "description": "This endpoint requires the `asset.update` permission."
       }
     },
+    "/assets/bulk": {
+      "post": {
+        "operationId": "getBulkAssets",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetBulkGetDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.read",
+        "description": "This endpoint requires the `asset.read` permission."
+      }
+    },
     "/assets/bulk-upload-check": {
       "post": {
         "description": "Checks if assets exist by checksums",
@@ -9959,6 +10023,21 @@
           "force": {
             "type": "boolean"
           },
+          "ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "type": "object"
+      },
+      "AssetBulkGetDto": {
+        "properties": {
           "ids": {
             "items": {
               "format": "uuid",

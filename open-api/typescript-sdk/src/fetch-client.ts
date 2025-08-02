@@ -2209,6 +2209,26 @@ export function getAssetInfo({ id, key, slug }: {
     }));
 }
 /**
+ * This endpoint requires the `asset.read` permission.
+ */
+export function getBulkAssets({ assetBulkGetDto, key, slug }: {
+    assetBulkGetDto: { ids: string[] };
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>(`/assets/bulk${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: assetBulkGetDto
+    })));
+}
+/**
  * This endpoint requires the `asset.update` permission.
  */
 export function updateAsset({ id, updateAssetDto }: {

@@ -6,6 +6,7 @@ import { OnJob } from 'src/decorators';
 import { AssetResponseDto, MapAsset, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
+  AssetBulkGetDto,
   AssetBulkUpdateDto,
   AssetJobName,
   AssetJobsDto,
@@ -75,6 +76,38 @@ export class AssetService extends BaseService {
     }
 
     return data;
+  }
+
+  async getBulk(auth: AuthDto, dto: AssetBulkGetDto): Promise<AssetResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AssetRead, ids: dto.ids });
+
+    const assets = await this.assetRepository.getByIdsWithRelations(dto.ids, {
+      exifInfo: true,
+      owner: true,
+      faces: { person: true },
+      stack: { assets: true },
+      tags: true,
+    });
+
+    return assets
+      .filter((asset) => asset !== null)
+      .map((asset) => {
+        if (auth.sharedLink && !auth.sharedLink.showExif) {
+          return mapAsset(asset, { stripMetadata: true, withStack: true, auth });
+        }
+
+        const data = mapAsset(asset, { withStack: true, auth });
+
+        if (auth.sharedLink) {
+          delete data.owner;
+        }
+
+        if (data.ownerId !== auth.user.id || auth.sharedLink) {
+          data.people = [];
+        }
+
+        return data;
+      });
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
