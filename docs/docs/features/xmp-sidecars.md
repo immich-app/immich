@@ -20,7 +20,7 @@ Immich reads and writes a selected set of metadata fields to and from XMP sideca
 | **Rating**          | `xmp:Rating`                                  | `xmp:Rating`                                                                                            |
 | **Timecode**        | `exif:DateTimeOriginal`, `photoshop:DateCreated` | In prioritized order:<br>`exif:SubSecDateTimeOriginal`<br>`exif:DateTimeOriginal`<br>`xmp:SubSecCreateDate`<br>`xmp:CreateDate`<br>`xmp:CreationDate`<br>`xmp:MediaCreateDate`<br>`xmp:SubSecMediaCreateDate`<br>`xmp:DateTimeCreated` |
 | **Location**        | `exif:GPSLatitude`, `exif:GPSLongitude`       | `exif:GPSLatitude`, `exif:GPSLongitude`                                                                 |
-| **Tags**            | `digiKam:TagsList`                            | `digiKam:TagsList`, `dc:subject`                                                                        | 
+| **Tags**            | `digiKam:TagsList`                            | In prioritized order: <br>`digiKam:TagsList`<br>`lr:HierarchicalSubject`<br>`IPTC:Keywords`            | 
 
 All other fields (e.g. `Creator`, `Source`, IPTC, Lightroom edits) remain in the `.xmp` file and are **not searchable** in Immich.
 
