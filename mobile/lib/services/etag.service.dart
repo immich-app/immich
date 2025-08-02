@@ -1,8 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
 
-final etagServiceProvider =
-    Provider((ref) => ETagService(ref.watch(etagRepositoryProvider)));
+final etagServiceProvider = Provider((ref) => ETagService(ref.watch(etagRepositoryProvider)));
 
 class ETagService {
   final ETagRepository _eTagRepository;

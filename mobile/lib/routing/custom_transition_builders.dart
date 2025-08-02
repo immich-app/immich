@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 class CustomTransitionsBuilders {
   const CustomTransitionsBuilders._();
 
-  static const ZoomPageTransitionsBuilder zoomPageTransitionsBuilder =
-      ZoomPageTransitionsBuilder();
+  static const ZoomPageTransitionsBuilder zoomPageTransitionsBuilder = ZoomPageTransitionsBuilder();
 
   static const RouteTransitionsBuilder zoomedPage = _zoomedPage;
 
@@ -19,8 +18,7 @@ class CustomTransitionsBuilders {
       PageRouteBuilder(
         allowSnapshotting: true,
         fullscreenDialog: false,
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const SizedBox.shrink(),
+        pageBuilder: (context, animation, secondaryAnimation) => const SizedBox.shrink(),
       ),
       context,
       animation,

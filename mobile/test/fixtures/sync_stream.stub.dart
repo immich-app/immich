@@ -9,6 +9,9 @@ abstract final class SyncStreamStub {
       email: "admin@admin",
       id: "1",
       name: "Admin",
+      avatarColor: null,
+      hasProfileImage: false,
+      profileChangedAt: DateTime(2025),
     ),
     ack: "1",
   );
@@ -19,6 +22,9 @@ abstract final class SyncStreamStub {
       email: "user@user",
       id: "5",
       name: "User",
+      avatarColor: null,
+      hasProfileImage: false,
+      profileChangedAt: DateTime(2025),
     ),
     ack: "5",
   );
@@ -30,11 +36,7 @@ abstract final class SyncStreamStub {
 
   static final partnerV1 = SyncEvent(
     type: SyncEntityType.partnerV1,
-    data: SyncPartnerV1(
-      inTimeline: true,
-      sharedById: "1",
-      sharedWithId: "2",
-    ),
+    data: SyncPartnerV1(inTimeline: true, sharedById: "1", sharedWithId: "2"),
     ack: "3",
   );
   static final partnerDeleteV1 = SyncEvent(
@@ -70,19 +72,13 @@ abstract final class SyncStreamStub {
 
   static final memoryToAssetV1 = SyncEvent(
     type: SyncEntityType.memoryToAssetV1,
-    data: SyncMemoryAssetV1(
-      assetId: "asset-1",
-      memoryId: "memory-1",
-    ),
+    data: SyncMemoryAssetV1(assetId: "asset-1", memoryId: "memory-1"),
     ack: "7",
   );
 
   static final memoryToAssetDeleteV1 = SyncEvent(
     type: SyncEntityType.memoryToAssetDeleteV1,
-    data: SyncMemoryAssetDeleteV1(
-      assetId: "asset-2",
-      memoryId: "memory-1",
-    ),
+    data: SyncMemoryAssetDeleteV1(assetId: "asset-2", memoryId: "memory-1"),
     ack: "8",
   );
 }

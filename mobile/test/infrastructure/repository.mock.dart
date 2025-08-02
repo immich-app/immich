@@ -16,16 +16,13 @@ class MockLogRepository extends Mock implements IsarLogRepository {}
 
 class MockIsarUserRepository extends Mock implements IsarUserRepository {}
 
-class MockDeviceAssetRepository extends Mock
-    implements IsarDeviceAssetRepository {}
+class MockDeviceAssetRepository extends Mock implements IsarDeviceAssetRepository {}
 
 class MockSyncStreamRepository extends Mock implements SyncStreamRepository {}
 
-class MockLocalAlbumRepository extends Mock
-    implements DriftLocalAlbumRepository {}
+class MockLocalAlbumRepository extends Mock implements DriftLocalAlbumRepository {}
 
-class MockLocalAssetRepository extends Mock
-    implements DriftLocalAssetRepository {}
+class MockLocalAssetRepository extends Mock implements DriftLocalAssetRepository {}
 
 class MockStorageRepository extends Mock implements StorageRepository {}
 

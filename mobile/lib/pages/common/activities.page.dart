@@ -16,9 +16,7 @@ import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
 
 @RoutePage()
 class ActivitiesPage extends HookConsumerWidget {
-  const ActivitiesPage({
-    super.key,
-  });
+  const ActivitiesPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,10 +25,8 @@ class ActivitiesPage extends HookConsumerWidget {
     final asset = ref.watch(currentAssetProvider);
     final user = ref.watch(currentUserProvider);
 
-    final activityNotifier = ref
-        .read(albumActivityProvider(album.remoteId!, asset?.remoteId).notifier);
-    final activities =
-        ref.watch(albumActivityProvider(album.remoteId!, asset?.remoteId));
+    final activityNotifier = ref.read(albumActivityProvider(album.remoteId!, asset?.remoteId).notifier);
+    final activities = ref.watch(albumActivityProvider(album.remoteId!, asset?.remoteId));
 
     final listViewScrollController = useScrollController();
 
@@ -49,10 +45,7 @@ class ActivitiesPage extends HookConsumerWidget {
       body: activities.widgetWhen(
         onData: (data) {
           final liked = data.firstWhereOrNull(
-            (a) =>
-                a.type == ActivityType.like &&
-                a.user.id == user?.id &&
-                a.assetId == asset?.remoteId,
+            (a) => a.type == ActivityType.like && a.user.id == user?.id && a.assetId == asset?.remoteId,
           );
 
           return SafeArea(
@@ -65,14 +58,11 @@ class ActivitiesPage extends HookConsumerWidget {
                   itemBuilder: (context, index) {
                     // Additional vertical gap after the last element
                     if (index == data.length) {
-                      return const SizedBox(
-                        height: 80,
-                      );
+                      return const SizedBox(height: 80);
                     }
 
                     final activity = data[index];
-                    final canDelete = activity.user.id == user?.id ||
-                        album.ownerId == user?.id;
+                    final canDelete = activity.user.id == user?.id || album.ownerId == user?.id;
 
                     return Padding(
                       padding: const EdgeInsets.all(5),
@@ -80,8 +70,7 @@ class ActivitiesPage extends HookConsumerWidget {
                         activity.id,
                         ActivityTile(activity),
                         onDismiss: canDelete
-                            ? (activityId) async => await activityNotifier
-                                .removeActivity(activity.id)
+                            ? (activityId) async => await activityNotifier.removeActivity(activity.id)
                             : null,
                       ),
                     );

@@ -1,12 +1,9 @@
-import 'dart:io';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/repositories/widget.repository.dart';
 
 final widgetServiceProvider = Provider((ref) {
-  return WidgetService(
-    ref.watch(widgetRepositoryProvider),
-  );
+  return WidgetService(ref.watch(widgetRepositoryProvider));
 });
 
 class WidgetService {
@@ -33,10 +30,8 @@ class WidgetService {
   }
 
   Future<void> refreshWidgets() async {
-    if (Platform.isAndroid) return;
-
-    for (final name in kWidgetNames) {
-      await _repository.refresh(name);
+    for (final (iOSName, androidName) in kWidgetNames) {
+      await _repository.refresh(iOSName, androidName);
     }
   }
 }

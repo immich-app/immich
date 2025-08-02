@@ -27,10 +27,7 @@ class SyncApiRepository {
     final client = httpClient ?? http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
 
-    final headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/jsonlines+json',
-    };
+    final headers = {'Content-Type': 'application/json', 'Accept': 'application/jsonlines+json'};
 
     final headerParams = <String, String>{};
     await _api.applyToParams([], headerParams);
@@ -57,6 +54,8 @@ class SyncApiRepository {
           SyncRequestType.stacksV1,
           SyncRequestType.partnerStacksV1,
           SyncRequestType.userMetadataV1,
+          SyncRequestType.peopleV1,
+          SyncRequestType.assetFacesV1,
         ],
       ).toJson(),
     );
@@ -76,10 +75,7 @@ class SyncApiRepository {
 
       if (response.statusCode != 200) {
         final errorBody = await response.stream.bytesToString();
-        throw ApiException(
-          response.statusCode,
-          'Failed to get sync stream: $errorBody',
-        );
+        throw ApiException(response.statusCode, 'Failed to get sync stream: $errorBody');
       }
 
       await for (final chunk in response.stream.transform(utf8.decoder)) {
@@ -110,8 +106,7 @@ class SyncApiRepository {
       client.close();
     }
     stopwatch.stop();
-    _logger
-        .info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
+    _logger.info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
     DLog.log("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
   }
 
@@ -173,6 +168,10 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.partnerStackDeleteV1: SyncStackDeleteV1.fromJson,
   SyncEntityType.userMetadataV1: SyncUserMetadataV1.fromJson,
   SyncEntityType.userMetadataDeleteV1: SyncUserMetadataDeleteV1.fromJson,
+  SyncEntityType.personV1: SyncPersonV1.fromJson,
+  SyncEntityType.personDeleteV1: SyncPersonDeleteV1.fromJson,
+  SyncEntityType.assetFaceV1: SyncAssetFaceV1.fromJson,
+  SyncEntityType.assetFaceDeleteV1: SyncAssetFaceDeleteV1.fromJson,
 };
 
 class _SyncAckV1 {

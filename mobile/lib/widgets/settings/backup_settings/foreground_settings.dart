@@ -12,8 +12,7 @@ class ForegroundBackupSettings extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isAutoBackup = ref.watch(backupProvider.select((s) => s.autoBackup));
 
-    void onButtonTap() =>
-        ref.read(backupProvider.notifier).setAutoBackup(!isAutoBackup);
+    void onButtonTap() => ref.read(backupProvider.notifier).setAutoBackup(!isAutoBackup);
 
     if (isAutoBackup) {
       return SettingsButtonListTile(

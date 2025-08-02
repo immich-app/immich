@@ -1,4 +1,5 @@
 import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
+import { UserMetadataKey } from 'src/enum';
 import { Column, CreateDateColumn, Generated, Table, Timestamp } from 'src/sql-tools';
 
 @Table('user_metadata_audit')
@@ -10,7 +11,7 @@ export class UserMetadataAuditTable {
   userId!: string;
 
   @Column({ indexName: 'IDX_user_metadata_audit_key' })
-  key!: string;
+  key!: UserMetadataKey;
 
   @CreateDateColumn({ default: () => 'clock_timestamp()', indexName: 'IDX_user_metadata_audit_deleted_at' })
   deletedAt!: Generated<Timestamp>;

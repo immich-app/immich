@@ -1,5 +1,1 @@
-enum QuickFilterMode {
-  all,
-  sharedWithMe,
-  myAlbums,
-}
+enum QuickFilterMode { all, sharedWithMe, myAlbums }

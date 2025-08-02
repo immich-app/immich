@@ -48,10 +48,7 @@ abstract final class Bootstrap {
     );
   }
 
-  static Future<void> initDomain(
-    Isar db, {
-    bool shouldBufferLogs = true,
-  }) async {
+  static Future<void> initDomain(Isar db, {bool shouldBufferLogs = true}) async {
     await StoreService.init(storeRepository: IsarStoreRepository(db));
     await LogService.init(
       logRepository: IsarLogRepository(db),

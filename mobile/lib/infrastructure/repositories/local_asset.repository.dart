@@ -10,22 +10,17 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   const DriftLocalAssetRepository(this._db) : super(_db);
 
   Stream<LocalAsset?> watchAsset(String id) {
-    final query = _db.localAssetEntity
-        .select()
-        .addColumns([_db.remoteAssetEntity.id]).join([
+    final query = _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.id]).join([
       leftOuterJoin(
         _db.remoteAssetEntity,
         _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
         useColumns: false,
       ),
-    ])
-      ..where(_db.localAssetEntity.id.equals(id));
+    ])..where(_db.localAssetEntity.id.equals(id));
 
     return query.map((row) {
       final asset = row.readTable(_db.localAssetEntity).toDto();
-      return asset.copyWith(
-        remoteId: row.read(_db.remoteAssetEntity.id),
-      );
+      return asset.copyWith(remoteId: row.read(_db.remoteAssetEntity.id));
     }).watchSingleOrNull();
   }
 
@@ -55,5 +50,19 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
         batch.deleteWhere(_db.localAssetEntity, (e) => e.id.isIn(slice));
       }
     });
+  }
+
+  Future<LocalAsset?> getById(String id) {
+    final query = _db.localAssetEntity.select()..where((lae) => lae.id.equals(id));
+
+    return query.map((row) => row.toDto()).getSingleOrNull();
+  }
+
+  Future<int> getCount() {
+    return _db.managers.localAssetEntity.count();
+  }
+
+  Future<int> getHashedCount() {
+    return _db.managers.localAssetEntity.filter((e) => e.checksum.isNull().not()).count();
   }
 }

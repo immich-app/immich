@@ -14,9 +14,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:share_plus/share_plus.dart';
 
-final assetMediaRepositoryProvider = Provider(
-  (ref) => AssetMediaRepository(ref.watch(assetApiRepositoryProvider)),
-);
+final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.watch(assetApiRepositoryProvider)));
 
 class AssetMediaRepository {
   final AssetApiRepository _assetApiRepository;
@@ -24,8 +22,7 @@ class AssetMediaRepository {
 
   const AssetMediaRepository(this._assetApiRepository);
 
-  Future<List<String>> deleteAll(List<String> ids) =>
-      PhotoManager.editor.deleteWithIds(ids);
+  Future<List<String>> deleteAll(List<String> ids) => PhotoManager.editor.deleteWithIds(ids);
 
   Future<asset_entity.Asset?> get(String id) async {
     final entity = await AssetEntity.fromId(id);
@@ -52,8 +49,7 @@ class AssetMediaRepository {
       asset.fileCreatedAt = asset.fileModifiedAt;
     }
     if (local.latitude != null) {
-      asset.exifInfo =
-          ExifInfo(latitude: local.latitude, longitude: local.longitude);
+      asset.exifInfo = ExifInfo(latitude: local.latitude, longitude: local.longitude);
     }
     asset.local = local;
     return asset;
@@ -79,12 +75,10 @@ class AssetMediaRepository {
       final localId = (asset is LocalAsset)
           ? asset.id
           : asset is RemoteAsset
-              ? asset.localId
-              : null;
+          ? asset.localId
+          : null;
       if (localId != null) {
-        File? f =
-            await AssetEntity(id: localId, width: 1, height: 1, typeInt: 0)
-                .originFile;
+        File? f = await AssetEntity(id: localId, width: 1, height: 1, typeInt: 0).originFile;
         downloadedXFiles.add(XFile(f!.path));
       } else if (asset is RemoteAsset) {
         final tempDir = await getTemporaryDirectory();
@@ -119,8 +113,6 @@ class AssetMediaRepository {
         _log.warning("Failed to delete temporary file: ${file.path}", e);
       }
     }
-    return result.status == ShareResultStatus.success
-        ? downloadedXFiles.length
-        : 0;
+    return result.status == ShareResultStatus.success ? downloadedXFiles.length : 0;
   }
 }

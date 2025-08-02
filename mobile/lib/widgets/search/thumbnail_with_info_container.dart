@@ -27,10 +27,7 @@ class ThumbnailWithInfoContainer extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(borderRadius),
               gradient: LinearGradient(
-                colors: [
-                  context.colorScheme.surfaceContainer,
-                  context.colorScheme.surfaceContainer.darken(amount: .1),
-                ],
+                colors: [context.colorScheme.surfaceContainer, context.colorScheme.surfaceContainer.darken(amount: .1)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -43,9 +40,7 @@ class ThumbnailWithInfoContainer extends StatelessWidget {
                 end: FractionalOffset.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  label == ''
-                      ? Colors.black.withValues(alpha: 0.1)
-                      : Colors.black.withValues(alpha: 0.5),
+                  label == '' ? Colors.black.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.5),
                 ],
                 stops: const [0.0, 1.0],
               ),
@@ -53,15 +48,10 @@ class ThumbnailWithInfoContainer extends StatelessWidget {
             child: child,
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8) +
-                const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8) + const EdgeInsets.only(bottom: 8),
             child: Text(
               label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
               maxLines: 2,
               softWrap: false,
               overflow: TextOverflow.ellipsis,

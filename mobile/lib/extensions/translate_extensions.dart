@@ -29,19 +29,14 @@ extension TextTranslateExtension on Text {
   }
 }
 
-String _translateHelper(
-  BuildContext? context,
-  String key, [
-  Map<String, Object>? args,
-]) {
+String _translateHelper(BuildContext? context, String key, [Map<String, Object>? args]) {
   if (key.isEmpty) {
     return '';
   }
   try {
     final translatedMessage = key.tr(context: context);
     return args != null
-        ? MessageFormat(translatedMessage, locale: Intl.defaultLocale ?? 'en')
-            .format(args)
+        ? MessageFormat(translatedMessage, locale: Intl.defaultLocale ?? 'en').format(args)
         : translatedMessage;
   } catch (e) {
     debugPrint('Translation failed for key "$key". Error: $e');

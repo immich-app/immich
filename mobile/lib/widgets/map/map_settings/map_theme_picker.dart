@@ -8,11 +8,7 @@ class MapThemePicker extends StatelessWidget {
   final ThemeMode themeMode;
   final Function(ThemeMode) onThemeChange;
 
-  const MapThemePicker({
-    super.key,
-    required this.themeMode,
-    required this.onThemeChange,
-  });
+  const MapThemePicker({super.key, required this.themeMode, required this.onThemeChange});
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +19,7 @@ class MapThemePicker extends StatelessWidget {
           child: Center(
             child: Text(
               "map_settings_theme_settings",
-              style: context.textTheme.bodyMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
             ).tr(),
           ),
         ),
@@ -77,12 +72,7 @@ class _BorderedMapThumbnail extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             border: Border.fromBorderSide(
-              BorderSide(
-                width: 4,
-                color: shouldHighlight
-                    ? context.colorScheme.onSurface
-                    : Colors.transparent,
-              ),
+              BorderSide(width: 4, color: shouldHighlight ? context.colorScheme.onSurface : Colors.transparent),
             ),
             borderRadius: const BorderRadius.all(Radius.circular(20)),
           ),
@@ -98,9 +88,7 @@ class _BorderedMapThumbnail extends StatelessWidget {
           padding: const EdgeInsets.only(top: 10),
           child: Text(
             name,
-            style: context.textTheme.bodyMedium?.copyWith(
-              fontWeight: shouldHighlight ? FontWeight.bold : null,
-            ),
+            style: context.textTheme.bodyMedium?.copyWith(fontWeight: shouldHighlight ? FontWeight.bold : null),
           ),
         ),
       ],

@@ -58,25 +58,23 @@ class SharedLink {
   }
 
   SharedLink.fromDto(SharedLinkResponseDto dto)
-      : id = dto.id,
-        allowDownload = dto.allowDownload,
-        allowUpload = dto.allowUpload,
-        description = dto.description,
-        password = dto.password,
-        expiresAt = dto.expiresAt,
-        key = dto.key,
-        showMetadata = dto.showMetadata,
-        type = dto.type == SharedLinkType.ALBUM
-            ? SharedLinkSource.album
-            : SharedLinkSource.individual,
-        title = dto.type == SharedLinkType.ALBUM
-            ? dto.album?.albumName.toUpperCase() ?? "UNKNOWN SHARE"
-            : "INDIVIDUAL SHARE",
-        thumbAssetId = dto.type == SharedLinkType.ALBUM
-            ? dto.album?.albumThumbnailAssetId
-            : dto.assets.isNotEmpty
-                ? dto.assets[0].id
-                : null;
+    : id = dto.id,
+      allowDownload = dto.allowDownload,
+      allowUpload = dto.allowUpload,
+      description = dto.description,
+      password = dto.password,
+      expiresAt = dto.expiresAt,
+      key = dto.key,
+      showMetadata = dto.showMetadata,
+      type = dto.type == SharedLinkType.ALBUM ? SharedLinkSource.album : SharedLinkSource.individual,
+      title = dto.type == SharedLinkType.ALBUM
+          ? dto.album?.albumName.toUpperCase() ?? "UNKNOWN SHARE"
+          : "INDIVIDUAL SHARE",
+      thumbAssetId = dto.type == SharedLinkType.ALBUM
+          ? dto.album?.albumThumbnailAssetId
+          : dto.assets.isNotEmpty
+          ? dto.assets[0].id
+          : null;
 
   @override
   String toString() =>

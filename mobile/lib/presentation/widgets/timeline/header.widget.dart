@@ -43,17 +43,11 @@ class TimelineHeader extends StatelessWidget {
 
     final date = (bucket as TimeBucket).date;
 
-    final isMonthHeader =
-        header == HeaderType.month || header == HeaderType.monthAndDay;
-    final isDayHeader =
-        header == HeaderType.day || header == HeaderType.monthAndDay;
+    final isMonthHeader = header == HeaderType.month || header == HeaderType.monthAndDay;
+    final isDayHeader = header == HeaderType.day || header == HeaderType.monthAndDay;
 
     return Padding(
-      padding: EdgeInsets.only(
-        top: isMonthHeader ? 8.0 : 0.0,
-        left: 12.0,
-        right: 12.0,
-      ),
+      padding: EdgeInsets.only(top: isMonthHeader ? 8.0 : 0.0, left: 12.0, right: 12.0),
       child: SizedBox(
         height: height,
         child: Column(
@@ -63,32 +57,17 @@ class TimelineHeader extends StatelessWidget {
             if (isMonthHeader)
               Row(
                 children: [
-                  Text(
-                    _formatMonth(context, date),
-                    style: context.textTheme.labelLarge?.copyWith(fontSize: 24),
-                  ),
+                  Text(_formatMonth(context, date), style: context.textTheme.labelLarge?.copyWith(fontSize: 24)),
                   const Spacer(),
-                  if (header != HeaderType.monthAndDay)
-                    _BulkSelectIconButton(
-                      bucket: bucket,
-                      assetOffset: assetOffset,
-                    ),
+                  if (header != HeaderType.monthAndDay) _BulkSelectIconButton(bucket: bucket, assetOffset: assetOffset),
                 ],
               ),
             if (isDayHeader)
               Row(
                 children: [
-                  Text(
-                    _formatDay(context, date),
-                    style: context.textTheme.labelLarge?.copyWith(
-                      fontSize: 15,
-                    ),
-                  ),
+                  Text(_formatDay(context, date), style: context.textTheme.labelLarge?.copyWith(fontSize: 15)),
                   const Spacer(),
-                  _BulkSelectIconButton(
-                    bucket: bucket,
-                    assetOffset: assetOffset,
-                  ),
+                  _BulkSelectIconButton(bucket: bucket, assetOffset: assetOffset),
                 ],
               ),
           ],
@@ -102,18 +81,13 @@ class _BulkSelectIconButton extends ConsumerWidget {
   final Bucket bucket;
   final int assetOffset;
 
-  const _BulkSelectIconButton({
-    required this.bucket,
-    required this.assetOffset,
-  });
+  const _BulkSelectIconButton({required this.bucket, required this.assetOffset});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     List<BaseAsset> bucketAssets;
     try {
-      bucketAssets = ref
-          .watch(timelineServiceProvider)
-          .getAssets(assetOffset, bucket.assetCount);
+      bucketAssets = ref.watch(timelineServiceProvider).getAssets(assetOffset, bucket.assetCount);
     } catch (e) {
       bucketAssets = <BaseAsset>[];
     }
@@ -122,23 +96,12 @@ class _BulkSelectIconButton extends ConsumerWidget {
 
     return IconButton(
       onPressed: () {
-        ref.read(multiSelectProvider.notifier).toggleBucketSelection(
-              assetOffset,
-              bucket.assetCount,
-            );
+        ref.read(multiSelectProvider.notifier).toggleBucketSelection(assetOffset, bucket.assetCount);
         ref.read(hapticFeedbackProvider.notifier).heavyImpact();
       },
       icon: isAllSelected
-          ? Icon(
-              Icons.check_circle_rounded,
-              size: 26,
-              color: context.primaryColor,
-            )
-          : Icon(
-              Icons.check_circle_outline_rounded,
-              size: 26,
-              color: context.colorScheme.onSurfaceSecondary,
-            ),
+          ? Icon(Icons.check_circle_rounded, size: 26, color: context.primaryColor)
+          : Icon(Icons.check_circle_outline_rounded, size: 26, color: context.colorScheme.onSurfaceSecondary),
     );
   }
 }

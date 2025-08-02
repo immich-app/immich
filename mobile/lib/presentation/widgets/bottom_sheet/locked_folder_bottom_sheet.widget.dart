@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
@@ -18,7 +18,7 @@ class LockedFolderBottomSheet extends ConsumerWidget {
       shouldCloseOnMinExtent: false,
       actions: [
         ShareActionButton(source: ActionSource.timeline),
-        DownloadActionButton(),
+        DownloadActionButton(source: ActionSource.timeline),
         DeletePermanentActionButton(source: ActionSource.timeline),
         RemoveFromLockFolderActionButton(source: ActionSource.timeline),
       ],

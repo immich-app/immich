@@ -1,11 +1,6 @@
 part of 'base_asset.model.dart';
 
-enum AssetVisibility {
-  timeline,
-  hidden,
-  archive,
-  locked,
-}
+enum AssetVisibility { timeline, hidden, archive, locked }
 
 // Model for an asset stored in the server
 class RemoteAsset extends BaseAsset {
@@ -15,7 +10,6 @@ class RemoteAsset extends BaseAsset {
   final AssetVisibility visibility;
   final String ownerId;
   final String? stackId;
-  final int stackCount;
 
   const RemoteAsset({
     required this.id,
@@ -34,12 +28,10 @@ class RemoteAsset extends BaseAsset {
     this.visibility = AssetVisibility.timeline,
     super.livePhotoVideoId,
     this.stackId,
-    this.stackCount = 0,
   });
 
   @override
-  AssetState get storage =>
-      localId == null ? AssetState.remote : AssetState.merged;
+  AssetState get storage => localId == null ? AssetState.remote : AssetState.merged;
 
   @override
   String get heroTag => '${localId ?? checksum}_$id';
@@ -61,7 +53,6 @@ class RemoteAsset extends BaseAsset {
     thumbHash: ${thumbHash ?? "<NA>"},
     visibility: $visibility,
     stackId: ${stackId ?? "<NA>"},
-    stackCount: $stackCount,
     checksum: $checksum,
     livePhotoVideoId: ${livePhotoVideoId ?? "<NA>"},
  }''';
@@ -77,8 +68,7 @@ class RemoteAsset extends BaseAsset {
         ownerId == other.ownerId &&
         thumbHash == other.thumbHash &&
         visibility == other.visibility &&
-        stackId == other.stackId &&
-        stackCount == other.stackCount;
+        stackId == other.stackId;
   }
 
   @override
@@ -89,8 +79,7 @@ class RemoteAsset extends BaseAsset {
       localId.hashCode ^
       thumbHash.hashCode ^
       visibility.hashCode ^
-      stackId.hashCode ^
-      stackCount.hashCode;
+      stackId.hashCode;
 
   RemoteAsset copyWith({
     String? id,
@@ -109,7 +98,6 @@ class RemoteAsset extends BaseAsset {
     AssetVisibility? visibility,
     String? livePhotoVideoId,
     String? stackId,
-    int? stackCount,
   }) {
     return RemoteAsset(
       id: id ?? this.id,
@@ -128,7 +116,6 @@ class RemoteAsset extends BaseAsset {
       visibility: visibility ?? this.visibility,
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       stackId: stackId ?? this.stackId,
-      stackCount: stackCount ?? this.stackCount,
     );
   }
 }

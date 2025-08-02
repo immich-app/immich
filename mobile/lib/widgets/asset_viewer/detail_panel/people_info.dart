@@ -18,17 +18,10 @@ class PeopleInfo extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final peopleProvider =
-        ref.watch(assetPeopleNotifierProvider(asset).notifier);
-    final people = ref
-        .watch(assetPeopleNotifierProvider(asset))
-        .value
-        ?.where((p) => !p.isHidden);
+    final peopleProvider = ref.watch(assetPeopleNotifierProvider(asset).notifier);
+    final people = ref.watch(assetPeopleNotifierProvider(asset)).value?.where((p) => !p.isHidden);
 
-    showPersonNameEditModel(
-      String personId,
-      String personName,
-    ) {
+    showPersonNameEditModel(String personId, String personName) {
       return showDialog(
         context: context,
         useRootNavigator: false,
@@ -41,13 +34,13 @@ class PeopleInfo extends ConsumerWidget {
       });
     }
 
-    final curatedPeople = people
+    final curatedPeople =
+        people
             ?.map(
               (p) => SearchCuratedContent(
                 id: p.id,
                 label: p.name,
-                subtitle: p.birthDate != null &&
-                        p.birthDate!.isBefore(asset.fileCreatedAt)
+                subtitle: p.birthDate != null && p.birthDate!.isBefore(asset.fileCreatedAt)
                     ? _formatAge(p.birthDate!, asset.fileCreatedAt)
                     : null,
               ),
@@ -56,9 +49,7 @@ class PeopleInfo extends ConsumerWidget {
         [];
 
     return AnimatedCrossFade(
-      crossFadeState: (people?.isEmpty ?? true)
-          ? CrossFadeState.showFirst
-          : CrossFadeState.showSecond,
+      crossFadeState: (people?.isEmpty ?? true) ? CrossFadeState.showFirst : CrossFadeState.showSecond,
       duration: const Duration(milliseconds: 200),
       firstChild: Container(),
       secondChild: Padding(
@@ -85,17 +76,10 @@ class PeopleInfo extends ConsumerWidget {
                 content: curatedPeople,
                 onTap: (content, index) {
                   context
-                      .pushRoute(
-                        PersonResultRoute(
-                          personId: content.id,
-                          personName: content.label,
-                        ),
-                      )
+                      .pushRoute(PersonResultRoute(personId: content.id, personName: content.label))
                       .then((_) => peopleProvider.refresh());
                 },
-                onNameTap: (person, index) => {
-                  showPersonNameEditModel(person.id, person.label),
-                },
+                onNameTap: (person, index) => {showPersonNameEditModel(person.id, person.label)},
               ),
             ),
           ],
@@ -109,22 +93,18 @@ class PeopleInfo extends ConsumerWidget {
     int ageInMonths = _calculateAgeInMonths(birthDate, referenceDate);
 
     if (ageInMonths <= 11) {
-      return "exif_bottom_sheet_person_age_months"
-          .tr(namedArgs: {'months': ageInMonths.toString()});
+      return "exif_bottom_sheet_person_age_months".tr(namedArgs: {'months': ageInMonths.toString()});
     } else if (ageInMonths > 12 && ageInMonths <= 23) {
-      return "exif_bottom_sheet_person_age_year_months"
-          .tr(namedArgs: {'months': (ageInMonths - 12).toString()});
+      return "exif_bottom_sheet_person_age_year_months".tr(namedArgs: {'months': (ageInMonths - 12).toString()});
     } else {
-      return "exif_bottom_sheet_person_age_years"
-          .tr(namedArgs: {'years': ageInYears.toString()});
+      return "exif_bottom_sheet_person_age_years".tr(namedArgs: {'years': ageInYears.toString()});
     }
   }
 
   int _calculateAge(DateTime birthDate, DateTime referenceDate) {
     int age = referenceDate.year - birthDate.year;
     if (referenceDate.month < birthDate.month ||
-        (referenceDate.month == birthDate.month &&
-            referenceDate.day < birthDate.day)) {
+        (referenceDate.month == birthDate.month && referenceDate.day < birthDate.day)) {
       age--;
     }
     return age;

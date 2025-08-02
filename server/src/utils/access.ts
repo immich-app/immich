@@ -92,7 +92,7 @@ const checkSharedLinkAccess = async (
       return sharedLink.allowDownload ? await access.album.checkSharedLinkAccess(sharedLinkId, ids) : new Set();
     }
 
-    case Permission.AlbumAddAsset: {
+    case Permission.AlbumAssetCreate: {
       return sharedLink.allowUpload ? await access.album.checkSharedLinkAccess(sharedLinkId, ids) : new Set();
     }
 
@@ -163,7 +163,7 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return setUnion(isOwner, isShared);
     }
 
-    case Permission.AlbumAddAsset: {
+    case Permission.AlbumAssetCreate: {
       const isOwner = await access.album.checkOwnerAccess(auth.user.id, ids);
       const isShared = await access.album.checkSharedAlbumAccess(
         auth.user.id,
@@ -195,7 +195,7 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return setUnion(isOwner, isShared);
     }
 
-    case Permission.AlbumRemoveAsset: {
+    case Permission.AlbumAssetDelete: {
       const isOwner = await access.album.checkOwnerAccess(auth.user.id, ids);
       const isShared = await access.album.checkSharedAlbumAccess(
         auth.user.id,

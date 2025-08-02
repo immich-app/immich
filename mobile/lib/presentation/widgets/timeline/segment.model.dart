@@ -37,13 +37,12 @@ abstract class Segment {
     required this.headerExtent,
     required this.spacing,
     required this.header,
-  })  : gridIndex = firstIndex + 1,
-        gridOffset = startOffset + headerExtent + spacing;
+  }) : gridIndex = firstIndex + 1,
+       gridOffset = startOffset + headerExtent + spacing;
 
   bool containsIndex(int index) => firstIndex <= index && index <= lastIndex;
 
-  bool isWithinOffset(double offset) =>
-      startOffset <= offset && offset <= endOffset;
+  bool isWithinOffset(double offset) => startOffset <= offset && offset <= endOffset;
 
   int getMinChildIndexForScrollOffset(double scrollOffset);
   int getMaxChildIndexForScrollOffset(double scrollOffset);
@@ -88,13 +87,9 @@ abstract class Segment {
 }
 
 extension SegmentListExtension on List<Segment> {
-  bool equals(List<Segment> other) =>
-      length == other.length &&
-      lastOrNull?.endOffset == other.lastOrNull?.endOffset;
+  bool equals(List<Segment> other) => length == other.length && lastOrNull?.endOffset == other.lastOrNull?.endOffset;
 
-  Segment? findByIndex(int index) =>
-      firstWhereOrNull((s) => s.containsIndex(index));
+  Segment? findByIndex(int index) => firstWhereOrNull((s) => s.containsIndex(index));
 
-  Segment? findByOffset(double offset) =>
-      firstWhereOrNull((s) => s.isWithinOffset(offset)) ?? lastOrNull;
+  Segment? findByOffset(double offset) => firstWhereOrNull((s) => s.isWithinOffset(offset)) ?? lastOrNull;
 }

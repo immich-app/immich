@@ -17,12 +17,14 @@ export enum ImmichHeader {
   UserToken = 'x-immich-user-token',
   SessionToken = 'x-immich-session-token',
   SharedLinkKey = 'x-immich-share-key',
+  SharedLinkSlug = 'x-immich-share-slug',
   Checksum = 'x-immich-checksum',
   Cid = 'x-immich-cid',
 }
 
 export enum ImmichQuery {
   SharedLinkKey = 'key',
+  SharedLinkSlug = 'slug',
   ApiKey = 'apiKey',
   SessionKey = 'sessionKey',
 }
@@ -87,30 +89,44 @@ export enum Permission {
   AssetRead = 'asset.read',
   AssetUpdate = 'asset.update',
   AssetDelete = 'asset.delete',
+  AssetStatistics = 'asset.statistics',
   AssetShare = 'asset.share',
   AssetView = 'asset.view',
   AssetDownload = 'asset.download',
   AssetUpload = 'asset.upload',
+  AssetReplace = 'asset.replace',
 
   AlbumCreate = 'album.create',
   AlbumRead = 'album.read',
   AlbumUpdate = 'album.update',
   AlbumDelete = 'album.delete',
   AlbumStatistics = 'album.statistics',
-
-  AlbumAddAsset = 'album.addAsset',
-  AlbumRemoveAsset = 'album.removeAsset',
   AlbumShare = 'album.share',
   AlbumDownload = 'album.download',
+
+  AlbumAssetCreate = 'albumAsset.create',
+  AlbumAssetDelete = 'albumAsset.delete',
+
+  AlbumUserCreate = 'albumUser.create',
+  AlbumUserUpdate = 'albumUser.update',
+  AlbumUserDelete = 'albumUser.delete',
+
+  AuthChangePassword = 'auth.changePassword',
 
   AuthDeviceDelete = 'authDevice.delete',
 
   ArchiveRead = 'archive.read',
 
+  DuplicateRead = 'duplicate.read',
+  DuplicateDelete = 'duplicate.delete',
+
   FaceCreate = 'face.create',
   FaceRead = 'face.read',
   FaceUpdate = 'face.update',
   FaceDelete = 'face.delete',
+
+  JobCreate = 'job.create',
+  JobRead = 'job.read',
 
   LibraryCreate = 'library.create',
   LibraryRead = 'library.read',
@@ -125,6 +141,10 @@ export enum Permission {
   MemoryRead = 'memory.read',
   MemoryUpdate = 'memory.update',
   MemoryDelete = 'memory.delete',
+  MemoryStatistics = 'memory.statistics',
+
+  MemoryAssetCreate = 'memoryAsset.create',
+  MemoryAssetDelete = 'memoryAsset.delete',
 
   NotificationCreate = 'notification.create',
   NotificationRead = 'notification.read',
@@ -144,6 +164,19 @@ export enum Permission {
   PersonMerge = 'person.merge',
   PersonReassign = 'person.reassign',
 
+  PinCodeCreate = 'pinCode.create',
+  PinCodeUpdate = 'pinCode.update',
+  PinCodeDelete = 'pinCode.delete',
+
+  ServerAbout = 'server.about',
+  ServerApkLinks = 'server.apkLinks',
+  ServerStorage = 'server.storage',
+  ServerStatistics = 'server.statistics',
+
+  ServerLicenseRead = 'serverLicense.read',
+  ServerLicenseUpdate = 'serverLicense.update',
+  ServerLicenseDelete = 'serverLicense.delete',
+
   SessionCreate = 'session.create',
   SessionRead = 'session.read',
   SessionUpdate = 'session.update',
@@ -160,6 +193,11 @@ export enum Permission {
   StackUpdate = 'stack.update',
   StackDelete = 'stack.delete',
 
+  SyncStream = 'sync.stream',
+  SyncCheckpointRead = 'syncCheckpoint.read',
+  SyncCheckpointUpdate = 'syncCheckpoint.update',
+  SyncCheckpointDelete = 'syncCheckpoint.delete',
+
   SystemConfigRead = 'systemConfig.read',
   SystemConfigUpdate = 'systemConfig.update',
 
@@ -172,10 +210,30 @@ export enum Permission {
   TagDelete = 'tag.delete',
   TagAsset = 'tag.asset',
 
-  AdminUserCreate = 'admin.user.create',
-  AdminUserRead = 'admin.user.read',
-  AdminUserUpdate = 'admin.user.update',
-  AdminUserDelete = 'admin.user.delete',
+  UserRead = 'user.read',
+  UserUpdate = 'user.update',
+
+  UserLicenseCreate = 'userLicense.create',
+  UserLicenseRead = 'userLicense.read',
+  UserLicenseUpdate = 'userLicense.update',
+  UserLicenseDelete = 'userLicense.delete',
+
+  UserOnboardingRead = 'userOnboarding.read',
+  UserOnboardingUpdate = 'userOnboarding.update',
+  UserOnboardingDelete = 'userOnboarding.delete',
+
+  UserPreferenceRead = 'userPreference.read',
+  UserPreferenceUpdate = 'userPreference.update',
+
+  UserProfileImageCreate = 'userProfileImage.create',
+  UserProfileImageRead = 'userProfileImage.read',
+  UserProfileImageUpdate = 'userProfileImage.update',
+  UserProfileImageDelete = 'userProfileImage.delete',
+
+  AdminUserCreate = 'adminUser.create',
+  AdminUserRead = 'adminUser.read',
+  AdminUserUpdate = 'adminUser.update',
+  AdminUserDelete = 'adminUser.delete',
 }
 
 export enum SharedLinkType {
@@ -198,6 +256,7 @@ export enum StorageFolder {
 }
 
 export enum SystemMetadataKey {
+  MediaLocation = 'MediaLocation',
   ReverseGeocodingState = 'reverse-geocoding-state',
   FacialRecognitionState = 'facial-recognition-state',
   MemoriesState = 'memories-state',
@@ -354,6 +413,11 @@ export enum LogLevel {
   Fatal = 'fatal',
 }
 
+export enum ApiCustomExtension {
+  Permission = 'x-immich-permission',
+  AdminOnly = 'x-immich-admin-only',
+}
+
 export enum MetadataKey {
   AuthRoute = 'auth_route',
   AdminRoute = 'admin_route',
@@ -416,6 +480,8 @@ export enum DatabaseExtension {
 export enum BootstrapEventPriority {
   // Database service should be initialized before anything else, most other services need database access
   DatabaseService = -200,
+  // Detect and configure the media location before jobs are queued which may use it
+  StorageService = -195,
   // Other services may need to queue jobs on bootstrap.
   JobService = -190,
   // Initialise config after other bootstrap services, stop other services from using config on bootstrap
@@ -544,6 +610,7 @@ export enum DatabaseLock {
   CLIPDimSize = 512,
   Library = 1337,
   NightlyJobs = 600,
+  MediaLocation = 700,
   GetSystemConfig = 69,
   BackupDatabase = 42,
   MemoryCreation = 777,
@@ -557,6 +624,7 @@ export enum SyncRequestType {
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
   AssetsV1 = 'AssetsV1',
   AssetExifsV1 = 'AssetExifsV1',
+  AuthUsersV1 = 'AuthUsersV1',
   MemoriesV1 = 'MemoriesV1',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
   PartnersV1 = 'PartnersV1',
@@ -566,10 +634,13 @@ export enum SyncRequestType {
   StacksV1 = 'StacksV1',
   UsersV1 = 'UsersV1',
   PeopleV1 = 'PeopleV1',
+  AssetFacesV1 = 'AssetFacesV1',
   UserMetadataV1 = 'UserMetadataV1',
 }
 
 export enum SyncEntityType {
+  AuthUserV1 = 'AuthUserV1',
+
   UserV1 = 'UserV1',
   UserDeleteV1 = 'UserDeleteV1',
 
@@ -616,6 +687,9 @@ export enum SyncEntityType {
 
   PersonV1 = 'PersonV1',
   PersonDeleteV1 = 'PersonDeleteV1',
+
+  AssetFaceV1 = 'AssetFaceV1',
+  AssetFaceDeleteV1 = 'AssetFaceDeleteV1',
 
   UserMetadataV1 = 'UserMetadataV1',
   UserMetadataDeleteV1 = 'UserMetadataDeleteV1',

@@ -17,15 +17,14 @@ PlatformException _createConnectionError(String channelName) {
 
 bool _deepEquals(Object? a, Object? b) {
   if (a is List && b is List) {
-    return a.length == b.length &&
-        a.indexed
-            .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
+    return a.length == b.length && a.indexed.every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
   }
   if (a is Map && b is Map) {
     return a.length == b.length &&
-        a.entries.every((MapEntry<Object?, Object?> entry) =>
-            (b as Map<Object?, Object?>).containsKey(entry.key) &&
-            _deepEquals(entry.value, b[entry.key]));
+        a.entries.every(
+          (MapEntry<Object?, Object?> entry) =>
+              (b as Map<Object?, Object?>).containsKey(entry.key) && _deepEquals(entry.value, b[entry.key]),
+        );
   }
   return a == b;
 }
@@ -41,6 +40,7 @@ class PlatformAsset {
     this.height,
     required this.durationInSeconds,
     required this.orientation,
+    required this.isFavorite,
   });
 
   String id;
@@ -61,18 +61,10 @@ class PlatformAsset {
 
   int orientation;
 
+  bool isFavorite;
+
   List<Object?> _toList() {
-    return <Object?>[
-      id,
-      name,
-      type,
-      createdAt,
-      updatedAt,
-      width,
-      height,
-      durationInSeconds,
-      orientation,
-    ];
+    return <Object?>[id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite];
   }
 
   Object encode() {
@@ -91,6 +83,7 @@ class PlatformAsset {
       height: result[6] as int?,
       durationInSeconds: result[7]! as int,
       orientation: result[8]! as int,
+      isFavorite: result[9]! as bool,
     );
   }
 
@@ -131,13 +124,7 @@ class PlatformAlbum {
   int assetCount;
 
   List<Object?> _toList() {
-    return <Object?>[
-      id,
-      name,
-      updatedAt,
-      isCloud,
-      assetCount,
-    ];
+    return <Object?>[id, name, updatedAt, isCloud, assetCount];
   }
 
   Object encode() {
@@ -173,12 +160,7 @@ class PlatformAlbum {
 }
 
 class SyncDelta {
-  SyncDelta({
-    required this.hasChanges,
-    required this.updates,
-    required this.deletes,
-    required this.assetAlbums,
-  });
+  SyncDelta({required this.hasChanges, required this.updates, required this.deletes, required this.assetAlbums});
 
   bool hasChanges;
 
@@ -189,12 +171,7 @@ class SyncDelta {
   Map<String, List<String>> assetAlbums;
 
   List<Object?> _toList() {
-    return <Object?>[
-      hasChanges,
-      updates,
-      deletes,
-      assetAlbums,
-    ];
+    return <Object?>[hasChanges, updates, deletes, assetAlbums];
   }
 
   Object encode() {
@@ -207,8 +184,7 @@ class SyncDelta {
       hasChanges: result[0]! as bool,
       updates: (result[1] as List<Object?>?)!.cast<PlatformAsset>(),
       deletes: (result[2] as List<Object?>?)!.cast<String>(),
-      assetAlbums:
-          (result[3] as Map<Object?, Object?>?)!.cast<String, List<String>>(),
+      assetAlbums: (result[3] as Map<Object?, Object?>?)!.cast<String, List<String>>(),
     );
   }
 
@@ -269,11 +245,9 @@ class NativeSyncApi {
   /// Constructor for [NativeSyncApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  NativeSyncApi(
-      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
-      : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix =
-            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  NativeSyncApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+    : pigeonVar_binaryMessenger = binaryMessenger,
+      pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -283,15 +257,13 @@ class NativeSyncApi {
   Future<bool> shouldFullSync() async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.shouldFullSync$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -313,15 +285,13 @@ class NativeSyncApi {
   Future<SyncDelta> getMediaChanges() async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -343,15 +313,13 @@ class NativeSyncApi {
   Future<void> checkpointSync() async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.checkpointSync$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -368,15 +336,13 @@ class NativeSyncApi {
   Future<void> clearSyncCheckpoint() async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.clearSyncCheckpoint$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -393,16 +359,13 @@ class NativeSyncApi {
   Future<List<String>> getAssetIdsForAlbum(String albumId) async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetIdsForAlbum$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[albumId]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[albumId]);
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -424,15 +387,13 @@ class NativeSyncApi {
   Future<List<PlatformAlbum>> getAlbums() async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAlbums$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -454,16 +415,13 @@ class NativeSyncApi {
   Future<int> getAssetsCountSince(String albumId, int timestamp) async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsCountSince$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[albumId, timestamp]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[albumId, timestamp]);
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -482,20 +440,16 @@ class NativeSyncApi {
     }
   }
 
-  Future<List<PlatformAsset>> getAssetsForAlbum(String albumId,
-      {int? updatedTimeCond}) async {
+  Future<List<PlatformAsset>> getAssetsForAlbum(String albumId, {int? updatedTimeCond}) async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsForAlbum$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[albumId, updatedTimeCond]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[albumId, updatedTimeCond]);
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -517,16 +471,13 @@ class NativeSyncApi {
   Future<List<Uint8List?>> hashPaths(List<String> paths) async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashPaths$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[paths]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[paths]);
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {

@@ -52,54 +52,53 @@ class ExifInfo {
   });
 
   static ExifInfo fromDto(domain.ExifInfo dto) => ExifInfo(
-        id: dto.assetId,
-        fileSize: dto.fileSize,
-        dateTimeOriginal: dto.dateTimeOriginal,
-        timeZone: dto.timeZone,
-        make: dto.make,
-        model: dto.model,
-        lens: dto.lens,
-        f: dto.f,
-        mm: dto.mm,
-        iso: dto.iso?.toInt(),
-        exposureSeconds: dto.exposureSeconds,
-        lat: dto.latitude,
-        long: dto.longitude,
-        city: dto.city,
-        state: dto.state,
-        country: dto.country,
-        description: dto.description,
-        orientation: dto.orientation,
-      );
+    id: dto.assetId,
+    fileSize: dto.fileSize,
+    dateTimeOriginal: dto.dateTimeOriginal,
+    timeZone: dto.timeZone,
+    make: dto.make,
+    model: dto.model,
+    lens: dto.lens,
+    f: dto.f,
+    mm: dto.mm,
+    iso: dto.iso?.toInt(),
+    exposureSeconds: dto.exposureSeconds,
+    lat: dto.latitude,
+    long: dto.longitude,
+    city: dto.city,
+    state: dto.state,
+    country: dto.country,
+    description: dto.description,
+    orientation: dto.orientation,
+  );
 
   domain.ExifInfo toDto() => domain.ExifInfo(
-        assetId: id,
-        fileSize: fileSize,
-        description: description,
-        orientation: orientation,
-        timeZone: timeZone,
-        dateTimeOriginal: dateTimeOriginal,
-        isFlipped: ExifDtoConverter.isOrientationFlipped(orientation),
-        latitude: lat,
-        longitude: long,
-        city: city,
-        state: state,
-        country: country,
-        make: make,
-        model: model,
-        lens: lens,
-        f: f,
-        mm: mm,
-        iso: iso?.toInt(),
-        exposureSeconds: exposureSeconds,
-      );
+    assetId: id,
+    fileSize: fileSize,
+    description: description,
+    orientation: orientation,
+    timeZone: timeZone,
+    dateTimeOriginal: dateTimeOriginal,
+    isFlipped: ExifDtoConverter.isOrientationFlipped(orientation),
+    latitude: lat,
+    longitude: long,
+    city: city,
+    state: state,
+    country: country,
+    make: make,
+    model: model,
+    lens: lens,
+    f: f,
+    mm: mm,
+    iso: iso?.toInt(),
+    exposureSeconds: exposureSeconds,
+  );
 }
 
 class RemoteExifEntity extends Table with DriftDefaultsMixin {
   const RemoteExifEntity();
 
-  TextColumn get assetId =>
-      text().references(RemoteAssetEntity, #id, onDelete: KeyAction.cascade)();
+  TextColumn get assetId => text().references(RemoteAssetEntity, #id, onDelete: KeyAction.cascade)();
 
   TextColumn get city => text().nullable()();
 
@@ -149,24 +148,24 @@ class RemoteExifEntity extends Table with DriftDefaultsMixin {
 
 extension RemoteExifEntityDataDomainEx on RemoteExifEntityData {
   domain.ExifInfo toDto() => domain.ExifInfo(
-        fileSize: fileSize,
-        dateTimeOriginal: dateTimeOriginal,
-        timeZone: timeZone,
-        make: make,
-        model: model,
-        iso: iso,
-        city: city,
-        state: state,
-        country: country,
-        description: description,
-        orientation: orientation,
-        latitude: latitude,
-        longitude: longitude,
-        f: fNumber?.toDouble(),
-        mm: focalLength?.toDouble(),
-        lens: lens,
-        width: width?.toDouble(),
-        height: height?.toDouble(),
-        isFlipped: ExifDtoConverter.isOrientationFlipped(orientation),
-      );
+    fileSize: fileSize,
+    dateTimeOriginal: dateTimeOriginal,
+    timeZone: timeZone,
+    make: make,
+    model: model,
+    iso: iso,
+    city: city,
+    state: state,
+    country: country,
+    description: description,
+    orientation: orientation,
+    latitude: latitude,
+    longitude: longitude,
+    f: fNumber?.toDouble(),
+    mm: focalLength?.toDouble(),
+    lens: lens,
+    width: width?.toDouble(),
+    height: height?.toDouble(),
+    isFlipped: ExifDtoConverter.isOrientationFlipped(orientation),
+  );
 }

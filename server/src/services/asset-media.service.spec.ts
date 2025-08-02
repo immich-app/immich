@@ -29,7 +29,7 @@ const uploadFile = {
     file: {
       uuid: 'random-uuid',
       checksum: Buffer.from('checksum', 'utf8'),
-      originalPath: 'upload/admin/image.jpeg',
+      originalPath: '/data/library/admin/image.jpeg',
       originalName: 'image.jpeg',
       size: 1000,
     },
@@ -42,7 +42,7 @@ const uploadFile = {
         uuid: 'random-uuid',
         mimeType: 'image/jpeg',
         checksum: Buffer.from('checksum', 'utf8'),
-        originalPath: `upload/admin/${filename}`,
+        originalPath: `/data/admin/${filename}`,
         originalName: filename,
         size: 1000,
       },
@@ -294,16 +294,16 @@ describe(AssetMediaService.name, () => {
 
     it('should return profile for profile uploads', () => {
       expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
-        'upload/profile/admin_id',
+        expect.stringContaining('/data/profile/admin_id'),
       );
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/profile/admin_id');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('/data/profile/admin_id'));
     });
 
     it('should return upload for everything else', () => {
       expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
-        'upload/upload/admin_id/ra/nd',
+        expect.stringContaining('/data/upload/admin_id/ra/nd'),
       );
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith('upload/upload/admin_id/ra/nd');
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('/data/upload/admin_id/ra/nd'));
     });
   });
 
@@ -505,6 +505,7 @@ describe(AssetMediaService.name, () => {
       await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).resolves.toEqual(
         new ImmichFileResponse({
           path: '/original/path.jpg',
+          fileName: 'asset-id.jpg',
           contentType: 'image/jpeg',
           cacheControl: CacheControl.PrivateWithCache,
         }),
@@ -906,14 +907,14 @@ describe(AssetMediaService.name, () => {
         size: 1000,
         uuid: 'random-uuid',
         checksum: Buffer.from('checksum', 'utf8'),
-        originalPath: 'upload/upload/user-id/ra/nd/random-uuid.jpg',
+        originalPath: '/data/upload/user-id/ra/nd/random-uuid.jpg',
       } as unknown as Express.Multer.File;
 
       await sut.onUploadError(request, file);
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
-        data: { files: ['upload/upload/user-id/ra/nd/random-uuid.jpg'] },
+        data: { files: [expect.stringContaining('/data/upload/user-id/ra/nd/random-uuid.jpg')] },
       });
     });
   });

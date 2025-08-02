@@ -8,10 +8,7 @@ class LargeLeadingTile extends StatelessWidget {
     required this.onTap,
     required this.title,
     this.subtitle,
-    this.leadingPadding = const EdgeInsets.symmetric(
-      vertical: 8,
-      horizontal: 16.0,
-    ),
+    this.leadingPadding = const EdgeInsets.symmetric(vertical: 8, horizontal: 16.0),
     this.borderRadius = 20.0,
     this.trailing,
     this.selected = false,
@@ -40,26 +37,19 @@ class LargeLeadingTile extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: selected
-              ? selectedTileColor ??
-                  Theme.of(context).primaryColor.withAlpha(30)
+              ? selectedTileColor ?? Theme.of(context).primaryColor.withAlpha(30)
               : tileColor ?? Colors.transparent,
           borderRadius: BorderRadius.circular(borderRadius),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Padding(
-              padding: leadingPadding,
-              child: leading,
-            ),
+            Padding(padding: leadingPadding, child: leading),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: context.width * 0.6,
-                    child: title,
-                  ),
+                  SizedBox(width: context.width * 0.6, child: title),
                   subtitle ?? const SizedBox.shrink(),
                 ],
               ),

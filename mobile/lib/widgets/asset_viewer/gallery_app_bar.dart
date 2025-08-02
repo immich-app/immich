@@ -34,17 +34,12 @@ class GalleryAppBar extends ConsumerWidget {
       return const SizedBox();
     }
     final album = ref.watch(currentAlbumProvider);
-    final isOwner =
-        asset.ownerId == fastHash(ref.watch(currentUserProvider)?.id ?? '');
+    final isOwner = asset.ownerId == fastHash(ref.watch(currentUserProvider)?.id ?? '');
     final showControls = ref.watch(showControlsProvider);
 
-    final isPartner = ref
-        .watch(partnerSharedWithProvider)
-        .map((e) => fastHash(e.id))
-        .contains(asset.ownerId);
+    final isPartner = ref.watch(partnerSharedWithProvider).map((e) => fastHash(e.id)).contains(asset.ownerId);
 
-    toggleFavorite(Asset asset) =>
-        ref.read(assetProvider.notifier).toggleFavorite([asset]);
+    toggleFavorite(Asset asset) => ref.read(assetProvider.notifier).toggleFavorite([asset]);
 
     handleActivities() {
       if (album != null && album.shared && album.remoteId != null) {
@@ -53,15 +48,10 @@ class GalleryAppBar extends ConsumerWidget {
     }
 
     handleRestore(Asset asset) async {
-      final result =
-          await ref.read(trashProvider.notifier).restoreAssets([asset]);
+      final result = await ref.read(trashProvider.notifier).restoreAssets([asset]);
 
       if (result && context.mounted) {
-        ImmichToast.show(
-          context: context,
-          msg: 'asset_restored_successfully'.tr(),
-          gravity: ToastGravity.BOTTOM,
-        );
+        ImmichToast.show(context: context, msg: 'asset_restored_successfully'.tr(), gravity: ToastGravity.BOTTOM);
       }
     }
 
@@ -71,9 +61,7 @@ class GalleryAppBar extends ConsumerWidget {
         builder: (BuildContext _) {
           return UploadDialog(
             onUpload: () {
-              ref
-                  .read(manualUploadProvider.notifier)
-                  .uploadAssets(context, [asset]);
+              ref.read(manualUploadProvider.notifier).uploadAssets(context, [asset]);
             },
           );
         },
@@ -83,16 +71,10 @@ class GalleryAppBar extends ConsumerWidget {
     addToAlbum(Asset addToAlbumAsset) {
       showModalBottomSheet(
         elevation: 0,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(15.0),
-          ),
-        ),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
         context: context,
         builder: (BuildContext _) {
-          return AddToAlbumBottomSheet(
-            assets: [addToAlbumAsset],
-          );
+          return AddToAlbumBottomSheet(assets: [addToAlbumAsset]);
         },
       );
     }
@@ -104,8 +86,7 @@ class GalleryAppBar extends ConsumerWidget {
     handleLocateAsset() async {
       // Go back to the gallery
       await context.maybePop();
-      await context
-          .navigateTo(const TabControllerRoute(children: [PhotosRoute()]));
+      await context.navigateTo(const TabControllerRoute(children: [PhotosRoute()]));
       ref.read(tabProvider.notifier).update((state) => state = TabEnum.home);
       // Scroll to the asset's date
       scrollToDateNotifierProvider.scrollToDate(asset.fileCreatedAt);

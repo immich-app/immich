@@ -335,6 +335,11 @@ export class AssetRepository {
     return count;
   }
 
+  @GenerateSql()
+  getFileSamples() {
+    return this.db.selectFrom('asset_file').select(['assetId', 'path']).limit(sql.lit(3)).execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   getById(id: string, { exifInfo, faces, files, library, owner, smartSearch, stack, tags }: GetByIdsRelations = {}) {
     return this.db

@@ -1,17 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum ImmichColorPreset {
-  indigo,
-  deepPurple,
-  pink,
-  red,
-  orange,
-  yellow,
-  lime,
-  green,
-  cyan,
-  slateGray
-}
+enum ImmichColorPreset { indigo, deepPurple, pink, red, orange, yellow, lime, green, cyan, slateGray }
 
 const ImmichColorPreset defaultColorPreset = ImmichColorPreset.indigo;
 const String defaultColorPresetName = "indigo";

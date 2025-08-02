@@ -168,6 +168,15 @@ from
 where
   "livePhotoVideoId" = $1::uuid
 
+-- AssetRepository.getFileSamples
+select
+  "assetId",
+  "path"
+from
+  "asset_file"
+limit
+  3
+
 -- AssetRepository.getById
 select
   "asset".*

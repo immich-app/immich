@@ -80,6 +80,16 @@ export class UserRepository {
   }
 
   @GenerateSql()
+  getFileSamples() {
+    return this.db
+      .selectFrom('user')
+      .select(['id', 'profileImagePath'])
+      .where('profileImagePath', '!=', sql.lit(''))
+      .limit(sql.lit(3))
+      .execute();
+  }
+
+  @GenerateSql()
   async hasAdmin(): Promise<boolean> {
     const admin = await this.db
       .selectFrom('user')

@@ -4,20 +4,12 @@ import 'package:immich_mobile/widgets/settings/preference_settings/theme_setting
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 
 class PreferenceSetting extends StatelessWidget {
-  const PreferenceSetting({
-    super.key,
-  });
+  const PreferenceSetting({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const preferenceSettings = [
-      ThemeSetting(),
-      HapticSetting(),
-    ];
+    const preferenceSettings = [ThemeSetting(), HapticSetting()];
 
-    return const SettingsSubPageScaffold(
-      settings: preferenceSettings,
-      showDivider: true,
-    );
+    return const SettingsSubPageScaffold(settings: preferenceSettings, showDivider: true);
   }
 }

@@ -5,7 +5,7 @@ import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
-import { commands } from 'src/commands';
+import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
 import { ImmichWorker } from 'src/enum';
@@ -97,7 +97,7 @@ export class MicroservicesModule extends BaseModule {}
 
 @Module({
   imports: [...imports],
-  providers: [...common, ...commands, SchedulerRegistry],
+  providers: [...common, ...commandsAndQuestions, SchedulerRegistry],
 })
 export class ImmichAdminModule implements OnModuleDestroy {
   constructor(private service: CliService) {}

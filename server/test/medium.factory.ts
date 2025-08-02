@@ -154,6 +154,12 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { asset, result };
   }
 
+  async newAssetFace(dto: Partial<Insertable<AssetFace>> & { assetId: string }) {
+    const assetFace = mediumFactory.assetFaceInsert(dto);
+    const result = await this.get(PersonRepository).createAssetFace(assetFace);
+    return { assetFace, result };
+  }
+
   async newMemory(dto: Partial<Insertable<MemoryTable>> = {}) {
     const memory = mediumFactory.memoryInsert(dto);
     const result = await this.get(MemoryRepository).create(memory, new Set<string>());
@@ -501,7 +507,14 @@ const userInsert = (user: Partial<Insertable<UserTable>> = {}) => {
     deletedAt: null,
     isAdmin: false,
     profileImagePath: '',
+    profileChangedAt: newDate(),
     shouldChangePassword: true,
+    storageLabel: null,
+    pinCode: null,
+    oauthId: '',
+    avatarColor: null,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   };
 
   return { ...defaults, ...user, id };

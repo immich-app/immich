@@ -3,14 +3,13 @@
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
   import { AppRoute } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import SearchFilterModal from '$lib/modals/SearchFilterModal.svelte';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { generateId } from '$lib/utils/generate-id';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, modalManager } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
   import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
