@@ -1,5 +1,8 @@
 The mobile app can be downloaded from the following places:
 
+<details><summary>Obtainium</summary>
+    You can get your Obtainium config link from the Utilities page of your Immich server.</details>
+
 - [Google Play Store](https://play.google.com/store/apps/details?id=app.alextran.immich)
 - [Apple App Store](https://apps.apple.com/us/app/immich/id1613945652)
 - [F-Droid](https://f-droid.org/packages/app.alextran.immich)
