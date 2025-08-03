@@ -14,6 +14,7 @@ import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -578,6 +579,7 @@ class AddToAlbumHeader extends ConsumerWidget {
         return;
       }
 
+      ref.read(currentRemoteAlbumProvider.notifier).setAlbum(newAlbum);
       context.pushRoute(RemoteAlbumRoute(album: newAlbum));
     }
 
