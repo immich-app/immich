@@ -404,7 +404,7 @@ To migrate from the old storage configuration to the new one, you will need to c
    rsync -av /mnt/tank/immich/upload/ /mnt/tank/immich/data/upload/
    rsync -av /mnt/tank/immich/thumbs/ /mnt/tank/immich/data/thumbs/
    rsync -av /mnt/tank/immich/profile/ /mnt/tank/immich/data/profile/
-   rsync -av /mnt/tank/immich/video/ /mnt/tank/immich/data/video/
+   rsync -av /mnt/tank/immich/video/ /mnt/tank/immich/data/encoded-video/
    rsync -av /mnt/tank/immich/backups/ /mnt/tank/immich/data/backups/
    ```
 
@@ -417,7 +417,7 @@ To migrate from the old storage configuration to the new one, you will need to c
     rsync -av /mnt/tank/immich/library/.immich /mnt/tank/immich/data/library/
    ```
 
-   Replace `library` with the name of the folder you are copying.
+   Replace `library` with the name of the folder where you are copying the file.
    :::
 
 4. **Update the permissions** as the permissions of the data that have been copied has been preserved, to ensure that the `apps` user (UID 568) has the correct permissions on all the copied data. If you just created the dataset with the **Apps** preset, from the TrueNAS web interface, go to the **Datasets** screen, select the **data** dataset, click on the **Edit** button next to **Permissions**, tick the "Apply permissions recursively" checkbox, and click **Save**. This will apply the correct permissions to all the copied data.
