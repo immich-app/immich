@@ -35,18 +35,15 @@
         <div>
           <form>
             <label>
-              URL:{' '}
-              <input bind:value={inputUrl} placeholder="https://my.immich.app" required />
+              URL: <input bind:value={inputUrl} placeholder="https://my.immich.app" required />
             </label>
             <br />
             <label>
-              API Key:{' '}
-              <input bind:value={inputApiKey} placeholder="<immich-api-key>" required />
+              API Key: <input bind:value={inputApiKey} placeholder="<immich-api-key>" required />
             </label>
             <p>
-              Variant:{' '}
-              <label>
-                <input
+              Variant: <label
+                ><input
                   type="radio"
                   name="archVariantOption"
                   value="app-arm64-v8a-release"
