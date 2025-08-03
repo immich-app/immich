@@ -42,6 +42,7 @@
     onReload?: (() => void) | undefined;
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
+    scrollContainer?: HTMLElement | null;
   }
 
   let {
@@ -60,6 +61,7 @@
     onReload = undefined,
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
+    scrollContainer = typeof document !== 'undefined' ? document.documentElement : null,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAssetId } = assetViewingStore;
@@ -133,7 +135,8 @@
 
   const updateSlidingWindow = () => {
     const v = $state.snapshot(viewport);
-    const top = (document.scrollingElement?.scrollTop || 0) - slidingWindowOffset;
+    const top = (scrollContainer?.scrollTop || 0) - slidingWindowOffset;
+
     const bottom = top + v.height;
     const w = {
       top,
@@ -456,15 +459,20 @@
       selectAssetCandidates(lastAssetMouseEvent);
     }
   });
+
+  $effect(() => {
+    if (scrollContainer) {
+      const handleScroll = () => updateSlidingWindow();
+      scrollContainer.addEventListener('scroll', handleScroll);
+      updateSlidingWindow();
+      return () => {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      };
+    }
+  });
 </script>
 
-<svelte:document
-  onkeydown={onKeyDown}
-  onkeyup={onKeyUp}
-  onselectstart={onSelectStart}
-  use:shortcuts={shortcutList}
-  onscroll={() => updateSlidingWindow()}
-/>
+<svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
