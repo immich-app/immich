@@ -101,7 +101,6 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
     return null;
   }
 
-  // round to nearest integer
   return Math.round(val);
 };
 
