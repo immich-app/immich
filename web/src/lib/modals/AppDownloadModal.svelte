@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
-  import { appStoreBadge, fdroidBadge, Modal, ModalBody, playStoreBadge } from '@immich/ui';
+  import { appStoreBadge, fdroidBadge, Modal, ModalBody, /* obtainiumBadge, */ playStoreBadge } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -9,7 +9,6 @@
     info = await getAboutInfo();
   });
 
-  const currentURL = location.origin;
   let inputUrl = $state(location.origin);
   let inputApiKey = $state();
   let archVariant = $state();
@@ -82,6 +81,12 @@
               </label>
             </p>
           </form>
+        </div>
+      </div>
+
+      <div>
+        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="nodejs-desc"></label>
+        <p class="immich-form-label pb-2 text-sm" id="fdroid-link">
           <a
             hidden={!(inputUrl && inputApiKey && archVariant)}
             href={obtainiumLink}
@@ -89,10 +94,13 @@
             target="_blank"
             rel="noreferrer"
             id="version-desc"
-          >
-            Obtainium config url
+            ><img
+              class="pt-2 pr-5"
+              alt="Get it on Obtainium"
+              src="https://raw.githubusercontent.com/ImranR98/Obtainium/refs/heads/main/assets/graphics/badge_obtainium.png"
+            />
           </a>
-        </div>
+        </p>
       </div>
 
       <div>
@@ -101,7 +109,7 @@
         >
         <p class="immich-form-label pb-2 text-sm" id="fdroid-link">
           <a href="https://f-droid.org/packages/app.alextran.immich/" target="_blank"
-            ><img class="p-5" alt="Add to F-Droid" src={fdroidBadge} /></a
+            ><img class="pt-2 pr-10" alt="Get it on F-Droid" src={fdroidBadge} /></a
           >
         </p>
       </div>
@@ -123,21 +131,23 @@
         >
         <p class="immich-form-label pb-2 text-sm" id="app-store-link">
           <a href="https://apps.apple.com/us/app/immich/id1613945652" target="_blank"
-            ><img class="p-5" alt="Download on the App Store" src={appStoreBadge} width="90%" /></a
+            ><img class="pt-2 pr-5" alt="Download on the App Store" src={appStoreBadge} width="90%" /></a
           >
         </p>
       </div>
 
+      <!--
       <div class="col-span-2">
         <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="imagemagick-desc"
           >Wide</label
         >
         <p class="immich-form-label pb-2 text-sm" id="imagemagick-desc">
           <a href="https://f-droid.org/packages/app.alextran.immich/" target="_blank"
-            ><img width="20%" alt="Add to F-Droid" src="https://f-droid.org/badge/get-it-on-en.png" /></a
+            ><img alt="Add to F-Droid" src={fdroidBadge} /></a
           >
         </p>
       </div>
+      -->
     </div>
   </ModalBody>
 </Modal>
