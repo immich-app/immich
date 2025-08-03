@@ -101,7 +101,7 @@
         >
         <p class="immich-form-label pb-2 text-sm" id="fdroid-link">
           <a href="https://f-droid.org/packages/app.alextran.immich/" target="_blank"
-            ><img alt="Add to F-Droid" src={fdroidBadge} /></a
+            ><img class="p-5" alt="Add to F-Droid" src={fdroidBadge} /></a
           >
         </p>
       </div>
@@ -123,7 +123,7 @@
         >
         <p class="immich-form-label pb-2 text-sm" id="app-store-link">
           <a href="https://apps.apple.com/us/app/immich/id1613945652" target="_blank"
-            ><img alt="Download on the App Store" src={appStoreBadge} width="90%" /></a
+            ><img class="p-5" alt="Download on the App Store" src={appStoreBadge} width="90%" /></a
           >
         </p>
       </div>
