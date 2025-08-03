@@ -2,6 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import AppDownloadModal from '$lib/modals/AppDownloadModal.svelte';
+  import ObtainiumConfigModal from '$lib/modals/ObtainiumConfigModal.svelte';
   import { modalManager } from '@immich/ui';
   import { mdiContentDuplicate, mdiImageSizeSelectLarge } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -32,6 +33,12 @@
 <br />
 <div class="border border-gray-300 dark:border-immich-dark-gray rounded-3xl pt-1 pb-6 dark:text-white">
   <p class="text-xs font-medium p-4">{$t('download').toUpperCase()}</p>
+  <button
+    type="button"
+    onclick={() => modalManager.show(ObtainiumConfigModal, {})}
+    class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
+    >Obtainium Configurator
+  </button>
   <button
     type="button"
     onclick={() => modalManager.show(AppDownloadModal, {})}
