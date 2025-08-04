@@ -36,8 +36,6 @@ import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.da
 import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
     as i17;
 import 'package:drift/internal/modular.dart' as i18;
-import 'package:immich_mobile/infrastructure/entities/log.entity.drift.dart'
-    as i19;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -312,26 +310,4 @@ class $DriftManager {
       i15.$$PersonEntityTableTableManager(_db, _db.personEntity);
   i16.$$AssetFaceEntityTableTableManager get assetFaceEntity =>
       i16.$$AssetFaceEntityTableTableManager(_db, _db.assetFaceEntity);
-}
-
-abstract class $DriftLogger extends i0.GeneratedDatabase {
-  $DriftLogger(i0.QueryExecutor e) : super(e);
-  $DriftLoggerManager get managers => $DriftLoggerManager(this);
-  late final i19.$LogMessageEntityTable logMessageEntity = i19
-      .$LogMessageEntityTable(this);
-  @override
-  Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
-      allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
-  @override
-  List<i0.DatabaseSchemaEntity> get allSchemaEntities => [logMessageEntity];
-  @override
-  i0.DriftDatabaseOptions get options =>
-      const i0.DriftDatabaseOptions(storeDateTimeAsText: true);
-}
-
-class $DriftLoggerManager {
-  final $DriftLogger _db;
-  $DriftLoggerManager(this._db);
-  i19.$$LogMessageEntityTableTableManager get logMessageEntity =>
-      i19.$$LogMessageEntityTableTableManager(_db, _db.logMessageEntity);
 }

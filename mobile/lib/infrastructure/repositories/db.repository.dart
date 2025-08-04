@@ -9,7 +9,6 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
@@ -130,25 +129,4 @@ class DriftDatabaseRepository implements IDatabaseRepository {
 
   @override
   Future<T> transaction<T>(Future<T> Function() callback) => _db.transaction(callback);
-}
-
-@DriftDatabase(tables: [LogMessageEntity])
-class DriftLogger extends $DriftLogger implements IDatabaseRepository {
-  DriftLogger([QueryExecutor? executor])
-    : super(
-        executor ?? driftDatabase(name: 'immich_logs', native: const DriftNativeOptions(shareAcrossIsolates: true)),
-      );
-
-  @override
-  int get schemaVersion => 1;
-
-  @override
-  MigrationStrategy get migration => MigrationStrategy(
-    beforeOpen: (details) async {
-      await customStatement('PRAGMA foreign_keys = ON');
-      await customStatement('PRAGMA synchronous = NORMAL');
-      await customStatement('PRAGMA journal_mode = WAL');
-      await customStatement('PRAGMA busy_timeout = 500');
-    },
-  );
 }
