@@ -11,6 +11,7 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -122,6 +123,11 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
   // On Photos page menu tapped
   if (router.activeIndex == 0 && index == 0) {
     EventStream.shared.emit(const ScrollToTopEvent());
+  }
+
+  // On Photos page navigation, invalidate memories provider to get the most up-to-date data
+  if (router.activeIndex == 0) {
+    ref.invalidate(driftMemoryFutureProvider);
   }
 
   // On Search page tapped
