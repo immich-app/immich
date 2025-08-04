@@ -16,17 +16,16 @@ class MainTimelinePage extends ConsumerWidget {
     return memoryLaneProvider.maybeWhen(
       data: (memories) {
         return memories.isEmpty
-            ? const Timeline(showStorageIndicator: true)
+            ? const Timeline()
             : Timeline(
                 topSliverWidget: SliverToBoxAdapter(
                   key: Key('memory-lane-${memories.first.assets.first.id}'),
                   child: DriftMemoryLane(memories: memories),
                 ),
                 topSliverWidgetHeight: 200,
-                showStorageIndicator: true,
               );
       },
-      orElse: () => const Timeline(showStorageIndicator: true),
+      orElse: () => const Timeline(),
     );
   }
 }
