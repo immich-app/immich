@@ -30,6 +30,7 @@
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { getAssetInfo } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiClose, mdiDotsVertical, mdiPlus, mdiSelectAll, mdiSelectRemove } from '@mdi/js';
   import { onDestroy } from 'svelte';
@@ -123,36 +124,63 @@
 
       // Use batch endpoint for much better performance
       // Process in smaller chunks to avoid overwhelming the server
-      const BATCH_SIZE = 500; // Load 500 assets per batch request
+      let BATCH_SIZE = 500; // Load 500 assets per batch request
       let loadedAssets: TimelineAsset[] = [];
+      let useFallback = false;
 
       for (let i = 0; i < assetIds.length; i += BATCH_SIZE) {
         if (signal.aborted) {
           break;
         }
 
-        const batchIds = assetIds.slice(i, i + BATCH_SIZE);
+        let batchIds = assetIds.slice(i, i + BATCH_SIZE);
         console.log(`Loading batch ${i / BATCH_SIZE + 1}: ${batchIds.length} assets`);
 
         try {
-          // Use the new bulk endpoint instead of individual requests
-          const response = await fetch('/api/assets/bulk', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ ids: batchIds }),
-            credentials: 'include', // This ensures cookies are included for auth
-          });
+          if (!useFallback) {
+            // Try the bulk endpoint first
+            const response = await fetch('/api/assets/bulk', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ ids: batchIds }),
+              credentials: 'include', // This ensures cookies are included for auth
+            });
 
-          if (!response.ok) {
-            throw new Error(`Failed to fetch assets: ${response.status}`);
+            if (response.status === 404) {
+              console.log('Bulk API not available, falling back to individual requests');
+              useFallback = true;
+              BATCH_SIZE = 20;
+              batchIds = assetIds.slice(i, i + BATCH_SIZE);
+              // Fall through to fallback logic below
+            } else if (!response.ok) {
+              throw new Error(`Failed to fetch assets: ${response.status}`);
+            } else {
+              const batchAssets = await response.json();
+              const timelineAssets = batchAssets.map(toTimelineAsset);
+              loadedAssets.push(...timelineAssets);
+            }
           }
+          // Fallback: use individual getAssetInfo calls
+          if (useFallback) {
+            console.log(`Using fallback method for batch ${i / BATCH_SIZE + 1}`);
+            const batchAssets = await Promise.all(
+              batchIds.map(async (id) => {
+                try {
+                  const asset = await getAssetInfo({ id });
+                  return toTimelineAsset(asset);
+                } catch (error) {
+                  console.error(`Failed to load individual asset ${id}:`, error);
+                  return null;
+                }
+              }),
+            );
 
-          const batchAssets = await response.json();
-
-          const timelineAssets = batchAssets.map(toTimelineAsset);
-          loadedAssets.push(...timelineAssets);
+            // Filter out failed assets
+            const validAssets = batchAssets.filter((asset): asset is TimelineAsset => asset !== null);
+            loadedAssets.push(...validAssets);
+          }
 
           // Update UI with current batch
           panelAssets = [...loadedAssets];
