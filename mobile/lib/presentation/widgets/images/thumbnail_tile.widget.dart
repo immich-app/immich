@@ -54,8 +54,8 @@ class ThumbnailTile extends ConsumerWidget {
 
     final hasStack = asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
 
-    final storageIndicator =
-        showStorageIndicator ?? ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) ?? true;
+    final bool storageIndicator =
+        showStorageIndicator ?? ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator)));
 
     return Stack(
       children: [
