@@ -9,11 +9,11 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
 @RoutePage()
-class DriftTrashPage extends ConsumerWidget {
+class DriftTrashPage extends StatelessWidget {
   const DriftTrashPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ProviderScope(
       overrides: [
         timelineServiceProvider.overrideWith((ref) {
