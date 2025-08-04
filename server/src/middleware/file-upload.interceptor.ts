@@ -104,10 +104,9 @@ export class FileUploadInterceptor implements NestInterceptor {
 
   private filename(request: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
     console.log('File upload started:', file.originalname);
-    // @ts-expect-error abc
-    request.emit = (eventName: string) => {
-      console.log('File upload event emitted:', eventName);
-    };
+    request.on('data', () => {
+      console.log('Data event triggered for file upload:', file.originalname);
+    });
     request.on('close', () => {
       console.log('Request closed');
     });
