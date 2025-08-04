@@ -103,6 +103,24 @@ export class FileUploadInterceptor implements NestInterceptor {
   }
 
   private filename(request: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
+    console.log('File upload started:', file.originalname);
+    // @ts-expect-error abc
+    request.emit = (eventName: string) => {
+      console.log('File upload event emitted:', eventName);
+    };
+    request.on('close', () => {
+      console.log('Request closed');
+    });
+    request.on('aborted', () => {
+      console.log('Request aborted, cleaning up file');
+      this.defaultStorage._removeFile(request, file, (error) => {
+        if (error) {
+          this.logger.warn('Request aborted, failed to cleanup file', error);
+        } else {
+          this.logger.log('Request aborted, file cleaned up successfully');
+        }
+      });
+    });
     return callbackify(
       () => this.assetService.getUploadFilename(asRequest(request, file)),
       callback as Callback<string>,
@@ -128,8 +146,15 @@ export class FileUploadInterceptor implements NestInterceptor {
 
     const hash = createHash('sha1');
     file.stream.on('data', (chunk) => hash.update(chunk));
+    file.stream.on('error', (error) => {
+      this.logger.warn('Stream error while uploading file, cleaning up', error);
+      this.assetService.onUploadError(request, file).catch(this.logger.error);
+      callback(error);
+    });
+    console.log('File upload started:', file.originalname);
     this.defaultStorage._handleFile(request, file, (error, info) => {
       if (error) {
+        console.error('Error handling file upload:', error);
         hash.destroy();
         callback(error);
       } else {

@@ -131,6 +131,7 @@ export class AssetMediaService extends BaseService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     try {
+      console.log(`Uploading asset: ${file.originalPath}, size: ${file.size}`);
       await this.requireAccess({
         auth,
         permission: Permission.AssetUpload,
@@ -138,20 +139,25 @@ export class AssetMediaService extends BaseService {
         ids: [auth.user.id],
       });
 
+      console.log(`User quota: ${auth.user.quotaSizeInBytes}, usage: ${auth.user.quotaUsageInBytes}`);
       this.requireQuota(auth, file.size);
 
+      console.log(`Asset type: ${file.originalName}, checksum: ${file.checksum}`);
       if (dto.livePhotoVideoId) {
         await onBeforeLink(
           { asset: this.assetRepository, event: this.eventRepository },
           { userId: auth.user.id, livePhotoVideoId: dto.livePhotoVideoId },
         );
       }
+      console.log(`Creating asset with deviceAssetId: ${dto.deviceAssetId}, deviceId: ${dto.deviceId}`);
       const asset = await this.create(auth.user.id, dto, file, sidecarFile);
 
+      console.log(`Asset created with id: ${asset.id}, originalPath: ${asset.originalPath}`);
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
       return { id: asset.id, status: AssetMediaStatus.CREATED };
     } catch (error: any) {
+      console.log(`Error uploading asset: ${error.message}, ${file.originalPath}`, error);
       return this.handleUploadError(error, auth, file, sidecarFile);
     }
   }
