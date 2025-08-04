@@ -3,18 +3,36 @@
 
   import { goto } from '$app/navigation';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
+  import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
+  import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
+  import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
+  import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
+  import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
+  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import Map from '$lib/components/shared-components/map/map.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { AppRoute } from '$lib/constants';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { sidebarStore } from '$lib/stores/sidebar.svelte';
+  import { preferences } from '$lib/stores/user.store';
+  import { handlePromiseError } from '$lib/utils';
+  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
+  import { mdiClose, mdiDotsVertical, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onDestroy } from 'svelte';
+  import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
   interface Props {
@@ -37,6 +55,17 @@
   let showBottomPanel = $state(false);
   let panelAssets: TimelineAsset[] = $state([]);
   let selectedAssetId: string | null = $state(null);
+
+  // Asset interaction for multi-select in gallery
+  let assetInteraction = new AssetInteraction();
+
+  // Viewport tracking for square thumbnail grid
+  let panelElement: HTMLElement | undefined = $state();
+  let panelWidth = $state(0);
+  let galleryViewport = $derived({ width: panelWidth - 32, height: 300 });
+
+  // Reference to the scrollable container for GalleryViewer
+  let scrollableContainer: HTMLElement | undefined = $state();
 
   // Connection management for asset loading.
   // Used to abort the loading of assets when the user navigates away from the map page.
@@ -75,6 +104,9 @@
     viewingAssetCursor = 0;
     selectedAssetId = assetIds[0];
     isLoading = true;
+
+    // Clear any existing selections
+    assetInteraction.clearMultiselect();
 
     // Start batch asset loading
     await loadAssetsWithBatching(assetIds);
@@ -154,20 +186,14 @@
     }
   }
 
-  async function onPanelAssetClick(asset: TimelineAsset) {
-    console.log('Panel asset clicked:', asset.id);
-    selectedAssetId = asset.id;
-    viewingAssetCursor = viewingAssets.indexOf(asset.id);
-    await setAssetId(asset.id);
-    showAssetViewerFn(true);
-    console.log('Asset viewer should now be open');
-  }
-
   function closeBottomPanel() {
     console.log('Closing bottom panel');
 
     // Cancel any ongoing loading
     cancelAssetLoading();
+
+    // Clear selections
+    assetInteraction.clearMultiselect();
 
     showBottomPanel = false;
     panelAssets = [];
@@ -204,6 +230,54 @@
     await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
     return asset;
   }
+
+  // Handle gallery navigation for selected assets
+  async function handleGalleryNext() {
+    const selectedAssets = assetInteraction.selectedAssets;
+    if (selectedAssets.length > 0) {
+      const currentAsset = selectedAssets[selectedAssets.length - 1];
+      const currentIndex = panelAssets.findIndex((asset) => asset.id === currentAsset.id);
+      if (currentIndex >= 0 && currentIndex < panelAssets.length - 1) {
+        return panelAssets[currentIndex + 1];
+      }
+    }
+    return undefined;
+  }
+
+  async function handleGalleryPrevious() {
+    const selectedAssets = assetInteraction.selectedAssets;
+    if (selectedAssets.length > 0) {
+      const currentAsset = selectedAssets[0];
+      const currentIndex = panelAssets.findIndex((asset) => asset.id === currentAsset.id);
+      if (currentIndex > 0) {
+        return panelAssets[currentIndex - 1];
+      }
+    }
+    return undefined;
+  }
+
+  // Asset action handlers
+  const handleSelectAll = () => {
+    assetInteraction.selectAssets(panelAssets);
+  };
+
+  const handleDeleteOrArchiveAssets = (assetIds: string[]) => {
+    panelAssets = panelAssets.filter((asset) => !assetIds.includes(asset.id));
+    assetInteraction.clearMultiselect();
+  };
+
+  // Track panel width for responsive gallery
+  $effect(() => {
+    if (panelElement) {
+      const observer = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          panelWidth = entry.contentRect.width;
+        }
+      });
+      observer.observe(panelElement);
+      return () => observer.disconnect();
+    }
+  });
 </script>
 
 {#if $featureFlags.loaded && $featureFlags.map}
@@ -213,80 +287,98 @@
     </div>
   </UserPageLayout>
 
-  <!-- Bottom Panel -->
+  <!-- Asset selection control bar at the top -->
+  {#if assetInteraction.selectionActive}
+    <div class="fixed top-0 left-0 right-0 z-[100]">
+      <AssetSelectControlBar
+        assets={assetInteraction.selectedAssets}
+        clearSelect={() => cancelMultiselect(assetInteraction)}
+      >
+        <CreateSharedLink />
+        <IconButton
+          shape="round"
+          color="secondary"
+          variant="ghost"
+          aria-label={$t('select_all')}
+          icon={mdiSelectAll}
+          onclick={handleSelectAll}
+        />
+
+        <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
+          <AddToAlbum />
+          <AddToAlbum shared />
+        </ButtonContextMenu>
+
+        <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
+
+        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+          <DownloadAction menuItem />
+          <ChangeDate menuItem />
+          <ChangeDescription menuItem />
+          <ChangeLocation menuItem />
+          <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={handleDeleteOrArchiveAssets} />
+          {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
+            <TagAction menuItem />
+          {/if}
+          <DeleteAssets menuItem onAssetDelete={handleDeleteOrArchiveAssets} />
+        </ButtonContextMenu>
+      </AssetSelectControlBar>
+    </div>
+  {/if}
+
+  <!-- Bottom Panel with GalleryViewer -->
   {#if showBottomPanel}
     <div
-      class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50"
+      class="fixed bottom-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg z-0"
+      class:left-0={!sidebarStore.isOpen}
+      class:left-64={sidebarStore.isOpen}
+      bind:this={panelElement}
     >
       <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-          Photos ({viewingAssets.length})
-          {#if isLoading}
-            <span class="text-sm text-gray-500">
-              (Loading {panelAssets.length}/{viewingAssets.length}...)
-              <span
-                class="inline-block w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin ml-1"
-              ></span>
-            </span>
-          {/if}
-        </h3>
-        <button
-          onclick={closeBottomPanel}
-          class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          aria-label="Close photo panel"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
+        <div class="flex items-center gap-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            Photos ({viewingAssets.length})
+            {#if isLoading}
+              <span class="text-sm text-gray-500">
+                (Loading {panelAssets.length}/{viewingAssets.length}...)
+                <span
+                  class="inline-block w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin ml-1"
+                ></span>
+              </span>
+            {/if}
+          </h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            onclick={closeBottomPanel}
+            class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            aria-label="Close photo panel"
+          >
+            <IconButton shape="round" color="secondary" variant="ghost" aria-label={$t('close')} icon={mdiClose} />
+          </button>
+        </div>
       </div>
 
-      <div class="p-4 max-h-64 overflow-y-auto" id="asset-grid-container">
-        {#if panelAssets.length === 0}
+      <div class="p-2 max-h-80 overflow-y-auto" style="height: 245px;" bind:this={scrollableContainer}>
+        {#if panelAssets.length === 0 && !isLoading}
+          <div class="flex items-center justify-center h-32">
+            <div class="text-gray-500 dark:text-gray-400">No photos found in this location</div>
+          </div>
+        {:else if panelAssets.length === 0 && isLoading}
           <div class="flex items-center justify-center h-32">
             <div class="text-gray-500 dark:text-gray-400">Loading photos...</div>
           </div>
         {:else}
-          <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-12 gap-1">
-            {#each panelAssets as asset (asset.id)}
-              <div
-                class="relative cursor-pointer rounded-lg overflow-hidden hover:opacity-80 transition-opacity aspect-square"
-                class:ring-2={selectedAssetId === asset.id}
-                class:ring-blue-500={selectedAssetId === asset.id}
-              >
-                <div
-                  class="w-full h-full cursor-pointer rounded-lg overflow-hidden hover:opacity-80 transition-opacity"
-                  onclick={() => onPanelAssetClick(asset)}
-                  onkeydown={(e) => e.key === 'Enter' && onPanelAssetClick(asset)}
-                  role="button"
-                  tabindex="0"
-                  data-asset-id={asset.id}
-                >
-                  <img
-                    src={getAssetThumbnailUrl({
-                      id: asset.id,
-                      size: AssetMediaSize.Thumbnail,
-                      cacheKey: asset.thumbhash,
-                    })}
-                    alt={$getAltText(asset)}
-                    class="w-full h-full object-cover"
-                    draggable="false"
-                    loading="lazy"
-                  />
-                </div>
-              </div>
-            {/each}
-
-            {#if isLoading && panelAssets.length < viewingAssets.length}
-              {#each Array.from({ length: Math.min(12, viewingAssets.length - panelAssets.length) }) as _, i}
-                <div class="aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse">
-                  <div class="w-full h-full flex items-center justify-center">
-                    <div class="w-8 h-8 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                </div>
-              {/each}
-            {/if}
-          </div>
+          <GalleryViewer
+            assets={panelAssets}
+            viewport={galleryViewport}
+            {assetInteraction}
+            disableAssetSelect={false}
+            showArchiveIcon={false}
+            onNext={handleGalleryNext}
+            onPrevious={handleGalleryPrevious}
+            scrollContainer={scrollableContainer}
+          />
         {/if}
       </div>
     </div>
