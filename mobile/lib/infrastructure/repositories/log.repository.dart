@@ -28,8 +28,10 @@ class LogRepository {
     return true;
   }
 
-  Future<List<LogMessage>> getAll() async {
-    final query = _db.logMessageEntity.select()..orderBy([(row) => OrderingTerm.desc(row.createdAt)]);
+  Future<List<LogMessage>> getAll({int limit = 250}) async {
+    final query = _db.logMessageEntity.select()
+      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+      ..limit(limit);
 
     return query.map((log) => log.toDto()).get();
   }
