@@ -1,8 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/trash_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
@@ -11,11 +9,11 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
 @RoutePage()
-class DriftTrashPage extends StatelessWidget {
+class DriftTrashPage extends ConsumerWidget {
   const DriftTrashPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ProviderScope(
       overrides: [
         timelineServiceProvider.overrideWith((ref) {
@@ -30,7 +28,6 @@ class DriftTrashPage extends StatelessWidget {
         }),
       ],
       child: Timeline(
-        showStorageIndicator: Store.tryGet(StoreKey.storageIndicator) ?? true,
         appBar: SliverAppBar(
           title: Text('trash'.t(context: context)),
           floating: true,
