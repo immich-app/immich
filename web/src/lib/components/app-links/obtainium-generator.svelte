@@ -29,8 +29,6 @@
   };
 </script>
 
-<!-- This whole file is based on ServerAboutModal. -->
-
 <div class="flex flex-col sm:grid sm:grid-cols-2 gap-5 text-immich-primary dark:text-immich-dark-primary">
   <div>
     <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="obtainium-configurator"
