@@ -96,7 +96,7 @@ class HashService {
       if (hash?.length == 20) {
         hashed.add(asset.copyWith(checksum: base64.encode(hash!)));
       } else {
-        _log.warning("Failed to hash file for ${asset.id}");
+        _log.warning("Failed to hash file for ${asset.id}: ${asset.name} created at ${asset.createdAt}");
       }
     }
 
