@@ -10,11 +10,11 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
+import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -63,7 +63,7 @@ void main() {
 
   setUpAll(() async {
     final loggerDb = DriftLogger(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    final LogRepository logRepository = LogRepository.init(loggerDb);
+    final LogRepository logRepository = LogRepository(loggerDb);
 
     WidgetsFlutterBinding.ensureInitialized();
     final db = await TestUtils.initIsar();
