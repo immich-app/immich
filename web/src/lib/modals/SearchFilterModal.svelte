@@ -8,6 +8,7 @@
     query: string;
     queryType: 'smart' | 'metadata' | 'description';
     personIds: SvelteSet<string>;
+    strictSearch: boolean;
     tagIds: SvelteSet<string> | null;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
@@ -76,6 +77,10 @@
     query,
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
+    strictSearch:
+      'strictPersonSearch' in searchQuery && typeof searchQuery.strictPersonSearch === 'boolean'
+        ? searchQuery.strictPersonSearch
+        : false,
     tagIds:
       'tagIds' in searchQuery
         ? searchQuery.tagIds === null
@@ -114,6 +119,7 @@
       query: '',
       queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
+      strictSearch: false,
       tagIds: new SvelteSet(),
       location: {},
       camera: {},
@@ -153,6 +159,7 @@
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
+      strictPersonSearch: filter.strictSearch === true ? true : undefined,
       tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
       rating: filter.rating,
@@ -183,7 +190,7 @@
     <form id={formId} autocomplete="off" {onsubmit} {onreset}>
       <div class="flex flex-col gap-4 pb-10" tabindex="-1">
         <!-- PEOPLE -->
-        <SearchPeopleSection bind:selectedPeople={filter.personIds} />
+        <SearchPeopleSection bind:selectedPeople={filter.personIds} bind:strictPersonSearch={filter.strictSearch} />
 
         <!-- TEXT -->
         <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />

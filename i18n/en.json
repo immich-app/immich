@@ -1927,6 +1927,7 @@
   "storage_label": "Storage label",
   "storage_quota": "Storage Quota",
   "storage_usage": "{used} of {available} used",
+  "strict_person_search": "Strict person search",
   "submit": "Submit",
   "success": "Success",
   "suggestions": "Suggestions",
