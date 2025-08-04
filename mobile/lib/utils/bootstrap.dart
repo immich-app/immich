@@ -54,7 +54,7 @@ abstract final class Bootstrap {
     await StoreService.init(storeRepository: IsarStoreRepository(db));
 
     await LogService.init(
-      logRepository: LogRepository.init(loggerDb),
+      logRepository: LogRepository(loggerDb),
       storeRepository: IsarStoreRepository(db),
       shouldBuffer: shouldBufferLogs,
     );

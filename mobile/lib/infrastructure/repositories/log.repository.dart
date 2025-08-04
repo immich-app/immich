@@ -9,20 +9,6 @@ class LogRepository {
   final DriftLogger _db;
   const LogRepository(this._db);
 
-  static LogRepository? instance;
-
-  static LogRepository init(DriftLogger db) {
-    if (instance != null) {
-      throw "LogRepository already initialized";
-    }
-    instance = LogRepository(db);
-    return instance!;
-  }
-
-  static LogRepository? getInstance() {
-    return instance;
-  }
-
   Future<bool> deleteAll() async {
     await _db.logMessageEntity.deleteAll();
     return true;
