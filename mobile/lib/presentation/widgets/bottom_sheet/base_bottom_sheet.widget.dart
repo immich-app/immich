@@ -22,13 +22,13 @@ class BaseBottomSheet extends ConsumerStatefulWidget {
     this.slivers,
     this.controller,
     this.initialChildSize = 0.35,
-    this.minChildSize = 0.15,
+    double? minChildSize,
     this.maxChildSize = 0.65,
     this.expand = true,
     this.shouldCloseOnMinExtent = true,
     this.resizeOnScroll = true,
     this.backgroundColor,
-  });
+  }) : minChildSize = minChildSize ?? 0.15;
 
   @override
   ConsumerState<BaseBottomSheet> createState() => _BaseDraggableScrollableSheetState();

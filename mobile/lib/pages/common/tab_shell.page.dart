@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -137,25 +139,50 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
   ref.read(tabProvider.notifier).state = TabEnum.values[index];
 }
 
-class _BottomNavigationBar extends ConsumerWidget {
+class _BottomNavigationBar extends ConsumerStatefulWidget {
   const _BottomNavigationBar({required this.tabsRouter, required this.destinations});
 
   final List<Widget> destinations;
   final TabsRouter tabsRouter;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isScreenLandscape = context.orientation == Orientation.landscape;
-    final isMultiselectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+  ConsumerState createState() => _BottomNavigationBarState();
+}
 
-    if (isScreenLandscape || isMultiselectEnabled) {
+class _BottomNavigationBarState extends ConsumerState<_BottomNavigationBar> {
+  bool hideNavigationBar = false;
+  StreamSubscription? _eventSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _eventSubscription = EventStream.shared.listen<MultiSelectToggleEvent>(_onEvent);
+  }
+
+  void _onEvent(MultiSelectToggleEvent event) {
+    setState(() {
+      hideNavigationBar = event.isEnabled;
+    });
+  }
+
+  @override
+  void dispose() {
+    _eventSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isScreenLandscape = context.orientation == Orientation.landscape;
+
+    if (isScreenLandscape || hideNavigationBar) {
       return const SizedBox.shrink();
     }
 
     return NavigationBar(
-      selectedIndex: tabsRouter.activeIndex,
-      onDestinationSelected: (index) => _onNavigationSelected(tabsRouter, index, ref),
-      destinations: destinations,
+      selectedIndex: widget.tabsRouter.activeIndex,
+      onDestinationSelected: (index) => _onNavigationSelected(widget.tabsRouter, index, ref),
+      destinations: widget.destinations,
     );
   }
 }
