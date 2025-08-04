@@ -162,7 +162,7 @@ export class NotificationService extends BaseService {
 
     const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId]);
     if (asset) {
-      this.eventRepository.clientSend('on_asset_update', userId, mapAsset(asset));
+      this.eventRepository.clientSend('on_asset_update', userId, mapAsset(asset, { auth: { user: { id: userId } } as AuthDto }));
     }
   }
 

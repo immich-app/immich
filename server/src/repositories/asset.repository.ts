@@ -4,6 +4,7 @@ import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFileType, AssetMetadataKey, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -591,7 +592,7 @@ export class AssetRepository {
   @GenerateSql({
     params: [DummyValue.TIME_BUCKET, { withStacked: true }],
   })
-  getTimeBucket(timeBucket: string, options: TimeBucketOptions) {
+  getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth?: AuthDto) {
     const query = this.db
       .with('cte', (qb) =>
         qb
@@ -690,7 +691,16 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['duration']), sql.lit('{}')).as('duration'),
             eb.fn.coalesce(eb.fn('array_agg', ['id']), sql.lit('{}')).as('id'),
             eb.fn.coalesce(eb.fn('array_agg', ['visibility']), sql.lit('{}')).as('visibility'),
-            eb.fn.coalesce(eb.fn('array_agg', ['isFavorite']), sql.lit('{}')).as('isFavorite'),
+            eb.fn.coalesce(
+              eb.fn('array_agg', [
+                eb.case()
+                  .when(eb.ref('ownerId'), '=', auth?.user.id || '')
+                  .then(eb.ref('isFavorite'))
+                  .else(sql.lit(false))
+                  .end()
+              ]), 
+              sql.lit('{}')
+            ).as('isFavorite'),
             eb.fn.coalesce(eb.fn('array_agg', ['isImage']), sql.lit('{}')).as('isImage'),
             // TODO: isTrashed is redundant as it will always be all true or false depending on the options
             eb.fn.coalesce(eb.fn('array_agg', ['isTrashed']), sql.lit('{}')).as('isTrashed'),
