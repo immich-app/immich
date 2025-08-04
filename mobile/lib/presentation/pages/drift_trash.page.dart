@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/trash_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
@@ -28,7 +30,7 @@ class DriftTrashPage extends StatelessWidget {
         }),
       ],
       child: Timeline(
-        showStorageIndicator: true,
+        showStorageIndicator: Store.tryGet(StoreKey.storageIndicator) ?? true,
         appBar: SliverAppBar(
           title: Text('trash'.t(context: context)),
           floating: true,

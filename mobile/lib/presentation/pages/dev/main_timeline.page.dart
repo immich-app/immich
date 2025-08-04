@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_lane.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
@@ -16,7 +18,7 @@ class MainTimelinePage extends ConsumerWidget {
     return memoryLaneProvider.maybeWhen(
       data: (memories) {
         return memories.isEmpty
-            ? const Timeline(showStorageIndicator: true)
+            ? Timeline(showStorageIndicator: Store.tryGet(StoreKey.storageIndicator) ?? true)
             : Timeline(
                 topSliverWidget: SliverToBoxAdapter(
                   key: Key('memory-lane-${memories.first.assets.first.id}'),
@@ -26,7 +28,7 @@ class MainTimelinePage extends ConsumerWidget {
                 showStorageIndicator: true,
               );
       },
-      orElse: () => const Timeline(showStorageIndicator: true),
+      orElse: () => Timeline(showStorageIndicator: Store.tryGet(StoreKey.storageIndicator) ?? true),
     );
   }
 }

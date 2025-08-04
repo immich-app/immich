@@ -2,6 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/local_album_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -26,7 +28,7 @@ class LocalTimelinePage extends StatelessWidget {
       child: Timeline(
         appBar: MesmerizingSliverAppBar(title: album.name),
         bottomSheet: const LocalAlbumBottomSheet(),
-        showStorageIndicator: true,
+        showStorageIndicator: Store.tryGet(StoreKey.storageIndicator) ?? true,
       ),
     );
   }
