@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
@@ -25,7 +26,7 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class GeneralBottomSheet extends ConsumerWidget {
+class GeneralBottomSheet extends HookConsumerWidget {
   final double? minChildSize;
   const GeneralBottomSheet({super.key, this.minChildSize});
 
@@ -33,6 +34,7 @@ class GeneralBottomSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final multiselect = ref.watch(multiSelectProvider);
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
+    final sheetController = useDraggableScrollableController();
 
     Future<void> addAssetsToAlbum(RemoteAlbum album) async {
       final selectedAssets = multiselect.selectedAssets;
@@ -59,7 +61,12 @@ class GeneralBottomSheet extends ConsumerWidget {
       ref.read(multiSelectProvider.notifier).reset();
     }
 
+    Future<void> onKeyboardExpand() {
+      return sheetController.animateTo(0.85, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
+    }
+
     return BaseBottomSheet(
+      controller: sheetController,
       initialChildSize: 0.45,
       minChildSize: minChildSize,
       maxChildSize: 0.85,
@@ -90,7 +97,7 @@ class GeneralBottomSheet extends ConsumerWidget {
       ],
       slivers: [
         const AddToAlbumHeader(),
-        AlbumSelector(onAlbumSelected: addAssetsToAlbum),
+        AlbumSelector(onAlbumSelected: addAssetsToAlbum, onKeyboardExpanded: onKeyboardExpand),
       ],
     );
   }
