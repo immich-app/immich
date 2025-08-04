@@ -180,4 +180,74 @@ describe(SyncRequestType.AlbumAssetsV1, () => {
     await ctx.syncAckAll(auth, newResponse);
     await expect(ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV1])).resolves.toEqual([]);
   });
+
+  it('should backfill old album assets when a user adds assets to an album they share you', async () => {
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    const { asset: firstAsset } = await ctx.newAsset({ ownerId: user2.id });
+    await wait(2);
+    const { asset: secondAsset } = await ctx.newAsset({ ownerId: user2.id });
+    await wait(2);
+    const { asset: album1Asset } = await ctx.newAsset({ ownerId: user2.id });
+    await wait(2);
+    const { album: album1 } = await ctx.newAlbum({ ownerId: user2.id });
+    const { album: album2 } = await ctx.newAlbum({ ownerId: user2.id });
+    await ctx.newAlbumAsset({ albumId: album1.id, assetId: album1Asset.id });
+    await ctx.newAlbumUser({ albumId: album1.id, userId: auth.user.id, role: AlbumUserRole.Editor });
+
+    const firstAlbumResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV1]);
+    expect(firstAlbumResponse).toHaveLength(1);
+    expect(firstAlbumResponse).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          id: album1Asset.id,
+        }),
+        type: SyncEntityType.AlbumAssetV1,
+      },
+    ]);
+
+    await ctx.syncAckAll(auth, firstAlbumResponse);
+
+    await ctx.newAlbumAsset({ albumId: album2.id, assetId: firstAsset.id });
+    await ctx.newAlbumUser({ albumId: album2.id, userId: auth.user.id, role: AlbumUserRole.Editor });
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV1]);
+    expect(response).toHaveLength(1);
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          id: firstAsset.id,
+        }),
+        type: SyncEntityType.AlbumAssetBackfillV1,
+      },
+      {
+        ack: expect.stringContaining(SyncEntityType.AlbumAssetBackfillV1),
+        data: {},
+        type: SyncEntityType.SyncAckV1,
+      },
+    ]);
+
+    // ack initial album asset sync
+    await ctx.syncAckAll(auth, response);
+
+    await ctx.newAlbumAsset({ albumId: album2.id, assetId: secondAsset.id });
+    await wait(2);
+
+    // should backfill the new asset even though it's older than the first asset
+    const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV1]);
+    expect(newResponse).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          id: secondAsset.id,
+        }),
+        type: SyncEntityType.AlbumAssetV1,
+      },
+    ]);
+
+    await ctx.syncAckAll(auth, newResponse);
+    await expect(ctx.syncStream(auth, [SyncRequestType.AlbumAssetsV1])).resolves.toEqual([]);
+  });
 });
