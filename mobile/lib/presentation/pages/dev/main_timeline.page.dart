@@ -15,6 +15,9 @@ class MainTimelinePage extends ConsumerWidget {
     final memoryLaneProvider = ref.watch(driftMemoryFutureProvider);
     final memoriesEnabled = ref.watch(currentUserProvider.select((user) => user?.memoryEnabled ?? true));
 
+    // TODO: the user preferences need to be updated 
+    // from the server to get live hiding/showing of memory lane
+    
     return memoryLaneProvider.maybeWhen(
       data: (memories) {
         return memories.isEmpty || !memoriesEnabled
