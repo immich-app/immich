@@ -23,6 +23,7 @@ import { getMyPartnerIds } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { setIsEqual } from 'src/utils/set';
 import { fromAck, mapJsonLine, serialize, SerializeOptions, toAck } from 'src/utils/sync';
+import { v7 } from 'uuid';
 
 type CheckpointMap = Partial<Record<SyncEntityType, SyncAck>>;
 type AssetLike = Omit<SyncAssetV1, 'checksum' | 'thumbhash'> & {
@@ -388,10 +389,12 @@ export class SyncService extends BaseService {
     const backfillType = SyncEntityType.AlbumAssetBackfillV1;
     const backfillCheckpoint = checkpointMap[backfillType];
     const albums = await this.syncRepository.album.getCreatedAfter(auth.user.id, backfillCheckpoint?.updateId);
-    const upsertType = SyncEntityType.AlbumAssetV1;
-    const upsertCheckpoint = checkpointMap[upsertType];
-    if (upsertCheckpoint) {
-      const endId = upsertCheckpoint.updateId;
+    const updateType = SyncEntityType.AlbumAssetUpdateV1;
+    const createType = SyncEntityType.AlbumAssetCreateV1;
+    const updateCheckpoint = checkpointMap[updateType];
+    const createCheckpoint = checkpointMap[createType];
+    if (createCheckpoint) {
+      const endId = createCheckpoint.updateId;
 
       for (const album of albums) {
         const createId = album.createId;
@@ -416,9 +419,26 @@ export class SyncService extends BaseService {
       });
     }
 
-    const upserts = this.syncRepository.albumAsset.getUpserts(auth.user.id, checkpointMap[upsertType]);
-    for await (const { updateId, ...data } of upserts) {
-      send(response, { type: upsertType, ids: [updateId], data: mapSyncAssetV1(data) });
+    if (createCheckpoint) {
+      const updates = this.syncRepository.albumAsset.getUpdates(auth.user.id, createCheckpoint, updateCheckpoint);
+      for await (const { updateId, ...data } of updates) {
+        send(response, { type: updateType, ids: [updateId], data: mapSyncAssetV1(data) });
+      }
+    }
+
+    const creates = this.syncRepository.albumAsset.getCreates(auth.user.id, createCheckpoint);
+    let first = true;
+    for await (const { updateId, ...data } of creates) {
+      if (first) {
+        send(response, {
+          type: SyncEntityType.SyncAckV1,
+          data: {},
+          ackType: SyncEntityType.AlbumAssetUpdateV1,
+          ids: [v7()],
+        });
+        first = false;
+      }
+      send(response, { type: createType, ids: [updateId], data: mapSyncAssetV1(data) });
     }
   }
 

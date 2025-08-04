@@ -668,8 +668,14 @@ export enum SyncEntityType {
   AlbumUserBackfillV1 = 'AlbumUserBackfillV1',
   AlbumUserDeleteV1 = 'AlbumUserDeleteV1',
 
+  AlbumAssetCreateV1 = 'AlbumAssetCreateV1', // album-to-asset table joined to asset table, updateId from album-to-asset, filter out assets owned by you
+  AlbumAssetUpdateV1 = 'AlbumAssetUpdateV1', // asset table, updateId from asset table, don't send assets where createdAt == updatedAt, filter out assets owned by you
   AlbumAssetV1 = 'AlbumAssetV1',
   AlbumAssetBackfillV1 = 'AlbumAssetBackfillV1',
+  AlbumAssetExifCreateV1 = 'AlbumAssetExifCreateV1', // album-to-asset table joined to asset-exif table, updateId from album-to-asset, filter out assets owned by you
+  // If exif isn't created straight away that might cause a problem with the exif createV1, maybe we just send an empty object if it doesn't exist yet?
+  // We would ack this on album-to-asset table so that would work ok for future syncs
+  AlbumAssetExifUpdateV1 = 'AlbumAssetExifUpdateV1', // asset-exif table, updateId from asset-exif table, filter out assets owned by you
   AlbumAssetExifV1 = 'AlbumAssetExifV1',
   AlbumAssetExifBackfillV1 = 'AlbumAssetExifBackfillV1',
 

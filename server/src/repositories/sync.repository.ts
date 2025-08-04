@@ -155,31 +155,48 @@ class AlbumAssetSync extends BaseSync {
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
   getBackfill(albumId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
     return this.db
-      .selectFrom('asset')
-      .innerJoin('album_asset', 'album_asset.assetsId', 'asset.id')
+      .selectFrom('album_asset')
+      .innerJoin('asset', 'asset.id', 'album_asset.assetsId')
       .select(columns.syncAsset)
-      .select('asset.updateId')
+      .select('album_asset.updateId')
       .where('album_asset.albumsId', '=', albumId)
-      .where('asset.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .where('asset.updateId', '<=', beforeUpdateId)
-      .$if(!!afterUpdateId, (eb) => eb.where('asset.updateId', '>=', afterUpdateId!))
-      .orderBy('asset.updateId', 'asc')
+      .where('album_asset.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .where('album_asset.updateId', '<=', beforeUpdateId)
+      .$if(!!afterUpdateId, (eb) => eb.where('album_asset.updateId', '>=', afterUpdateId!))
+      .orderBy('album_asset.updateId', 'asc')
       .stream();
   }
 
   @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
+  getUpdates(userId: string, albumToAssetAck: SyncAck, ack?: SyncAck) {
     return this.db
       .selectFrom('asset')
       .innerJoin('album_asset', 'album_asset.assetsId', 'asset.id')
       .select(columns.syncAsset)
       .select('asset.updateId')
       .where('asset.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .where('album_asset.updateId', '<=', albumToAssetAck.updateId) // Ensure we only send updates for assets that the client already knows about
       .$if(!!ack, (qb) => qb.where('asset.updateId', '>', ack!.updateId))
       .orderBy('asset.updateId', 'asc')
       .innerJoin('album', 'album.id', 'album_asset.albumsId')
       .leftJoin('album_user', 'album_user.albumsId', 'album_asset.albumsId')
       .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_user.usersId', '=', userId)]))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getCreates(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('album_asset')
+      .select('album_asset.updateId')
+      .innerJoin('asset', 'asset.id', 'album_asset.assetsId')
+      .select(columns.syncAsset)
+      .innerJoin('album', 'album.id', 'album_asset.albumsId')
+      .leftJoin('album_user', 'album_user.albumsId', 'album_asset.albumsId')
+      .where('album_asset.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_user.usersId', '=', userId)]))
+      .$if(!!ack, (qb) => qb.where('album_asset.updateId', '>', ack!.updateId))
+      .orderBy('album_asset.updateId', 'asc')
       .stream();
   }
 }
