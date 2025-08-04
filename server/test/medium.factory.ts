@@ -481,8 +481,6 @@ const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: stri
     name: person.name || 'Test Name',
     ownerId: person.ownerId || newUuid(),
     thumbnailPath: person.thumbnailPath || '/path/to/thumbnail.jpg',
-    updatedAt: person.updatedAt || newDate(),
-    updateId: person.updateId || newUuid(),
   };
   return {
     ...defaults,
