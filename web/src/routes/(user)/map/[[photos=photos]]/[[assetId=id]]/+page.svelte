@@ -22,6 +22,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { preferences } from '$lib/stores/user.store';
@@ -30,7 +31,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { IconButton } from '@immich/ui';
-  import { mdiClose, mdiDotsVertical, mdiPlus, mdiSelectAll } from '@mdi/js';
+  import { mdiClose, mdiDotsVertical, mdiPlus, mdiSelectAll, mdiSelectRemove } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -259,6 +260,11 @@
   // Asset action handlers
   const handleSelectAll = () => {
     assetInteraction.selectAssets(panelAssets);
+    isSelectingAllAssets.set(true);
+  };
+
+  const handleCancel = () => {
+    cancelMultiselect(assetInteraction);
   };
 
   const handleDeleteOrArchiveAssets = (assetIds: string[]) => {
@@ -289,7 +295,7 @@
 
   <!-- Asset selection control bar at the top -->
   {#if assetInteraction.selectionActive}
-    <div class="fixed top-0 left-0 right-0 z-[100]">
+    <div class="fixed top-0 left-0 right-0">
       <AssetSelectControlBar
         assets={assetInteraction.selectedAssets}
         clearSelect={() => cancelMultiselect(assetInteraction)}
@@ -299,9 +305,9 @@
           shape="round"
           color="secondary"
           variant="ghost"
-          aria-label={$t('select_all')}
-          icon={mdiSelectAll}
-          onclick={handleSelectAll}
+          aria-label={$isSelectingAllAssets ? $t('unselect_all') : $t('select_all')}
+          icon={$isSelectingAllAssets ? mdiSelectRemove : mdiSelectAll}
+          onclick={$isSelectingAllAssets ? handleCancel : handleSelectAll}
         />
 
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
@@ -329,7 +335,7 @@
   <!-- Bottom Panel with GalleryViewer -->
   {#if showBottomPanel}
     <div
-      class="fixed bottom-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg z-0"
+      class="fixed bottom-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg"
       class:left-0={!sidebarStore.isOpen}
       class:left-64={sidebarStore.isOpen}
       bind:this={panelElement}
