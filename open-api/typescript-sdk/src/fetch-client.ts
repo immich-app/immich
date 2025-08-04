@@ -3552,6 +3552,9 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * This endpoint requires the `server.versionCheck` permission.
+ */
 export function getVersionCheck(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -4616,6 +4619,7 @@ export enum Permission {
     ServerApkLinks = "server.apkLinks",
     ServerStorage = "server.storage",
     ServerStatistics = "server.statistics",
+    ServerVersionCheck = "server.versionCheck",
     ServerLicenseRead = "serverLicense.read",
     ServerLicenseUpdate = "serverLicense.update",
     ServerLicenseDelete = "serverLicense.delete",

@@ -6506,7 +6506,9 @@
         ],
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-permission": "server.versionCheck",
+        "description": "This endpoint requires the `server.versionCheck` permission."
       }
     },
     "/server/version-history": {
@@ -12631,6 +12633,7 @@
           "server.apkLinks",
           "server.storage",
           "server.statistics",
+          "server.versionCheck",
           "serverLicense.read",
           "serverLicense.update",
           "serverLicense.delete",
