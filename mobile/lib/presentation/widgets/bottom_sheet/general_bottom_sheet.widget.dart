@@ -26,12 +26,31 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class GeneralBottomSheet extends HookConsumerWidget {
+class GeneralBottomSheet extends ConsumerStatefulWidget {
   final double? minChildSize;
   const GeneralBottomSheet({super.key, this.minChildSize});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<GeneralBottomSheet> createState() => _GeneralBottomSheetState();
+}
+
+class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
+  late DraggableScrollableController textController;
+
+  @override
+  void initState() {
+    super.initState();
+    textController = DraggableScrollableController();
+  }
+
+  @override
+  void dispose() {
+    textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final multiselect = ref.watch(multiSelectProvider);
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
     final sheetController = useDraggableScrollableController();
@@ -68,7 +87,7 @@ class GeneralBottomSheet extends HookConsumerWidget {
     return BaseBottomSheet(
       controller: sheetController,
       initialChildSize: 0.45,
-      minChildSize: minChildSize,
+      minChildSize: widget.minChildSize,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
       actions: [
