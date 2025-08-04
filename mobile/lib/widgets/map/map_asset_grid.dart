@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/map/map_event.model.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/timeline.provider.dart';
@@ -229,9 +230,7 @@ class _MapSheetDragRegion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final assetsInBoundsText = assetsInBoundCount > 0
-        ? "map_assets_in_bounds".tr(namedArgs: {'count': assetsInBoundCount.toString()})
-        : "map_no_assets_in_bounds".tr();
+    final assetsInBoundsText = "map_assets_in_bounds".t(context: context, args: {'count': assetsInBoundCount});
 
     return SingleChildScrollView(
       controller: controller,
