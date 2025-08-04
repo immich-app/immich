@@ -28,7 +28,6 @@ class DriftTrashPage extends StatelessWidget {
         }),
       ],
       child: Timeline(
-        showStorageIndicator: true,
         appBar: SliverAppBar(
           title: Text('trash'.t(context: context)),
           floating: true,
