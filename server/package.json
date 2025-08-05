@@ -123,7 +123,7 @@
     "@testcontainers/redis": "^11.0.0",
     "@types/archiver": "^6.0.0",
     "@types/async-lock": "^1.4.2",
-    "@types/bcrypt": "^5.0.0",
+    "@types/bcrypt": "^6.0.0",
     "@types/body-parser": "^1.19.6",
     "@types/compression": "^1.7.5",
     "@types/cookie-parser": "^1.4.8",
