@@ -156,6 +156,23 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   Future<void> addUsers(String albumId, List<String> userIds) {
     return _remoteAlbumService.addUsers(albumId: albumId, userIds: userIds);
   }
+
+  Future<void> removeUser(String albumId, String userId) {
+    return _remoteAlbumService.removeUser(albumId, userId: userId);
+  }
+
+  Future<void> leaveAlbum(String albumId, {required String userId}) async {
+    await _remoteAlbumService.removeUser(albumId, userId: userId);
+
+    final updatedAlbums = state.albums.where((album) => album.id != albumId).toList();
+    final updatedFilteredAlbums = state.filteredAlbums.where((album) => album.id != albumId).toList();
+
+    state = state.copyWith(albums: updatedAlbums, filteredAlbums: updatedFilteredAlbums);
+  }
+
+  Future<void> setActivityStatus(String albumId, bool enabled) {
+    return _remoteAlbumService.setActivityStatus(albumId, enabled);
+  }
 }
 
 final remoteAlbumDateRangeProvider = FutureProvider.family<(DateTime, DateTime), String>((ref, albumId) async {
