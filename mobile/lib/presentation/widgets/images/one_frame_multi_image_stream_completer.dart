@@ -35,7 +35,7 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
     );
   }
 
-  _onImage(ImageInfo image) {
+  void _onImage(ImageInfo image) {
     setImage(image);
     _initialImage?.dispose();
     _initialImage = null;
