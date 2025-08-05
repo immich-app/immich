@@ -9,7 +9,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -55,7 +54,6 @@ class DriftEditImagePage extends ConsumerWidget {
           .read(fileMediaRepositoryProvider)
           .saveImage(imageData, title: "${p.withoutExtension(asset.name)}_edited.jpg");
 
-      await ref.read(albumProvider.notifier).refreshDeviceAlbums();
       context.navigator.popUntil((route) => route.isFirst);
       ImmichToast.show(durationInSecond: 3, context: context, msg: 'Image Saved!');
     } catch (e) {
