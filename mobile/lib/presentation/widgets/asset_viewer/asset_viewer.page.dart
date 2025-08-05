@@ -620,11 +620,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         ),
         bottomNavigationBar: showingBottomSheet
             ? const SizedBox.shrink()
-            : Column(
+            : const Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [const AssetStackRow(), const ViewerBottomBar()],
+                children: [AssetStackRow(), ViewerBottomBar()],
               ),
       ),
     );
