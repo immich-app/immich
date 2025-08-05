@@ -122,7 +122,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _apiService.setAccessToken(accessToken);
 
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
-    final customHeaders = Store.get(StoreKey.customHeaders);
+    final customHeaders = Store.tryGet(StoreKey.customHeaders);
     await _widgetService.writeCredentials(serverEndpoint, accessToken, customHeaders);
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
