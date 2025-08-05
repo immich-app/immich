@@ -1,5 +1,6 @@
 import { Kysely } from 'kysely';
 import { AlbumUserRole, SyncEntityType, SyncRequestType } from 'src/enum';
+import { AssetRepository } from 'src/repositories/asset.repository';
 import { DB } from 'src/schema';
 import { SyncTestContext } from 'test/medium.factory';
 import { factory } from 'test/small.factory';
@@ -11,6 +12,18 @@ const setup = async (db?: Kysely<DB>) => {
   const ctx = new SyncTestContext(db || defaultDatabase);
   const { auth, user, session } = await ctx.newSyncAuthUser();
   return { auth, user, session, ctx };
+};
+
+const updateSyncAck = {
+  ack: expect.stringContaining(SyncEntityType.AlbumAssetExifUpdateV1),
+  data: {},
+  type: SyncEntityType.SyncAckV1,
+};
+
+const backfillSyncAck = {
+  ack: expect.stringContaining(SyncEntityType.AlbumAssetExifBackfillV1),
+  data: {},
+  type: SyncEntityType.SyncAckV1,
 };
 
 beforeAll(async () => {
@@ -28,8 +41,8 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
     await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
+      updateSyncAck,
       {
         ack: expect.any(String),
         data: {
@@ -59,9 +72,10 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
           state: null,
           timeZone: null,
         },
-        type: SyncEntityType.AlbumAssetExifV1,
+        type: SyncEntityType.AlbumAssetExifCreateV1,
       },
     ]);
+    expect(response).toHaveLength(2);
 
     await ctx.syncAckAll(auth, response);
     await expect(ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1])).resolves.toEqual([]);
@@ -75,7 +89,7 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
     await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
 
     await expect(ctx.syncStream(auth, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
-    await expect(ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1])).resolves.toHaveLength(1);
+    await expect(ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1])).resolves.toHaveLength(2);
   });
 
   it('should not sync album asset exif for unrelated user', async () => {
@@ -97,55 +111,46 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
   it('should backfill album assets exif when a user shares an album with you', async () => {
     const { auth, ctx } = await setup();
     const { user: user2 } = await ctx.newUser();
-    const { asset: asset1Owner } = await ctx.newAsset({ ownerId: auth.user.id });
-    await ctx.newExif({ assetId: asset1Owner.id, make: 'asset1Owner' });
-    await wait(2);
+    const { album: album1 } = await ctx.newAlbum({ ownerId: user2.id });
+    const { album: album2 } = await ctx.newAlbum({ ownerId: user2.id });
     const { asset: asset1User2 } = await ctx.newAsset({ ownerId: user2.id });
     await ctx.newExif({ assetId: asset1User2.id, make: 'asset1User2' });
+    await ctx.newAlbumAsset({ albumId: album2.id, assetId: asset1User2.id });
     await wait(2);
     const { asset: asset2User2 } = await ctx.newAsset({ ownerId: user2.id });
     await ctx.newExif({ assetId: asset2User2.id, make: 'asset2User2' });
+    await ctx.newAlbumAsset({ albumId: album2.id, assetId: asset2User2.id });
+    await wait(2);
+    await ctx.newAlbumAsset({ albumId: album1.id, assetId: asset2User2.id });
     await wait(2);
     const { asset: asset3User2 } = await ctx.newAsset({ ownerId: user2.id });
+    await ctx.newAlbumAsset({ albumId: album2.id, assetId: asset3User2.id });
     await ctx.newExif({ assetId: asset3User2.id, make: 'asset3User2' });
-    const { album: album1 } = await ctx.newAlbum({ ownerId: user2.id });
-    await ctx.newAlbumAsset({ albumId: album1.id, assetId: asset2User2.id });
+    await wait(2);
     await ctx.newAlbumUser({ albumId: album1.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
+      updateSyncAck,
       {
         ack: expect.any(String),
         data: expect.objectContaining({
           assetId: asset2User2.id,
         }),
-        type: SyncEntityType.AlbumAssetExifV1,
+        type: SyncEntityType.AlbumAssetExifCreateV1,
       },
     ]);
+    expect(response).toHaveLength(2);
 
     // ack initial album asset exif sync
     await ctx.syncAckAll(auth, response);
 
     // create a second album
-    const { album: album2 } = await ctx.newAlbum({ ownerId: user2.id });
-    await Promise.all(
-      [asset1User2.id, asset2User2.id, asset3User2.id, asset1Owner.id].map((assetId) =>
-        ctx.newAlbumAsset({ albumId: album2.id, assetId }),
-      ),
-    );
     await ctx.newAlbumUser({ albumId: album2.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     // should backfill the album user
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
     expect(newResponse).toEqual([
-      {
-        ack: expect.any(String),
-        data: expect.objectContaining({
-          assetId: asset1Owner.id,
-        }),
-        type: SyncEntityType.AlbumAssetExifBackfillV1,
-      },
       {
         ack: expect.any(String),
         data: expect.objectContaining({
@@ -160,21 +165,194 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
         }),
         type: SyncEntityType.AlbumAssetExifBackfillV1,
       },
-      {
-        ack: expect.stringContaining(SyncEntityType.AlbumAssetExifBackfillV1),
-        data: {},
-        type: SyncEntityType.SyncAckV1,
-      },
+      backfillSyncAck,
+      updateSyncAck,
       {
         ack: expect.any(String),
         data: expect.objectContaining({
           assetId: asset3User2.id,
         }),
-        type: SyncEntityType.AlbumAssetExifV1,
+        type: SyncEntityType.AlbumAssetExifCreateV1,
       },
     ]);
+    expect(newResponse).toHaveLength(5);
 
     await ctx.syncAckAll(auth, newResponse);
     await expect(ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1])).resolves.toEqual([]);
+  });
+
+  it('should sync old asset exif when a user adds them to an album they share you', async () => {
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    const { asset: firstAsset } = await ctx.newAsset({ ownerId: user2.id, originalFileName: 'firstAsset' });
+    await ctx.newExif({ assetId: firstAsset.id, make: 'firstAsset' });
+    const { asset: secondAsset } = await ctx.newAsset({ ownerId: user2.id, originalFileName: 'secondAsset' });
+    await ctx.newExif({ assetId: secondAsset.id, make: 'secondAsset' });
+    const { asset: album1Asset } = await ctx.newAsset({ ownerId: user2.id, originalFileName: 'album1Asset' });
+    await ctx.newExif({ assetId: album1Asset.id, make: 'album1Asset' });
+    const { album: album1 } = await ctx.newAlbum({ ownerId: user2.id });
+    const { album: album2 } = await ctx.newAlbum({ ownerId: user2.id });
+    await ctx.newAlbumAsset({ albumId: album2.id, assetId: firstAsset.id });
+    await wait(2);
+    await ctx.newAlbumAsset({ albumId: album1.id, assetId: album1Asset.id });
+    await ctx.newAlbumUser({ albumId: album1.id, userId: auth.user.id, role: AlbumUserRole.Editor });
+
+    const firstAlbumResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
+    expect(firstAlbumResponse).toEqual([
+      updateSyncAck,
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          assetId: album1Asset.id,
+        }),
+        type: SyncEntityType.AlbumAssetExifCreateV1,
+      },
+    ]);
+    expect(firstAlbumResponse).toHaveLength(2);
+
+    await ctx.syncAckAll(auth, firstAlbumResponse);
+
+    await ctx.newAlbumUser({ albumId: album2.id, userId: auth.user.id, role: AlbumUserRole.Editor });
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          assetId: firstAsset.id,
+        }),
+        type: SyncEntityType.AlbumAssetExifBackfillV1,
+      },
+      backfillSyncAck,
+    ]);
+    expect(response).toHaveLength(2);
+
+    //  ack initial album asset sync
+    await ctx.syncAckAll(auth, response);
+
+    await ctx.newAlbumAsset({ albumId: album2.id, assetId: secondAsset.id });
+    await wait(2);
+
+    // should backfill the new asset even though it's older than the first asset
+    const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
+    expect(newResponse).toEqual([
+      updateSyncAck,
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          assetId: secondAsset.id,
+        }),
+        type: SyncEntityType.AlbumAssetExifCreateV1,
+      },
+    ]);
+    expect(newResponse).toHaveLength(2);
+
+    await ctx.syncAckAll(auth, newResponse);
+    await expect(ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1])).resolves.toEqual([]);
+  });
+
+  it('should sync asset exif updates for an album shared with you', async () => {
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({ ownerId: user2.id });
+    await ctx.newExif({ assetId: asset.id, make: 'asset' });
+    const { album } = await ctx.newAlbum({ ownerId: user2.id });
+    await wait(2);
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+    await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
+    expect(response).toHaveLength(2);
+    expect(response).toEqual([
+      updateSyncAck,
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          assetId: asset.id,
+        }),
+        type: SyncEntityType.AlbumAssetExifCreateV1,
+      },
+    ]);
+
+    await ctx.syncAckAll(auth, response);
+
+    // update the asset
+    const assetRepository = ctx.get(AssetRepository);
+    await assetRepository.upsertExif({
+      assetId: asset.id,
+      city: 'New City',
+    });
+
+    const updateResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
+    expect(updateResponse).toHaveLength(1);
+    expect(updateResponse).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          assetId: asset.id,
+          city: 'New City',
+        }),
+        type: SyncEntityType.AlbumAssetExifUpdateV1,
+      },
+    ]);
+  });
+
+  it('should sync delayed asset exif creates for an album shared with you', async () => {
+    const { auth, ctx } = await setup();
+    const { user: user2 } = await ctx.newUser();
+    const { asset: assetWithExif } = await ctx.newAsset({ ownerId: user2.id });
+    await ctx.newExif({ assetId: assetWithExif.id, make: 'assetWithExif' });
+    const { asset: assetDelayedExif } = await ctx.newAsset({ ownerId: user2.id });
+    const { album } = await ctx.newAlbum({ ownerId: user2.id });
+    const { asset: newerAsset } = await ctx.newAsset({ ownerId: user2.id });
+    await ctx.newExif({ assetId: newerAsset.id, make: 'newerAsset' });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: assetWithExif.id });
+    await wait(2);
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: assetDelayedExif.id });
+    await wait(2);
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: newerAsset.id });
+    await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
+    expect(response).toEqual([
+      updateSyncAck,
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          assetId: assetWithExif.id,
+        }),
+        type: SyncEntityType.AlbumAssetExifCreateV1,
+      },
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          assetId: newerAsset.id,
+        }),
+        type: SyncEntityType.AlbumAssetExifCreateV1,
+      },
+    ]);
+    expect(response).toHaveLength(3);
+
+    await ctx.syncAckAll(auth, response);
+
+    // update the asset
+    const assetRepository = ctx.get(AssetRepository);
+    await assetRepository.upsertExif({
+      assetId: assetDelayedExif.id,
+      city: 'Delayed Exif',
+    });
+
+    const updateResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumAssetExifsV1]);
+    expect(updateResponse).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          assetId: assetDelayedExif.id,
+          city: 'Delayed Exif',
+        }),
+        type: SyncEntityType.AlbumAssetExifUpdateV1,
+      },
+    ]);
+    expect(updateResponse).toHaveLength(1);
   });
 });

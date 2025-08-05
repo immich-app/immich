@@ -9,7 +9,7 @@ from
 where
   "usersId" = $1
   and "createId" >= $2
-  and "createdAt" < now() - interval '1 millisecond'
+  and "createId" < $3
 order by
   "createId" asc
 
@@ -21,7 +21,7 @@ from
   "album_audit"
 where
   "userId" = $1
-  and "deletedAt" < now() - interval '1 millisecond'
+  and "id" < $2
 order by
   "id" asc
 
@@ -41,10 +41,10 @@ from
   "album"
   left join "album_user" as "album_users" on "album"."id" = "album_users"."albumsId"
 where
-  "album"."updatedAt" < now() - interval '1 millisecond'
+  "album"."updateId" < $1
   and (
-    "album"."ownerId" = $1
-    or "album_users"."usersId" = $2
+    "album"."ownerId" = $2
+    or "album_users"."usersId" = $3
   )
 order by
   "album"."updateId" asc
@@ -67,20 +67,21 @@ select
   "asset"."livePhotoVideoId",
   "asset"."stackId",
   "asset"."libraryId",
-  "asset"."updateId"
+  "album_asset"."updateId"
 from
-  "asset"
-  inner join "album_asset" on "album_asset"."assetsId" = "asset"."id"
+  "album_asset"
+  inner join "asset" on "asset"."id" = "album_asset"."assetsId"
 where
   "album_asset"."albumsId" = $1
-  and "asset"."updatedAt" < now() - interval '1 millisecond'
-  and "asset"."updateId" <= $2
-  and "asset"."updateId" >= $3
+  and "album_asset"."updateId" < $2
+  and "album_asset"."updateId" <= $3
+  and "album_asset"."updateId" >= $4
 order by
-  "asset"."updateId" asc
+  "album_asset"."updateId" asc
 
--- SyncRepository.albumAsset.getUpserts
+-- SyncRepository.albumAsset.getCreates
 select
+  "album_asset"."updateId",
   "asset"."id",
   "asset"."ownerId",
   "asset"."originalFileName",
@@ -96,21 +97,20 @@ select
   "asset"."duration",
   "asset"."livePhotoVideoId",
   "asset"."stackId",
-  "asset"."libraryId",
-  "asset"."updateId"
+  "asset"."libraryId"
 from
-  "asset"
-  inner join "album_asset" on "album_asset"."assetsId" = "asset"."id"
+  "album_asset"
+  inner join "asset" on "asset"."id" = "album_asset"."assetsId"
   inner join "album" on "album"."id" = "album_asset"."albumsId"
   left join "album_user" on "album_user"."albumsId" = "album_asset"."albumsId"
 where
-  "asset"."updatedAt" < now() - interval '1 millisecond'
+  "album_asset"."updateId" < $1
   and (
-    "album"."ownerId" = $1
-    or "album_user"."usersId" = $2
+    "album"."ownerId" = $2
+    or "album_user"."usersId" = $3
   )
 order by
-  "asset"."updateId" asc
+  "album_asset"."updateId" asc
 
 -- SyncRepository.albumAssetExif.getBackfill
 select
@@ -139,20 +139,21 @@ select
   "asset_exif"."profileDescription",
   "asset_exif"."rating",
   "asset_exif"."fps",
-  "asset_exif"."updateId"
+  "album_asset"."updateId"
 from
-  "asset_exif"
-  inner join "album_asset" on "album_asset"."assetsId" = "asset_exif"."assetId"
+  "album_asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "album_asset"."assetsId"
 where
   "album_asset"."albumsId" = $1
-  and "asset_exif"."updatedAt" < now() - interval '1 millisecond'
-  and "asset_exif"."updateId" <= $2
-  and "asset_exif"."updateId" >= $3
+  and "album_asset"."updateId" < $2
+  and "album_asset"."updateId" <= $3
+  and "album_asset"."updateId" >= $4
 order by
-  "asset_exif"."updateId" asc
+  "album_asset"."updateId" asc
 
--- SyncRepository.albumAssetExif.getUpserts
+-- SyncRepository.albumAssetExif.getCreates
 select
+  "album_asset"."updateId",
   "asset_exif"."assetId",
   "asset_exif"."description",
   "asset_exif"."exifImageWidth",
@@ -177,21 +178,20 @@ select
   "asset_exif"."exposureTime",
   "asset_exif"."profileDescription",
   "asset_exif"."rating",
-  "asset_exif"."fps",
-  "asset_exif"."updateId"
+  "asset_exif"."fps"
 from
-  "asset_exif"
-  inner join "album_asset" on "album_asset"."assetsId" = "asset_exif"."assetId"
+  "album_asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "album_asset"."assetsId"
   inner join "album" on "album"."id" = "album_asset"."albumsId"
   left join "album_user" on "album_user"."albumsId" = "album_asset"."albumsId"
 where
-  "asset_exif"."updatedAt" < now() - interval '1 millisecond'
+  "album_asset"."updateId" < $1
   and (
-    "album"."ownerId" = $1
-    or "album_user"."usersId" = $2
+    "album"."ownerId" = $2
+    or "album_user"."usersId" = $3
   )
 order by
-  "asset_exif"."updateId" asc
+  "album_asset"."updateId" asc
 
 -- SyncRepository.albumToAsset.getBackfill
 select
@@ -202,9 +202,9 @@ from
   "album_asset" as "album_assets"
 where
   "album_assets"."albumsId" = $1
-  and "album_assets"."updatedAt" < now() - interval '1 millisecond'
-  and "album_assets"."updateId" <= $2
-  and "album_assets"."updateId" >= $3
+  and "album_assets"."updateId" < $2
+  and "album_assets"."updateId" <= $3
+  and "album_assets"."updateId" >= $4
 order by
   "album_assets"."updateId" asc
 
@@ -233,7 +233,7 @@ where
         "album_user"."usersId" = $2
     )
   )
-  and "deletedAt" < now() - interval '1 millisecond'
+  and "id" < $3
 order by
   "id" asc
 
@@ -247,10 +247,10 @@ from
   inner join "album" on "album"."id" = "album_asset"."albumsId"
   left join "album_user" on "album_user"."albumsId" = "album_asset"."albumsId"
 where
-  "album_asset"."updatedAt" < now() - interval '1 millisecond'
+  "album_asset"."updateId" < $1
   and (
-    "album"."ownerId" = $1
-    or "album_user"."usersId" = $2
+    "album"."ownerId" = $2
+    or "album_user"."usersId" = $3
   )
 order by
   "album_asset"."updateId" asc
@@ -265,9 +265,9 @@ from
   "album_user"
 where
   "albumsId" = $1
-  and "updatedAt" < now() - interval '1 millisecond'
-  and "updateId" <= $2
-  and "updateId" >= $3
+  and "updateId" < $2
+  and "updateId" <= $3
+  and "updateId" >= $4
 order by
   "updateId" asc
 
@@ -296,7 +296,7 @@ where
         "album_user"."usersId" = $2
     )
   )
-  and "deletedAt" < now() - interval '1 millisecond'
+  and "id" < $3
 order by
   "id" asc
 
@@ -309,14 +309,14 @@ select
 from
   "album_user"
 where
-  "album_user"."updatedAt" < now() - interval '1 millisecond'
+  "album_user"."updateId" < $1
   and "album_user"."albumsId" in (
     select
       "id"
     from
       "album"
     where
-      "ownerId" = $1
+      "ownerId" = $2
     union
     (
       select
@@ -324,7 +324,7 @@ where
       from
         "album_user" as "albumUsers"
       where
-        "albumUsers"."usersId" = $2
+        "albumUsers"."usersId" = $3
     )
   )
 order by
@@ -338,7 +338,7 @@ from
   "asset_audit"
 where
   "ownerId" = $1
-  and "deletedAt" < now() - interval '1 millisecond'
+  and "id" < $2
 order by
   "id" asc
 
@@ -365,7 +365,7 @@ from
   "asset"
 where
   "ownerId" = $1
-  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $2
 order by
   "updateId" asc
 
@@ -408,7 +408,7 @@ where
     where
       "ownerId" = $1
   )
-  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $2
 order by
   "updateId" asc
 
@@ -421,7 +421,7 @@ from
   left join "asset" on "asset"."id" = "asset_face_audit"."assetId"
 where
   "asset"."ownerId" = $1
-  and "asset_face_audit"."deletedAt" < now() - interval '1 millisecond'
+  and "asset_face_audit"."id" < $2
 order by
   "asset_face_audit"."id" asc
 
@@ -442,33 +442,10 @@ from
   "asset_face"
   left join "asset" on "asset"."id" = "asset_face"."assetId"
 where
-  "asset_face"."updatedAt" < now() - interval '1 millisecond'
-  and "asset"."ownerId" = $1
+  "asset_face"."updateId" < $1
+  and "asset"."ownerId" = $2
 order by
   "asset_face"."updateId" asc
-
--- SyncRepository.authUser.getUpserts
-select
-  "id",
-  "name",
-  "email",
-  "avatarColor",
-  "deletedAt",
-  "updateId",
-  "profileImagePath",
-  "profileChangedAt",
-  "isAdmin",
-  "pinCode",
-  "oauthId",
-  "storageLabel",
-  "quotaSizeInBytes",
-  "quotaUsageInBytes"
-from
-  "user"
-where
-  "updatedAt" < now() - interval '1 millisecond'
-order by
-  "updateId" asc
 
 -- SyncRepository.memory.getDeletes
 select
@@ -478,7 +455,7 @@ from
   "memory_audit"
 where
   "userId" = $1
-  and "deletedAt" < now() - interval '1 millisecond'
+  and "id" < $2
 order by
   "id" asc
 
@@ -501,7 +478,7 @@ from
   "memory"
 where
   "ownerId" = $1
-  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $2
 order by
   "updateId" asc
 
@@ -521,7 +498,7 @@ where
     where
       "ownerId" = $1
   )
-  and "deletedAt" < now() - interval '1 millisecond'
+  and "id" < $2
 order by
   "id" asc
 
@@ -541,7 +518,7 @@ where
     where
       "ownerId" = $1
   )
-  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $2
 order by
   "updateId" asc
 
@@ -553,8 +530,7 @@ from
   "partner"
 where
   "sharedWithId" = $1
-  and "createId" >= $2
-  and "createdAt" < now() - interval '1 millisecond'
+  and "createId" < $2
 order by
   "partner"."createId" asc
 
@@ -570,7 +546,7 @@ where
     "sharedById" = $1
     or "sharedWithId" = $2
   )
-  and "deletedAt" < now() - interval '1 millisecond'
+  and "id" < $3
 order by
   "id" asc
 
@@ -587,7 +563,7 @@ where
     "sharedById" = $1
     or "sharedWithId" = $2
   )
-  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $3
 order by
   "updateId" asc
 
@@ -614,9 +590,9 @@ from
   "asset"
 where
   "ownerId" = $1
-  and "updatedAt" < now() - interval '1 millisecond'
-  and "updateId" <= $2
-  and "updateId" >= $3
+  and "updateId" < $2
+  and "updateId" <= $3
+  and "updateId" >= $4
 order by
   "updateId" asc
 
@@ -635,7 +611,7 @@ where
     where
       "sharedWithId" = $1
   )
-  and "deletedAt" < now() - interval '1 millisecond'
+  and "id" < $2
 order by
   "id" asc
 
@@ -669,7 +645,7 @@ where
     where
       "sharedWithId" = $1
   )
-  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $2
 order by
   "updateId" asc
 
@@ -706,9 +682,9 @@ from
   inner join "asset" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = $1
-  and "asset_exif"."updatedAt" < now() - interval '1 millisecond'
-  and "asset_exif"."updateId" <= $2
-  and "asset_exif"."updateId" >= $3
+  and "asset_exif"."updateId" < $2
+  and "asset_exif"."updateId" <= $3
+  and "asset_exif"."updateId" >= $4
 order by
   "asset_exif"."updateId" asc
 
@@ -758,7 +734,7 @@ where
           "sharedWithId" = $1
       )
   )
-  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $2
 order by
   "updateId" asc
 
@@ -777,7 +753,7 @@ where
     where
       "sharedWithId" = $1
   )
-  and "deletedAt" < now() - interval '1 millisecond'
+  and "id" < $2
 order by
   "id" asc
 
@@ -793,9 +769,9 @@ from
   "stack"
 where
   "ownerId" = $1
-  and "updatedAt" < now() - interval '1 millisecond'
-  and "updateId" <= $2
-  and "updateId" >= $3
+  and "updateId" < $2
+  and "updateId" <= $3
+  and "updateId" >= $4
 order by
   "updateId" asc
 
@@ -818,7 +794,7 @@ where
     where
       "sharedWithId" = $1
   )
-  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $2
 order by
   "updateId" asc
 
@@ -830,7 +806,7 @@ from
   "person_audit"
 where
   "ownerId" = $1
-  and "deletedAt" < now() - interval '1 millisecond'
+  and "id" < $2
 order by
   "id" asc
 
@@ -851,7 +827,7 @@ from
   "person"
 where
   "ownerId" = $1
-  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $2
 order by
   "updateId" asc
 
@@ -863,7 +839,7 @@ from
   "stack_audit"
 where
   "userId" = $1
-  and "deletedAt" < now() - interval '1 millisecond'
+  and "id" < $2
 order by
   "id" asc
 
@@ -879,7 +855,7 @@ from
   "stack"
 where
   "ownerId" = $1
-  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $2
 order by
   "updateId" asc
 
@@ -890,7 +866,7 @@ select
 from
   "user_audit"
 where
-  "deletedAt" < now() - interval '1 millisecond'
+  "id" < $1
 order by
   "id" asc
 
@@ -907,7 +883,7 @@ select
 from
   "user"
 where
-  "updatedAt" < now() - interval '1 millisecond'
+  "updateId" < $1
 order by
   "updateId" asc
 
@@ -920,7 +896,7 @@ from
   "user_metadata_audit"
 where
   "userId" = $1
-  and "deletedAt" < now() - interval '1 millisecond'
+  and "id" < $2
 order by
   "id" asc
 
@@ -934,6 +910,6 @@ from
   "user_metadata"
 where
   "userId" = $1
-  and "updatedAt" < now() - interval '1 millisecond'
+  and "updateId" < $2
 order by
   "updateId" asc
