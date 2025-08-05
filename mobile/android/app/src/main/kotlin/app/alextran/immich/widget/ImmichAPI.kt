@@ -59,16 +59,18 @@ class ImmichAPI(cfg: ServerConfig) {
     return URL(urlString.toString())
   }
 
+  private fun HttpURLConnection.applyCustomHeaders() {
+    serverConfig.customHeaders.forEach { (key, value) ->
+      setRequestProperty(key, value)
+    }
+  }
+
   suspend fun fetchSearchResults(filters: SearchFilters): List<Asset> = withContext(Dispatchers.IO) {
     val url = buildRequestURL("/search/random")
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "POST"
       setRequestProperty("Content-Type", "application/json")
-
-      // Custom Headers
-      serverConfig.customHeaders.forEach { (key, value) ->
-        setRequestProperty(key, value)
-      }
+      applyCustomHeaders()
 
       doOutput = true
     }
@@ -90,11 +92,7 @@ class ImmichAPI(cfg: ServerConfig) {
     val url = buildRequestURL("/memories", listOf("for" to iso8601))
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "GET"
-
-      // Custom Headers
-      serverConfig.customHeaders.forEach { (key, value) ->
-        setRequestProperty(key, value)
-      }
+      applyCustomHeaders()
     }
 
     val response = connection.inputStream.bufferedReader().readText()
@@ -114,11 +112,7 @@ class ImmichAPI(cfg: ServerConfig) {
     val url = buildRequestURL("/albums")
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "GET"
-
-      // Custom Headers
-      serverConfig.customHeaders.forEach { (key, value) ->
-        setRequestProperty(key, value)
-      }
+      applyCustomHeaders()
     }
 
     val response = connection.inputStream.bufferedReader().readText()

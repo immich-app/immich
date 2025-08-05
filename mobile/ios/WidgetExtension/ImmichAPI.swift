@@ -169,7 +169,7 @@ class ImmichAPI {
     return components?.url
   }
   
-  func applyHeaders(for request: inout URLRequest) {
+  func applyCustomHeaders(for request: inout URLRequest) {
     for (header, value) in serverConfig.customHeaders {
       request.addValue(value, forHTTPHeaderField: header)
     }
@@ -193,7 +193,7 @@ class ImmichAPI {
     request.httpMethod = "POST"
     request.httpBody = try JSONEncoder().encode(filters)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    applyHeaders(for: &request)
+    applyCustomHeaders(for: &request)
     
     let (data, _) = try await URLSession.shared.data(for: request)
 
@@ -216,7 +216,7 @@ class ImmichAPI {
 
     var request = URLRequest(url: searchURL)
     request.httpMethod = "GET"
-    applyHeaders(for: &request)
+    applyCustomHeaders(for: &request)
 
     let (data, _) = try await URLSession.shared.data(for: request)
 
@@ -275,7 +275,7 @@ class ImmichAPI {
 
     var request = URLRequest(url: searchURL)
     request.httpMethod = "GET"
-    applyHeaders(for: &request)
+    applyCustomHeaders(for: &request)
     
     let (data, _) = try await URLSession.shared.data(for: request)
 
