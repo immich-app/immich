@@ -341,11 +341,9 @@ export type SyncItem = {
   [SyncEntityType.AlbumUserDeleteV1]: SyncAlbumUserDeleteV1;
   [SyncEntityType.AlbumAssetCreateV1]: SyncAssetV1;
   [SyncEntityType.AlbumAssetUpdateV1]: SyncAssetV1;
-  [SyncEntityType.AlbumAssetV1]: SyncAssetV1;
   [SyncEntityType.AlbumAssetBackfillV1]: SyncAssetV1;
   [SyncEntityType.AlbumAssetExifCreateV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumAssetExifUpdateV1]: SyncAssetExifV1;
-  [SyncEntityType.AlbumAssetExifV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumAssetExifBackfillV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumToAssetV1]: SyncAlbumToAssetV1;
   [SyncEntityType.AlbumToAssetBackfillV1]: SyncAlbumToAssetV1;
