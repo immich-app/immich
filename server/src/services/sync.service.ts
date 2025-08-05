@@ -23,7 +23,7 @@ import { SyncAck } from 'src/types';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { setIsEqual } from 'src/utils/set';
-import { fromAck, mapJsonLine, serialize, SerializeOptions, toAck } from 'src/utils/sync';
+import { fromAck, serialize, SerializeOptions, toAck } from 'src/utils/sync';
 
 type CheckpointMap = Partial<Record<SyncEntityType, SyncAck>>;
 type AssetLike = Omit<SyncAssetV1, 'checksum' | 'thumbhash'> & {
@@ -100,6 +100,10 @@ export class SyncService extends BaseService {
     const checkpoints: Record<string, Insertable<SessionSyncCheckpointTable>> = {};
     for (const ack of dto.acks) {
       const { type } = fromAck(ack);
+      if (type === SyncEntityType.SyncResetV1) {
+        await this.sessionRepository.resetSyncProgress(sessionId);
+        return;
+      }
       // TODO proper ack validation via class validator
       if (!Object.values(SyncEntityType).includes(type)) {
         throw new BadRequestException(`Invalid ack type: ${type}`);
@@ -129,11 +133,12 @@ export class SyncService extends BaseService {
 
     if (dto.reset) {
       await this.sessionRepository.resetSyncProgress(session.id);
-      session.isPendingSyncReset = false;
     }
 
-    if (session.isPendingSyncReset) {
-      response.write(mapJsonLine({ type: SyncEntityType.SyncResetV1, data: {} }));
+    const isPendingSyncReset = await this.sessionRepository.isPendingSyncReset(session.id);
+
+    if (isPendingSyncReset) {
+      send(response, { type: SyncEntityType.SyncResetV1, ids: ['reset'], data: {} });
       response.end();
       return;
     }
