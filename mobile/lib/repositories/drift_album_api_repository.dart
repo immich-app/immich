@@ -87,6 +87,15 @@ class DriftAlbumApiRepository extends ApiRepository {
     final response = await checkNull(_api.addUsersToAlbum(albumId, AddUsersDto(albumUsers: albumUsers)));
     return response.toRemoteAlbum();
   }
+
+  Future<void> removeUser(String albumId, {required String userId}) async {
+    await _api.removeUserFromAlbum(albumId, userId);
+  }
+
+  Future<bool> setActivityStatus(String albumId, bool isEnabled) async {
+    final response = await checkNull(_api.updateAlbumInfo(albumId, UpdateAlbumDto(isActivityEnabled: isEnabled)));
+    return response.isActivityEnabled;
+  }
 }
 
 extension on AlbumResponseDto {
