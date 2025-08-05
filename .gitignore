@@ -25,3 +25,4 @@ mobile/ios/fastlane/report.xml
 
 vite.config.js.timestamp-*
 .pnpm-store
+.devcontainer/

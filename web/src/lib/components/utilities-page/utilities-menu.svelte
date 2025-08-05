@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
-  import { mdiContentDuplicate, mdiImageSizeSelectLarge } from '@mdi/js';
+  import { mdiContentDuplicate, mdiCrosshairsGps, mdiImageSizeSelectLarge } from '@mdi/js';
   import { t } from 'svelte-i18n';
 </script>
 
@@ -25,5 +25,12 @@
       ><Icon path={mdiImageSizeSelectLarge} class="text-immich-primary dark:text-immich-dark-primary" size="24" />
     </span>
     {$t('review_large_files')}
+  </a>
+  <a
+    href={AppRoute.GEOLOCATION}
+    class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
+  >
+    <span><Icon path={mdiCrosshairsGps} class="text-immich-primary dark:text-immich-dark-primary" size="24" /> </span>
+    {$t('geolocation')}
   </a>
 </div>
