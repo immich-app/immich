@@ -25,7 +25,6 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view_gallery.dart';
 import 'package:platform/platform.dart';
@@ -594,8 +593,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       });
     });
 
-    final isInLockedView = ref.watch(inLockedViewProvider);
-
     // Currently it is not possible to scroll the asset when the bottom sheet is open all the way.
     // Issue: https://github.com/flutter/flutter/issues/109037
     // TODO: Add a custom scrum builder once the fix lands on stable
@@ -627,7 +624,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [const AssetStackRow(), if (!isInLockedView) const ViewerBottomBar()],
+                children: [const AssetStackRow(), const ViewerBottomBar()],
               ),
       ),
     );
