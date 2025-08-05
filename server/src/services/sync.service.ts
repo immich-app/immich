@@ -449,7 +449,7 @@ export class SyncService extends BaseService {
           type: SyncEntityType.SyncAckV1,
           data: {},
           ackType: SyncEntityType.AlbumAssetUpdateV1,
-          ids: [v7()],
+          ids: [options.nowId],
         });
         first = false;
       }
