@@ -465,10 +465,12 @@ export class SyncService extends BaseService {
     const backfillType = SyncEntityType.AlbumAssetExifBackfillV1;
     const backfillCheckpoint = checkpointMap[backfillType];
     const albums = await this.syncRepository.album.getCreatedAfter(options, backfillCheckpoint?.updateId);
-    const upsertType = SyncEntityType.AlbumAssetExifV1;
-    const upsertCheckpoint = checkpointMap[upsertType];
-    if (upsertCheckpoint) {
-      const endId = upsertCheckpoint.updateId;
+    const updateType = SyncEntityType.AlbumAssetExifUpdateV1;
+    const createType = SyncEntityType.AlbumAssetExifCreateV1;
+    const upsertCheckpoint = checkpointMap[updateType];
+    const createCheckpoint = checkpointMap[createType];
+    if (createCheckpoint) {
+      const endId = createCheckpoint.updateId;
 
       for (const album of albums) {
         const createId = album.createId;
@@ -493,9 +495,26 @@ export class SyncService extends BaseService {
       });
     }
 
-    const upserts = this.syncRepository.albumAssetExif.getUpserts(options, checkpointMap[upsertType]);
-    for await (const { updateId, ...data } of upserts) {
-      send(response, { type: upsertType, ids: [updateId], data });
+    if (createCheckpoint) {
+      const updates = this.syncRepository.albumAssetExif.getUpdates(options, createCheckpoint, upsertCheckpoint);
+      for await (const { updateId, ...data } of updates) {
+        send(response, { type: updateType, ids: [updateId], data });
+      }
+    }
+
+    const creates = this.syncRepository.albumAssetExif.getCreates(options, createCheckpoint);
+    let first = true;
+    for await (const { updateId, ...data } of creates) {
+      if (first) {
+        send(response, {
+          type: SyncEntityType.SyncAckV1,
+          data: {},
+          ackType: SyncEntityType.AlbumAssetExifUpdateV1,
+          ids: [options.nowId],
+        });
+        first = false;
+      }
+      send(response, { type: createType, ids: [updateId], data });
     }
   }
 

@@ -139,20 +139,21 @@ select
   "asset_exif"."profileDescription",
   "asset_exif"."rating",
   "asset_exif"."fps",
-  "asset_exif"."updateId"
+  "album_asset"."updateId"
 from
-  "asset_exif"
-  inner join "album_asset" on "album_asset"."assetsId" = "asset_exif"."assetId"
+  "album_asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "album_asset"."assetsId"
 where
   "album_asset"."albumsId" = $1
-  and "asset_exif"."updateId" < $2
-  and "asset_exif"."updateId" <= $3
-  and "asset_exif"."updateId" >= $4
+  and "album_asset"."updateId" < $2
+  and "album_asset"."updateId" <= $3
+  and "album_asset"."updateId" >= $4
 order by
-  "asset_exif"."updateId" asc
+  "album_asset"."updateId" asc
 
--- SyncRepository.albumAssetExif.getUpserts
+-- SyncRepository.albumAssetExif.getCreates
 select
+  "album_asset"."updateId",
   "asset_exif"."assetId",
   "asset_exif"."description",
   "asset_exif"."exifImageWidth",
@@ -177,21 +178,20 @@ select
   "asset_exif"."exposureTime",
   "asset_exif"."profileDescription",
   "asset_exif"."rating",
-  "asset_exif"."fps",
-  "asset_exif"."updateId"
+  "asset_exif"."fps"
 from
-  "asset_exif"
-  inner join "album_asset" on "album_asset"."assetsId" = "asset_exif"."assetId"
+  "album_asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "album_asset"."assetsId"
   inner join "album" on "album"."id" = "album_asset"."albumsId"
   left join "album_user" on "album_user"."albumsId" = "album_asset"."albumsId"
 where
-  "asset_exif"."updateId" < $1
+  "album_asset"."updateId" < $1
   and (
     "album"."ownerId" = $2
     or "album_user"."usersId" = $3
   )
 order by
-  "asset_exif"."updateId" asc
+  "album_asset"."updateId" asc
 
 -- SyncRepository.albumToAsset.getBackfill
 select

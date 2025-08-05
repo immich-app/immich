@@ -675,6 +675,9 @@ export enum SyncEntityType {
   AlbumAssetExifCreateV1 = 'AlbumAssetExifCreateV1', // album-to-asset table joined to asset-exif table, updateId from album-to-asset, filter out assets owned by you
   // If exif isn't created straight away that might cause a problem with the exif createV1, maybe we just send an empty object if it doesn't exist yet?
   // We would ack this on album-to-asset table so that would work ok for future syncs
+  // If exif didn't exist we would send nothing as it would be filtered out when joining from album-to-asset table to the exif table
+  // Therefore there would be no create event for that asset and it would be skipped forever
+  // However when the exif is created, we would send an update event for that exif, as the updateId would be new and we no longer filter out exif where createdAt == updatedAt
   AlbumAssetExifUpdateV1 = 'AlbumAssetExifUpdateV1', // asset-exif table, updateId from asset-exif table, filter out assets owned by you
   AlbumAssetExifV1 = 'AlbumAssetExifV1',
   AlbumAssetExifBackfillV1 = 'AlbumAssetExifBackfillV1',

@@ -148,8 +148,6 @@ describe(SyncRequestType.AlbumAssetsV1, () => {
     // ack initial album asset sync
     await ctx.syncAckAll(auth, response);
 
-    // create a second album
-
     await ctx.newAlbumUser({ albumId: album2.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
     // should backfill the album user
