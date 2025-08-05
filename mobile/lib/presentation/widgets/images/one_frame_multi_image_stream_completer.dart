@@ -11,17 +11,22 @@ import 'package:flutter/painting.dart';
 class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
   ImageInfo? _initialImage;
 
-  /// The constructor to create an OneFramePlaceholderImageStreamCompleter. The [image]
-  /// should be the primary image to display. The [initialImage] is an optional
-  /// image that will be emitted synchronously, useful as a thumbnail or placeholder.
+  /// The constructor to create an OneFramePlaceholderImageStreamCompleter. The [images]
+  /// should be the primary images to display (typically asynchronously as they load).
+  /// The [initialImage] is an optional image that will be emitted synchronously
+  /// until the first stream image is completed, useful as a thumbnail or placeholder.
   OneFramePlaceholderImageStreamCompleter(
-    Stream<ImageInfo> image, {
+    Stream<ImageInfo> images, {
     ImageInfo? initialImage,
     InformationCollector? informationCollector,
   }) {
     _initialImage = initialImage;
-    image.listen(
-      setImage,
+    images.listen(
+      (image) {
+        setImage(image);
+        _initialImage?.dispose();
+        _initialImage = null;
+      },
       onError: (Object error, StackTrace stack) {
         reportError(
           context: ErrorDescription('resolving a single-frame image stream'),
@@ -34,15 +39,8 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
     );
   }
 
-  /// We must avoid disposing a completer if it never had a listener, even
-  /// if all [keepAlive] handles get disposed.
-  bool __hadAtLeastOneListener = false;
-
-  bool __disposed = false;
-
   @override
   void addListener(ImageStreamListener listener) {
-    __hadAtLeastOneListener = true;
     final initialImage = _initialImage;
     if (initialImage != null) {
       try {
@@ -59,59 +57,9 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
   }
 
   @override
-  void removeListener(ImageStreamListener listener) {
-    super.removeListener(listener);
-    if (!hasListeners) {
-      __maybeDispose();
-    }
-  }
-
-  int __keepAliveHandles = 0;
-
-  @override
-  ImageStreamCompleterHandle keepAlive() {
-    final delegateHandle = super.keepAlive();
-    return _OneFramePlaceholderImageStreamCompleterHandle(this, delegateHandle);
-  }
-
-  void __maybeDispose() {
-    if (!__hadAtLeastOneListener || __disposed || hasListeners || __keepAliveHandles != 0) {
-      return;
-    }
-
-    __disposed = true;
-  }
-
-  @override
   void onDisposed() {
     _initialImage?.dispose();
     _initialImage = null;
     super.onDisposed();
-  }
-}
-
-class _OneFramePlaceholderImageStreamCompleterHandle implements ImageStreamCompleterHandle {
-  _OneFramePlaceholderImageStreamCompleterHandle(this._completer, this._delegateHandle) {
-    _completer!.__keepAliveHandles += 1;
-  }
-
-  OneFramePlaceholderImageStreamCompleter? _completer;
-  final ImageStreamCompleterHandle _delegateHandle;
-
-  /// Call this method to signal the [ImageStreamCompleter] that it can now be
-  /// disposed when its last listener drops.
-  ///
-  /// This method must only be called once per object.
-  @override
-  void dispose() {
-    assert(_completer != null);
-    assert(_completer!.__keepAliveHandles > 0);
-    assert(!_completer!.__disposed);
-
-    _delegateHandle.dispose();
-
-    _completer!.__keepAliveHandles -= 1;
-    _completer!.__maybeDispose();
-    _completer = null;
   }
 }
