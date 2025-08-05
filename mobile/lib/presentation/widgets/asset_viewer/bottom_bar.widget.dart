@@ -6,12 +6,10 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
 
@@ -30,7 +28,6 @@ class ViewerBottomBar extends ConsumerWidget {
     final isSheetOpen = ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
-    final currentAlbum = ref.watch(currentRemoteAlbumProvider);
 
     if (!showControls) {
       opacity = 0;
@@ -40,7 +37,6 @@ class ViewerBottomBar extends ConsumerWidget {
       const ShareActionButton(source: ActionSource.viewer),
       if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
       if (asset.hasRemote && isOwner) const ArchiveActionButton(source: ActionSource.viewer),
-      if (currentAlbum != null) RemoveFromAlbumActionButton(albumId: currentAlbum.id, source: ActionSource.viewer),
       asset.isLocalOnly
           ? const DeleteLocalActionButton(source: ActionSource.viewer)
           : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
