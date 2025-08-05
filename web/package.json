@@ -69,7 +69,7 @@
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.8",
     "@sveltejs/enhanced-img": "^0.7.0",
-    "@sveltejs/kit": "^2.25.0",
+    "@sveltejs/kit": "^2.25.2",
     "@sveltejs/vite-plugin-svelte": "6.1.0",
     "@tailwindcss/vite": "^4.1.7",
     "@testing-library/jest-dom": "^6.4.2",
