@@ -147,11 +147,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Precache both thumbnail and full image for smooth transitions
     unawaited(
       Future.wait([
-        precacheImage(
-          getThumbnailImageProvider(asset: asset, size: screenSize),
-          context,
-          onError: (_, __) {},
-        ),
+        precacheImage(getThumbnailImageProvider(asset: asset), context, onError: (_, __) {}),
         precacheImage(getFullImageProvider(asset, size: screenSize), context, onError: (_, __) {}),
       ]),
     );
@@ -482,7 +478,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       width: double.infinity,
       height: double.infinity,
       color: backgroundColor,
-      child: Thumbnail(asset: asset, fit: BoxFit.contain, size: Size(ctx.width, ctx.height)),
+      child: Thumbnail(asset: asset, fit: BoxFit.contain),
     );
   }
 
@@ -513,7 +509,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   PhotoViewGalleryPageOptions _imageBuilder(BuildContext ctx, BaseAsset asset) {
-    final size = Size(ctx.width, ctx.height);
+    final size = ctx.sizeData;
     return PhotoViewGalleryPageOptions(
       key: ValueKey(asset.heroTag),
       imageProvider: getFullImageProvider(asset, size: size),
@@ -529,10 +525,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       onTapDown: _onTapDown,
       onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
       errorBuilder: (_, __, ___) => Container(
-        width: ctx.width,
-        height: ctx.height,
+        width: size.width,
+        height: size.height,
         color: backgroundColor,
-        child: Thumbnail(asset: asset, fit: BoxFit.contain, size: size),
+        child: Thumbnail(asset: asset, fit: BoxFit.contain),
       ),
     );
   }
@@ -562,7 +558,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           asset: asset,
           image: Image(
             key: ValueKey(asset),
-            image: getFullImageProvider(asset, size: Size(ctx.width, ctx.height)),
+            image: getFullImageProvider(asset, size: ctx.sizeData),
             fit: BoxFit.contain,
             height: ctx.height,
             width: ctx.width,
