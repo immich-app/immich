@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
@@ -35,17 +34,16 @@ class GeneralBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
-  late DraggableScrollableController textController;
-
+  late DraggableScrollableController sheetController;
   @override
   void initState() {
     super.initState();
-    textController = DraggableScrollableController();
+    sheetController = DraggableScrollableController();
   }
 
   @override
   void dispose() {
-    textController.dispose();
+    sheetController.dispose();
     super.dispose();
   }
 
@@ -53,7 +51,6 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
   Widget build(BuildContext context) {
     final multiselect = ref.watch(multiSelectProvider);
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
-    final sheetController = useDraggableScrollableController();
 
     Future<void> addAssetsToAlbum(RemoteAlbum album) async {
       final selectedAssets = multiselect.selectedAssets;
