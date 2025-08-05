@@ -60,12 +60,10 @@ extension MapBounds on $RemoteExifEntityTable {
     final southwest = bounds.southwest;
     final northeast = bounds.northeast;
 
-    if (southwest.longitude <= northeast.longitude) {
-      return latitude.isBetweenValues(southwest.latitude, northeast.latitude) &
-          longitude.isBetweenValues(southwest.longitude, northeast.longitude);
-    } else {
-      return latitude.isBetweenValues(southwest.latitude, northeast.latitude) &
-          (longitude.isBiggerOrEqualValue(southwest.longitude) | longitude.isSmallerOrEqualValue(northeast.longitude));
-    }
+    final latInBounds = latitude.isBetweenValues(southwest.latitude, northeast.latitude);
+    final longInBounds = southwest.longitude <= northeast.longitude
+        ? longitude.isBetweenValues(southwest.longitude, northeast.longitude)
+        : (longitude.isBiggerOrEqualValue(southwest.longitude) | longitude.isSmallerOrEqualValue(northeast.longitude));
+    return latInBounds & longInBounds;
   }
 }
