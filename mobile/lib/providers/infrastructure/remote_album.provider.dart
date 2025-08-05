@@ -163,7 +163,11 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
 
   Future<void> leaveAlbum(String albumId, {required String userId}) async {
     await _remoteAlbumService.removeUser(albumId, userId: userId);
-    await deleteAlbum(albumId);
+
+    final updatedAlbums = state.albums.where((album) => album.id != albumId).toList();
+    final updatedFilteredAlbums = state.filteredAlbums.where((album) => album.id != albumId).toList();
+
+    state = state.copyWith(albums: updatedAlbums, filteredAlbums: updatedFilteredAlbums);
   }
 
   Future<void> setActivityStatus(String albumId, bool enabled) {

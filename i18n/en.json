@@ -1753,6 +1753,7 @@
   "shared_album_activity_remove_title": "Delete Activity",
   "shared_album_section_people_action_error": "Error leaving/removing from album",
   "shared_album_section_people_action_leave": "Remove user from album",
+  "shared_album_section_people_action_leave_v2": "Leave album",
   "shared_album_section_people_action_remove_user": "Remove user from album",
   "shared_album_section_people_title": "PEOPLE",
   "shared_by": "Shared by",

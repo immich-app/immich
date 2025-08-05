@@ -48,7 +48,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
     void leaveAlbum() async {
       try {
         await ref.read(remoteAlbumProvider.notifier).leaveAlbum(album.id, userId: userId);
-        context.navigateTo(const MainTimelineRoute(children: [DriftAlbumsRoute()]));
+        context.navigateTo(const DriftAlbumsRoute());
       } catch (_) {
         showErrorMessage();
       }
@@ -58,7 +58,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
       try {
         await ref.read(remoteAlbumProvider.notifier).removeUser(album.id, user.id);
         ref.invalidate(remoteAlbumSharedUsersProvider(album.id));
-      } catch (error) {
+      } catch (_) {
         showErrorMessage();
       }
 
@@ -100,7 +100,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
         actions = [
           ListTile(
             leading: const Icon(Icons.exit_to_app_rounded),
-            title: const Text("shared_album_section_people_action_leave").tr(),
+            title: const Text("shared_album_section_people_action_leave_v2").tr(),
             onTap: leaveAlbum,
           ),
         ];
