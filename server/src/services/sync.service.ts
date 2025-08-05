@@ -24,7 +24,6 @@ import { getMyPartnerIds } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { setIsEqual } from 'src/utils/set';
 import { fromAck, mapJsonLine, serialize, SerializeOptions, toAck } from 'src/utils/sync';
-import { v7 } from 'uuid';
 
 type CheckpointMap = Partial<Record<SyncEntityType, SyncAck>>;
 type AssetLike = Omit<SyncAssetV1, 'checksum' | 'thumbhash'> & {

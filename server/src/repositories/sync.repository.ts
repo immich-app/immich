@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, SelectQueryBuilder, sql } from 'kysely';
+import { Kysely, SelectQueryBuilder } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -250,12 +250,7 @@ class AlbumToAssetSync extends BaseSync {
     params: [{ nowId: DummyValue.UUID, userId: DummyValue.UUID }, DummyValue.UUID, DummyValue.UUID, DummyValue.UUID],
     stream: true,
   })
-  getBackfill(
-    { nowId, userId }: SyncQueryOptions,
-    albumId: string,
-    afterUpdateId: string | undefined,
-    beforeUpdateId: string,
-  ) {
+  getBackfill({ nowId }: SyncQueryOptions, albumId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
     return this.db
       .selectFrom('album_asset as album_assets')
       .select(['album_assets.assetsId as assetId', 'album_assets.albumsId as albumId', 'album_assets.updateId'])
