@@ -66,7 +66,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return _db.managers.localAssetEntity.filter((e) => e.checksum.isNull().not()).count();
   }
 
-  Future<List<LocalAsset>> getAssetsByChecksums(Iterable<String> checksums) {
+  Future<List<LocalAsset>> getByChecksums(Iterable<String> checksums) {
     if (checksums.isEmpty) return Future.value([]);
     final query = _db.localAssetEntity.select()..where((lae) => lae.checksum.isIn(checksums));
     return query.map((row) => row.toDto()).get();

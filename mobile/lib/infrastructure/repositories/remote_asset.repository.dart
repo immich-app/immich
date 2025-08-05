@@ -254,22 +254,12 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     return _db.managers.remoteAssetEntity.count();
   }
 
-  Future<List<RemoteAsset>> getAssetsByChecksums(Iterable<String> checksums, {bool? isTrashed}) {
+  Future<List<RemoteAsset>> getByChecksums(Iterable<String> checksums, {bool? isTrashed}) {
     if (checksums.isEmpty) return Future.value([]);
-    final conditions = <Expression<bool>>[
-      _db.remoteAssetEntity.checksum.isIn(checksums),
-    ];
-
+    final query = _db.remoteAssetEntity.select()..where((rae) => rae.checksum.isIn(checksums));
     if (isTrashed != null) {
-      if (isTrashed) {
-        conditions.add(_db.remoteAssetEntity.deletedAt.isNotNull());
-      } else {
-        conditions.add(_db.remoteAssetEntity.deletedAt.isNull());
-      }
+      query.where((rae) => isTrashed ? rae.deletedAt.isNotNull() : rae.deletedAt.isNull());
     }
-
-    final query = _db.remoteAssetEntity.select()..where((rae) => conditions.reduce((a, b) => a & b));
     return query.map((row) => row.toDto()).get();
   }
-
 }

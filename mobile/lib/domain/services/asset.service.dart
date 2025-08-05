@@ -107,7 +107,7 @@ class AssetService {
 
       if (trashedItems.isNotEmpty) {
         final trashedAssetsChecksums = trashedItems.map((syncItem) => syncItem.checksum);
-        final localAssetsToTrash = await _localAssetRepository.getAssetsByChecksums(trashedAssetsChecksums);
+        final localAssetsToTrash = await _localAssetRepository.getByChecksums(trashedAssetsChecksums);
         if (localAssetsToTrash.isNotEmpty) {
           final mediaUrls = await Future.wait(
             localAssetsToTrash.map(
@@ -121,7 +121,7 @@ class AssetService {
       final modifiedItems = syncItems.where((e) => e.deletedAt == null);
       if (modifiedItems.isNotEmpty) {
         final modifiedChecksums = modifiedItems.map((syncItem) => syncItem.checksum);
-        final remoteAssetsToRestore = await _remoteAssetRepository.getAssetsByChecksums(
+        final remoteAssetsToRestore = await _remoteAssetRepository.getByChecksums(
           modifiedChecksums,
           isTrashed: true,
         );
