@@ -3,6 +3,7 @@ package app.alextran.immich.widget
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import app.alextran.immich.widget.model.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -24,14 +25,23 @@ class ImmichAPI(cfg: ServerConfig) {
 
       val serverURL = prefs.getString("widget_server_url", "") ?: ""
       val sessionKey = prefs.getString("widget_auth_token", "") ?: ""
+      val customHeadersJSON = prefs.getString("widget_custom_headers", "") ?: ""
 
       if (serverURL.isBlank() || sessionKey.isBlank()) {
         return null
       }
 
+      var customHeaders: Map<String, String> = HashMap<String, String>()
+
+      if (customHeadersJSON.isNotBlank()) {
+        val stringMapType = object : TypeToken<Map<String, String>>() {}.type
+        customHeaders = Gson().fromJson(customHeadersJSON, stringMapType)
+      }
+
       return ServerConfig(
         serverURL,
-        sessionKey
+        sessionKey,
+        customHeaders
       )
     }
   }
@@ -55,6 +65,12 @@ class ImmichAPI(cfg: ServerConfig) {
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "POST"
       setRequestProperty("Content-Type", "application/json")
+
+      // Custom Headers
+      serverConfig.customHeaders.forEach { (key, value) ->
+        setRequestProperty(key, value)
+      }
+
       doOutput = true
     }
 
@@ -75,6 +91,11 @@ class ImmichAPI(cfg: ServerConfig) {
     val url = buildRequestURL("/memories", listOf("for" to iso8601))
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "GET"
+
+      // Custom Headers
+      serverConfig.customHeaders.forEach { (key, value) ->
+        setRequestProperty(key, value)
+      }
     }
 
     val response = connection.inputStream.bufferedReader().readText()
@@ -94,6 +115,11 @@ class ImmichAPI(cfg: ServerConfig) {
     val url = buildRequestURL("/albums")
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "GET"
+
+      // Custom Headers
+      serverConfig.customHeaders.forEach { (key, value) ->
+        setRequestProperty(key, value)
+      }
     }
 
     val response = connection.inputStream.bufferedReader().readText()
