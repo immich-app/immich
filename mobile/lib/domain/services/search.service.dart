@@ -1,10 +1,9 @@
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/search_result.model.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/search_api.repository.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart' as api show AssetVisibility;
 import 'package:openapi/api.dart' hide AssetVisibility;
 
 class SearchService {
@@ -51,42 +50,4 @@ class SearchService {
     }
     return null;
   }
-}
-
-extension on AssetResponseDto {
-  RemoteAsset toDto() {
-    return RemoteAsset(
-      id: id,
-      name: originalFileName,
-      checksum: checksum,
-      createdAt: fileCreatedAt,
-      updatedAt: updatedAt,
-      ownerId: ownerId,
-      visibility: switch (visibility) {
-        api.AssetVisibility.timeline => AssetVisibility.timeline,
-        api.AssetVisibility.hidden => AssetVisibility.hidden,
-        api.AssetVisibility.archive => AssetVisibility.archive,
-        api.AssetVisibility.locked => AssetVisibility.locked,
-        _ => AssetVisibility.timeline,
-      },
-      durationInSeconds: duration.toDuration()?.inSeconds ?? 0,
-      height: exifInfo?.exifImageHeight?.toInt(),
-      width: exifInfo?.exifImageWidth?.toInt(),
-      isFavorite: isFavorite,
-      livePhotoVideoId: livePhotoVideoId,
-      thumbHash: thumbhash,
-      localId: null,
-      type: type.toAssetType(),
-    );
-  }
-}
-
-extension on AssetTypeEnum {
-  AssetType toAssetType() => switch (this) {
-    AssetTypeEnum.IMAGE => AssetType.image,
-    AssetTypeEnum.VIDEO => AssetType.video,
-    AssetTypeEnum.AUDIO => AssetType.audio,
-    AssetTypeEnum.OTHER => AssetType.other,
-    _ => throw Exception('Unknown AssetType value: $this'),
-  };
 }

@@ -1,3 +1,5 @@
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:openapi/api.dart';
 
 enum SharedLinkSource { album, individual }
@@ -14,6 +16,8 @@ class SharedLink {
   final String key;
   final bool showMetadata;
   final SharedLinkSource type;
+  final List<RemoteAsset> assets;
+  final String? albumId;
 
   const SharedLink({
     required this.id,
@@ -27,6 +31,8 @@ class SharedLink {
     required this.key,
     required this.showMetadata,
     required this.type,
+    this.assets = const [],
+    this.albumId,
   });
 
   SharedLink copyWith({
@@ -74,7 +80,9 @@ class SharedLink {
           ? dto.album?.albumThumbnailAssetId
           : dto.assets.isNotEmpty
           ? dto.assets[0].id
-          : null;
+          : null,
+      assets = dto.assets.map((asset) => asset.toDto()).toList(),
+      albumId = dto.album?.id;
 
   @override
   String toString() =>
