@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/migration.dart';
@@ -70,6 +71,7 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
       await ref.read(backgroundSyncProvider).cancel();
       ref.read(websocketProvider.notifier).stopListeningToBetaEvents();
       ref.read(websocketProvider.notifier).startListeningToOldEvents();
+      ref.read(readonlyModeProvider.notifier).setReadonlyMode(false);
     }
 
     if (mounted) {

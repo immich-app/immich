@@ -49,7 +49,8 @@ enum AppSettingsEnum<T> {
   betaTimeline<bool>(StoreKey.betaTimeline, null, false),
   enableBackup<bool>(StoreKey.enableBackup, null, false),
   useCellularForUploadVideos<bool>(StoreKey.useWifiForUploadVideos, null, false),
-  useCellularForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, null, false);
+  useCellularForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, null, false),
+  readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 

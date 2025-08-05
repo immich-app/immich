@@ -21,6 +21,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/she
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
@@ -44,6 +45,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
 
     final isInLockedView = ref.watch(inLockedViewProvider);
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final actions = <Widget>[
       const ShareActionButton(source: ActionSource.viewer),
@@ -65,8 +67,18 @@ class AssetDetailBottomSheet extends ConsumerWidget {
 
     final lockedViewActions = <Widget>[];
 
+    List<Widget> getSheetActions() {
+      if (isReadonlyModeEnabled) return [];
+
+      if (isInLockedView) {
+        return lockedViewActions;
+      }
+
+      return actions;
+    }
+
     return BaseBottomSheet(
-      actions: isInLockedView ? lockedViewActions : actions,
+      actions: getSheetActions(),
       slivers: const [_AssetDetailBottomSheet()],
       controller: controller,
       initialChildSize: initialChildSize,
