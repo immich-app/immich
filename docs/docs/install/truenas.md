@@ -382,13 +382,19 @@ To update the app to the latest version:
 
 ## Migration
 
-### Migrating from Old Storage Configuration
+:::danger
+Perform a backup of your Immich data before proceeding with the migration steps below. This is crucial to prevent any data loss if something goes wrong during the migration process.
+
+The migration should also be performed when the Immich app is not running to ensure no data is being written while you are copying the data.
+:::
+
+### Migration from Old Storage Configuration
+
+There are two ways to migrate from the old storage configuration to the new one, depending on whether you want to keep the old multiple datasets or if you want to move to a double dataset configuration with a single dataset for Immich data storage and a single dataset for Postgres data storage.
 
 :::note Old TrueNAS Versions Permissions
 If you were using an older version of TrueNAS (before 24.10.2.2), the datasets, except the one for **pgData** had only to be owned by the `root` user (UID 0). You might have to add the **modify** permission to the `apps` user (UID 568) or the user you want to run Immich as, to all of them, except **pgData**. The steps to add or change ACL permissions are described in the [TrueNAS documentation](https://www.truenas.com/docs/scale/scaletutorials/datasets/permissionsscale/).
 :::
-
-There are two ways to migrate from the old storage configuration to the new one, depending on whether you want to keep the old datasets or not.
 
 <Tabs groupId="truenas-migration-tabs">
   <TabItem value="migrate-new-dataset" label="Migrate data to a new dataset" default>
@@ -409,6 +415,21 @@ To migrate from the old storage configuration to the new one, you will need to c
    ```
 
    Make sure to replace `/mnt/tank/immich/` with the correct path to your old datasets and `/mnt/tank/immich/data/` with the correct path to your new dataset.
+
+   :::tip
+   If you were using ixVolume (dataset created automatically by the system) for Immich data storage, the path to the data should be `/mnt/.ix-apps/app_mounts/immich/`. You have to use this path instead of `/mnt/tank/immich/` in the `rsync` command above, for example:
+
+   ```bash
+   rsync -av /mnt/.ix-apps/app_mounts/immich/library/ /mnt/tank/immich/data/library/
+   ```
+
+   If you were also using ixVolume for Postgres data storage, you also should, first create the pgData dataset, as described in the [Setting up Storage Datasets](#setting-up-storage-datasets) section above, and then you can use the following command to copy the Postgres data:
+
+   ```bash
+   rsync -av /mnt/.ix-apps/app_mounts/immich/pgData/ /mnt/tank/immich/pgData/
+   ```
+
+   :::
 
    :::warning
    Make sure that for each folder, the .immich file is copied as well, as it contains important metadata for Immich. If for some reason the .immich file is not copied, you can copy it manually with the rsync command, for example:
@@ -433,7 +454,18 @@ To migrate from the old storage configuration to the new one, you will need to c
 
 This will recreate the Immich container with the new storage configuration and start the app.
 
-If everything went well, you should now be able to access Immich with the new storage configuration. You can verify that the data has been copied correctly by checking the Immich web interface and ensuring that all your photos and videos are still available. You can also delete the old datasets if you no longer need them.
+If everything went well, you should now be able to access Immich with the new storage configuration. You can verify that the data has been copied correctly by checking the Immich web interface and ensuring that all your photos and videos are still available. You can also delete the old datasets if you no longer need them using the TrueNAS web interface.
+If you were using the ixVolume (dataset created automatically by the system), or folders, for Immich data storage, you can delete the old datasets using the following commands:
+
+```bash
+rm -r /mnt/.ix-apps/app_mounts/immich/library
+rm -r /mnt/.ix-apps/app_mounts/immich/uploads
+rm -r /mnt/.ix-apps/app_mounts/immich/thumbs
+rm -r /mnt/.ix-apps/app_mounts/immich/profile
+rm -r /mnt/.ix-apps/app_mounts/immich/video
+rm -r /mnt/.ix-apps/app_mounts/immich/backups
+```
+
 </TabItem>
 
   <TabItem value="migrate-old-dataset" label="Keep the existing datasets">
