@@ -22,11 +22,7 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
   }) {
     _initialImage = initialImage;
     images.listen(
-      (image) {
-        setImage(image);
-        _initialImage?.dispose();
-        _initialImage = null;
-      },
+      _onImage,
       onError: (Object error, StackTrace stack) {
         reportError(
           context: ErrorDescription('resolving a single-frame image stream'),
@@ -37,6 +33,12 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
         );
       },
     );
+  }
+
+  _onImage(ImageInfo image) {
+    setImage(image);
+    _initialImage?.dispose();
+    _initialImage = null;
   }
 
   @override
