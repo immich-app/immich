@@ -59,6 +59,7 @@ ImageInfo? getCachedImage(ImageProvider key) {
   final ImageStreamCompleter? stream = PaintingBinding.instance.imageCache.putIfAbsent(
     key,
     () => throw Exception(), // don't bother loading if it isn't cached
+    onError: (_, __) {},
   );
 
   if (stream != null) {
