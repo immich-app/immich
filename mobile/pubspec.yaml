@@ -116,7 +116,7 @@ dev_dependencies:
   # Drift generator
   drift_dev: ^2.23.1
   # Type safe platform code
-  pigeon: ^25.3.1
+  pigeon: ^26.0.0
 
 flutter:
   uses-material-design: true
