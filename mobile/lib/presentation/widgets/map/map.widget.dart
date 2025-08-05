@@ -34,7 +34,9 @@ class CustomSourceProperties implements SourceProperties {
 }
 
 class DriftMap extends ConsumerStatefulWidget {
-  const DriftMap({super.key});
+  final LatLng? initialLocation;
+
+  const DriftMap({super.key, this.initialLocation});
 
   @override
   ConsumerState<DriftMap> createState() => _DriftMapState();
@@ -43,17 +45,10 @@ class DriftMap extends ConsumerStatefulWidget {
 class _DriftMapState extends ConsumerState<DriftMap> {
   MapLibreMapController? mapController;
   final _reloadMutex = AsyncMutex();
-  final _debouncer = Debouncer(interval: const Duration(milliseconds: 250), maxWaitTime: const Duration(seconds: 2));
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  final _debouncer = Debouncer(interval: const Duration(milliseconds: 500), maxWaitTime: const Duration(seconds: 2));
 
   @override
   void dispose() {
-    mapController?.removeListener(onMapMoved);
-    mapController?.dispose();
     _debouncer.dispose();
     super.dispose();
   }
@@ -78,6 +73,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
       MapUtils.defaultHeatMapLayerId,
       MapUtils.defaultHeatmapLayerProperties,
     );
+    _debouncer.run(setBounds);
     controller.addListener(onMapMoved);
   }
 
@@ -140,7 +136,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        _Map(onMapCreated: onMapCreated, onMapReady: onMapReady),
+        _Map(initialLocation: widget.initialLocation, onMapCreated: onMapCreated, onMapReady: onMapReady),
         _MyLocationButton(onZoomToLocation: onZoomToLocation),
         const MapBottomSheet(),
       ],
@@ -149,7 +145,9 @@ class _DriftMapState extends ConsumerState<DriftMap> {
 }
 
 class _Map extends StatelessWidget {
-  const _Map({required this.onMapCreated, required this.onMapReady});
+  final LatLng? initialLocation;
+
+  const _Map({this.initialLocation, required this.onMapCreated, required this.onMapReady});
 
   final MapCreatedCallback onMapCreated;
 
@@ -157,10 +155,13 @@ class _Map extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final initialLocation = this.initialLocation;
     return MapThemeOverride(
       mapBuilder: (style) => style.widgetWhen(
         onData: (style) => MapLibreMap(
-          initialCameraPosition: const CameraPosition(target: LatLng(0, 0), zoom: 0),
+          initialCameraPosition: initialLocation == null
+              ? const CameraPosition(target: LatLng(0, 0), zoom: 0)
+              : CameraPosition(target: initialLocation, zoom: MapUtils.mapZoomToAssetLevel),
           styleString: style,
           onMapCreated: onMapCreated,
           onStyleLoadedCallback: onMapReady,

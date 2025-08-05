@@ -69,7 +69,7 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
       shouldCloseOnMinExtent: widget.shouldCloseOnMinExtent,
       builder: (BuildContext context, ScrollController scrollController) {
         return Card(
-          color: widget.backgroundColor ?? context.colorScheme.surfaceContainerHigh,
+          color: widget.backgroundColor ?? context.colorScheme.surface,
           borderOnForeground: false,
           clipBehavior: Clip.antiAlias,
           elevation: 6.0,
@@ -131,11 +131,11 @@ class _DragHandle extends StatelessWidget {
           width: 32,
           height: 6,
           child: DecoratedBox(
-          decoration: BoxDecoration(
+            decoration: BoxDecoration(
               borderRadius: const BorderRadius.all(Radius.circular(20)),
               color: context.themeData.dividerColor.lighten(amount: 0.6),
+            ),
           ),
-        ),
         ),
       ),
     );

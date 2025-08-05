@@ -453,9 +453,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         ),
       ])
       ..where(
-        _db.remoteExifEntity.latitude.isNotNull() &
-            _db.remoteExifEntity.longitude.isNotNull() &
-            _db.remoteExifEntity.inBounds(bounds) &
+        _db.remoteExifEntity.inBounds(bounds) &
             _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
             _db.remoteAssetEntity.deletedAt.isNull(),
       )
@@ -479,9 +477,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
             ),
           ])
           ..where(
-            _db.remoteExifEntity.latitude.isNotNull() &
-                _db.remoteExifEntity.longitude.isNotNull() &
-                _db.remoteExifEntity.inBounds(bounds) &
+            _db.remoteExifEntity.inBounds(bounds) &
                 _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
                 _db.remoteAssetEntity.deletedAt.isNull(),
           )

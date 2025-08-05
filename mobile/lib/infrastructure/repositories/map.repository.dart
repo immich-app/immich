@@ -24,16 +24,14 @@ class DriftMapRepository extends DriftDatabaseRepository {
   Future<List<Marker>> _watchMapMarker({
     Expression<bool> Function($RemoteAssetEntityTable row)? assetFilter,
     LatLngBounds? bounds,
-  }) {
+  }) async {
+    final assetId = _db.remoteExifEntity.assetId;
+    final latitude = _db.remoteExifEntity.latitude;
+    final longitude = _db.remoteExifEntity.longitude;
+
     final query = _db.remoteExifEntity.selectOnly()
-      ..addColumns([_db.remoteExifEntity.assetId, _db.remoteExifEntity.latitude, _db.remoteExifEntity.longitude])
-      ..join([
-        innerJoin(
-          _db.remoteAssetEntity,
-          _db.remoteAssetEntity.id.equalsExp(_db.remoteExifEntity.assetId),
-          useColumns: false,
-        ),
-      ])
+      ..addColumns([assetId, latitude, longitude])
+      ..join([innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(assetId), useColumns: false)])
       ..limit(10000);
 
     if (assetFilter != null) {
@@ -43,15 +41,14 @@ class DriftMapRepository extends DriftDatabaseRepository {
     if (bounds != null) {
       query.where(_db.remoteExifEntity.inBounds(bounds));
     } else {
-      query.where(_db.remoteExifEntity.latitude.isNotNull() & _db.remoteExifEntity.longitude.isNotNull());
+      query.where(latitude.isNotNull() & longitude.isNotNull());
     }
 
-    return query.map((row) {
-      return Marker(
-        assetId: row.read(_db.remoteExifEntity.assetId)!,
-        location: LatLng(row.read(_db.remoteExifEntity.latitude)!, row.read(_db.remoteExifEntity.longitude)!),
-      );
-    }).get();
+    final rows = await query.get();
+    return List.generate(rows.length, (i) {
+      final row = rows[i];
+      return Marker(assetId: row.read(assetId)!, location: LatLng(row.read(latitude)!, row.read(longitude)!));
+    }, growable: false);
   }
 }
 

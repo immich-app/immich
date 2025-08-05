@@ -22,7 +22,6 @@ final _features = [
     icon: Icons.timeline_rounded,
     onTap: (ctx, _) => ctx.pushRoute(const TabShellRoute()),
   ),
-  _Feature(name: 'Map', icon: Icons.map_outlined, onTap: (ctx, _) => ctx.pushRoute(const DriftMapRoute())),
   _Feature(
     name: 'Selection Mode Timeline',
     icon: Icons.developer_mode_rounded,

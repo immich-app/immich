@@ -107,14 +107,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     super.initState();
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final currentTilesPerRow = ref.read(settingsProvider).get(Setting.tilesPerRow);
-      setState(() {
-        _perRow = currentTilesPerRow;
-        _scaleFactor = 7.0 - _perRow;
-        _baseScaleFactor = _scaleFactor;
-      });
-    });
+    final currentTilesPerRow = ref.read(settingsProvider).get(Setting.tilesPerRow);
+    _perRow = currentTilesPerRow;
+    _scaleFactor = 7.0 - _perRow;
+    _baseScaleFactor = _scaleFactor;
 
     ref.listenManual(multiSelectProvider.select((s) => s.isEnabled), _onMultiSelectionToggled);
   }
