@@ -159,6 +159,9 @@ class SyncStreamService {
       // to acknowledge that the client has processed all the backfill events
       case SyncEntityType.syncAckV1:
         return;
+      // Request to reset the client state. Clear everything related to remote entities
+      case SyncEntityType.syncResetV1:
+        return _syncStreamRepository.reset();
       case SyncEntityType.memoryV1:
         return _syncStreamRepository.updateMemoriesV1(data.cast());
       case SyncEntityType.memoryDeleteV1:

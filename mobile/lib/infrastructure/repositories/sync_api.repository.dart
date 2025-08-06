@@ -156,7 +156,8 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.albumToAssetV1: SyncAlbumToAssetV1.fromJson,
   SyncEntityType.albumToAssetBackfillV1: SyncAlbumToAssetV1.fromJson,
   SyncEntityType.albumToAssetDeleteV1: SyncAlbumToAssetDeleteV1.fromJson,
-  SyncEntityType.syncAckV1: _SyncAckV1.fromJson,
+  SyncEntityType.syncAckV1: _SyncEmptyDto.fromJson,
+  SyncEntityType.syncResetV1: _SyncEmptyDto.fromJson,
   SyncEntityType.memoryV1: SyncMemoryV1.fromJson,
   SyncEntityType.memoryDeleteV1: SyncMemoryDeleteV1.fromJson,
   SyncEntityType.memoryToAssetV1: SyncMemoryAssetV1.fromJson,
@@ -174,6 +175,6 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.assetFaceDeleteV1: SyncAssetFaceDeleteV1.fromJson,
 };
 
-class _SyncAckV1 {
-  static _SyncAckV1? fromJson(dynamic _) => _SyncAckV1();
+class _SyncEmptyDto {
+  static _SyncEmptyDto? fromJson(dynamic _) => _SyncEmptyDto();
 }
