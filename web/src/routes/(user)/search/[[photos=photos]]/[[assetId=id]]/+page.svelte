@@ -360,7 +360,7 @@
 {/if}
 
 <section
-  class="mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4"
+  class="mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4 max-h-screen"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={searchResultsElement}
