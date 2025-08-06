@@ -13,6 +13,7 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
@@ -109,6 +110,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
                   icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
                   onPressed: widget.onShowOptions,
                 ),
+              if (currentAlbum.isActivityEnabled) const ActivityActionButton(menuItem: true),
             ],
             flexibleSpace: Builder(
               builder: (context) {
