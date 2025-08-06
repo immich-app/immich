@@ -13,53 +13,62 @@ class TrashService {
   final LocalFilesManagerRepository _localFilesManager;
   final StorageRepository _storageRepository;
   final Platform _platform;
-  final Logger _logger;
+  final Logger _logger = Logger('TrashService');
 
-  const TrashService({
+  TrashService({
     required AppSettingsService appSettingsService,
     required RemoteAssetRepository remoteAssetRepository,
     required DriftLocalAssetRepository localAssetRepository,
     required LocalFilesManagerRepository localFilesManager,
     required StorageRepository storageRepository,
-    required Logger logger,
   }) : _appSettingsService = appSettingsService,
        _remoteAssetRepository = remoteAssetRepository,
        _localAssetRepository = localAssetRepository,
        _localFilesManager = localFilesManager,
        _storageRepository = storageRepository,
-       _platform = const LocalPlatform(),
-       _logger = logger;
+       _platform = const LocalPlatform();
 
   Future<void> handleRemoteChanges(Iterable<({String checksum, DateTime? deletedAt})> syncItems) async {
-    if (_platform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid)) {
-      final trashedItems = syncItems.where((item) => item.deletedAt != null);
-
-      if (trashedItems.isNotEmpty) {
-        final trashedAssetsChecksums = trashedItems.map((syncItem) => syncItem.checksum);
-        final localAssetsToTrash = await _localAssetRepository.getByChecksums(trashedAssetsChecksums);
-        if (localAssetsToTrash.isNotEmpty) {
-          final mediaUrls = await Future.wait(
-            localAssetsToTrash.map(
-              (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
-            ),
-          );
-          _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
-          await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
-        }
-      }
-      final modifiedItems = syncItems.where((e) => e.deletedAt == null);
-      if (modifiedItems.isNotEmpty) {
-        final modifiedChecksums = modifiedItems.map((syncItem) => syncItem.checksum);
-        final remoteAssetsToRestore = await _remoteAssetRepository.getByChecksums(modifiedChecksums, isTrashed: true);
-        if (remoteAssetsToRestore.isNotEmpty) {
-          _logger.info("Restoring from trash ${remoteAssetsToRestore.map((e) => e.name).join(", ")} assets");
-          for (final remoteAsset in remoteAssetsToRestore) {
-            await _localFilesManager.restoreFromTrash(remoteAsset.name, remoteAsset.type.index);
-          }
-        }
-      }
-    } else {
+    if (!_platform.isAndroid || !_appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid)) {
       return Future.value();
+    }
+    final trashedAssetsChecksums = syncItems
+        .where((item) => item.deletedAt != null)
+        .map((syncItem) => syncItem.checksum);
+    await applyRemoteTrashToLocal(trashedAssetsChecksums);
+    final modifiedAssetsChecksums = syncItems
+        .where((item) => item.deletedAt == null)
+        .map((syncItem) => syncItem.checksum);
+    await applyRemoteRestoreToLocal(modifiedAssetsChecksums);
+  }
+
+  Future<void> applyRemoteTrashToLocal(Iterable<String> trashedAssetsChecksums) async {
+    if (trashedAssetsChecksums.isNotEmpty) {
+      final localAssetsToTrash = await _localAssetRepository.getByChecksums(trashedAssetsChecksums);
+      if (localAssetsToTrash.isNotEmpty) {
+        final mediaUrls = await Future.wait(
+          localAssetsToTrash.map(
+            (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
+          ),
+        );
+        _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
+        await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
+      }
+    }
+  }
+
+  Future<void> applyRemoteRestoreToLocal(Iterable<String> modifiedAssetsChecksums) async {
+    if (modifiedAssetsChecksums.isNotEmpty) {
+      final remoteAssetsToRestore = await _remoteAssetRepository.getByChecksums(
+        modifiedAssetsChecksums,
+        isTrashed: true,
+      );
+      if (remoteAssetsToRestore.isNotEmpty) {
+        _logger.info("Restoring from trash ${remoteAssetsToRestore.map((e) => e.name).join(", ")} assets");
+        for (final remoteAsset in remoteAssetsToRestore) {
+          await _localFilesManager.restoreFromTrash(remoteAsset.name, remoteAsset.type.index);
+        }
+      }
     }
   }
 }
