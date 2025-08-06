@@ -6,7 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
@@ -14,7 +13,6 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/backup/drift_album_info_list_tile.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
-import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
 @RoutePage()
 class DriftBackupAlbumSelectionPage extends ConsumerStatefulWidget {
@@ -67,14 +65,14 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     final selectedBackupAlbums = albums.where((album) => album.backupSelection == BackupSelection.selected).toList();
     final excludedBackupAlbums = albums.where((album) => album.backupSelection == BackupSelection.excluded).toList();
 
-    handleSyncAlbumToggle(bool isEnable) async {
-      if (isEnable) {
-        await ref.read(albumProvider.notifier).refreshRemoteAlbums();
-        for (final album in selectedBackupAlbums) {
-          await ref.read(albumProvider.notifier).createSyncAlbum(album.name);
-        }
-      }
-    }
+    // handleSyncAlbumToggle(bool isEnable) async {
+    //   if (isEnable) {
+    //     await ref.read(albumProvider.notifier).refreshRemoteAlbums();
+    //     for (final album in selectedBackupAlbums) {
+    //       await ref.read(albumProvider.notifier).createSyncAlbum(album.name);
+    //     }
+    //   }
+    // }
 
     return PopScope(
       onPopInvokedWithResult: (didPop, result) async {
@@ -167,16 +165,15 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                     ),
                   ),
 
-                  SettingsSwitchListTile(
-                    valueNotifier: _enableSyncUploadAlbum,
-                    title: "sync_albums".t(context: context),
-                    subtitle: "sync_upload_album_setting_subtitle".t(context: context),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    titleStyle: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-                    subtitleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.primary),
-                    onChanged: handleSyncAlbumToggle,
-                  ),
-
+                  // SettingsSwitchListTile(
+                  //   valueNotifier: _enableSyncUploadAlbum,
+                  //   title: "sync_albums".t(context: context),
+                  //   subtitle: "sync_upload_album_setting_subtitle".t(context: context),
+                  //   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  //   titleStyle: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                  //   subtitleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.primary),
+                  //   onChanged: handleSyncAlbumToggle,
+                  // ),
                   ListTile(
                     title: Text(
                       "albums_on_device_count".t(context: context, args: {'count': albumCount.toString()}),

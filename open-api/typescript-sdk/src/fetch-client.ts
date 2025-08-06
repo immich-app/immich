@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.136.0
+ * 1.137.3
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -3552,6 +3552,9 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * This endpoint requires the `server.versionCheck` permission.
+ */
 export function getVersionCheck(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -4616,6 +4619,7 @@ export enum Permission {
     ServerApkLinks = "server.apkLinks",
     ServerStorage = "server.storage",
     ServerStatistics = "server.statistics",
+    ServerVersionCheck = "server.versionCheck",
     ServerLicenseRead = "serverLicense.read",
     ServerLicenseUpdate = "serverLicense.update",
     ServerLicenseDelete = "serverLicense.delete",
@@ -4766,9 +4770,11 @@ export enum SyncEntityType {
     AlbumUserV1 = "AlbumUserV1",
     AlbumUserBackfillV1 = "AlbumUserBackfillV1",
     AlbumUserDeleteV1 = "AlbumUserDeleteV1",
-    AlbumAssetV1 = "AlbumAssetV1",
+    AlbumAssetCreateV1 = "AlbumAssetCreateV1",
+    AlbumAssetUpdateV1 = "AlbumAssetUpdateV1",
     AlbumAssetBackfillV1 = "AlbumAssetBackfillV1",
-    AlbumAssetExifV1 = "AlbumAssetExifV1",
+    AlbumAssetExifCreateV1 = "AlbumAssetExifCreateV1",
+    AlbumAssetExifUpdateV1 = "AlbumAssetExifUpdateV1",
     AlbumAssetExifBackfillV1 = "AlbumAssetExifBackfillV1",
     AlbumToAssetV1 = "AlbumToAssetV1",
     AlbumToAssetDeleteV1 = "AlbumToAssetDeleteV1",

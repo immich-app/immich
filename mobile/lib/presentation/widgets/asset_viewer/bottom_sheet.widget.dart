@@ -12,6 +12,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permane
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
@@ -21,6 +22,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/she
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
@@ -42,8 +44,8 @@ class AssetDetailBottomSheet extends ConsumerWidget {
     }
 
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
-
     final isInLockedView = ref.watch(inLockedViewProvider);
+    final currentAlbum = ref.watch(currentRemoteAlbumProvider);
 
     final actions = <Widget>[
       const ShareActionButton(source: ActionSource.viewer),
@@ -61,6 +63,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
         const DeleteLocalActionButton(source: ActionSource.viewer),
         const UploadActionButton(source: ActionSource.timeline),
       ],
+      if (currentAlbum != null) RemoveFromAlbumActionButton(albumId: currentAlbum.id, source: ActionSource.viewer),
     ];
 
     final lockedViewActions = <Widget>[];
@@ -143,12 +146,18 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
     final cameraTitle = _getCameraInfoTitle(exifInfo);
 
+    Future<void> editDateTime() async {
+      await ref.read(actionProvider.notifier).editDateTime(ActionSource.viewer, context);
+    }
+
     return SliverList.list(
       children: [
         // Asset Date and Time
         _SheetTile(
           title: _getDateTime(context, asset),
           titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          trailing: asset.hasRemote ? const Icon(Icons.edit, size: 18) : null,
+          onTap: asset.hasRemote ? () async => await editDateTime() : null,
         ),
         if (exifInfo != null) _SheetAssetDescription(exif: exifInfo),
         const SheetPeopleDetails(),
@@ -194,11 +203,21 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
 class _SheetTile extends StatelessWidget {
   final String title;
   final Widget? leading;
+  final Widget? trailing;
   final String? subtitle;
   final TextStyle? titleStyle;
   final TextStyle? subtitleStyle;
+  final VoidCallback? onTap;
 
-  const _SheetTile({required this.title, this.titleStyle, this.leading, this.subtitle, this.subtitleStyle});
+  const _SheetTile({
+    required this.title,
+    this.titleStyle,
+    this.leading,
+    this.subtitle,
+    this.subtitleStyle,
+    this.trailing,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -234,8 +253,10 @@ class _SheetTile extends StatelessWidget {
       title: titleWidget,
       titleAlignment: ListTileTitleAlignment.center,
       leading: leading,
+      trailing: trailing,
       contentPadding: leading == null ? null : const EdgeInsets.only(left: 25),
       subtitle: subtitleWidget,
+      onTap: onTap,
     );
   }
 }

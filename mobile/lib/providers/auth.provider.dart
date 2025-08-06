@@ -121,7 +121,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> saveAuthInfo({required String accessToken}) async {
     await _apiService.setAccessToken(accessToken);
 
-    await _widgetService.writeCredentials(Store.get(StoreKey.serverEndpoint), accessToken);
+    final serverEndpoint = Store.get(StoreKey.serverEndpoint);
+    final customHeaders = Store.tryGet(StoreKey.customHeaders);
+    await _widgetService.writeCredentials(serverEndpoint, accessToken, customHeaders);
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
     String deviceId = Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;

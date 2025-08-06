@@ -101,6 +101,7 @@ class Permission {
   static const serverPeriodApkLinks = Permission._(r'server.apkLinks');
   static const serverPeriodStorage = Permission._(r'server.storage');
   static const serverPeriodStatistics = Permission._(r'server.statistics');
+  static const serverPeriodVersionCheck = Permission._(r'server.versionCheck');
   static const serverLicensePeriodRead = Permission._(r'serverLicense.read');
   static const serverLicensePeriodUpdate = Permission._(r'serverLicense.update');
   static const serverLicensePeriodDelete = Permission._(r'serverLicense.delete');
@@ -230,6 +231,7 @@ class Permission {
     serverPeriodApkLinks,
     serverPeriodStorage,
     serverPeriodStatistics,
+    serverPeriodVersionCheck,
     serverLicensePeriodRead,
     serverLicensePeriodUpdate,
     serverLicensePeriodDelete,
@@ -394,6 +396,7 @@ class PermissionTypeTransformer {
         case r'server.apkLinks': return Permission.serverPeriodApkLinks;
         case r'server.storage': return Permission.serverPeriodStorage;
         case r'server.statistics': return Permission.serverPeriodStatistics;
+        case r'server.versionCheck': return Permission.serverPeriodVersionCheck;
         case r'serverLicense.read': return Permission.serverLicensePeriodRead;
         case r'serverLicense.update': return Permission.serverLicensePeriodUpdate;
         case r'serverLicense.delete': return Permission.serverLicensePeriodDelete;

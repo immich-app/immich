@@ -56,7 +56,7 @@
 </script>
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
-  <div class="flex gap-2 flex-wrap">
+  <div class="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
     {#if assets && data.assets.length > 0}
       {#each assets as asset (asset.id)}
         <LargeAssetData {asset} onViewAsset={(asset) => setAsset(asset)} />

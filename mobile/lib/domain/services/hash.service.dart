@@ -94,13 +94,14 @@ class HashService {
       if (hash?.length == 20) {
         hashed.add(asset.copyWith(checksum: base64.encode(hash!)));
       } else {
-        _log.warning("Failed to hash file for ${asset.id}");
+        _log.warning("Failed to hash file for ${asset.id}: ${asset.name} created at ${asset.createdAt}");
       }
     }
 
     _log.fine("Hashed ${hashed.length}/${toHash.length} assets");
 
     await _localAssetRepository.updateHashes(hashed);
+    await _storageRepository.clearCache();
   }
 }
 

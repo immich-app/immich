@@ -50,7 +50,6 @@
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
 
@@ -149,10 +148,7 @@
 
   // eslint-disable-next-line svelte/valid-prop-names-in-kit-pages
   export const loadNextPage = async (force?: boolean) => {
-    if (!nextPage || searchResultAssets.length >= MAX_ASSET_COUNT) {
-      return;
-    }
-    if (isLoading && !force) {
+    if (!nextPage || (isLoading && !force)) {
       return;
     }
     isLoading = true;

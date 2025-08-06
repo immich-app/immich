@@ -6506,7 +6506,9 @@
         ],
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-permission": "server.versionCheck",
+        "description": "This endpoint requires the `server.versionCheck` permission."
       }
     },
     "/server/version-history": {
@@ -9469,7 +9471,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.136.0",
+    "version": "1.137.3",
     "contact": {}
   },
   "tags": [],
@@ -12631,6 +12633,7 @@
           "server.apkLinks",
           "server.storage",
           "server.statistics",
+          "server.versionCheck",
           "serverLicense.read",
           "serverLicense.update",
           "serverLicense.delete",
@@ -14786,6 +14789,10 @@
           "isFavorite": {
             "type": "boolean"
           },
+          "libraryId": {
+            "nullable": true,
+            "type": "string"
+          },
           "livePhotoVideoId": {
             "nullable": true,
             "type": "string"
@@ -14832,6 +14839,7 @@
           "fileModifiedAt",
           "id",
           "isFavorite",
+          "libraryId",
           "livePhotoVideoId",
           "localDateTime",
           "originalFileName",
@@ -14936,9 +14944,11 @@
           "AlbumUserV1",
           "AlbumUserBackfillV1",
           "AlbumUserDeleteV1",
-          "AlbumAssetV1",
+          "AlbumAssetCreateV1",
+          "AlbumAssetUpdateV1",
           "AlbumAssetBackfillV1",
-          "AlbumAssetExifV1",
+          "AlbumAssetExifCreateV1",
+          "AlbumAssetExifUpdateV1",
           "AlbumAssetExifBackfillV1",
           "AlbumToAssetV1",
           "AlbumToAssetDeleteV1",

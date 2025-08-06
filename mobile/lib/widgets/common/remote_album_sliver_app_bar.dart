@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -18,6 +19,7 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/remote_album_shared_user_icons.dart';
 
 class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
@@ -93,7 +95,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
               ),
               onPressed: () {
                 ref.read(remoteAlbumProvider.notifier).refresh();
-                context.pop();
+                context.navigateTo(const TabShellRoute(children: [DriftAlbumsRoute()]));
               },
             ),
             actions: [

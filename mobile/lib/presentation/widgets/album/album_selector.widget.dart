@@ -14,6 +14,7 @@ import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -26,8 +27,9 @@ typedef AlbumSelectorCallback = void Function(RemoteAlbum album);
 
 class AlbumSelector extends ConsumerStatefulWidget {
   final AlbumSelectorCallback onAlbumSelected;
+  final Function? onKeyboardExpanded;
 
-  const AlbumSelector({super.key, required this.onAlbumSelected});
+  const AlbumSelector({super.key, required this.onAlbumSelected, this.onKeyboardExpanded});
 
   @override
   ConsumerState<AlbumSelector> createState() => _AlbumSelectorState();
@@ -50,6 +52,12 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
     searchController.addListener(() {
       onSearch(searchController.text, filterMode);
+    });
+
+    searchFocusNode.addListener(() {
+      if (searchFocusNode.hasFocus) {
+        widget.onKeyboardExpanded?.call();
+      }
     });
   }
 
@@ -578,6 +586,8 @@ class AddToAlbumHeader extends ConsumerWidget {
         return;
       }
 
+      ref.read(currentRemoteAlbumProvider.notifier).setAlbum(newAlbum);
+      ref.read(multiSelectProvider.notifier).reset();
       context.pushRoute(RemoteAlbumRoute(album: newAlbum));
     }
 

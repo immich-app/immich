@@ -220,10 +220,20 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     });
   }
 
+  Future<void> removeUser(String albumId, {required String userId}) {
+    return _db.remoteAlbumUserEntity.deleteWhere((row) => row.albumId.equals(albumId) & row.userId.equals(userId));
+  }
+
   Future<void> deleteAlbum(String albumId) async {
     return _db.transaction(() async {
       await _db.remoteAlbumEntity.deleteWhere((table) => table.id.equals(albumId));
     });
+  }
+
+  Future<void> setActivityStatus(String albumId, bool isEnabled) async {
+    final query = _db.update(_db.remoteAlbumEntity)..where((row) => row.id.equals(albumId));
+
+    await query.write(RemoteAlbumEntityCompanion(isActivityEnabled: Value(isEnabled)));
   }
 
   Stream<RemoteAlbum?> watchAlbum(String albumId) {

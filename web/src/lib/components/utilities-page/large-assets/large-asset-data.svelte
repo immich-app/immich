@@ -1,12 +1,8 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { getAssetThumbnailUrl } from '$lib/utils';
-  import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
-  import { getAltText } from '$lib/utils/thumbnail-util';
+  import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
+  import { getFileSize } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AssetResponseDto } from '@immich/sdk';
-  import { mdiHeart } from '@mdi/js';
-  import { t } from 'svelte-i18n';
 
   interface Props {
     asset: AssetResponseDto;
@@ -16,43 +12,26 @@
   let { asset, onViewAsset }: Props = $props();
 
   let assetData = $derived(JSON.stringify(asset, null, 2));
+
+  let boxWidth = $state(300);
 </script>
 
 <div
-  class="max-w-60 rounded-xl border-4 transition-colors font-semibold text-xs bg-gray-200 dark:bg-gray-800 border-gray-200 dark:border-gray-800"
+  class="w-full aspect-square rounded-xl border-4 transition-colors font-semibold text-xs bg-gray-200 dark:bg-gray-800 border-gray-200 dark:border-gray-800"
+  bind:clientWidth={boxWidth}
+  title={assetData}
 >
-  <div class="relative w-full">
-    <button type="button" onclick={() => onViewAsset(asset)} class="block relative w-full" aria-label={$t('keep')}>
-      <!-- THUMBNAIL-->
-      <img
-        src={getAssetThumbnailUrl(asset.id)}
-        alt={$getAltText(toTimelineAsset(asset))}
-        title={assetData}
-        class="h-60 object-cover rounded-t-xl w-full"
-        draggable="false"
-      />
+  <div class="relative w-full h-full overflow-hidden rounded-lg">
+    <Thumbnail asset={toTimelineAsset(asset)} readonly onClick={() => onViewAsset(asset)} thumbnailSize={boxWidth} />
 
-      <!-- OVERLAY CHIP -->
-      {#if !!asset.libraryId}
-        <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-red-300/90">External</div>
-      {/if}
-
-      <!-- FAVORITE ICON -->
-      {#if asset.isFavorite}
-        <div class="absolute bottom-2 start-2">
-          <Icon path={mdiHeart} size="24" class="text-white" />
-        </div>
-      {/if}
-    </button>
+    {#if !!asset.libraryId}
+      <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-red-500">External</div>
+    {/if}
   </div>
-
-  <div class="flex justify-between items-center pl-2 pr-4 gap-2">
-    <div class="grid gap-y-2 py-2 text-xs transition-colors dark:text-white">
-      <div class="text-left text-ellipsis truncate">{asset.originalFileName}</div>
-      <span>{getAssetResolution(asset)}</span>
-    </div>
-    <div class="dark:text-white text-lg font-bold whitespace-nowrap w-max">
-      {getFileSize(asset, 1)}
-    </div>
+  <div class="text-center mt-4 px-4 text-sm font-normal truncate" title={asset.originalFileName}>
+    {asset.originalFileName}
+  </div>
+  <div class="text-center">
+    <p class="text-primary text-xl font-semibold py-3">{getFileSize(asset, 1)}</p>
   </div>
 </div>

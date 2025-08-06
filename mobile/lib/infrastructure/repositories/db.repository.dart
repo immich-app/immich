@@ -21,7 +21,7 @@ import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' hide Index;
 
 import 'db.repository.drift.dart';
 
@@ -66,7 +66,7 @@ class Drift extends $Drift implements IDatabaseRepository {
     : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -102,6 +102,18 @@ class Drift extends $Drift implements IDatabaseRepository {
                 columnTransformer: {v5.userEntity.profileChangedAt: currentDateAndTime},
               ),
             );
+          },
+          from5To6: (m, v6) async {
+            // Drops the (checksum, ownerId) and adds it back as (ownerId, checksum)
+            await customStatement('DROP INDEX IF EXISTS UQ_remote_asset_owner_checksum');
+            await m.create(v6.idxRemoteAssetOwnerChecksum);
+            // Adds libraryId to remote_asset_entity
+            await m.addColumn(v6.remoteAssetEntity, v6.remoteAssetEntity.libraryId);
+            await m.create(v6.uQRemoteAssetsOwnerChecksum);
+            await m.create(v6.uQRemoteAssetsOwnerLibraryChecksum);
+          },
+          from6To7: (m, v7) async {
+            await m.createIndex(v7.idxLatLng);
           },
         ),
       );

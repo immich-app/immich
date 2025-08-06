@@ -97,18 +97,22 @@ export class StorageService extends BaseService {
       const current = StorageCore.getMediaLocation();
       const samples = await this.assetRepository.getFileSamples();
       if (samples.length > 0) {
-        const originalPath = samples[0].originalPath;
+        const path = samples[0].path;
         const savedValue = await this.systemMetadataRepository.get(SystemMetadataKey.MediaLocation);
         let previous = savedValue?.location || '';
 
+        if (!previous && this.configRepository.getEnv().storage.mediaLocation) {
+          previous = current;
+        }
+
         if (!previous) {
-          previous = originalPath.startsWith('upload/') ? 'upload' : '/usr/src/app/upload';
+          previous = path.startsWith('upload/') ? 'upload' : '/usr/src/app/upload';
         }
 
         if (previous !== current) {
           this.logger.log(`Media location changed (from=${previous}, to=${current})`);
 
-          if (!originalPath.startsWith(previous)) {
+          if (!path.startsWith(previous)) {
             throw new Error(
               'Detected an inconsistent media location. For more information, see https://immich.app/errors#inconsistent-media-location',
             );
