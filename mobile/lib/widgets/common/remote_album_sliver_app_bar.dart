@@ -28,12 +28,14 @@ class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
     this.onShowOptions,
     this.onToggleAlbumOrder,
     this.onEditTitle,
+    this.onActivity,
   });
 
   final IconData icon;
   final void Function()? onShowOptions;
   final void Function()? onToggleAlbumOrder;
   final void Function()? onEditTitle;
+  final void Function()? onActivity;
 
   @override
   ConsumerState<RemoteAlbumSliverAppBar> createState() => _MesmerizingSliverAppBarState();
@@ -100,6 +102,11 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
             IconButton(
               icon: Icon(Icons.swap_vert_rounded, color: actionIconColor, shadows: actionIconShadows),
               onPressed: widget.onToggleAlbumOrder,
+            ),
+          if (currentAlbum.isActivityEnabled)
+            IconButton(
+              icon: Icon(Icons.chat, color: actionIconColor, shadows: actionIconShadows),
+              onPressed: widget.onActivity,
             ),
           if (widget.onShowOptions != null)
             IconButton(
