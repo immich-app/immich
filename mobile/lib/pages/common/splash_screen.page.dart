@@ -49,7 +49,6 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final wsProvider = ref.read(websocketProvider.notifier);
       ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
         (a) {
-          log.info('Successfully updated auth info with access token: $accessToken');
           try {
             wsProvider.connect();
             infoProvider.getServerInfo();
