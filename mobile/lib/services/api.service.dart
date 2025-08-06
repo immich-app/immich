@@ -92,8 +92,9 @@ class ApiService implements Authentication {
 
   /// Takes a server URL and attempts to resolve the API endpoint.
   ///
-  /// Input: [schema://]host[:port][/path]
+  /// Input: [schema://][basicAuth:password@]host[:port][/path]
   ///  schema - optional (default: https)
+  ///  userInfo - optional
   ///  host   - required
   ///  port   - optional (default: based on schema)
   ///  path   - optional
