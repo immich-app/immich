@@ -88,20 +88,4 @@ class PeopleInfo extends ConsumerWidget {
       ),
     );
   }
-
-  int _calculateAge(DateTime birthDate, DateTime referenceDate) {
-    int age = referenceDate.year - birthDate.year;
-    if (referenceDate.month < birthDate.month ||
-        (referenceDate.month == birthDate.month && referenceDate.day < birthDate.day)) {
-      age--;
-    }
-    return age;
-  }
-
-  int _calculateAgeInMonths(DateTime birthDate, DateTime referenceDate) {
-    return (referenceDate.year - birthDate.year) * 12 +
-        referenceDate.month -
-        birthDate.month -
-        (referenceDate.day < birthDate.day ? 1 : 0);
-  }
 }
