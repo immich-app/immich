@@ -701,7 +701,7 @@ typedef $$RemoteExifEntityTableProcessedTableManager =
     >;
 i0.Index get idxLatLng => i0.Index(
   'idx_lat_lng',
-  'CREATE INDEX idx_lat_lng ON remote_exif_entity (latitude, longitude)',
+  'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
 );
 
 class $RemoteExifEntityTable extends i2.RemoteExifEntity
