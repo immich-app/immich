@@ -16,7 +16,6 @@ void main() {
     await StoreService.init(storeRepository: IsarStoreRepository(db));
   });
 
-
   group('sanitizeUrl', () {
     test('Should encode correctly', () {
       var unEncodedURL = 'user:password@example.com/addSchemaAndRemovesSlashes////';
@@ -39,7 +38,7 @@ void main() {
       var idn = 'https://bücher.de';
       expect(punycodeEncodeUrl(idn), 'https://xn--bcher-kva.de');
     });
-   
+
     test('Keeps basic auth in encoding', () {
       var basicAuthURL = 'https://user:password@example.com';
       expect(punycodeEncodeUrl(basicAuthURL), 'https://user:password@example.com');
@@ -47,7 +46,7 @@ void main() {
   });
 
   group('punycodeDecode', () {
-   test('malformed URL returns a null', () {
+    test('malformed URL returns a null', () {
       var badURL = 'example.com/missing%20a%20scheme';
       expect(punycodeDecodeUrl(badURL), null);
     });
@@ -56,7 +55,7 @@ void main() {
       var idn = 'https://xn--bcher-kva.de';
       expect(punycodeDecodeUrl(idn), 'https://bücher.de');
     });
-   
+
     test('Keeps basic auth in encoding', () {
       var basicAuthURL = 'https://user:password@example.com/%20with%20spaces';
       expect(punycodeDecodeUrl(basicAuthURL), 'https://user:password@example.com/ with spaces');
@@ -68,11 +67,11 @@ void main() {
       expect(getServerUrl(), null);
     });
 
-    test('Returns null if what was set is not a correct url', () {
-      Store.put(StoreKey.serverEndpoint, 'example.com');
+    test('Returns null if what was set is not a correct url', () async {
+      await Store.put(StoreKey.serverEndpoint, 'example.com');
       expect(getServerUrl(), null);
     });
-    
+
     test('Returns decoded basic URL', () async {
       var encodedURL = 'https://example.com/ clears extra paths';
       await Store.put(StoreKey.serverEndpoint, encodedURL);
@@ -91,11 +90,10 @@ void main() {
       expect(getServerUrl(), portURL);
     });
 
-      test('Returns decoded complex URL', () async {
+    test('Returns decoded complex URL', () async {
       var complexURL = 'https://user:password@example.com:1337/123/abc';
       await Store.put(StoreKey.serverEndpoint, complexURL);
       expect(getServerUrl(), 'https://user:password@example.com:1337');
     });
-
   });
 }
