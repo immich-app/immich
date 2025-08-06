@@ -1,6 +1,5 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import type { RouteId } from '$app/types';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiChevronDown, mdiChevronLeft } from '@mdi/js';
   import type { Snippet } from 'svelte';
