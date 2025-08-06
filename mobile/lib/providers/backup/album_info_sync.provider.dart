@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/services/local_album.service.dart';
@@ -19,12 +20,14 @@ class AlbumInfoSyncNotifier extends Notifier<bool> {
 
   Future<void> createMirrorAlbums(List<LocalAlbum> localAlbums, String ownerId) async {
     for (final localAlbum in localAlbums) {
+      debugPrint("Creating mirror albums for ${localAlbum.name}");
       final remoteAlbum = await _remoteAlbumService.getByName(localAlbum.name, ownerId);
       if (remoteAlbum != null) {
+        debugPrint("Remote album ${localAlbum.name} already exists, skipping creation");
         continue;
       }
-
-      _remoteAlbumService.createAlbum(title: localAlbum.name, assetIds: []);
+      debugPrint("Creating remote album for ${localAlbum.name}");
+      await _remoteAlbumService.createAlbum(title: localAlbum.name, assetIds: []);
     }
   }
 }

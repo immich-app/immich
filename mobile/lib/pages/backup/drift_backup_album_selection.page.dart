@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/backup/album_info_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -74,7 +75,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
       return;
     }
 
-    print("selected albums $selectedAlbums");
+    await ref.read(albumInfoSyncProvider.notifier).createMirrorAlbums(selectedAlbums, ownerId);
   }
 
   Future<void> handlePagePopped() async {
@@ -83,9 +84,10 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
       return;
     }
 
-    if (_enableSyncUploadAlbum.value) {
+    if (_enableSyncUploadAlbum.value == true) {
       await _handleSyncUploadAlbums(currentUser.id);
     }
+
     await _handleUpload(currentUser.id);
   }
 
