@@ -7,7 +7,6 @@ import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:isar/isar.dart';
 
 import '../test_utils.dart';
-import '../fixtures/user.stub.dart';
 
 void main() {
   late Isar db;
