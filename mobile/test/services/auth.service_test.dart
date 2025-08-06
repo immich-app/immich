@@ -59,7 +59,7 @@ void main() {
       db.writeTxnSync(() => db.clearSync());
       await StoreService.init(storeRepository: IsarStoreRepository(db));
     });
-    // add test here
+
     test('Should resolve HTTP endpoint', () async {
       const testUrl = 'http://ip:2283';
       const resolvedUrl = 'http://ip:2283/api';
