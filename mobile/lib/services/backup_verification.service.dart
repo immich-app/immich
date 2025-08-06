@@ -11,6 +11,7 @@ import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -116,7 +117,8 @@ class BackupVerificationService {
     final List<Asset> result = [];
     BackgroundIsolateBinaryMessenger.ensureInitialized(tuple.rootIsolateToken);
     final db = await Bootstrap.initIsar();
-    await Bootstrap.initDomain(db);
+    final logDb = DriftLogger();
+    await Bootstrap.initDomain(db, logDb);
     await tuple.fileMediaRepository.enableBackgroundAccess();
     final ApiService apiService = ApiService();
     apiService.setEndpoint(tuple.endpoint);
