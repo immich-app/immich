@@ -893,6 +893,45 @@ class DriftLockedFolderRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftMapPage]
+class DriftMapRoute extends PageRouteInfo<DriftMapRouteArgs> {
+  DriftMapRoute({
+    Key? key,
+    LatLng? initialLocation,
+    List<PageRouteInfo>? children,
+  }) : super(
+         DriftMapRoute.name,
+         args: DriftMapRouteArgs(key: key, initialLocation: initialLocation),
+         initialChildren: children,
+       );
+
+  static const String name = 'DriftMapRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftMapRouteArgs>(
+        orElse: () => const DriftMapRouteArgs(),
+      );
+      return DriftMapPage(key: args.key, initialLocation: args.initialLocation);
+    },
+  );
+}
+
+class DriftMapRouteArgs {
+  const DriftMapRouteArgs({this.key, this.initialLocation});
+
+  final Key? key;
+
+  final LatLng? initialLocation;
+
+  @override
+  String toString() {
+    return 'DriftMapRouteArgs{key: $key, initialLocation: $initialLocation}';
+  }
+}
+
+/// generated route for
 /// [DriftMemoryPage]
 class DriftMemoryRoute extends PageRouteInfo<DriftMemoryRouteArgs> {
   DriftMemoryRoute({

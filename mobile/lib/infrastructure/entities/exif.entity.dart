@@ -95,6 +95,7 @@ class ExifInfo {
   );
 }
 
+@TableIndex(name: 'idx_lat_lng', columns: {#latitude, #longitude})
 class RemoteExifEntity extends Table with DriftDefaultsMixin {
   const RemoteExifEntity();
 

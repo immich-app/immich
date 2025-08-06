@@ -27,8 +27,9 @@ class Debouncer {
   }
 
   Future<void>? drain() {
-    if (_timer != null && _timer!.isActive) {
-      _timer!.cancel();
+    final timer = _timer;
+    if (timer != null && timer.isActive) {
+      timer.cancel();
       if (_lastAction != null) {
         _callAndRest();
       }
