@@ -26,8 +26,12 @@ class RemoteAlbumService {
     return _repository.get(albumId);
   }
 
-  List<RemoteAlbum> sortAlbums(List<RemoteAlbum> albums, RemoteAlbumSortMode sortMode, {bool isReverse = false}) {
-    return sortMode.sortFn(albums, isReverse);
+  Future<List<RemoteAlbum>> sortAlbums(
+    List<RemoteAlbum> albums,
+    RemoteAlbumSortMode sortMode, {
+    bool isReverse = false,
+  }) async {
+    return await sortMode.sortFn(albums, getAssets, isReverse);
   }
 
   List<RemoteAlbum> searchAlbums(
