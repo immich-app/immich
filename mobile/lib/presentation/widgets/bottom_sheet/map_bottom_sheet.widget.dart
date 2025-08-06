@@ -12,6 +12,7 @@ class MapBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return const BaseBottomSheet(
       initialChildSize: 0.25,
+      maxChildSize: 0.9,
       shouldCloseOnMinExtent: false,
       resizeOnScroll: false,
       actions: [],
