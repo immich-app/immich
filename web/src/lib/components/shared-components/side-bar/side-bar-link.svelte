@@ -6,8 +6,6 @@
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  type UserRouteId<T> = T extends `/(user)/${infer TPart}` ? (TPart extends `${string}[${string}` ? never : T) : never;
-
   interface Props {
     title: string;
     href: string;
