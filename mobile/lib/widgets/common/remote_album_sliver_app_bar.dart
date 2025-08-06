@@ -13,7 +13,6 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
@@ -30,12 +29,14 @@ class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
     this.onShowOptions,
     this.onToggleAlbumOrder,
     this.onEditTitle,
+    this.onActivity,
   });
 
   final IconData icon;
   final void Function()? onShowOptions;
   final void Function()? onToggleAlbumOrder;
   final void Function()? onEditTitle;
+  final void Function()? onActivity;
 
   @override
   ConsumerState<RemoteAlbumSliverAppBar> createState() => _MesmerizingSliverAppBarState();
@@ -105,12 +106,16 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
                   icon: Icon(Icons.swap_vert_rounded, color: actionIconColor, shadows: actionIconShadows),
                   onPressed: widget.onToggleAlbumOrder,
                 ),
+              if (currentAlbum.isActivityEnabled)
+                IconButton(
+                  icon: Icon(Icons.chat, color: actionIconColor, shadows: actionIconShadows),
+                  onPressed: widget.onActivity,
+                ),
               if (widget.onShowOptions != null)
                 IconButton(
                   icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
                   onPressed: widget.onShowOptions,
                 ),
-              if (currentAlbum.isActivityEnabled) const ActivityActionButton(menuItem: true),
             ],
             flexibleSpace: Builder(
               builder: (context) {

@@ -7,7 +7,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
-import 'package:immich_mobile/presentation/widgets/album/activity_text_field.dart';
+import 'package:immich_mobile/presentation/widgets/album/drift_activity_text_field.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
@@ -21,24 +21,25 @@ class DriftActivitiesPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Album has to be set in the provider before reaching this page
     final album = ref.watch(currentRemoteAlbumProvider)!;
     final asset = ref.watch(currentAssetNotifier) as RemoteAsset?;
     final user = ref.watch(currentUserProvider);
 
     final activityNotifier = ref.read(albumActivityProvider(album.id, asset?.id).notifier);
     final activities = ref.watch(albumActivityProvider(album.id, asset?.id));
-
     final listViewScrollController = useScrollController();
 
-    Future<void> onAddComment(String comment) async {
-      await activityNotifier.addComment(comment);
-      // Scroll to the end of the list to show the newly added activity
+    void scrollToBottom() {
       listViewScrollController.animateTo(
-        listViewScrollController.position.maxScrollExtent + 200,
+        listViewScrollController.position.maxScrollExtent + 80,
         duration: const Duration(milliseconds: 600),
         curve: Curves.fastOutSlowIn,
       );
+    }
+
+    Future<void> onAddComment(String comment) async {
+      await activityNotifier.addComment(comment);
+      scrollToBottom();
     }
 
     return Scaffold(
@@ -54,17 +55,13 @@ class DriftActivitiesPage extends HookConsumerWidget {
               children: [
                 ListView.builder(
                   controller: listViewScrollController,
-                  // +1 to display an additional over-scroll space after the last element
                   itemCount: data.length + 1,
                   itemBuilder: (context, index) {
-                    // Additional vertical gap after the last element
                     if (index == data.length) {
                       return const SizedBox(height: 80);
                     }
-
                     final activity = data[index];
                     final canDelete = activity.user.id == user?.id || album.ownerId == user?.id;
-
                     return Padding(
                       padding: const EdgeInsets.all(5),
                       child: DismissibleActivity(
@@ -80,7 +77,10 @@ class DriftActivitiesPage extends HookConsumerWidget {
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
-                    color: context.scaffoldBackgroundColor,
+                    decoration: BoxDecoration(
+                      color: context.scaffoldBackgroundColor,
+                      border: Border(top: BorderSide(color: context.colorScheme.secondaryContainer, width: 1)),
+                    ),
                     child: DriftActivityTextField(
                       isEnabled: album.isActivityEnabled,
                       likeId: liked?.id,
@@ -93,6 +93,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
           );
         },
       ),
+      resizeToAvoidBottomInset: true,
     );
   }
 }

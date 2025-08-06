@@ -6,7 +6,6 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/cast_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
@@ -14,7 +13,6 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_act
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -47,7 +45,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
     final websocketConnected = ref.watch(websocketProvider.select((c) => c.isConnected));
-    final album = ref.watch(currentRemoteAlbumProvider);
 
     final actions = <Widget>[
       if (isCasting || (asset.hasRemote && websocketConnected)) const CastActionButton(menuItem: true),
@@ -61,7 +58,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           icon: const Icon(Icons.image_search),
           tooltip: 'view_in_timeline',
         ),
-      if (album != null && album.isActivityEnabled && !isInLockedView) const ActivityActionButton(menuItem: true),
       if (asset.hasRemote && isOwner && !asset.isFavorite)
         const FavoriteActionButton(source: ActionSource.viewer, menuItem: true),
       if (asset.hasRemote && isOwner && asset.isFavorite)
