@@ -50,8 +50,12 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
         (a) {
           log.info('Successfully updated auth info with access token: $accessToken');
-          wsProvider.connect();
-          infoProvider.getServerInfo();
+          try {
+            wsProvider.connect();
+            infoProvider.getServerInfo();
+          } catch (e) {
+            log.severe('Failed establishing connection to the server: $e');
+          }
         },
         onError: (exception) => {
           log.severe('Failed to update auth info with access token: $accessToken'),
