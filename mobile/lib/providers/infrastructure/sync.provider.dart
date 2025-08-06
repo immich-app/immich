@@ -11,12 +11,13 @@ import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash.provider.dart';
 
 final syncStreamServiceProvider = Provider(
   (ref) => SyncStreamService(
     syncApiRepository: ref.watch(syncApiRepositoryProvider),
     syncStreamRepository: ref.watch(syncStreamRepositoryProvider),
-    assetService: ref.watch(assetServiceProvider),
+    trashService: ref.watch(trashServiceProvider),
     cancelChecker: ref.watch(cancellationProvider),
   ),
 );
