@@ -1,27 +1,43 @@
+import 'package:drift/drift.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:isar/isar.dart';
+import 'package:immich_mobile/infrastructure/entities/log.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 
-class IsarLogRepository extends IsarDatabaseRepository {
-  final Isar _db;
-  const IsarLogRepository(super.db) : _db = db;
+class LogRepository {
+  final DriftLogger _db;
+  const LogRepository(this._db);
 
   Future<bool> deleteAll() async {
-    await transaction(() async => await _db.loggerMessages.clear());
+    await _db.logMessageEntity.deleteAll();
     return true;
   }
 
-  Future<List<LogMessage>> getAll() async {
-    final logs = await _db.loggerMessages.where().sortByCreatedAtDesc().findAll();
-    return logs.map((l) => l.toDto()).toList();
+  Future<List<LogMessage>> getAll({int limit = 250}) async {
+    final query = _db.logMessageEntity.select()
+      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+      ..limit(limit);
+
+    return query.map((log) => log.toDto()).get();
+  }
+
+  LogMessageEntityCompanion _toEntityCompanion(LogMessage log) {
+    return LogMessageEntityCompanion.insert(
+      message: log.message,
+      level: log.level,
+      createdAt: log.createdAt,
+      logger: Value(log.logger),
+      details: Value(log.error),
+      stack: Value(log.stack),
+    );
   }
 
   Future<bool> insert(LogMessage log) async {
-    final logEntity = LoggerMessage.fromDto(log);
+    final logEntity = _toEntityCompanion(log);
 
     try {
-      await transaction(() => _db.loggerMessages.put(logEntity));
+      await _db.logMessageEntity.insertOne(logEntity);
     } catch (e) {
       return false;
     }
@@ -30,19 +46,30 @@ class IsarLogRepository extends IsarDatabaseRepository {
   }
 
   Future<bool> insertAll(Iterable<LogMessage> logs) async {
-    await transaction(() async {
-      final logEntities = logs.map((log) => LoggerMessage.fromDto(log)).toList();
-      await _db.loggerMessages.putAll(logEntities);
-    });
+    final logEntities = logs.map(_toEntityCompanion).toList();
+    await _db.logMessageEntity.insertAll(logEntities);
+
     return true;
   }
 
-  Future<void> truncate({int limit = 250}) async {
-    await transaction(() async {
-      final count = await _db.loggerMessages.count();
-      if (count <= limit) return;
-      final toRemove = count - limit;
-      await _db.loggerMessages.where().limit(toRemove).deleteAll();
-    });
+  Future<void> deleteByLogger(String logger) async {
+    await _db.logMessageEntity.deleteWhere((row) => row.logger.equals(logger));
+  }
+
+  Stream<List<LogMessage>> watchMessages(String logger) {
+    final query = _db.logMessageEntity.select()
+      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+      ..where((row) => row.logger.equals(logger));
+
+    return query.watch().map((rows) => rows.map((row) => row.toDto()).toList());
+  }
+
+  Future<void> truncate({int limit = kLogTruncateLimit}) async {
+    final totalCount = await _db.managers.logMessageEntity.count();
+    if (totalCount > limit) {
+      final rowsToDelete = totalCount - limit;
+
+      await _db.managers.logMessageEntity.orderBy((o) => o.createdAt.asc()).limit(rowsToDelete).delete();
+    }
   }
 }
